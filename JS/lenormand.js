@@ -180,11 +180,22 @@ function _lnSecRand() { // v3.6 密碼學隨機（決定牌序的唯一隨機源
   try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return _u[0] / 4294967296; }
   catch (e) { return Math.random(); }
 }
+function _lnRandInt(max){
+  if(typeof window._secInt==='function')return window._secInt(max);
+  if(!Number.isInteger(max)||max<1||max>4294967296)throw new RangeError('無效的洗牌範圍');
+  var cr=window.crypto||window.msCrypto;
+  if(cr&&cr.getRandomValues){
+    var u=new Uint32Array(1),limit=Math.floor(4294967296/max)*max;
+    for(var i=0;i<128;i++){cr.getRandomValues(u);if(u[0]<limit)return u[0]%max;}
+    throw new Error('隨機來源未產生有效樣本');
+  }
+  return Math.floor(Math.random()*max);
+}
 function shuffleDeck() {
   _lnDeck = CARDS.map(function(c){ return JSON.parse(JSON.stringify(c)); });
   // Fisher-Yates
   for (var i = _lnDeck.length - 1; i > 0; i--) {
-    var j = Math.floor(_lnSecRand() * (i + 1)); // v3.6 密碼學隨機洗牌
+    var j = _lnRandInt(i + 1); // v3.6 密碼學隨機洗牌
     var t = _lnDeck[i]; _lnDeck[i] = _lnDeck[j]; _lnDeck[j] = t;
   }
   _lnDrawn = [];

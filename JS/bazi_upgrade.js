@@ -535,6 +535,7 @@ function baziTianGanHe(bazi) {
 // ── 10. 旺衰病象（母多滅子 / 殺重身輕 / 財多身弱 / 食傷洩秀太過 / 殺印兩旺…）──
 // 把「身強弱 → 用神方向」講成具體病象，尤其根治「印重埋身（水多木漂類）」漏判
 function baziStrengthPattern(bazi) {
+  if(bazi&&bazi.isNeutral)return []; // 中間帶不是身弱，避免布林相容欄位誤判
   if (!bazi || !bazi.dmEl) return [];
   var dmEl=bazi.dmEl, ep=bazi.ep||{};
   var YIN={木:'水',火:'木',土:'火',金:'土',水:'金'};
@@ -641,7 +642,7 @@ function baziTongGen(bazi) {
   var dmEl = WX_MAP[bazi.dm];
   var CG = CG_CORE;
   var pk = ['year','month','day','hour'], pn = {year:'年',month:'月',day:'日',hour:'時'};
-  var TAG = ['（本氣強根）','（中氣根）','（餘氣弱根）'];
+  var TAG = ['（本氣根）','（中氣根）','（餘氣根）']; // 根力另審月令與沖合，不由藏干序號直接判強弱
   var roots = [];
   pk.forEach(function (k) {
     var pil = bazi.pillars[k]; if (!pil) return;
@@ -657,6 +658,12 @@ function baziTongGen(bazi) {
 // 解決「unfav 只列最重一個」導致大運判吉凶與喜忌不完整、不一致的問題；全盤共用此表
 function baziWuxingStance(bazi) {
   if (!bazi || !bazi.dmEl) return null;
+  if(bazi.fuyiAssessment){
+    var f=bazi.fuyiAssessment, m=Object.assign({},f.map), es=['木','火','土','金','水'], rs={};
+    f.items.forEach(function(i){rs[i.element]=i.role;});
+    var xi=es.filter(e=>m[e]==='喜'),ji=es.filter(e=>m[e]==='忌'),ping=es.filter(e=>m[e]==='平');
+    return {map:m,role:rs,xi:xi,ji:ji,ping:ping,conflict:!!bazi.strengthConflict,model:f.model,candidateOnly:false,scope:f.scope,summary:f.conclusion+'；喜向：'+(xi.join('、')||'不預設')+'；忌向：'+(ji.join('、')||'不預設')};
+  }
   var dmEl = bazi.dmEl, els = ['木','火','土','金','水'];
   var YIN = {木:'水',火:'木',土:'火',金:'土',水:'金'}, SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'},
       KE = {木:'土',火:'金',土:'水',金:'木',水:'火'}, KEME = {木:'金',火:'水',土:'木',金:'火',水:'土'};
@@ -688,6 +695,7 @@ function baziWuxingStance(bazi) {
 
 // ── 13. 旺衰矛盾說明（得令卻弱／失令卻強…講開，避免 AI 卡在「得令=是卻判身弱」）──
 function baziStrengthNote(bazi) {
+  if(bazi&&bazi.isNeutral)return {notes:['本模型位在中和附近；'+(bazi.strengthAssessment?bazi.strengthAssessment.evidence.join('；'):'' )],zh:'扶抑採中間帶，依根氣、原局通路及調候選作用，不由 strong=false 改稱身弱。'};
   if (!bazi || !bazi.dm || !bazi.pillars) return null;
   var dm = bazi.dm, strong = !!bazi.strong, deLing = !!bazi.deLing;
   var mZhi = bazi.pillars.month ? bazi.pillars.month.zhi : '';

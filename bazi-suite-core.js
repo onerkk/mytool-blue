@@ -351,9 +351,11 @@
       '扶抑立場：'+safeText(stance.summary, '喜候選 '+safeArray(chart&&chart.fav).join('、')+'；忌候選 '+safeArray(chart&&chart.unfav).join('、'))+'。',
       '月令格局候選：'+modelText(ge)+'。格神、相神與成敗救應須回到透藏根氣；touChu 為空時不能宣稱格神已透干。格局用神與扶抑用神分義。',
       '官殺辨析：'+modelText(chart&&chart.guanShaMix)+'。',
+      '核心扶抑與調候：'+(typeof root.baziCoreAnalysisLines==='function'?root.baziCoreAnalysisLines(chart).join('\n'):modelText(chart&&chart.fuyiAssessment))+'。',
+      '合化判別：'+(typeof root.baziHuaQiLines==='function'?root.baziHuaQiLines(chart).join('\n'):modelText(chart&&chart.huaQiAssessments))+'。',
       '病藥模型：'+modelText(chart&&chart.medicineGod)+'；通關模型：'+modelText(chart&&chart.relayGod)+'。未提供的模型不可補造。',
       '調候鏡頭：候選五行 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+(th.sourceUrl?'；校對來源 '+th.sourceUrl:'')+'。調候與扶抑分開，不自動互相覆蓋。',
-      '特殊格局：'+(safeArray(chart&&chart.specialStructureCandidates).length?safeArray(chart.specialStructureCandidates).map(function(x){return x.type+'（'+x.status+'）';}).join('、'):'無自動成立項；候選仍須人工覆核')+'。'
+      '其他特殊格局待判資料：'+(safeArray(chart&&chart.specialStructureCandidates).length?safeArray(chart.specialStructureCandidates).map(function(x){return modelText(x);}).join('、'):'無；以月令一般格局為主')+'。'
     ];
   }
 

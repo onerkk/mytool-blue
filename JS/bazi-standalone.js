@@ -354,15 +354,27 @@
     else {
     var dm = b.dm||'', dmEl = b.dmEl||'';
     var geTxt = b.specialStructure ? (b.specialStructure.type||'特殊格局')
-              : (Array.isArray(b.specialStructureCandidates) && b.specialStructureCandidates.length ? b.specialStructureCandidates[0].type+'（待覆核）' : (b.zhengGe && b.zhengGe.geName ? b.zhengGe.geName : ''));
+              : (b.zhengGe && b.zhengGe.geName ? b.zhengGe.geName : '一般格局，依月令取用');
     var favTxt = Array.isArray(b.fav)? b.fav.join('、') : '';
     var unfavTxt = Array.isArray(b.unfav)? b.unfav.join('、') : '';
     var curDy = _currentDayun(b);
     h += '<div class="bzx-summary">';
-    h += '<div class="sline">日主 <b>'+dm+'</b>（'+dmEl+'行）・ 模型候選 <span class="sgold">'+(b.strongLevel||(b.strong?'身強':'身弱'))+'</span>'+(b.structType?'（'+b.structType+'）':'')+'</div>';
-    h += '<p class="jd-model-note">以下為判法候選，需以月令、根氣與全局覆核。旺衰不是能力評分，喜忌也不是全年吉凶。</p>';
-    if (geTxt) h += '<div class="sline">取格候選：<b>'+geTxt+'</b></div>';
-    if (favTxt) h += '<div class="sline">用神候選：<span class="sgold">'+favTxt+'</span>'+(unfavTxt?' ・ 忌神候選：'+unfavTxt:'')+'</div>';
+    h += '<div class="sline">日主 <b>'+dm+'</b>（'+dmEl+'行）・ 旺衰參考 <span class="sgold">'+(b.strongLevel||(b.strong?'身強':'身弱'))+'</span>'+(b.structType?'（'+b.structType+'）':'')+'</div>';
+    h += '<p class="jd-model-note">月令取格、扶抑與季節取用分開呈現。旺衰描述命局的承擔與生扶，喜忌要連同原局及歲運解讀。</p>';
+    if (geTxt) h += '<div class="sline">'+(b.specialStructure?'採用格局':'月令取格')+'：<b>'+geTxt+'</b></div>';
+    if(b.zhengGe&&b.zhengGe.touChu)h += '<div class="sline">取格依據：月支'+b.pillars.month.zhi+'藏'+b.zhengGe.touChu+'透干，對日主為'+b.zhengGe.geGod+'。</div>';
+    (b.huaQiAssessments||[]).forEach(function(a){
+      function esc(text){return String(text||'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
+      h += '<div class="sline bzx-hua-verdict"><b>'+esc(a.status)+'</b><p>'+esc(a.conclusion)+'</p>';
+      h += '<details><summary>查看合化判讀依據</summary><p>'+esc(a.evidence.join('；'))+'。</p>';
+      if(a.blockingEvidence.length)h += '<p>'+esc(a.blockingEvidence.join('；'))+'。</p>';
+      if(a.requiredChecks.length)h += '<p>'+esc(a.requiredChecks.join('；'))+'。</p>';
+      h += '<p>'+esc(a.policyNote)+'</p></details></div>';
+    });
+    if (favTxt) h += '<div class="sline">扶抑喜向：<span class="sgold">'+favTxt+'</span>'+(unfavTxt?' ・ 忌向：'+unfavTxt:'')+'</div>';
+    if(b.fuyiAssessment)h += '<div class="sline">'+_fmt(b.fuyiAssessment.conclusion)+'</div>';
+    if(b.strengthAssessment)h += '<details><summary>查看旺衰與根氣依據</summary><p>'+b.strengthAssessment.evidence.map(_fmt).join('；')+'。</p><p>'+_fmt(b.strengthAssessment.disclaimer)+'</p></details>';
+    if(b.seasonalAssessment)h += '<div class="sline">調候條件：'+_fmt(b.seasonalAssessment.conclusion)+'</div>';
     if (b.tiaohou && b.tiaohou.need) h += '<div class="sline">季節參考：'+(b.tiaohou.need.join('、'))+'（'+(b.tiaohou.reason||'窮通寶鑑')+'）</div>';
     if (curDy) h += '<div class="sline">現行大運：<b>'+(curDy.gz||'')+'</b>'+((curDy.startDate&&curDy.endDateExclusive)?'（'+curDy.startDate+' ～ '+curDy.endDateExclusive+'）':((curDy.ageStart!=null)?'（'+curDy.ageStart+'～'+curDy.ageEnd+'歲）':''))+'</div>';
     if (_meta && _meta.solarNote) h += '<div class="sline" style="font-size:.68rem;opacity:.7">真太陽時'+_meta.solarNote+'</div>';
@@ -508,11 +520,13 @@
     if(b.strengthNote)L.push('旺衰複核提示：'+b.strengthNote);
     if(b.strengthAssessment&&b.strengthAssessment.disclaimer)L.push('旺衰模型說明：'+b.strengthAssessment.disclaimer);
     if(b.ep){L.push('五行相對權重（僅供本模型內比較，不是古籍固定比例）：'+['木','火','土','金','水'].map(function(e){return e+Math.round(b.ep[e]||0)+'%';}).join('、')+'。');}
-    if(b.specialStructure){L.push('特殊格局已確認候選：'+(b.specialStructure.type||'')+'；'+(b.specialStructure.desc||'')+'。仍須檢查根氣、破格字與逆勢。');}
+    if(b.specialStructure){L.push('特殊格局資料：'+(b.specialStructure.type||'')+'；'+(b.specialStructure.desc||'')+'。');}
+    if(typeof baziHuaQiLines==='function')L=L.concat(baziHuaQiLines(b));
+    if(typeof baziCoreAnalysisLines==='function')L=L.concat(baziCoreAnalysisLines(b));
     if(Array.isArray(b.specialStructureCandidates)&&b.specialStructureCandidates.length){
       L.push('特殊格局待審候選：'+b.specialStructureCandidates.map(function(c){return (c.type||'候選')+'；支持：'+((c.evidence||[]).join('、')||'—')+'；阻礙：'+((c.blockingEvidence||[]).join('、')||'未列')+'；尚須檢查：'+((c.requiredChecks||[]).join('、')||'—');}).join('｜')+'。這些候選不自動覆蓋扶抑喜忌。');
     }
-    if(!b.specialStructure&&b.zhengGe&&b.zhengGe.geName){L.push('月令取格候選：'+b.zhengGe.geName+(b.zhengGe.geGod?'（格神 '+b.zhengGe.geGod+'）':'')+'。取格是觀察框架，不可單獨代替旺衰、調候與全局生剋。');}
+    if(!b.specialStructure&&b.zhengGe&&b.zhengGe.geName){L.push('月令取格：'+b.zhengGe.geName+(b.zhengGe.geGod?'（格神 '+b.zhengGe.geGod+'）':'')+'。取格是觀察框架，不可單獨代替旺衰、調候與全局生剋。');}
     if(b.guanShaMix&&b.guanShaMix.zh)L.push('官殺辨析：'+b.guanShaMix.zh);
     if(Array.isArray(b.strengthPattern)&&b.strengthPattern.length)L.push('旺衰結構候選標記：'+b.strengthPattern.map(function(x){return (x.type||'未命名')+(x.el?'（'+(Array.isArray(x.el)?x.el.join('、'):x.el)+'）':'');}).join('、')+'。請用月令、根氣、透干與制化覆核，再判斷它如何影響喜忌與本題。');
     L.push('扶抑喜用候選：'+(Array.isArray(b.fav)&&b.fav.length?b.fav.join('、'):'—')+'；忌神候選：'+(Array.isArray(b.unfav)&&b.unfav.length?b.unfav.join('、'):'—')+'。');
@@ -612,8 +626,8 @@
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
     if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912engine2');
     if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260912accuracy1');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260913methods1');
-    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260912engine2');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260913core2');
+    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260913core2');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }
     var idx = 0;

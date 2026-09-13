@@ -4689,6 +4689,187 @@ function getBaziSeasonalReference(dayStem, monthBranch) {
   };
 }
 
+// Position-aware facts shared by support, seasonal and transit interpretation.
+// Sources and the limits of the application policy are recorded in docs/core-engine-audit-20260913.md.
+function getBaziStructureFacts(pillars) {
+  var keys=['year','month','day','hour'], names={year:'年',month:'月',day:'日',hour:'時'};
+  if(!pillars || keys.some(function(k){var p=pillars[k];return !p || !Object.prototype.hasOwnProperty.call(WX_G,p.gan) || !Object.prototype.hasOwnProperty.call(CG,p.zhi);})) return null;
+  var dm=pillars.day.gan, dmEl=WX_G[dm], stems=[], hidden=[], elements={};
+  ['木','火','土','金','水'].forEach(function(e){elements[e]={element:e,exposed:[],roots:[]};});
+  keys.forEach(function(k,i){
+    var p=pillars[k], s={pillar:k,index:i,stem:p.gan,element:WX_G[p.gan],god:k==='day'?'日主':tenGod(dm,p.gan),label:names[k]+'干'+p.gan};
+    stems.push(s);elements[s.element].exposed.push(s);
+    (CG[p.zhi]||[]).forEach(function(g,j){
+      var clashes=keys.filter(function(other){return other!==k && LIU_CHONG[p.zhi]===pillars[other].zhi;});
+      var r={pillar:k,index:i,branch:p.zhi,stem:g,element:WX_G[g],god:tenGod(dm,g),hiddenIndex:j,qi:['本氣','中氣','餘氣'][j],clashedBy:clashes,label:names[k]+'支'+p.zhi+'藏'+g};
+      hidden.push(r);elements[r.element].roots.push(r);
+    });
+  });
+  var links=[];
+  stems.forEach(function(a){stems.forEach(function(b){
+    if(a.index===b.index)return;
+    var relation=SHENG[a.element]===b.element?'生':KE[a.element]===b.element?'剋':null;
+    if(relation)links.push({from:a.pillar,to:b.pillar,fromStem:a.stem,toStem:b.stem,relation:relation,distance:Math.abs(a.index-b.index),adjacent:Math.abs(a.index-b.index)===1,label:a.label+relation+b.label});
+  });});
+  var combinations=[];
+  stems.forEach(function(a){stems.forEach(function(b){if(a.index<b.index&&TG_HE[a.stem]===b.stem)combinations.push({from:a.pillar,to:b.pillar,pair:a.stem+b.stem,distance:b.index-a.index,adjacent:b.index-a.index===1,target:TG_HE_EL[a.stem],transforms:null});});});
+  stems.forEach(function(s){
+    s.roots=elements[s.element].roots.map(function(r){return r.label;});
+    s.rooted=s.roots.length>0;
+    s.constraints=links.filter(function(l){return l.to===s.pillar&&l.relation==='剋'&&l.adjacent;}).map(function(l){return l.label;});
+    combinations.filter(function(c){return c.adjacent&&(c.from===s.pillar||c.to===s.pillar);}).forEach(function(c){s.constraints.push(c.pair+'相合（未判成化或去除）');});
+  });
+  var paths=[];
+  links.filter(function(l){return l.adjacent&&l.relation==='生';}).forEach(function(a){
+    links.filter(function(l){return l.adjacent&&l.relation==='生'&&l.from===a.to&&l.to!==a.from;}).forEach(function(b){
+      paths.push({pillars:[a.from,a.to,b.to],stems:[a.fromStem,a.toStem,b.toStem],label:names[a.from]+'干'+a.fromStem+'→'+names[a.to]+'干'+a.toStem+'→'+names[b.to]+'干'+b.toStem});
+    });
+  });
+  return {policy:'FOUR_PILLARS_POSITION_FACTS_V1',dm:dm,dmEl:dmEl,stems:stems,hidden:hidden,elements:elements,dayMasterRoots:elements[dmEl].roots,links:links,combinations:combinations,adjacentGenerationPaths:paths,
+    note:'根氣列四支藏干；沖不自動刪根。相生路徑只列實際相鄰明干；隔位關係另列距離，不把五行共存當成已流通。'};
+}
+
+// A declared ordinary-chart support/drain lens, with an explanation for every
+// direction. It never ranks an element merely because its numeric share is low.
+function assessBaziFuyi(facts, strong, neutral) {
+  if(!facts)return null;
+  var dm=facts.dmEl, yin=BE_SHENG[dm], out=SHENG[dm], wealth=KE[dm], officer=BE_KE[dm];
+  var roles={};roles[dm]='比劫';roles[yin]='印';roles[out]='食傷';roles[wealth]='財';roles[officer]='官殺';
+  var map={}, items=[], mechanisms=[];
+  function active(e){return facts.elements[e].exposed.some(function(s){return s.pillar!=='day'&&s.rooted&&!s.constraints.length;});}
+  ['木','火','土','金','水'].forEach(function(e){
+    var helps=e===dm||e===yin;
+    map[e]=neutral?'平':(strong?!helps:helps)?'喜':'忌';
+    var why=e===dm?'同氣扶身，落到四支才有可核對的根':e===yin?'生身；官殺存在時另有承接生剋的作用':e===out?'日主所生，洩身並可生財；身弱時要看能否承擔':e===wealth?'日主所剋，耗身並生官殺；也可能制印，位置決定是否破壞保護':'剋身與約束；有印承接、食傷制約時作用會改變';
+    var elem=facts.elements[e];
+    items.push({element:e,role:roles[e],stance:map[e],reason:why,exposed:elem.exposed.filter(function(s){return s.pillar!=='day';}).map(function(s){return s.label;}),roots:elem.roots.map(function(r){return r.label;}),active:active(e),conditions:elem.exposed.flatMap(function(s){return s.constraints;})});
+  });
+  if(facts.elements[officer].exposed.length && active(yin) && facts.dayMasterRoots.length){
+    mechanisms.push({type:'官殺—印—身',elements:[officer,yin,dm],action:'保留原有印的承接，並照顧日主根氣；不把既有印星等同還要不斷增加印',evidence:facts.elements[yin].exposed.map(function(s){return s.label;}).concat(facts.dayMasterRoots.map(function(r){return r.label;})),status:'原局具備三方字與印根；實際距離、制合另列'});
+  }
+  if(active(out)&&active(wealth))mechanisms.push({type:'食傷生財',elements:[dm,out,wealth],action:strong?'以已有食傷承接日主，再看財能否接續；同時查官印牽制':'食傷、財均有實際落點，先照顧日主承擔，不能只因財有源就判有利',evidence:facts.elements[out].exposed.concat(facts.elements[wealth].exposed).map(function(s){return s.label;}),status:'明干有根；是否連續相鄰以路徑欄為準'});
+  var favored=neutral?[]:(strong?[out,wealth,officer]:[dm,yin]);
+  favored.sort(function(a,b){return Number(active(b))-Number(active(a));});
+  if(!strong&&!neutral&&mechanisms.some(function(m){return m.type==='官殺—印—身';}))favored=[yin,dm];
+  return {model:'ORDINARY_SUPPORT_DRAIN_WITH_CHANNELS_V1',scope:'一般格局扶抑；調候與格局用神另層合參',strengthInput:neutral?'中和附近':strong?'偏強向':'偏弱向',map:map,items:items,fav:favored,unfav:Object.keys(map).filter(function(e){return map[e]==='忌';}),mechanisms:mechanisms,
+    conclusion:neutral?'強弱位在本模型中間帶，扶抑不預設補哪一行；依已存在的生剋通路與調候條件選作用':strong?'扶抑先看食傷、財、官殺如何承接或約束；優先檢查原局已有根且未被近干牽制的方向':'扶抑以根氣與印比承接為主；印能否化官殺、根能否受生，決定實際用法',
+    sources:['https://www.donglishuzhai.net/chapter/3719.html','https://www.donglishuzhai.net/chapter/3722.html','https://www.donglishuzhai.net/chapter/3733.html'],
+    policyNote:'這是明示的扶抑基準與通路排序，不是古籍統一喜忌表；元素有作用與現實需要購買該元素象徵物是兩回事。'};
+}
+
+function assessBaziSeasonal(facts, reference) {
+  if(!facts||!reference)return null;
+  var rows=reference.candidateStems.map(function(g){
+    var exposed=facts.stems.filter(function(s){return s.stem===g;}), hidden=facts.hidden.filter(function(s){return s.stem===g;}), roots=facts.elements[WX_G[g]].roots;
+    return {stem:g,element:WX_G[g],status:exposed.length?'已透':hidden.length?'藏支未透':'原局未見',exposed:exposed.map(function(s){return s.label;}),hidden:hidden.map(function(s){return s.label;}),roots:roots.map(function(s){return s.label;}),constraints:exposed.flatMap(function(s){return s.constraints;}),usableAutomatically:false};
+  });
+  var month=facts.hidden.find(function(s){return s.pillar==='month';}).branch;
+  var clauses=[];
+  function has(g){return facts.stems.some(function(s){return s.stem===g;});}
+  function any(g){return has(g)||facts.hidden.some(function(s){return s.stem===g;});}
+  // Exact, observable premises from the selected Qiongtong text; no numeric
+  // definition is invented for ambiguous words such as 多/少/旺/過量.
+  if(facts.dm==='乙'&&month==='申'){
+    if(has('丙')&&facts.hidden.some(function(s){return s.branch==='巳';}))clauses.push({id:'YI_SHEN_BING_SI',matched:true,conclusion:'丙透且見巳，原文制秋金的分支具備字面條件；再看水土是否牽制丙'});
+    if(has('己')&&has('丙'))clauses.push({id:'YI_SHEN_JI_BING',matched:true,conclusion:'己、丙同透，所校七月篇的土火配合條件已出現'});
+    if(has('癸')&&!any('丙'))clauses.push({id:'YI_SHEN_GUI_WITHOUT_BING',matched:true,conclusion:'本盤癸已透、丙未見，採七月篇「有癸而無丙」分支說明；先交代現有滋養，不把己丙癸三者全當成缺額'});
+  }
+  if(facts.dm==='乙'&&month==='子'){
+    clauses.push({id:'YI_ZI_BING_WARMTH',matched:true,conclusion:any('丙')?'所校仲冬乙木先取丙暖；本盘已見丙，續查壬癸、戊與丙的位置及根源':'所校仲冬乙木先取丙暖；本盤未見丙，丁火不能直接當成同一調候條件已滿足'});
+  }
+  return {policy:'SEASONAL_STEM_CONDITIONS_V1',sourceUrl:reference.sourceUrl,sourceSection:reference.sourceSection,stems:rows,matchedClauses:clauses,
+    conclusion:rows.map(function(r){return r.stem+r.element+'：'+r.status;}).join('；')+(clauses.length?'。'+clauses.map(function(c){return c.conclusion;}).join('。'):''),
+    coverage:'120個月令／季節入口逐干核對透藏、同五行根與相鄰制合；明示命中的條文分支。原文多寡、清濁與成化仍需按全局裁決，未寫入任意百分比。',climateScoreAdjustment:0};
+}
+
+function baziSeasonalTransit(reference, facts, gan, zhi) {
+  if(!reference||!facts)return [];
+  var notes=[];
+  reference.candidateStems.forEach(function(g){
+    var place=gan===g?'天干透出':(CG[zhi]||[]).includes(g)?'地支藏有':null;
+    if(!place)return;
+    var against=facts.stems.filter(function(s){return KE[s.element]===WX_G[g]||TG_HE[s.stem]===g;}).map(function(s){return s.label+(TG_HE[s.stem]===g?'相合':'剋入');});
+    notes.push('調候條件：此運'+place+g+'，對應'+reference.sourceSection+'的取用入口'+(against.length?'；同時見'+against.join('、'):'')+'；與原局透藏合參，不由季節字詞自動評吉凶');
+  });
+  return notes;
+}
+
+function baziCoreAnalysisLines(chart) {
+  if(!chart||!chart.structureFacts)return [];
+  var f=chart.structureFacts, lines=['核心根氣：'+(f.dayMasterRoots.map(function(r){return r.label+'（'+r.qi+(r.clashedBy.length?'，有沖配對':'')+'）';}).join('、')||'四支藏干無同五行根')+'。'];
+  if(chart.fuyiAssessment)lines.push('扶抑判別：'+JSON.stringify(chart.fuyiAssessment));
+  if(chart.seasonalAssessment)lines.push('調候實盤條件：'+JSON.stringify(chart.seasonalAssessment));
+  lines.push('明干位置與生剋：'+JSON.stringify({links:f.links,combinations:f.combinations,adjacentGenerationPaths:f.adjacentGenerationPaths}));
+  if(chart.strengthAssessment)lines.push('旺衰模型依據：'+JSON.stringify(chart.strengthAssessment));
+  return lines;
+}
+
+// A five-stem combination is a relation, not a completed transformation verdict.
+// This bounded assessment selects an ordinary reading when BOTH surviving roots
+// and exposed, rooted support remain. Other configurations stay explicitly open;
+// the classical true/false transformation examples cannot be reduced to root counts.
+function assessBaziHuaQi(pillars){
+  var keys=['year','month','day','hour'], labels=['年','月','日','時'];
+  if(!pillars||keys.some(function(k){return !pillars[k]||!Object.prototype.hasOwnProperty.call(WX_G,pillars[k].gan)||!Object.prototype.hasOwnProperty.call(CG,pillars[k].zhi);}))return [];
+  var rows=keys.map(function(k,i){return {index:i,gan:pillars[k].gan,zhi:pillars[k].zhi,label:labels[i]};});
+  var day=rows[2],dmEl=WX_G[day.gan],yinEl=BE_SHENG[dmEl];
+  var pairs={'甲己':'土','己甲':'土','乙庚':'金','庚乙':'金','丙辛':'水','辛丙':'水','丁壬':'木','壬丁':'木','戊癸':'火','癸戊':'火'};
+  var clashes={子:'午',午:'子',丑:'未',未:'丑',寅:'申',申:'寅',卯:'酉',酉:'卯',辰:'戌',戌:'辰',巳:'亥',亥:'巳'};
+  var groups=['申子辰','亥卯未','寅午戌','巳酉丑','寅卯辰','巳午未','申酉戌','亥子丑'];
+  var branches=rows.map(function(r){return r.zhi;});
+  var completeGroups=groups.filter(function(g){return g.split('').every(function(z){return branches.indexOf(z)>=0;});});
+  function roots(el){
+    var result=[];
+    rows.forEach(function(r){(CG[r.zhi]||[]).forEach(function(g){if(WX_G[g]===el){
+      var affected=rows.some(function(other){return clashes[r.zhi]===other.zhi;})||completeGroups.some(function(group){return group.indexOf(r.zhi)>=0;});
+      result.push({pillar:keys[r.index],position:r.label+'支',branch:r.zhi,stem:g,element:el,relationAffectsAssessment:affected});
+    }});});
+    return result;
+  }
+  function rootText(r){return r.position+r.branch+'藏'+r.stem;}
+  var dmRoots=roots(dmEl),yinRoots=roots(yinEl);
+  var printedSupport=rows.filter(function(r){return r.index!==2&&WX_G[r.gan]===yinEl;}).map(function(r){
+    var adjacentConstraint=rows.some(function(other){return Math.abs(r.index-other.index)===1&&(KE[WX_G[other.gan]]===yinEl||pairs[r.gan+other.gan]);});
+    return {pillar:keys[r.index],position:r.label+'干',stem:r.gan,god:tenGod(day.gan,r.gan),rooted:yinRoots.length>0,adjacentConstraint:adjacentConstraint};
+  });
+  var materialRoot=dmRoots.some(function(r){return !r.relationAffectsAssessment;});
+  var materialSupport=printedSupport.some(function(r){return r.rooted&&!r.adjacentConstraint;})&&yinRoots.some(function(r){return !r.relationAffectsAssessment;});
+  return [rows[1],rows[3]].filter(function(r){return pairs[day.gan+r.gan];}).map(function(partner){
+    var target=pairs[day.gan+partner.gan],relation='日干'+day.gan+'與'+partner.label+'干'+partner.gan+'五合';
+    var supportedOrdinary=target!==dmEl&&materialRoot&&materialSupport;
+    var supportDescriptions=printedSupport.map(function(r){return r.position+r.stem+'為'+r.god+(r.rooted?'，支中有'+yinEl+'氣相接':'，支中未見同五行根')+(r.adjacentConstraint?'，另有緊貼合制需分辨':'');});
+    var evidence=[relation,'月支'+rows[1].zhi+'本氣'+CG[rows[1].zhi][0]+'屬'+WX_G[CG[rows[1].zhi][0]]];
+    var blocking=[];
+    if(target!==dmEl&&dmRoots.length)blocking.push('原日主同五行根：'+dmRoots.map(rootText).join('、'));
+    if(target!==dmEl&&printedSupport.length)blocking.push('生扶來源：'+supportDescriptions.join('；'));
+    var unresolved=[];
+    if(!supportedOrdinary){
+      if(target===dmEl)unresolved.push('化神與日主同五行，不能用日主有根直接排除；須審另一合干的去留及化神承接');
+      if(!dmRoots.length)unresolved.push('未見日主同五行根，仍須比較化神得時、通路與制化');
+      if(dmRoots.some(function(r){return r.relationAffectsAssessment;}))unresolved.push('根所在支涉及六沖或完整三合／三會；列出關係不等於根已消失或已成化');
+      if(printedSupport.some(function(r){return r.adjacentConstraint;}))unresolved.push('透印有緊貼合制，須判生扶是否仍可作用');
+      unresolved.push('依化神得時、得勢、其他合干與救應比較真化、假化或普通格局，尚未自動裁決');
+    }
+    return {
+      type:'化'+target+'格審查',relation:relation,targetElement:target,
+      statusCode:supportedOrdinary?'ORDINARY_PREFERRED':'UNRESOLVED',
+      status:supportedOrdinary?'本盤不採真化'+target+'格':'成化未定',
+      preferredApproach:'ordinary',
+      conclusion:supportedOrdinary?'日主保留根氣，且透印有根相接；本次以普通格局為主，'+relation+'另作作用關係，不按真化'+target+'格改取喜忌。':'先按月令一般格局分析；'+relation+'已確認，真化／假化條件尚未裁決。',
+      evidence:evidence,blockingEvidence:blocking,dayMasterRoots:dmRoots,printedSupport:printedSupport,supportRoots:yinRoots,
+      checks:{adjacentDayCombination:true,dayMasterRetainsRoots:dmRoots.length>0,exposedRootedSupport:materialSupport,survivingRootAndSupport:supportedOrdinary,completeBranchGroups:completeGroups},
+      requiredChecks:unresolved,appliesAutomatically:false,
+      policy:'JY_ROOTED_SUPPORT_ORDINARY_FIRST_V1',
+      policyNote:'根與有根透印同時保留時採普通格局優先。此為明示的工程判法；不把見根一律等同不化，也不將未採真化自動改名假化。',
+      sources:['https://www.donglishuzhai.net/chapter/3718.html','https://zh.wikisource.org/zh-hant/滴天髓闡微#十三、化象','https://zh.wikisource.org/zh-hant/滴天髓闡微#十五、假化']
+    };
+  });
+}
+
+function baziHuaQiLines(chart){
+  return (chart&&chart.huaQiAssessments||[]).map(function(a){return '合化審查：'+a.status+'。'+a.conclusion+' 支持：'+a.evidence.join('；')+'。取捨依據：'+(a.blockingEvidence.join('；')||'未由本規則判定普通格局優先')+'。'+(a.requiredChecks.length?'未裁決部分：'+a.requiredChecks.join('；')+'。':'')+'採用判法：'+a.policy+'；'+a.policyNote;});
+}
+
 function computeBazi(year,month,day,hour,minute,gender,options){
   options=Object.assign({timezoneOffset:8},options||{});
   minute=minute==null?0:minute;
@@ -4846,8 +5027,10 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   
   const deLing = (dmMonthState === '旺');   // 得令：月支五行=日主五行
   const deXiang = (dmMonthState === '相');  // 得相：月令所生=日主
-  // 得地（日支藏干有同我五行）
-  const deDi = (CG[dZ] || []).some(g => WX_G[g] === dmEl);
+  const structureFacts = getBaziStructureFacts(pillars);
+  // 得地核對四支根氣；日支另留 sittingRoot，避免年時有根仍被當作無根。
+  const deDi = structureFacts.dayMasterRoots.length > 0;
+  const sittingRoot = structureFacts.dayMasterRoots.some(r => r.pillar === "day");
   // 得勢（天干有生我/同我）
   let helpCount = 0;
   [yG, mG, hG].forEach(g => {
@@ -4855,82 +5038,31 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   });
   const deShi = helpCount >= 2;
   
-  // ═══ 身強弱判定：v69.27 多因素防誤判 ═══
-  // selfPts = ec[日主五行] + ec[印星五行]（60分制）只能當量化參考。
-  // 最終裁決必須同看：月令、通根、透干、藏干、格局、調候。
-  // 若 selfPts 與月令/通根/格局矛盾，輸出端必須列為「矛盾訊號」，不可硬判。
-  let _strengthScore = selfPts;  // 直接用 selfPts 作為分數
-  // 身強判定：
-  //   1. selfPts >= 31 → 身強（比劫+印星超過半數）
-  //   2. selfPts >= 25 且得令(旺) → 身強（月令加權：得令者門檻降低）
-  //   校準依據：案例8(得令+21=弱) 案例11(得令+27=強) → 門檻25
-  let strengthConflict = false;
-  let strengthConflictReason = '';
-  let strong = selfPts >= 31 || (deLing && selfPts >= 25);
-  if (selfPts >= 31 && !deLing && !deDi && !deShi) {
-    strengthConflict = true;
-    strengthConflictReason = '五行分數偏強，但月令/日支/天干助力不足，需降權複核';
-  }
-  if (selfPts < 25 && (deLing || (deDi && deShi))) {
-    strengthConflict = true;
-    strengthConflictReason = '五行分數偏弱，但月令或根氣助力存在，需降權複核';
-  }
-  
-  // 身強弱七級分類（本系統相對模型；非各派統一標準）
-  // 依據：selfPts (0-60) + 本系統月令／日支／透干修正
-  //   月令（得令/失令）加減 10 分 — 月令是八字的綱領
-  //   日支（得地/失地）加減 5 分 — 日支是日主的根
-  //   天干（得勢/失勢）加減 3 分 — 天干是表面
-  // 校準點（adjusted = selfPts ± 月令加權）：
-  //   - >= 42  旺極（專旺態勢，接近從強格）
-  //   - >= 36  太旺（身強上緣）
-  //   - >= 30  偏旺（一般身強）
-  //   - >= 24  中和（日主持平）
-  //   - >= 18  偏弱（一般身弱）
-  //   - >= 12  太弱（身弱下緣）
-  //   - <  12  弱極（專弱態勢，接近從弱格）
-  // 此分級用於輸出展示與 AI 判讀，不影響 strong bool 舊邏輯
-  let _adjPts = selfPts;
-  // 月令：得令+10、失令-10
-  _adjPts += deLing ? 10 : -10;
-  // 日支：得地+5、失地-5
-  _adjPts += deDi ? 5 : -5;
-  // 天干：得勢+3、失勢-3（得勢=至少一個比劫或印透干）
-  _adjPts += deShi ? 3 : -3;
-  let strongLevel;
-  if (_adjPts >= 42) strongLevel = '旺極';
-  else if (_adjPts >= 36) strongLevel = '太旺';
-  else if (_adjPts >= 30) strongLevel = '偏旺';
-  else if (_adjPts >= 24) strongLevel = '中和';
-  else if (_adjPts >= 18) strongLevel = '偏弱';
-  else if (_adjPts >= 12) strongLevel = '太弱';
-  else strongLevel = '弱極';
-  // 中和特殊處理：強弱判定在門檻附近容易誤判，中和格局用神靈活。
-  let isNeutral = (strongLevel === '中和');
-  // 舊版 strong 採另一組門檻，曾出現 strong=true 但 strongLevel='太弱' 的自相矛盾。
-  // 相容欄位 strong 現統一由七級分類推得；中和時保留為中性並以原始自黨分作參考。
-  const thresholdStrong = strong;
-  let classifiedStrong = ['偏旺','太旺','旺極'].includes(strongLevel);
-  if (isNeutral) classifiedStrong = selfPts >= 30;
-  if (thresholdStrong !== classifiedStrong) {
-    strengthConflict = true;
-    var _oldReason = strengthConflictReason ? strengthConflictReason + '；' : '';
-    strengthConflictReason = _oldReason + '兩套舊門檻結論不一致，現以同一七級分類輸出，並要求人工複核月令、通根與透干';
-  }
-  strong = classifiedStrong;
+  // Seven bands remain an application-relative display model, not a classical
+  // equation. One classifier is used by the UI, ordinary support lens and exports.
+  // 旺 and 相 are distinct; root evidence is no longer restricted to the day seat.
+  const monthAdjustment = deLing ? 10 : deXiang ? 5 : -10;
+  const rootAdjustment = deDi ? 5 : -5;
+  const stemAdjustment = deShi ? 3 : -3;
+  const _adjPts = selfPts + monthAdjustment + rootAdjustment + stemAdjustment;
+  let strongLevel = _adjPts>=42?'旺極':_adjPts>=36?'太旺':_adjPts>=30?'偏旺':_adjPts>=24?'中和':_adjPts>=18?'偏弱':_adjPts>=12?'太弱':'弱極';
+  let isNeutral = strongLevel === '中和';
+  let strong = ['偏旺','太旺','旺極'].includes(strongLevel);
+  let strengthConflict = false, strengthConflictReason = '';
+  const rootLabels=structureFacts.dayMasterRoots.map(r=>r.label+'（'+r.qi+'）');
+  const printedHelpers=structureFacts.stems.filter(s=>s.pillar!=='day'&&(s.element===dmEl||s.element===yinEl));
+  const affectedRoots=structureFacts.dayMasterRoots.filter(r=>r.clashedBy.length);
+  if (affectedRoots.length) {strengthConflict=true;strengthConflictReason='根支有六沖配對，根氣不直接刪除；需比較所沖兩支的月令、透干與其他會合';}
   const strengthAssessment = {
-    model: 'JINGYUE_RELATIVE_STRENGTH_V2',
-    level: strongLevel,
-    isStrong: strong,
-    isNeutral: isNeutral,
-    selfSupportPoints: selfPts,
-    adjustedPoints: _adjPts,
-    thresholdMethodResult: thresholdStrong,
-    conflict: strengthConflict,
-    conflictReason: strengthConflictReason,
-    disclaimer: '旺衰為流派模型判斷，不是自然科學測量；臨界盤須以月令、通根、透干、制化及實際應驗複核。'
+    model:'JINGYUE_RELATIVE_STRENGTH_V3_FOUR_ROOTS', level:strongLevel,isStrong:strong,isNeutral:isNeutral,
+    selfSupportPoints:selfPts,adjustedPoints:_adjPts,
+    components:{month:{state:dmMonthState,points:monthAdjustment},root:{allFourBranches:deDi,sittingRoot:sittingRoot,points:rootAdjustment},exposedHelp:{count:helpCount,points:stemAdjustment}},
+    evidence:[dm+'生於'+mZ+'月，月支五行狀態為'+dmMonthState,rootLabels.length?'根氣：'+rootLabels.join('、'):'四支藏干無同五行根',printedHelpers.length?'透干助力：'+printedHelpers.map(s=>s.label+'（'+s.god+(s.constraints.length?'，'+s.constraints.join('、'):'')+'）').join('、'):'年、月、時干無印比透出'],
+    conflict:strengthConflict,conflictReason:strengthConflictReason,
+    sources:['https://www.donglishuzhai.net/chapter/3719.html'],
+    disclaimer:'四支通根、月令與透干分層有文獻依據；60分、加權與七級門檻是本站相對模型，未獲典籍或獨立資料證實為唯一旺衰算法。相鄰生剋、調候及特殊格局另列，不能把此分數當完整取用裁決。'
   };
-  
+
   // 結構類型（保留舊欄位相容性）
   let structType = (isNeutral ? '中和' : (strong ? '身強' : '身弱')) + '(' + Math.round(selfPts) + ')';
   let capacity = Math.round(selfPts);
@@ -4943,266 +5075,46 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   // 本層只列候選證據與待審條件；specialStructure 保持 null，不覆蓋一般扶抑喜忌。
   let specialStructure = null;
   let specialStructureCandidates = [];
+  var huaQiAssessments = assessBaziHuaQi(pillars);
 
   (function detectSpecialStructureCandidates(){
-    var _dmPct = (ec[dmEl] || 0) / tot;
-    var _yinPct = (ec[yinEl] || 0) / tot;
-    var _selfPct = selfRatio;
-    var _woShengEl = SHENG[dmEl];
-    var _woKeEl = KE[dmEl];
-    var _keWoEl = BE_KE[dmEl];
-    var _woShengPct = (ec[_woShengEl]||0)/tot;
-    var _woKePct = (ec[_woKeEl]||0)/tot;
-    var _keWoPct = (ec[_keWoEl]||0)/tot;
-    var _hasDmRoot = false, _hasYinRoot = false;
-    [yZ,mZ,dZ,hZ].forEach(function(z){
-      (CG[z]||[]).forEach(function(g){
-        if(WX_G[g]===dmEl) _hasDmRoot=true;
-        if(WX_G[g]===yinEl) _hasYinRoot=true;
-      });
-    });
-    [yG,mG,hG].forEach(function(g){ if(WX_G[g]===dmEl) _hasDmRoot=true; });
-
-    if (_selfPct <= 0.18 && !deLing) {
-      var dominant = [
-        {type:'從財格候選', el:_woKeEl, pct:_woKePct},
-        {type:'從殺格候選', el:_keWoEl, pct:_keWoPct},
-        {type:'從兒格候選', el:_woShengEl, pct:_woShengPct}
-      ].sort(function(a,b){return b.pct-a.pct;})[0];
-      specialStructureCandidates.push({
-        type: dominant.pct >= 0.30 ? dominant.type : '從弱格候選',
-        status: '待人工覆核',
-        evidence: ['自黨相對權重偏低','月令不直接扶身', dominant.el+'相對權重'+Math.round(dominant.pct*100)+'%'],
-        blockingEvidence: [].concat(_hasDmRoot?['原局仍見日主根氣']:[],_hasYinRoot?['原局仍見印根']:[]),
-        requiredChecks: ['真假從需逐支審根氣與透干','是否有逆勢破格字','歲運是否引動扶身而破格'],
-        appliesAutomatically: false
-      });
+    var monthElement=WX_G[(CG[mZ]||[])[0]], hasPrintedHelp=structureFacts.stems.some(s=>s.pillar!=='day'&&(s.element===dmEl||s.element===yinEl));
+    // Following-output is not conditioned on a very weak day master. The chapter
+    // explicitly permits root/companions; 印 and 官殺 must be examined separately.
+    if(monthElement===SHENG[dmEl] && structureFacts.elements[KE[dmEl]].roots.length){
+      specialStructureCandidates.push({type:'從兒法檢視',status:'食傷秉令並見財根',evidence:['月支本氣為食傷','財星有藏干根氣'],blockingEvidence:structureFacts.elements[yinEl].exposed.map(s=>s.label+'為印').concat(structureFacts.elements[BE_KE[dmEl]].exposed.map(s=>s.label+'為官殺')),requiredChecks:['食傷能否接續生財','印與官殺是否介入及有無制合','普通洩秀與從兒的分界按全局判'],appliesAutomatically:false,source:'https://zh.wikisource.org/zh-hant/滴天髓闡微#順局'});
     }
-    if (_selfPct >= 0.82 && deLing) {
-      specialStructureCandidates.push({
-        type:'從強／專旺候選', status:'待人工覆核',
-        evidence:['印比相對權重高','月令扶身'],
-        blockingEvidence:[].concat(_woShengPct>0.08?['食傷並非全無']:[],_woKePct>0.08?['財星並非全無']:[],_keWoPct>0.08?['官殺並非全無']:[]),
-        requiredChecks:['是否真能順旺而無逆神','透藏剋洩是否足以破格'], appliesAutomatically:false
-      });
+    if(!deDi&&!hasPrintedHelp && [KE[dmEl],BE_KE[dmEl]].includes(monthElement)){
+      specialStructureCandidates.push({type:monthElement===KE[dmEl]?'從財法檢視':'從殺法檢視',status:'無日主藏干根且無印比透干',evidence:['月支本氣為'+(monthElement===KE[dmEl]?'財':'官殺'),'四支藏干無比劫根，年/月/時干無印比'],blockingEvidence:structureFacts.elements[yinEl].roots.map(r=>r.label+'仍有印根'),requiredChecks:['藏印是否可用','主勢是否純粹而無逆神','歲運新增根、印是否改變結構'],appliesAutomatically:false});
     }
 
-    var HE_MAP={'甲己':'土','己甲':'土','乙庚':'金','庚乙':'金','丙辛':'水','辛丙':'水','丁壬':'木','壬丁':'木','戊癸':'火','癸戊':'火'};
-    var _hePairs=[];
-    if(HE_MAP[dG+mG]) _hePairs.push({with:'月干'+mG,el:HE_MAP[dG+mG],adjacent:true});
-    if(HE_MAP[dG+hG]) _hePairs.push({with:'時干'+hG,el:HE_MAP[dG+hG],adjacent:true});
-    _hePairs.forEach(function(x){
+    huaQiAssessments.filter(function(a){return a.statusCode==='UNRESOLVED';}).forEach(function(a){
       specialStructureCandidates.push({
-        type:'化氣格候選（化'+x.el+'）', status:'待人工覆核',
-        evidence:['日干'+dG+'與'+x.with+'構成天干五合','化神月令狀態：'+getMonthState(x.el),'化神相對權重：'+Math.round(((ec[x.el]||0)/tot)*100)+'%'],
-        blockingEvidence:[].concat(_hasDmRoot?['日主仍有根，化氣條件受阻']:[],((ec[BE_KE[x.el]]||0)/tot)>0.10?['剋化神之氣不弱']:[]),
-        requiredChecks:['化神是否真正得令得勢','日主是否完全無根無助','是否有妒合、爭合、沖破及逆神','不同流派對日主合化條件不同'],
-        appliesAutomatically:false
+        type:'合化待判（化'+a.targetElement+'）', status:a.status,
+        evidence:a.evidence.slice(),blockingEvidence:a.blockingEvidence.slice(),
+        requiredChecks:a.requiredChecks.slice(),appliesAutomatically:false,assessmentPolicy:a.policy
       });
     });
   })();
 
-  // ── 用神忌神 ──────────────────────────────────
-  // 特殊格局：直接用從格/化氣格的喜忌
-  // 正常格局：扶抑法（身強洩耗，身弱扶印）
-  let fav = [], unfav = [];
-
-  const woSheng = SHENG[dmEl];      // 食傷（我生）
-  const woKe = KE[dmEl];            // 財（我剋）
-  const keWo = BE_KE[dmEl];         // 官殺（剋我）
-  const yinElV5 = BE_SHENG[dmEl];   // 印星五行（生我）
-
-  if(specialStructure){
-    // ── 從格/化氣格：用格局指定的喜忌 ──
-    fav = specialStructure.favEls.slice();
-    unfav = specialStructure.unfavEls.slice();
-  } else if (strong) {
-    // ══ 身強用神：取分數最低的兩個洩耗五行，按十神優先級排序 ══
-    // 選擇邏輯：最缺的優先補（分數低→高）
-    // 排序邏輯：十神優先級 食傷>財星>官殺
-    const _ssCands = [
-      { el: woSheng, score: ec[woSheng] || 0, pri: 1 },  // 食傷
-      { el: woKe, score: ec[woKe] || 0, pri: 2 },        // 財星
-      { el: keWo, score: ec[keWo] || 0, pri: 3 }         // 官殺
-    ].sort((a, b) => a.score - b.score); // 分數低→高（最缺的排前面）
-
-    // 取分數最低的兩個
-    fav = _ssCands.slice(0, 2).map(c => c.el);
-    
-    // 重新按十神優先級排序輸出
-    const _priMap = {};
-    _ssCands.forEach(c => { _priMap[c.el] = c.pri; });
-    fav.sort((a, b) => (_priMap[a] || 9) - (_priMap[b] || 9));
-
-    // ══ 身強忌神：十神固定優先級 比劫>印星 ══
-    // 比劫永遠是第一忌神，印星只在分數>=8時才列為第二忌神
-    unfav = [dmEl]; // 比劫=第一忌神
-    if ((ec[yinElV5] || 0) >= 8) {
-      unfav.push(yinElV5); // 印星分數夠高才列
-    }
-
-  } else {
-    // ══ 身弱用神：先活命再打仗 比劫>印星 ══
-    fav = [dmEl]; // 第一用神：比劫（幫身固根）
-
-    const yinPct = (ec[yinElV5] || 0) / tot;
-    // 印星過量閾值：依日主旺衰程度動態調整
-    // selfRatio 越低（身越弱）→ 越需要印星 → 閾值越寬鬆
-    // selfRatio=0.15(極弱)→ 閾值0.45, selfRatio=0.25(弱)→ 0.35, selfRatio=0.35(微弱)→ 0.28
-    const _yinThresh = 0.20 + (0.50 - Math.min(0.50, selfRatio)) * 0.5;
-    // 正印 vs 偏印修正：偏印(梟神)過旺更危險，閾值收緊5%
-    // 偏印=生我且同陰陽的天干；正印=生我且異陰陽
-    // 日干陰陽：YY_G[dG]，印星五行的天干裡同陰陽者=偏印
-    const _dmYY = YY_G[dG]; // 日干陰陽
-    // 八字四柱中印星天干裡，同陰陽者是偏印，異陰陽者是正印
-    const _yinTGans = [yG,mG,hG].filter(function(g){ return WX_G[g] === yinElV5; });
-    const _hasPartialYin = _yinTGans.some(function(g){ return YY_G[g] === _dmYY; });
-    const _yinThreshAdj = _hasPartialYin ? _yinThresh - 0.05 : _yinThresh;
-    if (yinPct <= _yinThreshAdj) {
-      fav.push(yinElV5);
-    }
-
-    // ══ 身弱忌神：分數最高的洩耗五行，十神優先級排序 ══
-    // 候選：食傷/財星/官殺（已是用神的排除）
-    const _wkCands = [
-      { el: woSheng, score: ec[woSheng] || 0, pri: 1 },  // 食傷 優先級1
-      { el: woKe, score: ec[woKe] || 0, pri: 3 },        // 財星 優先級3
-      { el: keWo, score: ec[keWo] || 0, pri: 2 }         // 官殺 優先級2
-    ].filter(c => !fav.includes(c.el))
-     .sort((a, b) => b.score - a.score); // 先按分數高→低
-
-    unfav = [];
-    if (_wkCands.length) {
-      const t1 = _wkCands[0];
-      unfav.push(t1.el);
-
-      // 第二忌神：差距<=5 且分數>=14 才列（11案例校準）
-      if (_wkCands.length > 1) {
-        const t2 = _wkCands[1];
-        if (t1.score - t2.score <= 5 && t2.score >= 14) {
-          unfav.push(t2.el);
-        }
-      }
-      
-      // 排序輸出：按十神優先級 食傷(1)>官殺(2)>財星(3)
-      if (unfav.length === 2) {
-        const _priMap = {};
-        _wkCands.forEach(c => { _priMap[c.el] = c.pri; });
-        unfav.sort((a, b) => (_priMap[a] || 9) - (_priMap[b] || 9));
-      }
-    }
-  }
-
-  // 去重 & 忌神不得與用神重疊
-  fav = [...new Set(fav)];
-  unfav = [...new Set(unfav.filter(u => !fav.includes(u)))];
-  
-  // ── 防禦性安全網：基本一致性檢查 ──
-  if(!specialStructure){
-    // 身強喜用不應包含比劫或印星
-    if(strong && fav.includes(dmEl)){
-      console.warn('[用神安全網] 身強卻喜比劫，修正');
-      fav = fav.filter(f => f !== dmEl);
-      if(fav.length === 0) fav = [woSheng, woKe];
-    }
-    // 身弱只有比劫且印星不過量 → 補印星
-    if(!strong && fav.length === 1 && fav[0] === dmEl){
-      const _yinPctSafe = (ec[yinElV5] || 0) / tot;
-      const _yinThreshSafe = 0.20 + (0.50 - Math.min(0.50, selfRatio)) * 0.5;
-      if(_yinPctSafe <= _yinThreshSafe && !fav.includes(yinElV5)){
-        fav.push(yinElV5);
-      }
-    }
-  }
-  
-  fav = [...new Set(fav)];
-  unfav = [...new Set(unfav.filter(u => !fav.includes(u)))];
-  
-  // v51 病藥用神（子平取用五法之病藥法）
-  // 原理：命局中最突兀的忌神聚集 = 病。能剋制或化洩此病的五行 = 藥。
-  // 藥神往往就是最迫切的用神。
-  // 例：乙木日主命局金旺(申酉成勢) → 病在金(七殺無制) → 藥=火(丁火剋金)=病藥用神
-  let medicineGod = null;
-  (function detectMedicineGod(){
-    if (specialStructure) return; // 從格化氣格不走病藥
-    // 找最旺的忌神（分數最高且是 unfav）
-    let maxUnfavEl = null, maxUnfavScore = 0;
-    unfav.forEach(el => {
-      if ((ec[el]||0) > maxUnfavScore) {
-        maxUnfavEl = el;
-        maxUnfavScore = ec[el]||0;
-      }
-    });
-    // 病必須足夠嚴重：忌神分數 >= 18（佔 30% 以上）才算病
-    if (!maxUnfavEl || maxUnfavScore < 18) return;
-    // 藥=能剋制病的五行
-    const _ke_reverse = {金:'火',木:'金',水:'土',火:'水',土:'木'}; // 誰剋它
-    const _sheng_from = {金:'土',木:'水',水:'金',火:'木',土:'火'}; // 誰生它（我們要找洩病的=被病生的）
-    const _sheng_to = {金:'水',木:'火',水:'木',火:'土',土:'金'};   // 病生誰（洩病）
-    const _keEl = _ke_reverse[maxUnfavEl]; // 剋病
-    const _xieEl = _sheng_to[maxUnfavEl];  // 洩病
-    // 優先取剋，若剋神不在命局則取洩
-    let drug = null, drugMethod = null;
-    if ((ec[_keEl]||0) >= 3) { drug = _keEl; drugMethod = '剋'; }
-    else if ((ec[_xieEl]||0) >= 3) { drug = _xieEl; drugMethod = '洩'; }
-    else { drug = _keEl; drugMethod = '剋(命局無藥，待行運補)'; }
-    medicineGod = {
-      disease: maxUnfavEl,
-      diseaseScore: maxUnfavScore,
-      drug: drug,
-      method: drugMethod,
-      detail: '病在'+maxUnfavEl+'('+maxUnfavScore+'/60)，藥用'+drug+'('+drugMethod+')'
-    };
-  })();
-  
-  // v51 通關用神（子平取用五法之通關法）
-  // 原理：命局兩股相剋力量均衡時（如水火俱旺），取第三方五行通關調和
-  // 例：水火各佔 25/60，以木通關（水生木、木生火）
-  let relayGod = null;
-  (function detectRelayGod(){
-    if (specialStructure) return;
-    const _pairs = [
-      { a:'水', b:'火', relay:'木' },
-      { a:'金', b:'木', relay:'水' },
-      { a:'火', b:'金', relay:'土' },
-      { a:'木', b:'土', relay:'火' },
-      { a:'土', b:'水', relay:'金' }
-    ];
-    for (const p of _pairs) {
-      const sA = ec[p.a]||0, sB = ec[p.b]||0;
-      // 兩者均 >= 20 且差距 <= 5 = 對峙態勢
-      if (sA >= 20 && sB >= 20 && Math.abs(sA-sB) <= 5) {
-        relayGod = {
-          opponents: [p.a, p.b],
-          opponentScores: [sA, sB],
-          relay: p.relay,
-          detail: p.a+'('+sA+')vs'+p.b+'('+sB+')對峙，以'+p.relay+'通關'
-        };
-        break;
-      }
-    }
-  })();
-  
-  // DEBUG: 追蹤用神判斷流程（上線後可移除）
-  console.log('[八字DEBUG] 日主:'+dm+'('+dmEl+') | ec:', JSON.stringify(ec), 
-    '| selfPts:'+selfPts, '| selfRatio:'+Math.round(selfRatio*100)+'%',
-    '| 強弱級別:'+strongLevel+'('+(strong?'身強':'身弱')+')',
-    '| specialStructure:'+(specialStructure?specialStructure.type:'null'),
-    '| fav:'+fav.join(','), '| unfav:'+unfav.join(','),
-    '| medicineGod:'+(medicineGod?medicineGod.detail:'無'),
-    '| relayGod:'+(relayGod?relayGod.detail:'無'));
-  // ───────────────────────────────────────────────────────────────────────────
-
-  // ── 能量流向（保留舊欄位相容性）──
-  const weightedEC = {...ec}; // 用60分代替舊的權重分
-  const flowOrder = ['水','木','火','土','金'];
-  const sortedEls = Object.entries(ec).sort((a,b) => b[1] - a[1]);
-  const mainFlow = sortedEls[0][0] + '→' + SHENG[sortedEls[0][0]] + '→' + SHENG[SHENG[sortedEls[0][0]]];
-  const energyFlow = {
-    mainFlow: mainFlow,
-    breakPoint: '無明顯阻斷',
-    maxNode: sortedEls[0][0],
-    sortedPower: sortedEls.map(([el,v]) => el+'('+v+')').join(' > ')
+  // Full ordinary support/drain map replaces lowest-share supplementation and
+  // mutually inconsistent partial-print thresholds. Seasonal use stays separate.
+  const fuyiAssessment=assessBaziFuyi(structureFacts,strong,isNeutral);
+  let fav=fuyiAssessment.fav.slice(), unfav=fuyiAssessment.unfav.slice();
+  const woSheng=SHENG[dmEl], woKe=KE[dmEl], keWo=BE_KE[dmEl];
+  // A numeric maximum is not sufficient to diagnose a "disease" or an absent remedy.
+  // Concrete support and control mechanisms are carried by fuyiAssessment instead.
+  const medicineGod=null;
+  const relayMechanism=fuyiAssessment.mechanisms.find(m=>m.type==='官殺—印—身');
+  const relayGod=relayMechanism?{opponents:[keWo,dmEl],relay:yinEl,detail:relayMechanism.action,evidence:relayMechanism.evidence,status:relayMechanism.status}:null;
+  const weightedEC={...ec};
+  const sortedEls=Object.entries(ec).sort((a,b)=>b[1]-a[1]);
+  const actualPaths=structureFacts.adjacentGenerationPaths;
+  const directControls=structureFacts.links.filter(l=>l.adjacent&&l.relation==='剋');
+  const energyFlow={
+    mainFlow:actualPaths.length?actualPaths.map(p=>p.label).join('；'):'明干未形成相鄰三節相生路徑',
+    paths:actualPaths,breakPoint:directControls.length?directControls.map(l=>l.label).join('；'):'相鄰明干未見直接相剋；仍須合看支根、合絆與季節',
+    maxNode:sortedEls[0][0],sortedPower:sortedEls.map(([el,v])=>el+'('+v+')').join(' > '),basis:'實際明干相鄰路徑；五行分數排序不是流通證明'
   };
 
   // ── 反證驗證（保留舊欄位相容性）──
@@ -5219,6 +5131,8 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     tiaohou.mainNeedElement = tiaohou.need[0];
     tiaohou.mainNeedRelativeShare = Math.round((ec[tiaohou.need[0]] || 0) / tot * 100);
   }
+
+  const seasonalAssessment = assessBaziSeasonal(structureFacts, tiaohou);
 
   // ── 十神 ──
   const gods={};
@@ -5347,42 +5261,16 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     });
 
     // [Step3] 十神配合度
-    if(['正印','偏印'].includes(dyGod)&&!strong){dyScore+=1;dyNotes.push('有貴人庇護，能得到幫助');}
+    if(['正印','偏印'].includes(dyGod)&&!strong&&!isNeutral){dyScore+=1;dyNotes.push('有貴人庇護，能得到幫助');}
     if(['正官'].includes(dyGod)&&strong){dyScore+=1;dyNotes.push('有適度約束，反而幫你穩定發展');}
-    if(['七殺'].includes(dyGod)&&!strong){dyScore-=1.5;dyNotes.push('外部壓力特別大，需注意');}
+    if(['七殺'].includes(dyGod)&&!strong&&!isNeutral){dyScore-=1.5;dyNotes.push('外部壓力特別大，需注意');}
     if(['食神','傷官'].includes(dyGod)&&strong){dyScore+=1;dyNotes.push('才華有發揮的舞台');}
     if(['正財','偏財'].includes(dyGod)&&strong){dyScore+=1;dyNotes.push('財運有利，可以主動把握');}
-    if(['正財','偏財'].includes(dyGod)&&!strong){dyScore-=0.5;dyNotes.push('有財但力不從心，量力而為');}
+    if(['正財','偏財'].includes(dyGod)&&!strong&&!isNeutral){dyScore-=0.5;dyNotes.push('有財但力不從心，量力而為');}
 
-    // [Step4] 調候加成（金寒水冷 / 火旺土燥等極端格局，調候為第一優先）
-    if(tiaohou){
-      const thReason=tiaohou.reason||'';
-      const isCold=thReason.includes('寒')||thReason.includes('冷')||thReason.includes('金水泛濫');
-      const isHot=thReason.includes('火旺')||thReason.includes('燥')||thReason.includes('火炎');
-      // 調候命盤：暖/潤局是核心需求，權重拉到最高
-      if(isCold){
-        if(dyEl==='火'||dyZEl==='火'){dyScore+=3;dyNotes.push('🔥 寒命逢火運，調候大利（暖局翻身）');}
-        if(dyEl==='火'&&dyZEl==='火'){dyScore+=1.5;dyNotes.push('天干地支皆火，暖局效果極強');}
-        if(dyEl==='木'||dyZEl==='木'){dyScore+=1;dyNotes.push('寒命逢木運，木能生火助暖');}
-        if(dyEl==='水'||dyZEl==='水'){dyScore-=2.5;dyNotes.push('❄ 寒命再逢水運，雪上加霜');}
-        if(dyEl==='水'&&dyZEl==='水'){dyScore-=1.5;dyNotes.push('天干地支皆水，寒氣加劇');}
-        if(dyEl==='金'||dyZEl==='金'){dyScore-=2;dyNotes.push('寒命逢金運，金寒水冷加重');}
-        if(dyEl==='金'&&dyZEl==='金'){dyScore-=1;dyNotes.push('天干地支皆金，金旺生水助寒');}
-      }
-      if(isHot){
-        if(dyEl==='水'||dyZEl==='水'){dyScore+=3;dyNotes.push('💧 熱命逢水運，調候大利（潤局解渴）');}
-        if(dyEl==='水'&&dyZEl==='水'){dyScore+=1.5;dyNotes.push('天干地支皆水，潤局效果極強');}
-        if(dyEl==='金'||dyZEl==='金'){dyScore+=1;dyNotes.push('熱命逢金運，金能生水助潤');}
-        if(dyEl==='火'||dyZEl==='火'){dyScore-=2.5;dyNotes.push('🔥 熱命再逢火運，火上澆油');}
-        if(dyEl==='火'&&dyZEl==='火'){dyScore-=1.5;dyNotes.push('天干地支皆火，燥氣加劇');}
-        if(dyEl==='木'||dyZEl==='木'){dyScore-=1.5;dyNotes.push('熱命逢木運，木助火勢');}
-      }
-      // 非極端格局的一般調候
-      if(!isCold&&!isHot){
-        if(thReason.includes('寒')&&(dyEl==='火'||dyZEl==='火')){dyScore+=2;dyNotes.push('寒命逢火運，調候有利');}
-        if(thReason.includes('火旺')&&(dyEl==='水'||dyZEl==='水')){dyScore+=2;dyNotes.push('熱命逢水運，調候有利');}
-      }
-    }
+    // Exact transit stems and hidden stems trigger a condition review, not
+    // keywords in prose and not an unconditional hot/cold score bonus.
+    dyNotes.push(...baziSeasonalTransit(tiaohou,structureFacts,dyG,dyZ));
 
     let lv='平穩';
     if(dyScore>=6) lv='大吉';
@@ -5457,28 +5345,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
         }
       });
 
-      // 流年調候加成（與大運同步強化）
-      if(tiaohou){
-        const thR2=tiaohou.reason||'';
-        const isCold2=thR2.includes('寒')||thR2.includes('冷')||thR2.includes('金水泛濫');
-        const isHot2=thR2.includes('火旺')||thR2.includes('燥')||thR2.includes('火炎');
-        if(isCold2){
-          if(lnEl==='火'||lnZEl==='火'){lnScore+=2;lnNotes.push('🔥 寒命逢火年，暖局有利');}
-          if(lnEl==='木'||lnZEl==='木'){lnScore+=0.5;lnNotes.push('木生火，間接助暖');}
-          if(lnEl==='水'||lnZEl==='水'){lnScore-=1.5;lnNotes.push('❄ 寒命逢水年，加寒');}
-          if(lnEl==='金'||lnZEl==='金'){lnScore-=1;lnNotes.push('金生水加寒');}
-        }else if(isHot2){
-          if(lnEl==='水'||lnZEl==='水'){lnScore+=2;lnNotes.push('💧 熱命逢水年，潤局有利');}
-          if(lnEl==='金'||lnZEl==='金'){lnScore+=0.5;lnNotes.push('金生水，間接助潤');}
-          if(lnEl==='火'||lnZEl==='火'){lnScore-=1.5;lnNotes.push('🔥 熱命逢火年，加燥');}
-          if(lnEl==='木'||lnZEl==='木'){lnScore-=1;lnNotes.push('木生火加燥');}
-        }else{
-          if(thR2.includes('寒')&&(lnEl==='火'||lnZEl==='火')){lnScore+=1;lnNotes.push('寒命逢火年，暖局');}
-          if(thR2.includes('寒')&&(lnEl==='水'||lnZEl==='水')){lnScore-=1;lnNotes.push('寒命逢水年，加寒');}
-          if(thR2.includes('火旺')&&(lnEl==='水'||lnZEl==='水')){lnScore+=1;lnNotes.push('熱命逢水年，降溫');}
-          if(thR2.includes('火旺')&&(lnEl==='火'||lnZEl==='火')){lnScore-=1;lnNotes.push('熱命逢火年，加熱');}
-        }
-      }
+      lnNotes.push(...baziSeasonalTransit(tiaohou,structureFacts,lnG,lnZ));
 
       let lnLv='平穩';
       if(lnScore>=5) lnLv='大吉';
@@ -5488,9 +5355,9 @@ function computeBazi(year,month,day,hour,minute,gender,options){
       else if(lnScore>=-3) lnLv='小凶';
       else if(lnScore>=-5) lnLv='凶';
       else lnLv='大凶';
-      liuNian.push({year:lnYear,gz:lnG+lnZ,el:lnEl,zEl:lnZEl,level:lnLv,god:lnGod,score:lnScore,scorePolicy:'ELEMENT_TEN_GOD_CLIMATE_ONLY',interactionScoreAdjustment:0,notes:lnNotes,events:lnEvents,clash:lnClash,affect:lnAffect,periodStart:annualPeriod.periodStart,periodEndExclusive:annualPeriod.periodEndExclusive,partialStart:annualPeriod.partialStart,partialEnd:annualPeriod.partialEnd,boundaryApprox:annualPeriod.boundaryApprox});
+      liuNian.push({year:lnYear,gz:lnG+lnZ,el:lnEl,zEl:lnZEl,level:lnLv,god:lnGod,score:lnScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,notes:lnNotes,events:lnEvents,clash:lnClash,affect:lnAffect,periodStart:annualPeriod.periodStart,periodEndExclusive:annualPeriod.periodEndExclusive,partialStart:annualPeriod.partialStart,partialEnd:annualPeriod.partialEnd,boundaryApprox:annualPeriod.boundaryApprox});
     }
-    dayun.push({gz:dyG+dyZ,el:dyEl,zEl:dyZEl,ageStart:as,ageEnd:ae,ageStartText:(qiyun.age+i*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',ageEndText:(qiyun.age+(i+1)*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',startDate:_baziFormatDateTime(cycleStart),midDate:_baziFormatDateTime(cycleMid),endDateExclusive:_baziFormatDateTime(cycleEnd),isCurrent:isCur,level:lv,score:dyScore,scorePolicy:'ELEMENT_TEN_GOD_CLIMATE_ONLY',interactionScoreAdjustment:0,god:dyGod,zGod:dyZGod,notes:dyNotes,clash:dyClash,he:dyHe,xing:dyXing,liuNian,ganScore:dyGanScore,zhiScore:dyZhiScore});
+    dayun.push({gz:dyG+dyZ,el:dyEl,zEl:dyZEl,ageStart:as,ageEnd:ae,ageStartText:(qiyun.age+i*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',ageEndText:(qiyun.age+(i+1)*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',startDate:_baziFormatDateTime(cycleStart),midDate:_baziFormatDateTime(cycleMid),endDateExclusive:_baziFormatDateTime(cycleEnd),isCurrent:isCur,level:lv,score:dyScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,god:dyGod,zGod:dyZGod,notes:dyNotes,clash:dyClash,he:dyHe,xing:dyXing,liuNian,ganScore:dyGanScore,zhiScore:dyZhiScore});
   }
 
   // ── 袁天罡稱骨 ──
@@ -5514,7 +5381,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false}};
+  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
 }
 
 
@@ -5529,22 +5396,12 @@ function computeBazi(year,month,day,hour,minute,gender,options){
    ・藏干少的地支，未使用位的預算由前位吸收（總預算恒定）
    ・歸一化到60分（floor+殘差分配法）
    ・不使用旺衰倍率
-   ・身強弱：selfPts = ec[日主] + ec[印星]，門檻 >= 31 = 身強（60分制過半）
+   ・只輸出相對組成，不以單一過半門檻判身強弱
 ════════════════════════════════════════════════════════════════════════════ */
 function calcAppV5Scores(input){
-  // ╔═══════════════════════════════════════════════════════════════════╗
-  // ║  八字五行分數引擎 v8.0 — 預算恒定分配制（3組App實測全命中）      ║
-  // ║  校準命盤：                                                     ║
-  // ║    1994-06-20 23:00 → 金8 木5 水15 火16 土16 身弱(21) ✅       ║
-  // ║    1998-07-14 10:00 → 金3 木12 水5 火12 土28 身弱(8)  ✅       ║
-  // ║    2000-12-01 12:00 → 金6 木8 水16 火15 土15 身弱(22) ✅       ║
-  // ║                                                                 ║
-  // ║  模型：天干=6 each（含日干）                                     ║
-  // ║    非月支預算=10（3干=[6,2,2] 2干=[6,4] 1干=[10]）             ║
-  // ║    月支預算=20（3干=[12,5,3] 2干=[12,8] 1干=[20]）             ║
-  // ║    關鍵：每地支「總預算」恒定，藏干少時由前位吸收後位預算         ║
-  // ║    歸一化到60分（floor + 殘差分配）· 無旺衰倍率                  ║
-  // ╚═══════════════════════════════════════════════════════════════════╝
+  // Legacy 60-point relative composition display: exposed stem=6,
+  // month-branch budget=20, other branches=10; floor plus largest remainder.
+  // Matching a few app outputs does not validate strength or use-god judgments.
   const WX_KEYS = ['金','木','水','火','土'];
 
   const W_STEM = 6;  // 天干權重（含日干，全部相同）

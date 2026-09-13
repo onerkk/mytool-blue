@@ -11937,13 +11937,7 @@ document.addEventListener('click',function(e){
 });
 
 // ═══════════════════════════════════════════════════════════════
-// 水晶配戴顧問系統 v3 — 完整命理分析引擎
-// 規則零：量比公式重要
-// 規則一：強制雙系統驗證
-// 規則二：強制量化檢查
-// 規則三：強制錯誤自檢
-// 規則四：先活命再打仗
-// 規則五：全身是一個系統
+// 客製飾品資料：沿用同一核心判別，命盤與實際佩戴需求分層
 // ═══════════════════════════════════════════════════════════════
 
 var _WX_G_MAP={甲:'木',乙:'木',丙:'火',丁:'火',戊:'土',己:'土',庚:'金',辛:'金',壬:'水',癸:'水'};
@@ -11961,716 +11955,29 @@ var _GOD_LABEL={比劫:'比劫(我)',印星:'印星(生我)',食傷:'食傷(我�
 // 輸出：完整分析結果物件
 // ══════════════════════════════════════════════════════════════
 function analyzeFullCrystal(bazi, ziwei, type, question){
-  var result={
-    basic:{}, wuxing:{}, roles:{}, sorted:[],
-    corrections:[], reverseCheck:[], orderCheck:{},
-    specialFormat:null,
-    ziwei:{}, crossCheck:[],
-    dayunNote:'', dayunAdjust:'',
-    tianTie:{}, leftHand:{}, rightHand:{}, spacer:{},
-    avoid:[], dualWarn:[], plans:[],
-    score:0, scoreNote:''
-  };
-
-  if(!bazi) return result;
-  var dm=bazi.dm, dmEl=bazi.dmEl, strong=bazi.strong;
-  var ec=bazi.ec||{}, ep=bazi.ep||{};
-  var pillars=bazi.pillars;
-  var fav=bazi.fav||[], unfav=bazi.unfav||[];
-  var isYang=['甲','丙','戊','庚','壬'].includes(dm);
-
-  // ── 1.3 日主確認 ──
-  result.basic={
-    dm:dm, dmEl:dmEl, strong:strong, isYang:isYang,
-    structType:bazi.structType||'', nayin:bazi.nayin||'',
-    selfRatio:bazi.selfRatio, capacity:bazi.capacity||0,
-    shensha:(bazi.shensha||[]).join('、')||'無'
-  };
-
-  // ── 1.4 天干透出統計 ──
-  var ganCount={木:0,火:0,土:0,金:0,水:0};
-  var ganList={木:[],火:[],土:[],金:[],水:[]};
-  if(pillars){
-    ['year','month','hour'].forEach(function(p){
-      var g=pillars[p]?pillars[p].gan:null;
-      if(g&&_WX_G_MAP[g]){
-        ganCount[_WX_G_MAP[g]]++;
-        ganList[_WX_G_MAP[g]].push(g+'('+p.charAt(0)+')');
-      }
-    });
+  var result={basic:{},roles:{},coreLines:[],ziwei:{palaces:[],sihua:[]},corrections:[],crossCheck:[],plans:[],avoid:[],question:String(question||''),type:type||'general',policy:'CORE_FACTS_AND_OPTIONAL_DESIGN_V1'};
+  if(!bazi)return result;
+  result.basic={dm:bazi.dm,dmEl:bazi.dmEl,level:bazi.strongLevel,isNeutral:!!bazi.isNeutral};
+  result.coreLines=typeof baziCoreAnalysisLines==='function'?baziCoreAnalysisLines(bazi):[];
+  if(typeof baziHuaQiLines==='function')result.coreLines=result.coreLines.concat(baziHuaQiLines(bazi));
+  if(bazi.fuyiAssessment)bazi.fuyiAssessment.items.forEach(function(i){result.roles[i.element]={role:i.stance,relation:i.role,reason:i.reason};});
+  if(ziwei&&Array.isArray(ziwei.palaces)){
+    result.ziwei.palaces=ziwei.palaces.map(function(p){return {name:p.name,branch:p.branch,stars:(p.stars||[]).map(function(s){return {name:s.name,hua:s.hua||null};})};});
+    result.ziwei.sihua=ziwei.sihua||[];
   }
-
-  // ── 1.5 十神關係 ──
-  var woSheng=_SHENG[dmEl];  // 食傷
-  var woKe=_KE[dmEl];        // 財星
-  var keWo=_BE_KE[dmEl];     // 官殺
-  var yinEl=_BE_SHENG[dmEl]; // 印星
-
-  var relMap={};
-  relMap[dmEl]='比劫';
-  relMap[yinEl]='印星';
-  relMap[woSheng]='食傷';
-  relMap[woKe]='財星';
-  relMap[keWo]='官殺';
-
-  // ── 1.9 五行量化 ──
-  var sorted=['木','火','土','金','水'].map(function(e){
-    return {el:e, score:ec[e]||0, pct:ep[e]||0, ganTou:ganCount[e]||0, ganDetail:ganList[e]||[]};
-  }).sort(function(a,b){return b.score-a.score;});
-  result.sorted=sorted;
-
-  result.wuxing={};
-  sorted.forEach(function(s){
-    result.wuxing[s.el]={score:s.score, pct:s.pct, ganTou:s.ganTou, relation:relMap[s.el]||'?'};
-  });
-
-  // ══════════════════════════════════════════
-  // 第二階段：用神推導
-  // ══════════════════════════════════════════
-
-  // 2.2 初步判定（從 bazi.fav/unfav 取基線）
-  var roles={};
-  ['木','火','土','金','水'].forEach(function(e){
-    var role='閒神';
-    if(fav[0]===e) role='第一用神';
-    else if(fav[1]===e) role='第二用神';
-    else if(unfav[0]===e) role='第一忌神';
-    else if(unfav[1]===e) role='第二忌神';
-    roles[e]={
-      el:e, pct:ep[e]||0, score:ec[e]||0, ganTou:ganCount[e]||0,
-      relation:relMap[e]||'?', role:role, originalRole:role,
-      isFav:fav.includes(e), isUnfav:unfav.includes(e),
-      sortOrder:0 // for final priority sorting
-    };
-  });
-
-  // ── 2.3 量化修正 ──
-  var corrections=[];
-
-  // 修正規則一：過量印星降級
-  var yinPct=ep[yinEl]||0;
-  var yinGan=ganCount[yinEl]||0;
-  var yinR=roles[yinEl];
-  var rule1='未觸發';
-
-  // 特殊格局檢查表
-  var specialFormats={
-    '水多木漂':{dm:'木',el:'水',threshold:30},
-    '土多金埋':{dm:'金',el:'土',threshold:30},
-    '木多火塞':{dm:'火',el:'木',threshold:30},
-    '火多土焦':{dm:'土',el:'火',threshold:30},
-    '金多水濁':{dm:'水',el:'金',threshold:30}
-  };
-
-  if((yinR.role==='第一用神'||yinR.role==='第二用神')&&(yinPct>25||yinGan>=2)){
-    var oldRole=yinR.role;
-    // 檢查特殊格局
-    var formatName='';
-    Object.keys(specialFormats).forEach(function(fn){
-      var sf=specialFormats[fn];
-      if(dmEl===sf.dm&&yinEl===sf.el&&yinPct>=sf.threshold) formatName=fn;
-    });
-    // 梟印奪食檢查：偏印≥2透+根 且食傷<5%
-    var shiPct=ep[woSheng]||0;
-    var isXiaoYin=yinGan>=2&&shiPct<5;
-
-    if(yinPct>35||yinGan>=3||formatName){
-      yinR.role='忌神(印過旺)';
-      yinR.isFav=false; yinR.isUnfav=true;
-      var reason=yinEl+'(印星)佔'+yinPct+'%';
-      if(yinGan>=3) reason+='且'+yinGan+'透';
-      if(formatName) reason+='，觸發'+formatName+'格局';
-      if(isXiaoYin) reason+='，疑似梟印奪食';
-      corrections.push({rule:'修正規則一(過量印星降級)',action:'執行',from:oldRole,to:'忌神',reason:reason});
-      rule1='執行→'+yinEl+'從'+oldRole+'降為忌神：'+reason;
-      result.specialFormat=formatName||null;
-    }else if(yinPct>25||yinGan>=2){
-      yinR.role='閒神(印偏旺)';
-      yinR.isFav=false;
-      corrections.push({rule:'修正規則一',action:'執行',from:oldRole,to:'閒神(印偏旺)',reason:yinEl+'佔'+yinPct+'%'+(yinGan>=2?'且'+yinGan+'透':'')+'，不宜再補'});
-      rule1='執行→'+yinEl+'從'+oldRole+'降為閒神(偏旺)';
-    }
-
-    // 印降級後，如果身弱需要重新確定第一用神
-    // 規則四：先活命再打仗 → 比劫（同五行幫身）為第一用神
-    if(!strong&&(yinR.role.includes('忌')||yinR.role.includes('閒'))){
-      if(roles[dmEl].role!=='第一用神'){
-        var dmOld=roles[dmEl].role;
-        roles[dmEl].role='第一用神';
-        roles[dmEl].isFav=true;
-        corrections.push({rule:'規則四(先活命再打仗)',action:'執行',from:dmOld,to:'第一用神',reason:'印星降級後，身弱日主需比劫幫身，'+dmEl+'升為第一用神'});
-      }
-    }
-  }else{
-    rule1='未觸發（印星'+yinEl+'佔'+yinPct+'%，天干'+yinGan+'透）';
-  }
-
-  // 修正規則二：極缺五行升級
-  var rule2='未觸發';
-  var shiPctR2=ep[woSheng]||0;
-  var guanPctR2=ep[keWo]||0;
-  var shiR=roles[woSheng];
-
-  // 條件：食傷佔比≤5% 且 官殺≥25% 且 食傷不是用神
-  if(shiPctR2<=5&&guanPctR2>=25&&!shiR.role.includes('用神')){
-    // 檢查：忌神佔比 ÷ 食傷佔比 > 10
-    var ratio=shiPctR2>0?(guanPctR2/shiPctR2):999;
-    if(ratio>10){
-      var oldShiRole=shiR.role;
-      // 但要遵守規則四：先活命再打仗
-      // 如果身弱且比劫已是第一用神，食傷為第二用神
-      if(!strong&&roles[dmEl].role==='第一用神'){
-        shiR.role='第二用神(制殺)';
-      }else if(strong){
-        // 身旺時食傷可以是第一用神
-        shiR.role='用神(制殺)';
-      }else{
-        shiR.role='第二用神(制殺)';
-      }
-      shiR.isFav=true; shiR.isUnfav=false;
-      corrections.push({rule:'修正規則二(極缺五行升級)',action:'執行',from:oldShiRole,to:shiR.role,
-        reason:woSheng+'(食傷)僅'+shiPctR2+'%，'+keWo+'(官殺)高達'+guanPctR2+'%，比值'+Math.round(ratio)+'倍，制殺功能>洩身'});
-      rule2='執行→'+woSheng+'從'+oldShiRole+'升為'+shiR.role;
-    }
-  }
-  if(rule2==='未觸發') rule2='未觸發（食傷'+woSheng+' '+shiPctR2+'%，官殺'+keWo+' '+guanPctR2+'%）';
-
-  // 修正規則三：仇神傳導鏈驗證
-  var rule3='未觸發';
-  // 收集當前實際忌神
-  var curUnfavEls=[];
-  ['木','火','土','金','水'].forEach(function(e){if(roles[e].role.includes('忌神')) curUnfavEls.push(e);});
-
-  ['木','火','土','金','水'].forEach(function(e){
-    if(!roles[e].role.includes('閒')) return;
-    // 是否直接生忌神（一步）
-    var directFeed=curUnfavEls.some(function(u){return _BE_SHENG[u]===e;});
-    // 是否直接剋忌神（一步）
-    var directKill=curUnfavEls.some(function(u){return _KE[e]===u;});
-
-    if(directFeed&&directKill){
-      // 同時生忌神又剋忌神 → 剋制功能優先
-      // 看佔比：如果該五行佔比低（<15%），剋制功能更重要
-      if((ep[e]||0)<15){
-        roles[e].role='喜神(制忌)';
-        roles[e].isFav=true;
-        corrections.push({rule:'修正規則三(傳導鏈驗證)',action:'執行',from:'閒神',to:'喜神(制忌)',
-          reason:e+'同時生忌('+_SHENG[e]+')又剋忌('+_KE[e]+')，但佔比僅'+(ep[e]||0)+'%，剋制功能優先'});
-        rule3='執行→'+e+'從閒神升為喜神(制忌)';
-      }
-    }
-  });
-
-  // 修正規則四：身弱用財限制
-  var rule4='未觸發';
-  if(!strong){
-    var caiEl=woKe; // 財星五行
-    if(roles[caiEl].role.includes('用神')){
-      // 身弱不應直接補財
-      var oldCaiRole=roles[caiEl].role;
-      roles[caiEl].role='閒神(身弱不宜直補)';
-      roles[caiEl].isFav=false;
-      corrections.push({rule:'修正規則四(身弱用財限制)',action:'執行',from:oldCaiRole,to:'閒神',
-        reason:'身弱('+bazi.structType+')不可直接補財星'+caiEl+'行，需先補身再扛財'});
-      rule4='執行→'+caiEl+'從'+oldCaiRole+'降為閒神';
-    }else{
-      rule4='未觸發（財星'+caiEl+'非用神）';
-    }
-  }
-
-  // ── 喜神/仇神標記（修正後）──
-  var actualFavEls=[], actualUnfavEls=[];
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role.includes('用神')) actualFavEls.push(e);
-    if(roles[e].role.includes('忌神')) actualUnfavEls.push(e);
-  });
-
-  ['木','火','土','金','水'].forEach(function(e){
-    if(!roles[e].role.includes('閒')) return;
-    if(roles[e].role!=='閒神') return; // 已被標記的閒神(印偏旺)等不再處理
-
-    // 喜神：直接生用神，且自身佔比≤25%
-    var isXi=actualFavEls.some(function(f){return _BE_SHENG[f]===e;})&&(ep[e]||0)<=25;
-    // 仇神：直接生忌神（一步傳導）
-    var isChou=actualUnfavEls.some(function(u){return _BE_SHENG[u]===e;});
-    // 是否同時直接剋忌神
-    var killsUnfav=actualUnfavEls.some(function(u){return _KE[e]===u;});
-
-    if(isChou&&killsUnfav){
-      // 同時生忌又剋忌 → 看佔比
-      if((ep[e]||0)<15) roles[e].role='喜神(制忌兼生用)';
-      else roles[e].role='仇神(偏)';
-    }else if(isXi&&!isChou){
-      roles[e].role='喜神(生用神)';
-      roles[e].isFav=true;
-    }else if(isChou&&!isXi){
-      roles[e].role='仇神(生忌神)';
-    }
-  });
-
-  result.roles=roles;
-  result.corrections=corrections;
-
-  // ── 2.4 反向檢驗 ──
-  var rc=[];
-  // 1. 佔比>25%的五行是否被判為用神？
-  var check1=false;
-  ['木','火','土','金','水'].forEach(function(e){if((ep[e]||0)>25&&roles[e].role.includes('用神')) check1=true;});
-  rc.push({id:1,q:'佔比>25%判為用神？',pass:!check1,note:check1?'需檢查':''});
-
-  // 2. 佔比<5%判為忌神/仇神？
-  var check2=false;
-  ['木','火','土','金','水'].forEach(function(e){if((ep[e]||0)<5&&(roles[e].role.includes('忌神')||roles[e].role.includes('仇神'))) check2=true;});
-  rc.push({id:2,q:'佔比<5%判為忌/仇？',pass:!check2,note:check2?'需檢查':''});
-
-  // 3. 超過一步傳導鏈判仇神？
-  rc.push({id:3,q:'超一步傳導判仇神？',pass:true,note:'已由修正規則三處理'});
-
-  // 4. 用神配置讓最弱五行更弱？
-  var weakest=sorted[sorted.length-1];
-  var check4=actualFavEls.length&&!actualFavEls.includes(weakest.el)&&weakest.pct<5;
-  rc.push({id:4,q:'用神讓最弱('+weakest.el+weakest.pct+'%)更弱？',pass:!check4,note:check4?'注意'+weakest.el+'極弱':''});
-
-  // 5. 忌神配置讓最旺五行更旺？
-  var strongest=sorted[0];
-  rc.push({id:5,q:'忌神讓最旺('+strongest.el+strongest.pct+'%)更旺？',pass:true,note:'忌神已排除不會補'});
-
-  // 6. 偏印≥2仍把印星歸用神？
-  var check6=yinGan>=2&&roles[yinEl].role.includes('用神');
-  rc.push({id:6,q:'偏印≥2仍為用神？',pass:!check6,note:check6?'需檢查':''});
-
-  // 7. 身弱推薦補財星？
-  var check7=!strong&&roles[woKe].role.includes('用神');
-  rc.push({id:7,q:'身弱補財星？',pass:!check7,note:check7?'需檢查':''});
-
-  result.reverseCheck=rc;
-
-  // ── 2.6 用神排序確認 ──
-  var oc={};
-  oc.isWeak=!strong;
-  if(!strong){
-    oc.survivalFirst=true;
-    // 第一用神應該是「讓日主存活」的五行
-    var first='';
-    ['木','火','土','金','水'].forEach(function(e){if(roles[e].role==='第一用神') first=e;});
-    oc.firstIsSurvival=(first===dmEl||first===yinEl)&&!(roles[yinEl].role.includes('忌')||roles[yinEl].role.includes('閒'));
-    if(first===dmEl) oc.firstIsSurvival=true; // 比劫幫身OK
-    oc.firstEl=first;
-    oc.note=oc.firstIsSurvival?'✓ 第一用神('+first+')為幫身五行，符合先活命再打仗':'⚠ 第一用神('+first+')非幫身五行，需檢查排序';
-  }else{
-    oc.survivalFirst=false;
-    oc.note='身旺，不需先活命規則';
-  }
-  result.orderCheck=oc;
-
-  // ══════════════════════════════════════════
-  // 第三階段：紫微斗數分析
-  // ══════════════════════════════════════════
-  var starElMap={'天機':'木','貪狼':'木','廉貞':'火','武曲':'金','七殺':'金',
-    '破軍':'水','太陰':'水','天同':'土','天梁':'土','巨門':'土','太陽':'火',
-    '紫微':'土','天府':'土','天相':'水','左輔':'水','右弼':'金','文曲':'水','文昌':'金'};
-
-  var zwr={mingStars:'',mingEls:[],shenZhu:'',shenEl:'',wuxingJu:'',sihua:[],
-    palaces:{},curDx:null,curDxGanEl:''};
-
-  if(ziwei&&ziwei.palaces){
-    var pNames=['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'];
-    function getPStars(idx){
-      if(!ziwei.palaces[idx]) return {names:'空宮',els:[]};
-      var ss=(ziwei.palaces[idx].stars||[]).filter(function(s){return s.type==='major';});
-      return {
-        names:ss.map(function(s){return s.name+(s.bright?'('+s.bright+')':'');}).join('、')||'空宮',
-        els:ss.map(function(s){return starElMap[s.name];}).filter(Boolean)
-      };
-    }
-    var ming=getPStars(0);
-    zwr.mingStars=ming.names;
-    zwr.mingEls=ming.els;
-    if(ziwei.shenZhu){zwr.shenZhu=ziwei.shenZhu;zwr.shenEl=starElMap[ziwei.shenZhu]||'';}
-    if(ziwei.wuxingJu) zwr.wuxingJu=ziwei.wuxingJu;
-    if(ziwei.sihua) zwr.sihua=ziwei.sihua;
-
-    // 相關宮位
-    zwr.palaces.career=getPStars(8);
-    zwr.palaces.wealth=getPStars(4);
-    zwr.palaces.love=getPStars(2);
-    zwr.palaces.health=getPStars(5);
-
-    // 大限
-    var curDx=ziwei.daXian?ziwei.daXian.find(function(d){return d.isCurrent;}):null;
-    if(curDx){
-      zwr.curDx=curDx;
-      zwr.curDxGanEl=curDx.gan?(_WX_G_MAP[curDx.gan]||''):'';
-    }
-  }
-  result.ziwei=zwr;
-
-  // ── 3.5 紫微與八字交叉驗證（強制五問）──
-  var cc=[];
-  var actualFav1='';
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role==='第一用神'||(roles[e].role.includes('用神')&&!actualFav1)) actualFav1=e;
-  });
-  if(!actualFav1) actualFav1=fav[0]||dmEl;
-
-  // Q1：命主星五行 vs 用神忌神
-  if(zwr.mingEls.length){
-    var mingMatch=zwr.mingEls.includes(actualFav1);
-    var mingConflict=zwr.mingEls.some(function(e){return actualUnfavEls.includes(e);});
-    cc.push({q:'命主星vs用神',bazi:actualFav1,ziwei:zwr.mingEls.join('/'),
-      match:mingMatch?'一致':mingConflict?'衝突':'不一致',
-      adopt:mingMatch?'雙系統確認，主石比例可提高':'以八字為主'});
-  }
-  // Q2：身主星五行 vs 用神
-  if(zwr.shenEl){
-    var shenMatch=zwr.shenEl===actualFav1;
-    var shenIsUnfav=actualUnfavEls.includes(zwr.shenEl);
-    cc.push({q:'身主星vs用神',bazi:actualFav1,ziwei:zwr.shenZhu+'('+zwr.shenEl+')',
-      match:shenMatch?'一致':shenIsUnfav?'身主落忌神→需加強補益':'不一致',
-      adopt:shenMatch?'強化配石信心':'以八字為主'});
-  }
-  // Q3：化忌落宮 vs 八字弱點
-  if(zwr.sihua.length){
-    var jiItems=zwr.sihua.filter(function(h){return h.hua==='化忌';});
-    jiItems.forEach(function(ji){
-      cc.push({q:'化忌落宮',bazi:'弱點',ziwei:ji.star+'化忌→'+ji.palace,
-        match:'印證命局弱點',adopt:ji.palace+'宮為業力/壓力所在'});
-    });
-  }
-  // Q4：大限五行 vs 用神
-  if(zwr.curDxGanEl){
-    var dxMatch=actualFavEls.includes(zwr.curDxGanEl);
-    var dxConflict=actualUnfavEls.includes(zwr.curDxGanEl);
-    cc.push({q:'大限天干vs用神',bazi:actualFav1,
-      ziwei:zwr.curDx.gan+'('+zwr.curDxGanEl+')走'+zwr.curDx.palaceName,
-      match:dxMatch?'大限走用神，助力佳':dxConflict?'⚠大限走忌神，需加強':'中性',
-      adopt:dxConflict?'加強用神主石+辟邪':'標準配置'});
-    if(dxConflict) result.dayunAdjust='⚠ 大限走忌神('+zwr.curDxGanEl+')，加強用神+辟邪';
-    else if(dxMatch) result.dayunAdjust='✓ 大限走用神，標準配置';
-  }
-  // Q5：不一致時處理原則
-  cc.push({q:'不一致處理',bazi:'主導',ziwei:'微調',match:'原則',adopt:'八字定方向，紫微調細節'});
-
-  result.crossCheck=cc;
-
-  // 大運流年
-  var curDy=bazi.dayun?bazi.dayun.find(function(d){return d.isCurrent;}):null;
-  var thisYear=new Date().getFullYear();
-  var curLn=curDy&&curDy.liuNian?curDy.liuNian.find(function(l){return l.year===thisYear;}):null;
-  if(curDy){
-    result.dayunNote='大運：'+curDy.gz+'('+curDy.level+') '+curDy.el+'行';
-    if(curLn) result.dayunNote+=' ｜ 流年：'+curLn.gz+'('+curLn.level+')';
-  }
-
-  // ══════════════════════════════════════════
-  // 第五階段：手鍊配置
-  // ══════════════════════════════════════════
-
-  var adjustedUnfavSet=new Set(actualUnfavEls);
-  // 加入印偏旺、仇神也不補
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role.includes('忌')||roles[e].role==='閒神(印偏旺)') adjustedUnfavSet.add(e);
-  });
-
-  function filterSafe(list){return list.filter(function(c){return !adjustedUnfavSet.has(c.el);});}
-
-  // 收集最終用神順序（規則四已確認）
-  var finalFav1='',finalFav2='';
-  var finalXishen='';
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role==='第一用神'&&!finalFav1) finalFav1=e;
-  });
-  ['木','火','土','金','水'].forEach(function(e){
-    if((roles[e].role==='第二用神'||roles[e].role==='第二用神(制殺)'||roles[e].role==='用神(制殺)')&&!finalFav2) finalFav2=e;
-  });
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role.includes('喜神')&&!finalXishen) finalXishen=e;
-  });
-  if(!finalFav1) finalFav1=fav[0]||dmEl;
-
-  // 5.2 左手＝第一用神（讓日主存活），右手＝第二用神（制衡忌神）
-  // 核心規則：左手純補命根，右手對外制敵
-  // 不可混搭：左手不放食傷（洩身），右手不放印星（往外排根基）
-
-  // 左手：第一用神材質（最純正的優先）
-  var base1=filterSafe(CRYSTAL_DB[finalFav1]||[]).filter(function(c){return c.tier!=='special';});
-  // 優先純正材質：如木行優先綠檀木（純木），火行優先紅石榴石（純火）
-  var leftMain=base1.length?base1[0]:{n:'白水晶',el:finalFav1};
-  var leftAlt=base1.length>1?base1[1]:null;
-
-  // 右手：第二用神材質（制敵方向）
-  var rightStone='',rightEl='',rightRole='',rightAlt='';
-  if(finalFav2&&finalFav2!==finalFav1){
-    var base2=filterSafe(CRYSTAL_DB[finalFav2]||[]).filter(function(c){return c.tier!=='special';});
-    if(base2.length){
-      rightStone=base2[0].n;rightEl=finalFav2;rightRole=roles[finalFav2].role;
-      if(base2.length>1) rightAlt=base2[1].n;
-    }
-  }
-  // fallback：如果沒有第二用神，右手用辟邪
-  // ⚠ 但辟邪石的五行不能是忌神或印偏旺
-  if(!rightStone){
-    // 依序嘗試：第一用神同五行（左右都補命根）→ 喜神五行 → 中性辟邪
-    if(finalFav1){
-      // 同五行不同材質
-      var alt1=base1.length>1?base1[1]:null;
-      if(alt1){rightStone=alt1.n;rightEl=finalFav1;rightRole='同五行辟邪';}
-    }
-    if(!rightStone&&finalXishen&&!adjustedUnfavSet.has(finalXishen)){
-      var xb=filterSafe(CRYSTAL_DB[finalXishen]||[]).filter(function(c){return c.tier!=='special';});
-      if(xb.length){rightStone=xb[0].n;rightEl=finalXishen;rightRole='喜神辟邪';}
-    }
-    if(!rightStone){
-      // 最後才考慮水行黑曜石，但要檢查水是否可用
-      if(!adjustedUnfavSet.has('水')&&roles['水'].role!=='閒神(印偏旺)'){
-        rightStone='黑曜石';rightEl='水';rightRole='辟邪排濁';
-      }else if(!adjustedUnfavSet.has('土')){
-        rightStone='虎眼石';rightEl='土';rightRole='穩定氣場';
-      }else{
-        rightStone='綠檀木';rightEl='木';rightRole='同五行護身';
-      }
-    }
-  }
-
-  // 隔珠：優先用喜神五行，其次用第一用神同五行強化
-  var spacer='',spacerEl='',spacerReason='';
-  // 如果喜神存在且安全
-  if(finalXishen&&!adjustedUnfavSet.has(finalXishen)&&finalXishen!==finalFav1){
-    var spMap={金:'純銀隔珠',木:'綠檀木隔珠',水:'藍紋瑪瑙小珠',火:'紅瑪瑙小珠',土:'黃玉小珠'};
-    spacer=spMap[finalXishen]||'透明水晶小珠';
-    spacerEl=finalXishen;spacerReason='喜神('+finalXishen+')隔珠，生助用神';
-  }else{
-    // 沒有喜神或喜神就是第一用神 → 隔珠也用第一用神五行（純化加強）
-    var spMap2={金:'純銀隔珠',木:'綠檀木小珠',水:'藍紋瑪瑙小珠',火:'紅瑪瑙小珠',土:'黃玉小珠'};
-    if(!adjustedUnfavSet.has(finalFav1)){
-      spacer=spMap2[finalFav1]||'透明水晶小珠';
-      spacerEl=finalFav1;spacerReason='與主石同五行('+finalFav1+')，純化加強';
-    }else{
-      spacer='透明水晶小珠';spacerEl='';spacerReason='中性';
-    }
-  }
-
-  // 比例（左手16珠基準，右手單獨素珠）
-  var total=16;
-  var leftCount=12, xishenCount=0, spacerCount=4;
-  // 左手：純第一用神 + 隔珠（不混入其他五行）
-  // 如果喜神石不是第一用神五行，可以少量加入左手（但不超過20%）
-  var xishenStone='';
-  if(finalXishen&&finalXishen!==finalFav1&&!adjustedUnfavSet.has(finalXishen)){
-    var xBase=filterSafe(CRYSTAL_DB[finalXishen]||[]).filter(function(c){return c.tier!=='special';});
-    if(xBase.length){
-      xishenStone=xBase[0].n;
-      leftCount=10; xishenCount=2; spacerCount=4; // 不超過20%
-    }
-  }
-
-  result.leftHand={
-    mainStone:leftMain.n, mainEl:finalFav1, mainRole:roles[finalFav1].role,
-    altStone:leftAlt?leftAlt.n:'', count:leftCount,
-    xishenStone:xishenStone, xishenEl:finalXishen, xishenCount:xishenCount,
-    spacer:spacer, spacerEl:spacerEl, spacerReason:spacerReason, spacerCount:spacerCount
-  };
-  result.rightHand={
-    stone:rightStone, el:rightEl, role:rightRole, alt:rightAlt
-  };
-
-  // 天鐵評估（第六階段）
-  var goldPct=ep['金']||0;
-  var ttScore=0, ttStars=0, ttReason='', ttSuitable=false;
-  var goldRole=roles['金'].role;
-  if(goldRole.includes('第一用神')&&goldPct<8){ttScore=95;ttStars=5;ttReason='金為第一用神＋極缺金('+goldPct+'%)，最適合';ttSuitable=true;}
-  else if(goldRole.includes('第一用神')){ttScore=80;ttStars=4;ttReason='金為第一用神('+goldPct+'%)，適合';ttSuitable=true;}
-  else if(goldRole.includes('第二用神')){ttScore=65;ttStars=3;ttReason='金為第二用神('+goldPct+'%)，可用';ttSuitable=true;}
-  else if(goldRole.includes('閒神')){ttScore=40;ttStars=2;ttReason='金為閒神('+goldPct+'%)，不建議';ttSuitable=false;}
-  else if(goldRole.includes('忌神')&&goldPct<=15){ttScore=20;ttStars=1;ttReason='金為忌神但命局金不多('+goldPct+'%)，避免';ttSuitable=false;}
-  else if(goldRole.includes('忌神')){ttScore=0;ttStars=0;ttReason='金為忌神且金已過旺('+goldPct+'%)，絕對禁止';ttSuitable=false;}
-  else{ttScore=40;ttStars=2;ttReason='金角色：'+goldRole+'('+goldPct+'%)';ttSuitable=false;}
-  // 陰陽修正
-  if(!isYang&&ttScore>0){ttScore=Math.max(ttScore-10,0);ttReason+='。日主'+dm+'陰性，天鐵偏剛猛';}
-  // 紫微加分
-  if(zwr.mingEls.includes('金')&&ttScore>30){ttScore=Math.min(ttScore+5,100);ttReason+='。命宮有金星加分';}
-
-  result.tianTie={score:ttScore,stars:ttStars,reason:ttReason,suitable:ttSuitable};
-
-  // 避免材質
-  var avoidMap={金:'天鐵、白水晶、金髮晶、銀鈦晶、月光石',木:'綠幽靈、翡翠、綠碧璽、捷克隕石',
-    水:'黑曜石、海藍寶、黑髮晶、拉長石',火:'紅瑪瑙、石榴石、太陽石、粉晶、草莓晶',
-    土:'黃水晶、虎眼石、茶晶'};
-  var avoidList=[];
-  adjustedUnfavSet.forEach(function(e){
-    if(avoidMap[e]){
-      var r=roles[e]?roles[e].role:'忌神';
-      avoidList.push({el:e,role:r,stones:avoidMap[e]});
-    }
-  });
-  // 仇神也列出
-  ['木','火','土','金','水'].forEach(function(e){
-    if(roles[e].role.includes('仇神')&&avoidMap[e]&&!adjustedUnfavSet.has(e)){
-      avoidList.push({el:e,role:roles[e].role+'(慎用)',stones:avoidMap[e]});
-    }
-  });
-  result.avoid=avoidList;
-
-  // 雙屬性警告
-  var dualMap={'紫水晶':'火','鈦晶':'金','月光石':'金+水','草莓晶':'木+火','海藍寶':'水+金','捷克隕石':'木+火','沉香':'木+微火'};
-  var dualWarn=[];
-  Object.keys(dualMap).forEach(function(stone){
-    var els=dualMap[stone].split('+').map(function(s){return s.replace('微','');});
-    var conflict=els.filter(function(e){return adjustedUnfavSet.has(e);});
-    if(conflict.length) dualWarn.push({stone:stone,attr:dualMap[stone],conflict:conflict.join('+')});
-  });
-  result.dualWarn=dualWarn;
-
-  // 方案
-  var rightDesc=rightStone+'('+rightEl+'/'+rightRole+')';
-  result.plans=[
-    {name:'A 素珠',desc:'左手：'+leftMain.n+'('+finalFav1+')純素珠＋'+spacer+' ｜ 右手：'+rightDesc+' 素珠'},
-    {name:'B 加喜神',desc:'左手：'+leftMain.n+'('+finalFav1+')約75%＋'+(xishenStone||(leftAlt?leftAlt.n:''))+'(喜神/輔)約12%＋隔珠 ｜ 右手：'+rightDesc}
-  ];
-  if(ttSuitable){
-    result.plans.push({name:'C 含天鐵',desc:'左手：'+leftMain.n+'約60%＋天鐵約12%＋隔珠 ｜ 右手：'+rightDesc});
-  }
-
-  // 5.5 配置檢驗
-  var configCheck=[];
-  configCheck.push({id:1,q:'推薦材質全為用神方向？',pass:!adjustedUnfavSet.has(finalFav1)&&!adjustedUnfavSet.has(rightEl)});
-  configCheck.push({id:2,q:'避免清單涵蓋忌神材質？',pass:avoidList.length>0||actualUnfavEls.length===0});
-  configCheck.push({id:3,q:'雙屬性有忌神成分？',pass:true,note:dualWarn.length?'有'+dualWarn.length+'項警告':'無'});
-  configCheck.push({id:4,q:'全身用神佔比>70%？',pass:true,note:'需使用者提供全身配戴資訊'});
-  configCheck.push({id:5,q:'隔珠五行符合？',pass:!adjustedUnfavSet.has(spacerEl)});
-  configCheck.push({id:6,q:'左手第一用神/右手第二用神？',
-    pass:(finalFav1===result.leftHand.mainEl)&&(finalFav2?rightEl===finalFav2:true),
-    note:'左:'+result.leftHand.mainStone+'('+finalFav1+') 右:'+rightStone+'('+rightEl+')'});
-  configCheck.push({id:7,q:'是否因需求繞過用神？',pass:true});
-  result.configCheck=configCheck;
-
+  result.designBrief='先按這次問題選一個日常提醒，再依喜歡的色澤、觸感、重量與工作習慣選材。五行僅作可選的傳統配色象徵；珠數、左右手與材質比例由手圍、舒適度及設計決定。';
+  result.nextStep='確認預算、手圍、常戴哪手、金屬接觸反應與現有飾品，再定材料與尺寸。';
   return result;
 }
 
-// ══════════════════════════════════════════
-// 格式化輸出：給店主的通知文字
-// ══════════════════════════════════════════
 function formatCrystalReport(r, form){
-  var name=form.name||'未提供';
-  var bdate=form.bdate||'未提供';
-  var btime=form.btime||'未提供';
-  var gender=form.gender==='male'?'男':(form.gender==='female'?'女':'未知');
-  var question=form.question||'';
-  var type=form.type||'general';
-  var typeLabel={love:'感情',career:'事業',wealth:'財運',health:'健康',relationship:'人際',family:'家庭'}[type]||'綜合';
-
-  var b=r.basic;
-  var msg='══ 客製手鍊 v3 ══\n';
-  msg+=name+' '+gender+' '+bdate+' '+btime+'\n';
-  msg+='日主：'+b.dm+'('+b.dmEl+') '+b.structType+(b.isYang?' 陽':' 陰')+' 納音：'+b.nayin+'\n';
-  msg+='承載力：'+b.capacity+' 自身比：'+b.selfRatio+'%\n';
-  msg+='神煞：'+b.shensha+'\n\n';
-
-  // 五行角色
-  msg+='── 五行量化 ──\n';
-  r.sorted.forEach(function(s){
-    var ro=r.roles[s.el];
-    msg+=s.el+' '+s.pct+'%('+Math.round(s.score)+'/60)';
-    if(s.ganTou>0) msg+=' 透'+s.ganTou;
-    msg+=' '+ro.relation+' → '+ro.role;
-    if(ro.originalRole!==ro.role) msg+=' (原:'+ro.originalRole+')';
-    msg+='\n';
-  });
-  msg+='\n';
-
-  // 量化修正
-  if(r.corrections.length){
-    msg+='── 量化修正 ──\n';
-    r.corrections.forEach(function(c){msg+=c.rule+'：'+c.reason+' → '+c.from+'→'+c.to+'\n';});
-    msg+='\n';
-  }
-
-  // 特殊格局
-  if(r.specialFormat) msg+='⚠ 特殊格局：'+r.specialFormat+'\n\n';
-
-  // 反向檢驗
-  msg+='── 反向檢驗 ──\n';
-  r.reverseCheck.forEach(function(c){msg+=(c.pass?'✓':'✗')+' '+c.id+'.'+c.q+(c.note?' '+c.note:'')+'\n';});
-  msg+='\n';
-
-  // 用神排序
-  msg+='── 用神排序 ──\n'+r.orderCheck.note+'\n\n';
-
-  // 紫微
-  var zw=r.ziwei;
-  msg+='── 紫微 ──\n';
-  msg+='命宮：'+zw.mingStars+'('+zw.mingEls.join('/')+')';
-  if(zw.shenZhu) msg+=' 身主：'+zw.shenZhu+'('+zw.shenEl+')';
-  if(zw.wuxingJu) msg+=' '+zw.wuxingJu;
-  msg+='\n';
-  if(zw.sihua.length) msg+='四化：'+zw.sihua.map(function(h){return h.star+h.hua+'→'+h.palace;}).join('、')+'\n';
-  var typeMap={love:'love',career:'career',wealth:'wealth',health:'health',relationship:'relationship',family:'family'};
-  if(typeMap[type]&&zw.palaces[typeMap[type]]){
-    var pLabel={love:'夫妻',career:'官祿',wealth:'財帛',health:'疾厄',relationship:'僕役',family:'田宅'}[type];
-    msg+=pLabel+'宮：'+zw.palaces[typeMap[type]].names+'\n';
-  }
-  msg+='\n';
-
-  // 交叉驗證
-  msg+='── 交叉驗證(五問) ──\n';
-  r.crossCheck.forEach(function(c){
-    msg+=c.q+'：'+c.match+'（'+c.adopt+'）\n';
-  });
-  msg+='\n';
-
-  // 大運
-  if(r.dayunNote){
-    msg+='── 大運 ──\n'+r.dayunNote+'\n';
-    if(r.dayunAdjust) msg+=r.dayunAdjust+'\n';
-    msg+='\n';
-  }
-
-  // 搭配
-  msg+='══ 搭配方案 ══\n\n';
-  var lh=r.leftHand;
-  msg+='🤚 左手（第一用神/補命根）\n';
-  msg+='主石：'+lh.mainStone+'('+lh.mainEl+'/'+lh.mainRole+')×'+lh.count;
-  if(lh.altStone) msg+=' 替換：'+lh.altStone;
-  msg+='\n';
-  if(lh.xishenCount>0) msg+='喜神：'+lh.xishenStone+'('+lh.xishenEl+'/生用神)×'+lh.xishenCount+'\n';
-  msg+='隔珠：'+lh.spacer+'×'+lh.spacerCount+'('+lh.spacerReason+')\n\n';
-
-  var rh=r.rightHand;
-  msg+='🫲 右手（第二用神/制敵排濁）\n';
-  msg+=rh.stone+'('+rh.el+'/'+rh.role+') 素珠\n';
-  if(r.dayunAdjust&&r.dayunAdjust.includes('⚠')) msg+='← 大運忌神期加強辟邪\n';
-  msg+='\n';
-
-  // 天鐵
-  var tt=r.tianTie;
-  msg+='── 天鐵 ──\n';
-  msg+='★'.repeat(tt.stars)+'☆'.repeat(5-tt.stars)+' '+tt.score+'分\n';
-  msg+=tt.reason+'\n';
-  msg+=(tt.suitable?'→ 建議入鍊':'→ 不入鍊')+'\n\n';
-
-  // 避免
-  msg+='── 避免 ──\n';
-  r.avoid.forEach(function(a){msg+=a.role+' '+a.el+'行：'+a.stones+'\n';});
-  if(r.dualWarn.length){
-    msg+='⚠雙屬性：';
-    r.dualWarn.forEach(function(d){msg+=d.stone+'('+d.attr+')忌'+d.conflict+' ';});
-    msg+='\n';
-  }
-  msg+='\n';
-
-  // 方案
-  msg+='── 方案 ──\n';
-  r.plans.forEach(function(p){msg+=p.name+'：'+p.desc+'\n';});
-  msg+='\n';
-
-  // 配置檢驗
-  msg+='── 配置檢驗 ──\n';
-  r.configCheck.forEach(function(c){msg+=(c.pass?'✓':'✗')+' '+c.id+'.'+c.q+(c.note?' '+c.note:'')+'\n';});
-
-  msg+='\n問題('+typeLabel+')：'+question+'\n';
-  msg+='產生：'+new Date().toLocaleString('zh-TW');
-
-  return msg;
+  form=form||{};
+  var lines=['客製手鍊：命盤參考與設計需求',String(form.name||'未提供姓名')+' '+String(form.bdate||'')+' '+String(form.btime||''),'問題：'+String(form.question||r.question||'')];
+  if(r.basic.dm)lines.push('日主：'+r.basic.dm+'（'+r.basic.dmEl+'）；旺衰模型：'+(r.basic.level||'未列'));
+  lines=lines.concat(r.coreLines||[]);
+  if(r.ziwei.palaces.length)lines.push('紫微原盤（獨立系統）：'+JSON.stringify(r.ziwei));
+  lines.push(r.designBrief||'',r.nextStep||'');
+  return lines.join('\n');
 }
 
 function sendCustomOrderEmail(){
@@ -15649,6 +14956,8 @@ function _buildPayload() {
     if (b.structType) L.push('格局：' + b.structType);
     // 不預寫格局的人生結論；交給 AI 依成立條件、破格與題目自行裁決。
     if (b.specialStructure && b.specialStructure.desc) L.push('特殊格局：' + b.specialStructure.desc);
+    if (typeof baziHuaQiLines === 'function') L=L.concat(baziHuaQiLines(b));
+    if (typeof baziCoreAnalysisLines === 'function') L=L.concat(baziCoreAnalysisLines(b));
     if (b.zhengGe && b.zhengGe.zh) L.push(b.zhengGe.zh);
 
     // 藏干
@@ -19832,7 +19141,9 @@ renderTarot = function(){
             p.dims.bazi.dyDetail = dy.gz + '（' + (dy.level || '') + '，' + (dy.el || '') + '）';
             // ★ v36：結構化方向欄位（crossObs 用，取代 regex）
             p.dims.bazi.dyDirection = /大吉|吉/.test(dy.level||'') ? 'positive' : /凶|大凶/.test(dy.level||'') ? 'negative' : 'neutral';
-            var yr = new Date().getFullYear();
+            var _bzRef=Number.isFinite(bz._referenceInstantTimestamp)?bz._referenceInstantTimestamp:Date.now();
+            var _bzYear=window.BAZI_CORE&&window.BAZI_CORE.getYearGanZhiAt?window.BAZI_CORE.getYearGanZhiAt(new Date(_bzRef)):null;
+            var yr = _bzYear?_bzYear.year:(bz.liuNianPeriod&&bz.liuNianPeriod.year)||new Date(_bzRef).getUTCFullYear();
             if (dy.liuNian) {
               var ln = dy.liuNian.find(function(l) { return l.year === yr; });
               if (ln) {
@@ -19852,6 +19163,12 @@ renderTarot = function(){
         if (bz.specialStructure) {
           p.dims.bazi.specialGe = bz.specialStructure.type + '：' + (bz.specialStructure.desc || '');
         }
+        p.dims.bazi.fuyiAssessment=bz.fuyiAssessment||null;
+        p.dims.bazi.seasonalAssessment=bz.seasonalAssessment||null;
+        p.dims.bazi.strengthAssessment=bz.strengthAssessment||null;
+        p.dims.bazi.isNeutral=!!bz.isNeutral;
+        if (Array.isArray(bz.huaQiAssessments)) p.dims.bazi.huaQiAssessments = bz.huaQiAssessments;
+        if (Array.isArray(bz.specialStructureCandidates)) p.dims.bazi.specialStructureCandidates = bz.specialStructureCandidates;
         // 用神忌神（最核心的判斷依據）
         if (bz.fav && bz.fav.length) p.dims.bazi.favEls = bz.fav.join('、');
         if (bz.unfav && bz.unfav.length) p.dims.bazi.unfavEls = bz.unfav.join('、');
@@ -19871,7 +19188,10 @@ renderTarot = function(){
           }
         }
         // 格局類型（正格）
-        if (bz.zhengGe && bz.zhengGe.type) p.dims.bazi.geJu = bz.zhengGe.type;
+        if (bz.zhengGe && bz.zhengGe.geName) {
+          p.dims.bazi.geJu = bz.zhengGe.geName;
+          p.dims.bazi.monthStructure = {name:bz.zhengGe.geName,stem:bz.zhengGe.geGan,god:bz.zhengGe.geGod,exposedStem:bz.zhengGe.touChu||null};
+        }
         // ★ v16.4：流月拐點（哪幾個月吉/凶——推月份的核心）
         if (bz.liuYue && bz.liuYue.length) {
           var _goodM = bz.liuYue.filter(function(m){ return m.label === '吉' || m.label === '小吉' || m.label === '大吉'; });
@@ -20194,6 +19514,7 @@ renderTarot = function(){
                   var lnHuaKey = lnZw.hua;
                   p.dims.ziwei.lnHuaData=lnZw.hua;
                   p.dims.ziwei.lnPalaces=lnZw.palaces||[];
+                  p.dims.ziwei.lnFlowStars=lnZw.flowStars||[];
                   if (lnHuaKey.length) {
                     p.dims.ziwei.lnHua = lnHuaKey.map(function(h) { return h.star + h.hua + '入本命' + h.palace + (h.periodPalace?'〔'+h.layer+h.periodPalace+'〕':''); }).join('、');
                   }
@@ -20388,7 +19709,7 @@ renderTarot = function(){
               return s;
             });
             p.dims.ziwei.allDaXian = _allDx.join('；');
-            p.dims.ziwei.daXianData=S.ziwei.daXian.map(function(dx){return {ageStart:dx.ageStart,ageEnd:dx.ageEnd,isCurrent:dx.isCurrent,branch:dx.branch,gan:dx.gan,palaces:dx.palaces||[],hua:dx.hua||[]};});
+            p.dims.ziwei.daXianData=S.ziwei.daXian.map(function(dx){return {ageStart:dx.ageStart,ageEnd:dx.ageEnd,isCurrent:dx.isCurrent,branch:dx.branch,gan:dx.gan,palaces:dx.palaces||[],hua:dx.hua||[],flowStars:dx.flowStars||[]};});
           }
 
           // ═══ v30：完整十二宮關鍵宮位（原本只送5個，現在全送12個）═══

@@ -5,6 +5,22 @@ function _secRand() {
   try { var _u = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(_u); return _u[0] / 4294967296; }
   catch (e) { return Math.random(); }
 }
+// Uniform bounded integer. Reject the incomplete tail of the uint32 range
+// instead of scaling or applying % to it. Binary orientation still uses _secRand.
+function _secInt(maxExclusive) {
+  if(!Number.isInteger(maxExclusive)||maxExclusive<1||maxExclusive>4294967296)throw new RangeError('隨機範圍必須為 1 至 2^32 的整數');
+  var cryptoSource=window.crypto||window.msCrypto;
+  if(cryptoSource&&typeof cryptoSource.getRandomValues==='function'){
+    var word=new Uint32Array(1),limit=Math.floor(4294967296/maxExclusive)*maxExclusive;
+    for(var attempt=0;attempt<128;attempt++){
+      cryptoSource.getRandomValues(word);
+      if(word[0]<limit){window._jyRandomSource='crypto-uint32-rejection';return word[0]%maxExclusive;}
+    }
+    throw new Error('隨機來源未產生有效樣本，請重新操作。');
+  }
+  window._jyRandomSource='math-random-fallback';
+  return Math.floor(Math.random()*maxExclusive);
+}
 // v86_28 根治：全域狀態 S 提前宣告於最早載入的 tarot.js（var＋window 雙掛，跨 script 共享）。
 //   根因：原 S 僅宣告於 bazi.js 的「const S」，而 const/let 頂層不掛 window、不跨 <script> 共享，
 //   且 bazi.js 走 DEFERRED 閒置延遲載入——ui.js 的 _enterFromHome 用到 S 時 S 尚未存在＝「開始解讀」按了沒反應。
@@ -388,7 +404,7 @@ function calcMhChar(){
 }
 function calcMhRandom(){
   if(S.meihua){showMhLockedMsg();return;}
-  showMH(calcMH(Math.floor(_secRand()*8)+1,Math.floor(_secRand()*8)+1,Math.floor(_secRand()*6)+1)); // v86_22 密碼學隨機起卦
+  showMH(calcMH(_secInt(8)+1,_secInt(8)+1,_secInt(6)+1)); // v86_22 密碼學隨機起卦
 }
 
 // ── Tarot deck + analysis + story + draw UI (lines 5992-6570) ──
@@ -3083,7 +3099,7 @@ function initTarotDeck(){
   function _fyShuffle(arr){
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(_secRand() * (i + 1)); // v86_22 密碼學隨機洗牌
+      var j = _secInt(i + 1); // v86_22 密碼學隨機洗牌
       var t = a[i]; a[i] = a[j]; a[j] = t;
     }
     return a;

@@ -149,15 +149,18 @@ test('天干五合與六合不自動判定成化或灌入分數', () => {
   assert(chart.branchInteractions.every(x => x.score === undefined));
   assert.strictEqual(chart.calculationPolicy.forecastInteractionScoring, false);
   assert(chart.dayun.filter(d => d.gz !== '小運').every(d => d.interactionScoreAdjustment === 0));
-  assert(chart.dayun.filter(d => d.gz !== '小運').every(d => d.scorePolicy === 'ELEMENT_TEN_GOD_CLIMATE_ONLY'));
+  assert(chart.dayun.filter(d => d.gz !== '小運').every(d => d.scorePolicy === 'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE'));
   assert(chart.dayun.flatMap(d => d.liuNian || []).every(y => y.interactionScoreAdjustment === 0));
 });
 
-test('特殊格局只列候選，不自動覆蓋扶抑喜忌', () => {
+test('有根透印的乙庚合採普通格局，保留合化判別且不覆蓋扶抑喜忌', () => {
   const { chart } = chartAt(ctx);
   assert.strictEqual(chart.specialStructure, null);
   assert(Array.isArray(chart.specialStructureCandidates));
-  assert(chart.specialStructureCandidates.some(x => String(x.type).startsWith('化氣格候選')));
+  assert(!chart.specialStructureCandidates.some(x => /化.*金/.test(String(x.type))));
+  assert.strictEqual(chart.huaQiAssessments[0].statusCode, 'ORDINARY_PREFERRED');
+  assert.strictEqual(chart.huaQiAssessments[0].printedSupport.length, 2);
+  assert.strictEqual(chart.zhengGe.geName, '正官格');
   assert(chart.specialStructureCandidates.every(x => x.appliesAutomatically === false));
 });
 
@@ -263,7 +266,7 @@ test('首頁載入本地曆法引擎且版本路徑正確', () => {
   assert(html.includes('JS/solar-location.js'));
   assert(html.includes('JS/bazi-calendar-core.js'));
   assert(html.includes('JS/bazi.js'));
-  assert(html.includes('JS/bazi_upgrade.js?v=20260912engine2'));
+  assert(html.includes('JS/bazi_upgrade.js?v=20260913core2'));
   assert(html.includes('JS/bazi-standalone.js'));
   const standalone = fs.readFileSync(path.join(ROOT, 'JS/bazi-standalone.js'), 'utf8');
   const upgrade = fs.readFileSync(path.join(ROOT, 'JS/bazi_upgrade.js'), 'utf8');

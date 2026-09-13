@@ -463,6 +463,7 @@
         var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔大限'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : '';
         L.push('・' + dx.ageStart + '–' + dx.ageEnd + '歲　走「' + (dx.palaceName||dx.palace||'') + '」宮(' + (dx.branch||'') + ')' +
           (dx.level?'〔'+dx.level+'〕':'') + (dx.theme?'　主題:'+dx.theme:'') + huaTxt + cur);
+        if(dx.flowStars&&dx.flowStars.length)L.push('    大限流曜：'+JSON.stringify(dx.flowStars));
         if(dx.palaces&&dx.palaces.length)L.push('    大限十二宮疊宮：'+dx.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
       });
     }
@@ -480,6 +481,7 @@
           L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　流年命宮落本命「' + (lnf.mingPalace || '') + '」' +
             (lnf.focus ? '·' + lnf.focus : '') +
             ((lnf.hua && lnf.hua.length) ? '　流年四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔流年'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
+          if(lnf.flowStars&&lnf.flowStars.length)L.push('    流年流曜：'+JSON.stringify(lnf.flowStars));
           if(lnf.palaces&&lnf.palaces.length)L.push('    流年十二宮疊宮：'+lnf.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
           if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.forEach(function(n){ L.push('    - ' + n); });
         }
@@ -640,8 +642,8 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260913methods1', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260913methods1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260913core2', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260913core2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;

@@ -2251,38 +2251,15 @@ enhanceTarot = function(tarot) {
     // ★ v64.1 正統 Mathers Book T:「cut each of the packets as nearly in the centre
     //   as possible, putting each uppermost half to the right of and beside the lower
     //   half, thus yielding four packets of nearly equal dimensions.」
-    // 正統做法:兩刀切,每刀盡量對半 → 四堆「nearly equal」
-    // 78 / 4 = 19.5,正統範圍應該在 19-20 ±3 內(16-22),不是隨意 12-27
-    var len = deck.length; // 78
-    var MIN_PILE = 16;
-    var MAX_PILE = 22;
-
-    // 模擬人手「對半切」的自然偏差:每堆 19.5 ± 2.5,符合 Mathers「nearly equal」
-    var sizes = [];
-    for (var s = 0; s < 4; s++) {
-      sizes.push(Math.round(19.5 + (Math.random() - 0.5) * 5)); // 17 ~ 22
-    }
-    // 正規化:調整到總和 = len,每堆在 MIN_PILE ~ MAX_PILE
-    var diff = len - sizes.reduce(function(a, b) { return a + b; }, 0);
-    var safety = 0;
-    while (diff !== 0 && safety < 200) {
-      var ri = Math.floor(Math.random() * 4);
-      if (diff > 0 && sizes[ri] < MAX_PILE) { sizes[ri]++; diff--; }
-      else if (diff < 0 && sizes[ri] > MIN_PILE) { sizes[ri]--; diff++; }
-      safety++;
-    }
-    // ★ Bug #33 fix: safety 退出時 sizes 加總可能仍 ≠ 78（極端情況都頂到 MAX/MIN 邊界）
-    //   後面 deck[idx++] 會讀到 undefined 造成 piles[pk][pi].id throw
-    //   修法：強制把 sizes 校正成加總 = 78（直接從第一堆吸收差額）
-    var finalSum = sizes.reduce(function(a, b) { return a + b; }, 0);
-    if (finalSum !== len) {
-      sizes[0] += (len - finalSum); // 把差額塞給第一堆
-      // 萬一第一堆變成負數或太大，做夾擠保險
-      if (sizes[0] < 1) {
-        // 把 sizes 直接 reset 成 [20, 20, 19, 19] 的合理基準
-        sizes = [20, 20, 19, 19];
-      }
-    }
+    // 數位政策：先切兩堆，再各切一次；下列偏移範圍由本站明定，古文未規定數字。
+    var len=deck.length;
+    if(len!==78||new Set(deck.map(c=>c&&c.id)).size!==78)throw new Error('開鑰需要完整且不重複的 78 張牌。');
+    // Explicit digital cut policy: cut near the centre, then cut both packets
+    // near their centres. Every cut is a real boundary; totals need no repair.
+    var randomInt=typeof window._secInt==='function'?window._secInt:function(n){return Math.floor(Math.random()*n);};
+    var first=39+randomInt(5)-2,second=78-first;
+    var left=Math.floor(first/2)+randomInt(3)-1,right=Math.floor(second/2)+randomInt(3)-1;
+    var sizes=[left,first-left,right,second-right];
 
     // YHVH 四堆：Yod=火, Heh=水, Vav=風, Heh(final)=土
     var pileKeys = ['fire', 'water', 'air', 'earth'];
@@ -2322,6 +2299,8 @@ enhanceTarot = function(tarot) {
 
     return {
       piles: { fire: piles.fire.length, water: piles.water.length, air: piles.air.length, earth: piles.earth.length },
+      cutPolicy: 'NEAR_CENTRE_TWO_LEVELS_V1',
+      cutBoundaries: [sizes[0],sizes[0]+sizes[1],sizes[0]+sizes[1]+sizes[2]],
       activePile: activePile,
       meaning: pileMeaning[activePile] || '',
       activeCards: activeCards,
@@ -2786,7 +2765,7 @@ enhanceTarot = function(tarot) {
     });
     // Fisher-Yates shuffle
     for (var i = deck.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = typeof window._secInt==='function'?window._secInt(i+1):Math.floor(Math.random()*(i+1));
       var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
     }
     return deck;
