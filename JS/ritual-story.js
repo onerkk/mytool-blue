@@ -2,6 +2,7 @@
 (function(root){
   'use strict';
   var profiles={
+    vedic:{place:'九曜星殿',chapter:'在星環深處，讀懂自己的節奏',invitation:'走入九曜星殿',beats:['出生的一刻，化作星圖的座標。','本命、分盤與運期，層層相會。','帶著真正的問題，展開自己的方向。']},
     tarot:{place:'月下神殿',chapter:'月光，替你留了一個位置',invitation:'走近牌桌',beats:['先讓牌聚攏。','讓心裡的問題，穿過月光。','牌已展開，接下來由你選擇。']},
     lenormand:{place:'翡翠密庭',chapter:'每條線索，都有它的來處',invitation:'走進庭院',beats:['把眼前的牌放在一起。','看看它們如何前後相連。','帶著完整牌序，回到你的問題。']},
     bazi:{place:'時光長廊',chapter:'沿著時間，重新認識自己',invitation:'走入時間長廊',beats:['四個時間座標，緩緩升起。','每個座標，都要放回整張命盤看。','先核對出生資料，再理解自己的節奏。']},

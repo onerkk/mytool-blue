@@ -48,6 +48,7 @@ export function instrumentPose(type,index,state){
  return {rise:0,tilt:0,glow:0};
 }
 export const CAST={
+ vedic:{actor:'star-guide',speaker:'星衡',role:'印度占星引路人',accent:'#e4c28c',chapter:'九曜星殿',lens:'沿著本命、分盤與時間，理解自己的方向。'},
  tarot:{actor:'lunar-guide',speaker:'月見',role:'塔羅引路人',accent:'#ddbd81',chapter:'月下問心',lens:'把心事說清楚，再看見下一步。'},
  lenormand:{actor:'lunar-guide',speaker:'月見',role:'牌語引路人',accent:'#9ed9c4',chapter:'翡翠密語',lens:'讓具體的生活線索，彼此相連。'},
  bazi:{actor:'star-guide',speaker:'星衡',role:'四柱引路人',accent:'#e4c790',chapter:'時光長卷',lens:'從出生時刻，理解一路走來的自己。'},

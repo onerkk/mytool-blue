@@ -46,7 +46,7 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced,craft}){
    moving.push({node:group,type:'twin',index:i});
   }
  }
- if(kind==='ziwei'){
+ if(kind==='ziwei'||kind==='vedic'){
   const nodes=[];
   for(let i=0;i<36;i++){
    const a=i*2.399963,z=-3-(i%4)*.6,node=mesh(new T.OctahedronGeometry(i%3?.022:.04),glow);

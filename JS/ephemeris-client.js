@@ -79,36 +79,9 @@
 
   // 升級 jyotish.planets 的 sidLon
   async function upgradeJyotish(jyotish, year, month, day, hour, minute, tz) {
-    if (!jyotish || !jyotish.planets) return jyotish;
-    var data = await _fetchEphemeris(year, month, day, hour, minute, tz, 'tropical');
-    if (!data || !data.planets) return jyotish;
-
-    var ayanamsa = jyotish.ayanamsa || 0;
-    // 用同一個 ayanamsa 把 tropical 換成 sidereal
-    function _toSid(lon) {
-      var s = (lon - ayanamsa) % 360;
-      return s < 0 ? s + 360 : s;
-    }
-
-    Object.keys(data.planets).forEach(function(en) {
-      var pl = jyotish.planets[en];
-      if (!pl) return;
-      var p = data.planets[en];
-      if (typeof p.lon !== 'number') return;
-      pl.tropLon = p.lon;
-      pl.sidLon = _toSid(p.lon);
-      // 重算 rashi/nakshatra 等
-      if (typeof window.jyGetRashi === 'function') {
-        var r = window.jyGetRashi(pl.sidLon);
-        pl.rashiIdx = r.idx; pl.rashi = r.rashi; pl.degInSign = r.deg;
-      }
-      if (typeof window.jyGetNakshatra === 'function') {
-        var n = window.jyGetNakshatra(pl.sidLon);
-        pl.naksIdx = n.idx; pl.nakshatra = n.nakshatra;
-        pl.naksPada = n.pada; pl.naksLord = n.lord;
-      }
-    });
-    jyotish._ephemerisSource = data.source;
+    // A longitude-only patch leaves vargas, dignities, aspects and dashas stale.
+    // Preserve the complete snapshot. The standalone Jyotisha core computes all
+    // derived fields atomically from its local, independently checked ephemeris.
     return jyotish;
   }
 

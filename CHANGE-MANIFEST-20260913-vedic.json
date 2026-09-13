@@ -1,0 +1,391 @@
+{
+  "release": "jingyue-vedic-20260913",
+  "basis": "jingyue-engine-output-fix-20260913.zip applied site snapshot",
+  "basis_zip_sha256": "1d657dc0443af8f557e17c4bd1a430b90ddfaa17ce8460491db98931d1238fd2",
+  "engine_version": "jy-vedic-1.0.0",
+  "service_worker": "jy-main-v79",
+  "instructions": "UPDATE-20260913-vedic.md",
+  "verification": "docs/vedic-engine-20260913.md",
+  "changed_file_count": 54,
+  "deletions": [],
+  "files": [
+    {
+      "path": "CSS/vedic.css",
+      "status": "added",
+      "bytes": 16575,
+      "sha256": "5ddb8edce90c63420a438cda01d9817d4d7ea4b2f5e383776474bef5a063a7c3",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/atelier-ui.js",
+      "status": "modified",
+      "bytes": 12175,
+      "sha256": "91fbaf339ebceb6d480618e38a98e5af1ee0bc274615df66a273fded8b524069",
+      "previous_sha256": "58536d255264d73cf854c38f64597da20d39f0f40c4d69eb8ec9d694d75d3e80"
+    },
+    {
+      "path": "JS/bazi.js",
+      "status": "modified",
+      "bytes": 326869,
+      "sha256": "c861512a85c486e618b152a9f01d0be2e533c9e6f2c903cdaf72f952809735ac",
+      "previous_sha256": "a702e4fe18a27a7ddc0ff53410ade387361f10da4037d7c9565f710c357988b9"
+    },
+    {
+      "path": "JS/cinematic-src/choreography.mjs",
+      "status": "modified",
+      "bytes": 4866,
+      "sha256": "f6fe28652a664f8e3612b930a8bc310d3bdb6c11d2b145fad21af6a5ba66febf",
+      "previous_sha256": "9c21e74fc8de2f2f27264a0c57f7a7649f3007a2c4da9cad8325220ea6de5bfc"
+    },
+    {
+      "path": "JS/cinematic-src/presence.mjs",
+      "status": "modified",
+      "bytes": 6637,
+      "sha256": "a4b0f7f54cf60b298857387979b6334891c879fb205958dc5c04b47d94438ef7",
+      "previous_sha256": "6e39464a12a163bd72f27483c7536c3d925fc093799db218bee21f03196c95ae"
+    },
+    {
+      "path": "JS/cinematic-src/scenery.mjs",
+      "status": "modified",
+      "bytes": 5628,
+      "sha256": "3caa0c5172b8af02c6ba2995504d48b4d91752b5149ae684f28198f600469612",
+      "previous_sha256": "895d817122d99ce9e9c9aebca35f305b1c9187a2426b1a228c49ec80775914f9"
+    },
+    {
+      "path": "JS/cinematic-src/stage.mjs",
+      "status": "modified",
+      "bytes": 20596,
+      "sha256": "c6738a41ff929dd56bb86c2fe369f22808809a806f2deacbe4c6979ea369ff0c",
+      "previous_sha256": "e5847c906e5d51b8bb2a5949067a59f6e8f5757cf72280312f3e05d67c06781a"
+    },
+    {
+      "path": "JS/cinematic-stage.js",
+      "status": "modified",
+      "bytes": 615473,
+      "sha256": "9b1c94a0f40609f64acd4242bc7f825301e9a69ca795a7feeeeda7e97ffb0052",
+      "previous_sha256": "7da18f7c2466179161ac39e18beffdfb8e3fb78815880ca0e3accdd09d471e6d"
+    },
+    {
+      "path": "JS/ephemeris-client.js",
+      "status": "modified",
+      "bytes": 3886,
+      "sha256": "960003f9e99edec3b5aad2360e3d6c952859e588ba35520bb8200f17223a654e",
+      "previous_sha256": "03585de870735a54fc9409399790ceff416542cbbbd4c2b81caf63906bb814ac"
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "status": "modified",
+      "bytes": 36578,
+      "sha256": "adcf6b39539a8237d8ccd870500a19150d92fc4b8dce878501143d8f27420047",
+      "previous_sha256": "746afd7471b8f5ec9aaa8a2454ce04622827faec9a4eb2adfd54086716c1f166"
+    },
+    {
+      "path": "JS/ritual-story.js",
+      "status": "modified",
+      "bytes": 7235,
+      "sha256": "e13b586705fbb48a40346f601a5e304eeb23949cbfbbbc25f4c8142966770315",
+      "previous_sha256": "7d74f1a758abadb667a94fb53c2aff549eda6407d4afdfd6752bf3567e9e76d0"
+    },
+    {
+      "path": "JS/sw.js",
+      "status": "modified",
+      "bytes": 4524,
+      "sha256": "4b49772c3164b12ef388c2374b183b7b9caf7a9b87344df8a779c5410196cb20",
+      "previous_sha256": "645652cddd168fc5ac1559f8bc299914c038ab25d04fd5c5a03ea202da0163f2"
+    },
+    {
+      "path": "JS/ui.js",
+      "status": "modified",
+      "bytes": 432932,
+      "sha256": "d6f7dbae1436ebf390018c5cb03024f4170a7de765e97cfee75602ab60e80384",
+      "previous_sha256": "1e5e3b1cc7b848e6a2da3ddcd6e0d4fb30fd4f5b9430e5053036514e532d6c95"
+    },
+    {
+      "path": "JS/vedic-ayanamsa.js",
+      "status": "added",
+      "bytes": 133876,
+      "sha256": "dccc34ac7c0ca811fe3acf585c86853548c2ed14ac9a2d43076d5bfe44de4cc6",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/vedic-engine.js",
+      "status": "added",
+      "bytes": 25679,
+      "sha256": "ac57aacf2fc000dbe428d540967894d2d8f58dd861151ea5bdc02bce2921c6fd",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "status": "added",
+      "bytes": 17991,
+      "sha256": "a0f2d49bd3889064dceb40ede0f981a8172738830f6b6725fda82850b6e9a756",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "status": "added",
+      "bytes": 26856,
+      "sha256": "f4355098052612c006b5438660bdd44ac873513730aa481d37f4fd3587a45ca2",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/vendor/astronomy-engine-2.1.19.min.js",
+      "status": "added",
+      "bytes": 116424,
+      "sha256": "f41139a87941ea017ab902b954c9389fa27ea72083d7fab4971756d7769d14e6",
+      "previous_sha256": null
+    },
+    {
+      "path": "JS/vendor/astronomy-engine-LICENSE.txt",
+      "status": "added",
+      "bytes": 1368,
+      "sha256": "23ffb1e4b2abf08bab8867ca0c219a9feaef5853a39394be64792ce42188ef1e",
+      "previous_sha256": null
+    },
+    {
+      "path": "UPDATE-20260913-vedic.md",
+      "status": "added",
+      "bytes": 1393,
+      "sha256": "cac2f11d88b6211a3158980771ca539ab4a5c79212cacb469507f18a3c86271f",
+      "previous_sha256": null
+    },
+    {
+      "path": "assets/ui/vedic-astrolabe.svg",
+      "status": "added",
+      "bytes": 15703,
+      "sha256": "ddf891997ea2a422b703bffcf22151f59a1a2a27a4992fac589b0deb845108f2",
+      "previous_sha256": null
+    },
+    {
+      "path": "docs/vedic-engine-20260913.md",
+      "status": "added",
+      "bytes": 12517,
+      "sha256": "f16a5d8e911118915df911189f58518466ecc5be74017cd0e1b9513dfac9467f",
+      "previous_sha256": null
+    },
+    {
+      "path": "index.html",
+      "status": "modified",
+      "bytes": 145300,
+      "sha256": "9bb8d1812370d8e05ac5f1a0beeaf3f3f7af1188f3c643401c7fb381a3a31c52",
+      "previous_sha256": "5fe65caea51ffaf8dfb152594317ac9ccb19728dbf1ccb2260422bb7693a47d8"
+    },
+    {
+      "path": "package.json",
+      "status": "modified",
+      "bytes": 3270,
+      "sha256": "46d1cee30d74f0f653dcf79f5e305df23f9de64195a9bb19813ec541bf178bef",
+      "previous_sha256": "e27270688a1e969fb993405f7964508bcb6fd584da76b4793c97e5b58a15bed1"
+    },
+    {
+      "path": "review/vedic-20260913/browser-smoke.json",
+      "status": "added",
+      "bytes": 789,
+      "sha256": "8764842500377fd9642d3404e57583b7c6b58822c8b05c6cf0d298eed8da40fe",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/browser-smoke.log",
+      "status": "added",
+      "bytes": 974,
+      "sha256": "3dbb5f2ba1bc2c63ec247ecd24a36e09c779fa6a75e377bc25a1182b38a344be",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/desktop-vedic-chart.png",
+      "status": "added",
+      "bytes": 1051328,
+      "sha256": "8b4816bac083aa5e3fb0b49d94040afa231156d67019b0cf0a06a1131b84b257",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/engine-tests.json",
+      "status": "added",
+      "bytes": 2464,
+      "sha256": "e1f270ba9b7527f918fae650753ff74ef195ef1e432adc08610ca5ada1fc37cc",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/example-chart.json",
+      "status": "added",
+      "bytes": 134083,
+      "sha256": "f81842c4e0bc9f47e889b9fcfc595e16ef488becf241a5da7a0631cf4183aa2f",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/full-regression.log",
+      "status": "added",
+      "bytes": 57486,
+      "sha256": "f17fde2ceb1b74106abf9f58db555805c038bb6c219ca0ea19b43639e067cfe7",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-copy.png",
+      "status": "added",
+      "bytes": 289486,
+      "sha256": "c461818b8e7fcc314f76579c7588c494fecf81532f12f307e351218ab293c435",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-d1.png",
+      "status": "added",
+      "bytes": 294354,
+      "sha256": "f2fd4ed34042644eeae8a2069a465688cc8d03802d26c90379eea1975c8eede0",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-d9-north.png",
+      "status": "added",
+      "bytes": 241411,
+      "sha256": "203f4037dab9824cbb470b796653012139ddba65ef75710140a81c1b8c7898d4",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-dasha.png",
+      "status": "added",
+      "bytes": 283874,
+      "sha256": "53e73cc9e324969fbc34e9f367c9f10ffb0f834d785e0f5c94040e3ccc01b96b",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-entrance.png",
+      "status": "added",
+      "bytes": 435579,
+      "sha256": "4cc9b2a6f7c12ad6cd6bea941dd57fadf728e3be1af2f2c659383c2c37fe5514",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-prompt.txt",
+      "status": "added",
+      "bytes": 80003,
+      "sha256": "02d055761ebc21e4b2ad6f22945d263ac798ea2adc7d49b431edf0f51d8dfb8a",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/mobile-vedic-ritual.png",
+      "status": "added",
+      "bytes": 437139,
+      "sha256": "d0b469cd5fe09e7268dcdf44747a8ff9764aa41db8796b73f4ff5305c93cde46",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-bracelet.txt",
+      "status": "added",
+      "bytes": 79934,
+      "sha256": "f7c264d52c41eb80a8188225403a4c96f816e865a68c7e1500b38da54825ba67",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-career.txt",
+      "status": "added",
+      "bytes": 79872,
+      "sha256": "e185252aefddcc8f864cdf47012f3f5b0287e12184e2ac8dd38db5148715b297",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-general.txt",
+      "status": "added",
+      "bytes": 79661,
+      "sha256": "fe8938d17b9e3c205ad115c01a24ab98a5fc64cff2cf4a46dfc72a864a835e6c",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-learning.txt",
+      "status": "added",
+      "bytes": 79746,
+      "sha256": "7accee7df6989a3b58d852d4cc7df5d6eab6a7446a6a6291f48fba8aef4f0eb3",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-relationship.txt",
+      "status": "added",
+      "bytes": 79889,
+      "sha256": "641e550e8431eda2e789d7ab0d7c22e2ce4ec4696591ce21148d1a3a058576bc",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-timing.txt",
+      "status": "added",
+      "bytes": 79848,
+      "sha256": "28cc7352fec7abe821754c939bb198d45910ef518e721e6dba1b73f0101ab26e",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-wealth.txt",
+      "status": "added",
+      "bytes": 79818,
+      "sha256": "f9dba44c9ccf80b9a0915d53f87a162c21d7cc280544f134e4278b08e08c01e7",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/prompt-wellbeing.txt",
+      "status": "added",
+      "bytes": 79721,
+      "sha256": "5fd7ed44390e9dc155cfe66fb6ad1ff4f7f796a2945d76877b66bc58281855b9",
+      "previous_sha256": null
+    },
+    {
+      "path": "review/vedic-20260913/vedic-engine-tests.log",
+      "status": "added",
+      "bytes": 1755,
+      "sha256": "798b5acebc57c7d09be7242c44b13f3c0f9004f42a4edce55b63caa412ebb80a",
+      "previous_sha256": null
+    },
+    {
+      "path": "scripts/vedic-reference.py",
+      "status": "added",
+      "bytes": 3574,
+      "sha256": "770a08d9a73e1807f66348cdc47c2060f714b3467a948d5c07ab28eb743aba81",
+      "previous_sha256": null
+    },
+    {
+      "path": "sw.js",
+      "status": "modified",
+      "bytes": 4524,
+      "sha256": "4b49772c3164b12ef388c2374b183b7b9caf7a9b87344df8a779c5410196cb20",
+      "previous_sha256": "645652cddd168fc5ac1559f8bc299914c038ab25d04fd5c5a03ea202da0163f2"
+    },
+    {
+      "path": "tests/atelier-ui-20260911.cjs",
+      "status": "modified",
+      "bytes": 9515,
+      "sha256": "2d45804c4e15e125abdf7a96dda5902814639086d2ef4d34d2c3bfa331b7d869",
+      "previous_sha256": "31b4f4c6993c8b3f1590738b29ad6f7bb4178d6574a53d54483d53cf1f525364"
+    },
+    {
+      "path": "tests/cinematic-20260911.cjs",
+      "status": "modified",
+      "bytes": 11903,
+      "sha256": "d03db9184a0a63602cd4295ac3cdc7e1a0ed143fc74453e92e685e22a9a9af56",
+      "previous_sha256": "fe7572d96da59eb4dfeca8ea05cfdd9cf74d9f0a133ec2bfad2c9ebcc2175e89"
+    },
+    {
+      "path": "tests/fixtures/vedic-swiss-20260913.json",
+      "status": "added",
+      "bytes": 398122,
+      "sha256": "bea14d148b173866204cb6923a604d5fb959a2a683748f352da412ddd3138330",
+      "previous_sha256": null
+    },
+    {
+      "path": "tests/fixtures/vedic-swiss-extra-20260913.json",
+      "status": "added",
+      "bytes": 10212,
+      "sha256": "d6e138540662c538b97476179737f7dc62f5ecd2a16f066f8b6237b5beb84581",
+      "previous_sha256": null
+    },
+    {
+      "path": "tests/reading-depth-20260912.cjs",
+      "status": "modified",
+      "bytes": 15300,
+      "sha256": "3df98e02589422f6236993b16c0e170d7d77b9cb9a12cd70089adcf70dc03f5f",
+      "previous_sha256": "ed5073c1e3d606c7ddd01c9be8e5503c3dea5c9ce525d17e3e833403e535508c"
+    },
+    {
+      "path": "tests/vedic-engine-20260913.cjs",
+      "status": "added",
+      "bytes": 11832,
+      "sha256": "d2506ccd3a4dd2dabdda4294a7f9073b0f299e43fb7942e38fffad0d6957c380",
+      "previous_sha256": null
+    }
+  ]
+}

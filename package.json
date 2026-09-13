@@ -4,7 +4,7 @@
     "three": "0.186.0"
   },
   "scripts": {
-    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft && npm run test:methods && npm run test:huaqi && npm run test:core-engines && npm run test:output-consistency",
+    "test": "npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft && npm run test:methods && npm run test:huaqi && npm run test:core-engines && npm run test:output-consistency && npm run test:vedic",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
     "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
@@ -36,7 +36,8 @@
     "test:methods": "node tests/method-engine-20260913.cjs && node tests/method-prompts-20260913.cjs",
     "test:huaqi": "node tests/bazi-huaqi-20260913.cjs",
     "test:core-engines": "node tests/core-engine-20260913.cjs",
-    "test:output-consistency": "node tests/engine-output-consistency-20260913.cjs"
+    "test:output-consistency": "node tests/engine-output-consistency-20260913.cjs",
+    "test:vedic": "node tests/vedic-engine-20260913.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"

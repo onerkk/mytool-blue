@@ -5735,7 +5735,8 @@ showAuraResult = function(){
       ['compat','05','兩個人的相處','八字合盤','我們如何理解與支持彼此？','需要雙方資料'],
       ['ziwei','06','人生的不同面向','紫微斗數','從十二宮，認識人生的選擇。','需要日期時辰'],
       ['meihua','07','變化中的方向','梅花易數','進一步，還是先停下來看清楚？','時間・數字・漢字'],
-      ['oracle','08','給心一份安定','靜月靈籤','靜心求籤，讀一段此刻的提醒。','六十甲子靈籤']
+      ['oracle','08','給心一份安定','靜月靈籤','靜心求籤，讀一段此刻的提醒。','六十甲子靈籤'],
+      ['vedic','09','九曜與生命節奏','印度占星','本命、分盤與運期，照見方向。','十六分盤・三層運期']
     ];
     var tiles = methods.map(function(m){return '<button type="button" class="at-tool" data-tool="'+m[0]+'" onclick="_atelierChoose(\''+m[0]+'\')"><span class="at-tool-top"><span class="at-tool-kicker">'+m[2]+'</span><span class="at-tool-number">'+m[1]+'</span></span><span class="at-art" data-art="'+m[0]+'" aria-hidden="true"></span><strong>'+m[3]+'</strong><span class="at-tool-desc">'+m[4]+'</span><span class="at-tool-foot"><span>'+m[5]+'</span><span class="at-tool-arrow" aria-hidden="true">↗</span></span></button>';}).join('');
     hookScreen.innerHTML = '<div class="at-home">'+

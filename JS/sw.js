@@ -17,7 +17,8 @@
 // v73: 20260912flow2 快速手勢、即時進度、保留牌組續讀與筆記隔離。
 // v74: 20260912accuracy1 來源校核、曆法安星與各入口版本同步。
 // v78: 20260913output1 坐根／通根、原生牌面模式及體用資料一致性。
-const CACHE_NAME = 'jy-main-v78';
+// v79: 20260913vedic1 九曜星殿、獨立 Jyotisha 核心與三層運期。
+const CACHE_NAME = 'jy-main-v79';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

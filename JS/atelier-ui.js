@@ -77,7 +77,7 @@
       return;
     }
     if (tool === 'compat' && window.BaziSuiteUI) { window.BaziSuiteUI.open('compat'); return; }
-    var calls = { lenormand: '_lenormandOpen', bazi: '_baziOpen', ziwei: '_ziweiOpen', meihua: '_meihuaOpen', oracle: '_oracleOpen' };
+    var calls = { lenormand: '_lenormandOpen', bazi: '_baziOpen', ziwei: '_ziweiOpen', vedic: '_vedicOpen', meihua: '_meihuaOpen', oracle: '_oracleOpen' };
     if (calls[tool] && typeof window[calls[tool]] === 'function') window[calls[tool]]();
   };
 

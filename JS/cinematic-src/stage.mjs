@@ -115,6 +115,14 @@ export function mountStage(host,kind,options={}){
    for(let i=0;i<15;i++){const g=new T.Group();objects.add(g);const body=new T.Mesh(geom,gold);g.add(body);const face=new T.Mesh(keep(new T.PlaneGeometry(.636,1.045)),back);face.position.z=.008;g.add(face);deck.push(g);}
    loadTexture('assets/ui/tarot-back-moon-gold.jpg',texture=>{back.map=texture;back.color.set('#ffffff');back.needsUpdate=true;});
   }
+ }else if(kind==='vedic'){
+  // Nine symbolic graha jewels on a crafted instrument, not physical orbits.
+  const instrument=new T.Group();objects.add(instrument);instrument.position.y=.08;
+  [0,.72,1.45,2.15].forEach((a,i)=>{const r=craft.bezel(instrument,.70+i*.13);r.rotation.set(a,.35+i*.6,.2);animated.push({type:'orbit',node:r,index:i,rate:i%2?-.09:.11});});
+  const core=mesh(new T.SphereGeometry(.19,24,16),craft.jewel,instrument);animated.push({type:'core',node:core});
+  const colors=['#f7cb62','#dae3f1','#cf7b62','#87b9a0','#e6c67c','#e7d0c0','#8d9ac8','#afa1d9','#c7a790'];
+  for(let i=0;i<9;i++){const a=i*Math.PI*2/9;const mat=keep(new T.MeshPhysicalMaterial({color:colors[i],roughness:.18,metalness:.45,clearcoat:1,emissive:colors[i],emissiveIntensity:.15}));const star=mesh(new T.IcosahedronGeometry(.065+i%3*.015,1),mat,instrument);star.position.set(Math.cos(a)*1.06,Math.sin(a)*1.06,Math.sin(a*2)*.12);animated.push({type:'star',node:star,index:i});}
+  for(let i=0;i<12;i++){const r=ring(.22,.006,instrument),a=i*Math.PI/6;r.scale.set(.5,1.4,1);r.position.set(Math.sin(a)*.75,Math.cos(a)*.75,-.2);r.rotation.z=-a;}
  }else if(kind==='ziwei'){
   const instrument=new T.Group();objects.add(instrument);instrument.position.y=.07;
   [0,.8,1.5].forEach((a,i)=>{const r=craft.bezel(instrument,.9+i*.08);r.rotation.set(a,.45+i*.65,.3);animated.push({type:'orbit',node:r,index:i,rate:(i%2?-.12:.15)});});

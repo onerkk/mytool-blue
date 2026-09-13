@@ -14,17 +14,17 @@ function load(env, name) { vm.runInContext(read('JS/'+name+'.js'), env.ctx, {fil
 function actualFunction(file, name) { const source=read(file); let found; function walk(node) { if(!node||typeof node!=='object')return; if(node.type==='FunctionDeclaration'&&node.id?.name===name)found=source.slice(node.start,node.end); for(const value of Object.values(node)){if(Array.isArray(value))value.forEach(walk);else if(value&&typeof value==='object')walk(value);} } walk(acorn.parse(source,{ecmaVersion:'latest'})); assert(found,name); return found; }
 function expose(env, file, code) { vm.runInContext(read('JS/'+file+'.js').replace(/\}\)\(\);\s*$/,code+'\n})();'),env.ctx); }
 function add(e, tag, id) { const el=e.doc.body.appendChild(new e.Element(tag)); el.id=id; return el; }
-test('Eight home entrances are native buttons and reach the right flow; direct compatibility remains separate',()=>{
+test('Nine home entrances are native buttons and reach the right flow; direct compatibility remains separate',()=>{
  const e=environment(),calls=[];add(e,'div','hook-screen');const input=add(e,'section','input-screen'),q=add(e,'textarea','f-question');
  const heading=input.appendChild(new e.Element('header'));heading.className='at-input-head';
  e.ctx._enterFromHome=()=>calls.push('input');e.ctx.pickTool=(tool,options)=>calls.push([tool,options.stayAtQuestion]);
  e.ctx.BaziSuiteUI={open:tab=>calls.push(tab)};
- const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen'};
+ const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen',vedic:'_vedicOpen'};
  for(const [name,key] of Object.entries(bridges))e.ctx[key]=()=>calls.push(name);
  load(e,'atelier-ui');vm.runInContext(actualFunction('JS/ui.js','_redesignHomepage')+';_redesignHomepage();',e.ctx);
- const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,8);
+ const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,9);
  for(const tile of tiles){assert.equal(tile.tagName,'BUTTON');vm.runInContext(tile.getAttribute('onclick'),e.ctx);}
- assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle','vedic']);
  assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.equal(e.doc.activeElement,heading);assert.notEqual(e.doc.activeElement,q);
 });
 test('Spread picker preserves incoming options, traps Tab, closes with Escape and restores prior focus/overflow',()=>{

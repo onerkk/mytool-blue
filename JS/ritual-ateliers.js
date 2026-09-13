@@ -3,6 +3,7 @@
   'use strict';
   var active = null;
   var themes = {
+    vedic:{name:'印度占星',world:'celestial-observatory',room:'九曜星殿',en:'THE NAVAGRAHA SANCTUM',title:'讓星圖，照見你的生命節奏。',intro:'從出生的座標，走進九曜與時間交織的星殿。帶著心裡的問題，讓每一層脈絡逐漸清晰。',focus:'觸動星儀，讓九曜依序點亮。',guide:'沿著金色星軌移動手指，或按住星儀。',action:'本命與時間，沿星環相會',ready:'九曜已亮，星圖為你展開。',outro:'接下來從本命開始，走入分盤與運期。每個座位與日期，都來自同一份出生資料。',finish:'展開我的印度命盤',type:'hold'},
     ootk:{name:'開鑰之法',world:'moon-sanctum',room:'秘鑰之門',en:'OPENING OF THE KEY',title:'一扇門，一層新的觀察。',intro:'帶著同一個問題，沿著五層程序慢慢探索。每層看完，再決定何時繼續。',focus:'讓牌，為第一扇門聚攏。',guide:'左右拖曳牌組，或按住片刻。',action:'牌在聚攏，第一扇門即將開啟',ready:'從第一層，開始觀察。',outro:'接下來保留每次操作的牌序、計數與配對；若程序需要停止，會清楚說明原因。',finish:'進入五層程序',type:'hold'},
     tarot: {name:'塔羅',world:'moon-sanctum',room:'月下神殿',en:'THE MOON SANCTUM',title:'今夜，先聽見自己。',intro:'越過日常的喧囂，把最在意的那件事，留在這片月光裡。',focus:'讓牌，回應你的觸碰。',guide:'按住牌組，讓散落的心緒慢慢收攏。',action:'月光正在穿過牌組',ready:'牌已洗好，輪到你的直覺。',outro:'不必尋找「正確」的一張。接下來，從牌背中選出你的牌。',finish:'開始選牌',type:'hold'},
     lenormand: {name:'雷諾曼',world:'moon-garden',room:'翡翠月庭',en:'THE EMERALD GARDEN',title:'線索，藏在相遇之間。',intro:'沿著月光走進庭院。帶著一個具體的問題，看看牌與牌會如何相遇。',focus:'親手，揭開故事的起點。',guide:'依你的節奏，輕觸面前的牌。',action:'讓線索在月光裡相連',ready:'讓相遇的牌，連成一句話。',outro:'帶著原來的問題，查看完整牌陣與牌序，再探索它們之間的關係。',finish:'展開完整牌陣',type:'cards'},
@@ -40,7 +41,7 @@
     if(!themes[kind])throw new Error('Unknown ceremony: '+kind);
     if(active)return active.handle;
     var cfg=themes[kind],doc=root.document,previous=doc.activeElement;
-    var reduced=!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var reduced=!!options.reduced||!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,audio=null,audioOn=false,stage=null;
     var story=null;
     var gesture=null,travel=0,turn=0,intent='clarity';
@@ -54,6 +55,7 @@
     var dialog=doc.createElement('dialog');dialog.className='jr-dialog';
     var actors={tarot:['lunar-guide','月見','塔羅引路人'],lenormand:['lunar-guide','月見','牌語引路人'],bazi:['star-guide','星衡','四柱引路人'],compat:['star-guide','星衡','關係引路人'],ziwei:['star-guide','星衡','星圖引路人'],meihua:['blossom-guide','清和','觀象引路人'],oracle:['blossom-guide','清和','靜心引路人']};
     actors.ootk=['lunar-guide','月見','開鑰引路人'];
+    actors.vedic=['star-guide','星衡','印度占星引路人'];
     var actor=actors[kind],gestureCopy={ootk:'左右拖曳切牌，或按住牌組',tarot:'左右拖曳切牌，或按住牌組',ziwei:'沿星軌轉動手指，或按住星儀',meihua:'左右拂過光線，或按住凝心',oracle:'上下輕晃籤筒，或按住祈願'};
     dialog.setAttribute('data-ritual',kind);dialog.setAttribute('data-world',cfg.world);dialog.setAttribute('data-mode',mode);
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');

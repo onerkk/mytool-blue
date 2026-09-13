@@ -8,7 +8,7 @@ export function presencePoint(kind,index,count,state){
  const a=q*Math.PI*2+t*.15+(state.turn||0)*.12,r=.8+open*.55;
  if(kind==='bazi')return {x:(lane-1.5)*.68+Math.sin(a*3)*.12,y:-1.6+((q*4+t*.18)%1)*(1.2+open*.6),z:.6+Math.cos(a*3)*.14};
  if(kind==='compat'){const side=index%2?1:-1;return {x:side*.58+Math.cos(a*2)*(.45+open*.15),y:-.88+Math.sin(a*2)*.56,z:.7+Math.sin(a*2+side)*.32};}
- if(kind==='ziwei')return {x:Math.cos(a*2)*r,y:-.75+Math.sin(a*2)*r*.65,z:.35+Math.sin(a*3)*.65};
+ if(kind==='ziwei'||kind==='vedic')return {x:Math.cos(a*2)*r,y:-.75+Math.sin(a*2)*r*.65,z:.35+Math.sin(a*3)*.65};
  if(kind==='meihua')return {x:Math.cos(a)*r*(.7+.25*Math.cos(a*5)),y:-.95+Math.sin(a)*r*.6,z:.45+Math.sin(a*5+t*.3)*.28};
  if(kind==='oracle')return {x:Math.sin(a*3)*(.26+q*.55),y:-1.65+((q+t*.09)%1)*(1.6+open*.5),z:.55+Math.cos(a*3)*.35};
  if(kind==='lenormand')return {x:(index%3-1)*.72+Math.cos(a*3)*.28,y:-1.12+Math.sin(a*3)*.18+open*.12,z:.85+Math.sin(a*2)*.17};

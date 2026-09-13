@@ -1,0 +1,486 @@
+{
+  "polar": [
+    {
+      "jd": 2461296.5,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 338.24192659586674
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 158.13176358699144
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 157.35986988274183
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 156.12060632554545
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 154.77521370371804
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 153.72568563812837
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 153.2630536297787
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 333.4823629862188
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 334.2900251282962
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 335.4620055673038
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 336.70779565651094
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": -89,
+      "longitude": 0,
+      "ascendant": 337.7247061715832
+    },
+    {
+      "jd": 2461296.5,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 358.32942097446346
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 1.637629463315914
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 177.59756529325796
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 161.4859612996597
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 140.6561588500156
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 130.7259134562177
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 310.8686448679324
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 316.27150603249873
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 324.2825108245783
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 333.4823878174201
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 342.8966301430695
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": -80,
+      "longitude": 0,
+      "ascendant": 351.619242753789
+    },
+    {
+      "jd": 2461296.5,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 14.822876136481256
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 26.86081164433163
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 34.79130015216209
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 192.04681487923187
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 98.49096452856374
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 279.70288133982245
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 290.2301578865839
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 303.190573519548
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 317.3576639854867
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 332.15850138017805
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 347.08346860838174
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": -70,
+      "longitude": 0,
+      "ascendant": 1.6198187468811334
+    },
+    {
+      "jd": 2461296.5,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 110.03260063504814
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 122.96668193666726
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 137.11909273889327
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 151.91362982129542
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 166.8407140212476
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 181.38750633546766
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 195.03604212406853
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 207.03642175701046
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 214.8414692761111
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 10.430694378688717
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 278.27365927869886
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": 70,
+      "longitude": 0,
+      "ascendant": 99.83929991336923
+    },
+    {
+      "jd": 2461296.5,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 130.8139747008562
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 136.15702093398468
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 144.13870079450498
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 153.32753409324792
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 162.74537988399274
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 171.48736151866044
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 178.4200400892663
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 181.64425161386404
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 357.4392916999501
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 341.13061730991467
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 320.38672246535543
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": 80,
+      "longitude": 0,
+      "ascendant": 310.662792292509
+    },
+    {
+      "jd": 2461296.5,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 333.2651199502681
+    },
+    {
+      "jd": 2461296.5833333335,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 153.47356340561907
+    },
+    {
+      "jd": 2461296.6666666665,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 154.27312755980273
+    },
+    {
+      "jd": 2461296.75,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 155.4413775089974
+    },
+    {
+      "jd": 2461296.8333333335,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 156.6884316827342
+    },
+    {
+      "jd": 2461296.9166666665,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 157.71139605714058
+    },
+    {
+      "jd": 2461297.0,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 158.24566471209758
+    },
+    {
+      "jd": 2461297.0833333335,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 338.12419824516513
+    },
+    {
+      "jd": 2461297.1666666665,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 337.3425245059447
+    },
+    {
+      "jd": 2461297.25,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 336.0982880530671
+    },
+    {
+      "jd": 2461297.3333333335,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 334.7546152681887
+    },
+    {
+      "jd": 2461297.4166666665,
+      "latitude": 89,
+      "longitude": 0,
+      "ascendant": 333.71283069097507
+    }
+  ],
+  "raman": [
+    {
+      "jd": 2415256.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 21.028004814196926,
+      "Moon": 131.9680005092666,
+      "ascendant": 254.88495840669106
+    },
+    {
+      "jd": 2433518.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 21.721842377916705,
+      "Moon": 280.59751674430925,
+      "ascendant": 254.08742694032603
+    },
+    {
+      "jd": 2445571.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 22.177934007005515,
+      "Moon": 327.6439603641342,
+      "ascendant": 253.6377072100294
+    },
+    {
+      "jd": 2451781.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 22.41564700894877,
+      "Moon": 72.9511527622485,
+      "ascendant": 254.22057525728604
+    },
+    {
+      "jd": 2461277.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 22.785722700670558,
+      "Moon": 276.14511408090107,
+      "ascendant": 253.58099804041515
+    },
+    {
+      "jd": 2488305.7881944445,
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "ayanamsa": 23.818926296947566,
+      "Moon": 9.366782903334249,
+      "ascendant": 252.62450571745705
+    }
+  ]
+}

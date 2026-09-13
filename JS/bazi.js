@@ -1383,10 +1383,11 @@ function jyGetRashi(sidLon) {
  * Each Pada = 3°20' = 3.3333°
  */
 function jyGetNakshatra(sidLon) {
-  var naksIdx = Math.floor(sidLon / 13.333333) % 27;
+  sidLon = ((sidLon % 360) + 360) % 360;
+  var naksIdx = Math.floor(sidLon / (360 / 27)) % 27;
   var naks = JY_NAKSHATRA[naksIdx];
-  var degInNaks = sidLon - naksIdx * 13.333333;
-  var pada = Math.floor(degInNaks / 3.333333) + 1;
+  var degInNaks = sidLon - naksIdx * (360 / 27);
+  var pada = Math.floor(degInNaks / (360 / 108)) + 1;
   if (pada > 4) pada = 4;
   return {
     idx: naksIdx,
@@ -1394,7 +1395,7 @@ function jyGetNakshatra(sidLon) {
     pada: pada,
     degInNaks: degInNaks,
     lord: naks.lord,
-    pctComplete: (degInNaks / 13.333333) * 100
+    pctComplete: (degInNaks / (360 / 27)) * 100
   };
 }
 
@@ -1405,6 +1406,10 @@ function jyGetNakshatra(sidLon) {
 function jyGetDignity(planet, rashiIdx, degInSign) {
   var d = JY_DIGNITY[planet];
   if (!d) return 'neutral';
+
+  // Degree subdivisions precede the sign-wide exaltation check.
+  if (planet === 'Moon' && rashiIdx === 1) return degInSign < 3 ? 'exalted' : 'moola';
+  if (planet === 'Mercury' && rashiIdx === 5) return degInSign < 15 ? 'exalted' : degInSign < 20 ? 'moola' : 'own';
 
   // Exalted
   if (rashiIdx === d.exaltRashi) {
@@ -1426,7 +1431,7 @@ function jyGetDignity(planet, rashiIdx, degInSign) {
     Saturn:  {sign:10, min:0,  max:20}
   };
   var mr = MOOLA_RANGE[planet];
-  if (mr && rashiIdx === mr.sign && degInSign >= mr.min && degInSign <= mr.max) {
+  if (mr && rashiIdx === mr.sign && degInSign >= mr.min && degInSign < mr.max) {
     return 'moola';
   }
   // Own sign (includes moola sign beyond moola degree range)
@@ -1531,11 +1536,13 @@ function jyCalcDasha(moonSidLon, birthDate) {
 
     // Calculate Antardashas (sub-periods)
     var antardashas = [];
-    var adCursor = cursor;
+    // ADs subdivide the complete MD, including its elapsed pre-birth portion.
+    var fullStart = i === 0 ? birthMs - totalYears * (1 - pctRemaining) * yearDays * dayMs : cursor;
+    var adCursor = fullStart;
     for (var j = 0; j < 9; j++) {
       var adLordIdx = (lordIdx + j) % 9;
       var adLord = JY_DASHA_ORDER[adLordIdx];
-      var adYears = (actualYears * JY_DASHA_YEARS[adLord]) / 120;
+      var adYears = (totalYears * JY_DASHA_YEARS[adLord]) / 120;
       var adDurationMs = adYears * yearDays * dayMs;
 
       antardashas.push({
@@ -1556,6 +1563,7 @@ function jyCalcDasha(moonSidLon, birthDate) {
       sym: JY_PLANETS[lord].sym,
       years: Math.round(actualYears * 100) / 100,
       start: startDate,
+      fullStart: new Date(fullStart),
       end: endDate,
       isCurrent: (Date.now() >= cursor && Date.now() < cursor + durationMs),
       antardashas: antardashas
@@ -1902,7 +1910,8 @@ function computeJyotish(natal, birthYear, birthMonth, birthDay, birthHour, birth
 
   // ── Step 5: Vimshottari Dasha ──
   var moonSidLon = planets.Moon ? planets.Moon.sidLon : 0;
-  var birthDate = new Date(birthYear, birthMonth - 1, birthDay, birthHour, birthMinute || 0);
+  // Reuse the natal UTC Julian day; the device timezone must not move the dasha.
+  var birthDate = new Date((jd - 2440587.5) * 86400000);
   var dashas = jyCalcDasha(moonSidLon, birthDate);
 
   // Find current Mahadasha and Antardasha

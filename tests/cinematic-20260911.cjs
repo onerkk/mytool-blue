@@ -20,8 +20,8 @@ function form(e,kind,section,button,count){
 }
 (async()=>{
  const {cardPose,actorPose,cameraPose,instrumentPose,CAST}=await import('../JS/cinematic-src/choreography.mjs');
- await test('All eight systems have an original actor and complete local transparent atlas',()=>{
-  assert.equal(Object.keys(CAST).length,8);
+ await test('All nine experiences have an actor and complete local transparent atlas',()=>{
+  assert.equal(Object.keys(CAST).length,9);
   for(const c of Object.values(CAST)){assert(fs.statSync(path.join(project,'assets/ui',c.actor+'.webp')).size>10000);assert(c.speaker&&c.role&&c.chapter);}
   assert.deepEqual([0,1,2,3].map(actorPose),[0,1,2,3]);
  });
