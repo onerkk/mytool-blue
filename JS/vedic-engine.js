@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='jy-vedic-1.0.0', DAY=86400000, RAD=Math.PI/180;
+  const VERSION='jy-vedic-1.1.0', DAY=86400000, RAD=Math.PI/180;
   const KEYS=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
   const NAMES=['太陽','月亮','火星','水星','木星','金星','土星','羅睺','計都'];
   const SYMBOLS=['☉','☽','♂','☿','♃','♀','♄','☊','☋'];
@@ -157,6 +157,18 @@
       const permanent=FRIENDS[a].includes(b)?1:ENEMIES[a].includes(b)?-1:0,house=mod(planets[b].sign-planets[a].sign,12)+1,temporary=[2,3,4,10,11,12].includes(house)?1:-1;
       out.push({from:a,to:b,permanent,temporary,compound:permanent+temporary,label:['強敵','敵','中性','友','強友'][permanent+temporary+2]});}));return out;
   }
+  function solarCondition(key,longitude,sunLongitude,retrograde=false){
+    const separation=Math.abs(diff(finite(longitude,'黃經'),finite(sunLongitude,'太陽黃經')));
+    const limit={Moon:12,Mars:17,Mercury:retrograde?12:14,Jupiter:11,Venus:retrograde?8:10,Saturn:15}[key];
+    return {separationDegrees:separation,thresholdDegrees:limit??null,combust:limit==null?null:separation<limit,
+      nearBoundary:limit!=null&&Math.abs(separation-limit)<=1/60,
+      method:'Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility'};
+  }
+  function naturalNatures(planets){
+    const phase=norm(planets.Moon.longitude-planets.Sun.longitude),out={Sun:'malefic',Moon:phase>0&&phase<180?'benefic':'malefic',Mars:'malefic',Jupiter:'benefic',Venus:'benefic',Saturn:'malefic',Rahu:'malefic',Ketu:'malefic'};
+    const companions=KEYS.filter(k=>k!=='Mercury'&&planets[k].sign===planets.Mercury.sign),good=companions.filter(k=>out[k]==='benefic').length,bad=companions.length-good;
+    out.Mercury=!companions.length||good>bad?'benefic':bad>good?'malefic':'mixed';return out;
+  }
   function dispositors(planets){return KEYS.map(k=>{let chain=[k],seen=new Set([k]),next=LORDS[planets[k].sign];
     while(!seen.has(next)){chain.push(next);seen.add(next);next=LORDS[planets[next].sign];}
     return {planet:k,chain,closesAt:next,cycle:chain.slice(chain.indexOf(next)),selfDispositor:chain[chain.length-1]===next};});}
@@ -164,9 +176,22 @@
   function yogas(planets,asc,asp){
     const list=[],add=(name,keys,rule)=>list.push({name,planets:keys,rule,conditions:keys.map(k=>({planet:k,house:planets[k].house,dignity:planets[k].dignity.label,sunSeparation:planets[k].sunSeparation})),status:'structural'});
     if(asc!=null)for(const [k,name] of [['Mars','Ruchaka'],['Mercury','Bhadra'],['Jupiter','Hamsa'],['Venus','Malavya'],['Saturn','Sasa']]){
-      if([1,4,7,10].includes(planets[k].house)&&['own','moolatrikona','exalted'].includes(planets[k].dignity.status))add(name+'（五大人格組合）',[k],'本垣或擢升、位於本命上升角宮');
+      if([1,4,7,10].includes(planets[k].house)&&['own','moolatrikona','exalted'].includes(planets[k].dignity.status))add(name+'（五大行星格局）',[k],'本垣或擢升、位於本命上升角宮；近日狀態與受照另看成色');
     }
-    if([0,3,6,9].includes(mod(planets.Jupiter.sign-planets.Moon.sign,12)))add('Gaja Kesari（月木角宮）',['Moon','Jupiter'],'木星在月亮第一、四、七、十座；此為位置條件，成色仍看尊貴與受克');
+    if([0,3,6,9].includes(mod(planets.Jupiter.sign-planets.Moon.sign,12))){
+      const nature=naturalNatures(planets),j=planets.Jupiter,dispositor=LORDS[j.sign],rel=relationships(planets).find(r=>r.from==='Jupiter'&&r.to===dispositor);
+      const connected=k=>planets[k].sign===j.sign||asp.graha.some(a=>a.from===k&&a.toPlanets.includes('Jupiter'));
+      const supporters=KEYS.filter(k=>k!=='Jupiter'&&nature[k]==='benefic'&&connected(k));
+      const mixedSupport=KEYS.some(k=>nature[k]==='mixed'&&connected(k));
+      const solar=j.solar||solarCondition('Jupiter',j.longitude,planets.Sun.longitude,!!j.retrograde);
+      const checks=[{key:'moonQuadrant',label:'木星位於月亮的角宮',passed:true},
+        {key:'beneficSupport',label:supporters.length?'自然吉曜支持：'+supporters.map(zh).join('、'):mixedSupport?'支持星水星的同座吉凶數量相等':'木星沒有自然吉曜同座或全照',passed:supporters.length?true:mixedSupport?null:false},
+        {key:'notDebilitated',label:j.dignity.debilitated?'木星落陷':'木星未落陷',passed:!j.dignity.debilitated},
+        {key:'notCombust',label:'木星距太陽 '+solar.separationDegrees.toFixed(2)+'°；燃燒門檻 11°',passed:!solar.combust},
+        {key:'notEnemy',label:'木星與所在座主的合成關係：'+(dispositor==='Jupiter'?'本垣':rel.label),passed:dispositor==='Jupiter'||rel.compound>=0}];
+      const formed=checks.every(c=>c.passed===true);add(formed?'Gaja Kesari（象獅格局）':'月木角宮關係',['Moon','Jupiter'],formed?'符合本版採用的 PVR 條件：月木角宮、吉曜支持，木星未落陷、未燃燒且非合成敵座。':'月木角宮關係成立；未滿足本版 Gaja Kesari 的全部條件，按實際關係解讀。');
+      Object.assign(list[list.length-1],{status:formed?'structural':'relation',checks,definition:'PVR 11.7 / Gaja-Kesari; compound friendship; angular combustion convention'});
+    }
     if(planets.Sun.sign===planets.Mercury.sign)add('Budha Aditya（日水同座）',['Sun','Mercury'],'太陽與水星同座；須同看近日距離與宮主角色');
     KEYS.slice(0,7).forEach((a,i)=>KEYS.slice(i+1,7).forEach(b=>{if(LORDS[planets[a].sign]===b&&LORDS[planets[b].sign]===a)add('Parivartana（互容）',[a,b],'兩曜互入對方本垣；依實際掌宮辨別領域與代價');}));
     if(asc!=null){const l9=LORDS[(asc+8)%12],l10=LORDS[(asc+9)%12];
@@ -178,6 +203,7 @@
   function timeSensitivity(input,base,minutes){
     if(minutes===0)return {minutes:0,sampled:false,changes:[],note:'依使用者所填精確時間計算；星曆角度仍有數值誤差'};
     const center=instant(input.utc).getTime(),unknown=!!input.unknownTime,span=minutes*60000,changes=new Map();
+    let firstEndMin=Infinity,firstEndMax=-Infinity;const firstLords=new Set(),currentLords=new Set();
     let start=center-span,end=center+span;
     if(unknown&&input.civil&&input.civil.date&&input.civil.timezone){
       const nextDay=new Date(input.civil.date+'T12:00:00Z');nextDay.setUTCDate(nextDay.getUTCDate()+1);
@@ -190,8 +216,9 @@
     for(let i=0;i<=count;i++){const ms=start+i*step,a=astronomy(new Date(ms),input.latitude,input.longitude,input.ayanamsa),keys=unknown?KEYS:KEYS.concat('Lagna');
       keys.forEach(k=>Object.keys(VARGAS).forEach(d=>{const lon=k==='Lagna'?a.ascendant:a.planets[k].sidereal,key=k+'/D'+d,s=varga(lon,+d).sign;let set=changes.get(key);if(!set){set=new Set();changes.set(key,set);}set.add(s);}));
       const n=nakshatra(a.planets.Moon.sidereal);let set=changes.get('Moon/nakshatra');if(!set){set=new Set();changes.set('Moon/nakshatra',set);}set.add(n.name);
+      if(!unknown){const ds=dasha(a.planets.Moon.sidereal,new Date(ms),input.reference,input.yearDays);firstEndMin=Math.min(firstEndMin,ds.periods[0].end);firstEndMax=Math.max(firstEndMax,ds.periods[0].end);firstLords.add(ds.firstLord);currentLords.add(ds.current?[ds.current.maha.lord,ds.current.antar.lord,ds.current.pratyantar.lord].join('/'):'before-birth');}
     }
-    return {minutes,sampled:true,sampledStart:new Date(start).toISOString(),sampledEnd:new Date(end).toISOString(),sampleStepSeconds:step/1000,changes:[...changes].filter(([,s])=>s.size>1).map(([key,s])=>({key,alternatives:[...s]})),note:unknown?'時間未知：不排上升、宮位、分盤宮位與確定運期；行星以中午作觀察錨並附當地全日取樣變化':'出生時間區間取樣：變動項請按出生紀錄核對；分盤不固定等同未來事件'};
+    return {minutes,sampled:true,sampledStart:new Date(start).toISOString(),sampledEnd:new Date(end).toISOString(),sampleStepSeconds:step/1000,changes:[...changes].filter(([,s])=>s.size>1).map(([key,s])=>({key,alternatives:[...s]})),dashaTiming:unknown?null:{firstEndMin,firstEndMax,firstLords:[...firstLords],currentLords:[...currentLords],sampleCount:count+1,note:'出生時間區間的取樣結果；跨月宿時第一運主可能改變，日期範圍須與 firstLords 一起讀'},note:unknown?'時間未知：不排上升、宮位、分盤宮位與確定運期；行星以中午作觀察錨並附當地全日取樣變化':'出生時間區間取樣：變動項請按出生紀錄核對；分盤不固定等同未來事件'};
   }
   function compute(options){
     const input=Object.assign({ayanamsa:'lahiri',yearDays:365.2425,uncertaintyMinutes:0,unknownTime:false},options);
@@ -200,16 +227,19 @@
     const birth=instant(input.utc),reference=instant(input.reference||new Date());
     const min=Date.UTC(1900,0,1),max=Date.UTC(2101,0,1);if(birth<min||birth>=max||reference<min||reference>=max)throw Error('目前星曆核對範圍為 1900–2100 年');
     const uncertainty=finite(Number(input.uncertaintyMinutes),'時間誤差');if(uncertainty<0||uncertainty>720)throw Error('時間誤差須為 0–720 分鐘');
-    const raw=astronomy(birth,input.latitude,input.longitude,input.ayanamsa),prev=astronomy(new Date(+birth-DAY/2),input.latitude,input.longitude,input.ayanamsa),next=astronomy(new Date(+birth+DAY/2),input.latitude,input.longitude,input.ayanamsa);
+    const velocityHalfDays=10/1440;
+    const raw=astronomy(birth,input.latitude,input.longitude,input.ayanamsa),prev=astronomy(new Date(+birth-DAY*velocityHalfDays),input.latitude,input.longitude,input.ayanamsa),next=astronomy(new Date(+birth+DAY*velocityHalfDays),input.latitude,input.longitude,input.ayanamsa);
     const lagna=input.unknownTime?null:placement(raw.ascendant),planets={};
-    KEYS.forEach((k,i)=>{const p=placement(raw.planets[k].sidereal),speed=diff(next.planets[k].sidereal,prev.planets[k].sidereal);
+    KEYS.forEach((k,i)=>{const p=placement(raw.planets[k].sidereal),speed=diff(next.planets[k].sidereal,prev.planets[k].sidereal)/(2*velocityHalfDays);
       planets[k]=Object.assign({key:k,name:NAMES[i],symbol:SYMBOLS[i]},p,{tropical:raw.planets[k].tropical,latitude:raw.planets[k].latitude,speed,retrograde:speed<0,stationary:Math.abs(speed)<0.005,house:lagna?mod(p.sign-lagna.sign,12)+1:null,nakshatra:nakshatra(p.longitude),dignity:dignity(k,p.longitude),dispositor:LORDS[p.sign],sunSeparation:Math.abs(diff(p.longitude,raw.planets.Sun.sidereal))});
+      planets[k].solar=solarCondition(k,p.longitude,raw.planets.Sun.sidereal,speed<0);
+      planets[k].solar.motionSensitive=['Mercury','Venus'].includes(k)&&planets[k].stationary;
     });
     const vargas={};Object.keys(VARGAS).forEach(d=>{const la=lagna?varga(lagna.longitude,+d):null,ps={};KEYS.forEach(k=>{ps[k]=varga(planets[k].longitude,+d);ps[k].house=la?mod(ps[k].sign-la.sign,12)+1:null;ps[k].vargottama=d==='9'&&ps[k].sign===planets[k].sign;});vargas[d]={division:+d,purpose:VARGAS[d],lagna:la,planets:ps};});
     const asp=aspects(planets,lagna&&lagna.sign),av=ashtakavarga(planets,lagna&&lagna.sign),rel=relationships(planets);
     const houses=lagna?Array.from({length:12},(_,i)=>{const sign=(lagna.sign+i)%12,lord=LORDS[sign];return {house:i+1,sign,signName:SIGNS[sign],lord,lordHouse:planets[lord].house,occupants:KEYS.filter(k=>planets[k].house===i+1),aspectedBy:asp.graha.filter(a=>a.toHouse===i+1).map(a=>a.from),sav:av.sav[sign]};}):[];
     const phase=norm(planets.Moon.longitude-planets.Sun.longitude),half=partFloor(phase/6),karanas=['Bava','Balava','Kaulava','Taitila','Gara','Vanija','Vishti'];
-    const panchanga={tithi:partFloor(phase/12)+1,paksha:phase<180?'上弦半月 Shukla':'下弦半月 Krishna',elongation:phase,yoga:partFloor(norm(planets.Sun.longitude+planets.Moon.longitude)*27/360)+1,karana:half===0?'Kimstughna':half>=57?['Shakuni','Chatushpada','Naga'][half-57]:karanas[(half-1)%7],note:'出生瞬間的角度項；未把民用午夜當作傳統日出日界'};
+    const panchanga={tithi:partFloor(phase/12)+1,paksha:phase<180?'白半月 Shukla（漸盈）':'黑半月 Krishna（漸虧）',elongation:phase,yoga:partFloor(norm(planets.Sun.longitude+planets.Moon.longitude)*27/360)+1,karana:half===0?'Kimstughna':half>=57?['Shakuni','Chatushpada','Naga'][half-57]:karanas[(half-1)%7],note:'出生瞬間的角度項；未把民用午夜當作傳統日出日界'};
     const ranked=KEYS.slice(0,7).sort((a,b)=>planets[b].degree-planets[a].degree),karakaNames=['AK','AmK','BK','MK','PK','GK','DK'];
     const karakas=ranked.map((k,i)=>({role:karakaNames[i],planet:k,degree:planets[k].degree,tied:ranked.some(x=>x!==k&&Math.abs(planets[x].degree-planets[k].degree)<1e-8)}));
     const now=astronomy(reference,input.latitude,input.longitude,input.ayanamsa),transits=KEYS.map(k=>{const p=placement(now.planets[k].sidereal);return {planet:k,...p,fromLagna:lagna?mod(p.sign-lagna.sign,12)+1:null,fromMoon:mod(p.sign-planets.Moon.sign,12)+1,bav:av&&av.bav[k]?av.bav[k][p.sign]:null,sav:av?av.sav[p.sign]:null};});
@@ -225,12 +255,15 @@
     const out={schema:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude:input.latitude,longitude:input.longitude,location:input.location||'',civil:input.civil?{...input.civil}:null,unknownTime:input.unknownTime},
       policy:{astronomy:'Astronomy Engine 2.1.19; geocentric apparent ecliptic of date',deltaT:'Swiss 2.10.03 Moshier monthly numeric model; future Delta T is a prediction',ayanamsa:input.ayanamsa,ayanamsaDegrees:raw.ayanamsa,meanAyanamsa:raw.meanAyanamsa,node:'mean',houses:'whole-sign',dashaYearDays:input.yearDays,vargas:'Parashari 16; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign',karakas:'7 grahas, no nodes',dignity:'degree-aware; Venus moolatrikona 0–15 Libra (PVR convention)',scope:'D1–D60, Vimshottari MD/AD/PD, graha/rasi drishti, BAV/SAV, dispositors, arudha, seven karakas, structural yogas; not a full Shadbala or Jaimini-dasha calculator'},
       julianDay:raw.jd,lagna,planets,houses,vargas,aspects:asp,relationships:rel,dispositors:dispositors(planets),ashtakavarga:av,arudhas:arudhas(planets,lagna&&lagna.sign),karakas,yogas:yogas(planets,lagna&&lagna.sign,asp),panchanga,dasha:dashas,transits,transitSnapshots};
-    out.sensitivity=timeSensitivity({...input,utc:birth},out,input.unknownTime?720:uncertainty);
+    out.policy.combustion='Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility';
+    out.policy.friendship='dignity friend/enemy labels: natural; relationships: compound; Gaja Kesari uses compound as in PVR';
+    out.naturalNatures=naturalNatures(planets);
+    out.sensitivity=timeSensitivity({...input,utc:birth,reference},out,input.unknownTime?720:uncertainty);
     out.sensitivity.angularCheckArcminutes=1;
     out.sensitivity.nearAngularBoundaries=[];
     KEYS.concat(lagna?['Lagna']:[]).forEach(k=>{const x=k==='Lagna'?lagna.longitude:planets[k].longitude;
       Object.keys(VARGAS).forEach(d=>{const left=varga(x-1/60,+d),right=varga(x+1/60,+d);if(left.sign!==right.sign)out.sensitivity.nearAngularBoundaries.push({key:k+'/D'+d,alternatives:[left.signName,right.signName]});});});
     return freeze(out);
   }
-  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
+  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
 })(typeof globalThis!=='undefined'?globalThis:this);

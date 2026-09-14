@@ -25,7 +25,7 @@
     return {engine:chart.schema,birth:chart.input,policy:chart.policy,topic:t.name,focusHouses:t.houses,focusVargas:t.vargas,
       lagna:chart.lagna,planets:chart.planets,houses:chart.houses,
       vargas:Object.values(chart.vargas).map(v=>({division:v.division,purpose:v.purpose,lagna:v.lagna&&v.lagna.signName,planets:C.KEYS.map(k=>({planet:k,sign:v.planets[k].signName,house:v.planets[k].house,vargottama:v.planets[k].vargottama}))})),
-      aspects:chart.aspects,dispositors:chart.dispositors,relationships:chart.relationships,arudhas:chart.arudhas,karakas:chart.karakas,yogas:chart.yogas,panchanga:chart.panchanga,
+      naturalNatures:chart.naturalNatures,aspects:chart.aspects,dispositors:chart.dispositors,relationships:chart.relationships,arudhas:chart.arudhas,karakas:chart.karakas,yogas:chart.yogas,panchanga:chart.panchanga,
       ashtakavarga:chart.ashtakavarga&&{bav:chart.ashtakavarga.bav,sav:chart.ashtakavarga.sav,total:chart.ashtakavarga.total,policy:chart.ashtakavarga.policy,signOrder:C.SIGNS},
       dasha:chart.input.unknownTime?{status:'時間未知：不輸出中午假設下的確定交運表'}:{yearDays:chart.dasha.yearDays,firstLord:chart.dasha.firstLord,balanceYears:chart.dasha.balanceYears,current:current&&{maha:{lord:current.maha.lord,start:iso(current.maha.start),end:iso(current.maha.end)},antar:{lord:current.antar.lord,start:iso(current.antar.start),end:iso(current.antar.end)},pratyantars:current.pratyantars.map(p=>({lord:p.lord,start:iso(p.start),end:iso(p.end),active:p===current.pratyantar}))},nextThreeYears:periods},
       transits:chart.transits,transitSnapshots:chart.transitSnapshots||[],sensitivity:chart.sensitivity};
@@ -47,10 +47,10 @@
 【本命解讀骨架】
 1. 先以 D1 上升與上升主確定整盤參照，沿上升主的掌宮、落宮、座性、尊貴、定位星與受照關係，說明命主如何實際行動。月亮及月宿描述習慣與感受，太陽描述主導和價值感；三者的支持或牴觸要整合，不給三份互不相干的個性清單。
 2. 每個問題選直接相關的宮位與宮主，區分自然象徵星和本盤功能宮主。天然吉曜仍可能承擔困難宮位；逆行不自動等於弱，落陷不等於一生失敗。宮主連到哪裡才是事情如何發生的路徑。空宮仍由宮主、受照與定位星分析。
-3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距是原始數值；若使用燃燒門檻，明示所用傳統門檻與順逆行版本。勿將未計算的完整 Shadbala 當現成分數。
+3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距與 solar 是已算的傳統角距判定；月 12°、火 17°、水順 14°／逆 12°、木 11°、金順 10°／逆 8°、土 15°。燃燒角距表示所採方法的近日狀態，不是精確偕日升落可見性。nearBoundary 或 motionSensitive 為真時，具體說明接近哪個分界。勿將未計算的完整 Shadbala 當現成分數。
 4. 同座先說共享哪個生活領域，再分析雙曜性質及各自掌宮如何協作或競爭；精確角距補充親近程度。同座和互容分開：互容是互入對方本垣，須追蹤交換的宮位與代價。沿 dispositors 找終點或循環，指出表面現象背後由哪顆星承接。
 5. graha drishti 為有方向的行星相位：七曜第七照，火星另第四／八，木星另第五／九，土星另第三／十。逐條區分 A 照 B 和 B 照 A；未相互照見不寫互相。rasi drishti 為另一套星座關係，兩者獨立命名。交點在此不安特殊行星相位，羅睺計都以落宮、同座、星座相位、月宿主與定位星看放大或抽離的方向。
-6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，寫出可逐項核對的條件，從本盤原始座位重查，不能看到名稱就套結果。
+6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，寫出可逐項核對的條件，從本盤原始座位重查，不能看到名稱就套結果。
 
 【九曜與宮位語彙：用於合成，不是單星斷語】
 ${Object.entries(PLANET_MEANINGS).map(([k,v])=>root.JYVedic.zh(k)+'：'+v).join('。\n')}。
@@ -61,7 +61,7 @@ ${HOUSE_MEANINGS.map((x,i)=>(i+1)+'宮：'+x).join('；')}。
 【十六分盤如何交叉判讀】
 D1 決定本命基本脈絡，依問題選分盤的專題鏡頭：D2 財富、D3 手足、D4 居所、D7 養育、D9 成熟與關係、D10 事業、D12 父母、D16 生活品質、D20 精神實踐、D24 教育、D27 強弱條件、D30 困難與修復、D40／45／60 細部參照。
 每張分盤以它自己的上升與宮主重新定位。先看主題宮／主題宮主，再看 D1 主題星進入該分盤的座位，區分重複支持、能力存在但代價增高、以及本命與專題不一致。D9 同座 Vargottama 表示本命與九分盤座性延續，成色仍看該座及功能角色。
-D2 採日月 Hora，D30 採不等區段，D60 從本命星座起算；不要改算成另一流派後混用。高分盤先看 sensitivity，出生時間變動就換宮／換座的項目要指出「哪項變動會改變哪個子結論」，用穩定結構完成主要分析。D60 不是用來證明前世事件的紀錄。
+D2 採日月 Hora，D30 採不等區段，D60 從本命星座起算；不要改算成另一流派後混用。高分盤先看 sensitivity，包括 dashaTiming 中出生時間區間對交運日期及當期運主的實際取樣變動；出生時間變動就換宮／換座的項目要指出「哪項變動會改變哪個子結論」，用穩定結構完成主要分析。D60 不是用來證明前世事件的紀錄。
 
 【運期與行運的合成】
 Vimshottari 從本命月宿取起運主。出生時第一大運已走過的部分保留在出生前，副運按完整大運比例分配，不能把剩餘大運重新分成九份。年長以 policy.dashaYearDays 為準。
@@ -74,7 +74,7 @@ ${t.guide}
 請選一個最有可能改變行動的替代解讀，用本盤真正的反向條件與可觀察的生活訊號比較。讓讀者知道你為何取主判，而不是列完優缺點就交還問題。最後給一個小型可逆行動：做什麼、何時檢查、看到什麼繼續或調整；檢查日屬行動規劃。若涉及與人對話，可給一句能實際說出口的話。
 
 【選品延伸】
-先完成原問句。需要時依已說清楚的生活需求推薦一種材料或飾品品類，以兩三句說明理由和搭配的一個行動；有不同理由再給替代選項。材料知識與傳統星曜／色彩象徵分開說，不宣稱礦石改變星位、人體缺礦物、保證療效或改變他人心意；不依庫存反推需求。沒有偏好、預算或材質資料時承認選擇條件，不能自造珠徑、價格或現貨。已有財务困難則以原有物品作提醒。一般情況最後保留：
+先完成原問句。需要時依已說清楚的生活需求推薦一種材料或飾品品類，以兩三句說明理由和搭配的一個行動；有不同理由再給替代選項。材料知識與傳統星曜／色彩象徵分開說，不宣稱礦石改變星位、人體缺礦物、保證療效或改變他人心意；不依庫存反推需求。沒有偏好、預算或材質資料時承認選擇條件，不能自造珠徑、價格或現貨。已有財務困難則以原有物品作提醒。一般情況最後保留：
 [靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)
 願你諸事順遂。
 
@@ -86,6 +86,7 @@ ${JSON.stringify(payload,null,1)}
 P.V.R. Narasimha Rao, Vedic Astrology: An Integrated Approach（尊貴、分盤、宮主、相位、Ashtakavarga、Vimshottari）：https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf
 Astronomy Engine 官方原始碼與精度設計：https://github.com/cosinekitty/astronomy
 Swiss Ephemeris 參照介面與恆星黃道政策：https://www.astro.com/swisseph/swephprg.htm
+Drik Panchang 公開的 Surya Siddhanta 燃燒角距與順逆行差異：木星 https://www.drikpanchang.com/planet/asta/guru-asta-date-time.html 、水星 https://www.drikpanchang.com/planet/asta/budha-asta-date-time.html 、金星 https://www.drikpanchang.com/planet/asta/shukra-asta-date-time.html
 本站已按書目核查並作數值對照；這不是作者認證，也不表示本輪接收提示詞的 AI 已即時查網。資料 scope 明示未計算的流派模組，不得把它們冒充已經算好的結果。請開始解讀。`;
   }
   root.JYVedicPrompt=Object.freeze({build,data,topics:TOPICS,houseMeanings:HOUSE_MEANINGS});

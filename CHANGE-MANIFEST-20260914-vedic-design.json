@@ -1,0 +1,362 @@
+{
+  "format": 1,
+  "date": "2026-09-14",
+  "description": "本輪印度占星介面、專屬過場、引擎及提示詞變更；不含未變更檔案。",
+  "applyTo": "2026-09-13 印度占星已更新版本",
+  "previousUpdateZip": "jingyue-vedic-update-20260913.zip",
+  "previousZipSha256": "3e668bec7624f32f9289ab482f5835d0d579bf22911fbc52c85dcddcc29f227d",
+  "engineSchema": "jy-vedic-1.1.0",
+  "cache": "jy-main-v80",
+  "validation": {
+    "npmTestExitCode": 0,
+    "vedicCoreGroupsPassed": 27,
+    "browserScenariosPassed": 25
+  },
+  "deleted": [],
+  "files": [
+    {
+      "path": "CSS/vedic.css",
+      "status": "modified",
+      "bytes": 42963,
+      "sha256": "d3fc456abebfcc90ae266b52d7c440e0b09774e941668478054aa389c3cb2bb7",
+      "beforeSha256": "5ddb8edce90c63420a438cda01d9817d4d7ea4b2f5e383776474bef5a063a7c3"
+    },
+    {
+      "path": "JS/sw.js",
+      "status": "modified",
+      "bytes": 4611,
+      "sha256": "948ffb6b35afbb52ba1e1fc337ad3164d6b4e0f88e32d7e74a01df4583082e72",
+      "beforeSha256": "4b49772c3164b12ef388c2374b183b7b9caf7a9b87344df8a779c5410196cb20"
+    },
+    {
+      "path": "JS/vedic-engine.js",
+      "status": "modified",
+      "bytes": 30008,
+      "sha256": "4e7de2cb9b5e8c935ff311152483a21cf76accdd9295b75d067059bd51eb5c4f",
+      "beforeSha256": "ac57aacf2fc000dbe428d540967894d2d8f58dd861151ea5bdc02bce2921c6fd"
+    },
+    {
+      "path": "JS/vedic-picker.js",
+      "status": "added",
+      "bytes": 12268,
+      "sha256": "5b6aef3e934cb4f0548ffbcec36da2da15417a20d0e128dbb30c3e1060f31683",
+      "beforeSha256": null
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "status": "modified",
+      "bytes": 19007,
+      "sha256": "2b3f4c46817f5dadeb06dd03185cace46026f03e623571e207bef7fa7c2c811a",
+      "beforeSha256": "a0f2d49bd3889064dceb40ede0f981a8172738830f6b6725fda82850b6e9a756"
+    },
+    {
+      "path": "JS/vedic-ritual.js",
+      "status": "added",
+      "bytes": 6276,
+      "sha256": "32068cc983af5fc21c70374b55873748d7f671103eb868006adb808c6179f2f7",
+      "beforeSha256": null
+    },
+    {
+      "path": "JS/vedic-scene-src.mjs",
+      "status": "added",
+      "bytes": 8321,
+      "sha256": "605feef8d77bd5fc51f74771c4193634f87d5690a32912295fda0f9f35fc9fa3",
+      "beforeSha256": null
+    },
+    {
+      "path": "JS/vedic-scene.js",
+      "status": "added",
+      "bytes": 587717,
+      "sha256": "09a11a265722c9e9b3f5e3401b50770b5fb8d7f638c16a20228ea13e78961e44",
+      "beforeSha256": null
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "status": "modified",
+      "bytes": 39981,
+      "sha256": "2c93816d731c92b6406e5804b7802a20d5ba1789db3cd6244ce0bc3486e59526",
+      "beforeSha256": "f4355098052612c006b5438660bdd44ac873513730aa481d37f4fd3587a45ca2"
+    },
+    {
+      "path": "UPDATE-20260914-vedic-design.md",
+      "status": "added",
+      "bytes": 2275,
+      "sha256": "ff09117350e8c942417b25ea1b7cae5df4a2fb90eb41dbd65cfb01839083d174",
+      "beforeSha256": null
+    },
+    {
+      "path": "assets/fonts/noto-sans-devanagari-400.woff2",
+      "status": "added",
+      "bytes": 50416,
+      "sha256": "f86f14cbd1004f5795689ee9cc70d5d87d915f5135b30283525c1c7b8f0eb192",
+      "beforeSha256": null
+    },
+    {
+      "path": "assets/fonts/noto-sans-devanagari-LICENSE.txt",
+      "status": "added",
+      "bytes": 4384,
+      "sha256": "79c44862256af9a67fc23df7c45ae289e730c7f6d4f8fb8ef593bd3c314b6d6d",
+      "beforeSha256": null
+    },
+    {
+      "path": "assets/ui/vedic-jaali.svg",
+      "status": "added",
+      "bytes": 15572,
+      "sha256": "293b89f67af3f68674ff73e3157c52a1e97edee397057d7a5736afd12988420a",
+      "beforeSha256": null
+    },
+    {
+      "path": "docs/vedic-design-20260914.md",
+      "status": "added",
+      "bytes": 10619,
+      "sha256": "947143adbe74121e447f95e802903e2a41d2ee2084d5dff2372a22f4e37fff90",
+      "beforeSha256": null
+    },
+    {
+      "path": "index.html",
+      "status": "modified",
+      "bytes": 145440,
+      "sha256": "ca360f4b2cc9ab66ec1288b4bdda3baa21068f7b336ebd2679fb2269a25dc0dd",
+      "beforeSha256": "9bb8d1812370d8e05ac5f1a0beeaf3f3f7af1188f3c643401c7fb381a3a31c52"
+    },
+    {
+      "path": "package.json",
+      "status": "modified",
+      "bytes": 3427,
+      "sha256": "fe6347c1c1b6161e67e89f6924573c1d4a5a3273afe11850f96a398377b3a0a2",
+      "beforeSha256": "46d1cee30d74f0f653dcf79f5e305df23f9de64195a9bb19813ec541bf178bef"
+    },
+    {
+      "path": "review/accuracy-prompts/02-ootk-five-operations.txt",
+      "status": "modified",
+      "bytes": 46396,
+      "sha256": "151f86abda00551026b4b8c7eae80811c3159dfa75129d263d7647b0ddf5ec94",
+      "beforeSha256": "03d8264a68dbd836760a5bb186a3cc9b6e3d9f734f66c0c8dfd556f344222b32"
+    },
+    {
+      "path": "review/accuracy-prompts/INPUTS.json",
+      "status": "modified",
+      "bytes": 1059229,
+      "sha256": "78883e85b14abd98ffff5cf8c0f19a21171cc2b7f14d21553681cf8cc7d709cb",
+      "beforeSha256": "e3d69f457053e69e9952133484b55080fccb66ca2a2563291e6adbdf25669643"
+    },
+    {
+      "path": "review/vedic-design-20260914/01-mobile-form.png",
+      "status": "added",
+      "bytes": 154520,
+      "sha256": "daecadafa7e0b704f1837d926ed4c1d1df0a9001f04496866eb1d453e752a6e9",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/02-date-picker.png",
+      "status": "added",
+      "bytes": 79144,
+      "sha256": "e4d703816521cb473b2bfbb93da5e2e906388e1a1171b1efe73d368e5b6fdc0d",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/03-time-picker.png",
+      "status": "added",
+      "bytes": 87166,
+      "sha256": "78a57e474a543c91aa30c5e382838b8af7cf2fd190a6e1360b50641a66482b68",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/04-ceremony-stations.png",
+      "status": "added",
+      "bytes": 320752,
+      "sha256": "2acc68810df4f7532cc3e0330221694075ca254f5255275c35427e1d1e6e7a33",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/05-ceremony-grahas.png",
+      "status": "added",
+      "bytes": 324541,
+      "sha256": "3b458559e93c3007f2039840b7016ea969741e9a54357a9148840bdde0e8aca8",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/06-ceremony-kundali.png",
+      "status": "added",
+      "bytes": 276919,
+      "sha256": "859f2c1be765abb6f64d9adb5ce90bc81d8c5fcbf69a1bc6c57cf5856f6956c0",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/07-result-chart.png",
+      "status": "added",
+      "bytes": 129946,
+      "sha256": "3dd46f07d326f721f9c3498ce152ccd3cc9edf078a71f817fa0924fb080efafb",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/08-north-chart.png",
+      "status": "added",
+      "bytes": 139577,
+      "sha256": "4dc07595ef18aa7b6b04cae38ba7fb0b065da69ea10b08d09a485fc084b800f9",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/09-d9-chart.png",
+      "status": "added",
+      "bytes": 141394,
+      "sha256": "73893fbb2962c948f92afeafbb3ec15c35e7f4c935ceba85b6120a31c1d82ef1",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/10-south-chart.png",
+      "status": "added",
+      "bytes": 150414,
+      "sha256": "ed68eba2f3a643ec74a3234b7b1b0bf5cac0d9c77553d591c0639c860643a61d",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/11-nine-grahas.png",
+      "status": "added",
+      "bytes": 94452,
+      "sha256": "7abc9dc5b703843bed66a1d80383b136df2471d9ef8c6939d9f1633ae8ffbd17",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/12-dasha.png",
+      "status": "added",
+      "bytes": 117752,
+      "sha256": "ad57636fbd39afc3c1d8d94261bd7450dd7d824bf8cbada3eb87c1374a85361c",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/13-selected-pratyantar.png",
+      "status": "added",
+      "bytes": 58534,
+      "sha256": "f36bf3bdbe4bc5007ddf90f349e7ee368b6fb2b472790ea75f79eee46a502dd4",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/14-reading-copy.png",
+      "status": "added",
+      "bytes": 167359,
+      "sha256": "50185339a1df883dcfb62e487a0a681fd08449519944270ec43163f1282a1125",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/15-desktop-chart.png",
+      "status": "added",
+      "bytes": 306449,
+      "sha256": "dc448a8e1f61218001b5dc5c85517fe57ba6f4ea20f98f0b51e570d807c3b242",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/16-reduced-motion.png",
+      "status": "added",
+      "bytes": 276919,
+      "sha256": "859f2c1be765abb6f64d9adb5ce90bc81d8c5fcbf69a1bc6c57cf5856f6956c0",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/17-webgl-fallback.png",
+      "status": "added",
+      "bytes": 289819,
+      "sha256": "8599b9f1f17f49b22e6521ab4624227ca25aef85911970674ab5eeda17b33626",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/18-unknown-time.png",
+      "status": "added",
+      "bytes": 92614,
+      "sha256": "18934a8370e94ef31518ae940803a3c0767577b638abe90a4b10e643799f2f67",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/browser-smoke.json",
+      "status": "added",
+      "bytes": 911,
+      "sha256": "f32ba9835adb32a6fc93d8c5ccc42bc99de5f6803f450024ec24768ced62d08f",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/browser-verification.log",
+      "status": "added",
+      "bytes": 790,
+      "sha256": "ba6e907566d1ef51c9ee9bc9728ef69b3dafe0c73617bc285f9c4b063bca59f0",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/design-engine-tests.json",
+      "status": "added",
+      "bytes": 2360,
+      "sha256": "3952a9ba221a639e90613b6e6461dbeb09ee5332fa3f28cf646038f0b7137aec",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/engine-tests.json",
+      "status": "added",
+      "bytes": 2480,
+      "sha256": "418eb00ced185f34c659c1a518688b2ff8d3d79dfd545e4d902ac8777d25a2a0",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/example-chart.json",
+      "status": "added",
+      "bytes": 140361,
+      "sha256": "a85c7df1fb028c77869fa31e8e29698a7bc8a82fd984187e5a0d69544645dfc7",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/example-reading-prompt.txt",
+      "status": "added",
+      "bytes": 86303,
+      "sha256": "35ae045cf5f3da8e5ee3a0516efec835830b96ccf184d9dfc899ea30a1da7f83",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/full-regression.log",
+      "status": "added",
+      "bytes": 61033,
+      "sha256": "bf3e9d357c34a1e0d756c4ac4c7b94b7b80bdde8b67a7ba4814f6a9c3cade3b9",
+      "beforeSha256": null
+    },
+    {
+      "path": "review/vedic-design-20260914/verification-summary.json",
+      "status": "added",
+      "bytes": 1875,
+      "sha256": "e2a26d2495303fa1cb5fa2989ab27b7439c635a9b19ade255791596ca101c0e7",
+      "beforeSha256": null
+    },
+    {
+      "path": "scripts/build-vedic-scene.mjs",
+      "status": "added",
+      "bytes": 471,
+      "sha256": "857a72ffb583d22dd4b3970455b55feca22a4eb7f19dde2d5693baf1dfe21b95",
+      "beforeSha256": null
+    },
+    {
+      "path": "sw.js",
+      "status": "modified",
+      "bytes": 4611,
+      "sha256": "948ffb6b35afbb52ba1e1fc337ad3164d6b4e0f88e32d7e74a01df4583082e72",
+      "beforeSha256": "4b49772c3164b12ef388c2374b183b7b9caf7a9b87344df8a779c5410196cb20"
+    },
+    {
+      "path": "tests/reading-depth-20260912.cjs",
+      "status": "modified",
+      "bytes": 15300,
+      "sha256": "76566addec62e82cef179aadf90e09a773648e3cdd1ecaad5a0fd86464902cf3",
+      "beforeSha256": "3df98e02589422f6236993b16c0e170d7d77b9cb9a12cd70089adcf70dc03f5f"
+    },
+    {
+      "path": "tests/vedic-browser-20260914.cjs",
+      "status": "added",
+      "bytes": 17147,
+      "sha256": "5955de07b60b0ae344287e4044d95b8662d5ce7894bece8a81ed0c563959fab6",
+      "beforeSha256": null
+    },
+    {
+      "path": "tests/vedic-design-20260914.cjs",
+      "status": "added",
+      "bytes": 10844,
+      "sha256": "284a285c635cbe86f25ba2d5aa08860ea89631629289f14b318144425fe9a1fe",
+      "beforeSha256": null
+    }
+  ],
+  "manifestNote": "本清單不列自己的雜湊，ZIP 內另含本清單。"
+}

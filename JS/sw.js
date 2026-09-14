@@ -18,7 +18,8 @@
 // v74: 20260912accuracy1 來源校核、曆法安星與各入口版本同步。
 // v78: 20260913output1 坐根／通根、原生牌面模式及體用資料一致性。
 // v79: 20260913vedic1 九曜星殿、獨立 Jyotisha 核心與三層運期。
-const CACHE_NAME = 'jy-main-v79';
+// v80: 20260914sanctum1 印度命盤工作區、獨立 3D 星殿與曆時選擇器。
+const CACHE_NAME = 'jy-main-v80';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

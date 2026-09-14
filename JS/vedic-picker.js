@@ -1,0 +1,59 @@
+/* Local civil date/time editor. No UTC conversion and no native OS picker. */
+(function(root){
+  'use strict';
+  const D=root.document,pad=n=>String(n).padStart(2,'0');
+  const days=(y,m)=>new Date(Date.UTC(y,m,0)).getUTCDate();
+  function validDate(value){const a=/^(\d{4})-(\d{2})-(\d{2})$/.exec(value||'');return !!a&&+a[1]>=1900&&+a[1]<=2100&&+a[2]>=1&&+a[2]<=12&&+a[3]>=1&&+a[3]<=days(+a[1],+a[2]);}
+  function validTime(value){return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value||'');}
+  let modal=null,resolve=null,returnFocus=null,state=null,frame=0,timers=[],opening=false;
+  function finish(value){if(!modal)return;const done=resolve;resolve=null;timers.forEach(clearTimeout);timers=[];cancelAnimationFrame(frame);const node=modal;modal=null;try{node.close();}catch(_){}node.remove();if(returnFocus&&returnFocus.isConnected)returnFocus.focus({preventScroll:true});if(done)done(value);}
+  function open(type,value,options={}){
+    if(modal)finish(null);returnFocus=D.activeElement;state={type,value,valid:type==='time'?validTime(value):validDate(value),mode:'days',yearValid:true,...options};
+    const seed=validDate(value)?value:'1990-01-01';[state.year,state.month,state.day]=seed.split('-').map(Number);state.hour=validTime(value)?+value.slice(0,2):null;state.minute=validTime(value)?+value.slice(3):null;
+    modal=D.createElement('dialog');modal.id='vd-picker';modal.className='vd-modal';modal.setAttribute('aria-labelledby','vdp-title');
+    modal.innerHTML='<div class="vdp-head"><div><span class="vd-kicker">JANMA · 出生座標</span><h2 id="vdp-title">'+(type==='time'?'設定出生時間':options.title||'選擇出生日期')+'</h2></div><button type="button" data-pick="cancel" class="vd-icon-button" aria-label="取消選擇">×</button></div><div id="vdp-body"></div><p id="vdp-status" class="vdp-status" aria-live="polite"></p><footer class="vdp-footer"><button type="button" data-pick="cancel">取消</button><button type="button" data-pick="save" class="vd-primary">確認'+(type==='time'?'時間':'日期')+' →</button></footer>';
+    D.body.appendChild(modal);modal.addEventListener('cancel',e=>{e.preventDefault();finish(null);});modal.addEventListener('click',click);modal.addEventListener('keydown',keydown);modal.addEventListener('input',input);
+    if(type==='time')renderTime();else renderDate();try{modal.showModal();}catch(_){modal.setAttribute('open','');modal.classList.add('vd-modal-fallback');}
+    const field=modal.querySelector(type==='time'?'[data-hour-input]':'[data-year-input]');if(field)field.focus({preventScroll:true});
+    return new Promise(r=>{resolve=r;});
+  }
+  function update(){if(!modal)return;const value=state.type==='time'?(state.hour==null||state.minute==null?'':pad(state.hour)+':'+pad(state.minute)):state.year+'-'+pad(state.month)+'-'+pad(state.day);
+    state.value=value;state.valid=state.type==='time'?validTime(value):validDate(value)&&state.valid&&state.yearValid;
+    modal.querySelector('[data-pick="save"]').disabled=!state.valid;
+    D.getElementById('vdp-status').textContent=state.valid?(state.type==='time'?(state.hour<12?'上午':'下午')+' '+(state.hour%12||12)+' 點 '+pad(state.minute)+' 分 · 24 小時制':state.year+' 年 '+state.month+' 月 '+state.day+' 日'):(state.type==='time'?'分別選擇小時與分鐘，可滑動或直接輸入。':state.yearValid===false?'請輸入 1900–2100 的完整四位數年份。':'可直接輸入西元年份，再選擇月份與日期。');
+  }
+  function renderDate(){
+    const host=D.getElementById('vdp-body'),first=new Date(Date.UTC(state.year,state.month-1,1)).getUTCDay(),count=days(state.year,state.month),selected=state.valid?state.day:1;
+    host.innerHTML='<div class="vdp-date-controls"><label>西元年份<input data-year-input inputmode="numeric" autocomplete="off" maxlength="4" aria-label="西元年份" value="'+state.year+'"></label><div><span>月份</span><button type="button" data-pick="months" aria-expanded="'+(state.mode==='months')+'">'+pad(state.month)+' 月 <small>⌄</small></button></div></div>'+
+      '<div class="vdp-calendar-nav"><button type="button" data-pick="prev" aria-label="上一月">‹</button><button type="button" data-pick="years" aria-label="展開年份選單">'+state.year+' 年 '+state.month+' 月</button><button type="button" data-pick="next" aria-label="下一月">›</button></div>'+
+      (state.mode==='months'?'<div class="vdp-choice-grid" aria-label="月份">'+Array.from({length:12},(_,i)=>'<button type="button" data-month="'+(i+1)+'" aria-pressed="'+(state.month===i+1)+'">'+(i+1)+' 月</button>').join('')+'</div>':state.mode==='years'?'<div class="vdp-year-nav"><button type="button" data-year-page="-12" aria-label="前十二年">←</button><span>'+state.yearPage+'—'+Math.min(2100,state.yearPage+11)+'</span><button type="button" data-year-page="12" aria-label="後十二年">→</button></div><div class="vdp-choice-grid" aria-label="年份">'+Array.from({length:12},(_,i)=>state.yearPage+i).filter(y=>y>=1900&&y<=2100).map(y=>'<button type="button" data-year="'+y+'" aria-pressed="'+(state.year===y)+'">'+y+'</button>').join('')+'</div>':'<table class="vdp-calendar" role="grid" aria-label="'+state.year+' 年 '+state.month+' 月"><thead><tr>'+['日','一','二','三','四','五','六'].map(w=>'<th scope="col">'+w+'</th>').join('')+'</tr></thead><tbody>'+Array.from({length:Math.ceil((first+count)/7)},(_,row)=>'<tr>'+Array.from({length:7},(_,col)=>{const d=row*7+col-first+1;return d<1||d>count?'<td></td>':'<td aria-selected="'+(state.valid&&d===state.day)+'"><button type="button" data-day="'+d+'" tabindex="'+(d===selected?'0':'-1')+'" aria-label="'+state.year+' 年 '+state.month+' 月 '+d+' 日">'+d+'</button></td>';}).join('')+'</tr>').join('')+'</tbody></table>');update();
+  }
+  function renderTime(){
+    D.getElementById('vdp-body').innerHTML='<div class="vdp-clock-face"><div class="vdp-clock-halo" aria-hidden="true"></div><div class="vdp-clock-inputs"><label><span>小時 · 00–23</span><input data-hour-input inputmode="numeric" maxlength="2" autocomplete="off" placeholder="--" aria-label="出生小時，24 小時制" value="'+(state.hour==null?'':pad(state.hour))+'"></label><b aria-hidden="true">:</b><label><span>分鐘 · 00–59</span><input data-minute-input inputmode="numeric" maxlength="2" autocomplete="off" placeholder="--" aria-label="出生分鐘" value="'+(state.minute==null?'':pad(state.minute))+'"></label></div></div><div class="vdp-wheels">'+['hour','minute'].map((key,i)=>'<div class="vdp-wheel-shell"><div class="vdp-wheel" data-wheel="'+key+'" role="group" aria-label="'+(i?'分鐘':'小時')+'滾動選單">'+Array.from({length:i?60:24},(_,n)=>'<button type="button" data-'+key+'="'+n+'" aria-pressed="'+(state[key]===n)+'" tabindex="'+(n===(state[key]??0)?0:-1)+'">'+pad(n)+'</button>').join('')+'</div></div>').join('')+'</div>';
+    opening=true;frame=requestAnimationFrame(()=>{if(!modal)return;modal.querySelectorAll('[data-wheel]').forEach(w=>{w.scrollTop=(state[w.dataset.wheel]||0)*44;let timer;w.addEventListener('scroll',()=>{clearTimeout(timer);if(opening)return;timer=setTimeout(()=>{if(!modal)return;const key=w.dataset.wheel,n=Math.max(0,Math.min(key==='hour'?23:59,Math.round(w.scrollTop/44)));setTime(key,n,false);},130);timers.push(timer);},{passive:true});});timers.push(setTimeout(()=>opening=false,180));});update();
+  }
+  function markTime(key){modal.querySelectorAll('[data-'+key+']').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset[key]===state[key]));b.tabIndex=+b.dataset[key]===(state[key]??0)?0:-1;});}
+  function setTime(key,n,scroll=true){state[key]=n;const field=modal.querySelector(key==='hour'?'[data-hour-input]':'[data-minute-input]');field.value=n==null?'':pad(n);markTime(key);if(scroll&&n!=null)modal.querySelector('[data-wheel="'+key+'"]').scrollTo({top:n*44,behavior:'instant'});update();}
+  function input(e){
+    if(e.target.hasAttribute('data-year-input')){const y=Number(e.target.value);if(/^\d{4}$/.test(e.target.value)&&y>=1900&&y<=2100){state.year=y;state.yearValid=true;state.day=Math.min(state.day,days(y,state.month));state.valid=true;state.mode='days';renderDate();const f=modal.querySelector('[data-year-input]');f.focus();f.setSelectionRange(4,4);}else{state.yearValid=false;state.valid=false;update();}}
+    if(e.target.hasAttribute('data-hour-input')||e.target.hasAttribute('data-minute-input')){const key=e.target.hasAttribute('data-hour-input')?'hour':'minute',v=e.target.value;if(!/^\d{1,2}$/.test(v)||+v>(key==='hour'?23:59)){state[key]=null;markTime(key);update();return;}state[key]=+v;markTime(key);opening=true;modal.querySelector('[data-wheel="'+key+'"]').scrollTop=+v*44;timers.push(setTimeout(()=>opening=false,180));update();}
+  }
+  function moveDate(delta){const d=new Date(Date.UTC(state.year,state.month-1,state.day+delta));if(d.getUTCFullYear()<1900||d.getUTCFullYear()>2100)return;state.year=d.getUTCFullYear();state.month=d.getUTCMonth()+1;state.day=d.getUTCDate();state.valid=true;renderDate();modal.querySelector('[data-day="'+state.day+'"]').focus();}
+  function moveMonth(delta){let m=state.month-1+delta,y=state.year+Math.floor(m/12);if(y<1900||y>2100)return;state.year=y;state.month=((m%12)+12)%12+1;state.day=Math.min(state.day,days(y,state.month));state.mode='days';renderDate();}
+  function click(e){const b=e.target.closest('button');if(!b)return;const a=b.dataset.pick;if(state.type==='date'&&state.yearValid===false&&a!=='cancel'&&a!=='save'){update();modal.querySelector('[data-year-input]').focus();return;}
+    if(a==='cancel')finish(null);else if(a==='save'){update();if(state.valid)finish(state.value);}else if(a==='months'){state.mode=state.mode==='months'?'days':'months';renderDate();}else if(a==='years'){state.mode=state.mode==='years'?'days':'years';state.yearPage=Math.max(1900,Math.min(2089,state.year-5));renderDate();}else if(a==='prev'||a==='next')moveMonth(a==='prev'?-1:1);
+    else if(b.dataset.month){state.month=+b.dataset.month;state.day=Math.min(state.day,days(state.year,state.month));state.valid=true;state.mode='days';renderDate();}
+    else if(b.dataset.year){state.year=+b.dataset.year;state.day=Math.min(state.day,days(state.year,state.month));state.valid=true;state.mode='days';renderDate();}
+    else if(b.dataset.yearPage){state.yearPage=Math.max(1900,Math.min(2089,state.yearPage+(+b.dataset.yearPage)));renderDate();}
+    else if(b.dataset.day){state.day=+b.dataset.day;state.valid=true;renderDate();modal.querySelector('[data-day="'+state.day+'"]').focus();}
+    else if(b.dataset.hour!=null)setTime('hour',+b.dataset.hour);else if(b.dataset.minute!=null)setTime('minute',+b.dataset.minute);
+  }
+  function keydown(e){
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish(null);return;}
+    if(e.key==='Tab'){const a=[...modal.querySelectorAll('button,input')].filter(x=>!x.disabled&&x.tabIndex>=0&&x.getClientRects().length);if(e.shiftKey&&D.activeElement===a[0]){e.preventDefault();a.at(-1).focus();}else if(!e.shiftKey&&D.activeElement===a.at(-1)){e.preventDefault();a[0].focus();}}
+    if(e.target.dataset.hour!=null||e.target.dataset.minute!=null){const k=e.target.dataset.hour!=null?'hour':'minute',max=k==='hour'?23:59,n=+e.target.dataset[k];if(['ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?max:Math.max(0,Math.min(max,n+(e.key==='ArrowUp'?-1:1)));setTime(k,next);modal.querySelector('[data-'+k+'=\"'+next+'\"]').focus({preventScroll:true});return;}}
+    if(e.target.dataset.day&&state.yearValid===false){e.preventDefault();modal.querySelector('[data-year-input]').focus();return;}
+    if(e.target.dataset.day){const n={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7};if(n[e.key]){e.preventDefault();moveDate(n[e.key]);}else if(e.key==='PageUp'||e.key==='PageDown'){e.preventDefault();moveMonth((e.key==='PageUp'?-1:1)*(e.shiftKey?12:1));modal.querySelector('[data-day="'+state.day+'"]').focus();}else if(e.key==='Home'||e.key==='End'){e.preventDefault();const dow=new Date(Date.UTC(state.year,state.month-1,state.day)).getUTCDay();moveDate(e.key==='Home'?-dow:6-dow);}}
+  }
+  root.JYVedicPicker=Object.freeze({open,close:()=>finish(null),isOpen:()=>!!modal,validDate,validTime,days});
+})(window);
