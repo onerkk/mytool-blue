@@ -1,0 +1,153 @@
+/* Navagraha Palace — carved brass, peacock enamel, lapis and illuminated stone.
+   Presentation only. The chart's twelve cells and native readings are untouched. */
+#vedic-page,.vd-modal{--vd-gold:#ebce94;--vd-line:#b58d4f66;--vd-ink:#09121c;--vd-muted:#b2c2c9;--vd-text:#f6eddb}
+#vedic-page{background:#09131d}
+#vedic-page:before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,#07121b2b,#08151ccc 58%,#07131cf5),url('../assets/ui/vedic-palace-20260914.webp') center top/cover no-repeat}
+#vedic-page .vd-header{background:linear-gradient(110deg,#0b222cf5,#0d1520f5 50%,#142730f5);border-bottom:1px solid #caad705e;box-shadow:inset 0 -3px 0 #020810,0 3px 0 #a9874633,0 12px 25px #0005;backdrop-filter:blur(16px)}
+#vedic-page .vd-brand{color:#f3d496;text-shadow:0 2px 2px #000;letter-spacing:.15em}
+#vedic-page .vd-brand svg{width:34px;height:34px;padding:5px;border:1px solid #d3b3759c;border-radius:50%;background:radial-gradient(at 25% 20%,#798f80,#113c40 44%,#051b22);box-shadow:inset 1px 2px 3px #fff4,0 2px 0 #765432,0 5px 9px #0008;color:#ffdf9e}
+#vedic-page .vd-brand small{color:#b7ac8f;letter-spacing:.23em}
+#vedic-page .vd-back,#vedic-page .vd-motion{border:1px solid #b19b6f6b;padding:8px 13px;min-height:39px;border-radius:9px;background:linear-gradient(145deg,#354742,#15242e 50%,#0d1823);box-shadow:inset 0 1px 0 #fff3,inset 0 -2px 0 #0008,0 3px 0 #04090e,0 5px 9px #0004;color:#e5c991}
+#vedic-page .vd-wrap{padding-top:0}
+#vedic-page .vd-entry-heading,#vedic-page .vd-result-heading{position:relative;isolation:isolate;min-height:236px;margin:0 -15px 27px;padding:35px 25px 29px;overflow:hidden;border-bottom:1px solid #cfae6466;background:linear-gradient(90deg,#04101ac7,transparent 75%)}
+#vedic-page .vd-entry-heading:before,#vedic-page .vd-result-heading:before{content:'';position:absolute;inset:8px 8px 0;border:1px solid #c5a36355;border-bottom:0;border-radius:110px 110px 0 0;pointer-events:none;z-index:-1;box-shadow:inset 0 0 0 4px #050e1880,inset 0 0 0 5px #bd945925,0 12px 40px #0004}
+#vedic-page .vd-entry-heading h1,#vedic-page .vd-result-heading h1{font-size:40px;line-height:1.4;color:#f7e6b6;text-shadow:0 2px 1px #201404,0 5px 22px #000;letter-spacing:.07em}
+#vedic-page .vd-entry-heading h1 span{color:#dcbb7c;font-size:23px}
+#vedic-page .vd-entry-heading p,#vedic-page .vd-result-heading p{color:#d0d0c8;text-shadow:0 2px 9px #000}
+#vedic-page .vd-entry-heading .vd-kicker,#vedic-page .vd-result-heading .vd-kicker{color:#f0c986;letter-spacing:.18em;text-shadow:0 2px 8px #000}
+#vedic-page .vd-entry-seal{width:142px;height:160px;justify-content:center;border-radius:48% 48% 18px 18px;background:radial-gradient(at 26% 17%,#6379707a,#072b34 48%,#040e1d);border:2px solid #b38d51;box-shadow:inset 0 0 0 3px #060d16,inset 0 0 0 4px #dec58c88,inset 0 14px 18px #fff1,0 6px 0 #5b4429,0 10px 0 #06121b,0 20px 22px #0008;transform:perspective(600px) rotateY(-14deg);position:relative}
+#vedic-page .vd-entry-seal svg{width:100px;height:100px;border:1px solid #b69b5b;box-shadow:0 0 0 4px #101c24,0 0 0 5px #d4b57955;filter:drop-shadow(0 4px 2px #0008)}
+#vedic-page .vd-entry-seal span{font-size:7px;color:#e6c386;letter-spacing:.1em}
+#vedic-page .vd-entry-art{border:2px solid #bca16b;box-shadow:inset 0 0 0 6px #061321,0 0 0 4px #8b673144,0 11px 0 #030b12,0 20px 36px #0009}
+#vedic-page .vd-form,#vedic-page .vd-detail,#vedic-page .vd-pratyantar-panel,#vedic-page .vd-reading-question,#vedic-page .vd-copy-panel{position:relative;border:1px solid #af935a85;border-radius:20px 5px 20px 5px;background:radial-gradient(ellipse at 0 0,#47605e44,transparent 55%),linear-gradient(125deg,#16333af2,#0d202dfc 42%,#091523fa);box-shadow:inset 0 1px 1px #ffefbd4a,inset 0 0 0 4px #091521,inset 0 0 0 5px #bda06432,0 5px 0 #020a10,0 8px 0 #8c6a3029,0 17px 35px #0007}
+#vedic-page .vd-form:after,#vedic-page .vd-detail:after,#vedic-page .vd-pratyantar-panel:after,#vedic-page .vd-copy-panel:after{content:'✧';position:absolute;right:11px;top:8px;color:#c8a9708c;font:20px Georgia;pointer-events:none}
+#vedic-page .vd-form-title{gap:17px}
+#vedic-page .vd-number{background:radial-gradient(at 28% 17%,#c5b17a 0,#416467 28%,#0d343a 58%,#061c28 80%);border:2px solid #c3a571;box-shadow:inset 1px 2px 3px #fff6,inset -2px -3px 4px #000a,0 2px 0 #362918,0 4px 0 #8c693c,0 7px 10px #0008;color:#ffdfa4;text-shadow:0 2px 1px #020b16}
+#vedic-page .vd-birth-control{background:radial-gradient(ellipse at 14% 0,#687f7666,transparent 60%),linear-gradient(120deg,#264248,#0d2634 55%,#10202b);border-color:#b1a1778c;border-radius:12px;box-shadow:inset 0 1px 1px #fff5,inset 0 0 0 3px #020d1966,inset 0 0 0 4px #b69b6740,0 4px 0 #030b12,0 6px 0 #75603577,0 10px 18px #0005}
+#vedic-page .vd-birth-control>svg{width:35px;height:35px;padding:7px;border-radius:50%;color:#ffe0a4;border:1px solid #e0c68c66;background:radial-gradient(at 20% 10%,#8e968480,#203f42 40%,#07131e);box-shadow:0 3px 5px #0008,inset 0 1px 1px #fff3}
+#vedic-page .vd-birth-control b{color:#f7deaf;font-weight:400;font-family:'Noto Serif TC',serif}
+#vedic-page input:not([type=checkbox]),#vedic-page select,#vedic-page textarea{background-color:#071925;border-color:#7a8c7b78;box-shadow:inset 0 2px 5px #0006,0 1px 0 #d5bc8230}
+#vedic-page .vd-primary,#vd-picker .vd-primary,#vd-ceremony .vd-primary{background:linear-gradient(112deg,#ffedb6 0,#d6b174 26%,#f8d99d 44%,#d7ac68 65%,#f1d49a 86%,#bb8646);border:1px solid #fff0bb;border-radius:12px;color:#132126;text-shadow:0 1px 0 #fffa;font-weight:700;box-shadow:inset 0 0 0 3px #fff0af60,inset 0 2px 1px #fff9,inset 0 -3px 1px #9a67239c,0 5px 0 #765225,0 7px 0 #d2ac6555,0 14px 23px #0008;overflow:hidden}
+#vedic-page .vd-primary:after,#vd-ceremony .vd-primary:after{content:'';pointer-events:none;position:absolute;inset:0;background:linear-gradient(112deg,transparent 25%,#fff6 46%,transparent 62%);transform:translateX(-130%);animation:vd-palace-gleam 8s 2s ease-in-out infinite}
+#vedic-page button:active:not(:disabled),#vd-picker button:active:not(:disabled),#vd-ceremony button:active:not(:disabled){transform:translateY(2px)}
+#vedic-page .vd-result-heading{align-items:flex-start;justify-content:center;flex-direction:column;gap:15px;min-height:224px}
+#vedic-page .vd-result-heading h1{font-size:36px}
+#vedic-page .vd-result-actions{display:flex;gap:10px}
+#vedic-page .vd-result-actions button{border:1px solid #d2b27280;background:linear-gradient(140deg,#2d474ae6,#0a1b2ae6);border-radius:7px;min-height:36px;box-shadow:inset 0 1px 0 #ffe3a44f,0 3px 0 #020b14,0 6px 10px #0005;color:#efd29b;padding:7px 13px}
+#vedic-page .vd-summary{gap:12px;padding:0;border:0;background:none;box-shadow:none;margin:0 0 27px}
+#vedic-page .vd-summary>div,#vedic-page .vd-summary>div:last-child{position:relative;padding:28px 17px 20px;border:1px solid #b7a17091;border-radius:40px 40px 10px 10px;background:radial-gradient(ellipse at 23% 5%,#89a19977,transparent 45%),linear-gradient(118deg,#28464d,#0d2933 55%,#0a1726);box-shadow:inset 0 0 0 3px #0005,inset 0 0 0 4px #e0bd6a3d,inset 0 2px 1px #ffe7aa99,0 5px 0 #030b13,0 7px 0 #8c6f3755,0 15px 20px #0007;text-align:center}
+#vedic-page .vd-summary>div:before{content:'✦';display:block;color:#e1c07c;font:15px Georgia;line-height:1;margin-bottom:12px;text-shadow:0 1px 1px #000,0 0 18px #e0c58a88}
+#vedic-page .vd-summary>div:nth-child(2):before{content:'☽';font-size:19px}
+#vedic-page .vd-summary>div:nth-child(3):before{content:'◈';font-size:18px}
+#vedic-page .vd-summary small{color:#d6cbb4}
+#vedic-page .vd-summary strong{color:#ffdf9f;text-shadow:0 3px 2px #05111a;margin:8px 0;font-size:30px;letter-spacing:.04em}
+#vedic-page .vd-summary span{color:#b4c7cc}
+#vedic-page .vd-tabs{gap:5px;padding:7px;border:1px solid #9f8a596b;border-radius:12px;background:linear-gradient(180deg,#243b41,#0a1c29 54%,#07131e);box-shadow:inset 0 1px 0 #ebd6a44d,0 4px 0 #030b14,0 6px 0 #ac8c4430,0 10px 16px #0006;margin:0 0 27px;top:calc(var(--vd-head) + 7px)}
+#vedic-page .vd-tabs button{border:1px solid transparent;border-radius:7px;background:linear-gradient(#5e746712,#0001);color:#9fb8c1;padding:10px 5px}
+#vedic-page .vd-tabs button[aria-selected=true]{background:linear-gradient(120deg,#f6dfab,#c6a06a 48%,#e0c18a);color:#182c31;border:1px solid #f9de9e;box-shadow:inset 0 1px 0 #fff9,inset 0 -2px 0 #82613070,0 3px 0 #55411e,0 4px 8px #0007}
+#vedic-page .vd-tab-panel{padding:25px 22px 24px;background:linear-gradient(130deg,#10272df5,#0b1927f5 58%,#10242cf5);border:1px solid #9b8b6857;border-radius:5px 21px 5px 21px;box-shadow:inset 0 1px 0 #ded0a333,0 12px 27px #0006}
+#vedic-page .vd-chart-format,#vedic-page .vd-varga-toolbar>div{background:#06131e;border:1px solid #b5a47255;border-radius:9px;padding:4px;box-shadow:inset 0 2px 6px #0007}
+#vedic-page .vd-chart-format button[aria-pressed=true],#vedic-page .vd-varga-toolbar button[aria-pressed=true]{background:linear-gradient(145deg,#e2c998,#9d8156);color:#142632;box-shadow:inset 0 1px 1px #fff8,0 2px 2px #0007}
+#vedic-page .vd-kundali-sheet{position:relative;background:radial-gradient(at 12% 0%,#4b716d,#183a43 28%,#08212f 64%,#132e37);border:2px solid #ceae72;border-radius:24px 6px 24px 6px;padding:19px 18px 17px;color:#e6d3aa;box-shadow:inset 0 0 0 3px #07101b,inset 0 0 0 4px #a18b5677,inset 0 0 25px #a6cdb822,0 5px 0 #554221,0 7px 0 #d5b776,0 12px 0 #020b14,0 21px 26px #0008}
+#vedic-page .vd-sheet-top{color:#f4d395;padding:3px 4px 16px;text-shadow:0 2px 2px #000}
+#vedic-page .vd-sheet-top span{width:25px;height:25px;display:grid;place-items:center;border:1px solid #d5b573;border-radius:50%;box-shadow:inset 0 1px 2px #fff4,0 3px 2px #0007;background:radial-gradient(at 25% 20%,#a4a583,#205857 35%,#0a1d2a)}
+#vedic-page .vd-sheet-top b{color:#e8d2a5}
+#vedic-page .vd-chart svg{filter:drop-shadow(0 4px 2px #0007);overflow:visible}
+#vedic-page .vd-chart polygon{fill:url(#vd-enamel);stroke:#a8915f;stroke-width:1.1;stroke-linejoin:bevel;transition:fill .25s,stroke .25s}
+#vedic-page .vd-chart g[data-selected=true] polygon{fill:url(#vd-enamel-lit);stroke:#ffe0a0;stroke-width:2;filter:url(#vd-emboss)}
+#vedic-page .vd-chart-border{stroke:#e8ce93;fill:none;stroke-width:2}
+#vedic-page .vd-chart .vd-sign-number{fill:#c3b181;font-size:16px}
+#vedic-page .vd-chart .vd-sign-name{fill:#b4c7c5;font-size:14px}
+#vedic-page .vd-chart .vd-cell-planets{fill:#ffe1a3;font-weight:500;font-size:17px;paint-order:stroke;stroke:#04131a;stroke-width:.35}
+#vedic-page .vd-chart g[data-selected=true] .vd-sign-number,#vedic-page .vd-chart g[data-selected=true] .vd-sign-name{fill:#f4dfb4}
+#vedic-page #vd-chart-caption{color:#b7b89f;font-size:10px;line-height:1.8;margin:14px 0 11px}
+#vedic-page .vd-chart-legend{border-color:#d5b77740;padding-top:12px;color:#a8bfbc}
+#vedic-page .vd-chart-legend b{color:#efcf92}
+#vedic-page .vd-house{background:linear-gradient(145deg,#294a4e,#0b2532 65%,#091a2b);border-color:#a28f5c;box-shadow:inset 0 1px 1px #deedd733,inset 0 -2px 3px #0006}
+#vedic-page .vd-house strong{color:#dbcfb1}
+#vedic-page .vd-house small{color:#8fafb3}
+#vedic-page .vd-house span{color:#ffdda0}
+#vedic-page .vd-house[data-selected=true]{background:radial-gradient(at 20% 10%,#739389,#1b5455 55%,#17363c);border-color:#ffde9b;box-shadow:inset 0 2px 3px #f3e6b54a,0 2px 3px #000a}
+#vedic-page .vd-chart-center{color:#c9b27d;background:radial-gradient(#254749,#091f2d 70%)}
+#vedic-page .vd-chart-center svg{color:#d5b575;filter:drop-shadow(0 3px 1px #000)}
+#vedic-page .vd-detail{align-self:start}
+#vedic-page .vd-detail h3,#vedic-page .vd-period-heading h3{color:#f1d29b;text-shadow:0 2px 1px #000}
+#vedic-page .vd-detail .vd-number{width:51px;height:51px;font-size:29px}
+#vedic-page .vd-fact-list>div{border-color:#ccb67a26}
+#vedic-page .vd-graha-table-head{color:#9ab1b8;padding-bottom:14px}
+#vedic-page .vd-graha-row{margin-bottom:10px;min-height:85px;border:1px solid #92a49447;border-radius:11px;background:radial-gradient(ellipse at 0 0,#53766e33,transparent 55%),linear-gradient(120deg,#18333d,#0b1e2c 80%);box-shadow:inset 0 1px 0 #ecdaac26,0 3px 0 #020c17,0 5px 9px #0004;padding:12px 13px}
+#vedic-page .vd-graha-row[aria-pressed=true]{border:1px solid #e5c785;background:linear-gradient(125deg,#355c5a,#153b43 55%,#122d3b);box-shadow:inset 0 0 0 3px #030d193d,inset 0 0 0 4px #d2b37b44,0 3px 0 #06121e,0 5px 0 #b3955666,0 9px 13px #0006}
+#vedic-page .vd-graha-row i{position:relative;width:43px;height:43px;flex-shrink:0;border:2px solid #bda574;border-radius:50%;background:radial-gradient(at 27% 20%,#fffce1,#c28c3c 24%,#7a431b 55%,#182631 85%);color:#fff0c5;text-shadow:0 2px 2px #0007;box-shadow:inset 1px 2px 2px #fff9,inset -2px -4px 6px #0009,0 0 0 3px #08141b,0 0 0 4px #b99a5b55,0 7px 7px #0009;font-size:20px}
+#vedic-page .vd-graha-row i[data-graha=Moon]{background:radial-gradient(at 25% 18%,#fffdec,#bac6c5 28%,#5c7881 57%,#172631 83%)}
+#vedic-page .vd-graha-row i[data-graha=Mars]{background:radial-gradient(at 25% 18%,#ffe5ae,#c06740 28%,#76362e 57%,#172631 83%)}
+#vedic-page .vd-graha-row i[data-graha=Mercury]{background:radial-gradient(at 25% 18%,#edffc6,#609882 28%,#145047 57%,#172631 83%)}
+#vedic-page .vd-graha-row i[data-graha=Venus]{background:radial-gradient(at 25% 18%,#fff6e8,#c599ac 28%,#765064 57%,#172631 83%)}
+#vedic-page .vd-graha-row i[data-graha=Saturn]{background:radial-gradient(at 25% 18%,#d3ddff,#7785b3 28%,#3c426c 57%,#172631 83%)}
+#vedic-page .vd-graha-row i[data-graha=Rahu],#vedic-page .vd-graha-row i[data-graha=Ketu]{background:radial-gradient(at 25% 18%,#e4d5f5,#8b819f 28%,#403754 57%,#172631 83%)}
+#vedic-page .vd-current-dasha{position:relative;overflow:hidden;border:1px solid #cfb37799;border-radius:20px 5px;background:radial-gradient(at 50% 0%,#4c746955,transparent 55%),linear-gradient(120deg,#21434a,#0f2e3c 58%,#152b39);box-shadow:inset 0 0 0 4px #061421,inset 0 0 0 5px #e6c6854a,inset 0 2px 0 #fff7,0 5px 0 #010912,0 8px 0 #997a414a,0 15px 30px #0007;padding:27px}
+#vedic-page .vd-current-dasha:before{content:'';position:absolute;width:250px;height:250px;right:-150px;top:-160px;border:1px solid #f6dba94d;border-radius:50%;box-shadow:0 0 0 10px #0a243055,0 0 0 11px #dac38040,0 0 0 22px #0a243055,0 0 0 23px #dac38030,0 0 0 37px #0a243055,0 0 0 38px #dac38030;pointer-events:none}
+#vedic-page .vd-current-dasha>div{gap:16px;margin-top:18px}
+#vedic-page .vd-current-dasha>div>span{border-right:1px solid #c8ad7155}
+#vedic-page .vd-current-dasha>div>span:last-child{border:0}
+#vedic-page .vd-current-dasha strong{color:#ffe1a4;text-shadow:0 3px 1px #000;font-size:32px}
+#vedic-page .vd-dasha-select select{min-height:54px;border:1px solid #b4a5779c;background-color:#17313b;box-shadow:inset 0 1px 0 #f7d8a247,0 3px 0 #020c18,0 6px 12px #0005;color:#f1d6a6}
+#vedic-page .vd-antar-row{border:1px solid #af98682e;border-radius:5px 14px 5px 14px;background:linear-gradient(120deg,#25423d55,#132534);margin-bottom:8px;box-shadow:inset 0 1px 0 #d5c19b16,0 2px 0 #04121e}
+#vedic-page .vd-antar-row[aria-pressed=true]{border-color:#d6b97999;background:linear-gradient(125deg,#48635c,#20404a 50%,#193140);box-shadow:inset 0 1px 0 #f2e1ab55,0 3px 0 #020914,0 5px 0 #a18a4844}
+#vedic-page .vd-period-dot{box-shadow:0 0 0 3px #1c3640,0 0 0 4px #ac99644d}
+#vedic-page .vd-antar-row[data-current=true] .vd-period-dot{background:radial-gradient(at 30% 25%,#fffce1,#e7bc70 40%,#a17637);box-shadow:0 0 0 3px #20383b,0 0 0 4px #cfa658,0 0 20px #e4c07377}
+#vedic-page .vd-yoga{background:linear-gradient(120deg,#2c423a55,#142933);border:1px solid #baa06355;border-radius:8px;padding:2px 15px;margin-bottom:12px;box-shadow:inset 0 1px 0 #d6caa226,0 3px 0 #06111c}
+#vedic-page .vd-copy-panel>svg{width:57px;height:57px;padding:10px;border:1px solid #c4a569;border-radius:50%;background:radial-gradient(at 25% 15%,#909d8266,#184549,#0a1f30);box-shadow:inset 0 1px 2px #fff4,0 3px 0 #74602e,0 9px 12px #0006}
+#vd-picker{background:radial-gradient(at 0 0,#34534b77,transparent 45%),linear-gradient(140deg,#16323c,#101e2d);border-color:#c1a16e;box-shadow:inset 0 0 0 4px #0c1c2a,inset 0 0 0 5px #cdb07544,0 7px 0 #070f19,0 10px 0 #ac8d493f,0 24px 80px #000a}
+#vd-picker .vdp-head{background:linear-gradient(115deg,#526d5c30,#152d38);border-bottom-color:#baa57060}
+#vd-picker .vdp-calendar button[aria-pressed=true],#vd-picker .vdp-month-grid button[aria-pressed=true]{background:linear-gradient(135deg,#f3dfa8,#c29b5e);color:#142c33;border-color:#fff0b4;box-shadow:inset 0 1px 0 #fff9,0 3px 0 #6b4d29,0 5px 8px #0007}
+/* Full-height composition: geometry occupies the room, interface floats above it. */
+#vd-ceremony{display:block;overflow:hidden;background:#07131e;max-height:none;isolation:isolate}
+#vd-ceremony .vdr-room{position:absolute;inset:0;z-index:0;opacity:1;background:linear-gradient(0deg,#06111e88,#08162133),url('../assets/ui/vedic-palace-20260914.webp') center/cover no-repeat}
+#vd-ceremony .vdr-stage{position:absolute;inset:0;width:100%;height:100%;max-width:none;max-height:none;min-height:0;aspect-ratio:auto;overflow:hidden;z-index:1}
+#vd-ceremony .vdr-canvas{inset:0;z-index:2;cursor:grab;touch-action:none}
+#vd-ceremony .vdr-canvas:active{cursor:grabbing}
+#vd-ceremony .vdr-vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(#020d1af2,transparent 29%,transparent 72%,#030e1bcc),radial-gradient(ellipse at 50% 48%,transparent 36%,#040a1659 100%)}
+#vd-ceremony .vdr-header{position:absolute;z-index:5;top:0;left:0;right:0;padding:18px 23px;min-height:78px;background:linear-gradient(#071623ed,transparent);pointer-events:none}
+#vd-ceremony .vdr-header button{pointer-events:auto;background:linear-gradient(125deg,#476056ae,#172b36de);border-color:#d0b78488;color:#f2daaa;box-shadow:inset 0 1px 0 #fff5,0 3px 0 #020811,0 5px 10px #0006;border-radius:8px;font-size:11px;min-height:37px;padding:7px 12px}
+#vd-ceremony .vdr-mark{gap:9px;color:#e9d09c;font:20px 'Noto Serif TC',serif;letter-spacing:.11em;text-shadow:0 3px 2px #000}
+#vd-ceremony .vdr-mark>b{font-size:32px;font-weight:400}
+#vd-ceremony .vdr-mark small{display:block;margin-top:5px;font:7px system-ui;letter-spacing:.13em;color:#c5b490}
+#vd-ceremony .vdr-copy{position:absolute;left:0;right:0;top:98px;z-index:3;pointer-events:none;padding:0 20px;text-align:center}
+#vd-ceremony .vdr-copy .vd-kicker{font-size:8px;letter-spacing:.24em;margin-bottom:11px;color:#e0b876}
+#vd-ceremony .vdr-copy h2{font-size:33px;font-weight:400;letter-spacing:.07em;line-height:1.6;color:#ffe7ae;text-shadow:0 2px 1px #1b0b02,0 5px 14px #000,0 0 24px #e3b15533}
+#vd-ceremony .vdr-copy p{color:#cfcebd;font-size:11px;letter-spacing:.03em;min-height:0;margin:10px auto 0;text-shadow:0 2px 5px #000}
+#vd-ceremony .vdr-bottom{position:absolute;z-index:5;bottom:0;left:50%;transform:translateX(-50%);width:min(540px,100%);padding:22px 27px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(0deg,#06121bf5,#06131bea 80%,transparent);pointer-events:none}
+#vd-ceremony .vdr-bottom button{pointer-events:auto}
+#vd-ceremony .vdr-phases{font-size:9px;letter-spacing:.03em;color:#8b9eaa;gap:6px;align-items:center}
+#vd-ceremony .vdr-phases span{position:relative}
+#vd-ceremony .vdr-phases [data-active=true]{color:#f8d58d;text-shadow:0 0 14px #dbaa4788}
+#vd-ceremony .vdr-phases [data-active=true]:before{content:'◆';font-size:5px;position:absolute;left:50%;top:-12px}
+#vd-ceremony .vdr-phases [data-past=true]{color:#c2b38b}
+#vd-ceremony .vdr-progress{height:2px;border-radius:2px;background:#6873704d;margin:12px 0 12px;overflow:visible}
+#vd-ceremony .vdr-progress i{background:linear-gradient(90deg,#8d6c36,#ffe3a1);box-shadow:0 0 9px #e6be7344}
+#vd-ceremony #vdr-fact{font-size:11px;min-height:19px;max-width:440px;margin:0 0 15px;color:#c1c9c7;line-height:1.8}
+#vd-ceremony .vdr-bottom .vd-primary{font-size:15px;min-height:54px;justify-content:space-between;padding:14px 23px;transition:opacity .5s,filter .5s,transform .2s}
+#vd-ceremony .vdr-bottom .vd-primary:disabled{opacity:.22;filter:saturate(.4);box-shadow:inset 0 1px 0 #ffe6a54a;cursor:default}
+#vd-ceremony .vdr-foot-actions{display:flex;align-items:center;justify-content:space-between;margin-top:11px;min-height:29px}
+#vd-ceremony .vdr-drag-hint{font-size:9px;color:#a4b7bb;letter-spacing:.02em;opacity:0;transition:opacity .6s}
+#vd-ceremony[data-complete=true] .vdr-drag-hint{opacity:1}
+#vd-ceremony .vdr-skip{color:#c5c9b9;background:none;border:0;box-shadow:none;min-height:30px;font-size:10px;margin:0;padding:4px 0 4px 15px}
+#vd-ceremony .vdr-fallback{position:absolute;inset:26% 9% 25%;overflow:visible;border:0;border-radius:0;background:none;box-shadow:none;perspective:900px;transform-style:preserve-3d;transition:opacity .5s}
+#vd-ceremony .vdr-fallback-rings{position:absolute;width:100%;aspect-ratio:1;top:50%;transform:translateY(-50%) rotateX(-12deg) rotateY(-18deg);transform-style:preserve-3d}
+#vd-ceremony .vdr-fallback-rings i{position:absolute;inset:0;border:5px ridge #d4b170;border-radius:50%;transform:rotateX(64deg);box-shadow:inset 0 0 0 3px #211b12,inset 0 0 0 5px #d9bb74,0 4px 0 #795a34,0 8px 15px #0008;background:none}
+#vd-ceremony .vdr-fallback-rings i:nth-child(2){transform:rotateY(65deg) rotateX(14deg);inset:6%}
+#vd-ceremony .vdr-fallback-rings i:nth-child(3){transform:rotateY(-35deg) rotateX(-28deg);inset:12%}
+#vd-ceremony .vdr-fallback-rings>b{position:absolute;inset:38%;border:2px solid #dfc183;display:grid;place-items:center;font-size:35px;color:#ffe4a1;border-radius:50%;background:radial-gradient(at 25% 15%,#fffac3,#9d6b26 35%,#201913);box-shadow:inset 0 2px 4px #fffb,0 0 22px #e6be704a}
+#vd-ceremony .vdr-fallback-core{position:absolute;inset:auto 0 2%;display:block;text-shadow:0 3px 3px #000}
+#vd-ceremony .vdr-fallback-core>span{display:none}
+#vd-ceremony .vdr-fallback-core>b{font-size:24px;display:block}
+#vd-ceremony .vdr-fallback-core>small{font-size:9px;color:#cfbc99}
+#vd-ceremony .vdr-fallback-plinth{position:absolute;left:12%;right:12%;bottom:0;height:10%;border-radius:50%;background:linear-gradient(#ffe1a0,#73542f 30%,#0b1721 34%,#071321 60%,#b7985a 61%,#2e2b24);transform:rotateX(58deg) translateZ(-40px);z-index:-1;box-shadow:0 14px 18px #0009}
+@keyframes vd-palace-gleam{0%,58%{transform:translateX(-130%)}77%,100%{transform:translateX(130%)}}
+@media(hover:hover){#vedic-page .vd-chart g:hover polygon{fill:url(#vd-enamel-lit);stroke:#f0d39a}#vedic-page .vd-house:hover{background:linear-gradient(#345d5b,#17313c)}#vedic-page .vd-graha-row:hover{border-color:#dfc788;transform:translateY(-2px)}#vedic-page .vd-tabs button:hover{border-color:#cdb27788}#vedic-page .vd-primary:hover,#vd-ceremony .vd-primary:not(:disabled):hover{filter:brightness(1.07)}}
+@media(min-width:900px){#vedic-page .vd-result-heading{min-height:250px;background:linear-gradient(90deg,#04131de0 10%,transparent 80%);padding:40px}#vedic-page .vd-result-actions{position:absolute;right:35px;bottom:35px}#vedic-page .vd-summary>div{padding-top:20px}#vedic-page .vd-summary>div:before{position:absolute;left:27px;top:46px;font-size:28px}#vd-ceremony .vdr-copy{top:100px}#vd-ceremony .vdr-copy h2{font-size:42px}#vd-ceremony .vdr-bottom{padding-bottom:22px}#vd-ceremony .vdr-header{padding:24px 42px}}
+@media(max-width:760px){#vedic-page .vd-wrap{padding:0 17px 25px}#vedic-page .vd-entry-heading{padding:36px 18px 33px;gap:12px;min-height:236px;margin:0 -8px 24px}#vedic-page .vd-entry-heading h1{font-size:34px}#vedic-page .vd-entry-heading h1 span{font-size:22px;margin-top:8px;letter-spacing:.16em}#vedic-page .vd-entry-heading p{font-size:11px;max-width:210px}#vedic-page .vd-entry-heading .vd-kicker{font-size:7px;letter-spacing:.11em}#vedic-page .vd-entry-seal{width:91px;height:118px;flex-shrink:0;padding:10px 5px}#vedic-page .vd-entry-seal svg{width:64px;height:64px}#vedic-page .vd-entry-seal span{font-size:5px}#vedic-page .vd-back,#vedic-page .vd-motion{padding:7px 10px;min-width:44px}#vedic-page .vd-brand{font-size:18px;letter-spacing:.08em}#vedic-page .vd-brand svg{width:29px;height:29px;padding:4px}#vedic-page .vd-brand small{font-size:6px}#vedic-page .vd-form{padding:27px 22px}#vedic-page .vd-result-heading{min-height:211px;margin:0 -8px 24px;padding:31px 18px 23px;gap:12px}#vedic-page .vd-result-heading h1{font-size:30px}#vedic-page .vd-result-heading button{font-size:10px}#vedic-page .vd-summary{gap:8px;margin-bottom:25px}#vedic-page .vd-summary>div,#vedic-page .vd-summary>div:last-child{padding:20px 5px 16px;border-radius:30px 30px 8px 8px}#vedic-page .vd-summary small{font-size:10px}#vedic-page .vd-summary strong{font-size:25px}#vedic-page .vd-summary span{font-size:9px;line-height:1.8}#vedic-page .vd-summary>div:before{margin-bottom:11px;height:16px}#vedic-page .vd-tabs{padding:5px;gap:3px;margin-bottom:22px}#vedic-page .vd-tabs button{font-size:12px;min-height:46px;padding:9px 2px;gap:5px}#vedic-page .vd-tabs button svg{width:17px;height:17px}#vedic-page .vd-tab-panel{padding:22px 13px 19px;margin:0 -3px}#vedic-page .vd-panel-heading h2{font-size:22px}#vedic-page .vd-panel-heading p{font-size:11px}#vedic-page .vd-varga-toolbar{gap:7px}#vedic-page .vd-varga-toolbar>div{padding:3px;gap:3px}#vedic-page .vd-varga-toolbar button{padding:4px 7px;min-height:34px;font-size:10px}#vedic-page .vd-varga-toolbar select{max-width:153px;font-size:10px}#vedic-page .vd-kundali-sheet{padding:16px 11px 15px}#vedic-page .vd-sheet-top{padding-bottom:13px}#vedic-page .vd-sheet-top b{font-size:14px}#vedic-page .vd-chart-legend span{font-size:8px}#vedic-page .vd-detail{padding:25px 20px}#vedic-page .vd-graha-row{padding:12px 9px;gap:8px;min-height:80px;grid-template-columns:1.3fr .82fr .3fr .73fr;font-size:11px}#vedic-page .vd-graha-row b{font-size:12px}#vedic-page .vd-graha-row i{width:34px;height:34px;font-size:17px}#vedic-page .vd-graha-row>span:first-child{gap:11px}#vedic-page .vd-graha-row>span:last-child{font-size:10px}#vedic-page .vd-graha-row small{font-size:10px}#vedic-page .vd-current-dasha{padding:23px 21px}#vedic-page .vd-current-dasha strong{font-size:28px}#vedic-page .vd-current-dasha small{font-size:11px}#vedic-page .vd-antar-row{min-height:70px}#vedic-page .vd-section-heading h2{font-size:25px}}
+@media(max-width:360px){#vedic-page .vd-wrap{padding-left:13px;padding-right:13px}#vedic-page .vd-entry-heading h1{font-size:31px}#vedic-page .vd-entry-seal{display:flex;width:75px;height:101px}#vedic-page .vd-entry-seal svg{width:52px;height:52px}#vedic-page .vd-brand{font-size:16px;gap:6px}#vedic-page .vd-brand svg{width:24px;height:24px}#vedic-page .vd-header{padding-left:9px;padding-right:9px}#vedic-page .vd-result-heading h1{font-size:27px}#vedic-page .vd-tab-panel{padding:19px 9px}#vedic-page .vd-varga-toolbar select{max-width:125px;font-size:9px}#vedic-page .vd-varga-toolbar button{padding:4px 5px}#vedic-page .vd-summary small{font-size:7px}#vedic-page .vd-graha-row{padding:10px 7px;gap:6px}#vedic-page .vd-graha-row i{width:29px;height:29px;font-size:15px}#vedic-page .vd-graha-row>span:first-child{gap:7px}#vedic-page .vd-graha-row b{font-size:11px}#vedic-page .vd-graha-row>span:last-child{font-size:9px}#vd-ceremony .vdr-header{padding:15px 15px}#vd-ceremony .vdr-mark{font-size:17px}#vd-ceremony .vdr-copy h2{font-size:28px}#vd-ceremony .vdr-bottom{padding-left:21px;padding-right:21px}}
+@media(max-height:730px){#vd-ceremony .vdr-copy{top:82px}#vd-ceremony .vdr-copy h2{font-size:28px}#vd-ceremony .vdr-copy p{margin-top:4px;font-size:10px}#vd-ceremony .vdr-bottom{padding-top:16px;padding-bottom:8px}#vd-ceremony #vdr-fact{margin-bottom:10px;font-size:10px}#vd-ceremony .vdr-bottom .vd-primary{min-height:47px;font-size:14px}#vd-ceremony .vdr-foot-actions{margin-top:7px}#vd-ceremony .vdr-phases{font-size:8px}}
+@media(prefers-reduced-motion:reduce){#vedic-page *,#vd-picker *,#vd-ceremony *{animation:none!important;transition:none!important}}
+#vedic-page[data-motion=still] *,#vedic-page[data-motion=still] *:after,#vd-ceremony[data-motion=still] *,#vd-ceremony[data-motion=still] *:after{animation:none!important;transition:none!important}

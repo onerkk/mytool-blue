@@ -1,0 +1,269 @@
+{
+  "version": "20260914palace1",
+  "baseline": "jingyue-vedic-redesign-20260914.zip / 20260914sanctum1",
+  "type": "changed files only; preserve relative paths",
+  "deletions": [],
+  "files": [
+    {
+      "path": "CSS/vedic-palace.css",
+      "action": "add",
+      "bytes": 27963,
+      "sha256": "b8af1c454e6139805db63ea2ba0b87f0a90a7b4e883f02eefcf5608036a598a0",
+      "baseline_sha256": null
+    },
+    {
+      "path": "JS/sw.js",
+      "action": "replace",
+      "bytes": 4693,
+      "sha256": "7e7147b8ade5e6655e729d8f7a89d925a6a8424a234bb23758486cd5c716cec7",
+      "baseline_sha256": "948ffb6b35afbb52ba1e1fc337ad3164d6b4e0f88e32d7e74a01df4583082e72"
+    },
+    {
+      "path": "JS/vedic-cinema-motion.mjs",
+      "action": "add",
+      "bytes": 1160,
+      "sha256": "b5e30a49744bc4130e42ed5747db25f23ca6cd7cfb9edbb1bd4cf127f4ac600b",
+      "baseline_sha256": null
+    },
+    {
+      "path": "JS/vedic-palace-scene.mjs",
+      "action": "add",
+      "bytes": 20373,
+      "sha256": "4ce47cf7d9f2d544602e8acb98f185a1763625ad559ddce5eac1f0b13e78adc5",
+      "baseline_sha256": null
+    },
+    {
+      "path": "JS/vedic-ritual.js",
+      "action": "replace",
+      "bytes": 7270,
+      "sha256": "52575c4d78700852cd5c70ae9a3f1acc8e63cdc3b53991fad4239422d92c4a8d",
+      "baseline_sha256": "32068cc983af5fc21c70374b55873748d7f671103eb868006adb808c6179f2f7"
+    },
+    {
+      "path": "JS/vedic-scene-src.mjs",
+      "action": "replace",
+      "bytes": 1120,
+      "sha256": "db189d66b51e41efcd8a4416e2ed742744a25955fd39c8cffee6a9c811435e44",
+      "baseline_sha256": "605feef8d77bd5fc51f74771c4193634f87d5690a32912295fda0f9f35fc9fa3"
+    },
+    {
+      "path": "JS/vedic-scene.js",
+      "action": "replace",
+      "bytes": 620636,
+      "sha256": "fbab6dd8a1a0485cfdbd6ead52b2b2f8117abd48e34194a4cfa92ab9f7bab2bc",
+      "baseline_sha256": "09a11a265722c9e9b3f5e3401b50770b5fb8d7f638c16a20228ea13e78961e44"
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "action": "replace",
+      "bytes": 40967,
+      "sha256": "566bb80eb8451e7c331e3805b37170a4d6c9105177817b2a0ac4fd895a32f52c",
+      "baseline_sha256": "2c93816d731c92b6406e5804b7802a20d5ba1789db3cd6244ce0bc3486e59526"
+    },
+    {
+      "path": "UPDATE-20260914-VEDIC-PALACE.md",
+      "action": "add",
+      "bytes": 2443,
+      "sha256": "754b4656fb667252018b84e340bbba525fe141e3d5152eb2dce29dcd93c6f6f0",
+      "baseline_sha256": null
+    },
+    {
+      "path": "assets/ui/vedic-palace-20260914.webp",
+      "action": "add",
+      "bytes": 413412,
+      "sha256": "7ed5705e9a15174fa65be4497136a847c9ae0584fccced646b2f03d1969330b3",
+      "baseline_sha256": null
+    },
+    {
+      "path": "docs/vedic-palace-20260914.md",
+      "action": "add",
+      "bytes": 4173,
+      "sha256": "e02a95e4eccb4da65cc3f9108d72197486a7397245e431a26bbad351c8eb2a2f",
+      "baseline_sha256": null
+    },
+    {
+      "path": "index.html",
+      "action": "replace",
+      "bytes": 145506,
+      "sha256": "9fca56eec9edc9428f4e380b06d475c7c8f33d0a93ce229ce5345d7e5450eb1e",
+      "baseline_sha256": "ca360f4b2cc9ab66ec1288b4bdda3baa21068f7b336ebd2679fb2269a25dc0dd"
+    },
+    {
+      "path": "package.json",
+      "action": "replace",
+      "bytes": 3521,
+      "sha256": "5b4048e1bf6f1821f6f75a5d00d1b8ba3e340515f7427c3d2d3214cae74755e9",
+      "baseline_sha256": "fe6347c1c1b6161e67e89f6924573c1d4a5a3273afe11850f96a398377b3a0a2"
+    },
+    {
+      "path": "review/vedic-palace-20260914/01-mobile-form.png",
+      "action": "add",
+      "bytes": 344985,
+      "sha256": "a011e52587ef2e4882d1993e88105a4dc02051100f0e0a0af8d6cce78ff95562",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/02-entrance.jpg",
+      "action": "add",
+      "bytes": 41394,
+      "sha256": "ad7ad90476dfeaa8af7a2c48b010e9f3daf721d6492de5f516c4fa7f950e8451",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/03-lift.jpg",
+      "action": "add",
+      "bytes": 41394,
+      "sha256": "ad7ad90476dfeaa8af7a2c48b010e9f3daf721d6492de5f516c4fa7f950e8451",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/04-orbits.jpg",
+      "action": "add",
+      "bytes": 41394,
+      "sha256": "ad7ad90476dfeaa8af7a2c48b010e9f3daf721d6492de5f516c4fa7f950e8451",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/05-reveal.jpg",
+      "action": "add",
+      "bytes": 76057,
+      "sha256": "1b17bb805e62d330b14f9c83063ef9ca66d5194f1e80ae6d40ead7669cacfa64",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/06-ready.png",
+      "action": "add",
+      "bytes": 388185,
+      "sha256": "53467a10dd41f79c43655d1b2fd6f93133d0a7c16d79a1d44a05847249befec5",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/07-drag.png",
+      "action": "add",
+      "bytes": 369830,
+      "sha256": "ac203924801f083f28b4853a373b4d8193a3e5695c0a4443608b71cefb4c0f30",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/08-result.png",
+      "action": "add",
+      "bytes": 326083,
+      "sha256": "882436e0afdebff6915500f0111078336cd2062ef851d534a6fc647b83cb38e0",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/09-kundali.png",
+      "action": "add",
+      "bytes": 258904,
+      "sha256": "f986dbbecb59db0e935141e5c294dae3d453e687452e756320dccfce388557e0",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/10-grahas.png",
+      "action": "add",
+      "bytes": 276201,
+      "sha256": "8bfe19df3024d5dac51b6d91e6dacedd68649cf20f6399c72668e549fd8be981",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/11-dasha.png",
+      "action": "add",
+      "bytes": 268929,
+      "sha256": "9617dbef68b3e903f651feb6ffd24a350630955ded3da513a03c27f1181bd925",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/12-reading.png",
+      "action": "add",
+      "bytes": 243487,
+      "sha256": "a0fd8e5b20672722417201c5772cf75716dfee7d4e7dccf2b308ae23bb30b5cd",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/13-desktop.png",
+      "action": "add",
+      "bytes": 1206189,
+      "sha256": "b59eb1e4924bc8620a0f7eab051615ce3675742a21339607efdadeed33647c8f",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/14-date-picker.png",
+      "action": "add",
+      "bytes": 167257,
+      "sha256": "9ee573242f08fef9223be9f1c77ae40d815da7b56a1915e378fbe791bb3d4a16",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/15-time-picker.png",
+      "action": "add",
+      "bytes": 156979,
+      "sha256": "7a9ca6b23b3467f015d51cc99a785825d27c3333c75a91a343af8744c85686fe",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/16-fallback.png",
+      "action": "add",
+      "bytes": 474305,
+      "sha256": "fcfd1fc9a22c64a4fbbc56e25cfbd70c36fbf49883ddcb6bc3f54820f5eb9850",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/browser-regression.json",
+      "action": "add",
+      "bytes": 911,
+      "sha256": "f32ba9835adb32a6fc93d8c5ccc42bc99de5f6803f450024ec24768ced62d08f",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/core-integrity.json",
+      "action": "add",
+      "bytes": 1022,
+      "sha256": "ce4bcde8a8e860abc5c714b88dd2eac0d64cebd2290710c0e474b3ae68fcff6a",
+      "baseline_sha256": null
+    },
+    {
+      "path": "review/vedic-palace-20260914/palace-browser.json",
+      "action": "add",
+      "bytes": 8695,
+      "sha256": "efb5352d14e594b8e8d68048a659fff3d6d83832b7d9b88aa8dc7d5f79daabf2",
+      "baseline_sha256": null
+    },
+    {
+      "path": "sw.js",
+      "action": "replace",
+      "bytes": 4693,
+      "sha256": "7e7147b8ade5e6655e729d8f7a89d925a6a8424a234bb23758486cd5c716cec7",
+      "baseline_sha256": "948ffb6b35afbb52ba1e1fc337ad3164d6b4e0f88e32d7e74a01df4583082e72"
+    },
+    {
+      "path": "tests/reading-depth-20260912.cjs",
+      "action": "replace",
+      "bytes": 15300,
+      "sha256": "b120d05e69606aa30e97211e080f9c0669a696c815fd9df38f6162259875a8da",
+      "baseline_sha256": "76566addec62e82cef179aadf90e09a773648e3cdd1ecaad5a0fd86464902cf3"
+    },
+    {
+      "path": "tests/vedic-palace-20260914.cjs",
+      "action": "add",
+      "bytes": 3576,
+      "sha256": "d61dc71e00241271210f99bdb6d14882e6da9426b1ed6c2399da80e0d4a47b75",
+      "baseline_sha256": null
+    },
+    {
+      "path": "tests/vedic-palace-browser-20260914.cjs",
+      "action": "add",
+      "bytes": 7814,
+      "sha256": "6b03db82f2e165f84262681432ef2a8f3db26c16a0893a961ebbb7d1983cbdb6",
+      "baseline_sha256": null
+    }
+  ],
+  "validation": {
+    "vedic_engine_groups": 14,
+    "vedic_design_groups": 13,
+    "palace_groups": 6,
+    "reading_depth_groups": 12,
+    "browser_scenarios": 25,
+    "recorded_scene_and_replay": "passed",
+    "physical_device_fps": "not tested"
+  }
+}

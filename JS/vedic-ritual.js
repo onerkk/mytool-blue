@@ -1,26 +1,49 @@
-/* A standalone Indian astrology ceremony. Not the shared character/ritual player. */
+/* Navagraha palace: one native chart, four spatial chapters, a cancellable lifecycle. */
 (function(root){
   'use strict';
   let active=null,loading=null;
+  const D=document,VERSION='20260914palace1',DURATION=14500;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  function loadScene(){if(root.JYVedicScene)return Promise.resolve();if(loading)return loading;
-    loading=new Promise((resolve,reject)=>{let timer=setTimeout(()=>reject(Error('scene timeout')),7000);const s=document.createElement('script');s.src='JS/vedic-scene.js?v=20260914sanctum1';s.onload=()=>{clearTimeout(timer);resolve();};s.onerror=()=>{clearTimeout(timer);loading=null;reject(Error('scene unavailable'));};document.head.appendChild(s);}).catch(e=>{loading=null;throw e;});return loading;}
-  function fallback(chart){const C=root.JYVedic,rows=[['日','月','火'],['水','木','金'],['土','羅','計']];return '<div class="vdr-fallback" aria-hidden="true"><img src="assets/ui/vedic-jaali.svg" alt=""><div class="vdr-fallback-core"><span>NAVAGRAHA</span><b>'+esc(chart.lagna?chart.lagna.signName:'月亮')+'</b><small>'+esc(chart.planets.Moon.nakshatra.name)+'</small><div>'+C.KEYS.map(k=>'<i>'+esc(C.zh(k))+'</i>').join('')+'</div></div></div>';}
+  function loadScene(){
+    if(root.JYVedicScene)return Promise.resolve();if(loading)return loading;
+    loading=new Promise((resolve,reject)=>{const s=D.createElement('script');let timer=setTimeout(()=>reject(Error('scene timeout')),10000);s.src='JS/vedic-scene.js?v='+VERSION;s.onload=()=>{clearTimeout(timer);resolve();};s.onerror=()=>{clearTimeout(timer);reject(Error('scene unavailable'));};D.head.appendChild(s);}).catch(e=>{loading=null;throw e;});return loading;
+  }
+  function fallback(chart){return '<div class="vdr-fallback" aria-hidden="true"><div class="vdr-fallback-rings"><i></i><i></i><i></i><b>✧</b></div><div class="vdr-fallback-core"><span>JANMA KUNDALI</span><b>'+esc(chart.lagna?.signName||chart.planets.Moon.signName)+'</b><small>'+esc(chart.planets.Moon.nakshatra.name)+'</small></div><div class="vdr-fallback-plinth"></div></div>';}
   function play(chart,options={}){
-    if(active)active.cancel();let done,scene=null,frame=0,dead=false,start=performance.now(),elapsed=0,lastTime=start,stage=-1,still=!!options.reduced;
-    const D=document,entry=D.activeElement,modal=D.createElement('dialog'),C=root.JYVedic,n=chart.planets.Moon.nakshatra;modal.id='vd-ceremony';modal.className='vd-modal vdr-modal';modal.dataset.motion=still?'still':'full';modal.setAttribute('aria-label','印度占星專屬星盤演出');
-    modal.innerHTML='<div class="vdr-room" aria-hidden="true"></div><header class="vdr-header"><span class="vdr-mark">✧ <small>JYOTISHA</small></span><button type="button" data-vdr="cancel" class="vd-quiet">返回資料</button></header><div class="vdr-copy"><span class="vd-kicker">NAVAGRAHA · 九曜入盤</span><h2 id="vdr-title">定位出生的天空</h2><p id="vdr-caption">'+esc(chart.input.civil?.date||chart.input.utc.slice(0,10))+' · '+esc(chart.input.location||'自訂出生地')+'</p></div><div class="vdr-stage">'+fallback(chart)+'<div id="vdr-canvas" class="vdr-canvas"></div><span class="vdr-orbit-label">27 NAKSHATRA · 12 RASHI · 9 GRAHA</span></div><div class="vdr-bottom"><div class="vdr-phases" aria-label="演出階段"><span>01 月宿</span><span>02 九曜</span><span>03 命盤</span></div><div class="vdr-progress" aria-hidden="true"><i></i></div><p id="vdr-fact" aria-live="polite"></p><button type="button" data-vdr="open" class="vd-primary" '+(still?'':'disabled')+'>展開我的印度命盤 →</button><button type="button" data-vdr="skip" class="vdr-skip">略過演出</button></div>';
+    if(active)active.cancel();
+    let done,scene=null,frame=0,dead=false,elapsed=0,lastTime=performance.now(),lastPaint=0,stage=-1,started=false;
+    const still=!!options.reduced,entry=D.activeElement,modal=D.createElement('dialog'),C=root.JYVedic,n=chart.planets.Moon.nakshatra;
+    modal.id='vd-ceremony';modal.className='vd-modal vdr-modal';modal.dataset.motion=still?'still':'full';modal.setAttribute('aria-label','印度占星・九曜星殿');
+    modal.innerHTML='<div class="vdr-room" aria-hidden="true"></div><div class="vdr-stage">'+fallback(chart)+'<div id="vdr-canvas" class="vdr-canvas" aria-label="立體星儀，可左右拖曳轉動"></div></div><div class="vdr-vignette" aria-hidden="true"></div><header class="vdr-header"><span class="vdr-mark"><b>✧</b><span>靜月之光<small>THE NAVAGRAHA PALACE</small></span></span><button type="button" data-vdr="cancel" class="vd-quiet">返回資料</button></header><div class="vdr-copy"><span class="vd-kicker" id="vdr-chapter">JYOTISHA · 九曜星殿</span><h2 id="vdr-title">星殿，即將為你開啟</h2><p id="vdr-caption">'+esc(chart.input.civil?.date||chart.input.utc.slice(0,10))+' · '+esc(chart.input.location||'自訂出生地')+'</p></div><div class="vdr-bottom"><div class="vdr-phases" aria-label="演出階段"><span>01 入殿</span><span>02 喚星</span><span>03 軌跡</span><span>04 命盤</span></div><div class="vdr-progress" aria-hidden="true"><i></i></div><p id="vdr-fact" aria-live="polite">正在點亮你的星殿…</p><button type="button" data-vdr="open" class="vd-primary" '+(still?'':'disabled')+'>展開我的印度命盤 <span>→</span></button><div class="vdr-foot-actions"><span class="vdr-drag-hint">↔ 輕觸星儀，左右轉動</span><button type="button" data-vdr="skip" class="vdr-skip">略過演出</button></div></div>';
     D.body.appendChild(modal);try{modal.showModal();}catch(_){modal.setAttribute('open','');modal.classList.add('vd-modal-fallback');}
-    const finished=new Promise(r=>done=r);const end=outcome=>{if(dead)return;dead=true;cancelAnimationFrame(frame);scene?.dispose();modal.close?.();modal.remove();D.removeEventListener('visibilitychange',visibility);if(entry?.isConnected&&!entry.disabled)entry.focus({preventScroll:true});active=null;done(outcome);};
-    active={finished,cancel:()=>end(false)};
-    function setStage(p){const index=still||p>=.94?3:p<.3?0:p<.62?1:2;if(index===stage)return;stage=index;modal.dataset.stage=String(index);const names=['定位出生的天空','九曜，循星位入盤','十二宮，展開生命脈絡','你的命盤已定位'];const captions=[n.name+' · 第 '+n.pada+' 足','依本命恆星黃道位置，逐一安置九曜。',chart.lagna?'上升 '+chart.lagna.signName+' · 北印度式命盤':'出生時間未知 · 保留可核對的星座位置','從本命、分盤與運期，理解當下。'];modal.querySelector('#vdr-title').textContent=names[index];modal.querySelector('#vdr-caption').textContent=captions[index];modal.querySelector('#vdr-fact').textContent=index===0?'本命月宿主：'+C.zh(n.lord):index===1?'月亮：'+chart.planets.Moon.signName+' · 九曜位置來自本次排盤':index===2?'同一份出生資料，將接續展開十六分盤與運期。':'星位與運期已保留，準備好就進入命盤。';modal.querySelectorAll('.vdr-phases span').forEach((x,i)=>x.dataset.active=String(i===Math.min(index,2)));if(index===3)modal.querySelector('[data-vdr="open"]').disabled=false;}
-    function draw(now){if(dead)return;const dt=Math.max(0,now-lastTime);lastTime=now;if(!D.hidden)elapsed+=dt;const p=still?1:Math.min(1,elapsed/10200);setStage(p);scene?.render(p);modal.querySelector('.vdr-progress i').style.transform='scaleX('+p+')';if(p<1&&!D.hidden)frame=requestAnimationFrame(draw);}
+    const finished=new Promise(r=>done=r),host=modal.querySelector('#vdr-canvas');
+    function end(outcome){if(dead)return;dead=true;cancelAnimationFrame(frame);scene?.dispose();modal.close?.();modal.remove();D.removeEventListener('visibilitychange',visibility);if(entry?.isConnected&&!entry.disabled)entry.focus({preventScroll:true});active=null;done(outcome);}
+    active={finished,cancel:()=>end(false),getSceneState:()=>scene?.getDiagnostics()||null};
+    function setStage(p){
+      const index=p<.22?0:p<.47?1:p<.76?2:3;if(index!==stage){stage=index;modal.dataset.stage=String(index);
+        const names=['穿過星光之門','讓九曜，緩緩醒來','循著你的星空軌跡','十二宮，為你展開'];
+        const captions=[(chart.input.location||'出生的座標')+' · 時間留下的光',n.name+' · 第 '+n.pada+' 足','月亮 '+chart.planets.Moon.signName+' · '+(chart.lagna?'上升 '+chart.lagna.signName:'出生時間待確認'),chart.lagna?'你的出生星位，匯成此刻的命盤':'時間未知 · 先保留穩定星位'];
+        modal.querySelector('#vdr-title').textContent=names[index];modal.querySelector('#vdr-caption').textContent=captions[index];
+        modal.querySelector('#vdr-chapter').textContent=['I · THE THRESHOLD','II · THE AWAKENING','III · THE CELESTIAL PATH','IV · YOUR JANMA KUNDALI'][index];
+        modal.querySelector('#vdr-fact').textContent=['由出生座標，走進你的九曜星殿。','本命月宿主：'+C.zh(n.lord)+' · 星儀正在升起。','星環相交，九曜依本次出生星位入盤。','同一份命盤，接續展開本命、分盤與運期。'][index];
+        modal.querySelectorAll('.vdr-phases span').forEach((x,i)=>{x.dataset.active=String(i===index);x.dataset.past=String(i<index);});
+      }
+      if(p>=1){modal.dataset.complete='true';modal.querySelector('[data-vdr="open"]').disabled=false;}
+    }
+    function draw(now){if(dead)return;const dt=Math.max(0,now-lastTime);lastTime=now;if(started&&!D.hidden)elapsed+=dt;
+      const p=still?1:Math.min(1,elapsed/DURATION);if(started){setStage(p);if(now-lastPaint>=32||still){scene?.render(p,elapsed/1000);lastPaint=now;}modal.querySelector('.vdr-progress i').style.transform='scaleX('+p+')';}
+      if(!D.hidden&&(!still||!started))frame=requestAnimationFrame(draw);
+    }
     function visibility(){lastTime=performance.now();cancelAnimationFrame(frame);if(!D.hidden&&!dead)frame=requestAnimationFrame(draw);}
-    D.addEventListener('visibilitychange',visibility);modal.addEventListener('cancel',e=>{e.preventDefault();end(false);});modal.addEventListener('click',e=>{const a=e.target.closest('[data-vdr]')?.dataset.vdr;if(a==='cancel')end(false);if(a==='skip'||a==='open')end(true);});
+    D.addEventListener('visibilitychange',visibility);
+    modal.addEventListener('cancel',e=>{e.preventDefault();end(false);});modal.addEventListener('click',e=>{const b=e.target.closest('[data-vdr]'),a=b?.dataset.vdr;if(a==='cancel')end(false);if(a==='skip'||a==='open'&&!b.disabled)end(true);});
     modal.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();end(false);}if(e.key==='Tab'){const a=[...modal.querySelectorAll('button')].filter(b=>!b.disabled);if(e.shiftKey&&D.activeElement===a[0]){e.preventDefault();a.at(-1).focus();}else if(!e.shiftKey&&D.activeElement===a.at(-1)){e.preventDefault();a[0].focus();}}});
-    const host=modal.querySelector('#vdr-canvas');host.addEventListener('vedic-scene-lost',()=>{scene?.dispose();scene=null;modal.dataset.renderer='fallback';});
-    Promise.all([loadScene(),document.fonts?.ready||Promise.resolve()]).then(()=>{if(dead)return;try{scene=root.JYVedicScene.create(host,chart);scene.render(still?1:Math.min(1,elapsed/10200));modal.dataset.renderer='webgl';}catch(_){modal.dataset.renderer='fallback';}}).catch(()=>{if(!dead)modal.dataset.renderer='fallback';});
+    host.addEventListener('vedic-scene-lost',()=>{scene?.dispose();scene=null;modal.dataset.renderer='fallback';});
+    host.addEventListener('pointermove',()=>{if(still)scene?.render(1,0);});
+    Promise.all([loadScene(),D.fonts?.ready||Promise.resolve()]).then(async()=>{
+      if(dead)return;try{scene=root.JYVedicScene.create(host,chart);await scene.ready;if(dead)return;scene.render(still?1:0,0);modal.dataset.renderer='webgl';}catch(_){if(!dead)modal.dataset.renderer='fallback';}
+    }).catch(()=>{if(!dead)modal.dataset.renderer='fallback';}).finally(()=>{if(dead)return;started=true;lastTime=performance.now();cancelAnimationFrame(frame);frame=requestAnimationFrame(draw);});
     frame=requestAnimationFrame(draw);modal.querySelector('[data-vdr="cancel"]').focus({preventScroll:true});return active;
   }
-  root.JYVedicRitual=Object.freeze({play,preload:loadScene,isActive:()=>!!active,cancel:()=>active?.cancel()});
+  root.JYVedicRitual=Object.freeze({play,preload:loadScene,isActive:()=>!!active,cancel:()=>active?.cancel(),getSceneState:()=>active?.getSceneState()||null});
 })(window);
