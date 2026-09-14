@@ -1,0 +1,50 @@
+{
+  "ok": true,
+  "renderer": "webgl",
+  "scene": {
+    "renderer": "webgl",
+    "progress": 1,
+    "camera": [
+      0.40000000000000036,
+      3.6,
+      26.16162088432484
+    ],
+    "turn": 0,
+    "frameCount": 72,
+    "zodiacPlaques": 12,
+    "planetJewels": 10,
+    "irisLeaves": 8,
+    "drawCalls": 175,
+    "triangles": 149680
+  },
+  "overflow": {
+    "client": 390,
+    "scroll": 390
+  },
+  "errors": [],
+  "missing": [
+    "/img/share-bg-tarot.png",
+    "/img/share-bg-ootk.png",
+    "/img/share-bg-general.png"
+  ],
+  "checks": [
+    "custom date/time picker",
+    "searchable city",
+    "WebGL iris chronology",
+    "touch rotate",
+    "same snapshot through animation and export",
+    "four tabs",
+    "copy prompt",
+    "SVG interaction",
+    "scroll recovery",
+    "skip/cancel lifecycle",
+    "reduced motion",
+    "WebGL context-loss fallback",
+    "unknown clock",
+    "Vedic cities",
+    "desktop"
+  ],
+  "viewport": "390×844 touch, 1440×1000 desktop",
+  "runtime": "Chromium / software WebGL; not physical handset measurements",
+  "date": "2026-09-14"
+}

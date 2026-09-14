@@ -20,7 +20,8 @@
 // v79: 20260913vedic1 九曜星殿、獨立 Jyotisha 核心與三層運期。
 // v80: 20260914sanctum1 印度命盤工作區、獨立 3D 星殿與曆時選擇器。
 // v81: 20260914palace1 立體星殿鏡頭、雕刻琺瑯命盤與全屏過場。
-const CACHE_NAME = 'jy-main-v81';
+// v82: 20260914western1 西洋星穹、原子化命盤與出生地整合。
+const CACHE_NAME = 'jy-main-v82';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

@@ -3,7 +3,7 @@
 //
 // 設計：
 //   - 在 computeNatalChart / computeJyotish 算完後,呼叫 worker /ephemeris
-//     拿到 JPL Horizons 等高精度星曆,覆寫 natal.planets.lon
+//     不再部分覆寫命盤；完整西洋入口由 JYWestern 原子化計算。
 //   - 失敗時靜默降級（保持原本 Meeus 結果）
 //   - KV 快取讓同分鐘出生的人共用,延遲幾乎為 0
 //
@@ -49,31 +49,10 @@
     }
   }
 
-  // 升級 natal.planets 的 lon（保留 lat / sign / sign info 等其他欄位重新計算）
-  // 注意：這只覆寫 planet.lon,sign 等需要 caller 重算
+  // Keep the legacy chart internally consistent. Replacing only longitudes
+  // invalidates its aspects, houses and derived analysis. The new independent
+  // Western core computes an immutable snapshot; no mixed-source patch applies.
   async function upgradeNatal(natal, year, month, day, hour, minute, tz) {
-    if (!natal || !natal.planets) return natal;
-    var data = await _fetchEphemeris(year, month, day, hour, minute, tz, 'tropical');
-    if (!data || !data.planets) return natal;
-
-    Object.keys(data.planets).forEach(function(en) {
-      var zh = EN_TO_ZH[en];
-      if (!zh || !natal.planets[zh]) return;
-      var p = data.planets[en];
-      if (typeof p.lon !== 'number') return;
-      // 覆寫 lon,並重算 sign 資訊
-      natal.planets[zh].lon = p.lon;
-      if (typeof p.lat === 'number') natal.planets[zh].lat = p.lat;
-      // 重算 sign 資訊（找 12 星座區段）
-      if (typeof window._getSign === 'function') {
-        var s = window._getSign(p.lon);
-        Object.assign(natal.planets[zh], {
-          sign: s.name, signIdx: s.idx, signDeg: s.deg,
-          signSym: s.sym, el: s.el
-        });
-      }
-    });
-    natal._ephemerisSource = data.source;
     return natal;
   }
 

@@ -28,7 +28,7 @@ const root=path.resolve(__dirname,'..'),runtimeOut=process.env.JY_QA_RUNTIME,out
  await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(380);await page.screenshot({path:out+'/01-mobile-form.png'});
 
  await page.evaluate(()=>{document.getElementById('vd-date').value='1983-08-25';document.getElementById('vd-time').value='14:55';document.getElementById('vd-reference').value='2026-09-14';});
- await page.locator('#vd-city').selectOption('5');await page.locator('#vd-question').fill('我適合什麼工作方向？');
+ await page.locator('#vd-city').selectOption({label:'台南'});await page.locator('#vd-question').fill('我適合什麼工作方向？');
  await page.locator('#vd-submit').tap();await page.waitForSelector('#vd-ceremony',{timeout:30000});
  await page.waitForFunction(()=>document.querySelector('#vd-ceremony').dataset.renderer==='webgl',null,{timeout:45000});
  const native=await page.evaluate(()=>JSON.stringify(JYVedicUI.getChart()));
