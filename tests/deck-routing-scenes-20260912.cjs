@@ -57,7 +57,7 @@ test('Actual Lenormand prompt preserves options, all seven card ids and branch g
 });
 const bindings={confirmedBeforeDeal:true,countDirection:'right',expectedPile:'water',primaryHouse:12,cognateHouse:7,expectedSign:11,expectedSephirah:5};
 function engine(){
- const e=dom();e.ctx.console={log(){},warn:console.warn,error:console.error};['picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading'].forEach(f=>load(e,f));
+ const e=dom();e.ctx.console={log(){},warn:console.warn,error:console.error};['reading-quality','picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading'].forEach(f=>load(e,f));
  vm.runInContext(read('JS/tarot_upgrade.js').replace('window._ootkTriggerAI = _triggerOOTKAI;', 'window._ootkTriggerAI = _triggerOOTKAI;window.__sequence=_runOOTKSequence;window.__record=_ootkCompletionHTML;'),e.ctx);
  vm.runInContext(actual('JS/ai-analysis.js','_buildOOTKPayload'),e.ctx);e.ctx._jyTarotQuestionText=()=>e.ctx.S.form.question;
  e.ctx.S.form={question:'如何坦白表達需要？'};e.ctx.goStep=()=>{};e.ctx._ootkResults=null;

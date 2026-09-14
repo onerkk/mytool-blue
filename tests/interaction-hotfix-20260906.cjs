@@ -10,7 +10,7 @@ function functionSource(file,name){const src=read(file),ast=acorn.parse(src,{ecm
  visit(ast);assert(found,'Missing actual function '+name);return found;
 }
 const {ctx,doc,Element}=environment();let alerts=[];ctx.alert=x=>alerts.push(x);ctx.confirm=()=>true;
-['picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading','tarot_upgrade'].forEach(f=>load(ctx,'JS/'+f+'.js'));
+['reading-quality','picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading','tarot_upgrade'].forEach(f=>load(ctx,'JS/'+f+'.js'));
 const imageSource=read('JS/ui.js').slice(read('JS/ui.js').indexOf('const _tarotImageCache ='),read('JS/ui.js').indexOf('/* =============================================================',read('JS/ui.js').indexOf('function getTarotCardImage')));
 vm.runInContext(imageSource,ctx);
 // Browser classic scripts share lexical bindings; window properties alone do not set let declarations.
@@ -42,7 +42,7 @@ test('Shared setup exports accept zero-index sign and sephirah without losing th
  const b=ctx.OOTKSetup.normalizeBindings({expectedPile:'water',primaryHouse:'7',cognateHouse:'5',expectedSign:'0',expectedSephirah:'0',countDirection:'right',confirmedBeforeDeal:true});assert.equal(b.expectedSign,0);assert.equal(b.expectedSephirah,0);assert.equal(b.confirmedBeforeDeal,true);assert.equal(ctx.OOTKSetup.signs.length,12);
 });
 // The production selection UI calls the production engine; only animation continuation is captured.
-const env2=environment(),c2=env2.ctx;['picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading'].forEach(f=>load(c2,'JS/'+f+'.js'));
+const env2=environment(),c2=env2.ctx;['reading-quality','picker-core','tarot-foundation','golden-dawn-tarot','tarot','tarot-reading'].forEach(f=>load(c2,'JS/'+f+'.js'));
 vm.runInContext(imageSource,c2);
 vm.runInContext(read('JS/tarot_upgrade.js').replace('  function _runOOTKSequence(', '  window.__setupContinue=function(sig,bindings){window.__confirmed={sig,bindings};};\n  function _runOOTKSequence(').replace('_runOOTKSequence(sigId, bindings);','window.__setupContinue(sigId, bindings);'),c2);
 test('Confirmed OOTK setup forwards all predeal bindings as an immutable snapshot',()=>{

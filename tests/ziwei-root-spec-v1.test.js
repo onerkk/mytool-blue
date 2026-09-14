@@ -56,7 +56,8 @@ const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
 ].forEach(x => assert(!(head + tail).includes(x), 'legacy/answer patch remains: ' + x));
 assert(!(head + tail).includes('ROOT-SPEC'));
 assert(!(head + tail).includes('證據帳本'));
-assert((head + tail).length < 5000, 'v4 root should stay concise');
+assert((head + tail).replace(ctx.JY_ZIWEI_PROMPT_ROOT.brandTailLines().join('\n'),'').length < 5000, 'analysis root stays concise; reviewed material guidance has its own scope');
+assert.equal(tail.split('【從解讀到適合你的配戴選擇】').length-1,1, 'selection method is included once');
 assert(tail.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
 assert(tail.includes('願你諸事順遂。'));
 

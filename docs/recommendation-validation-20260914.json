@@ -1,0 +1,366 @@
+{
+  "checkedOn": "2026-09-14",
+  "scope": "本輪選品提示詞、資料出口及現有引擎回歸檢查；未部署網站或外部 Worker。",
+  "baseCache": "jy-main-v83",
+  "targetCache": "jy-main-v84",
+  "recommendationContractVersion": "4.0.0",
+  "fullTest": {
+    "command": "npm test",
+    "exit": 0,
+    "note": "新增 API 選品契約案例另以 test:api-failures 成功重跑；完整測試與逐項測試均已完成。"
+  },
+  "individualSuiteCount": 34,
+  "individualSuites": [
+    {
+      "suite": "test:prompts",
+      "exit": 0,
+      "command": "npm run test:prompts",
+      "logSha256": "503dfcde1d2d35a835baf2f36e06f76ac8b8fe4197bf05ee9d8c84863a8c8000"
+    },
+    {
+      "suite": "test:tarot",
+      "exit": 0,
+      "command": "npm run test:tarot",
+      "logSha256": "51577df9d8f6c84cd5325f31d776371f40d2a8f765cd7f1e622a0d9140ad8881"
+    },
+    {
+      "suite": "test:ziwei",
+      "exit": 0,
+      "command": "npm run test:ziwei",
+      "logSha256": "34a5225af7d598c11d32683fd26820105017c08dfdb7710f442f707d9dde7c24"
+    },
+    {
+      "suite": "test:counter",
+      "exit": 0,
+      "command": "npm run test:counter",
+      "logSha256": "5de0a1c06d5d5853ee26ae173a103cb6a9418fa91c5b6e03c367ec6fd359726c"
+    },
+    {
+      "suite": "test:picker-data",
+      "exit": 0,
+      "command": "npm run test:picker-data",
+      "logSha256": "0afc8a3ace570f3f1d21369be493186882359225e1825987de32186c5cecdf2e"
+    },
+    {
+      "suite": "test:api-failures",
+      "exit": 0,
+      "command": "npm run test:api-failures",
+      "logSha256": "c9f3a1f734c71dc571fb9c2d50da84863e13ead3aea00ce7db48c6ba56741686"
+    },
+    {
+      "suite": "test:interactions",
+      "exit": 0,
+      "command": "npm run test:interactions",
+      "logSha256": "ca9b24b19be661a2ed5f3c782d0b332772c11c65942a09700a1965ab8b87dabc"
+    },
+    {
+      "suite": "test:display",
+      "exit": 0,
+      "command": "npm run test:display",
+      "logSha256": "f02677f5192c46fc932bccbaf674dc69a93d80a34d9d4f52c0ba06c764148899"
+    },
+    {
+      "suite": "test:audit",
+      "exit": 0,
+      "command": "npm run test:audit",
+      "logSha256": "1e59bd434a443fb3da75061cbd87176a394adf9620854996013a1c75edcb59df"
+    },
+    {
+      "suite": "test:professional",
+      "exit": 0,
+      "command": "npm run test:professional",
+      "logSha256": "7de27c90ad46c58914e8580a3c1c6306f0577c2c7099f69ed149e433a99a3695"
+    },
+    {
+      "suite": "test:cards",
+      "exit": 0,
+      "command": "npm run test:cards",
+      "logSha256": "9ff4e99bf8f3f9ec21def3321c32ff978513ee427320dcffb3fbccf04e2b079c"
+    },
+    {
+      "suite": "test:ui",
+      "exit": 0,
+      "command": "npm run test:ui",
+      "logSha256": "88e0d9f23bebe5ed4893546a7fa41b5935733986676a41d3b3e6104be91e9c6a"
+    },
+    {
+      "suite": "test:ritual",
+      "exit": 0,
+      "command": "npm run test:ritual",
+      "logSha256": "aaf922897fdfd98a83d31658dfa7dc51cd563494382cfbc719f5bbb636ac0592"
+    },
+    {
+      "suite": "test:cinematic",
+      "exit": 0,
+      "command": "npm run test:cinematic",
+      "logSha256": "648e814deecbdb69ba2969d9246c607eba9c4490a8d4409dc269792e294d752a"
+    },
+    {
+      "suite": "test:shuffle-recovery",
+      "exit": 0,
+      "command": "npm run test:shuffle-recovery",
+      "logSha256": "a478679f606ca5a78150a9d94213934d4fc22af30021dd704daaf2135d56096f"
+    },
+    {
+      "suite": "test:flow",
+      "exit": 0,
+      "command": "npm run test:flow",
+      "logSha256": "72632a48ee82ecade0462ede6efd4b61756dc81a897cfa22f1401a896116f544"
+    },
+    {
+      "suite": "test:depth",
+      "exit": 0,
+      "command": "npm run test:depth",
+      "logSha256": "74193d9d01f80f07f851fbf068e799052a4c057b6581ef874b318da4e6169b40"
+    },
+    {
+      "suite": "test:flow-polish",
+      "exit": 0,
+      "command": "npm run test:flow-polish",
+      "logSha256": "f47242d22a00f320479cb4f2e034cfb4bf968f4165ca61cf019812865f54a016"
+    },
+    {
+      "suite": "test:accuracy",
+      "exit": 0,
+      "command": "npm run test:accuracy",
+      "logSha256": "86aefe712fd2edeebbebd177f5ccca7675f0ff29db9dfae06751b3f5ea34543c"
+    },
+    {
+      "suite": "test:immersive",
+      "exit": 0,
+      "command": "npm run test:immersive",
+      "logSha256": "a6ab6e79ce0011ae48ac38920595314f145bb28c44fce47c8ac9845814c94e2f"
+    },
+    {
+      "suite": "test:plain",
+      "exit": 0,
+      "command": "npm run test:plain",
+      "logSha256": "1492ac7dce053c1ddc141e03932a10efb512992b0fe5fd90243fa989d58096c6"
+    },
+    {
+      "suite": "test:story",
+      "exit": 0,
+      "command": "npm run test:story",
+      "logSha256": "523d2fd9360d2cd3720d0ea6f97a1f1c0ee1974b7775c0bd55f1a526fc4434eb"
+    },
+    {
+      "suite": "test:free",
+      "exit": 0,
+      "command": "npm run test:free",
+      "logSha256": "8d51a5d00bacb856f0147197742fefa431da6436377fdaca799605615ef4d2cd"
+    },
+    {
+      "suite": "test:oracle-result",
+      "exit": 0,
+      "command": "npm run test:oracle-result",
+      "logSha256": "737c0c30b3fe35b2e746f0b6dc07762b29790cfcdae274eff2c57594fc646d10"
+    },
+    {
+      "suite": "test:craft",
+      "exit": 0,
+      "command": "npm run test:craft",
+      "logSha256": "f3c594fc23f4e23c0d86e4ed7eac511ac53d00f73fc0714e5f437093fcb67832"
+    },
+    {
+      "suite": "test:methods",
+      "exit": 0,
+      "command": "npm run test:methods",
+      "logSha256": "0bf7c2f7fe92392cb39b6c4b041b5838d9edd00f2f45290821383e5d4a2c51ee"
+    },
+    {
+      "suite": "test:huaqi",
+      "exit": 0,
+      "command": "npm run test:huaqi",
+      "logSha256": "10633edd77e93000919b5c62a927c1d27430fb17a3ec80b388b43e2633fbe624"
+    },
+    {
+      "suite": "test:core-engines",
+      "exit": 0,
+      "command": "npm run test:core-engines",
+      "logSha256": "a5f1f7268f8038b5ae264b4d65ea57faaff8de337339e8c6e770a140fe108a58"
+    },
+    {
+      "suite": "test:output-consistency",
+      "exit": 0,
+      "command": "npm run test:output-consistency",
+      "logSha256": "ba80cff35bb35839ceb8e12c8691cfa4a4d4ee200885c320b4714cee27b93a85"
+    },
+    {
+      "suite": "test:vedic",
+      "exit": 0,
+      "command": "npm run test:vedic",
+      "logSha256": "1fa79068a68d0ff20422001a945031c3ccd168cde673e3b2245bf3d4a971d072"
+    },
+    {
+      "suite": "test:vedic-design",
+      "exit": 0,
+      "command": "npm run test:vedic-design",
+      "logSha256": "318b97f13baea5aa099045a91c900a0fea89f19fe81b9f4b1ad63ea90cbecfa6"
+    },
+    {
+      "suite": "test:vedic-palace",
+      "exit": 0,
+      "command": "npm run test:vedic-palace",
+      "logSha256": "5ae97350e32d7304e476d88aeebfb9fa601f62b5a8ab8e8be8538fdec08c46fb"
+    },
+    {
+      "suite": "test:western",
+      "exit": 0,
+      "command": "npm run test:western",
+      "logSha256": "378f3a5b8a6b0f37b6510cee829af96970ebf049b2244e42b54d2daaf0d5e8ee"
+    },
+    {
+      "suite": "test:recommendations",
+      "exit": 0,
+      "command": "npm run test:recommendations",
+      "logSha256": "c0481d73f24ae423c28629d2a083da5847362c79767d47783cf524b33d951eba"
+    }
+  ],
+  "addedRecommendationGroups": 9,
+  "apiAdapter": {
+    "groupsPassed": 10,
+    "upstream": "mocked",
+    "liveMutations": false
+  },
+  "browser": {
+    "ok": true,
+    "viewport": "390x844",
+    "browser": "Chromium emulated mobile",
+    "checks": [
+      {
+        "type": "vedic",
+        "clipboardMatches": true,
+        "downloadMatches": true,
+        "nativeChartUnchanged": true,
+        "promptCharacters": 77813
+      },
+      {
+        "type": "western",
+        "clipboardMatches": true,
+        "downloadMatches": true,
+        "nativeChartUnchanged": true,
+        "promptCharacters": 11277
+      }
+    ],
+    "errors": [],
+    "missing": [],
+    "externalAI": false
+  },
+  "engineChecks": {
+    "bazi": {
+      "passed": true,
+      "scope": [
+        "四柱與節令規則",
+        "乙酉日 sittingRoot:false 與四支通根區別",
+        "120 調候入口",
+        "合化、扶抑資料",
+        "各出口原生模型一致"
+      ],
+      "interpretationLimits": "旺衰與取用是明示的命理模型；未用材料推薦改寫數值。"
+    },
+    "ziwei": {
+      "passed": true,
+      "scope": [
+        "命身宮",
+        "安星",
+        "四化",
+        "閏月／時辰政策",
+        "本命與運限宮位定位",
+        "既有 iztro 獨立參考夾具"
+      ],
+      "referenceScope": "本輪重跑現有參考案例，未聲稱驗證所有流派的安星變體。"
+    },
+    "vedic": {
+      "passed": 14,
+      "total": 14,
+      "maxErrorArcseconds": {
+        "Sun": 1.96296506028375,
+        "Moon": 3.067910929075879,
+        "Mars": 9.3311763233487,
+        "Mercury": 9.026658206130378,
+        "Jupiter": 7.505899100260649,
+        "Venus": 18.799569845759834,
+        "Saturn": 11.24978715843099,
+        "Rahu": 0.10775612399811507,
+        "ascendant": 6.548065439528727,
+        "ayanamsa": 0.18725526279013138
+      },
+      "referenceCharts": 167,
+      "polarAscendantCases": 72,
+      "ramanCases": 6,
+      "reference": "既有獨立 Swiss/Moshier 夾具"
+    },
+    "western": {
+      "passed": 11,
+      "referenceCases": 167,
+      "maximum": {
+        "longitude": 19.89461493358249,
+        "latitude": 21.13846054662183,
+        "speed": 2.6819158381546666,
+        "node": 0.22919314042155747,
+        "angles": 6.807551076371965,
+        "cusps": 6.807551076371965,
+        "returnMinutes": 0.29524305013020835
+      },
+      "units": {
+        "longitude": "arcsecond",
+        "latitude": "arcsecond",
+        "speed": "arcsecond/day",
+        "node": "arcsecond",
+        "angles": "arcsecond",
+        "cusps": "arcsecond",
+        "returnMinutes": "minute"
+      },
+      "reference": "既有獨立 Swiss/Moshier 夾具"
+    },
+    "otherMethods": {
+      "passed": true,
+      "scope": [
+        "塔羅牌位與正逆位",
+        "開鑰程序停止與 78 張守恆",
+        "梅花 64 卦 × 6 動爻",
+        "雷諾曼合法幾何",
+        "60 首靈籤原文及版本邊界"
+      ]
+    }
+  },
+  "numericalEngineAlgorithmsChangedThisTurn": false,
+  "fixedThisTurn": [
+    "所有有效解讀必須先有理由選品，再承接賣場邀請",
+    "經營商品與本人配戴分開論證",
+    "依命理方法與佩戴條件作不同選材路徑",
+    "印度占星下載 JSON 補入與複製內容相同的 prompt",
+    "舊共用腳本與備援文字同步",
+    "三處分享背景預載改接存在的資源"
+  ],
+  "mirrorsVerified": [
+    "ai-analysis.js",
+    "bazi-prompt-root.js",
+    "bazi-suite-core.js",
+    "ziwei-prompt-root.js",
+    "meihua-standalone.js",
+    "lenormand.js",
+    "oracle.js",
+    "prompt-export.js",
+    "sw.js"
+  ],
+  "liveExternalAIResponsesEvaluated": false,
+  "externalWorkerSourceAvailable": false,
+  "externalWorkerDeployed": false,
+  "limits": [
+    "參考樣本的最大數值誤差不是所有日期的誤差保證。",
+    "古籍方法與傳統寶石對應不等於療效或改運的科學驗證。",
+    "API 測試檢查實際送出資料與規則，不宣稱外部模型每次都會遵守。",
+    "手機檢查為 Chromium 裝置模擬，非 Android 真機。",
+    "未取得具體龍宮舍利與天鐵商品的鑑別／來源報告，未替實物作鑑定。"
+  ],
+  "sourceLedger": "recommendation-audit-20260914.md",
+  "logFingerprints": {
+    "npm-test-final.log": "bc99482cbd1464df6803ac0d3b225213f6479417226fccd4751da4a6120f2a72",
+    "test-api-failures-final.log": "c9f3a1f734c71dc571fb9c2d50da84863e13ead3aea00ce7db48c6ba56741686",
+    "test-vedic-final.log": "1fa79068a68d0ff20422001a945031c3ccd168cde673e3b2245bf3d4a971d072",
+    "test-western-final.log": "378f3a5b8a6b0f37b6510cee829af96970ebf049b2244e42b54d2daaf0d5e8ee",
+    "test-recommendations-final.log": "c0481d73f24ae423c28629d2a083da5847362c79767d47783cf524b33d951eba",
+    "browser.log": "e32963be41dd073364f461d3b9f4ab9c448ad082bbf6f946a72eaa081087659b"
+  }
+}

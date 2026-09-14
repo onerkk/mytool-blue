@@ -22,7 +22,7 @@
 // v81: 20260914palace1 立體星殿鏡頭、雕刻琺瑯命盤與全屏過場。
 // v82: 20260914western1 西洋星穹、原子化命盤與出生地整合。
 // v83: 20260914share1 十種入口共用清單、印度與西洋本命分享卡。
-const CACHE_NAME = 'jy-main-v83';
+const CACHE_NAME = 'jy-main-v84';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

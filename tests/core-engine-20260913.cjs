@@ -4,7 +4,7 @@ const {environment}=require('./dom-fixture.cjs');
 const base=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(base,f),'utf8'),plain=x=>JSON.parse(JSON.stringify(x));
 const {ctx:c}=environment();c.console={log(){},warn(){},error(){}};
 const load=f=>vm.runInContext(read(f),c,{filename:f});
-['JS/vendor/lunar.js','JS/bazi-calendar-core.js','JS/solar-location.js','JS/bazi.js','JS/bazi_upgrade.js','JS/ziwei.js','JS/ziwei-standalone.js','JS/bazi-prompt-root.js','JS/bazi-standalone.js','JS/bazi-suite-core.js'].forEach(load);
+['JS/reading-quality.js','JS/vendor/lunar.js','JS/bazi-calendar-core.js','JS/solar-location.js','JS/bazi.js','JS/bazi_upgrade.js','JS/ziwei.js','JS/ziwei-standalone.js','JS/bazi-prompt-root.js','JS/bazi-standalone.js','JS/bazi-suite-core.js'].forEach(load);
 const chartConstants=read('JS/ai-analysis.js');
 for(const n of acorn.parse(chartConstants,{ecmaVersion:'latest'}).body){
   if(n.type==='VariableDeclaration'&&n.declarations.some(d=>['SIHUA_TABLE','ZW_PALACES','ZW_MAJOR','ZW_BRIGHTNESS'].includes(d.id.name))||n.type==='FunctionDeclaration'&&n.id.name==='getStarBright')vm.runInContext(chartConstants.slice(n.start,n.end),c);

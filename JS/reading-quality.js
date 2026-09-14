@@ -1,7 +1,46 @@
-/* Reading contract v3. Source-reviewed methods, 2026-09-13; never changes a cast. */
+/* Reading contract v4. Method + material sources in docs/recommendation-audit-20260914.md. Never changes a cast. */
 (function(root){
   'use strict';
-  var RECOMMENDATION_TEXT="先完成原問題的解讀與可行建議，再依本次已知處境與有依據的分析，找出命主此刻最需要照顧的重點。不參考店內庫存，不受既有品項清單限制，也不先選商品再反推需求。有合理連結時，推薦一種適合的材料或飾品品類，以兩三句白話說明選擇理由，以及如何配合本題的一個具體行動；必要時再給一個有不同理由的替代選項。推薦到材料或品類即可，不指定未確認的珠徑、手圍、型號、價格或現貨，不重複列出商品名稱。依可靠的材質知識與已知佩戴偏好選擇；提及傳統象徵時說明是象徵，不宣稱命盤能證明人體缺某種礦物、必須購買，或保證療效、消災、改運與改變他人心意。若資料不足以挑選，坦白說明，不固定套用同一種水晶。實際需要休息、溝通或界線時，先把可做的事說清楚，飾品只是自願的日常提醒。財務困難者先用已有物品，不推購買；即時人身危機先協助求助，省略選品與賣場邀請。一般情況最後自然邀請到靜月之光蝦皮賣場看看，連結只放一次，不保證賣場一定有該推薦品類。這些是寫作規則，勿把規則或整段限制照抄成廣告或免責聲明。";
+  var RECOMMENDATION_TEXT=[
+    '【延伸選品】',
+    '【從解讀到適合你的配戴選擇】先完整回答原問題，充分說明判斷、牌組／命盤機制與可行建議，再完成一段有主推薦的個人選品，最後才邀請到賣場。一般有效解讀都要完成這一段；不能只有祝福或直接丟賣場連結，也不能拿商業品類分析代替個人選品。這是給讀牌者的選擇方法，正文自然說明結果，不逐項照抄規則。',
+    '1. 確認在替誰選：以提問者本人為預設；送禮／雙人題依明示收禮者，各自看需求。先從已完成的分析抽出一個真正影響本題的需要，引用具體牌組、原局作用、宮主相位或使用者明說的處境。把需要翻成可做的事，例如表達需求、守住承諾、整理決策或建立規律；不是看到「感情」「財運」兩字就配固定石頭。若問經營天鐵、水晶或龍宮舍利的生意，先比較商業選項；利於銷售某類商品不等於本人適合佩戴該材質，選品段須另建個人的理由。',
+    '2. 依本次實際方法判定取用，再看材質：生辰已知時使用完整有效命盤及相關歲運；只有牌／卦／籤時從本題的行動需要選。缺時辰或偏好不代表整段省略，先清楚選到本題支持的材料／品類層級，說明一個會改變選擇的條件；不補造八字、上升或對方資料。未確認的模型候選先比較根據、形成有先後的主判，再做象徵應用，不直接拿候選第一名當終身處方。',
+    '3. 比較真正不同的兩個候選後選一個主推薦：哪種色澤／觸感／文化意義最能承接上述需要，哪種更符合已知佩戴環境、抗碰撞要求、金屬接觸反應與預算。比較可以在分析中完成，正文只保留決定取捨的理由；替代選項至多一個，說清在何種條件下改選。水晶礦石、天鐵、龍宮舍利皆可考慮，按適配理由入選，不輪流推銷，不先選商品再反推需求；材料參考表不是賣場庫存，也不是限定可選名單。',
+    '4. 寫出具體而有分寸的推薦：點名一種材料或飾品品類，接著說「本題的哪個需要 → 為何這種材料／象徵適合 → 怎樣戴或在何時使用，配合哪一個行動」。一般用三至五句即可；原題就是手鍊選擇時，充分展開主輔、取用衝突與替代條件，結尾承接已有推薦，不再另推一套。沒有偏好時明說「若你喜歡這種色澤／質感，我會先選…」，不把假設寫成本人已知偏好。只選到材料／品類，不自造規格、價格、現貨或認證。',
+    '5. 將傳統取象與材料事實各自說準。五行色彩、星曜寶石與宗教寓意可作明示的文化象徵；選擇理由要能接回本題，不宣稱命盤能證明人體缺某種礦物，或把療效、招財、消災及改變他人心意寫成材質能力。飾品配合使用者的實際行動，不能替代溝通、治療或風險管理。檢查點看行動是否有用、佩戴是否舒適，而不是以某日的運期要求必須換買。',
+    '收尾順序：完整解讀與行動 → 有理由的主推薦 → 自然邀請 → 一次賣場連結 → 祝福。邀請須承接剛才的選材方向，例如請使用者到靜月之光蝦皮賣場看看喜歡的設計、核對材質，再決定是否適合自己；不保證賣場一定有該推薦品類。財務困難者先用已有物品，保留適合方向作日後參考、不催購；使用者明確拒絕選品／購買時尊重意願。即時人身危機先協助求助；無效或已停止的占卜只解釋程序，此兩種情況省略選品與賣場邀請。'
+  ].join('\n');
+  var RECOMMENDATION_METHODS={
+    bazi:'八字：先分格局、扶抑、調候各自處理的問題，再以月令、四支藏根、透干、合沖及生剋通路權衡主次，最後納入本次實算大運流年。指出取某行是為扶身、通關、制化或寒暖何者；需要時交代為何不取另一方向。喜用不是五行百分比最少，也不是缺哪行補哪行。若轉為青綠／赤／黃／白／黑的傳統五色設計，標明是色彩象徵，礦物本體不由顏色成為五行藥物；原局取用與當期側重分開。',
+    compat:'合盤：先分別讀兩人的原局、需求與當運，選品明示為A、B或兩人共同的相處提醒。另一人的五行不當成本人的補劑，同一款也不預設適合兩人。先決定各自要做的相處行動，再依本人取用或共同偏好選材；不以飾品承諾綁住對方。',
+    personality:'人格卡：回到所依據的四柱、十神作用及使用者自述，再選最值得練習的一項能力與提醒物。人格名稱、卡片顏色與分數不是礦物處方；能核對原局取用時才補充五行象徵。',
+    chart:'純排盤：維持資料校核用途，不從尚未解讀的柱表硬推出喜忌。選品只按原問題已明說的佩戴用途與偏好提出條件清楚的方向；若原問句就是選材，說明需要以本盤進一步比較扶抑與調候，先給可採用的日常設計方向。',
+    ziwei:'紫微：先從本題主宮、本宮星組、三方四正與四化牽動說清能力、壓力和可調整的行動；大限流年只採已提供的層次。再用該需要與本人偏好選材。五行局是排盤參數，星曜五行是本體系取象，兩者不能直接當八字缺行；單顆化忌或煞曜不對應必買的化煞石。若以金屬或色彩作提醒，說清是本站應用。',
+    astro:'西洋占星：先以本題宮位與宮主、命主星、日月及真實相位讀出需要；使用本次熱帶／恆星設定，元素分布只作氣質參照。太陽星座和月份誕生石不足以決定個人推薦；西洋尊貴也不直接套印度行星寶石表。根據已成立的星盤主題挑材質／配色，說明象徵如何支持行動與已知生活條件；出生時間不詳時改用穩定星位或原題需要。',
+    vedic:'印度占星：先讀D1上升、相關宮主的功能角色、落宮與尊貴、受照和定位星，再以有效分盤及當期大運／副運判斷承接。採P.V.R. Narasimha Rao《Vedic Astrology: An Integrated Approach》第34章的傳統寶石路徑時，先判功能吉凶與相關領域，才討論是否增強該星；星弱、落陷或正在走某星大運都不是單獨充分理由。表77的傳統對應：太陽紅寶石、月亮白珍珠、火星紅珊瑚、水星祖母綠、木星黃剛玉、金星鑽石、土星藍剛玉、羅睺鈣鋁榴石Hessonite、計都貓眼石。這是作者流派象徵，不是療效證據；同色便宜礦石可作色彩設計但不冒稱等效替代，例如綠碧璽不直接等於祖母綠、天鐵不直接等於土星寶石。先論有利與不利的實際職責，條件不足時仍可依本題需要選日常材質並明說未採正式星曜補救。',
+    tarot:'塔羅：從本盤實際牌位、牌組作用、建議與結果如何銜接，找出提問者要練習的行動；RWS正逆位與Book T元素尊貴各循原方法。元素或一張牌不能自動指定礦石；保留牌組形成的完整情境，再依材料外觀、觸感與文化象徵選提醒物。',
+    ootk:'開鑰之法：只有程序有效的操作才用於選品依據，從計數主線、配對與跨輪承接找出可行動的重點。代表牌落在哪個元素堆，不等於本人缺該元素。已停止、驗題未成立時解釋停止與整理問題的下一步，不用停止訊號推銷化解商品。',
+    lenormand:'雷諾曼：從實際相鄰牌句與整條線選出主題和可行動的條件；大牌陣用本次真實宮位幾何補充。牌名相同不構成選材依據，例如月亮不是必選月光石、心不是必選粉晶。狀態題若未能辨認第三人的關係身分，仍可從提問者如何確認、表達與保留界線的需要挑提醒物，不以推薦替本盤補出不存在的答案。',
+    meihua:'梅花：本卦、互卦、變卦與體用生剋先完成事情如何演變的主判，再將最重要的應對方式轉為選材理由。體卦是此次問事的參照，不等於提問者終身八字日主；某行剋體不自動成為永久禁戴色，動爻也不是珠數。',
+    oracle:'靈籤：先確認有效籤、原詩與版本，從整首轉折及勸進、守候或調整的主旨選出實際行動，再配材質。籤中龍、金、玉、佛等意象不直接變商品指定；龍宮舍利只有在使用者認同相關信仰意義且材質來源可核對時才列為文化性選項。',
+    name:'姓名學：筆畫數理、字義與本人需要分開；先說清本題的溝通／身份表達需要，再選材料與風格。姓名數理不推導人體缺礦，也不自行補出未提供的生辰。'
+  };
+  var MATERIAL_GUIDE=[
+    '【材質參考：事實與適用條件】以下提供比較線索，不是固定答案。先選符合本題的外觀／用途，再核對具體商品的鑑別、處理與配件；天然不等於耐撞或不過敏。可用自身可靠材質知識補充其他選項，來源未確認的說法不充作科學事實。',
+    '水晶與其他寶石：紫水晶為石英、莫氏硬度7，適合日常飾品但仍避強撞與急劇溫差；它的紫色可依本人偏好作沉澱／整理思緒的象徵，並非鎮靜療效。碧璽硬度7–7.5、韌性一般，選綠色品種可承接已判明的青綠木色設計，但不憑硬度斷言耐摔。月光石硬度6–6.5、韌性較差，若經常撞擊手腕，較不適合無保護的手鍊，可比較保護式墜飾或其他材料。硬玉／軟玉硬度不同而韌性優良，適合重視日常耐用與溫潤質感者，仍須核對處理與實際工藝。參考GIA各材質Care and Cleaning；只談這些物性可支持的用途。',
+    '天鐵：先問清商品標示與鑑別。若確為鐵隕石，主要是鐵鎳金屬，可因提問者喜歡宇宙來源、金屬質感，或願以其作守住承諾的個人象徵而入選；這種象徵不是鐵鎳的科學功效。藏式天鐵／托查名稱本身不等於經鑑定的鐵隕石，不把任何名為天鐵的商品一律寫成隕鐵。已知鎳過敏者改選合適的非含鎳接觸材質，配件亦核對；不能靠五行金的喜忌取代實際接觸條件。',
+    '龍宮舍利：本次沒有具體商品鑑別報告，單靠商品／宗教名稱無法確定礦物組成、硬度、產地或宗教來源。適配路徑是使用者已表達對相關文化、靜心儀式或信仰的認同，且可核對實物材質與來源，再把它用作既有修持／行動的提醒；不能只因命盤喜土、抽到龍意象或店主販售此物就優先推薦。信仰偏好未知時，明說這個成立條件，主推薦仍可選已有具體材質依據的飾品；不把它混稱佛教人體舍利、保證增生或通用補土材料。',
+    '佩戴落實：主題只是第一步，最後以本人喜歡、舒適、可保養及負擔得起為取捨。手串或墜飾由使用環境決定；同一需要也可用已有飾品。給一個與正文相連的動作及檢查點，例如在談界線前先整理一句需求，幾次互動後看是否更能說清楚；材料的選擇與他人是否答應分開評估。',
+    '材質書目（編寫時核閱於2026-09-14；支持物性或文化背景，不證明配戴能改運，也不表示本次接收提示詞的AI已查網）：GIA https://www.gia.edu/amethyst-care-cleaning 、https://www.gia.edu/tourmaline-care-cleaning 、https://www.gia.edu/moonstone-care-cleaning 、https://www.gia.edu/jade-care-cleaning ；英國自然史博物館 https://www.nhm.ac.uk/discover/types-of-meteorites.html ；John Vincent Bellezza 托查研究 https://www.asianart.com/articles/vestiges/index.html ；美國皮膚科醫學會 https://www.aad.org/public/diseases/eczema/insider/nickel-allergy 。龍宮舍利的本次具體實物鑑別資料未提供，保留可核對的文化選擇條件，不自填鑑定結果。'
+  ].join('\n');
+  var SHOP_FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
+  function recommendationText(kinds){
+    var selected=Array.isArray(kinds)?kinds:(kinds?[kinds]:Object.keys(RECOMMENDATION_METHODS));
+    var used={};
+    var guides=selected.map(function(k){k=k==='western'?'astro':k; if(used[k]||!RECOMMENDATION_METHODS[k])return ''; used[k]=true;return RECOMMENDATION_METHODS[k];}).filter(Boolean);
+    return [RECOMMENDATION_TEXT,'【本次方法的選材依據】僅採實際提供且有效的資料；多系統各自成判，再取最能回答本題的主線，不以票數或分數相加選材。',guides.join('\n'),MATERIAL_GUIDE].filter(Boolean).join('\n');
+  }
   var PLAIN_TEXT="【白話優先】開頭直接回答原問題，交代目前主判與最重要的理由；有支持的傾向就清楚選邊，然後充分解釋。正文依問題展開形成原因、關鍵組合如何作用、矛盾如何取捨、後續發展與成立條件，最後提出對應的行動。每個實質子題都要回答；篇幅隨問題與盤面複雜度調整，讓讀者看懂為什麼得到這個答案，不預設把依據壓成一小段。首次使用術語時立即翻成生活意思，以具體牌位、柱位、宮位或卦象關係支持解讀，避免只有抽象建議。對證據較弱的部分說清判到哪一層，以及缺少哪個會改變答案的關鍵，接著完成能判的分析。語氣溫和、直接、有主次；提供做得到的下一步、目的與調整訊號，必要時附一句能實際說出口的話。";
   // These are interpretive workflows synthesized from the source ledger in docs/.
   // They are not lookup answers, calculated probabilities or proof of events.
@@ -96,11 +135,12 @@
   function payloadGuide(kinds){
     var selected={};
     (kinds||[]).forEach(function(kind){if(METHODS[kind])selected[kind]=methodLines(kind);});
-    return {version:'3.0.0',answerStyle:PLAIN_TEXT,methods:selected,
+    return {version:'4.0.0',answerStyle:PLAIN_TEXT,methods:selected,
       synthesis:'先以實際提供資料的各系統各自成判，再比較回答的是同一命題、不同層面或不同時間。選出最能直接回答本題的主線，說明共識與衝突的原因，形成主次清楚的綜合結論；系統數量與同源訊號不作多數投票。',
       dataPolicy:'原始盤面、個案背景與衍生模型分開；本方法資料包提供閱讀上下文，沒有相應盤面時不啟用該系統。'};
   }
-  function recommendationPolicy(){return {mode:"needs_first",answerStyle:PLAIN_TEXT,outputRule:RECOMMENDATION_TEXT+"\n"+"[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)"+"\n願你諸事順遂。"};}
+  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.0.0',requiredForValidReading:true,answerStyle:PLAIN_TEXT,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:recommendationText(kinds)+'\n一般情況最後兩行：\n'+SHOP_FOOTER};}
+  function recommendationEnding(kinds){return recommendationText(kinds)+'\n請完成有依據的主推薦與承接邀請，一般情況最後兩行依序為：\n'+SHOP_FOOTER;}
   function lines(kind){return [
     PLAIN_TEXT,
     '【這一題的判讀品質】',
@@ -109,6 +149,6 @@
     '把支持、牽制與條件串成完整說明：現在是什麼局勢、為什麼形成、接下來較可能如何發展、哪個條件最能改變走向。同一訊號的改寫不算多份佐證。',
     '收尾給出小型可逆行動：做什麼、何時檢查、看到什麼才繼續或調整。檢查日是行動規劃，不是假裝預測日期。分析深度來自方法、組合與取捨，讓讀者理解自己的處境與選擇。'
   ].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'3.0.0',lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},recommendationText:function(){return RECOMMENDATION_TEXT;},recommendationPolicy:recommendationPolicy});
+  root.JY_READING_QUALITY=Object.freeze({version:'4.0.0',lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

@@ -42,23 +42,27 @@ test('Shared and standalone brand policies agree; no fixed gemstone or fabricate
  const shared=c.JY_READING_QUALITY,policy=shared.recommendationPolicy();
  assert.equal(policy.mode,'needs_first');assert(!('allowedItems' in policy));assert(!('sourceFile' in policy));
  for(const kind of ['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','oracle'])assert(shared.lines(kind).join('\n').includes('【白話優先】'));
- for(const spec of [b.JY_BAZI_PROMPT_ROOT,z.JY_ZIWEI_PROMPT_ROOT])assert(spec.brandTailLines().join('\n').includes(shared.recommendationText()));
+ for(const [spec,kind] of [[b.JY_BAZI_PROMPT_ROOT,'bazi'],[z.JY_ZIWEI_PROMPT_ROOT,'ziwei']])assert(spec.brandTailLines().join('\n').includes(shared.recommendationText(kind)));
  const fallback=runtime(['bazi-prompt-root','ziwei-prompt-root']).ctx;vm.runInContext('window.JY_READING_QUALITY=undefined;',fallback);
- for(const spec of [fallback.JY_BAZI_PROMPT_ROOT,fallback.JY_ZIWEI_PROMPT_ROOT]){
-  assert(spec.brandTailLines().join('\n').includes(shared.recommendationText()));
+ for(const [spec,kind] of [[fallback.JY_BAZI_PROMPT_ROOT,'bazi'],[fallback.JY_ZIWEI_PROMPT_ROOT,'ziwei']]){
+  assert(spec.brandTailLines().join('\n').includes(shared.recommendationText(kind)));
   assert(spec.answerContractLines('single').join('\n').includes('【白話優先】'));
  }
  // The prompt also must avoid turning symbolic interpretation into a sales diagnosis.
  assert(policy.outputRule.includes('財務困難者先用已有物品'));
  assert(policy.outputRule.includes('不宣稱命盤能證明人體缺某種礦物'));
- assert(!/白水晶|粉晶|手圍16cm|14mm/.test(policy.outputRule));
+ assert(!/手圍16cm|14mm/.test(policy.outputRule));
+ assert.equal(policy.requiredForValidReading,true);
+ assert.deepEqual(Array.from(policy.outputOrder),['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing']);
+ // Material names are now source-reviewed comparison knowledge, never selected inventory.
+ assert(policy.outputRule.includes('材料參考表不是賣場庫存'));
 });
 test('Legacy API entry points send needs-first policy and do not attach catalogue candidates',()=>{
  const follow=actualFunction('JS/ai-analysis.js','_triggerTarotFollowUp');
  assert(!/JYShopInventory|allowedItems|payload\.crystalCatalog|_buildCrystalCatalog\(/.test(follow));
- assert(follow.includes('recommendationPolicy()'));assert(follow.includes('mode:"needs_first"'));
+ assert(follow.includes("recommendationPolicy(payload.ootkData?['ootk']:['tarot'])"));assert(follow.includes('JY_REC_API.ootk'));
  const api=read('functions/api/ai.js');acorn.parse(api,{ecmaVersion:'latest',sourceType:'module'});
- assert(api.includes('【白話優先】'));assert(api.includes(sharedText()));
+ assert(api.includes('【白話優先】'));assert(api.includes(JSON.stringify(sharedText())));
  assert(!api.includes('只從實際候選資料選品'));
  function sharedText(){return c.JY_READING_QUALITY.recommendationText();}
 });

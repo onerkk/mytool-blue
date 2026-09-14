@@ -403,8 +403,8 @@
     return spec.universalRulesLines().concat(spec.domainRouterLines(mode||'single'));
   }
 
-  function baziBrandTailLines() {
-    return promptSpec().brandTailLines();
+  function baziBrandTailLines(mode) {
+    return promptSpec().brandTailLines(mode);
   }
 
   function buildSinglePrompt(lensId, chart, meta, userQuestion) {
@@ -425,7 +425,7 @@
       [
         '分析模式補充：純排盤模式聚焦資料校核；原局題以長期結構為主；歲運題引用資料中的交界；多選題使用一致標準比較。'
       ],
-      baziBrandTailLines()
+      baziBrandTailLines(lensId==='chart'?'chart':'single')
     ).join('\n\n');
   }
 
@@ -487,7 +487,7 @@
         '回答請分清A方、B方與共同關係層，說明吸引、支持、摩擦、權責／界線、溝通修復、長期壓力、時間節奏與可執行協議。',
         '支持與張力的筆數只用來整理線索，不是配對分數。請依雙方全局與現實互動判斷；未知時辰已排除的喜忌、時柱與運勢同步不得補回。'+s.cautions
       ],
-      baziBrandTailLines()
+      baziBrandTailLines('compatibility')
     ).join('\n\n');
   }
 
@@ -563,7 +563,7 @@
       personality.disclaimer,
       '【三柱參考】'+safeArray(personality.chart&&personality.chart.pillars).map(function(x){return x.label+' '+x.gan+x.zhi;}).join('；'),
       '先依三柱可支持的結構與當事人已提供的具體行為分析；將可觀察的傾向、反例與待確認部分說清楚。節氣或換日附近的三柱仍需核對。'
-    ].concat(universalQuestionRootLines('personality'),universalJudgmentRuleLines('personality'),promptSpec().answerContractLines('personality'),baziBrandTailLines()).join('\n\n');
+    ].concat(universalQuestionRootLines('personality'),universalJudgmentRuleLines('personality'),promptSpec().answerContractLines('personality'),baziBrandTailLines('personality')).join('\n\n');
     return [
       '【角色】'+promptSpec().roleText('personality'),
       '【系統聲明】'+personality.disclaimer,
@@ -586,7 +586,7 @@
       [
         '人格輸出補充：聚焦最有根據的特質，交代適用情境、優勢、風險、反例與可執行調整。'
       ],
-      baziBrandTailLines()
+      baziBrandTailLines('personality')
     ).join('\n\n');
   }
 

@@ -5,7 +5,7 @@ const {environment}=require('./dom-fixture.cjs');
 const root=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(root,f),'utf8'),plain=x=>JSON.parse(JSON.stringify(x));
 const F=require('../JS/tarot-foundation.js');let passed=0;
 function test(name,fn){try{fn();passed++;console.log('✓ '+name);}catch(e){process.exitCode=1;console.error('✗ '+name+'\n'+e.stack);}}
-function runtime(files=[]){const e=environment();e.ctx.console={log(){},warn(){},error(){}};files.forEach(f=>vm.runInContext(read('JS/'+f+'.js'),e.ctx,{filename:f}));return e;}
+function runtime(files=[]){const e=environment();vm.runInContext(read('JS/reading-quality.js'),e.ctx);e.ctx.console={log(){},warn(){},error(){}};files.forEach(f=>vm.runInContext(read('JS/'+f+'.js'),e.ctx,{filename:f}));return e;}
 function expose(ctx,file,body){vm.runInContext(read(file).replace(/\}\)\(\);\s*$/,body+'\n})();'),ctx,{filename:file});}
 function actualFunction(file,name){const src=read(file);let result;function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id?.name===name)result=src.slice(n.start,n.end);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}}walk(acorn.parse(src,{ecmaVersion:'latest'}));assert(result,name);return result;}
 const tarotCases=[
