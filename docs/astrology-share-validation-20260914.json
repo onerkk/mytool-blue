@@ -1,0 +1,99 @@
+{
+  "date": "2026-09-14",
+  "release": "20260914share1",
+  "scope": "本輪已執行的數值、傳統方法與分享流程測試；不聲稱所有可能輸入或預測已獲證實",
+  "automatedGroups": {
+    "vedic": 14,
+    "western": 11,
+    "output-consistency": 9,
+    "core-engines": 10,
+    "huaqi": 7,
+    "share-card": 10,
+    "share-preview": 10,
+    "astrology-share": 7,
+    "ui": 7,
+    "vedic-design": 13,
+    "vedic-palace": 6
+  },
+  "vedic": {
+    "passed": 14,
+    "total": 14,
+    "maxErrorArcseconds": {
+      "Sun": 1.96296506028375,
+      "Moon": 3.067910929075879,
+      "Mars": 9.3311763233487,
+      "Mercury": 9.026658206130378,
+      "Jupiter": 7.505899100260649,
+      "Venus": 18.799569845759834,
+      "Saturn": 11.24978715843099,
+      "Rahu": 0.10775612399811507,
+      "ascendant": 6.548065439528727,
+      "ayanamsa": 0.18725526279013138
+    }
+  },
+  "western": {
+    "passed": 11,
+    "referenceCases": 167,
+    "maximum": {
+      "longitude": 19.89461493358249,
+      "latitude": 21.13846054662183,
+      "speed": 2.6819158381546666,
+      "node": 0.22919314042155747,
+      "angles": 6.807551076371965,
+      "cusps": 6.807551076371965,
+      "returnMinutes": 0.29524305013020835
+    }
+  },
+  "browser": {
+    "ok": true,
+    "checks": [
+      "10 invitation labels equal homepage catalogue",
+      "2160 × 2700 PNG download",
+      "native-share mock receives exact preview PNG",
+      "vedic: actual form, result share, hidden/visible personal data, unknown time, immutable snapshot, touch scroll restoration",
+      "western: actual form, result share, hidden/visible personal data, unknown time, immutable snapshot, touch scroll restoration"
+    ],
+    "errors": [],
+    "missing": [
+      "/img/share-bg-tarot.png",
+      "/img/share-bg-ootk.png",
+      "/img/share-bg-general.png"
+    ],
+    "shares": [
+      {
+        "name": "靜月之光_月光邀請_2026-09-14.png",
+        "size": 5087665,
+        "type": "image/png",
+        "hash": "61fa313a1a8fb1cec0ffbd298e8203ebfc1a927256018f4d9615f6a25b7b7dc4",
+        "downloadMatchesPreviewAndShare": true
+      },
+      {
+        "name": "靜月之光_印度占星_2026-09-14.png",
+        "size": 4041949,
+        "type": "image/png",
+        "hash": "5151f3ddadc0c01c7ab5dabfb70b1e59c9b36fae9c6e9c67fe1564795f71d8d3",
+        "downloadMatchesPreviewAndShare": true
+      },
+      {
+        "name": "靜月之光_西洋占星_2026-09-14.png",
+        "size": 4358214,
+        "type": "image/png",
+        "hash": "630717f11678ab79465ddb2e5ec3f5ad4b59bcaeb0cc8e5dcd9ff5924de96a4a",
+        "downloadMatchesPreviewAndShare": true
+      }
+    ],
+    "viewport": "390 × 844 mobile / 1440 × 1000 desktop",
+    "nativeShare": "navigator.share is a recording mock; no external message was sent"
+  },
+  "sha256": {
+    "JS/vedic-engine.js": "4e7de2cb9b5e8c935ff311152483a21cf76accdd9295b75d067059bd51eb5c4f",
+    "JS/western-engine.js": "2bd8559fb791af0ee20e8153d232ba51f062fcf069736435477a3fcbf7383158",
+    "JS/vedic-ayanamsa.js": "dccc34ac7c0ca811fe3acf585c86853548c2ed14ac9a2d43076d5bfe44de4cc6",
+    "JS/western-chart.js": "76f1ac6727745c3e58c30ea394ece58fbec22df9acf3f4e12474176513556426",
+    "JS/share-card.js": "023de282bdddba8e47e008774518e2bd3b27bd3071ce2a959d49fc302ce5eac4",
+    "JS/method-catalog.js": "f881e4096ba1bcbee7547e627e4d69184624db902e657d3c41651d6b8c80f95d",
+    "tests/fixtures/vedic-swiss-20260913.json": "bea14d148b173866204cb6923a604d5fb959a2a683748f352da412ddd3138330",
+    "tests/fixtures/vedic-swiss-extra-20260913.json": "d6e138540662c538b97476179737f7dc62f5ecd2a16f066f8b6237b5beb84581",
+    "tests/fixtures/western-swiss-20260914.json": "a4668953032cf7e1694b1c86be1626413ba9e1dd3e43e7877d9a86a33f96c6f1"
+  }
+}

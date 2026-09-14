@@ -1,0 +1,26 @@
+靜月之光 · 分享卡更新 20260914share1
+
+本包接續已含印度與西洋占星的版本，只含本輪變更檔。
+依 ZIP 內原路徑覆蓋，並加入 JS/method-catalog.js；兩份 Service Worker 同為 jy-main-v83。
+更新與核對說明：docs/astrology-share-20260914.md
+驗證紀錄：docs/astrology-share-validation-20260914.json
+
+本輪變更檔 SHA-256：
+565b2837aaac910210a05eee7c86a24573f408da80fb3cc02de2ee0191f87f88  CSS/western.css
+f881e4096ba1bcbee7547e627e4d69184624db902e657d3c41651d6b8c80f95d  JS/method-catalog.js
+023de282bdddba8e47e008774518e2bd3b27bd3071ce2a959d49fc302ce5eac4  JS/share-card.js
+b41bd9183ae8a4daa11f6c95610f2cf9c704a59103e5bd7a6d5c88633634ef05  JS/sw.js
+ff541b298a6d4023a6817895cad7e2c939779661bda183d6947b5b23cc909b7f  JS/ui.js
+f6616f889016ae02353ae9c56ed64a648021f3a5301342afd62f90426c1cfb33  JS/vedic-standalone.js
+76f1ac6727745c3e58c30ea394ece58fbec22df9acf3f4e12474176513556426  JS/western-chart.js
+ffa160ebd0b6a26a4ffa46fc0f72d0a74e61603a5a62a0a600591bf360076013  JS/western-standalone.js
+969ac055ecee1e68cfead196ed67bc13678735964291a1a6f044de064675944e  docs/astrology-share-20260914.md
+433e3a69f6281b9be3e33c56d94cabc1889ce4fb28cdf0ba54f5922f4f604617  docs/astrology-share-validation-20260914.json
+685fa41dd78dd0d363651224ed70621e666912b69ae6f9fbcd81d5777eea9658  index.html
+49dc55523552b5e311b2104596b1bf5f2e8c6676c30d447389638b3582158475  package.json
+b41bd9183ae8a4daa11f6c95610f2cf9c704a59103e5bd7a6d5c88633634ef05  sw.js
+9ab2a6e814a7076dbeb2153e9106d259371037351fbc5a3b51dc90b368bb5019  tests/astrology-share-20260914.cjs
+174cddb9efc3f94305f996782b5b50d914d44432a7d6bfdba8015f33051ec8ca  tests/astrology-share-browser-20260914.cjs
+c0f7b69cd9d5b5214c32d1bc5735e40afa238483b0ac6abca4a00e943c8e47c8  tests/atelier-ui-20260911.cjs
+4e5efedbfe7aadbc19289c9a28f250d7a9916ea56a031912da111df872b5fa46  tests/share-card-20260911.cjs
+2250a33fe98d8b9cd8eeda9f84966934f4f2e11030a98686e23aae66cbf16998  tests/share-card-preview-20260911.cjs

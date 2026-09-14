@@ -1,11 +1,11 @@
-/*! 靜月之光 · Moon Atelier share cards v3.0.1 / 20260911preview1
- * Ten result/invitation renderers; decorative art never substitutes live data.
+/*! 靜月之光 · Moon Atelier share cards v3.1.0 / 20260914share1
+ * Twelve result/invitation renderers; decorative art never substitutes live data.
  * Golden Dawn Book T：牌面物理方向不建立固定逆位字典；RWS 保留實際逆位。
  * Public API: open, close, render (async), download; legacy _draw remains available.
  */
 (function () {
   'use strict';
-  if (window.JYShareCard && window.JYShareCard.version === '3.0.1') return;
+  if (window.JYShareCard && window.JYShareCard.version === '3.1.0') return;
   var W=1080, H=1350, SCALE=2, INK='#090f19', GOLD='#eed299', WHITE='#f7f1e6', MUTED='#b1b6c0';
   var SERIF='"Noto Serif TC","Songti TC","PMingLiU",serif';
   var SANS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
@@ -24,6 +24,8 @@
     baziPersonality:{name:'五軸人格',en:'FIVE AXES / SELF EXPLORATION',title:'你的模樣，不只一面',sub:'看見優勢，也接住不同狀態的自己。',accent:'#99cee3',rgb:'153,206,227',deep:'#244458',motif:'prism'},
     ziwei:{name:'紫微斗數',en:'ZI WEI / TWELVE PALACES',title:'展開你的人生星圖',sub:'從十二宮，梳理眼前的人生課題。',accent:'#cbb8ed',rgb:'203,184,237',deep:'#3e335d',motif:'orbit'},
     meihua:{name:'梅花易數',en:'MEI HUA / THE CHANGING MOMENT',title:'變化裡，自有線索',sub:'本、互、變之間，看見轉折的條件。',accent:'#b8d5b1',rgb:'184,213,177',deep:'#304b3d',motif:'yin'},
+    vedic:{name:'印度占星',en:'JYOTISHA / JANMA KUNDALI',title:'讓星圖，照見自己的節奏',sub:'本命星圖 · D1 Rāśi',accent:'#e5c28b',rgb:'229,194,139',deep:'#235451',motif:'orbit'},
+    western:{name:'西洋占星',en:'ASTROLOGY / YOUR CELESTIAL SIGNATURE',title:'在星辰之間，認識自己',sub:'本命星圖 · Natal Chart',accent:'#c5cff5',rgb:'197,207,245',deep:'#304066',motif:'orbit'},
     oracle:{name:'靜月靈籤',en:'SACRED VERSE / A QUIET MOMENT',title:'給此刻，一句提醒',sub:'靜下心，讀懂籤詩留給你的話。',accent:'#e4b092',rgb:'228,176,146',deep:'#55322e',motif:'lot'}
   };
   function str(v){return v==null?'':String(v);}
@@ -61,7 +63,11 @@
   function missing(c,t,message){plate(c,122,525,836,360,t,28);emblem(c,540,635,76,t);text(c,message||'尚無可分享的結果',540,766,38,WHITE,500,'center',true);note(c,'請先完成抽牌或排盤，再留下這一刻。',t,830);}
   function renderInvite(c,d,t){masthead(c,t,d);text(c,t.title,68,184,75,WHITE,600,'left',true,950);text(c,t.sub,68,278,75,GOLD,600,'left',true,950);var im=cache[HERO];if(im){var art=document.createElement('canvas');art.width=930;art.height=620;var ac=art.getContext('2d');ac.drawImage(im,0,0,930,620);ac.globalCompositeOperation='destination-in';var fade=ac.createLinearGradient(0,0,0,620);fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(.13,'#000');fade.addColorStop(.83,'#000');fade.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=fade;ac.fillRect(0,0,930,620);var side=ac.createLinearGradient(0,0,930,0);side.addColorStop(0,'rgba(0,0,0,0)');side.addColorStop(.2,'#000');side.addColorStop(.8,'#000');side.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=side;ac.fillRect(0,0,930,620);c.drawImage(art,75,319);}else{emblem(c,540,602,246,t);}
     var tag=str(d.tagline)||'感情的靠近，工作的轉彎，或下一個自己。';text(c,tag,540,871,29,WHITE,400,'center',false,930);
-    var systems=[['塔羅快讀','tarot'],['開鑰之法','ootk'],['雷諾曼','lenormand'],['紫微斗數','ziwei'],['八字命理','bazi'],['八字合盤','baziCompatibility'],['梅花易數','meihua'],['靜月靈籤','oracle']];systems.forEach(function(v,i){var x=65+(i%4)*241,y=918+Math.floor(i/4)*74,tt=THEMES[v[1]];plate(c,x,y,226,61,tt,17);star(c,x+24,y+30,6,tt.accent);text(c,v[0],x+128,y+30,28,WHITE,500,'center',false,175);});note(c,'選一種方式，為自己留一段安靜的時間。',t,1090);}
+    var systems=window.JYMethodCatalog,columns=5,gap=12,cell=(950-gap*(columns-1))/columns;
+    if(!systems||!systems.length)throw new Error('命理清單尚未載入');
+    systems.forEach(function(v,i){var x=65+(i%columns)*(cell+gap),y=918+Math.floor(i/columns)*74,tt=THEMES[v[6]]||t;plate(c,x,y,cell,61,tt,15);text(c,v[3],x+cell/2,y+30,27,WHITE,500,'center',false,cell-16);});
+    note(c,'十種探索，從你最在意的事開始。',t,1090);}
+
   function renderBazi(c,d,t){heading(c,t,d);question(c,d,t);var ps=arr(d.pillars);if(!ps.length){missing(c,t);return;}ps.slice(0,4).forEach(function(p,i){var x=67+i*242;plate(c,x,483,220,347,t,22,p.label==='日柱');text(c,p.label||['年柱','月柱','日柱','時柱'][i],x+110,522,27,t.accent,500,'center');line(c,x+33,555,x+187,555,rgba(t,.25));text(c,p.gan||'—',x+110,627,95,WHITE,600,'center',true);text(c,p.zhi||'—',x+110,745,95,p.label==='日柱'?GOLD:WHITE,600,'center',true);if(p.label==='日柱'){star(c,x+191,508,6,GOLD);}});rows(c,[['日主',d.dayMaster],['喜用候選',d.yongShen],['現行大運',d.dayun]],867,t,218);note(c,'從命盤看傾向，從生活確認方向。',t);}
   function renderBaziPersonality(c,d,t){heading(c,t,d);if(!d.code){missing(c,t);return;}plate(c,66,353,948,322,t,27,true);text(c,'FIVE AXES',96,393,19,t.accent,500);text(c,d.code,540,493,108,WHITE,600,'center',false,866);text(c,d.name||'五軸人格',540,594,46,t.accent,600,'center',true,856);var traits=Array.isArray(d.traits)?d.traits.join('  ·  '):str(d.traits);paragraph(c,traits,91,717,898,30,WHITE,2,41);var strengths=Array.isArray(d.strengths)?d.strengths.join('、'):str(d.strengths),watch=Array.isArray(d.watch)?d.watch.join('、'):str(d.watch);rows(c,[['可用優勢',strengths],['需要留意',watch],['出生資料',d.birthLine||'未顯示']],828,t,230);note(c,'本站五軸模型 · 作自我探索參考，非心理測驗。',t);}
   function renderBaziCompatibility(c,d,t){heading(c,t,d);text(c,d.scenario||'雙人關係',68,370,31,t.accent,500);var names=[d.nameA||'A 方',d.nameB||'B 方'],ps=[d.pillarsA,d.pillarsB];for(var i=0;i<2;i++){var x=65+i*500;plate(c,x,427,450,229,t,25,true);text(c,i?'乙方 / B':'甲方 / A',x+27,467,18,t.accent,500);text(c,names[i],x+27,518,39,WHITE,500,'left',true,394);paragraph(c,ps[i]||'未提供四柱',x+27,588,394,28,MUTED,2,35);}orb(c,540,540,22,t);rows(c,[['日柱互動',d.dayPillars],['互動摘要',d.signal],['支持／牽連',d.support==null?'未提供':str(d.support)+' 項'],['張力／磨合',d.tension==null?'未提供':str(d.tension)+' 項']],718,t,337);note(c,'訊號數量不是成功率；關係仍由彼此的選擇形成。',t);}
@@ -78,19 +84,77 @@
   function renderMeihua(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards);if(!cards.length){missing(c,t);return;}cards.slice(0,3).forEach(function(card,i){var x=68+i*321,w=300,y=492;plate(c,x,y,w,419,t,25,i===0);text(c,card.pos||['本卦','互卦','變卦'][i],x+w/2,y+40,26,t.accent,500,'center');var ls=arr(card.lines);if(ls.length===6){for(var li=0;li<6;li++){var yy=y+275-li*32,isDong=card.dong===li+1,col=isDong?'#f1bb7e':t.accent,bar=c.createLinearGradient(x+49,yy,x+249,yy+13);bar.addColorStop(0,'#f6ebcb');bar.addColorStop(.55,col);bar.addColorStop(1,t.deep);c.save();c.fillStyle=bar;c.shadowColor='#000';c.shadowOffsetY=4;c.shadowBlur=2;if(ls[li]){rr(c,x+49,yy,202,13,3);c.fill();}else{rr(c,x+49,yy,91,13,3);c.fill();rr(c,x+160,yy,91,13,3);c.fill();}c.restore();if(isDong)star(c,x+274,yy+6,5,'#ffbd86');}}else text(c,'未提供爻線',x+w/2,y+202,26,MUTED,400,'center');text(c,card.name||'未提供卦名',x+w/2,y+355,36,WHITE,500,'center',true,w-30);});if(d.conclusion)paragraph(c,d.conclusion,68,970,944,27,MUTED,3,36);note(c,'六爻由下而上 · 暖金標示動爻',t);}
   function renderOOTK(c,d,t){heading(c,t,d);question(c,d,t);var layers=arr(d.layers);if(!layers.length){missing(c,t,'尚無已完成的操作');return;}layers.slice(0,5).forEach(function(layer,i){var y=484+i*115;plate(c,67,y,947,98,t,19,layer.completed===true);orb(c,111,y+49,22,t);text(c,String(i+1).padStart(2,'0'),111,y+49,21,WHITE,500,'center');text(c,layer.label||'第'+(i+1)+'次操作',156,y+31,26,t.accent,500,'left',false,280);var value=str(layer.cards)||'尚未完成';if(value==='—')value='尚未記錄關鍵牌';text(c,value,156,y+67,28,WHITE,400,'left',true,822);});note(c,'僅呈現本次已記錄的操作摘要。',t);}
   function renderOracle(c,d,t){heading(c,t,d);var poem=str(d.poem);if(!poem){missing(c,t,'尚無可分享的籤詩');return;}plate(c,65,357,950,679,t,29,true);text(c,d.numberLabel||('第 '+str(d.number)+' 籤'),98,411,40,GOLD,600,'left',true,610);text(c,[d.ganzhi,d.rank].filter(Boolean).join(' · '),979,411,27,t.accent,500,'right',false,335);line(c,98,456,982,456,rgba(t,.3));var lines=poem.split('\n').filter(Boolean),maxChars=Math.max.apply(null,lines.map(function(l){return Array.from(l).length;})),sz=Math.min(49,378/Math.max(1,maxChars)),step=sz*1.2;lines.slice(0,4).forEach(function(l,i){var x=831-i*198;Array.from(l).forEach(function(ch,j){text(c,ch,x,516+j*step,sz,WHITE,500,'center',true);});});line(c,98,942,982,942,rgba(t,.25));text(c,d.story?'典故 · '+d.story:'六十甲子籤',98,984,27,t.accent,400,'left',true,880);note(c,d.edition||'原詩留在卡片裡，完整解讀回到本次籤文。',t);}
-  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,ootk:renderOOTK,oracle:renderOracle};
+  // Sharing consumes the completed, immutable native chart. No epoch, zodiac,
+  // planet, house or dasha is recalculated here; no default birth data is used.
+  var SIGNS=['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
+  var SHORT={Sun:'日',Moon:'月',Mars:'火',Mercury:'水',Jupiter:'木',Venus:'金',Saturn:'土',Rahu:'羅',Ketu:'計'};
+  var VKEYS=Object.keys(SHORT);
+  var NORTH=[[[200,0],[300,100],[200,200],[100,100]],[[0,0],[200,0],[100,100]],[[0,0],[100,100],[0,200]],[[0,200],[100,100],[200,200],[100,300]],[[0,200],[100,300],[0,400]],[[0,400],[100,300],[200,400]],[[200,200],[300,300],[200,400],[100,300]],[[200,400],[300,300],[400,400]],[[400,200],[400,400],[300,300]],[[200,200],[300,100],[400,200],[300,300]],[[400,0],[400,200],[300,100]],[[200,0],[400,0],[300,100]]];
+  function nativeChart(type,d){
+    var ch=d.chart;if(!ch||!ch.input||!ch.policy||!ch.planets)return null;
+    var keys=type==='vedic'?VKEYS:['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
+    if(!keys.every(function(k){var p=ch.planets[k];return p&&Number.isFinite(p.longitude)&&p.longitude>=0&&p.longitude<360&&p.sign===Math.floor(p.longitude/30);}))return null;
+    if(type==='vedic')return ch.policy.houses==='whole-sign'&&['lahiri','raman'].indexOf(ch.policy.ayanamsa)>=0?ch:null;
+    return ch.policy.zodiac==='回歸黃道'?ch:null;
+  }
+  function degrees(v){if(!Number.isFinite(v))return '未定';var m=Math.floor(((v%30+30)%30+1e-9)*60);m=Math.min(1799,m);return Math.floor(m/60)+'°'+String(m%60).padStart(2,'0')+'′';}
+  function unknownTime(type,ch){return type==='vedic'?ch.input.unknownTime:ch.sensitivity.unknownTime;}
+  function birthText(type,ch){var civil=ch.input.civil,unknown=unknownTime(type,ch);return civil?[civil.date,unknown?'時間不詳':civil.time,ch.input.location,civil.timezone].filter(Boolean).join(' · '):[ch.input.utc,'UTC',unknown?'時間不詳':'',ch.input.location].filter(Boolean).join(' · ');}
+  function astrologyHeading(c,d,t,type,ch){
+    masthead(c,t,d);text(c,t.en,68,153,18,t.accent,500);text(c,t.title,64,222,58,WHITE,600,'left',true,952);
+    var method=type==='vedic'?'D1 本命 · 恆星黃道 · '+(ch.policy.ayanamsa==='raman'?'Raman':'Lahiri')+' · 整宮制':'本命 · 回歸黃道 · '+(ch.houses?ch.policy.houseName:'宮位未定');
+    text(c,method,68,290,26,t.accent,500,'left',false,944);
+    text(c,d.showPersonal===true?birthText(type,ch):'JINGYUE · MY PERSONAL STAR CHART',68,334,d.showPersonal===true?24:19,MUTED,400,'left',false,944);
+    var hint=unknownTime(type,ch)?'時間不詳 · 星位為當地中午參考':ch.sensitivity&&ch.sensitivity.minutes?'出生時間 ±'+ch.sensitivity.minutes+' 分鐘 · 圖示為填寫時刻':'每一顆星，都有自己的位置。';
+    text(c,d.showPersonal===true&&d.question?d.question:hint,68,377,24,WHITE,400,'left',false,944);
+  }
+  function summary(c,items,t){items.forEach(function(item,i){var x=65+i*321;plate(c,x,1009,307,88,t,16);text(c,item[0],x+153.5,1033,20,t.accent,500,'center',false,276);text(c,item[1],x+153.5,1070,28,WHITE,500,'center',true,276);});}
+  function vedicDiagram(c,ch,t){
+    var known=!!ch.lagna&&!ch.input.unknownTime,side=540,x=270,y=423,scale=side/400;
+    plate(c,249,403,582,586,t,25,true);
+    var grid=[11,0,1,2,10,null,null,3,9,null,null,4,8,7,6,5];
+    var cells=known?NORTH.map(function(points,i){return {points:points,sign:(ch.lagna.sign+i)%12,house:i+1};}):grid.map(function(sign,i){var gx=i%4*100,gy=Math.floor(i/4)*100;return sign===null?null:{sign:sign,points:[[gx,gy],[gx+100,gy],[gx+100,gy+100],[gx,gy+100]]};}).filter(Boolean);
+    cells.forEach(function(cell){
+      var ps=VKEYS.filter(function(k){return ch.planets[k].sign===cell.sign;}),points=cell.points,cx=points.reduce(function(a,p){return a+p[0];},0)/points.length,cy=points.reduce(function(a,p){return a+p[1];},0)/points.length;
+      c.save();c.beginPath();points.forEach(function(p,i){c[i?'lineTo':'moveTo'](x+p[0]*scale,y+p[1]*scale);});c.closePath();
+      var fill=c.createLinearGradient(x,y,x+side,y+side);fill.addColorStop(0,cell.house===1?'#50766b':'#244f51');fill.addColorStop(.5,cell.house===1?'#234b4c':'#142f39');fill.addColorStop(1,'#0c202d');c.fillStyle=fill;c.fill();c.strokeStyle=t.accent;c.lineWidth=1.8;c.stroke();c.restore();
+      var tx=x+cx*scale,ty=y+cy*scale,rowsN=Math.ceil(ps.length/3),top=ty-(rowsN+1)*13;
+      text(c,(cell.sign+1)+(cell.house===1?' ↑':''),tx,top,22,t.accent,500,'center');text(c,SIGNS[cell.sign],tx,top+27,23,MUTED,400,'center');
+      // Every graha survives conjunctions; three glyphs per line, never a +N stub.
+      for(var row=0;row<rowsN;row++)text(c,ps.slice(row*3,row*3+3).map(function(k){return SHORT[k];}).join(' '),tx,top+54+row*27,25,WHITE,600,'center');
+    });
+    if(!known){text(c,'D1 · RĀŚI',540,681,27,t.accent,500,'center');text(c,'宮位未定',540,727,28,WHITE,400,'center',true);}
+    text(c,'日 太陽   月 月亮   火 火星   水 水星   木 木星   金 金星   土 土星   羅 羅睺   計 計都',540,978,16,t.accent,400,'center',false,910);
+  }
+  function renderVedic(c,d,t){
+    var ch=nativeChart('vedic',d);if(!ch){heading(c,t,d);missing(c,t,'尚無可分享的印度命盤');return;}
+    astrologyHeading(c,d,t,'vedic',ch);vedicDiagram(c,ch,t);
+    summary(c,[['上升 LAGNA',ch.lagna&&!ch.input.unknownTime?ch.lagna.signName+' '+degrees(ch.lagna.degree):'時間不詳'],['月亮 CHANDRA',ch.planets.Moon.signName+' '+degrees(ch.planets.Moon.degree)],['D1 本命星圖',ch.lagna&&!ch.input.unknownTime?'北印度式':'南印度式 · 星位參考']],t);
+    // Deliberately share the natal chart, not a date-dependent dasha headline.
+    note(c,ch.input.unknownTime?'當地中午星位參考 · 南式星座固定 · 宮位未定':'北式宮位固定 · 數字為星座編號 · 平均交點',t,1120);
+  }
+  function renderWestern(c,d,t){
+    var ch=nativeChart('western',d);if(!ch){heading(c,t,d);missing(c,t,'尚無可分享的西洋命盤');return;}
+    astrologyHeading(c,d,t,'western',ch);
+    if(!d._wheel){missing(c,t,'星盤圖像未完成，請重新製作');return;}
+    plate(c,220,403,640,591,t,28,true);c.drawImage(d._wheel,260,413,560,560);
+    var asc=ch.houses&&!ch.sensitivity.unknownTime?ch.houses.angles.ASC:null;
+    summary(c,[['太陽 SUN',ch.planets.Sun.signName+' '+degrees(ch.planets.Sun.degree)],['月亮 MOON',ch.planets.Moon.signName+' '+degrees(ch.planets.Moon.degree)],['上升 ASC',asc===null?'時間不詳':SIGNS[Math.floor(asc/30)]+' '+degrees(asc)]],t);
+    note(c,ch.sensitivity.unknownTime?'中午星位參考 · 不排上升與宮位':'本次實際星位與宮界 · 平均月交點',t,1120);
+  }
+  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
   function draw(type,data,canvas,options){var t=THEMES[type]||THEMES.invite,d=data||{},scale=options&&options.scale||SCALE;canvas.width=W*scale;canvas.height=H*scale;var c=canvas.getContext('2d');if(!c)throw new Error('無法建立卡片畫布');c.scale(scale,scale);background(c,t);(RENDER[type]||renderInvite)(c,d,t);footer(c,t,type==='invite');return canvas;}
   function loadImage(src){if(!src)return Promise.resolve(null);if(cache[src])return Promise.resolve(cache[src]);return new Promise(function(resolve){var im=new Image(),done=false,tm=setTimeout(function(){finish(null);},6500);function finish(v){if(done)return;done=true;clearTimeout(tm);im.onload=im.onerror=null;if(v)cache[src]=v;resolve(v);}im.onload=function(){finish(im);};im.onerror=function(){finish(null);};try{var u=new URL(src,document.baseURI);if(!/^(https?:|file:|data:|blob:)$/.test(u.protocol)){finish(null);return;}if(u.protocol!=='data:'&&u.protocol!=='file:'&&u.origin!==location.origin)im.crossOrigin='anonymous';im.src=src;}catch(e){finish(null);}});}
-  function fontReady(d){if(!document.fonts)return Promise.resolve();var sample='靜月之光為心裡的問號找到下一步塔羅八字紫微雷諾曼梅花靈籤'+JSON.stringify(d||{}).slice(0,5000);return Promise.race([Promise.all([document.fonts.load(font(40,600,true),sample),document.fonts.load(font(30,400,false),sample)]).catch(function(){}),new Promise(function(r){setTimeout(r,4000);})]);}
-  function render(type,data,options){var d=Object.assign({},data||{});d.cards=arr(d.cards).map(function(c){return Object.assign({},c);});var jobs=[loadImage(QR_SRC),fontReady(d)];if(type==='invite')jobs.push(loadImage(HERO));d.cards.forEach(function(c){if(c.img)jobs.push(loadImage(c.img));});return Promise.all(jobs).then(function(){return draw(type,d,document.createElement('canvas'),options);});}
+  function fontReady(d){if(!document.fonts)return Promise.resolve();var sample='靜月之光為心裡的問號找到下一步塔羅八字紫微雷諾曼梅花靈籤印度占星西洋占星恆星回歸黃道牡羊金牛雙子巨蟹獅子處女天秤天蠍射手摩羯水瓶雙魚日月水金火木土天海冥羅計上升時間不詳'+JSON.stringify(d||{}).slice(0,5000);return Promise.race([Promise.all([document.fonts.load(font(40,600,true),sample),document.fonts.load(font(30,400,false),sample)]).catch(function(){}),new Promise(function(r){setTimeout(r,4000);})]);}
+  function render(type,data,options){var d=Object.assign({},data||{});d.cards=arr(d.cards).map(function(c){return Object.assign({},c);});var jobs=[loadImage(QR_SRC),fontReady(d)];if(type==='invite')jobs.push(loadImage(HERO));if(type==='western'&&nativeChart(type,d)){if(!window.JYWesternChart)return Promise.reject(new Error('星盤繪圖元件尚未載入')); var svg=window.JYWesternChart.wheel(d.chart,{selected:null,interactive:false,id:'share-western',margin:16,centerLabel:d.chart.sensitivity.unknownTime?'REFERENCE':'NATAL'});jobs.push(loadImage('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)).then(function(im){if(!im)throw new Error('星盤圖像未完成');d._wheel=im;}));}d.cards.forEach(function(c){if(c.img)jobs.push(loadImage(c.img));});return Promise.all(jobs).then(function(){return draw(type,d,document.createElement('canvas'),options);});}
   function fileName(type){return '靜月之光_'+(THEMES[type]||THEMES.invite).name+'_'+new Date().toISOString().slice(0,10)+'.png';}
   function blobOf(canvas){return new Promise(function(resolve,reject){try{canvas.toBlob(function(b){b?resolve(b):reject(new Error('圖片轉檔未完成'));},'image/png');}catch(e){reject(e);}});}
   function saveBlob(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);}
   function download(type,data){return render(type,data).then(blobOf).then(function(blob){saveBlob(blob,fileName(type));return blob;});}
   function css(){if(document.getElementById('jysc-css'))return;var link=document.createElement('link');link.id='jysc-css';link.rel='stylesheet';link.href=BASE+'assets/share/share-cards-20260911.css';document.head.appendChild(link);}
-  function close(){serial++;if(!active)return;var cur=active;active=null;if(cur.stopPreview)cur.stopPreview();cur.bd.remove();document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
-  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" loading="eager" decoding="async" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine)?' hidden':'')+'><input type="checkbox" id="jysc-personal" checked> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
-    var focus=document.activeElement,overflow=document.body.style.overflow;document.body.appendChild(bd);document.body.style.overflow='hidden';var el={bd:bd,focus:focus,overflow:overflow,url:null,key:null};active=el;var share=bd.querySelector('#jysc-share'),dl=bd.querySelector('#jysc-dl'),status=bd.querySelector('#jysc-status'),img=bd.querySelector('img'),checkbox=bd.querySelector('#jysc-personal'),prepared=null,drawId=0;bd.querySelector('#jysc-close').onclick=close;bd.onclick=function(e){if(e.target===bd)close();};el.key=function(e){if(e.key==='Escape'){close();return;}if(e.key==='Tab'){var list=Array.from(bd.querySelectorAll('button:not(:disabled),input')).filter(function(n){return n.offsetParent!==null;}),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener('keydown',el.key);bd.querySelector('#jysc-close').focus();
+  function close(){serial++;if(!active)return;var cur=active;active=null;if(cur.stopPreview)cur.stopPreview();cur.bd.remove();if(cur.inert)cur.inert.forEach(function(p){p[0].inert=p[1];});document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
+  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" loading="eager" decoding="async" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine&&type!=='vedic'&&type!=='western')?' hidden':'')+'><input type="checkbox" id="jysc-personal"'+(type==='vedic'||type==='western'?'':' checked')+'> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
+    var focus=document.activeElement,overflow=document.body.style.overflow;document.body.appendChild(bd);document.body.style.overflow='hidden';var el={bd:bd,focus:focus,overflow:overflow,url:null,key:null};active=el;el.inert=Array.from(document.body.children).filter(function(n){return n!==bd&&['SCRIPT','STYLE','LINK'].indexOf(n.tagName)<0;}).map(function(n){var prior=n.inert;n.inert=true;return[n,prior];});var share=bd.querySelector('#jysc-share'),dl=bd.querySelector('#jysc-dl'),status=bd.querySelector('#jysc-status'),img=bd.querySelector('img'),checkbox=bd.querySelector('#jysc-personal'),prepared=null,drawId=0;bd.querySelector('#jysc-close').onclick=close;bd.onclick=function(e){if(e.target===bd)close();};el.key=function(e){if(e.key==='Escape'){close();return;}if(e.key==='Tab'){var list=Array.from(bd.querySelectorAll('button:not(:disabled),input')).filter(function(n){return n.offsetParent!==null;}),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener('keydown',el.key);bd.querySelector('#jysc-close').focus();
     function refresh(){
       var mine=++drawId,timer=null;
       if(el.stopPreview)el.stopPreview();
@@ -127,7 +191,7 @@
         status.textContent='可直接分享或下載高清圖片，也可關閉後重新預覽。';
         tip.textContent='請使用下方按鈕儲存或分享卡片。';
       }
-      var payload=Object.assign({},d);
+      var payload=Object.assign({},d);payload.showPersonal=checkbox.checked;
       if(!checkbox.checked){payload.question='';payload.nameA='A 方';payload.nameB='B 方';payload.birthLine='未顯示';}
       render(type,payload).then(function(cv){if(current())return blobOf(cv);}).then(function(blob){
         if(!current())return;
@@ -148,5 +212,5 @@
     }
     checkbox.onchange=refresh;dl.onclick=function(){if(prepared)saveBlob(prepared,fileName(type));};share.onclick=function(){if(!prepared)return;try{var f=new File([prepared],fileName(type),{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'靜月之光',text:'為心裡的問號，找到下一步的光。jingyue.uk'}).catch(function(e){if(e&&e.name==='AbortError')return;status.textContent='此環境無法直接分享，可使用「下載高清圖片」。';});return;}}catch(e){}saveBlob(prepared,fileName(type));status.textContent='圖片已下載，可貼到你想分享的社群。';};
     var stage=bd.querySelector('#jysc-stage');if(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){stage.onpointermove=function(e){var r=stage.getBoundingClientRect();img.style.transform='perspective(1000px) rotateX('+(-(e.clientY-r.top-r.height/2)/r.height*4)+'deg) rotateY('+((e.clientX-r.left-r.width/2)/r.width*4)+'deg)';};stage.onpointerleave=function(){img.style.transform='';};}refresh();return bd;}
-  window.JYShareCard={version:'3.0.1',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
+  window.JYShareCard={version:'3.1.0',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
 })();

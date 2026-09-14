@@ -15,7 +15,7 @@
     "test:display": "node tests/display-lifecycle-regression.cjs",
     "test:audit": "node tests/divination-audit-20260908.cjs",
     "test:professional": "node tests/divination-professional-20260910.cjs",
-    "test:cards": "node tests/share-card-20260911.cjs && node tests/share-card-preview-20260911.cjs",
+    "test:cards": "node tests/share-card-20260911.cjs && node tests/share-card-preview-20260911.cjs && node tests/astrology-share-20260914.cjs",
     "dev": "vite",
     "test:ui": "node tests/atelier-ui-20260911.cjs",
     "test:ritual": "node tests/ritual-lifecycle-20260911.cjs && node tests/ootk-scroll-20260912.cjs",

@@ -21,7 +21,7 @@ test('Ten home entrances are native buttons and reach the right flow; direct com
  e.ctx.BaziSuiteUI={open:tab=>calls.push(tab)};
  const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen',vedic:'_vedicOpen',western:'_westernOpen'};
  for(const [name,key] of Object.entries(bridges))e.ctx[key]=()=>calls.push(name);
- load(e,'atelier-ui');vm.runInContext(actualFunction('JS/ui.js','_redesignHomepage')+';_redesignHomepage();',e.ctx);
+ load(e,'method-catalog');load(e,'atelier-ui');vm.runInContext(actualFunction('JS/ui.js','_redesignHomepage')+';_redesignHomepage();',e.ctx);
  const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,10);
  for(const tile of tiles){assert.equal(tile.tagName,'BUTTON');vm.runInContext(tile.getAttribute('onclick'),e.ctx);}
  assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle','vedic','western']);

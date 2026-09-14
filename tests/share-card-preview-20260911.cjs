@@ -110,6 +110,7 @@ function fixture(options = {}) {
     return el;
   };
   vm.runInContext(lazyObserver, ctx);
+  vm.runInContext(fs.readFileSync(path.join(root, 'JS/method-catalog.js'), 'utf8'), ctx);
   vm.runInContext(source, ctx, { filename: 'share-card.js' });
   const api = ctx.JYShareCard;
   function parts(bd) {
@@ -124,7 +125,7 @@ async function settle() { for (let i = 0; i < 30; i++) await Promise.resolve(); 
 let passed = 0;
 async function test(name, fn) { await fn(); passed++; console.log('✓ ' + name); }
 (async () => {
-  await test('All ten dialogs show their completed image with the production lazy observer active', async () => {
+  await test('All twelve dialogs show their completed image with the production lazy observer active', async () => {
     const e = fixture();
     for (const type of e.api.types) {
       const bd = e.api.open(type, {}); await settle();

@@ -5727,18 +5727,7 @@ showAuraResult = function(){
   function _redesignHomepage() {
     var hookScreen = document.getElementById('hook-screen');
     if (!hookScreen) return;
-    var methods = [
-      ['tarot','01','此刻的選擇','塔羅快讀','下一步，我可以怎麼走？','不用出生資料'],
-      ['ootk','02','深入事件脈絡','開鑰之法','這件事背後，還有什麼線索？','78 張完整牌組'],
-      ['lenormand','03','生活裡的線索','雷諾曼','把零散線索，連成一個故事。','依問題選牌陣'],
-      ['bazi','04','自己的生命節奏','八字命理','看見特質，也看見適合的步調。','需要出生資料'],
-      ['compat','05','兩個人的相處','八字合盤','我們如何理解與支持彼此？','需要雙方資料'],
-      ['ziwei','06','人生的不同面向','紫微斗數','從十二宮，認識人生的選擇。','需要日期時辰'],
-      ['meihua','07','變化中的方向','梅花易數','進一步，還是先停下來看清楚？','時間・數字・漢字'],
-      ['oracle','08','給心一份安定','靜月靈籤','靜心求籤，讀一段此刻的提醒。','六十甲子靈籤'],
-      ['vedic','09','九曜與生命節奏','印度占星','本命、分盤與運期，照見方向。','十六分盤・三層運期'],
-      ['western','10','星辰與你的軌道','西洋占星','從星位與宮位，理解自己與時間。','本命・行運・次限・回歸']
-    ];
+    var methods = window.JYMethodCatalog;
     var tiles = methods.map(function(m){return '<button type="button" class="at-tool" data-tool="'+m[0]+'" onclick="_atelierChoose(\''+m[0]+'\')"><span class="at-tool-top"><span class="at-tool-kicker">'+m[2]+'</span><span class="at-tool-number">'+m[1]+'</span></span><span class="at-art" data-art="'+m[0]+'" aria-hidden="true"></span><strong>'+m[3]+'</strong><span class="at-tool-desc">'+m[4]+'</span><span class="at-tool-foot"><span>'+m[5]+'</span><span class="at-tool-arrow" aria-hidden="true">↗</span></span></button>';}).join('');
     hookScreen.innerHTML = '<div class="at-home">'+
       '<section class="at-hero" aria-labelledby="at-hero-title"><div class="at-hero-copy"><span class="at-eyebrow"><span aria-hidden="true">✦</span> 留一刻，給自己</span><h1 id="at-hero-title">為心裡的問號，<br><em>找到下一步的光。</em></h1><p>感情、工作，或更認識自己。<br>從你最在意的事，開始探索。</p></div><div class="at-hero-art"><img id="hero-moon" src="assets/share/moon-atelier-20260911.webp" width="1000" height="800" fetchpriority="high" loading="eager" alt="金色月弧與塔羅牌交織的立體星軌雕塑" onclick="_moonTap()"><span class="at-hero-seal" aria-hidden="true">THE MOON ATELIER</span></div><div class="at-hero-actions"><button type="button" id="home-cta-btn" class="at-primary" onclick="_atelierChoose(\'tarot\')"><span>用塔羅，問一件事</span><span aria-hidden="true">↗</span></button><a class="at-text-link" href="#at-explore">探索全部命理 <span aria-hidden="true">↓</span></a><span class="at-hero-meta">免費抽牌・排盤・解讀提示詞</span></div></section>'+
