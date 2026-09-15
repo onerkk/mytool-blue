@@ -8,7 +8,7 @@ const metadata={kind:'modified JS builders in Node VM; synthetic fixed inputs, n
 function savePrompt(name,prompt,input){assert(prompt&&prompt.length>100,name);assert(!/undefined|NaN|\[object Object\]/.test(prompt),name);assert(prompt.includes('【白話優先】'),name+' reader style');assert(prompt.includes('不先選商品再反推需求'),name+' needs first');assert(!/【可推薦庫存品項】|allowedItems|庫存_20260717|手圍16cm|14mm|推薦品項：/.test(prompt),name+' leaked stock or SKU');fs.writeFileSync(path.join(output,name+'.txt'),prompt);metadata.entries.push({name,input,characters:prompt.length});}
 const tar=draw('three_card','rws_reversals');savePrompt('01-tarot',tar.prompt,{question,cards:tar.cards.map(x=>({id:x.id,name:x.n,isUp:x.isUp})),spread:'three_card'});
 const rngBefore=c.Math.random;c.Math.random=()=>0.999999;
-const bindings={confirmedBeforeDeal:true,countDirection:'right',expectedPile:'water',primaryHouse:12,cognateHouse:7,expectedSign:11,expectedSephirah:5};
+const bindings={procedureProfile:'liber78_validation',confirmedBeforeDeal:true,countDirection:'right',expectedPile:'water',primaryHouse:12,cognateHouse:7,expectedSign:11,expectedSephirah:5};
 const full=c.ootkRunFull(35,'我在關係裡常把擔憂藏起來，應如何說出需要？',bindings);c.Math.random=rngBefore;
 assert.equal(full.completedOperations,5);assert(!full.abandonedAt);assert.equal(full.op4.ringSize,36);assert.equal(full.op4.activeCards.length,37);assert.equal(full.op4.countingPath[1].cardId,38,'King=4: center, card36, card37, card38');assert.equal(full.op4.ringPairs.length,18);
 c._ootkResults=full;savePrompt('02-ootk-five-operations',c.JY_buildExportPrompt('ootk'),{question:full.questionText,significatorId:35,bindings,rng:'constant 0.999999 test fixture, not production randomness',mainLineValidation:full.op1.mainLineValidation,operations:full});
