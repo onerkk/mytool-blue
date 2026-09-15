@@ -33,7 +33,12 @@ for(const [file,key,value] of targets){
     '// END GENERATED RECOMMENDATION '+key+'\n';
   const regex=new RegExp('// BEGIN GENERATED RECOMMENDATION '+key+'\\n[\\s\\S]*?// END GENERATED RECOMMENDATION '+key+'\\n');
   // Function replacement is essential: prompt content can contain literal $ characters.
-  persist(file,regex.test(old)?old.replace(regex,()=>block):block+old);
+  let next=regex.test(old)?old.replace(regex,()=>block):block+old;
+  // A loaded v4.0/v4.1 guide has the same methods but older selection rules.
+  // Use it only when its version matches this file's generated snapshot.
+  const sharedGuard=/((?:window|root)\.JY_READING_QUALITY)(?:&&\1\.version===["'][^"']+["'])?&&\1\.recommendationEnding\?/g;
+  next=next.replace(sharedGuard,(_,ref)=>ref+'&&'+ref+'.version==='+JSON.stringify(q.version)+'&&'+ref+'.recommendationEnding?');
+  persist(file,next);
 }
 for(const file of mirrors)persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
 if(failed)process.exitCode=1;
