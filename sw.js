@@ -23,7 +23,8 @@
 // v82: 20260914western1 西洋星穹、原子化命盤與出生地整合。
 // v83: 20260914share1 十種入口共用清單、印度與西洋本命分享卡。
 // v86: 20260915rec2 選品具體依據、移除預設材質引導與舊指引版本檢查。
-const CACHE_NAME = 'jy-main-v86';
+// v87: 20260917pair1 紫微政策、原始時分、雙系統合盤與立體雙星介面。
+const CACHE_NAME = 'jy-main-v87';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

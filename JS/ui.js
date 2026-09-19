@@ -1170,7 +1170,7 @@ function submitWithTool() {
     try {
       S.bazi = computeBazi(c.solarY, c.solarM, c.solarD, c.solarHH, c.solarMM, gender.value,{birthInstant:c.solarInfo&&c.solarInfo.utcTimestamp,trueSolarTimeApplied:!!c.solarInfo,second:(c.solarInfo&&c.solarInfo.second)||0,civilTimeStatus:c.solarInfo&&c.solarInfo.civilTimeStatus,timezoneId:c.solarInfo&&c.solarInfo.timezoneId,timezoneOffset:c.solarInfo?c.solarInfo.timezoneOffset:8,longitude:c.solarInfo&&c.solarInfo.longitude});
       try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
-      S.ziwei = computeZiwei(c.solarY, c.solarM, c.solarD, c.solarHH, gender.value);
+      S.ziwei = computeZiwei(c.clockY,c.clockM,c.clockD,c.clockHH,gender.value,{minute:c.clockMM,timePrecision:birth.timePrecision,btimeUnknown:birth.btimeUnknown,timezoneId:c.solarInfo&&c.solarInfo.timezoneId});
       try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
       try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { S.natal = null; }
       try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) {}
@@ -1226,7 +1226,7 @@ function submitStep0(){
     var c = _calcSolarAndCompute(birth, gender.value);
     S.bazi=computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value,{birthInstant:c.solarInfo&&c.solarInfo.utcTimestamp,trueSolarTimeApplied:!!c.solarInfo,second:(c.solarInfo&&c.solarInfo.second)||0,civilTimeStatus:c.solarInfo&&c.solarInfo.civilTimeStatus,timezoneId:c.solarInfo&&c.solarInfo.timezoneId,timezoneOffset:c.solarInfo?c.solarInfo.timezoneOffset:8,longitude:c.solarInfo&&c.solarInfo.longitude});
     try { if(S.bazi && typeof enhanceBazi==='function') enhanceBazi(S.bazi); } catch(e) { console.error('enhanceBazi:', e); }
-    S.ziwei=computeZiwei(c.solarY,c.solarM,c.solarD,c.solarHH,gender.value);
+    S.ziwei=computeZiwei(c.clockY,c.clockM,c.clockD,c.clockHH,gender.value,{minute:c.clockMM,timePrecision:birth.timePrecision,btimeUnknown:birth.btimeUnknown,timezoneId:c.solarInfo&&c.solarInfo.timezoneId});
     mergeZiweiIntoBazi();
     try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { console.error('Natal(manual):', e); S.natal=null; }
     try { if(S.natal && typeof enhanceNatalChart==='function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) { console.error('enhanceNatal:', e); }
@@ -1539,7 +1539,7 @@ function submitStep0Fast(){
   // 計算函數
   const fns = [
     ()=>{ S.bazi=computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value,{birthInstant:c.solarInfo&&c.solarInfo.utcTimestamp,trueSolarTimeApplied:!!c.solarInfo,second:(c.solarInfo&&c.solarInfo.second)||0,civilTimeStatus:c.solarInfo&&c.solarInfo.civilTimeStatus,timezoneId:c.solarInfo&&c.solarInfo.timezoneId,timezoneOffset:c.solarInfo?c.solarInfo.timezoneOffset:8,longitude:c.solarInfo&&c.solarInfo.longitude}); try{if(S.bazi&&typeof enhanceBazi==='function')enhanceBazi(S.bazi);}catch(e){} },
-    ()=>{ S.ziwei=computeZiwei(c.solarY,c.solarM,c.solarD,c.solarHH,gender.value); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); if(typeof renderZiweiFunZone==='function') try{renderZiweiFunZone();}catch(e){} if(typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){} if(typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){} if(typeof renderNatalFunZone==='function') try{renderNatalFunZone();}catch(e){} },
+    ()=>{ S.ziwei=computeZiwei(c.clockY,c.clockM,c.clockD,c.clockHH,gender.value,{minute:c.clockMM,timePrecision:birth.timePrecision,btimeUnknown:birth.btimeUnknown,timezoneId:c.solarInfo&&c.solarInfo.timezoneId}); mergeZiweiIntoBazi(); renderDailyFortune(); generateLuckyInfo(); if(typeof renderZiweiFunZone==='function') try{renderZiweiFunZone();}catch(e){} if(typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){} if(typeof renderNameFunZone==='function') try{renderNameFunZone();}catch(e){} if(typeof renderNatalFunZone==='function') try{renderNatalFunZone();}catch(e){} },
     ()=>{
       // ★ 自動模式：時間起卦（正統梅花時間法）
       try {
@@ -5783,7 +5783,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260913core2', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20260917pair1', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -7059,7 +7059,7 @@ function enterOOTKFromTarot() {
     try {
       S.bazi = computeBazi(sY, sM, sD, sHH, sMM, gender.value,{birthInstant:solarInfo&&solarInfo.utcTimestamp,trueSolarTimeApplied:!!solarInfo,second:(solarInfo&&solarInfo.second)||0,civilTimeStatus:solarInfo&&solarInfo.civilTimeStatus,timezoneId:solarInfo&&solarInfo.timezoneId,timezoneOffset:solarInfo?solarInfo.timezoneOffset:8,longitude:solarInfo&&solarInfo.longitude});
       try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
-      S.ziwei = computeZiwei(sY, sM, sD, sHH, gender.value);
+      S.ziwei = computeZiwei(y2,m2,d2,hh2,gender.value,{minute:mm2,timezoneId:solarInfo&&solarInfo.timezoneId});
       try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
       try { S.natal = computeNatalChart(y2, m2, d2, hh2, mm2, geoLon, geoLat); } catch(e) { S.natal = null; }
       try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, y2, m2, d2, hh2, mm2); } catch(e) {}

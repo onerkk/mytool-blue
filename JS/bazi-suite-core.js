@@ -450,6 +450,19 @@
     return lines;
   }
 
+  function buildCompatibilityDataBlock(comp) {
+    function luck(d){if(!d)return null;return {gz:d.gz,ageStart:d.ageStart,ageEnd:d.ageEnd,startDate:d.startDate,endDateExclusive:d.endDateExclusive};}
+    function annual(d){if(!d)return null;return {gz:d.gz,dayun:d.dayun,periodStart:d.periodStart,periodEndExclusive:d.periodEndExclusive,
+      segments:safeArray(d.segments).map(function(s){return {gz:s.gz,dayun:s.dayun,periodStart:s.periodStart,periodEndExclusive:s.periodEndExclusive};})};}
+    return ['【A方八字】',buildChartDataBlock(comp._chartA||{},comp._metaA||{}),
+      '【B方八字】',buildChartDataBlock(comp._chartB||{},comp._metaB||{}),
+      '【八字跨盤事實與候選模型】',relationFacts(comp).join('\n'),
+      '【雙向十神映射】',JSON.stringify(comp.directionalTenGods),
+      '【八字歲運同步】',JSON.stringify({aCurrent:luck(comp.luckSynchronization.aCurrent),bCurrent:luck(comp.luckSynchronization.bCurrent),
+        years:comp.luckSynchronization.years.map(function(x){return {year:x.year,a:annual(x.a),b:annual(x.b)};})}),
+      '資料界線：'+comp.uncertainty.note].join('\n\n');
+  }
+
   function buildCompatibilityPrompt(comp, userQuestion) {
     var s=comp.scenario;
     return [
@@ -682,7 +695,7 @@
     tenGod:tenGod, elementRelation:elementRelation, chartSummary:chartSummary,
     stemCrossRelations:stemCrossRelations, branchCrossRelations:branchCrossRelations, crossGroupRelations:crossGroupRelations,
     directionalTenGods:directionalTenGods, elementComplement:elementComplement, luckSynchronization:luckSynchronization,
-    createCompatibility:createCompatibility, buildCompatibilityPrompt:buildCompatibilityPrompt,
+    createCompatibility:createCompatibility, buildCompatibilityPrompt:buildCompatibilityPrompt,buildCompatibilityDataBlock:buildCompatibilityDataBlock,
     buildChartDataBlock:buildChartDataBlock, buildSinglePrompt:buildSinglePrompt,
     buildPersonality:buildPersonality, buildPersonalityPrompt:buildPersonalityPrompt,
     normalizeBaziString:normalizeBaziString, reverseBaziToSolarTimes:reverseBaziToSolarTimes, reverseBaziToSolarTimesAsync:reverseBaziToSolarTimesAsync,

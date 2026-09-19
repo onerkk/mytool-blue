@@ -133,12 +133,17 @@ if(require.main===module)(async()=>{
  });
  await test('Compatibility commits its real calculation and history only after completion; cancel leaves both empty',async()=>{
   const e=fixture(),c=e.ctx;e.clock.setTime(Date.UTC(2026,8,11));const stored=new Map();c.localStorage={getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v),removeItem:k=>stored.delete(k)};
-  ['vendor/lunar','bazi-calendar-core','bazi','bazi_upgrade','solar-location','bazi-prompt-root','bazi-suite-core','ritual-ateliers'].forEach(f=>load(e,f));
+  ['vendor/lunar','bazi-calendar-core','bazi','bazi_upgrade','solar-location','bazi-prompt-root','bazi-suite-core','ziwei-prompt-root','relationship-ui','ritual-ateliers'].forEach(f=>load(e,f));
+  const constants=read('JS/ai-analysis.js');
+  for(const n of acorn.parse(constants,{ecmaVersion:'latest'}).body){
+   if(n.type==='VariableDeclaration'&&n.declarations.some(d=>['SIHUA_TABLE','ZW_PALACES','ZW_MAJOR','ZW_BRIGHTNESS'].includes(d.id.name))||n.type==='FunctionDeclaration'&&n.id.name==='getStarBright')vm.runInContext(constants.slice(n.start,n.end),c);
+  }
+  ['ziwei','relationship-core'].forEach(f=>load(e,f));
   vm.runInContext(read('JS/bazi-suite.js').replace(/\}\)\(\);\s*$/,'window.__castCompat=castCompat;})();'),c);
   function input(){c.BaziSuiteUI.open('compat');for(const [prefix,date,gender] of [['a','1990-01-02','male'],['b','1992-06-18','female']])for(const [key,value] of Object.entries({date,time:'12:00',gender,boundary:'ZI_HOUR_23',country:'TW',city:'0',name:prefix}))e.doc.getElementById(prefix+'-'+key).value=value;e.doc.getElementById('c-question').value='如何理解彼此的相處差異？';}
-  input();let pending=c.__castCompat();await Promise.resolve();assert(c.JYRitual.isActive('compat'));assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(stored.size,0);e.doc.querySelector('.jr-cancel').click();await pending;assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(stored.size,0);
-  pending=c.__castCompat();await Promise.resolve();e.doc.querySelector('.jr-skip').click();await pending;assert(c.BaziSuiteUI.getState().compat.chartA.pillars.year);assert(c.BaziSuiteUI.getState().prompt.length>0);assert.equal(JSON.parse(stored.get('jy_bazi_suite_history_v1')).length,1);
-  input();pending=c.__castCompat();await Promise.resolve();c.BaziSuiteUI.close();await pending;assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(e.doc.body.style.overflow,'');assert.equal(JSON.parse(stored.get('jy_bazi_suite_history_v1')).length,1);
+  input();let pending=c.__castCompat();await Promise.resolve();await Promise.resolve();assert(c.JYRitual.isActive('compat'));assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(stored.size,0);e.doc.querySelector('.jr-cancel').click();await pending;assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(stored.size,0);
+  pending=c.__castCompat();await Promise.resolve();await Promise.resolve();e.doc.querySelector('.jr-skip').click();await pending;assert(c.BaziSuiteUI.getState().compat.chartA.pillars.year);assert.equal(c.BaziSuiteUI.getState().compat.ziwei.status,'complete');assert.equal(c.BaziSuiteUI.getState().exportData.kind,'bazi-ziwei-compatibility');assert(c.BaziSuiteUI.getState().prompt.length>0);assert.equal(JSON.parse(stored.get('jy_bazi_suite_history_v1')).length,1);
+  input();pending=c.__castCompat();await Promise.resolve();await Promise.resolve();c.BaziSuiteUI.close();await pending;assert.equal(c.BaziSuiteUI.getState().compat,null);assert.equal(e.doc.body.style.overflow,'');assert.equal(JSON.parse(stored.get('jy_bazi_suite_history_v1')).length,1);
  });
  await test('Oracle ceremony returns to its guide, advances to throwing only on completion and stops on close',()=>{
   const e=fixture(),c=e.ctx;load(e,'ritual-ateliers');vm.runInContext(read('JS/oracle.js').replace(/\}\)\(\);\s*$/,'window.__oraclePhase=function(){return _phase;};})();'),c);

@@ -44,6 +44,7 @@
   // v80.30 自訂選擇器狀態（寫回隱藏 zw-bd / zw-hh，_ziweiSubmit 沿用）
   var _zwSelDate = '';
   var _zwSelHH = '';
+  var _zwExactTime = '';
   var _zwLastChart = null;
   var _zwLastForm = null;
 
@@ -306,12 +307,16 @@
       var raw=zw.birthLunar||zw.lunar;
       L.push('引擎版本：'+zw.engineVersion+'；農曆出生：'+raw.year+'年'+(raw.isLeap?'閏':'')+raw.month+'月'+raw.day+'日。');
       L.push('【安星政策】農曆正月初一換年；'+(policy.dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日')+'；閏月'+(policy.leapMonthPolicy==='SPLIT_AT_15'?'十五日後作次月':'沿用本月')+'；實際安星月='+policy.effectiveMonth+'、日='+policy.effectiveDay+'。');
+      L.push('【紫微 calculationPolicy｜本盤唯一計算政策】'+JSON.stringify(policy));
+      L.push('本站預設 dayDivide=current：23:00–23:59 仍歸民用當日，00:00 換日；fixLeap=false：閏月整月沿用本月。這兩項非 iztro 預設。若本盤另選23時換日／閏月拆分，以以上實際政策為準。');
       L.push('命主按命宮地支，身主按生年地支；天傷交友、天使疾厄；解神為月解；流月採斗君、小限按生年三合起宮；旬空／截空保留雙支，依生年陰陽分正副（旬空／副旬、截空／副截），不作兩顆同等正星。不同設定須重排，不能混套別派星位。');
       L.push('本盤四化順序為祿權科忌：'+policy.sihuaTable+'。');
       L.push('參考時刻：'+policy.referenceDate+'；參考農曆年：'+policy.referenceLunarYear+'；目前虛歲：'+zw.currentAge+'，每年正月初一增歲。');
     }
 
-    L.push('出生(國曆；以時辰代表時排盤，未作出生地經度真太陽時校正)：' + birth + ' ' + btime + '　性別：' + gender);
+    var input=zw.birthInput||{};
+    L.push('民用出生日期：'+birth+'；民用出生時間：'+(input.civilTime||(form&&form.timePrecision==='shichen'?'未提供分鐘':btime)||'未提供分鐘')+'；性別：'+gender+'。');
+    L.push('排盤時辰：'+(input.hourBranch||'依輸入時辰')+'；安星代表時：'+(input.representativeTime||btime)+'（不是原始出生時刻）；真太陽時：本模組不採用。');
     L.push('年干支：' + ((zw.yGan||'') + (zw.yZhi||'')) + '　五行局：' + ({2:'水二局',3:'木三局',4:'金四局',5:'土五局',6:'火六局'}[zw.wuxingJu]||zw.wuxingJu||'') + '　命主：' + (zw.mingZhu||'') + '　身主：' + (zw.shenZhu||'') + '　命宮天干：' + (zw.mingGan||''));
 
     // 命宮/身宮定位
@@ -328,7 +333,7 @@
       L.push('【身宮】坐於「' + shen.name + '」(' + shen.branch + ')—一生後天用力與晚運落點在此。');
     }
     if (zw.laiYin) {
-      L.push('【來因宮（欽天派視角）】落「' + zw.laiYin.name + '」' + (zw.laiYin.name.slice(-1)==='宮'?'':'宮') + '(' + zw.laiYin.branch + '，宮干' + zw.laiYin.gan + ')—可用來觀察該流派所稱的生年四化發射源與課題。');
+      L.push('【來因宮（欽天派視角）】落「' + zw.laiYin.name + '」' + (zw.laiYin.name.slice(-1)==='宮'?'':'宮') + '(' + zw.laiYin.branch + '，宮干' + zw.laiYin.gan + ')—可用來觀察該流派所稱的生年四化發射源與課題；僅限欽天體系內解釋，不作三合派共同定義。');
     }
 
     // v80.62：三方四正由實際地支動態計算並資料層直給，禁止題型模板硬寫固定宮位。
@@ -395,8 +400,8 @@
         L.push('');
         L.push('【飛宮四化（飛星／欽天派視角）】(宮干四化的投射路徑，請與三方四正及生年四化交叉分析)');
         zw.feiGongHua.forEach(function (r) {
-          function seg(o) { return (o && o.star) ? (o.star + '→' + o.to + (o.self ? '(自化)' : '')) : '—'; }
-          L.push('・' + (r.palace.slice(-1) === '宮' ? r.palace : r.palace + '宮') + '(干' + r.gan + ')　祿:' + seg(r.lu) + '｜權:' + seg(r.quan) + '｜科:' + seg(r.ke) + '｜忌:' + seg(r.ji));
+          function seg(o) { return (o && o.star) ? (o.star + '→本命' + o.to + (o.self ? '(離心自化)' : '')) : '—'; }
+          L.push('・來源類型=本命宮干飛化；發射宮=' + (r.palace.slice(-1) === '宮' ? r.palace : r.palace + '宮') + '(干' + r.gan + ')　祿:' + seg(r.lu) + '｜權:' + seg(r.quan) + '｜科:' + seg(r.ke) + '｜忌:' + seg(r.ji));
         });
         L.push('(讀法參考：A宮「忌」入B宮，可觀察A領域的執著、阻滯或代價如何投向B領域；「祿」入可觀察資源投向。請再結合星曜強弱、三方與運限。)');
       }
@@ -431,7 +436,7 @@
     if (zw.patterns && zw.patterns.length) {
       L.push('');
       L.push('【命盤格局候選】(請以主星強弱、三方吉煞、四化、破格與運限覆核)');
-      zw.patterns.forEach(function(g){ L.push('・' + g.name + (g.level?'〔'+g.level+'〕':'') + '：' + (g.desc||'')); });
+      (zw.candidateInterpretation||zw.patterns).forEach(function(g){ L.push('・候選：'+g.name+'；盤面條件：'+(g.observedStructure||[]).join('；')+'；待覆核：主星位置、廟旺、三方煞曜、四化與破格。'); });
     }
     // 星系註記
     try {
@@ -455,14 +460,14 @@
       var _hasCur = zw.daXian.some(function(d){ return d.isCurrent; }); // 引擎已標當前大限就以它為唯一準
       L.push('');
       L.push('【運限計算政策】大限採虛歲；現行大限依同一查詢時刻的 isCurrent 與農曆虛歲判斷。資料未提供精確大限切換日期，以引擎年齡區間判讀。下方年份為農曆年度，正月初一交替；公曆元旦至農曆新年前仍列前一年度，不能把公曆「今年」誤套成同號農曆流年。流月未在本提示詞列出。');
-      L.push('【大限走勢】(本命為長期底色，大限為十年作用場域；〔吉凶〕與主題是前端相對標記，請結合具體星曜與四化分析；現行大限以 ◀現在 標示)');
+      L.push('【大限走勢】(本命為長期底色，大限為十年作用場域；僅提供計算資料，不傳送前端吉凶評級；現行大限以 ◀現在 標示)');
       zw.daXian.forEach(function(dx){
         // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
         var _isNow = _hasCur ? !!dx.isCurrent : (age != null && age >= dx.ageStart && age <= dx.ageEnd);
         var cur = _isNow ? ' ◀現在' : '';
         var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔大限'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : '';
         L.push('・' + dx.ageStart + '–' + dx.ageEnd + '歲　走「' + (dx.palaceName||dx.palace||'') + '」宮(' + (dx.branch||'') + ')' +
-          (dx.level?'〔'+dx.level+'〕':'') + (dx.theme?'　主題:'+dx.theme:'') + huaTxt + cur);
+          huaTxt + cur);
         if(dx.flowStars&&dx.flowStars.length)L.push('    大限流曜：'+JSON.stringify(dx.flowStars));
         if(dx.palaces&&dx.palaces.length)L.push('    大限十二宮疊宮：'+dx.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
       });
@@ -479,17 +484,19 @@
           if (!lnf) continue;
           var tag = (yy === ly0) ? '（現行農曆年度）' : (yy === ly0 + 1) ? '（下一農曆年度）' : '';
           L.push('・' + yy + tag + '　' + (lnf.gz || '') + '　流年命宮落本命「' + (lnf.mingPalace || '') + '」' +
-            (lnf.focus ? '·' + lnf.focus : '') +
+            '' +
             ((lnf.hua && lnf.hua.length) ? '　流年四化:' + lnf.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔流年'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : ''));
           if(lnf.flowStars&&lnf.flowStars.length)L.push('    流年流曜：'+JSON.stringify(lnf.flowStars));
           if(lnf.palaces&&lnf.palaces.length)L.push('    流年十二宮疊宮：'+lnf.palaces.map(function(p){return p.name+'['+p.branch+']＝本命'+p.natalPalace;}).join('；'));
-          if (yy === ly0 && lnf.notes && lnf.notes.length) lnf.notes.forEach(function(n){ L.push('    - ' + n); });
+          // Frontend interpretation notes are intentionally excluded from the prompt.
         }
       }
     } catch (e) {}
 
     return L.join('\n');
   }
+
+  window.JYZiweiData=Object.freeze({serialize:serializeChart});
 
   // ════════════════════════════════════════════════════════
   //  深度提示詞（比文墨天機更深）
@@ -599,7 +606,9 @@
     var draft = restoreForm === true ? _zwLastForm : null;
     _zwGender = draft ? draft.gender : '';
     _zwSelDate = draft ? draft.bdate : '';
-    _zwSelHH = draft ? (draft.btimeUnknown ? 'unknown' : String(parseInt(draft.btime, 10))) : '';
+    _zwSelHH = draft ? (draft.btimeUnknown ? 'unknown' : String(draft.hour!=null?draft.hour:parseInt(draft.btime,10))) : '';
+    _zwExactTime = draft&&draft.timePrecision==='minute'?draft.btime:'';
+    if(_zwExactTime){var draftHour=Number(_zwExactTime.split(':')[0]);_zwSelHH=String(draftHour===23?23:Math.floor(((draftHour+1)%24)/2)*2);}
     var w = document.createElement('div');
     w.className = 'zw-in';
     w.id = 'zw-input';
@@ -615,6 +624,7 @@
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 出生資料（國曆，不需姓名）</div>' +
           '<div class="zw-in-field"><label class="zw-in-label">國曆出生日期</label><button type="button" class="zwx-field" id="zwx-fld-date" onclick="_zwxOpenDate()">' + _zwDateInner() + '</button></div>' +
           '<div class="zw-in-field"><label class="zw-in-label">出生時辰</label><button type="button" class="zwx-field" id="zwx-fld-hh" onclick="_zwxOpenHH()">' + _zwHHInner() + '</button></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label" for="zw-exact-time">已知出生時分（選填）</label><input id="zw-exact-time" type="time" step="60" class="zw-in-select" oninput="_zwExactChanged(this.value)" value="'+_zwExactTime+'"><p class="zw-in-hint">填入原始時分會自動對應時辰，完整保留出生紀錄。</p></div>' +
           '<input type="hidden" id="zw-bd" value="' + _zwSelDate + '">' +
           '<input type="hidden" id="zw-hh" value="' + _zwSelHH + '">' +
           '<div class="zw-in-field"><label class="zw-in-label">性別</label><div class="zw-in-pills">' +
@@ -642,7 +652,7 @@
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260913core2', null);};
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260917pair1', null);};
         if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260913core2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
@@ -746,8 +756,10 @@
     var y = +md[1], mo = +md[2], d = +md[3];
     if (!window.JY_PICKER.validDate(y, mo, d, 2100)) { _zwxErr('請選擇有效的國曆日期（1900–2100）'); return; }
 
+    var exact=(document.getElementById('zw-exact-time')||{}).value||'';
+    if(exact&&!/^([01]\d|2[0-3]):[0-5]\d$/.test(exact)){_zwxErr('請填寫有效出生時分');return;}
     var hhEl = document.getElementById('zw-hh');
-    var hhVal = hhEl ? hhEl.value : '';
+    var hhVal = exact?String(Number(exact.split(':')[0])):(hhEl ? hhEl.value : '');
     if (hhVal === '') { _zwxErr('請選擇出生時辰，或明確選擇「不確定」'); return; }
     var btimeUnknown = (hhVal === 'unknown');
     var hh = btimeUnknown ? 12 : Number(hhVal);
@@ -756,8 +768,8 @@
     if (typeof computeZiwei !== 'function') { _zwxErr('排盤引擎仍在背景載入，請過幾秒再按一次「起盤」'); return; }
 
     var bdate = y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (d < 10 ? '0' : '') + d;
-    var btime = btimeUnknown ? '' : ((hh < 10 ? '0' : '') + hh + ':00');
-    var form = { type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
+    var btime = btimeUnknown ? '' : (exact||((hh < 10 ? '0' : '') + hh + ':00'));
+    var form = {hour:hh,minute:exact?Number(exact.split(':')[1]):null,timePrecision:exact?'minute':'shichen', type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
     try { if (typeof S !== 'undefined') { S.form = form; S._tarotOnlyMode = false; S._autoMode = false; } } catch (e) {}
 
     // 亮度表由共用引擎單一來源提供，避免此入口與其他入口覆寫成不同盤。
@@ -879,6 +891,7 @@
     var wk=ZWK[new Date(y,m-1,d).getDay()];
     return '<span class="val">'+y+' 年 '+m+' 月 '+d+' 日（週'+wk+'）</span><span class="chev">▾</span>';
   }
+  window._zwExactChanged=function(value){_zwExactTime=value;if(/^([01]\d|2[0-3]):[0-5]\d$/.test(value)){var hh=Number(value.split(':')[0]);_zwSelHH=String(hh===23?23:Math.floor(((hh+1)%24)/2)*2);}_zwxSyncFields();};
   function _zwHHInner(){
     if(_zwSelHH===''||_zwSelHH==null) return '<span class="ph">請選擇出生時辰</span><span class="chev">▾</span>';
     if(_zwSelHH==='unknown') return '<span class="val">不確定（尚未定盤）</span><span class="chev">▾</span>';
@@ -980,8 +993,8 @@
     h+='</div>';
     _zwxOpenSheet('出生時辰','紫微以時辰定盤，不需到分', h, false);
   };
-  window._zwxPickHH=function(h){ _zwSelHH=''+h; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
-  window._zwxPickHHU=function(){ _zwSelHH='unknown'; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
+  window._zwxPickHH=function(h){ _zwExactTime='';var el=document.getElementById('zw-exact-time');if(el)el.value='';_zwSelHH=''+h; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
+  window._zwxPickHHU=function(){ _zwExactTime='';var el=document.getElementById('zw-exact-time');if(el)el.value='';_zwSelHH='unknown'; _zwxClearErr(); _zwxSyncFields(); _zwxCloseSheet(); };
 
 
 })();

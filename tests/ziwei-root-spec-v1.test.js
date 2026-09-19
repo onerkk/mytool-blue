@@ -41,7 +41,7 @@ function load(rel){
 
 load('JS/ziwei-prompt-root.js');
 assert(ctx.JY_ZIWEI_PROMPT_ROOT, 'root api missing');
-assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '6.0.0');
+assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '6.1.0');
 
 const head = ctx.JY_ZIWEI_PROMPT_ROOT.composeHead();
 const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
@@ -87,7 +87,11 @@ const zw = {
 };
 const prompt = ctx._ziweiBuildPrompt(zw, {question:'公司異性未來會跟我交往嗎？',bdate:'1983-08-25',btime:'14:00',gender:'male'});
 assert(prompt.includes('公司異性未來會跟我交往嗎？'));
-assert(prompt.includes('以時辰代表時排盤，未作出生地經度真太陽時校正'));
+assert(prompt.includes('安星代表時：'));
+assert(prompt.includes('真太陽時：本模組不採用'));
+assert(!prompt.includes('〔中凶〕'));
+assert(!prompt.includes('理財重點期'));
+assert(!prompt.includes('〔吉〕'));
 assert(prompt.includes('【三方四正索引（引擎依本盤地支動態計算）】'));
 assert(prompt.includes('夫妻宮(亥)：對宮 官祿宮(巳)；三合 福德宮(卯)、遷移宮(未)'));
 assert(prompt.includes('財帛宮(酉)：對宮 福德宮(卯)；三合 命宮(丑)、官祿宮(巳)'));

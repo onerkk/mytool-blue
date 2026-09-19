@@ -19403,9 +19403,12 @@ renderTarot = function(){
           }
           if (S.ziwei.yGan && S.ziwei.yZhi) p.dims.ziwei.birthGanZhi = S.ziwei.yGan + S.ziwei.yZhi + '年';
           // Use the engine's selected Lai-Yin policy; natal Lu is a different datum.
-          if(S.ziwei.laiYin) p.dims.ziwei.laiyinGong = S.ziwei.laiYin.name+'（'+S.ziwei.laiYin.branch+'；宮干'+S.ziwei.laiYin.gan+'同生年干；沿用本盤來因宮政策）';
+          if(S.ziwei.laiYin) p.dims.ziwei.laiyinGong = S.ziwei.laiYin.name+'（'+S.ziwei.laiYin.branch+'；宮干'+S.ziwei.laiYin.gan+'同生年干；僅限欽天體系，不作三合派共同定義）';
           p.dims.ziwei.calculationPolicy = S.ziwei.calculationPolicy || null;
           p.dims.ziwei.birthLunar = S.ziwei.birthLunar || null;
+          p.dims.ziwei.birthInput = S.ziwei.birthInput || null;
+          p.dims.ziwei.calculatedFacts = S.ziwei.calculatedFacts || null;
+          p.dims.ziwei.interpretationRules = ['生年、宮干、大限、流年四化須按來源分層；跨盤參照不等於本命四化或自化。','性伴侶、婚姻、子女、外遇等事件數量不可由星曜換算；也不可推論不只一個、至少兩次或很多個。','候選格局須覆核；前端分數、吉凶與主題標籤不送入 calculatedFacts，也不作分析結論。'];
           p.dims.ziwei.currentAge = S.ziwei.currentAge;
           p.dims.ziwei.natalPalaces = S.ziwei.palaces;
           p.dims.ziwei.selfHuaData = S.ziwei.selfHua || [];
@@ -19463,9 +19466,7 @@ renderTarot = function(){
             var curDx = S.ziwei.daXian.find(function(d) { return d.isCurrent; });
             if (curDx) {
               p.dims.ziwei.dxDetail = curDx.ageStart + '-' + curDx.ageEnd + '歲走' + (curDx.palaceName || '') +
-                '（' + (curDx.theme || '') + '）' + (curDx.level || '');
-              // ★ v36：結構化方向欄位
-              p.dims.ziwei.dxDirection = /吉/.test(curDx.level||'') ? 'positive' : /凶/.test(curDx.level||'') ? 'negative' : 'neutral';
+                '（' + (curDx.gan || '') + (curDx.branch || '') + '）';
               if (curDx.stars && curDx.stars.length) p.dims.ziwei.dxStars = curDx.stars.join('+');
               // 大限四化（最影響十年方向）
               if (curDx.hua && curDx.hua.length) {
@@ -19484,7 +19485,7 @@ renderTarot = function(){
               var yr2 = Number((S.ziwei.calculationPolicy||{}).referenceLunarYear);
               var lnZw = S.ziwei.getLiuNianZw(yr2);
               if (lnZw) {
-                p.dims.ziwei.lnDetail = yr2 + '農曆年度命宮疊本命' + (lnZw.mingPalace || '') + '（' + (lnZw.focus || '') + '）';
+                p.dims.ziwei.lnDetail = yr2 + '農曆年度命宮疊本命' + (lnZw.mingPalace || '') + '（' + (lnZw.mingBranch || '') + '）';
                 // 流年化忌最關鍵
                 if (lnZw.hua && lnZw.hua.length) {
                   var lnHuaKey = lnZw.hua;
@@ -19495,11 +19496,7 @@ renderTarot = function(){
                     p.dims.ziwei.lnHua = lnHuaKey.map(function(h) { return h.star + h.hua + '入本命' + h.palace + (h.periodPalace?'〔'+h.layer+h.periodPalace+'〕':''); }).join('、');
                   }
                 }
-                // 流年雙忌警告
-                if (lnZw.notes) {
-                  var doubleJi = lnZw.notes.filter(function(n) { return n.indexOf('雙忌') >= 0; });
-                  if (doubleJi.length) p.dims.ziwei.lnWarning = doubleJi.join('；');
-                }
+                p.dims.ziwei.annualFacts = ziweiPeriodFacts(lnZw,'ANNUAL_YEAR_STEM');
               }
             } catch(e2) {}
           }
@@ -19509,11 +19506,7 @@ renderTarot = function(){
               var yr3 = Number((S.ziwei.calculationPolicy||{}).referenceLunarYear);
               var zwLiuYue = S.ziwei.getLiuYueZw(yr3);
               if (zwLiuYue && zwLiuYue.length) {
-                p.dims.ziwei.liuYueData=zwLiuYue;
-                var _zwGoodM = zwLiuYue.filter(function(m){ return m.score >= 2; });
-                var _zwBadM = zwLiuYue.filter(function(m){ return m.score <= -2; });
-                if (_zwGoodM.length) p.dims.ziwei.goodMonths = _zwGoodM.map(function(m){ return m.monthName || ('第' + m.month + '月'); }).join('、');
-                if (_zwBadM.length) p.dims.ziwei.badMonths = _zwBadM.map(function(m){ return m.monthName || ('第' + m.month + '月'); }).join('、');
+                p.dims.ziwei.liuYueData=zwLiuYue.map(function(m){return ziweiPeriodFacts(m,'MONTHLY_STEM');});
               }
             } catch(e3) {}
           }
@@ -19539,15 +19532,7 @@ renderTarot = function(){
           if (_kpParts.length) p.dims.ziwei.keyPalaces = _kpParts.join('；');
 
           // ═══ v25：特殊格局 ═══
-          if (S.ziwei.patterns && S.ziwei.patterns.length) {
-            p.dims.ziwei.patterns = S.ziwei.patterns.map(function(pt) {
-              return pt.name + '（' + pt.level + '）：' + pt.desc;
-            }).join('\n');
-          }
-          // ═══ v25：星曜組合 ═══
-          if (S.ziwei.starComboNotes && S.ziwei.starComboNotes.length) {
-            p.dims.ziwei.combos = S.ziwei.starComboNotes.join('；');
-          }
+          p.dims.ziwei.candidateInterpretation = S.ziwei.candidateInterpretation || [];
           // ═══ v25：今年小限 ═══
           if (S.ziwei.getXiaoXian) {
             try {
@@ -19556,7 +19541,7 @@ renderTarot = function(){
                 var _xx = S.ziwei.getXiaoXian(_curAge);
                 if (_xx) {
                   p.dims.ziwei.xiaoXian = '參照農曆年' + (S.ziwei.calculationPolicy||{}).referenceLunarYear + '，虛歲' + _xx.age + '小限走' + _xx.palace + '（' + _xx.branch + '）';
-                  if (_xx.notes && _xx.notes.length) p.dims.ziwei.xiaoXian += '：' + _xx.notes.join('、');
+                  // Only the computed palace is evidence; heuristic notes stay in the display layer.
                 }
               }
             } catch(_xxe) {}
@@ -19667,7 +19652,7 @@ renderTarot = function(){
                   }
                 });
                 if (_entries.length) {
-                  _flyMatrix.push(srcPal.name + '干' + srcPal.gan + '：' + _entries.join('、'));
+                  _flyMatrix.push('本命宮干飛化；發射宮：'+srcPal.name + '干' + srcPal.gan + '：' + _entries.join('、'));
                 }
               });
             }
@@ -19706,6 +19691,18 @@ renderTarot = function(){
             _fullKP.push(_kp.name + ':' + parts);
           });
           if (_fullKP.length) p.dims.ziwei.keyPalaces = _fullKP.join('；'); // 覆蓋原本只有5個宮的版本
+
+          // Use the same fact serializer as standalone export. Never forward talkZiweiFor's UI verdicts.
+          var _zwForm=S.form||{}, _zwRef=(S.ziwei.calculationPolicy||{}).referenceLunar;
+          var _zwUnknown=!!_zwForm.btimeUnknown||(S.ziwei.birthInput||{}).timePrecision==='unknown';
+          if (_zwUnknown) {
+            p.dims.ziwei={status:'BIRTH_TIME_UNKNOWN',interpretationRules:p.dims.ziwei.interpretationRules};
+            p.rawReadings.ziwei='出生時辰未知；紫微未定盤，不輸出暫排宮位、四化或運限。';
+          } else {
+            var _zwRefLine=_zwRef?'參考農曆'+(_zwRef.isLeap?'閏':'')+_zwRef.month+'月，'+_zwRef.year+'年。\n':'';
+            p.rawReadings.ziwei=_zwRefLine+(window.JYZiweiData?window.JYZiweiData.serialize(S.ziwei,_zwForm):JSON.stringify(S.ziwei.calculatedFacts));
+          }
+
 
         } catch (e) {}
       }
@@ -20209,9 +20206,9 @@ renderTarot = function(){
           }
         }
         // 紫微時間線
-        if (typeof S !== 'undefined' && S.ziwei && S.ziwei.daXian) {
+        if (typeof S !== 'undefined' && S.ziwei && S.ziwei.daXian && !(S.form||{}).btimeUnknown && (S.ziwei.birthInput||{}).timePrecision!=='unknown') {
           var _curDx = S.ziwei.daXian.find(function(d){return d.isCurrent;});
-          if (_curDx) _tlLines.push('紫微大限：走' + (_curDx.palaceName||'') + '（' + _curDx.ageStart + '-' + _curDx.ageEnd + '歲，' + (_curDx.level||'') + '）');
+          if (_curDx) _tlLines.push('紫微大限：走' + (_curDx.palaceName||'') + '（' + _curDx.ageStart + '-' + _curDx.ageEnd + '歲）');
         }
         // 梅花時間線
         if (typeof S !== 'undefined' && S.meihua) {

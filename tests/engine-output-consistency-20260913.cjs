@@ -60,15 +60,20 @@ test('Actual composite Bazi result renderer displays neutral and distinguishes d
  const output=ids.map(id=>env.doc.getElementById(id).innerHTML).join('\n');
  assert(output.includes('日支坐根：否'));assert(output.includes('四支通根：是'));assert(output.includes('中和'));assert(!output.includes('天生自帶能量'));assert(!/undefined|NaN/.test(output),(output.match(/.{0,65}(?:undefined|NaN).{0,65}/g)||[]).slice(0,8).join('\n'));
 });
-test('Ziwei periods retain their own scale and saved lunar year in raw text and structured data',()=>{
+test('Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts',()=>{
  reset();const p=c._buildPayload(),text=p.rawReadings.ziwei,dx=z.daXian.find(d=>d.isCurrent),year=z.getLiuNianZw(2026);
- assert(text.includes(dx.level));assert(!text.includes('很差'));assert(text.includes('零為基準'));assert(text.includes((year.score>=0?'+':'')+year.score));
+ assert(!text.includes(dx.level));assert(!text.includes('零為基準'));assert(text.includes('calculationPolicy'));assert(text.includes('三方四正'));
+ assert(p.dims.ziwei.calculatedFacts.palaceFlights.every(h=>h.sourceType==='NATAL_PALACE_STEM'));
+ assert(!/"(?:score|level|theme|focus|goodMonths|badMonths|dxDirection)":/.test(JSON.stringify(p.dims.ziwei)));
+ assert(!p.timeline.some(x=>x.startsWith('紫微')&&x.includes(dx.level)));
+ assert(p.dims.ziwei.interpretationRules.some(x=>x.includes('性伴侶')));
  assert(p.dims.ziwei.lnDetail.includes('2026農曆年度'));
  for(const [ref,yr]of [['2026-02-16T04:00:00Z',2025],['2026-02-17T04:00:00Z',2026]]){
   c.S.ziwei=c.computeZiwei(1983,8,25,14,'male',{referenceDate:ref});const q=c._buildPayload();assert(q.dims.ziwei.lnDetail.startsWith(yr+'農曆年度'));assert(q.rawReadings.ziwei.includes(yr+'年'));
  }
  c.S.ziwei=c.computeZiwei(1983,8,25,14,'male',{referenceDate:'2025-08-01T04:00:00Z'});assert(c._buildPayload().rawReadings.ziwei.includes('農曆閏6月'));
  c.S.ziwei=z;
+ c.S.form.btimeUnknown=true;const unknown=c._buildPayload();assert.equal(unknown.dims.ziwei.status,'BIRTH_TIME_UNKNOWN');assert(!unknown.dims.ziwei.calculatedFacts);assert(!(unknown.timeline||[]).some(x=>x.startsWith('紫微大限')));c.S.form.btimeUnknown=false;
 });
 const gen={木:'火',火:'土',土:'金',金:'水',水:'木'},control={木:'土',土:'水',水:'火',火:'金',金:'木'};
 const trigrams={'111':['乾','金'],'110':['兌','金'],'101':['離','火'],'100':['震','木'],'011':['巽','木'],'010':['坎','水'],'001':['艮','土'],'000':['坤','土']};
