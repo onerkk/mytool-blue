@@ -30,6 +30,15 @@
     if(!x)return '未定盤';
     return '<b>'+esc(x.decade?x.decade.palaceName+'大限':'未入大限')+'</b><small>'+esc(x.decade?x.decade.ageStart+'–'+x.decade.ageEnd+'歲':'')+'</small><span>流年命 → '+esc(x.annual.mingPalace)+'('+esc(x.annual.mingBranch)+')</span>';
   }
+  function birthTimes(audit){
+    if(!audit)return '';
+    return '<section class="bzs-card"><h3>出生時間與時辰核對</h3><div class="pair-chart-grid">'+audit.people.map(function(p){
+      return '<article><h4>'+esc(p.person==='A'?'甲方':'乙方')+'</h4><dl class="bzs-kv"><dt>民用出生時間</dt><dd>'+esc(p.civilDateTime)+'</dd>'+
+        '<dt>八字排盤時間</dt><dd>'+esc(p.bazi.chartDateTime||'時辰未知')+(p.bazi.chartDateTime?'（'+esc(p.bazi.timeBasis==='true-solar-wall'?'真太陽時':'民用時間')+'）':'')+'</dd>'+
+        '<dt>八字日柱日期</dt><dd>'+esc(p.bazi.dayPillarDate||'待校時')+'</dd><dt>八字時柱</dt><dd>'+esc(p.bazi.hourPillar||'未定')+'</dd><dt>紫微時辰</dt><dd>'+esc(p.ziwei?p.ziwei.hourBranch+'時（民用 '+p.ziwei.civilTime+'）':'未定盤')+'</dd></dl>'+
+        (p.differentHour||p.differentDate||p.differentDayDate?'<p class="bzs-note warning">時間校正或換日政策跨越時辰或日期；八字與紫微各自採用上列時間。</p>':'')+'</article>';
+    }).join('')+'</div></section>';
+  }
   function results(pair,metaA,metaB){
     if(!pair)return '';
     var a=metaA.name||'甲方',b=metaB.name||'乙方';
@@ -41,5 +50,5 @@
       (pair.timeline.length?'<section class="bzs-card"><h3>兩個人的時間軌道</h3><p>現行年度與未來三年，同時保留各自的大限和流年。</p><div class="pair-timeline">'+pair.timeline.map(function(t){return '<article><header><b>'+t.year+'</b><small>'+esc(t.window.start.slice(0,10))+' 起</small></header><div><small>甲方</small>'+periodCell(t.a)+'</div><div><small>乙方</small>'+periodCell(t.b)+'</div></article>';}).join('')+'</div><p class="pair-caption">紫微每年正月初一換年；八字以立春換年。解讀同一段期間時須各自核對。</p></section>':'')+
       '<details class="bzs-card pair-details"><summary>本次排盤依據<span>時間與方法 ↗</span></summary><p>紫微保留民用出生時分，午夜換日，閏月沿用本月；八字仍依各自地點校正真太陽時。</p><p>兩人的生年四化、宮干飛化、三方四正與年度運限均附在完整提示詞及 JSON 中。先分別成判，再比較支持與矛盾。</p></details></section>';
   }
-  root.JYRelationshipUI=Object.freeze({instrument:instrument,seal:seal,results:results});
+  root.JYRelationshipUI=Object.freeze({instrument:instrument,seal:seal,results:results,birthTimes:birthTimes});
 })(window);

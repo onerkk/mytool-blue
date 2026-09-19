@@ -247,7 +247,7 @@
   function currentAndAnnual(chart) {
     var dayun=safeArray(chart && chart.dayun),current = dayun.find(function(x){return x && x.isCurrent;}) || null;
     var ref=Number(chart&&chart._referenceTimestamp);
-    var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||(Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear()), byYear={};
+    var nowYear=referenceBaziYear(chart), byYear={};
     dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){
       if(!y||y.year<nowYear-1||y.year>nowYear+4)return;
       if(!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz,segments:[]},y);
@@ -266,7 +266,8 @@
       years:years.map(function(y){
         var ay=a.annual.find(function(x){return x.year===y;})||null;
         var by=b.annual.find(function(x){return x.year===y;})||null;
-        return {year:y,a:ay,b:by,note:'只並列雙方同年運勢資料，不把兩個模型分數相加成關係機率。'};
+        if(ay&&by&&JSON.stringify(ay.annualWindow)!==JSON.stringify(by.annualWindow))throw new Error('雙方立春年度瞬間不一致，請重新排盤。');
+        return {year:y,window:(ay||by).annualWindow,a:ay,b:by,note:'以共同 UTC 立春區間比較；交運年各自保留分段。真太陽時的鐘面讀數可不同，不代表節氣發生於不同瞬間。'};
       })
     };
   }
@@ -286,6 +287,8 @@
   function buildCompatibility(chartA, chartB, options) {
     options = options || {};
     if (!chartA || !chartB) throw new Error('合盤需要兩張完整命盤');
+    verifiedBirthFacts(chartA,options.metaA);verifiedBirthFacts(chartB,options.metaB);
+    if(chartA.calculationPolicy.referenceInstant!==chartB.calculationPolicy.referenceInstant)throw new Error('雙方八字參考時刻不一致，請重新排盤。');
     var scenario = getScenario(options.scenarioId || 'marriage');
     var unknownA=!!(options.metaA&&options.metaA.unknown), unknownB=!!(options.metaB&&options.metaB.unknown);
     var relationOptions={unknownA:unknownA,unknownB:unknownB};
@@ -298,7 +301,7 @@
     var support = stems.concat(branches).concat(groups).filter(function(x){return supportTypes[x.typeCode];});
     var signal = support.length && tension.length ? '支持與張力並存' : support.length ? '支持／牽連訊號較多' : tension.length ? '磨合與邊界議題較多' : '明顯配對訊號較少，需回到十神與現實互動';
     return {
-      version:'1.2.0', scenario:scenario,
+      version:'1.4.0', scenario:scenario,
       personA:chartSummary(chartA,options.metaA||{}),
       personB:chartSummary(chartB,options.metaB||{}),
       dayMasters:{aToB:elementRelation(chartA.dmEl||STEM_EL[chartA.dm],chartB.dmEl||STEM_EL[chartB.dm]), bToA:elementRelation(chartB.dmEl||STEM_EL[chartB.dm],chartA.dmEl||STEM_EL[chartA.dm])},
@@ -321,6 +324,25 @@
     });
   }
 
+  function verifiedBirthFacts(chart,meta){
+    if(!root.BAZI_CORE||typeof root.BAZI_CORE.birthFacts!=='function')throw new Error('時間核對元件版本不足，請重新整理後排盤。');
+    return root.BAZI_CORE.birthFacts(chart,meta);
+  }
+  function birthFactLines(chart,meta){
+    var f=verifiedBirthFacts(chart,meta);
+    return ['【已核對的八字計算事實】',
+      '原始民用：'+f.civilDateTime+'（'+(f.timezoneId||'UTC偏移 '+f.timezoneOffset)+'）；出生瞬間 UTC：'+(f.birthInstant||'時辰未知')+'。',
+      '八字排盤時間：'+(f.chartDateTime||'時辰未知')+'；基準 '+f.chartTimeBasis+'；換日 '+f.dayBoundaryMode+'；時支 '+(f.hourBranch||'未定')+'。',
+      '已核對四柱：'+f.pillars.map(function(p){return PILLAR_LABEL[p.key]+p.gz;}).join('、')+'。',
+      '透干：'+f.exposedStems.map(function(g){return PILLAR_LABEL[g.pillar]+g.stem+'('+g.tenGod+')';}).join('、')+'；僅藏支而未透干：'+(f.hiddenOnlyStems.join('、')||'無')+'。',f.rule].join('\n');
+  }
+  function referenceBaziYear(chart){
+    var instant=chart&&chart.calculationPolicy&&chart.calculationPolicy.referenceInstant;
+    if(!instant||!root.BAZI_CORE)throw new Error('流年參考瞬間缺漏，請重新排盤。');
+    return root.BAZI_CORE.getYearGanZhiAt(instant).year;
+  }
+  function periodLabel(period){return root.BAZI_CORE.periodLabel(period);}
+
   function interactionLines(chart) {
     var out = safeArray(chart && chart.branchInteractions).map(function(x){return '・'+safeText(x.type)+'：'+safeText(x.desc||x.description)+'；'+safeText(x.effect);});
     safeArray(chart && chart.tianGanHe).forEach(function(x){out.push('・天干五合：'+safeText(x.zh||x.pair)+'；合化狀態 '+safeText(x.transformationStatus,'待審'));});
@@ -329,15 +351,15 @@
 
   function luckLines(chart, limit) {
     return safeArray(chart && chart.dayun).filter(function(x){return x.gz && x.gz!=='小運';}).slice(0,limit||10).map(function(x){
-      return '・'+x.gz+'：'+fmtDate(x.startDate)+' ～ '+fmtDate(x.endDateExclusive)+'（終點不含）；干十神 '+safeText(x.god,'—')+'；支本氣十神 '+safeText(x.zGod,'—')+(x.isCurrent?' ★現行':'');
+      return '・'+x.gz+'：'+periodLabel(x)+'；干十神 '+safeText(x.god,'—')+'；支本氣十神 '+safeText(x.zGod,'—')+(x.isCurrent?' ★現行':'');
     });
   }
 
   function annualLines(chart, count) {
     var ref=Number(chart&&chart._referenceTimestamp), civilYear=Number.isFinite(ref)?new Date(ref).getUTCFullYear():new Date().getFullYear();
-    var nowYear=Number(chart&&chart.liuNianPeriod&&chart.liuNianPeriod.year)||civilYear, byYear={};
+    var nowYear=referenceBaziYear(chart), byYear={};
     safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){if(y&&y.year>=nowYear){var group=byYear[y.year]||(byYear[y.year]=[]);if(!group.some(function(x){return x.dayun===d.gz&&x.periodStart===y.periodStart;}))group.push(Object.assign({dayun:d.gz},y));}});});
-    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){return byYear[year].sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));}).map(function(x){return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+safeText(x.periodStart,'未提供')+' ～ '+safeText(x.periodEndExclusive,'未提供')+'）';}).join('\n');});
+    return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){return byYear[year].sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));}).map(function(x){return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+periodLabel(x)+'）';}).join('\n');});
   }
 
   function modelLines(chart) {
@@ -361,8 +383,10 @@
 
   function buildChartDataBlock(chart, meta) {
     meta=meta||{};
+    var verified=birthFactLines(chart,meta);
     if (meta.unknown) return [
       '【A. 三柱資料：時辰未知】',
+      verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.birthLine||'出生日期未標示'),
       pillarFactLines(chart,true).join('\n'),
       '午時是暫排值，已排除時柱及其衍生模型、命宮、神煞和精確交運時間。請以三柱作有限分析；喜忌格局、合盤五行互補與人格卡若依賴暫排全盤，只列為待校時候選。',
@@ -371,13 +395,14 @@
     var current=safeArray(chart&&chart.dayun).find(function(x){return x&&x.isCurrent;});
     return [
       '【A. 排盤與曆法資料】',
+      verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),
       meta.solarInfo&&meta.solarInfo.trueSolarDateTime?'民用出生時間校正為真太陽時：'+meta.solarInfo.trueSolarDateTime+'；經度 '+safeText(meta.longitude)+'°；時區 '+safeText(meta.timezoneId||meta.solarInfo.timezoneId)+'。':'真太陽時資料未提供。',
       '出生瞬間（UTC）：'+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.birthInstant,'未提供')+'；年、月柱在 UTC+8 核對節氣，日、時柱依本盤牆鐘；起運採分鐘折算法。',
       '排盤政策：換日 '+safeText(chart&&chart.calculationPolicy&&chart.calculationPolicy.dayBoundaryMode)+'；流年以立春為界；大運採半開區間 [起點,下一起點)。',
       meta.unknown?'時辰未知：目前以暫定時刻排盤，時柱、神煞、子女晚景象義及精確起運的把握度較低。':'',
       pillarFactLines(chart).join('\n'),
-      (meta.unknown?'・暫定起運（以12:00暫排，精確交運把握度較低）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&chart.qiyun.startDate)+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
+      (meta.unknown?'・暫定起運（以12:00暫排，精確交運把握度較低）：':'・起運：')+safeText(chart&&chart.qiyun&&chart.qiyun.startAgeText)+'；交運點 '+safeText(chart&&chart.qiyun&&(chart.qiyun.startUtc8||chart.qiyun.startDate))+'（UTC+8 民用時間）'+'；順逆 '+safeText(chart&&chart.qiyun&&chart.qiyun.direction)+'。',
       '・輔助資料：生肖 '+safeText(CHINESE_ZODIAC[chart&&chart.pillars&&chart.pillars.year&&chart.pillars.year.zhi],'—')+'；空亡 '+(chart&&chart.kongwang&&!Array.isArray(chart.kongwang)?'年柱 '+safeArray(chart.kongwang.year).join('、')+'；日柱 '+safeArray(chart.kongwang.day).join('、'):(safeArray(chart&&chart.kongwang).join('、')||'—'))+'；命宮 '+safeText(chart&&chart.mingGong&&(chart.mingGong.gan+chart.mingGong.zhi),'—')+'；胎元 '+safeText(chart&&chart.taiYuan&&(chart.taiYuan.gan+chart.taiYuan.zhi),'—')+'；八字重量 '+safeText(chart&&chart.chenggu&&chart.chenggu.display,'未計得')+'。稱骨、命宮、胎元、納音與神煞可作輔助視角，主判仍綜合月令與全局生剋。',
       '【原局干支作用——由核心唯一計算】',
       interactionLines(chart).join('\n'),
@@ -386,7 +411,7 @@
       modelLines(chart).join('\n'),
       '【大運資料】',
       luckLines(chart,10).join('\n'),
-      current?'現行大運：'+current.gz+'，'+current.startDate+' 起，至 '+current.endDateExclusive+' 交下一運。':'現行大運未能判定。',
+      current?'現行大運：'+current.gz+'，'+periodLabel(current)+'。':'現行大運未能判定。',
       '【近五個立春年度】',
       annualLines(chart,5).join('\n')||'・近年流年資料未能取得。',
       '流年與大運等級只能當本模型內相對排序；刑沖合害只列觸發，不自動加減分。',
@@ -451,15 +476,17 @@
   }
 
   function buildCompatibilityDataBlock(comp) {
-    function luck(d){if(!d)return null;return {gz:d.gz,ageStart:d.ageStart,ageEnd:d.ageEnd,startDate:d.startDate,endDateExclusive:d.endDateExclusive};}
-    function annual(d){if(!d)return null;return {gz:d.gz,dayun:d.dayun,periodStart:d.periodStart,periodEndExclusive:d.periodEndExclusive,
-      segments:safeArray(d.segments).map(function(s){return {gz:s.gz,dayun:s.dayun,periodStart:s.periodStart,periodEndExclusive:s.periodEndExclusive};})};}
+    function window(w){if(!w)return null;return {start:w.startUtc8,endExclusive:w.endExclusiveUtc8,timeBasis:'UTC+08:00',interval:'[start,end)'};}
+    function luck(d){if(!d)return null;return {gz:d.gz,ageStart:d.ageStart,ageEnd:d.ageEnd,window:window(d.window)};}
+    function annual(d){if(!d)return null;return {gz:d.gz,
+      segments:safeArray(d.segments).map(function(s){return {dayun:s.dayun,window:window(s.window)};})};}
     return ['【A方八字】',buildChartDataBlock(comp._chartA||{},comp._metaA||{}),
       '【B方八字】',buildChartDataBlock(comp._chartB||{},comp._metaB||{}),
       '【八字跨盤事實與候選模型】',relationFacts(comp).join('\n'),
       '【雙向十神映射】',JSON.stringify(comp.directionalTenGods),
       '【八字歲運同步】',JSON.stringify({aCurrent:luck(comp.luckSynchronization.aCurrent),bCurrent:luck(comp.luckSynchronization.bCurrent),
-        years:comp.luckSynchronization.years.map(function(x){return {year:x.year,a:annual(x.a),b:annual(x.b)};})}),
+        timeRule:'所有區間為共同 UTC+8 民用時間；各方 segments 為與大運相交後的區間，不是不同的立春。',
+        years:comp.luckSynchronization.years.map(function(x){return {year:x.year,annualWindow:window(x.window),a:annual(x.a),b:annual(x.b)};})}),
       '資料界線：'+comp.uncertainty.note].join('\n\n');
   }
 
@@ -487,8 +514,8 @@
         'B看A：'+comp.directionalTenGods.bViewsA.map(function(x){return PILLAR_LABEL[x.partnerPillar]+x.partnerStem+'＝'+x.tenGod+(x.hidden&&x.hidden.length?'（藏干 '+x.hidden.map(function(h){return h.stem+'＝'+h.tenGod;}).join('、')+'）':'');}).join('；')+'。',
         '十神映射有方向性；同一人對A與B可能呈現不同角色感受。',
         '【運勢同步】',
-        'A現行大運：'+(comp.luckSynchronization.aCurrent?comp.luckSynchronization.aCurrent.gz+'（'+comp.luckSynchronization.aCurrent.startDate+'～'+comp.luckSynchronization.aCurrent.endDateExclusive+'）':'未判定')+'。',
-        'B現行大運：'+(comp.luckSynchronization.bCurrent?comp.luckSynchronization.bCurrent.gz+'（'+comp.luckSynchronization.bCurrent.startDate+'～'+comp.luckSynchronization.bCurrent.endDateExclusive+'）':'未判定')+'。',
+        'A現行大運：'+(comp.luckSynchronization.aCurrent?comp.luckSynchronization.aCurrent.gz+'（'+periodLabel(comp.luckSynchronization.aCurrent)+'）':'未判定')+'。',
+        'B現行大運：'+(comp.luckSynchronization.bCurrent?comp.luckSynchronization.bCurrent.gz+'（'+periodLabel(comp.luckSynchronization.bCurrent)+'）':'未判定')+'。',
         comp.luckSynchronization.years.map(function(x){return '・'+x.year+'：A '+(x.a?x.a.gz+'／'+x.a.level:'無資料')+'；B '+(x.b?x.b.gz+'／'+x.b.level:'無資料')+'。';}).join('\n'),
         '【判讀規範】'
       ],
@@ -689,7 +716,7 @@
   }
 
   root.BaziSuiteCore = {
-    version:'1.2.0',
+    version:'1.4.0',
     scenarios:SCENARIOS.slice(), lenses:Object.assign({},LENSES),
     constants:{stems:STEMS.slice(),branches:BRANCHES.slice(),stemElements:Object.assign({},STEM_EL),branchElements:Object.assign({},BRANCH_EL)},
     tenGod:tenGod, elementRelation:elementRelation, chartSummary:chartSummary,
@@ -697,6 +724,7 @@
     directionalTenGods:directionalTenGods, elementComplement:elementComplement, luckSynchronization:luckSynchronization,
     createCompatibility:createCompatibility, buildCompatibilityPrompt:buildCompatibilityPrompt,buildCompatibilityDataBlock:buildCompatibilityDataBlock,
     buildChartDataBlock:buildChartDataBlock, buildSinglePrompt:buildSinglePrompt,
+    verifiedBirthFacts:verifiedBirthFacts,birthFactLines:birthFactLines,periodLabel:periodLabel,referenceBaziYear:referenceBaziYear,
     buildPersonality:buildPersonality, buildPersonalityPrompt:buildPersonalityPrompt,
     normalizeBaziString:normalizeBaziString, reverseBaziToSolarTimes:reverseBaziToSolarTimes, reverseBaziToSolarTimesAsync:reverseBaziToSolarTimesAsync,
     policy:{trueSolarTimePreferred:true,defaultDayBoundaryMode:'ZI_HOUR_23',annualBoundary:'LI_CHUN',luckInterval:'[start,end)',reverseLookupClockTimeOnly:true},

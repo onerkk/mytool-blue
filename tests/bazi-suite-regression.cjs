@@ -211,7 +211,7 @@ test('單人合盤人格與工具共用同一套自訂出生資料元件',()=>{
   assert(ui.includes("function dateField(prefix,label)"));
   assert(ui.includes("function timeField(prefix,label,allowUnknown,defaultTime)"));
   assert(ui.includes("function locationFields(prefix,label)"));
-  assert(ui.includes("version:'1.1.3'"));
+  assert(ui.includes("version:'1.2.0'"));
 });
 
 if(process.exitCode){console.error(`\n${passed} tests passed before failure(s).`);process.exit(process.exitCode);}console.log(`\nAll ${passed} Bazi suite regression tests passed.`);

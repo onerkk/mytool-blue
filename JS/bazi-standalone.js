@@ -438,6 +438,9 @@
   function buildBaziPrompt(question, b, meta) {
     var L=[], P=b.pillars||{}, G=b.gods||{}, CG=b.cangGan||{}, CS=b.cs||{}, NY=b.nayinAll||{};
     var keys=meta&&meta.unknown?['year','month','day']:['year','month','day','hour'];
+    if(!window.BAZI_CORE||!window.BAZI_CORE.birthFacts)throw new Error('時間核對元件版本不足，請重新整理後排盤。');
+    var birthFacts=window.BAZI_CORE.birthFacts(b,meta);
+    var periodLabel=window.BAZI_CORE.periodLabel;
     var role={year:'年柱',month:'月柱',day:'日柱',hour:'時柱'};
     var palace={year:'祖上、家族根基、幼年環境',month:'父母、成長環境、事業平台',day:'本人、配偶與親密關係',hour:'子女、部屬、晚景與成果'};
     var pad=function(n){return String(n).padStart(2,'0');};
@@ -447,6 +450,8 @@
     var spec=window.JY_BAZI_PROMPT_ROOT;
     if(!spec||typeof spec.rootProtocolLines!=='function')throw new Error('缺少 JS/bazi-prompt-root.js，無法生成八字證據提示詞');
 
+    L.push('【已核對的出生時間與四柱】',JSON.stringify(birthFacts));
+    L.push('年度及大運區間統一標示 UTC+8 民用時間；內部真太陽時讀數不得當成民用時間。藏干不等於透干，紫微時辰不得用來改寫八字時柱。');
     L.push('【角色】');
     L.push(spec.roleText('single'));
     L.push('');
@@ -482,7 +487,7 @@
     }
     if(b.renyuan)L.push('・人元司令：'+_fmt(b.renyuan)+'（輔助月令用事，不改變月柱）。');
     if(b.kongwang){var kw=[].concat(b.kongwang.year||[],b.kongwang.day||[]).filter(function(v,i,a){return v&&a.indexOf(v)===i;});if(kw.length)L.push('・空亡：'+kw.join('、')+'。');}
-    if(b.qiyun){L.push('・起運：'+(b.qiyun.startAgeText||'—')+'；交運點 '+fmtDate(b.qiyun.startDate)+'；順逆 '+(b.qiyun.direction==='forward'?'順行':'逆行')+'；取'+(b.qiyun.referenceJie||'節')+' '+fmtDate(b.qiyun.referenceJieDate)+'；精度 '+(b.qiyun.precision||'未標示')+'。');}
+    if(b.qiyun){L.push('・起運：'+(b.qiyun.startAgeText||'—')+'；交運點 '+fmtDate(b.qiyun.startUtc8)+'（UTC+8 民用時間）'+'；順逆 '+(b.qiyun.direction==='forward'?'順行':'逆行')+'；取'+(b.qiyun.referenceJie||'節')+' '+fmtDate(b.qiyun.referenceJieDate)+'（UTC+8 民用時間）'+'；精度 '+(b.qiyun.precision||'未標示')+'。');}
     L.push('四柱宮位傳統象義：年柱＝'+palace.year+'；月柱＝'+palace.month+'；日柱＝'+palace.day+'；時柱＝'+palace.hour+'。請與十神、生剋、歲運及現實情境綜合。');
     L.push('');
 
@@ -524,21 +529,21 @@
     L.push('【大運與流年資料】');
     if(Array.isArray(b.dayun)){
       b.dayun.filter(function(d){return d&&d.gz&&d.gz!=='小運';}).forEach(function(d){
-        L.push('・'+d.gz+'：'+fmtDate(d.startDate)+' ～ '+fmtDate(d.endDateExclusive)+'（終點不含）'+(d.god?'；干十神 '+d.god:'')+(d.zGod?'；支本氣十神 '+d.zGod:'')+(d.luckLabel?'；模型標記 '+d.luckLabel:'')+(d.isCurrent?' ★現行':''));
+        L.push('・'+d.gz+'：'+periodLabel(d)+(d.god?'；干十神 '+d.god:'')+(d.zGod?'；支本氣十神 '+d.zGod:'')+(d.luckLabel?'；模型標記 '+d.luckLabel:'')+(d.isCurrent?' ★現行':''));
       });
     }
     var cur=_currentDayun(b);
     if(cur){
-      L.push('現行大運：'+cur.gz+'，'+fmtDate(cur.startDate)+' 起，至 '+fmtDate(cur.endDateExclusive)+' 交下一運。');
-      if(cur.phaseNow)L.push('常用前後段觀察：目前為'+cur.phaseNow.half+'，觀察重點 '+cur.phaseNow.gz+'（'+cur.phaseNow.el+'、'+cur.phaseNow.god+'），至 '+fmtDate(cur.phaseNow.untilDate)+'；但'+cur.phaseNow.disclaimer);
+      L.push('現行大運：'+cur.gz+'，'+periodLabel(cur)+'。');
+      if(cur.phaseNow)L.push('常用前後段觀察：目前為'+cur.phaseNow.half+'，觀察重點 '+cur.phaseNow.gz+'（'+cur.phaseNow.el+'、'+cur.phaseNow.god+'），至 '+fmtDate(cur.phaseNow.untilDate)+'（'+(cur.timeBasis||'盤內時間')+'）；但'+cur.phaseNow.disclaimer);
       if(cur.phaseNow&&cur.phaseNow.nextDaYun)L.push('下一步大運：'+cur.phaseNow.nextDaYun.gz+'（模型標記 '+(cur.phaseNow.nextDaYun.luckLabel||'—')+'）。');
     }
     if(b.liuNianGZ)L.push('目前流年：'+b.liuNianGZ+'（以立春為年界；對應年份 '+((b.liuNianPeriod&&b.liuNianPeriod.year)||'—')+'）。');
-    var refYear=(b.liuNianPeriod&&b.liuNianPeriod.year)||new Date(isFinite(b._referenceTimestamp)?b._referenceTimestamp:Date.now()).getUTCFullYear();
+    var refYear=window.BAZI_CORE.getYearGanZhiAt(b.calculationPolicy.referenceInstant).year;
     var future=[];
     (b.dayun||[]).forEach(function(d){(d&&d.liuNian||[]).forEach(function(x){if(x&&x.year>=refYear&&x.year<=refYear+3&&!future.some(function(y){return y.year===x.year&&y.periodStart===x.periodStart&&y.dayun===d.gz;}))future.push(Object.assign({dayun:d.gz},x));});});
     future.sort(function(a,c){return a.year-c.year;});
-    if(future.length)L.push('近四個立春年度（交運年分段列出）：'+future.map(function(x){return x.year+' '+x.gz+'（大運 '+x.dayun+'；模型 '+(x.level||'未評')+'；區間 '+x.periodStart+' ～ '+x.periodEndExclusive+'）';}).join('；')+'。');
+    if(future.length)L.push('近四個立春年度（交運年分段列出）：'+future.map(function(x){return x.year+' '+x.gz+'（大運 '+x.dayun+'；模型 '+(x.level||'未評')+'；區間 '+periodLabel(x)+'）';}).join('；')+'。');
     L.push('流年與大運的「吉凶等級」是前端相對排序；刑沖合害、三合三會在此列為觸發。請回到干支、十神、原局承受與題目領域自行判讀。');
     L.push('');
 
@@ -610,7 +615,7 @@
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
     if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912engine2');
     if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260912accuracy1');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260913core2');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260920time1');
     if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260913core2');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }

@@ -19257,6 +19257,12 @@ renderTarot = function(){
 
         // ═══ v30：八字完整數據補齊（之前完全未送的核心結構）═══
 
+        // Verified clock ownership accompanies every composite Bazi payload.
+        if(window.BAZI_CORE&&window.BAZI_CORE.birthFacts){
+          p.dims.bazi.birthFacts=window.BAZI_CORE.birthFacts(bz,{unknown:!!p.btimeUnknown});
+          p.dims.bazi.periodTimePolicy='window 使用 UTC 瞬間與 UTC+8 民用時間；startDate／periodStart 等舊欄位使用各盤 timeBasis，不能把真太陽鐘面加上 UTC 時區。';
+        }
+
         // 四柱天干地支（八字本體——之前竟然沒送！）
         if (bz.pillars) {
           var _pks = ['year','month','day','hour'];
@@ -19355,7 +19361,7 @@ renderTarot = function(){
         // 所有大運（不只當前——人生時間軸）
         if (bz.dayun && bz.dayun.length) {
           p.dims.bazi.allDayun = bz.dayun.map(function(d) {
-            var s = (d.startDate||'未提供起點') + ' ～ ' + (d.endDateExclusive||d.endDate||'未提供終點') + ' ' + d.gz;
+            var s = (d.window?window.BAZI_CORE.periodLabel(d)+'；盤內時間 ':'')+(d.startDate||'未提供起點') + ' ～ ' + (d.endDateExclusive||d.endDate||'未提供終點') + '（'+(d.timeBasis||'基準未標示，須重排')+'） ' + d.gz;
             if (d.isCurrent) s += '★當前';
             s += '(' + (d.level || '') + ',' + (d.el || '') + ')';
             return s;
@@ -19364,7 +19370,7 @@ renderTarot = function(){
 
         // 起運資訊
         if (bz.qiyun) {
-          p.dims.bazi.qiyun = (bz.qiyun.startAgeText || String(bz.qiyun.startAgeDecimal!=null?bz.qiyun.startAgeDecimal:bz.qiyun.age)+'歲') + '起運；交運點 ' + (bz.qiyun.startDate||'未提供') + '；' + (bz.qiyun.direction==='forward'?'順行':'逆行');
+          p.dims.bazi.qiyun = (bz.qiyun.startAgeText || String(bz.qiyun.startAgeDecimal!=null?bz.qiyun.startAgeDecimal:bz.qiyun.age)+'歲') + '起運；交運點 ' + (bz.qiyun.startUtc8||'未提供')+'（UTC+8 民用時間）；盤內 '+(bz.qiyun.startDate||'未提供')+'（'+(bz.qiyun.startTimeBasis||'基準未標示')+'）；' + (bz.qiyun.direction==='forward'?'順行':'逆行');
         }
 
         // 完整地支互動（不截斷）

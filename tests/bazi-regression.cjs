@@ -225,7 +225,9 @@ test('提示詞分離排盤事實與流派模型，包含精確運界及限制',
   assert(prompt.includes('【B. 前端流派模型（供交叉核對）】'));
   assert(prompt.includes('經度 120.23°'));
   assert(prompt.includes('目前運勢比較基準 true-solar-wall'));
-  assert(prompt.includes('1989-05-17 18:53:39'));
+  assert(prompt.includes(chart.qiyun.startUtc8));
+  assert.equal(Date.parse(chart.qiyun.startUtc8),Date.parse(chart.qiyun.startUtc));
+  assert(prompt.includes('UTC+8 民用時間'));
   assert(prompt.includes('六害：年支亥害月支申'));
   assert.strictEqual((prompt.match(/六害：年支亥害月支申/g)||[]).length,1);
   assert(prompt.includes('精度提醒：真太陽時顯示到秒是曆法換算結果'));

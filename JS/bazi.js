@@ -162,9 +162,66 @@ function getBaziAnnualYearsOverlapping(startMs,endMs,chartOptions){
   var sy=new Date(startMs).getUTCFullYear()-1,ey=new Date(endMs).getUTCFullYear()+1,out=[];
   for(var y=sy;y<=ey;y++){
     var a=boundary(y),b=boundary(y+1);
-    if(a<endMs&&b>startMs) out.push({year:y,periodStart:_baziFormatDateTime(Math.max(a,startMs)),periodEndExclusive:_baziFormatDateTime(Math.min(b,endMs)),partialStart:a<startMs,partialEnd:b>endMs,boundaryApprox:false,timeBasis:chartOptions?'chart-wall':'UTC',precision:'astronomical-estimate'});
+    if(a<endMs&&b>startMs){
+      var from=Math.max(a,startMs),to=Math.min(b,endMs);
+      var annualStart=getBaziLiChunMs(y),annualEnd=getBaziLiChunMs(y+1);
+      out.push({year:y,periodStart:_baziFormatDateTime(from),periodEndExclusive:_baziFormatDateTime(to),
+        partialStart:a<startMs,partialEnd:b>endMs,boundaryApprox:false,
+        timeBasis:chartOptions?(chartOptions.trueSolarTimeApplied?'true-solar-wall':'local-civil-wall'):'UTC',
+        precision:'astronomical-estimate',
+        annualWindow:_baziInstantWindow(annualStart,annualEnd),
+        window:_baziInstantWindow(from===a?annualStart:_baziWallToInstant(from,chartOptions),to===b?annualEnd:_baziWallToInstant(to,chartOptions))});
+    }
   }
   return out;
+}
+
+// UTC fields are comparable instants. Legacy chart-wall strings have no UTC offset.
+function _baziUtc8(instant){return new Date(instant+8*3600000).toISOString().slice(0,19)+'+08:00';}
+function _baziInstantWindow(start,end){
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)throw new Error('時間區間無效，請重新排盤。');
+  return {timeBasis:'UTC',start:new Date(start).toISOString(),endExclusive:new Date(end).toISOString(),
+    displayTimezone:'Asia/Taipei',startUtc8:_baziUtc8(start),endExclusiveUtc8:_baziUtc8(end),interval:'[start,end)'};
+}
+function _baziPeriodLabel(period){
+  if(period&&period.window)return period.window.startUtc8+' ～ '+period.window.endExclusiveUtc8+'（UTC+8 民用時間，終點不含）';
+  return (period&&(period.periodStart||period.startDate)||'未提供')+' ～ '+(period&&(period.periodEndExclusive||period.endDateExclusive)||'未提供')+'（'+(period&&period.timeBasis||'舊資料時間基準未標示，須重排')+'）';
+}
+function _baziWallToInstant(wall,options){
+  return options?_baziReferenceToChartWall(wall,Object.assign({},options,{referenceTimeBasis:'chart-wall'})).instantTimestamp:wall;
+}
+function _baziBirthFacts(chart,meta){
+  meta=meta||{};
+  const policy=chart&&chart.calculationPolicy;
+  if(!policy||!Number.isFinite(chart._birthTimestamp)||!window.BaziCalendarCore)throw new Error('八字時間核對資料缺漏，請重新排盤。');
+  if(policy.trueSolarTimeApplied&&(policy.longitude==null||typeof window.calcTrueSolarTime!=='function'))throw new Error('八字真太陽時來源缺漏，請重新排盤。');
+  const instant=Date.parse(policy.birthInstant),wall=new Date(chart._birthTimestamp);
+  const resolved=_baziReferenceToChartWall(instant,policy);
+  if(Math.abs(resolved.timestamp-chart._birthTimestamp)>=1000)throw new Error('八字出生瞬間與排盤時間不一致，請重新排盤。');
+  const input={year:wall.getUTCFullYear(),month:wall.getUTCMonth()+1,day:wall.getUTCDate(),hour:wall.getUTCHours(),minute:wall.getUTCMinutes(),second:wall.getUTCSeconds(),
+    birthInstant:instant,timezoneOffset:policy.timezoneOffset,trueSolarTimeApplied:policy.trueSolarTimeApplied,dayBoundaryMode:policy.dayBoundaryMode};
+  const checked=window.BaziCalendarCore.calculateChart(input),keys=meta.unknown?['year','month','day']:['year','month','day','hour'];
+  if(!checked)throw new Error('八字曆法核對失敗，請重新排盤。');
+  if(chart.dm!==checked.pillars.day.gan)throw new Error('八字日主與日柱不一致，請重新排盤。');
+  const rows=keys.map(function(k){
+    const p=chart.pillars[k],expected=checked.pillars[k],hidden=CG[expected.zhi]||[];
+    if(!p||p.gan!==expected.gan||p.zhi!==expected.zhi)throw new Error('八字'+k+'柱與原始出生時間不一致，請重新排盤。');
+    if(JSON.stringify(chart.cangGan[k])!==JSON.stringify(hidden))throw new Error('八字藏干與地支不一致，請重新排盤。');
+    const stemGod=k==='day'?'日主':tenGod(chart.dm,p.gan),hiddenGods=hidden.map(g=>tenGod(chart.dm,g));
+    if(k!=='day'&&chart.gods[k].gan!==stemGod||JSON.stringify(chart.gods[k].zhi)!==JSON.stringify(hiddenGods))throw new Error('八字十神與四柱不一致，請重新排盤。');
+    return {key:k,gz:p.gan+p.zhi,gan:p.gan,zhi:p.zhi,stemTenGod:stemGod,hiddenStems:hidden.map((g,i)=>({stem:g,tenGod:hiddenGods[i]}))};
+  });
+  const civil=_baziFormatDateTime(Date.UTC(resolved.civilParts.year,resolved.civilParts.month-1,resolved.civilParts.day,resolved.civilParts.hour,resolved.civilParts.minute,resolved.civilParts.second));
+  if(meta.civilInput&&(meta.civilInput.date!==civil.slice(0,10)||!meta.unknown&&meta.civilInput.time!==civil.slice(11,16)||meta.civilInput.gender&&meta.civilInput.gender!==chart.gender))throw new Error('原始出生資料與八字命盤不一致，請重新排盤。');
+  if(!meta.unknown&&meta.solarInfo&&(Number(meta.solarInfo.utcTimestamp)!==instant||meta.solarInfo.trueSolarDateTime!==_baziFormatDateTime(chart._birthTimestamp)))throw new Error('真太陽時摘要與八字命盤不一致，請重新排盤。');
+  return {sourceType:'BAZI_CALENDAR_VERIFIED',status:meta.unknown?'PARTIAL_UNKNOWN_HOUR':'PASS',engine:checked.engine,engineVersion:checked.engineVersion,
+    birthInstant:meta.unknown?null:policy.birthInstant,civilDateTime:meta.unknown?civil.slice(0,10):civil,
+    timezoneId:policy.timezoneId,timezoneOffset:policy.timezoneOffset,longitude:policy.longitude,
+    chartDateTime:meta.unknown?null:_baziFormatDateTime(chart._birthTimestamp),chartTimeBasis:resolved.basis,
+    dayBoundaryMode:policy.dayBoundaryMode,dayPillarDate:meta.unknown?null:new Date(chart._birthTimestamp+(policy.dayBoundaryMode==='ZI_HOUR_23'&&wall.getUTCHours()>=23?86400000:0)).toISOString().slice(0,10),hourBranch:meta.unknown?null:checked.pillars.hour.zhi,
+    pillars:rows,exposedStems:rows.map(r=>({pillar:r.key,stem:r.gan,tenGod:r.stemTenGod})),
+    hiddenOnlyStems:[...new Set(rows.flatMap(r=>r.hiddenStems.map(g=>g.stem)))].filter(g=>!rows.some(r=>r.gan===g)),
+    rule:'四柱、透干與藏干以本物件為準；藏干不等於透干。紫微民用時辰不得回填八字時柱。'};
 }
 function _baziPillarRecord(pillars,key,index){var p=pillars&&pillars[key];return p&&p.zhi?{branch:p.zhi,pillar:key,label:{year:'年支',month:'月支',day:'日支',hour:'時支'}[key],index:index}:null;}
 function detectBaziBranchInteractions(pillars){
@@ -253,7 +310,7 @@ function detectBaziBranchInteractions(pillars){
 }
 
 window.BAZI_CORE=window.BAZI_CORE||{};
-Object.assign(window.BAZI_CORE,{hiddenStems:CG,clashes:LIU_CHONG,combinations:LIU_HE,harms:DZ_HAI,destructions:DZ_PO,trines:SAN_HE,directionals:SAN_HUI,defaultPolicy:BAZI_DEFAULT_POLICY,detectInteractions:detectBaziBranchInteractions,getYearGanZhiAt:getBaziYearGanZhiAt,getAnnualYearsOverlapping:getBaziAnnualYearsOverlapping,formatDateTime:_baziFormatDateTime,referenceToChartWall:_baziReferenceToChartWall});
+Object.assign(window.BAZI_CORE,{hiddenStems:CG,clashes:LIU_CHONG,combinations:LIU_HE,harms:DZ_HAI,destructions:DZ_PO,trines:SAN_HE,directionals:SAN_HUI,defaultPolicy:BAZI_DEFAULT_POLICY,detectInteractions:detectBaziBranchInteractions,getYearGanZhiAt:getBaziYearGanZhiAt,getAnnualYearsOverlapping:getBaziAnnualYearsOverlapping,formatDateTime:_baziFormatDateTime,referenceToChartWall:_baziReferenceToChartWall,birthFacts:_baziBirthFacts,instantWindow:_baziInstantWindow,periodLabel:_baziPeriodLabel,timeDataVersion:'20260920time1'});
 
 /* 十神 */
 function tenGod(dm,tgt){
@@ -5241,6 +5298,8 @@ function computeBazi(year,month,day,hour,minute,gender,options){
       zhiScore:0,
       startDate:_baziFormatDateTime(birthTimestamp),
       endDateExclusive:_baziFormatDateTime(firstDaYunStart),
+      timeBasis:options.trueSolarTimeApplied?'true-solar-wall':'local-civil-wall',
+      window:_baziInstantWindow(termInstant,_baziWallToInstant(firstDaYunStart,options)),
       isCurrent:referenceMs>=birthTimestamp && referenceMs<firstDaYunStart
     });
   }
@@ -5254,6 +5313,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     const cycleStart=_baziAddYearsMs(firstDaYunStart,i*10);
     const cycleEnd=_baziAddYearsMs(firstDaYunStart,(i+1)*10);
     const cycleMid=_baziAddYearsMs(cycleStart,5);
+    const cycleWindow=_baziInstantWindow(_baziWallToInstant(cycleStart,options),_baziWallToInstant(cycleEnd,options));
     const isCur=referenceMs>=cycleStart&&referenceMs<cycleEnd;
     const dyG=TG[gI],dyZ=DZ[zI],dyEl=WX_G[dyG],dyZEl=WX_Z[dyZ];
     /* ═══ 大運吉凶判定：四步分析法 ═══ */
@@ -5395,9 +5455,9 @@ function computeBazi(year,month,day,hour,minute,gender,options){
       else if(lnScore>=-3) lnLv='小凶';
       else if(lnScore>=-5) lnLv='凶';
       else lnLv='大凶';
-      liuNian.push({year:lnYear,gz:lnG+lnZ,el:lnEl,zEl:lnZEl,level:lnLv,god:lnGod,score:lnScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,notes:lnNotes,events:lnEvents,clash:lnClash,affect:lnAffect,periodStart:annualPeriod.periodStart,periodEndExclusive:annualPeriod.periodEndExclusive,partialStart:annualPeriod.partialStart,partialEnd:annualPeriod.partialEnd,boundaryApprox:annualPeriod.boundaryApprox});
+      liuNian.push({year:lnYear,gz:lnG+lnZ,el:lnEl,zEl:lnZEl,level:lnLv,god:lnGod,score:lnScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,notes:lnNotes,events:lnEvents,clash:lnClash,affect:lnAffect,periodStart:annualPeriod.periodStart,periodEndExclusive:annualPeriod.periodEndExclusive,partialStart:annualPeriod.partialStart,partialEnd:annualPeriod.partialEnd,boundaryApprox:annualPeriod.boundaryApprox,timeBasis:annualPeriod.timeBasis,window:annualPeriod.window,annualWindow:annualPeriod.annualWindow});
     }
-    dayun.push({gz:dyG+dyZ,el:dyEl,zEl:dyZEl,ageStart:as,ageEnd:ae,ageStartText:(qiyun.age+i*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',ageEndText:(qiyun.age+(i+1)*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',startDate:_baziFormatDateTime(cycleStart),midDate:_baziFormatDateTime(cycleMid),endDateExclusive:_baziFormatDateTime(cycleEnd),isCurrent:isCur,level:lv,score:dyScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,god:dyGod,zGod:dyZGod,notes:dyNotes,clash:dyClash,he:dyHe,xing:dyXing,liuNian,ganScore:dyGanScore,zhiScore:dyZhiScore});
+    dayun.push({gz:dyG+dyZ,el:dyEl,zEl:dyZEl,ageStart:as,ageEnd:ae,ageStartText:(qiyun.age+i*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',ageEndText:(qiyun.age+(i+1)*10)+'歲'+qiyun.months+'月'+qiyun.days+'日',startDate:_baziFormatDateTime(cycleStart),midDate:_baziFormatDateTime(cycleMid),endDateExclusive:_baziFormatDateTime(cycleEnd),window:cycleWindow,timeBasis:options.trueSolarTimeApplied?'true-solar-wall':'local-civil-wall',isCurrent:isCur,level:lv,score:dyScore,scorePolicy:'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE',climateScoreAdjustment:0,interactionScoreAdjustment:0,god:dyGod,zGod:dyZGod,notes:dyNotes,clash:dyClash,he:dyHe,xing:dyXing,liuNian,ganScore:dyGanScore,zhiScore:dyZhiScore});
   }
 
   // ── 袁天罡稱骨 ──
@@ -5542,7 +5602,7 @@ function computeStartAge(y,m,d,hr,mi,dir,gender,dayBoundaryMode,sec,options){
       var exact=window.BaziCalendarCore.calculateYun({year:y,month:m,day:d,hour:hr||0,minute:mi||0,second:sec||0,gender:gender,dayBoundaryMode:dayBoundaryMode,birthInstant:options.birthInstant,timezoneOffset:options.timezoneOffset,trueSolarTimeApplied:options.trueSolarTimeApplied});
       if(exact&&isFinite(exact.startTimestamp)){
         var exTxt=(exact.years?exact.years+'歲':'')+(exact.months?exact.months+'月':'')+(exact.days?exact.days+'日':'')+(exact.hours?exact.hours+'時':'');
-        return {age:exact.years,years:exact.years,months:exact.months,days:exact.days,hours:exact.hours,virtualAge:exact.years+1,startAge:exact.years,startAgeDecimal:exact.years+exact.months/12+exact.days/360+exact.hours/8640,startAgeText:exTxt||'不足一月',startTimestamp:exact.startTimestamp,startDate:exact.startDate,precision:exact.precision,direction:exact.direction,referenceJie:exact.referenceJie,referenceJieDate:exact.referenceJieDate,cycles:exact.cycles,calendarEngine:exact.engine,calendarEngineVersion:exact.engineVersion,smallStart:1,smallEnd:Math.max(0,exact.years-1)};
+        return {age:exact.years,years:exact.years,months:exact.months,days:exact.days,hours:exact.hours,virtualAge:exact.years+1,startAge:exact.years,startAgeDecimal:exact.years+exact.months/12+exact.days/360+exact.hours/8640,startAgeText:exTxt||'不足一月',startTimestamp:exact.startTimestamp,startDate:exact.startDate,startTimeBasis:options.trueSolarTimeApplied?'true-solar-wall':'local-civil-wall',startUtc:new Date(_baziWallToInstant(exact.startTimestamp,options)).toISOString(),startUtc8:_baziUtc8(_baziWallToInstant(exact.startTimestamp,options)),precision:exact.precision,direction:exact.direction,referenceJie:exact.referenceJie,referenceJieDate:exact.referenceJieDate,cycles:exact.cycles,calendarEngine:exact.engine,calendarEngineVersion:exact.engineVersion,smallStart:1,smallEnd:Math.max(0,exact.years-1)};
       }
     }
   }catch(e){throw new Error('起運計算未完成：'+e.message);}
