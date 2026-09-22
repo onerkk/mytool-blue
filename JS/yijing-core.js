@@ -12,8 +12,12 @@
     if(!c)throw new Error('卦象元件尚未載入');
     if(!Array.isArray(values)||values.length!==6||values.some(function(v){return !Number.isInteger(v)||v<6||v>9;}))throw new Error('請由初爻至上爻完整記錄六爻。');
     var method=input.method||'manual',records=input.records||[];
-    if(!['coins','manual'].includes(method))throw new Error('起卦方式無效');
+    if(!['yarrow','coins','manual'].includes(method))throw new Error('起卦方式無效');
     if(method==='coins'&&(records.length!==6||records.some(function(r,i){return c.fromCoins(r.coins)!==values[i]||r.value!==values[i];})))throw new Error('擲錢紀錄與卦象不一致');
+    if(method==='yarrow'){
+      if(!root.JYYarrowCore||records.length!==6)throw new Error('須有六爻完整揲蓍紀錄');
+      records.forEach(function(r,i){root.JYYarrowCore.validate(r,values[i]);});
+    }
     var code=0,changedCode=0,moving=[],still=[];
     values.forEach(function(v,i){if(v%2)code|=1<<i;if(v===6||v===7)changedCode|=1<<i;(v===6||v===9?moving:still).push(i+1);});
     var original=c.hexagram(code),changed=c.hexagram(changedCode),base=textFor(original.number),to=textFor(changed.number),selections=[],rule='';
@@ -33,11 +37,11 @@
     else if(moving.length===5){rule='五爻動，以之卦唯一不變爻的爻辭為主。';line('changed',still[0],'主讀');}
     else if(original.number===1||original.number===2){rule='乾坤六爻皆動，分別用「用九」或「用六」。';selections.push({hexagram:base.name,number:base.number,side:'original',kind:'use',position:null,label:base.use.label,text:base.use.text,role:'主讀',source:base.source,revision:base.revision});}
     else{rule='六爻皆動，以之卦卦辭為主。';judgment('changed','主讀');}
-    return freeze({version:'1.0.0',system:'yijing',method:method,question:String(input.question||'').trim(),calendar:JSON.parse(JSON.stringify(input.calendar||{})),
+    return freeze({version:'1.1.0',system:'yijing',method:method,question:String(input.question||'').trim(),calendar:JSON.parse(JSON.stringify(input.calendar||{})),
       values:values.slice(),records:JSON.parse(JSON.stringify(records)),original:original,changed:changed,hasChange:code!==changedCode,movingPositions:moving,
       lines:values.map(function(v,i){return {position:i+1,label:c.labels[i],value:v,yang:!!(v%2),moving:v===6||v===9,valueName:{6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[v],marker:v===6?'×':v===9?'○':'',text:base.lines[i]};}),
       originalText:base,changedText:to,reading:{policy:'朱子《易學啟蒙・考變占》',rule:rule,selections:selections},
-      policy:{lineOrder:'bottom-up',coinConvention:'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽',scope:'周易卦爻辭；不套用六爻納甲或梅花體用',sourceEdition:root.JYYijingData.edition,threeChanges:'三動爻位置由初向上列二十組合，前十主貞、後十主悔；兩卦皆讀'}});
+      policy:{lineOrder:'bottom-up',coinConvention:method==='coins'?'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽':null,yarrowPolicy:method==='yarrow'?root.JYYarrowCore.policy:null,scope:'周易卦爻辭；不套用六爻納甲或梅花體用',sourceEdition:root.JYYijingData.edition,threeChanges:'三動爻位置由初向上列二十組合，前十主貞、後十主悔；兩卦皆讀'}});
   }
-  root.JYYijingCore=Object.freeze({version:'1.0.0',calculate:calculate,textFor:textFor});
+  root.JYYijingCore=Object.freeze({version:'1.1.0',calculate:calculate,textFor:textFor});
 })(typeof window!=='undefined'?window:globalThis);

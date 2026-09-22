@@ -52,7 +52,10 @@
     "test:question-routing": "node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs",
     "build:yijing": "node scripts/build-yijing-data.cjs",
     "test:gua": "node scripts/build-yijing-data.cjs --check && node tests/gua-engine-20260922.cjs",
-    "test:gua:browser": "node tests/gua-browser-20260922.cjs"
+    "test:gua:browser": "node tests/gua-browser-20260922.cjs",
+    "build:gua-scene": "node scripts/build-gua-scene.mjs",
+    "test:yarrow": "node tests/yarrow-20260922.cjs",
+    "test:gua:craft": "node tests/gua-craft-browser-20260922.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"

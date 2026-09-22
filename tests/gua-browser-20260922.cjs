@@ -7,7 +7,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),root=path.resolve(__dirname,'..');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const styles=[...index.matchAll(/<link[^>]+rel="stylesheet"[^>]*>/g)].map(m=>m[0]).filter(s=>!s.includes('https:'));
-const scripts=['reading-quality','tarot-foundation','method-catalog','reading-recommender','atelier-ui','share-card','vendor/lunar','bazi-calendar-core','liuyao-core','yijing-data','yijing-core','gua-prompt','gua-room'];
+const scripts=['reading-quality','tarot-foundation','method-catalog','reading-recommender','atelier-ui','share-card','vendor/lunar','bazi-calendar-core','liuyao-core','yijing-data','yarrow-core','yijing-core','gua-prompt','gua-scene','gua-audio','gua-room'];
 const source=fs.readFileSync(path.join(root,'JS/ui.js'),'utf8');let home;
 function walk(node){if(!node||typeof node!=='object')return;if(node.type==='FunctionDeclaration'&&node.id?.name==='_redesignHomepage')home=source.slice(node.start,node.end);for(const v of Object.values(node)){if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}}
 walk(acorn.parse(source,{ecmaVersion:'latest'}));assert(home);
@@ -25,7 +25,7 @@ async function manual(p,kind,values,q){
   await room.locator('[data-action=start]').click();await room.locator('.gw-result').waitFor();return room;
 }
 (async()=>{
-  const browser=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage']});
+  const browser=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   try{
     const context=await browser.newContext({viewport:{width:1440,height:1080},acceptDownloads:true,serviceWorkers:'block'}),p=await context.newPage(),errors=[];
     p.on('pageerror',e=>errors.push(e.message));
@@ -57,7 +57,7 @@ async function manual(p,kind,values,q){
     }
     await p.setViewportSize({width:390,height:844});
     room=await manual(p,'yijing',[6,8,6,9,6,9]);cast=await p.evaluate(()=>JYGuaRoom.snapshot('yijing').result);assert.equal(cast.movingPositions.length,5);assert.equal(cast.reading.selections[0].side,'changed');assert.equal(cast.reading.selections[0].position,2);
-    await room.locator('[data-action=reset]').click();await room.locator('textarea').first().fill('<img src=x onerror="window.bad=1"> 請用易經看下一步');await room.locator('[data-mode=coins]').click();await room.locator('[data-action=start]').click();
+    await room.locator('[data-action=reset]').click();await room.locator('textarea').first().fill('<img src=x onerror="window.bad=1"> 請用易經看下一步');await room.locator('[data-mode=coins]').click();await room.locator('[data-action=start]').click();await room.locator('[data-action=toss]').click();
     let snapshot=await p.evaluate(()=>JYGuaRoom.snapshot('yijing'));assert.equal(snapshot.values.length,1);assert(snapshot.busy);let first=snapshot.values[0],date=snapshot.date;
     const buttonBox=await room.locator('[data-action=toss]').boundingBox();assert(buttonBox.y>=0&&buttonBox.y+buttonBox.height<=844);await shot(p,'yi-mobile-casting');
     await p.evaluate(()=>document.querySelector('#yijing-screen [data-action=toss]').click());assert.equal((await p.evaluate(()=>JYGuaRoom.snapshot('yijing'))).values.length,1);
@@ -68,7 +68,7 @@ async function manual(p,kind,values,q){
     // A prior completed chart is preserved. The pending question transfers when
     // the user explicitly starts a new reading in that system.
     room=p.locator('#liuyao-screen');await room.locator('[data-action=reset]').click();assert.equal(await room.locator('#ly-q').inputValue(),'請用六爻看這次合作能否推進');
-    await p.emulateMedia({reducedMotion:'reduce'});await room.locator('[data-mode=coins]').click();await room.locator('[data-action=start]').click();snapshot=await p.evaluate(()=>JYGuaRoom.snapshot('liuyao'));assert.equal(snapshot.values.length,1);assert(!snapshot.busy);await room.locator('[data-action=quick]').click();await fits(p);await shot(p,'liu-mobile-result');
+    await p.emulateMedia({reducedMotion:'reduce'});await room.locator('[data-mode=coins]').click();await room.locator('[data-action=start]').click();await room.locator('[data-action=toss]').click();snapshot=await p.evaluate(()=>JYGuaRoom.snapshot('liuyao'));assert.equal(snapshot.values.length,1);assert(!snapshot.busy);await room.locator('[data-action=quick]').click();await fits(p);await shot(p,'liu-mobile-result');
     await room.locator('[data-action=share]').click();await p.locator('#jysc-dl:enabled').waitFor();await shot(p,'liu-mobile-share');await p.locator('#jysc-close').click();await p.evaluate(()=>JYGuaRoom.close());
     assert.deepEqual(errors,[]);console.log('gua-browser ('+(fullSite?'full index.html':'component integration')+'): homepage, desktop / 320 / 390 / 768 px, manual / random / reduced motion, cast preservation, original text, recommendation, clipboard fallback, JSON and share cards passed.');
   }finally{await browser.close();}

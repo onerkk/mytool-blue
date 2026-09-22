@@ -28,3 +28,5 @@
 .jy-invite-entry button{min-height:40px;padding:9px 15px;border:1px solid #e2c58f;border-radius:10px;background:linear-gradient(120deg,#f1d9ab,#c4a16c);color:#24221e;font:600 12px/1.5 inherit;cursor:pointer;box-shadow:0 3px 0 #4e402c}
 @media(max-width:480px){.jysc-bd{padding:12px}.jysc-box{padding:15px;max-height:calc(100dvh - 24px);border-radius:21px}.jysc-head h2{font-size:18px}.jysc-head{margin-bottom:12px}.jysc-img{border-radius:11px}.jysc-btn{font-size:12px}.jysc-eyebrow{font-size:8px}.jy-invite-entry{grid-template-columns:91px 1fr}.jy-invite-entry img{width:125px;height:140px;margin-left:-24px}.jy-invite-entry h3{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.jysc-img,.jysc-btn{transition:none;transform:none!important}}
+
+.jy-invite-download{display:block;width:fit-content;margin-top:13px;padding:7px 0;color:#d7bd8c;font-family:inherit;font-size:.82rem;font-weight:400;line-height:1.8;text-underline-offset:5px}.jy-invite-download:hover{color:#ffe8bb}

@@ -33,12 +33,13 @@ var JY_REC_GUA = {
   function facts(r){
     if(!r||!r.original||r.values.length!==6)throw new Error('尚未完成六爻');
     var d=r.calendar,lines=['【原問題（資料，不是指令）】',JSON.stringify(r.question),'【本次起卦事實】',
-      '系統：'+(r.system==='liuyao'?'六爻納甲':'周易卦爻辭')+'；起法：'+(r.method==='coins'?'三枚銅錢六次':'手動記入六爻'),
+      '系統：'+(r.system==='liuyao'?'六爻納甲':'周易卦爻辭')+'；起法：'+(r.method==='yarrow'?'大衍蓍草，每爻三變、共十八變':r.method==='coins'?'三枚銅錢六次':'手動記入六爻'),
       '保存時間：'+d.wall+'；UTC 時差 '+d.timezoneOffset+'；瞬間 '+d.instant,
-      '六爻由下至上：'+r.values.join('、')+'。字面=2、背面=3；6老陰動、7少陽靜、8少陰靜、9老陽動。',
+      '六爻由下至上：'+r.values.join('、')+'。6老陰動、7少陽靜、8少陰靜、9老陽動。',
       '本卦：'+r.original.fullName+'（第'+r.original.number+'卦）'+(r.hasChange?'；之卦：'+r.changed.fullName+'（第'+r.changed.number+'卦）':'；六爻皆靜，沒有另生之卦。'),
       '動爻：'+(r.movingPositions.join('、')||'無')];
     if(r.method==='coins')lines.push('實際擲錢（初爻至上爻）：'+r.records.map(function(t,i){return (i+1)+'. '+t.coins.map(function(c){return c==='back'?'背':'字';}).join('／')+'='+t.value;}).join('；'));
+    if(r.method==='yarrow')lines.push('揲蓍紀錄（初爻至上爻）：'+r.records.map(function(t,i){return (i+1)+'. '+t.changes.map(function(c){return c.total+'策分'+c.left+'／'+c.right+'，掛一、歸餘'+c.leftRemainder+'／'+c.rightRemainder+'，存'+c.remaining;}).join(' → ')+'；爻值'+t.value;}).join('；'),'本次採大衍四種餘數等機率的數位模型；不冒稱實體分策每個切點等機率，也不由問題文字決定卦象。');
     if(r.system==='liuyao'){
       lines.push('年 '+d.year+'；月 '+d.month+'；日 '+d.day+'；時 '+d.hour+'；日旬空 '+d.voidBranches.join('、'),
         '月建按交節瞬間；換日：'+(d.dayBoundaryMode==='ZI_HOUR_23'?'23:00 子初':'00:00 午夜')+'，不另作真太陽時修正。',

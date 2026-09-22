@@ -17,7 +17,7 @@ let passed=0;async function test(name,fn){await fn();passed++;console.log('PASS 
  await test('Invitation and homepage use the same frozen twelve-method catalogue',async()=>{
   const c=await A.render('invite',{}),labels=Array.from(ctx.JYMethodCatalog,m=>m[3]);assert.equal(labels.length,12);assert.equal(new Set(labels).size,12);
   for(const label of labels){const t=c._rec.text.filter(t=>t.s===label);assert.equal(t.length,1,label);assert(t[0].x>64&&t[0].x<1016&&t[0].y<1070);}
-  assert.equal(new Set(c._rec.text.filter(t=>labels.includes(t.s)).map(t=>t.y)).size,3);
+  assert.equal(new Set(c._rec.text.filter(t=>labels.includes(t.s)).map(t=>t.y)).size,4);
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');assert(html.indexOf('JS/method-catalog.js?')<html.indexOf('JS/share-card.js?'));assert(html.indexOf('JS/method-catalog.js?')<html.indexOf('<script src="JS/ui.js?'));
   assert(fs.readFileSync(path.join(ROOT,'JS/ui.js'),'utf8').includes('var methods = window.JYMethodCatalog;'));
  });

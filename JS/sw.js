@@ -26,7 +26,8 @@
 // v87: 20260917pair1 紫微政策、原始時分、雙系統合盤與立體雙星介面。
 // v90: 20260922direct1 單一解讀輸出規則、精簡正文與選品後置。
 // v91: 20260922cards1 問題分題、系統推薦與新增牌陣。
-const CACHE_NAME = 'jy-main-v92';
+// v93: 20260922gua2 蓍草十八變、真 3D 器物、實錄音效與十二種分享卡。
+const CACHE_NAME = 'jy-main-v93';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
