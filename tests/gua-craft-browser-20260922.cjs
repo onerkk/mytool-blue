@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const {chromium}=require('playwright'),fs=require('fs'),path=require('path');
 const root=path.resolve(__dirname,'..'),out=process.env.GUA_SCREENSHOTS||path.join(require('os').tmpdir(),'jingyue-gua-craft');fs.mkdirSync(out,{recursive:true});
-(async()=>{const b=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});const c=await b.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+(async()=>{const b=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||process.env.JY_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});const c=await b.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
 await p.route('**/*',async route=>{let u=new URL(route.request().url());if(u.origin!=='https://jingyue.uk')return route.abort();let f=path.resolve(root,'.'+decodeURIComponent(u.pathname==='/'?'/index.html':u.pathname));try{const type={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.webp':'image/webp','.png':'image/png','.json':'application/json','.mp3':'audio/mpeg','.ogg':'audio/ogg','.woff2':'font/woff2'}[path.extname(f)]||'application/octet-stream';await route.fulfill({contentType:type,body:fs.readFileSync(f)});}catch(e){await route.fulfill({status:404,body:''});}});
 await p.goto('https://jingyue.uk',{waitUntil:'load'});
 

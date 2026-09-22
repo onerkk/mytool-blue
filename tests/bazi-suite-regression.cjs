@@ -69,7 +69,7 @@ test('六合五合與三合三會只列候選不宣告成化',()=>{
 
 test('六種單盤提示詞各自載入正確分析範圍',()=>{
   const expected={chart:'不延伸具體人生事件',general:'綜合判讀',career:'職涯結構',wealth:'現金流風險',love:'親密需求',annual:'未來四個立春年度'};
-  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('盘面事實'.replace('盘','盤')));assert(p.includes('流派解釋'));assert(p.includes('完整判讀順序'));assert(p.includes('不能用缺什麼就補什麼定喜用')); assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
+  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('已核對的八字計算事實'));if(id==='chart')assert(p.includes('不輸出人生預測'));else{assert(p.includes('正文只呈現結論及必要依據'));assert(p.includes('先回答，再解釋'));}assert(p.includes('不能用缺什麼就補什麼定喜用')); assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
 });
 
 test('五軸人格固定產生32個唯一類型且相同命盤可重現',()=>{

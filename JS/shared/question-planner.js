@@ -50,15 +50,17 @@ function analyzeReadingQuestion(value) {
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
   if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan};
-  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['astro','西洋占星',/星盤|星盘|占星|行星|上升星座/]];
-  var requests=[];
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var requests=[],exclusions={};
   q.split(/[，,。；;！？?\n]/).forEach(function(clause,order){
-    rules.forEach(function(rule){var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
-      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)||/以前|上次|之前|曾經/.test(before))return;
-      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before))requests.push({rule:rule,order:order,at:m.index});
+    rules.forEach(function(rule){if(rule[0]==='astro'&&/印度占星|吠陀占星|Jyotish|Vedic/i.test(clause)&&!/西洋|西方|Western/i.test(clause))return;var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
+      if(/以前|上次|之前|曾經/.test(before))return;
+      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)){exclusions[rule[0]]=true;return;}
+      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before)){delete exclusions[rule[0]];requests.push({rule:rule,order:order,at:m.index});}
     });
   });
   requests.sort(function(a,b){return a.order-b.order||a.at-b.at;});
+  requests=requests.filter(function(r){return !exclusions[r.rule[0]];});
   var explicit=requests.length?requests[requests.length-1].rule:null;
   var result;
   if(explicit)result={system:explicit[0],label:explicit[1],reason:'依你明確指定的解讀系統',explicit:true};
@@ -71,13 +73,19 @@ function recommendReadingSystem(question) {
   else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
   else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
   else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
-  result.plan=plan;result.readingMode='rws_reversals';
+  if(exclusions[result.system]){
+    var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];
+    var alternative=options.find(function(id){return !exclusions[id];});
+    var selected=rules.find(function(r){return r[0]===alternative;});
+    result=selected?{system:selected[0],label:selected[1],reason:'已排除你不想使用的系統，可用此法整理本題，再依資料決定解讀範圍'}:{system:null,label:'暫無推薦',reason:'適用的系統均被排除，請保留一種方法或自行選擇'};
+  }
+  result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.readingMode='rws_reversals';
   q.split(/[，,。；;！？?\n]/).forEach(function(clause){
     var m=clause.match(/Book\s*T|Golden\s*Dawn|黃金黎明|元素尊貴|RWS|正逆位/i);if(!m)return;
     var before=clause.slice(0,m.index);if(/以前|上次|之前|曾經/.test(before))return;
     var neg=/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before),rws=/RWS|正逆位/i.test(m[0]);
     if(!neg)result.readingMode=rws?'rws_reversals':'gd_book_t';
   });
-  result.birthDataRequired=/^(bazi|ziwei|astro)$/.test(result.system);
+  result.birthDataRequired=/^(bazi|ziwei|astro|vedic)$/.test(result.system);
   return result;
 }

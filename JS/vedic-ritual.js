@@ -2,7 +2,7 @@
 (function(root){
   'use strict';
   let active=null,loading=null;
-  const D=document,VERSION='20260914palace1',DURATION=14500;
+  const D=document,VERSION='20260922audit2',DURATION=14500;
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function loadScene(){
     if(root.JYVedicScene)return Promise.resolve();if(loading)return loading;

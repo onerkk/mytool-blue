@@ -58,8 +58,8 @@ test('Conflicting policies and mismatched birth minutes stop calculation',()=>{
 });
 test('AI facts contain no heuristic scores/levels/themes; geometry and flight origins remain exact',()=>{
  const facts=A.calculatedFacts;
- function visit(x){if(!x||typeof x!=='object')return;for(const [k,v] of Object.entries(x)){assert(!['score','level','theme','notes','patterns','starComboNotes'].includes(k),'heuristic leaked: '+k);visit(v);}}
- visit(facts);
+ function visit(x){if(!x||typeof x!=='object')return;for(const [k,v] of Object.entries(x)){assert(!['score','level','theme','notes','starComboNotes'].includes(k),'heuristic leaked: '+k);visit(v);}}
+ visit(facts);assert(facts.patternAssessment.patterns.every(p=>['structural','variant-structure'].includes(p.status)&&p.checks.every(c=>c.passed))); 
  const spouse=facts.sanFangSiZheng.find(p=>p.palace==='夫妻');assert.equal(spouse.opposite.branch,'巳');assert.deepEqual(Array.from(spouse.trines,p=>p.branch),['卯','未']);
  const self=facts.palaceFlights.find(h=>h.sourcePalace==='夫妻'&&h.hua==='化祿');assert.equal(self.star,'破軍');assert.equal(self.targetPalace,'夫妻');assert.equal(self.selfTransformation,'CENTRIFUGAL');assert.equal(self.sourceType,'NATAL_PALACE_STEM');
  const text=c.JYZiweiData.serialize(A,{bdate:'1983-08-25',btime:'14:55',timePrecision:'minute',gender:'male'});
@@ -106,8 +106,13 @@ test('All eight scenarios retain role focus, complete prompts and one material r
   for(const marker of ['A方八字','B方八字','A方紫微','B方紫微','雙向跨盤引動','紫微同期大限與流年','午夜','婚姻次數','不只一個'])assert(prompt.includes(marker),marker);
   assert.equal(prompt.split('[靜月之光蝦皮賣場]').length-1,1);
   assert(prompt.length<65000,'Avoid redundant period JSON overwhelming the combined prompt');
+  for(const facts of [pair.personA,pair.personB]){
+   for(const rule of facts.patternAssessment.catalog){assert(prompt.includes(rule.id),rule.id);for(const check of rule.checks)assert(prompt.includes((check.passed?'✓':'×')+check.label),rule.id+' check');}
+   for(const rule of facts.patternAssessment.patterns){assert(prompt.includes(rule.status));if(rule.variant)assert(prompt.includes(rule.variant));for(const list of [rule.evidence,rule.support,rule.modifiers])for(const w of list)assert(prompt.includes(w.palace+'('+w.branch+') '+w.star));}
+  }
+  for(const chart of [ba,bb])for(const rule of chart.specialRuleAssessment.rules){assert(prompt.includes(rule.id));assert(prompt.includes(rule.status));for(const evidence of rule.evidence||[])assert(prompt.includes(typeof evidence==='string'?evidence:JSON.stringify(evidence)));}
   for(const facts of [pair.personA,pair.personB])for(const flight of facts.palaceFlights)assert(prompt.includes(flight.star+flight.hua+'→'+flight.targetPalace+'('+flight.targetBranch+')'));
-  assert(!/undefined|NaN/.test(prompt));
+  assert(!/undefined|NaN|\[object Object\]/.test(prompt));
   if(scenario.id==='business')assert(!pair.focusPalaces.includes('夫妻'));
  }
 });

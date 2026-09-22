@@ -870,7 +870,7 @@ async function _jyPrepareCompositeAstro(birth) {
       ['JS/solar-location.js?v=20260922bridge1', function(){return typeof calcTrueSolarTime === 'function';}],
       ['JS/bazi.js?v=20260922bridge1', function(){return typeof computeBazi === 'function';}],
       ['JS/bazi_upgrade.js?v=20260922rules1', function(){return typeof enhanceBazi === 'function';}],
-      ['JS/ziwei.js?v=20260922rules1', function(){return typeof computeZiwei === 'function';}]
+      ['JS/ziwei.js?v=20260922audit2', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
       if (!entry[1]()) await new Promise(function(resolve, reject) {
@@ -5812,7 +5812,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260922rules1', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20260922audit2', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });

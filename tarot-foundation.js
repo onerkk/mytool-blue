@@ -702,15 +702,17 @@ function analyzeReadingQuestion(value) {
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
   if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan};
-  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['astro','西洋占星',/星盤|星盘|占星|行星|上升星座/]];
-  var requests=[];
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var requests=[],exclusions={};
   q.split(/[，,。；;！？?\n]/).forEach(function(clause,order){
-    rules.forEach(function(rule){var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
-      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)||/以前|上次|之前|曾經/.test(before))return;
-      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before))requests.push({rule:rule,order:order,at:m.index});
+    rules.forEach(function(rule){if(rule[0]==='astro'&&/印度占星|吠陀占星|Jyotish|Vedic/i.test(clause)&&!/西洋|西方|Western/i.test(clause))return;var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
+      if(/以前|上次|之前|曾經/.test(before))return;
+      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)){exclusions[rule[0]]=true;return;}
+      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before)){delete exclusions[rule[0]];requests.push({rule:rule,order:order,at:m.index});}
     });
   });
   requests.sort(function(a,b){return a.order-b.order||a.at-b.at;});
+  requests=requests.filter(function(r){return !exclusions[r.rule[0]];});
   var explicit=requests.length?requests[requests.length-1].rule:null;
   var result;
   if(explicit)result={system:explicit[0],label:explicit[1],reason:'依你明確指定的解讀系統',explicit:true};
@@ -723,14 +725,20 @@ function recommendReadingSystem(question) {
   else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
   else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
   else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
-  result.plan=plan;result.readingMode='rws_reversals';
+  if(exclusions[result.system]){
+    var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];
+    var alternative=options.find(function(id){return !exclusions[id];});
+    var selected=rules.find(function(r){return r[0]===alternative;});
+    result=selected?{system:selected[0],label:selected[1],reason:'已排除你不想使用的系統，可用此法整理本題，再依資料決定解讀範圍'}:{system:null,label:'暫無推薦',reason:'適用的系統均被排除，請保留一種方法或自行選擇'};
+  }
+  result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.readingMode='rws_reversals';
   q.split(/[，,。；;！？?\n]/).forEach(function(clause){
     var m=clause.match(/Book\s*T|Golden\s*Dawn|黃金黎明|元素尊貴|RWS|正逆位/i);if(!m)return;
     var before=clause.slice(0,m.index);if(/以前|上次|之前|曾經/.test(before))return;
     var neg=/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before),rws=/RWS|正逆位/i.test(m[0]);
     if(!neg)result.readingMode=rws?'rws_reversals':'gd_book_t';
   });
-  result.birthDataRequired=/^(bazi|ziwei|astro)$/.test(result.system);
+  result.birthDataRequired=/^(bazi|ziwei|astro|vedic)$/.test(result.system);
   return result;
 }
 // END SHARED QUESTION PLANNER
@@ -1065,7 +1073,7 @@ function recommendReadingSystem(question) {
     else if(qp.daily&&/提醒|指引|建議|該做什麼/.test(active))preferred='daily_action';
     else if(qp.mode==='single'&&f.advice&&!f.causal&&!f.hidden&&!f.external&&!f.knownDyad&&!f.deepOverview&&!f.timing)preferred='action_three';
     if(directive.selected)preferred=directive.selected;
-    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&(directive.selected===id||!/^fifteen_card$|^mathers_/.test(id))&&directive.excluded.indexOf(id)<0;}).map(function(id){
+    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&(directive.selected===id||(!/^fifteen_card$|^mathers_/.test(id)&&(id!=='multi_option'||qp.mode==='multi_option')&&(id!=='multi_question'||qp.mode==='multi_question')))&&directive.excluded.indexOf(id)<0;}).map(function(id){
       var m=instantiateMethod(id,compiled),missing=m.missingObservables;
       // Historical large procedures are opt-in, never triggered by ordinary numbers or adjectives such as "thorough".
       var rank=missing.length*40+(m.count||80)+(id==='mathers_21'||id==='mathers_horseshoe'?300:0);
@@ -1078,7 +1086,8 @@ function recommendReadingSystem(question) {
     if(missing.length)notes.push('本陣未設獨立牌位的面向：'+missing.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。完整保留原問句；可由整體結構作條件性討論，無資料可判的部分明說，不新增牌位或假裝已量測。');
     if(f.knownDyad&&selected==='timeline')notes.push('本次優先讀相對階段與轉折，沒有獨立的雙方內心牌位；不以階段牌認定對方意願。');
     var reasons={three_card:'單一焦點，先看既有基礎、現況與條件性走向',five_card:'需要分辨現況、形成因素、阻礙、可做的事與走向',cross:'重點是卡住的核心、拉扯力量與可介入方向',either_or:'兩個可辨識的選項，需要用相同標準比較兩條路',relationship:'問題聚焦已指明的雙方、互動原因、限制及下一步',timeline:'主要想了解階段順序與轉折條件',horseshoe:'需要同時查看盲點、外在影響、阻礙與可採取行動',celtic_cross:'需要整合根基、目標、近程、本人、環境及整體走向',tree_of_life:'問題聚焦反覆模式、內在需求或深層課題',zodiac:'需要分開檢視多個生活領域，再整合整體重點',minor_arcana:'具體日常事件，適合整理操作、資源與搜尋線索',fifteen_card:'依指定的五個三牌組比較核心、發展、決策與外在條件',mathers_21:'依指定的歷史三排七與首尾配對程序',mathers_horseshoe:'依指定的歷史三輪分堆與配對程序',ootk:'依指定的五次開鑰操作'};
-    plan.routingNotes=notes.concat(qp.notes);plan.systemRecommendation=recommendReadingSystem(compiled.originalQuestion);plan.selectionReason=(reasons[selected]||(METHODS[selected].picker||{}).suited||METHODS[selected].label)+'。';
+    if(selected==='multi_option')notes=notes.filter(function(n){return n.indexOf('問題含三個以上選項：')!==0;});
+    plan.routingNotes=notes.concat(qp.notes);plan.systemRecommendation=recommendReadingSystem(compiled.originalQuestion);plan.selectionReason=(reasons[selected]||(METHODS[selected].picker||{}).suited||METHODS[selected].label).replace(/[。]+$/,'')+'。';
     if(!directive.selected&&kind==='multiple'&&selected!=='multi_option')plan.selectionReason='這題有三個以上選項，先整理共同局勢與取捨；沒有替每個選項抽獨立結果牌。需要逐路比較時，請先選定兩個方案。';
     if(!directive.selected&&(kind==='ambiguous'||kind==='incomplete'))plan.selectionReason='尚未確認兩個完整方案，先看原問題的處境。若要雙路比較，請明寫「A：…，B：…」，再核對下方建議。';
     if(selected==='either_or'){

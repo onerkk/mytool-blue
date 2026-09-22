@@ -43,10 +43,13 @@
     var box=s.root.querySelector('.gw-yarrow-action');if(!box)return;var ch=s.lastChange;
     var titles=['聚策','分二','掛一','揲四','歸餘'];box.querySelectorAll('span').forEach(function(el,i){el.classList.toggle('is-active',i===p);el.classList.toggle('is-past',i<p);});
     var line=box.querySelector('p');if(line&&ch)line.textContent=[ch.total+' 策，重新聚攏','左 '+ch.left+' 策 · 右 '+ch.right+' 策','自右側取一策，暫置案前','左右各以四策成組','歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策'][p];
+    var summary=s.root.querySelector('.gw-stage-summary');if(summary&&ch&&p===4)summary.textContent='本次 '+ch.total+' 策 · 歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策';
   }
   function stage(s){
     var grass=isYarrow(s),last=s.records[s.records.length-1],ch=s.part.length?s.lastChange:null;
     var message=grass?(ch?'本次 '+ch.total+' 策 · 歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策':'五十策虛一，以四十九策候一卦。'):(last?'第 '+s.values.length+' 爻 · '+last.coins.map(function(c){return c==='back'?'背':'字';}).join('　')+' · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]):'三枚銅錢，六次落定一件心事。');
+    if(grass&&last&&!ch)message='第 '+s.values.length+' 爻已成 · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]);
+    if(s.busy)message=grass?'本次 '+s.lastChange.total+' 策 · 分二掛一，揲四歸餘。':'三錢入盤，靜候落定。';
     var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-render="fallback" role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
     if(grass){h+='<div class="gw-fallback-scroll">周 易</div><div class="gw-fallback-stalks">';for(var i=0;i<31;i++)h+='<i style="--i:'+i+'"></i>';h+='</div>';}
     else{h+='<div class="gw-fallback-tray"></div><div class="gw-fallback-coins">';for(var j=0;j<3;j++)h+='<div style="--i:'+j+'">'+coinSVG(s.id+'-fallback-'+j,!!(last&&last.coins[j]==='back'))+'</div>';h+='</div>';}
@@ -62,7 +65,7 @@
     try{
       if(s.scene&&s.sceneKind!==kind){s.scene.dispose();s.scene=null;}
       if(!s.scene){s.scene=root.JYGuaScene.create(host,kind);s.sceneKind=kind;}else s.scene.attach(host);
-      s.scene.update({kind:s.kind,values:s.values,part:s.part,record:s.records[s.records.length-1]||null,change:s.part.length?s.lastChange:null,reduced:reduced(),onPhase:function(p){yarrowPhase(s,p);},onCue:function(key,pan){if(s.busy&&active===s.kind)cue(s,key,{pan:pan,volume:key==='stems'?.85:.55});}});
+      s.scene.update({kind:s.kind,values:s.values,part:s.part,record:s.records[s.records.length-1]||null,change:s.part.length?s.lastChange:null,reduced:reduced()});
     }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用靜態器物畫面，起卦照常進行。';}
   }
   function settings(s){
@@ -83,8 +86,8 @@
     h+='<div class="gw-error" role="alert" tabindex="-1">'+esc(s.error)+'</div><div class="gw-live" role="status" aria-live="polite">'+(s.busy?(s.mode==='yarrow'?'蓍草正在分策、歸餘…':'銅錢正在落下…'):n===6?'六爻齊備，準備展開。':s.mode==='yarrow'?'三變成一爻；每一步都會留下紀錄。':n?'第 '+n+' 爻已記錄，繼續擲出下一爻。':'慢慢呼吸，讓問題留在心裡。')+'</div><div class="gw-actions"><button type="button" class="gw-primary" data-action="toss"'+(s.busy?' disabled':'')+'>'+(s.busy?'靜候落定…':n===6?'展開本次卦象':s.mode==='yarrow'?'揲蓍 · '+core().labels[n]+'第'+(s.part.length+1)+'變':'擲出'+core().labels[n])+'</button><button type="button" class="gw-quiet" data-action="quick"'+(s.busy?' disabled':'')+'>快速完成剩餘爻</button></div></section>';return h;
   }
   function yarrowProgress(s){
-    var count=s.part.length,steps=['第一變','第二變','第三變'],h='<div class="gw-yarrow-action"><div>'+['聚策','分二','掛一','揲四','歸餘'].map(function(t,i){return '<span class="'+(!s.busy&&count&&i===4?'is-active':'')+'">'+t+'</span>';}).join('')+'</div><p>'+(s.busy?'蓍草入案，候一變':count?'這一變已落定，依你的節奏繼續。':'四十九策入案，準備'+core().labels[s.values.length]+'。')+'</p></div><div class="gw-yarrow-progress" aria-label="每爻三變">';
-    steps.forEach(function(t,i){h+='<span class="'+(i<count?'is-done':i===count?'is-current':'')+'">'+t+'<b>'+(s.part[i]?s.part[i].remaining+' 策':i===count?(count?s.part[count-1].remaining:49)+' 策待分':'待續')+'</b></span>';});
+    var count=Math.max(0,s.part.length-(s.busy?1:0)),steps=['第一變','第二變','第三變'],h='<div class="gw-yarrow-action"><div>'+['聚策','分二','掛一','揲四','歸餘'].map(function(t,i){return '<span class="'+(!s.busy&&count&&i===4?'is-active':'')+'">'+t+'</span>';}).join('')+'</div><p>'+(s.busy?'蓍草入案，候一變':count?'這一變已落定，依你的節奏繼續。':'四十九策入案，準備'+core().labels[s.values.length]+'。')+'</p></div><div class="gw-yarrow-progress" aria-label="每爻三變">';
+    steps.forEach(function(t,i){h+='<span class="'+(i<count?'is-done':i===count?'is-current':'')+'"'+(i===count?' aria-current="step"':'')+'>'+t+'<b>'+(i<count?s.part[i].remaining+' 策':i===count?(count?s.part[count-1].remaining:49)+' 策'+(s.busy?'揲蓍中':'待分'):'待續')+'</b></span>';});
     return h+'</div>';
   }
   function diagram(s,g,side){
@@ -136,7 +139,23 @@
     if(root.JYFoley)root.JYFoley.sync();
     if(s.phase==='input'&&root.JYReadingRecommender)root.JYReadingRecommender.enhance(w);
   }
-  function clearMotion(s){clearTimeout(s.timer);s.timer=null;if(s.scene)s.scene.finish();if(root.JYFoley)root.JYFoley.stop('gua-'+s.kind);s.animations.forEach(function(a){try{a.cancel();}catch(_){}});s.animations=[];}
+  function clearMotion(s){clearTimeout(s.timer);s.timer=null;(s.cueTimers||[]).forEach(clearTimeout);s.cueTimers=[];if(s.scene)s.scene.finish();if(root.JYFoley)root.JYFoley.stop('gua-'+s.kind);s.animations.forEach(function(a){try{a.cancel();}catch(_){}});s.animations=[];}
+  // Keep the actual instruments visible after the user presses the fixed action.
+  // Audio follows the ceremony clock, never the GPU frame rate or intersection.
+  function frameStage(s){
+    var stage=s.root.querySelector('.gw-stage-side'),scene=s.root.querySelector('.gw-scene'),actions=s.root.querySelector('.gw-actions');
+    if(!stage||!scene)return;var r=scene.getBoundingClientRect(),room=s.root.getBoundingClientRect(),a=actions&&actions.getBoundingClientRect();
+    var bottom=a&&getComputedStyle(actions).position==='fixed'?a.top:room.bottom;
+    if(r.top<room.top+8||r.bottom>bottom-8)s.root.scrollTop+=stage.getBoundingClientRect().top-room.top-12;
+  }
+  function yarrowTimeline(s){
+    s.cueTimers=[];
+    [0,576,1368,1908,2880].forEach(function(ms,p){
+      var tick=function(){if(s.busy&&active===s.kind&&!document.hidden)yarrowPhase(s,p);};
+      if(ms)s.cueTimers.push(setTimeout(tick,ms));else tick();
+    });
+    [[.576,'stems',-.2],[1.368,'bamboo',0],[1.908,'stems',.2],[2.88,'bamboo',0]].forEach(function(c){cue(s,c[1],{delay:c[0],pan:c[2],volume:c[1]==='stems'?.85:.55,throttle:0});});
+  }
   function finish(s,paint){
     clearMotion(s);s.busy=false;s.commit=false;if(s.part.length===3)s.part=[];
     if(s.values.length===6){var engine=s.kind==='liuyao'?core():root.JYYijingCore;if(!engine)throw new Error('易經引擎尚未載入');s.result=engine.calculate({values:s.values,records:s.records,method:s.mode,question:s.question,calendar:s.date,focus:s.focus});s.phase='result';s.selected=s.result.movingPositions[0]||(s.kind==='liuyao'?s.result.original.palace.shi:1);}
@@ -154,9 +173,10 @@
     if(s.mode==='yarrow')nextYarrow(s);else{var record=core().toss();s.records.push(record);s.values.push(record.value);}
     s.busy=true;s.error='';render(s);
     if(reduced()){finish(s);cue(s,s.mode==='coins'?'coins':'stems',{volume:.75});return;}
+    frameStage(s);
     if(s.scene){s.scene.animate();}
     if(s.mode==='coins'){[0,1,2].forEach(function(i){cue(s,'coins',{delay:.99+i*.07,volume:.62,offset:.09,duration:.48,pan:(i-1)*.3,throttle:0});});}
-    else if(!s.scene||s.scene.mode!=='webgl'){cue(s,'stems',{volume:.8});cue(s,'bamboo',{delay:1.5,volume:.55});}
+    else yarrowTimeline(s);
     s.timer=setTimeout(function(){try{finish(s);}catch(e){s.busy=false;error(s,e);}},s.mode==='yarrow'?3700:1650);
   }
   function start(s){

@@ -135,13 +135,13 @@ var JY_READING_RELATIONSHIP = "【白話優先】直接解盤：使用繁體中�
   function periodText(p){
     if(!p)return '未入大限／資料未提供';
     var lines=[p.sourceType+'｜'+(p.year?p.year+'年 ':p.ageStart+'–'+p.ageEnd+'歲 ')+(p.gz||((p.gan||'')+(p.branch||'')))+'｜命宮疊本命'+(p.mingPalace||p.palaceName||'')];
-    lines.push('十二宮對照（運限宮名／地支→本命宮名）：'+(p.palaces||[]).map(function(x){return palaceRef(x.name,x.branch)+'→'+x.natalPalace;}).join('；'));
-    lines.push('本層四化：'+(p.hua||[]).map(function(h){return h.stem+'干 '+h.star+h.hua+'→本命'+palaceRef(h.natalPalace||h.palace,h.palaceBranch)+'／'+h.layer+h.periodPalace;}).join('；'));
-    lines.push('本層流曜（依本盤 flowStarPolicy）：'+(p.flowStars||[]).map(function(h){return h.displayName+'→本命'+palaceRef(h.natalPalace,h.branch)+'／'+h.layer+h.periodPalace;}).join('；'));
+    lines.push('宮位：'+(p.palaces||[]).map(function(x){return palaceRef(x.name,x.branch)+'→'+x.natalPalace;}).join('；'));
+    lines.push('四化：'+(p.hua||[]).map(function(h){return h.stem+'干 '+h.star+h.hua+'→本命'+palaceRef(h.natalPalace||h.palace,h.palaceBranch)+'／'+h.layer+h.periodPalace;}).join('；'));
+    lines.push('流曜：'+(p.flowStars||[]).map(function(h){return h.displayName+'→本命'+palaceRef(h.natalPalace,h.branch)+'／'+h.layer+h.periodPalace;}).join('；'));
     return lines.join('\n');
   }
   function chartText(f){
-    var head=Object.assign({},f);['palaces','sanFangSiZheng','natalTransformations','palaceFlights','selfTransformations','decades'].forEach(function(k){delete head[k];});
+    var head=Object.assign({},f);['palaces','sanFangSiZheng','natalTransformations','palaceFlights','selfTransformations','decades','patternAssessment'].forEach(function(k){delete head[k];});
     var lines=[JSON.stringify(head),'十二宮本命星曜（括號為類型／亮度／生年四化）：'];
     f.palaces.forEach(function(p){lines.push(p.name+'['+p.gan+p.branch+']'+(p.isMing?' 命宮':'')+(p.isShen?' 身宮':'')+' 長生：'+p.changsheng+'｜'+p.stars.map(function(s){return s.name+'('+s.type+'/'+(s.brightness||'未列')+(s.natalHua?'/'+s.natalHua:'')+')';}).join('、'));});
     lines.push('三方四正索引：');
@@ -151,11 +151,27 @@ var JY_READING_RELATIONSHIP = "【白話優先】直接解盤：使用繁體中�
     f.palaces.forEach(function(p){lines.push('發射宮 '+p.name+'['+p.gan+p.branch+']：'+f.palaceFlights.filter(function(h){return h.sourcePalace===p.name;}).map(function(h){return h.star+h.hua+'→'+palaceRef(h.targetPalace,h.targetBranch)+(h.selfTransformation?'＝離心自化':'');}).join('；'));});
     lines.push('本命自化／向心參照（飛星口徑）：'+JSON.stringify(f.selfTransformations),'大限完整座標與分層四化：');
     f.decades.forEach(function(p){lines.push(periodText(p));});
+    if(f.patternAssessment){
+      var a=f.patternAssessment;
+      lines.push('特殊結構核對（'+a.version+'）：'+a.policy,'規則來源：'+a.source);
+      // Preserve every checked condition, while avoiding 126 copies of the
+      // same source URL and the duplicated matched catalogue entries.
+      var groups=new Map();
+      (a.catalog||[]).filter(function(r){return !r.matched;}).forEach(function(r){var key=JSON.stringify([r.name,r.checks]);if(!groups.has(key))groups.set(key,{name:r.name,checks:r.checks,ids:[]});groups.get(key).ids.push(r.id);});
+      groups.forEach(function(r){lines.push(r.name+' ['+r.ids.join('、')+']：未成立；'+r.checks.map(function(c){return (c.passed?'✓':'×')+c.label;}).join('；'));});
+      function witness(list){return (list||[]).map(function(w){return w.palace+'('+w.branch+') '+w.star+(w.brightness?' '+w.brightness:'')+(w.hua?' '+w.hua:'');}).join('；')||'無';}
+      (a.patterns||[]).forEach(function(r){
+        lines.push('成立／異說結構：'+r.id+' '+r.name+'｜'+r.status+'｜'+r.classification+'｜'+r.palaces.join('、'),
+          '條件：'+r.checks.map(function(c){return (c.passed?'✓':'×')+c.label;}).join('；'),
+          '結構：'+witness(r.evidence),'支持：'+witness(r.support),'牽制：'+witness(r.modifiers),
+          r.desc,r.review,r.variant?'異說：'+r.variant:'');
+      });
+    }
     return lines.join('\n');
   }
   function dataBlock(pair){
     var lines=['【紫微合盤方法與邊界】',JSON.stringify(pair.policy),'情境主宮：'+pair.focusPalaces.join('、'),
-      '以下為 calculatedFacts 的文字序列化；完整物件另可匯出 JSON。大限重複資料只在各自大限表列一次，年度列明適用年齡區間。'];
+      '以下為 calculatedFacts 的文字序列化；完整物件另可匯出 JSON。大限重複資料只列一次。各層「宮位」按運限宮名(地支)→本命宮名，「流曜」沿本盤 flowStarPolicy；年度列明適用年齡區間。'];
     ['A','B'].forEach(function(id){var p=pair['person'+id];
       lines.push('【'+id+'方紫微 calculatedFacts】');
       lines.push(p?chartText(p):'出生時辰未知，未提供任何暫排紫微盤；不可補造宮位、星曜或運限。');
@@ -173,7 +189,7 @@ var JY_READING_RELATIONSHIP = "【白話優先】直接解盤：使用繁體中�
         lines.push(id.toUpperCase()+' 虛歲'+p.nominalAge+'；本年適用大限：'+(p.decade?p.decade.ageStart+'–'+p.decade.ageEnd+'歲 '+p.decade.palaceName+'('+p.decade.branch+')，四化及十二宮映射見此方上述大限表':'尚未入限'),periodText(p.annual));
       });
     });
-    return lines.join('\n\n');
+    return lines.join('\n');
   }
   function buildPrompt(comp,pair,question){
     var bz=root.JY_BAZI_PROMPT_ROOT,zw=root.JY_ZIWEI_PROMPT_ROOT;

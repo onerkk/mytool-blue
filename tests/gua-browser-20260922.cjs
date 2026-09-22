@@ -25,7 +25,7 @@ async function manual(p,kind,values,q){
   await room.locator('[data-action=start]').click();await room.locator('.gw-result').waitFor();return room;
 }
 (async()=>{
-  const browser=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
+  const browser=await chromium.launch({executablePath:process.env.GUA_CHROMIUM||process.env.JY_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   try{
     const context=await browser.newContext({viewport:{width:1440,height:1080},acceptDownloads:true,serviceWorkers:'block'}),p=await context.newPage(),errors=[];
     p.on('pageerror',e=>errors.push(e.message));

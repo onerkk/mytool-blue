@@ -248,3 +248,17 @@ button.gw-hex-line:hover,button.gw-hex-line[aria-pressed=true]{border-color:#cbb
 }
 @media(max-width:360px){.gw-room[data-phase=casting] .gw-scene{height:262px}.gw-room[data-phase=casting] .gw-head h1{font-size:1.4rem}.gw-stage-heading::before,.gw-stage-heading::after{max-width:15px}.gw-yarrow-action span{letter-spacing:1px}.gw-room[data-phase=casting] .gw-shell{padding-inline:15px}}
 @media(prefers-reduced-motion:reduce){.gw-yarrow-action span{transition:none}}
+
+/* Casting stays a compact instrument view; the immutable record sits below. */
+.gw-room[data-phase=casting] .gw-stage-side{scroll-margin-block:12px;position:relative}
+.gw-yarrow-progress [aria-current=step]{box-shadow:inset 0 1px 0 #fff2,0 5px 14px #0004;border-color:#dfc28b88}
+@media(max-width:640px){
+ .gw-room[data-phase=casting] .gw-line-list{grid-template-columns:repeat(6,minmax(0,1fr));display:grid;gap:6px;margin:10px 0;direction:rtl}
+ .gw-room[data-phase=casting] .gw-progress-row{direction:ltr;display:flex;flex-direction:column;gap:7px;min-width:0;padding:9px 2px;border:1px solid #c3ae7822;border-radius:7px;background:#07101455}
+ .gw-room[data-phase=casting] .gw-progress-row .gw-yao{width:100%;min-width:0;height:5px}
+ .gw-room[data-phase=casting] .gw-progress-row>span:last-child{font-size:.55rem;letter-spacing:0;white-space:normal;line-height:1.6;text-align:center}
+ .gw-room[data-phase=casting] .gw-progress-row[data-current=true]{border-color:#e3c58a88;background:#c6aa6010}
+ .gw-room[data-phase=casting] .gw-actions .gw-primary{min-height:50px}
+ .gw-room[data-phase=casting] .gw-actions .gw-quiet{min-height:44px}
+ .gw-room[data-phase=casting] .gw-actions{padding-top:16px}
+}

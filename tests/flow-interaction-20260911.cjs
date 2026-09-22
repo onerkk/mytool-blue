@@ -109,7 +109,7 @@ function point(el,type,x,y,id=1,extra={}){el.dispatch(type,{type,clientX:x,clien
   assert(container.querySelectorAll('.ln-section').every(section=>!section.hidden));
  });
  await test('Changing a compatibility scenario retains the scroll position and both birth forms',()=>{
-  const e=dom();load(e,'atelier-ui');load(e,'bazi-prompt-root');load(e,'bazi-suite-core');load(e,'bazi-suite');e.ctx.BaziSuiteUI.open('compat');
+  const e=dom();load(e,'atelier-ui');load(e,'bazi-prompt-root');load(e,'bazi-suite-core');load(e,'relationship-ui');load(e,'bazi-suite');e.ctx.BaziSuiteUI.open('compat');
   const screen=e.doc.getElementById('bzs-screen');screen.scrollTop=410;
   const choice=screen.querySelector('[data-scenario]');assert(choice);screen.dispatch('click',{target:choice});
   assert.equal(screen.scrollTop,410);assert(e.doc.getElementById('a-date'));assert(e.doc.getElementById('b-date'));

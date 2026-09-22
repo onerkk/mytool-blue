@@ -52,6 +52,10 @@ test('Eligibility precedes preference; manual selection preserves honest missing
  assert(F.instantiateMethod('three_card',r.compiledQuestion).missingObservables.includes('independent_subjects'));
  assert.equal(F.routeQuestion('請用單牌提醒，我該怎麼辦？').spreadId,'single_card');
  assert(!/^mathers|fifteen/.test(F.routeQuestion('請完整分析工作和感情所有阻礙與建議').spreadId));
+ for(const q of ['這件事為什麼卡住？','他為什麼不回我？','我需要調整什麼？']){
+  const r=F.routeQuestion(q);assert(r.ready);assert(!['multi_question','multi_option'].includes(r.spreadId),q);assert(r.methodPlan.slots.every(s=>!s.binding||s.binding.entity!==''));
+ }
+ const multi=F.routeQuestion('A：留職；B：跳槽；C：創業？');assert.equal(multi.methodPlan.branches.length,3);assert(!multi.readingNotes.join('').includes('沒有為每一選項抽獨立結果牌'));
 });
 test('New Tarot catalog draws unique cards with identical slot counts in layout, payload and prompt',()=>{
  for(const id of Object.keys(F.METHODS).filter(id=>F.METHODS[id].picker)){
@@ -74,6 +78,7 @@ test('All Lenormand layouts export the declared count and preserve drawn facts',
   assert(prompt.includes(def.name));cards.forEach(x=>assert(prompt.includes(x.id+'.'+x.name)));assert.equal(JSON.stringify(cards),before);assert(!/\[object Object\]|undefined/.test(prompt));
  }
  assert.equal(LN.recommend('請用七張線，工作會順利嗎？').id,'seven');assert.equal(LN.recommend('請用4×9大牌陣看工作').id,'grand_nines');
+ const q='A：留職；B：跳槽；C：創業？',p=lc.__ln.build(q,lc.__ln.cards.slice(0,9),'branches',null,null,LN.instantiate('branches',q));assert(p.includes('（3路）'));assert(!p.includes('這個版式沒有每方案獨立的可比支線'));
 });
 test('4×9 geometry contains 36 real houses, complete straight paths and only valid knight moves',()=>{
  const g=LN.grandNineGeometry(lc.__ln.cards);assert.equal(g.cells.length,36);assert.deepEqual(plain(g.corners),[0,8,27,35]);
@@ -82,6 +87,8 @@ test('4×9 geometry contains 36 real houses, complete straight paths and only va
  assert.equal(new Set(g.lines.map(x=>x.join(','))).size,g.lines.length);
 });
 test('System suggestions distinguish requested tradition, reflective questions and concrete events',()=>{
+ for(const [q,want] of [['請用印度占星看工作','vedic'],['請用吠陀占星看感情','vedic'],['請用西洋占星看工作','astro'],['之前用印度占星，這次請用西洋占星看感情','astro']]){const r=F.recommendSystem(q);assert.equal(r.system,want);assert.equal(r.birthDataRequired,true);}
+ for(const [q,excluded] of [['不要用塔羅，他喜歡我嗎？','tarot'],['不用雷諾曼，包裹何時到？','lenormand'],['不用八字，看我的先天命格','bazi']]){const r=F.recommendSystem(q);assert.notEqual(r.system,excluded);assert(r.excludedSystems.includes(excluded));}
  for(const [q,want]of [['求籤看今年工作','oracle'],['包裹何時有消息','lenormand'],['我的出生八字命格如何','bazi'],['紫微看我的事業','ziwei'],['用時間起卦看案子','meihua'],['起卦看案子','liuyao'],['請用六爻看簽約','liuyao'],['易經看下一步','yijing'],['周易看工作','yijing'],['用梅花看工作','meihua'],['之前用易經，這次請用六爻看合約','liuyao'],['不要用六爻，請用塔羅看感情','tarot'],['她對我的感受如何','tarot'],['請用雷諾曼看感情','lenormand'],['之前用雷諾曼，這次請用塔羅看感情','tarot']])assert.equal(F.recommendSystem(q).system,want,q);
 });
 test('Real Lenormand input, manual layout and draw controllers keep preview and saved plan aligned',()=>{
@@ -101,5 +108,9 @@ test('Recommendation preview and switching preserve typed text without changing 
  let called=null;c._atelierChoose=system=>{called=system;const target=doc.createElement('textarea');target.id='ln-q';doc.body.appendChild(target);};
  input.value='包裹何時有消息？';const before=JSON.stringify(c.S.tarot.drawn);c.JYReadingRecommender.render(input);
  const host=doc.getElementById('jy-recommend-f-question');assert(host);host.querySelector('button').click();assert.equal(called,'lenormand');assert.equal(doc.getElementById('ln-q').value,input.value);assert.equal(JSON.stringify(c.S.tarot.drawn),before);
+ c._atelierChoose=system=>{called=system;const target=doc.createElement('textarea');target.id=system==='vedic'?'vd-question':'wx-question';doc.body.appendChild(target);};
+ // The lightweight DOM fixture has no textContent clearing setter; the browser gate covers repeated edits.
+ host.innerHTML='';input.value='請用印度占星看工作';c.JYReadingRecommender.render(input);host.querySelector('button').click();assert.equal(called,'vedic');const vd=doc.getElementById('vd-question');assert.equal(vd.value,input.value);
+ let closed=0;c.JYVedicUI={close(){closed++;}};vd.value='請用西洋占星看工作';c.JYReadingRecommender.render(vd);doc.getElementById('jy-recommend-vd-question').querySelector('button').click();assert.equal(called,'western');assert.equal(closed,1);assert.equal(doc.getElementById('wx-question').value,vd.value);assert.equal(JSON.stringify(c.S.tarot.drawn),before);
 });
 console.log('question-routing: '+passed+' groups passed.');

@@ -9,17 +9,17 @@ function runtime(files=[]){const e=environment();vm.runInContext(read('JS/readin
 function expose(ctx,file,body){vm.runInContext(read(file).replace(/\}\)\(\);\s*$/,body+'\n})();'),ctx,{filename:file});}
 function actualFunction(file,name){const src=read(file);let result;function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id?.name===name)result=src.slice(n.start,n.end);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}}walk(acorn.parse(src,{ecmaVersion:'latest'}));assert(result,name);return result;}
 const tarotCases=[
- ['他為什麼最近不主動找我了？我該先開口嗎？','relationship'],
+ ['他為什麼最近不主動找我了？我該先開口嗎？','multi_question'],
  ['我跟她會走在一起嗎？為什麼？','relationship'],
  ['公司女工程師對我有意思嗎？','relationship'],
  ['她喜歡我還是只是禮貌？','relationship'],
  ['我想全面了解感情，不用五十四張牌','celtic_cross'],
- ['請不要用凱爾特十字，我該怎麼改善收入？','five_card'],
- ['我的訂單還有54張沒出貨，該怎麼辦？','five_card'],
- ['我今年21歲，想知道下一步該怎麼做？','five_card'],
+ ['請不要用凱爾特十字，我該怎麼改善收入？','action_three'],
+ ['我的訂單還有54張沒出貨，該怎麼辦？','action_three'],
+ ['我今年21歲，想知道下一步該怎麼做？','action_three'],
  ['他何時會主動聯絡？我該做什麼？','celtic_cross'],
  ['我想知道他何時回覆？','timeline'],
- ['我應該選A公司、B公司還是創業？','celtic_cross'],
+ ['我應該選A公司、B公司還是創業？','multi_option'],
  ['我應該接受A公司的offer還是留在B公司？','either_or'],
  ['要不要主動聯絡他？','either_or'],
  ['我要選 A 還是 B？','either_or'],
@@ -28,9 +28,9 @@ const tarotCases=[
  ['今年工作收入為什麼不穩定？','five_card'],
  ['今年感情、工作、財運如何？','zodiac'],
  ['今年整體運勢如何？','zodiac'],
- ['我想分析我和她關係的完整全局','celtic_cross'],
+ ['我想分析我和她關係的完整全局','relationship'],
  ['我想知道這件事我忽略了什麼，外在環境如何？','horseshoe'],
- ['這件事為什麼卡住？','cross'],
+ ['這件事為什麼卡住？','five_card'],
  ['為什麼我總是遇到同一種人？','tree_of_life'],
  ['我這個月的營業額能超過十萬元嗎？','five_card'],
  ['上次用凱爾特十字，這次只想問今天會收到訊息嗎？','three_card'],
@@ -39,7 +39,7 @@ const tarotCases=[
  ['不要用五十四張牌，請用三牌陣問這件事成不成？','three_card']
 ];
 test('Tarot: 28 natural-language cases select the intended method without altering the question',()=>{
- for(const [q,id] of tarotCases){const r=F.routeQuestion(q);assert.equal(r.spreadId,id,q);assert(r.ready);assert(r.methodPlan.protocol.readingPlan.length>=3);assert.equal(r.methodPlan.id,id);assert(r.reason);}
+ for(const [q,id] of tarotCases){const r=F.routeQuestion(q);assert.equal(r.spreadId,id,q);assert(r.ready);assert(r.methodPlan.protocol.readingPlan.length>0);assert(r.methodPlan.protocol.readingPlan.every(x=>typeof x==='string'&&x.trim()));assert.equal(r.methodPlan.id,id);assert(r.reason);}
  assert.equal(F.routeQuestion('').spreadId,null);
  const excluded=F.routeQuestion('不用五十四張牌，我想全面了解感情');assert(excluded.excludedMethods.includes('mathers_horseshoe'));
  const negative=F.compileQuestion('不是在問何時復合，而是他為什麼不回訊息？');assert(!negative.features.timing);
@@ -48,7 +48,7 @@ test('Tarot: comparison branches, multiple choices and missing capabilities rema
  const r=F.routeQuestion('我應該接受A公司的offer還是留在B公司？');
  assert.equal(r.methodPlan.slots[1].binding.entity,'接受A公司的offer');assert.equal(r.methodPlan.slots[2].binding.entity,'留在B公司');
  const binary=F.routeQuestion('要不要主動聯絡他？');assert.equal(binary.methodPlan.slots[1].binding.entity,'主動聯絡他');assert(binary.methodPlan.slots[2].binding.entity.includes('暫不採取'));
- const many=F.routeQuestion('我應該選A公司、B公司還是創業？');assert(many.readingNotes.join('').includes('三個以上選項'));assert(!many.compiledQuestion.relations.some(x=>x.type==='alternative_comparison'));
+ const many=F.routeQuestion('我應該選A公司、B公司還是創業？');assert.equal(many.methodPlan.branches.length,3);assert.equal(many.methodPlan.count,9);assert(!many.readingNotes.join('').includes('沒有為每一選項抽獨立結果牌'));assert(!many.compiledQuestion.relations.some(x=>x.type==='alternative_comparison'));
  const limited=F.routeQuestion('他何時會主動聯絡？我該做什麼？');assert(!limited.coverage.complete);assert(limited.methodPlan.routingNotes.join('').includes('不新增牌位'));
  assert(!F.compileQuestion('她喜歡我還是只是禮貌？').relations.some(x=>x.type==='alternative_comparison'));
 });
@@ -77,18 +77,18 @@ test('Tarot: each of 14 spread protocols has its own concrete reading sequence',
  assert(F.instantiateMethod('fifteen_card',F.compileQuestion('方向？')).protocol.readingPlan.join('').includes('五個三牌組'));
  assert(F.instantiateMethod('ootk',F.compileQuestion('方向？')).protocol.readingPlan.join('').includes('實際'));
 });
-const l=runtime();expose(l.ctx,'JS/lenormand.js',`window.lnTest={analyze:_lnAnalyzeQuestion,route:_lnDetectSpread,build:buildPrompt,cards:CARDS,spreads:SPREADS,links:_lnGrandExtraLinks,neighbors:_lnGrandImmediateNeighbors,lines:_lnGrandStraightLines,preview:_lnUpdateSpreadPreview,state:function(){return {spread:_lnResolved,auto:_lnAutoPick,cards:_lnDrawn,prompt:_lastPrompt};},set:function(id,q,sig){_lnSpread=id;_lnQuestion=q;_lnSignif=sig||null;_lnGender=null;_lnPhase='input';_lnDrawn=[];}};`);
+const l=runtime();expose(l.ctx,'JS/lenormand.js',`window.lnTest={analyze:_lnAnalyzeQuestion,route:_lnDetectSpread,build:buildPrompt,cards:CARDS,spreads:SPREADS,def:_lnBuildSpreadDef,links:_lnGrandExtraLinks,neighbors:_lnGrandImmediateNeighbors,lines:_lnGrandStraightLines,preview:_lnUpdateSpreadPreview,state:function(){return {spread:_lnResolved,auto:_lnAutoPick,cards:_lnDrawn,plan:_lnReadingPlan,prompt:_lastPrompt};},set:function(id,q,sig){_lnSpread=id;_lnQuestion=q;_lnSignif=sig||null;_lnGender=null;_lnPhase='input';_lnDrawn=[];}};`);
 const LN=l.ctx.lnTest;
 const lenormandCases=[
  ['這份工作值得繼續嗎？','three'],['他會回覆嗎？','three'],
- ['他為什麼最近不主動找我了？我該先開口嗎？','nine'],
- ['我跟她會走在一起嗎？為什麼？','five'],['他何時會聯絡？我該做什麼？','nine'],
+ ['他為什麼最近不主動找我了？我該先開口嗎？','branches'],
+ ['我跟她會走在一起嗎？為什麼？','five'],['他何時會聯絡？我該做什麼？','seven'],
  ['她喜歡我還是只是禮貌？','five'],['她是不是很忙還是沒興趣？','five'],
  ['今年感情、工作、財運如何？','grand'],['今年整體運勢如何？','grand'],
  ['工作和主管的相處會順利嗎？','three'],['我的工作收入不穩，該怎麼辦？','five'],
  ['我應該留下還是離職？','choice'],['要不要主動聯絡他？','choice'],
  ['我應該接受A公司的offer還是留在B公司？','choice'],
- ['我應該選A公司、B公司還是創業？','nine'],
+ ['我應該選A公司、B公司還是創業？','branches'],
  ['我想分析這段感情的優勢、風險與下一步','nine'],
  ['不用九宮格，他何時會回訊息？','five'],
  ['我的訂單有36張，請用心幫我分析怎麼處理？','five'],
@@ -97,7 +97,7 @@ const lenormandCases=[
  ['請用大牌陣分析工作','grand'],['請用九宮格分析工作','nine'],
  ['請用三張線分析工作','three'],['上次用九宮格，這次他會回覆嗎？','three'],
  ['不是在問何時復合，而是他為什麼不回訊息？','five'],
- ['我想知道工作如何？感情運勢呢？','grand'],
+ ['我想知道工作如何？感情運勢呢？','branches'],
  ['我應該留下還是？','five'],['A 還是 B？','choice']
 ];
 test('Lenormand: 28 question cases distinguish focused lines, real branches, facets and panorama',()=>{
@@ -110,19 +110,19 @@ test('Lenormand: 28 question cases distinguish focused lines, real branches, fac
 test('Lenormand: actual auto/manual casting exports matching positions and complete cards',()=>{
  for(const [q,id] of lenormandCases){
   LN.set('auto',q);let input=l.doc.getElementById('ln-q');if(!input){input=l.doc.body.appendChild(new l.Element('textarea'));input.id='ln-q';}input.value=q;
-  l.ctx._lnDoDraw();const state=LN.state();assert.equal(state.spread,id,q);assert.equal(state.cards.length,LN.spreads[id].count,q);assert.equal(new Set(state.cards.map(x=>x.id)).size,state.cards.length);assert(state.prompt.includes(q));assert(state.prompt.includes(state.auto.why));
-  assert(state.prompt.includes('<牌陣模組 name="'+LN.spreads[id].name+'">'));assert(state.prompt.endsWith('願你諸事順遂。'));assert.equal((state.prompt.match(/https:\/\/shopee.tw\/a50h95648d\?tab=shop/g)||[]).length,1);
+  l.ctx._lnDoDraw();const state=LN.state();assert.equal(state.spread,id,q);assert.equal(state.cards.length,state.plan.count,q);assert.equal(new Set(state.cards.map(x=>x.id)).size,state.cards.length);assert(state.prompt.includes(q));assert(state.prompt.includes(state.auto.why));
+  assert(state.prompt.includes('<牌陣模組 name="'+state.plan.name+'">'));assert(state.prompt.endsWith('願你諸事順遂。'));assert.equal((state.prompt.match(/https:\/\/shopee.tw\/a50h95648d\?tab=shop/g)||[]).length,1);
  }
- const q='今年感情、工作、財運如何？';LN.set('three',q);let input=l.doc.getElementById('ln-q');if(!input){input=l.doc.body.appendChild(new l.Element('textarea'));input.id='ln-q';}input.value=q;l.ctx._lnDoDraw();assert.equal(LN.state().cards.length,3);assert(LN.state().prompt.includes('僅按實際牌位解讀'));
+ const q='今年感情、工作、財運如何？';LN.set('three',q);let input=l.doc.getElementById('ln-q');if(!input){input=l.doc.body.appendChild(new l.Element('textarea'));input.id='ln-q';}input.value=q;l.ctx._lnDoDraw();assert.equal(LN.state().cards.length,3);assert(LN.state().prompt.includes('按下方已定義的牌位與幾何解讀'));
 });
 test('Lenormand: methods cannot substitute tarot meanings or each other’s geometry',()=>{
- const texts={};for(const [id,sp] of Object.entries(LN.spreads))texts[id]=LN.build('如何推進？',LN.cards.slice(0,sp.count),id);
+ const texts={};for(const [id,sp] of Object.entries(LN.spreads)){const q=id==='branches'?'A：留職；B：轉職；C：創業？':'如何推進？',def=LN.def(id,q);texts[id]=LN.build(q,LN.cards.slice(0,def.count),id);}
  assert(texts.three.includes('非相鄰鏡像：1↔3'));assert(!texts.three.includes('主盤鏡像與騎士步（'));
  assert(texts.five.includes('中心：3；非相鄰鏡像：1↔5、2↔4'));
  assert(texts.choice.includes('A路最大路徑：1.'));assert(texts.choice.includes('B路最大路徑：5.'));assert(texts.choice.includes('4不把兩路接成七張時間線'));
  assert(texts.nine.includes('八條線'));assert(texts.nine.includes('短斜鄰接2-4、2-6、4-8、6-8'));assert(texts.nine.includes('不預設過去／現在／未來'));
  assert(texts.grand.includes('固定宮位映射'));assert(texts.grand.includes('末排格33–36沒有主盤鏡像或騎士步'));
- for(const text of Object.values(texts)){assert(text.includes('不使用塔羅')||text.includes('雷諾曼不套用塔羅'));assert(text.includes('下一步'));assert(text.includes('不保證賣場一定有該推薦品類'));}
+ for(const text of Object.values(texts)){assert(text.includes('不使用塔羅')||text.includes('雷諾曼不套用塔羅'));assert(text.includes('1～3個對應本題的行動'));assert(text.includes('不保證庫存'));}
 });
 test('Lenormand: all 36 houses, 32 mirror positions and all knight moves are geometrically valid',()=>{
  const drawn=LN.cards.slice().reverse(),prompt=LN.build('全景？',drawn,'grand');
@@ -149,8 +149,8 @@ test('Lenormand: preview updates with current question without changing a comple
 });
 const b=runtime(['vendor/lunar','bazi-calendar-core','solar-location','bazi','bazi_upgrade','bazi-prompt-root','bazi-suite-core']).ctx;
 test('Bazi: each lens and each role scenario injects its distinct guide into the actual export',()=>{
- const a=b.computeBazi(1983,8,25,14,0,'male'),c=b.computeBazi(1994,6,20,14,0,'female');b.enhanceBazi(a);b.enhanceBazi(c);
- for(const lens of Object.keys(b.BaziSuiteCore.lenses)){const p=b.BaziSuiteCore.buildSinglePrompt(lens,a,{},'如何改善？');for(const s of b.JY_BAZI_PROMPT_ROOT.lensGuideLines(lens))assert(p.includes(s),lens);assert(p.includes('不保證賣場一定有該推薦品類'));}
+ const clock={referenceDate:'2026-09-22T00:00:00Z'},a=b.computeBazi(1983,8,25,14,0,'male',clock),c=b.computeBazi(1994,6,20,14,0,'female',clock);b.enhanceBazi(a);b.enhanceBazi(c);
+ for(const lens of Object.keys(b.BaziSuiteCore.lenses)){const p=b.BaziSuiteCore.buildSinglePrompt(lens,a,{},'如何改善？');for(const s of b.JY_BAZI_PROMPT_ROOT.lensGuideLines(lens))assert(p.includes(s),lens);assert(p.includes('不保證庫存'));}
  for(const s of b.BaziSuiteCore.scenarios){const comp=b.BaziSuiteCore.createCompatibility(a,c,{scenarioId:s.id}),p=b.BaziSuiteCore.buildCompatibilityPrompt(comp,'如何相處？');for(const step of b.JY_BAZI_PROMPT_ROOT.scenarioGuideLines(s.id))assert(p.includes(step),s.id);}
  const pure=b.BaziSuiteCore.buildSinglePrompt('chart',a,{},'');assert(pure.includes('純排盤不輸出人生預言'));assert(!pure.includes('【依問題選用分析面向】'));
 });
@@ -158,7 +158,7 @@ const m=runtime(['vendor/lunar','tarot','meihua_upgrade','meihua_output_layer','
 expose(m,'JS/meihua-standalone.js','window.mhTest=buildMeihuaPrompt;');vm.runInContext(read('JS/prompt-export.js'),m);
 test('Meihua: both prompt paths preserve actual hexagrams, method boundaries and one shop ending',()=>{
  const hex=m.calcMH(1,1,1);hex.castContext={timestamp:'2026-02-04T12:00:00Z',method:'two_numbers'};hex.question='何時前進？';m.S={form:{question:hex.question},meihua:hex};
- for(const p of [m.mhTest(hex.question,hex),m.JY_buildExportPrompt('meihua')]){assert(p.includes(hex.ben.n));assert(p.includes(hex.hu.n));assert(p.includes(hex.bian.n));assert(p.includes('原體'));assert(p.includes('純乾／純坤'));assert(p.includes('不保證賣場一定有該推薦品類'));assert(p.includes('https://shopee.tw/a50h95648d?tab=shop'));assert(!p.includes('【分析深度】每個主要結論說明「本盤具體牌位'));assert(!p.includes('牌陣專屬結構'));assert(!p.includes('undefined'));}
+ for(const p of [m.mhTest(hex.question,hex),m.JY_buildExportPrompt('meihua')]){assert(p.includes(hex.ben.n));assert(p.includes(hex.hu.n));assert(p.includes(hex.bian.n));assert(p.includes('原體'));assert(p.includes('純乾／純坤'));assert(p.includes('不保證庫存'));assert(p.includes('https://shopee.tw/a50h95648d?tab=shop'));assert(!p.includes('【分析深度】每個主要結論說明「本盤具體牌位'));assert(!p.includes('牌陣專屬結構'));assert(!p.includes('undefined'));}
  m.S.meihua={ben:hex.ben};assert.equal(m.JY_buildExportPrompt('meihua'),'');assert.equal(read('JS/meihua-standalone.js'),read('meihua-standalone.js'));
 });
 test('Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements',()=>{
@@ -172,7 +172,7 @@ test('Follow-up: original RWS reversals and branch positions survive alongside s
 });
 test('The local API preserves its JSON contract with system-specific depth and honest brand constraints',()=>{
  const src=read('functions/api/ai.js');acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'});
- for(const x of ['SYSTEM_METHODS','【西洋占星：','【吠陀占星：','【姓名學：','依本次方法結構讀牌組','只回傳 JSON 物件','"answer"','"action"','"timing"','"honest_word"','https://shopee.tw/a50h95648d?tab=shop'])assert(src.includes(x),x);
+ for(const x of ['SYSTEM_METHODS','【西洋占星：','【吠陀占星：','【姓名學：','按本次原生牌陣判讀','只回傳 JSON 物件','"answer"','"action"','"timing"','"honest_word"','https://shopee.tw/a50h95648d?tab=shop'])assert(src.includes(x),x);
 });
 console.log('professional-regression: '+passed+' groups passed; 56 routing cases plus real draw/export and geometry checks.');
 if(process.exitCode)process.exit(process.exitCode);

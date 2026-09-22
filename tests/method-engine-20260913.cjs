@@ -59,9 +59,9 @@ test('Actual composite adapter binds palace names to records, independent of ser
  for(const [field,separator]of [['allPalaces','\n'],['keyPalaces','；'],['flyMatrix','\n']])assert.deepEqual(rotated[field].split(separator).sort(),original[field].split(separator).sort(),field);
  assert.deepEqual(rotated.sihua.sort(),original.sihua.sort());assert.deepEqual(rotated.gongHua.sort(),original.gongHua.sort());
 });
-test('Twelve native methods reach the API system instructions without a tarot default',()=>{
- const q=c.JY_READING_QUALITY;assert.equal(q.methodKinds().length,12);assert.deepEqual(plain(q.methodLines('unknown')),[]);
- const guide=q.payloadGuide(q.methodKinds());assert.equal(Object.keys(guide.methods).length,12);
+test('Fourteen native methods reach the API system instructions without a tarot default',()=>{
+ const q=c.JY_READING_QUALITY;assert.equal(q.methodKinds().length,14);assert.deepEqual(plain(q.methodLines('unknown')),[]);
+ const guide=q.payloadGuide(q.methodKinds());assert.equal(Object.keys(guide.methods).length,14);
  const server=read('functions/api/ai.js'),serverAst=acorn.parse(server,{ecmaVersion:'latest',sourceType:'module'}),methodNode=serverAst.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='SYSTEM_METHODS'));
  const methodCtx=vm.createContext({});vm.runInContext(server.slice(methodNode.start,methodNode.end)+';globalThis.value=SYSTEM_METHODS;',methodCtx);
  for(const kind of q.methodKinds())for(const step of q.methodLines(kind))assert(methodCtx.value.includes(step),'missing '+kind+' method step');

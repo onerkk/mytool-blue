@@ -5,6 +5,7 @@ const root=path.resolve(__dirname,'..'),runtimeOut=process.env.JY_QA_RUNTIME,out
  fs.mkdirSync(out,{recursive:true});
  const pw=require(process.env.JY_PLAYWRIGHT_MODULE||(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright':'playwright'));
  let launch={headless:true};if(runtimeOut){const {default:chrome}=await import(runtimeOut+'/runtime-deps/node_modules/@sparticuz/chromium/build/index.js');const base=runtimeOut+'/browser-bin';launch={...launch,executablePath:base+'/chromium',args:chrome.args,env:{...process.env,LD_LIBRARY_PATH:base,FONTCONFIG_PATH:'/etc/fonts'}};}
+ if(process.env.JY_CHROMIUM)launch={headless:true,executablePath:process.env.JY_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']};
  const browser=await pw.chromium.launch(launch);
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,serviceWorkers:'block'}),page=await context.newPage();const errors=[],missing=[],calls=[];
  page.on('pageerror',e=>errors.push(String(e)));page.on('dialog',d=>d.dismiss());

@@ -29,7 +29,8 @@
 // v93: 20260922gua2 蓍草十八變、真 3D 器物、實錄音效與十二種分享卡。
 // v94: 20260922foley1 全站實物錄音、可記憶音量與蓍草書齋。
 // v96: 20260922bridge1 綜合占星共用原生引擎、民用時區與原子結果。
-const CACHE_NAME = 'jy-main-v96';
+// v97: 20260922audit2 選陣、分線與合盤提示詞、蓍草聲畫分離及手機視窗。
+const CACHE_NAME = 'jy-main-v97';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

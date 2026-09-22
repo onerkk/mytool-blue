@@ -243,7 +243,7 @@
     if(typeof window.computeZiwei==='function'&&window.JYRelationshipCore)return Promise.resolve();
     return new Promise(function(resolve,reject){
       if(!window.JYRelationshipCore||!window.JYRelationshipUI){reject(new Error('雙系統合盤元件尚未載入，請重新整理頁面'));return;}
-      var src='JS/ziwei.js?v=20260922rules1';
+      var src='JS/ziwei.js?v=20260922audit2';
       if(window._jyLazyScript)window._jyLazyScript(src,function(ok){ok&&typeof window.computeZiwei==='function'?resolve():reject(new Error('紫微引擎載入失敗，請重試'));});
       else{var script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=function(){reject(new Error('紫微引擎載入失敗'));};document.head.appendChild(script);}
     });

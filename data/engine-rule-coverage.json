@@ -1,5 +1,5 @@
 {
-  "release": "20260922bridge1",
+  "release": "20260922audit2",
   "claim": "明列已驗證範圍；不是所有流派窮盡",
   "sourceReview": "docs/engine-rules-20260922.md",
   "methods": [
@@ -11,7 +11,10 @@
         "RWS正逆位",
         "不重複",
         "牌位數",
-        "拒絕混用BookT"
+        "拒絕混用BookT",
+        "單題不誤配多分支",
+        "手動牌陣保留缺少的獨立問題位置",
+        "推薦尊重排除系統與印度／西洋指定"
       ],
       "limits": [
         "依問題整合牌義不屬確定性預測"
@@ -39,7 +42,9 @@
         "本位",
         "互宮",
         "閉合鏈",
-        "鄰域與騎士步"
+        "鄰域與騎士步",
+        "分線名稱依實際路數輸出",
+        "真實多分線不沿用無獨立分支的舊限制"
       ],
       "limits": [
         "無全派固定全部牌陣清單"
@@ -116,7 +121,8 @@
         "雙方各自原局",
         "新增特殊條件傳遞",
         "跨盤作用方向",
-        "時間歸屬"
+        "時間歸屬",
+        "精簡文字匯出保留所有規則ID、核對條件及證據；完整JSON不刪減"
       ],
       "limits": [
         "不把八柱拼為一人命盤"
@@ -125,7 +131,7 @@
     {
       "method": "ziwei",
       "engine": "JS/ziwei.js",
-      "profile": "actual-star-position-profile",
+      "profile": "iztro-author-structures-1.1.0",
       "implemented": [
         "陽梁卯",
         "明珠出海",
@@ -134,11 +140,16 @@
         "八種夾宮",
         "同宮星組",
         "生年三奇雙祿",
-        "雄宿異說"
+        "雄宿異說",
+        "君臣慶會紫破輔弼夾命／紫相昌曲命遷兩支線及煞忌否決",
+        "金輿扶駕天府修訂異說",
+        "陽梁昌祿四曜齊備",
+        "梁馬同宮逐實際宮位"
       ],
       "limits": [
         "位置成立與吉凶成色分開",
-        "不包含所有欽天及飛星流派"
+        "不包含所有欽天及飛星流派",
+        "作者君臣慶會天府支線的文字與示意位置有歧義，未作自動成立規則"
       ]
     },
     {
@@ -225,5 +236,6 @@
       ]
     }
   ],
-  "integrationVerification": "docs/astro-bridge-verification-20260922.json"
+  "integrationVerification": "docs/astro-bridge-verification-20260922.json",
+  "latestAudit": "docs/full-audit-20260922.md"
 }

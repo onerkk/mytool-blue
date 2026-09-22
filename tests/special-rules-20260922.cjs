@@ -51,6 +51,17 @@ test('Ziwei: flanking means two neighboring palaces; light levels are actual tab
  z=zw();put(z,'夫妻','火星','貪狼');const p=c.assessZiweiPatterns(z).patterns.find(p=>p.name==='火貪同宮');assert.deepEqual(plain(p.palaces),['夫妻']);assert(p.modifiers.some(m=>m.star==='火星'));
 });
 function pillars(text){return Object.fromEntries(text.split(' ').map((s,i)=>[['year','month','day','hour'][i],{gan:s[0],zhi:s[1]}]));}
+test('Ziwei: source-specific court, carriage, Sun–Liang–Chang–Lu and horse variants keep exclusions',()=>{
+ let z=put(zw('丑'),'命宮','紫微','破軍');put(z,'父母','左輔');put(z,'兄弟','右弼');assert(matched(z,'minister-flanked'));
+ let r=c.assessZiweiPatterns(z).patterns.find(x=>x.id==='minister-flanked');assert.equal(r.status,'variant-structure');assert(r.variant);
+ put(z,'官祿','火星');assert(!matched(z,'minister-flanked'));
+ z=put(zw(),'命宮','紫微','天相','文昌');put(z,'遷移','文曲');assert(matched(z,'minister-literary'));
+ z.find(p=>p.name==='遷移').stars[0].hua='化忌';assert(!matched(z,'minister-literary'));
+ z=put(zw(),'命宮','紫微','天相','文昌','文曲');assert(!matched(z,'minister-literary'));
+ z=put(zw(),'命宮','天府');put(z,'父母','太陽');put(z,'兄弟','太陰');assert(matched(z,'golden-carriage-fu'));z.find(p=>p.name==='命宮').stars[0].name='紫微';assert(!matched(z,'golden-carriage-fu'));
+ z=put(zw(),'命宮','太陽');put(z,'官祿','天梁');put(z,'財帛','文昌');z.find(p=>p.name==='財帛').stars[0].hua='化祿';assert(!matched(z,'sun-beam-literary-lu'));put(z,'遷移','祿存');assert(matched(z,'sun-beam-literary-lu'));
+ z=put(zw(),'夫妻','天梁','天馬');r=c.assessZiweiPatterns(z).patterns.find(x=>x.name==='梁馬同宮');assert.deepEqual(plain(r.palaces),['夫妻']);z.find(p=>p.name==='夫妻').stars.pop();put(z,'子女','天馬');assert(!c.assessZiweiPatterns(z).patterns.some(x=>x.name==='梁馬同宮'));
+});
 const brule=(p,id)=>c.assessBaziSpecialRules(pillars(p)).rules.find(r=>r.id===id);
 test('Bazi: following-output permits rooted peers; the printed season does not create a special pattern',()=>{
  assert.equal(brule('甲午 丙午 甲午 丁未','follow-output').status,'structural');

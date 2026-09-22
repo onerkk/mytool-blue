@@ -100,7 +100,7 @@ assert(prompt.includes('資料未提供精確大限切換日期'));
 assert(prompt.includes('運用你自身完整的命理知識'));
 assert(prompt.includes('特定對象仍需和實際行為交叉判斷'));
 assert(prompt.includes('流年落宮、四化及相關星曜'));
-assert(prompt.includes('不同流派若得出不同重點'));
+assert(prompt.includes('替代讀法只有會實質改變答案時才簡短提出')); 
 assert(prompt.includes('欽天派視角'));
 assert(prompt.includes('命盤格局候選'));
 assert(prompt.includes('星系組合候選'));

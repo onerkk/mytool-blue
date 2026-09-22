@@ -98,7 +98,7 @@ test('All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutu
   for(let up=1;up<=8;up++)for(let lo=1;lo<=8;lo++)for(let moving=1;moving<=6;moving++){
     const r=m.calcMH(up,lo,moving),bits=plain(r.lo.li.concat(r.up.li));assert.equal(r.tiG.n,moving<=3?up:lo);assert.equal(r.yoG.n,moving<=3?lo:up);
     const flipped=bits.map((v,i)=>i===moving-1?1-v:v),g1=m.gByL(...flipped.slice(3)),g2=m.gByL(...flipped.slice(0,3));assert.equal(r.bian.n,m.g64(g1.n,g2.n).n);
-    const hu1=m.gByL(bits[2],bits[3],bits[4]),hu2=m.gByL(bits[1],bits[2],bits[3]);assert.equal(r.hu.n,m.g64(hu1.n,hu2.n).n);
+    const nuclear=(up===lo&&(up===1||up===8))?flipped:bits;const hu1=m.gByL(nuclear[2],nuclear[3],nuclear[4]),hu2=m.gByL(nuclear[1],nuclear[2],nuclear[3]);assert.equal(r.hu.n,m.g64(hu1.n,hu2.n).n);
     r.castContext={timestamp:'2026-06-15T12:00:00Z',method:'fixture'};const p=m.__mhAudit.build('專案如何推進？',r);assert(p.includes(r.ben.n));assert(p.includes(r.hu.n));assert(p.includes(r.bian.n));assert(p.includes(bits.join('、')));assert(!/undefined|NaN/.test(p));
   }
 });

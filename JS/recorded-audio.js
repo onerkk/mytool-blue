@@ -28,8 +28,8 @@
   if(!usable())return Promise.resolve(false);
   try{var AC=root.AudioContext||root.webkitAudioContext;if(!AC)throw new Error('Audio unavailable');
    if(!context||context.state==='closed'){context=new AC();master=context.createGain();master.gain.value=volume;master.connect(context.destination);context.onstatechange=publish;}
-   var p=context.state==='running'?Promise.resolve():context.resume();
-   return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){if(context.state!=='running')reject(new Error('請再輕觸音效按鈕'));},2500);})]).then(function(){publish();return context.state==='running';}).catch(function(e){errors.resume=e.message;publish();return false;});
+   var p=context.state==='running'?Promise.resolve():context.resume(),timer;
+   return Promise.race([p,new Promise(function(_,reject){timer=setTimeout(function(){reject(new Error('請再輕觸音效按鈕'));},2500);})]).then(function(){if(context.state!=='running')throw new Error('請再輕觸音效按鈕');delete errors.resume;publish();return true;}).catch(function(e){errors.resume=e.message;publish();return false;}).finally(function(){clearTimeout(timer);});
   }catch(e){errors.resume=e.message;publish();return Promise.resolve(false);}
  }
  function decode(key){

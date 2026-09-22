@@ -1,0 +1,1075 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> npm run test:prompts && npm run test:tarot && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft && npm run test:methods && npm run test:huaqi && npm run test:core-engines && npm run test:output-consistency && npm run test:vedic && npm run test:vedic-design && npm run test:vedic-palace && npm run test:western && npm run test:recommendations && npm run test:ootk && npm run test:relationship && npm run test:time-ownership && npm run test:question-routing && npm run test:gua && npm run test:yarrow && npm run test:special-rules && npm run test:astro-bridge
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:prompts
+> node tests/prompt-accuracy-20260811.test.cjs
+
+✓ 首頁先載入 v6 共用提示詞根，再載入八字與紫微 standalone
+✓ 八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識
+✓ 紫微資料不再截掉第四顆之後的輔星、煞星或第九個格局
+✓ 梅花兩條 standalone 路徑完全一致，且不製造日曆假精確
+✓ 靈籤提示詞保留完整材料並開放 AI 的解籤知識
+✓ 雷諾曼保留合法幾何，並改為有主次的牌組整合方法
+✓ 七維 API 以盤面為主並允許模型使用自身跨系統知識
+
+All 7 prompt-accuracy regression tests passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:tarot
+> node tests/tarot-v102-method-data-prompt.test.js
+
+✓ foundation upgraded to method-data schema
+✓ export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger
+✓ prompt invites the AI to use its own tarot knowledge while keeping method data
+✓ five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain
+✓ Mathers methods remain ordered sequence methods
+✓ prompt preserves Book T, true adjacency and a concise recommendation ending
+✓ changed JS syntax is valid
+
+7 tests passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ziwei
+> node tests/ziwei-root-spec-v1.test.js
+
+ziwei-root-spec-v4: all assertions passed
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:counter
+> node tests/counter-proxy.test.mjs
+
+counter-proxy: all assertions passed
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:picker-data
+> node tests/picker-and-data-regression.cjs
+
+✓ Gregorian date validity and clamped month navigation
+✓ Modal viewport events, scroll lock and focus are fully restored
+✓ Legacy dialog fallback restores inert siblings and focus
+✓ Actual Ziwei and Bazi picker handlers render all six weeks and confirm leap day
+✓ Full Bazi suite keeps the last month clamped and confirms the selected date
+✓ Unknown Bazi birth time excludes artificial hour and full-chart judgments
+✓ Unknown time does not create a fixed personality type from a noon placeholder
+✓ Known Bazi preserves actual hour and full data, reference date stays reproducible
+✓ Unknown Ziwei time never exports an invented personal chart
+✓ All three pickers load after the shared core and body ID rules override legacy overflow
+picker-and-data-regression: 10 groups passed (DOM contract tests, not browser layout tests)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:api-failures
+> node tests/api-failure-regression.mjs
+
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+✓ Native astrology reaches the model once, preserving every structured fact
+✓ Dedicated casts, geometry and stopped operations survive the real API adapter
+✓ API asks for a personal material choice before the shop invitation, independent of stock
+api-failure-regression: 11 groups passed (mocked upstream; no live mutations)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:interactions
+> node tests/interaction-hotfix-20260906.cjs
+
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Real OOTK entry opens without calling unrelated birth engines
+✓ Storage refusal does not break the entry button
+✓ OOTK two-step selection validates before dealing and restores scroll on cancel
+✓ Shared setup exports accept zero-index sign and sephirah without losing them
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Confirmed OOTK setup forwards all predeal bindings as an immutable snapshot
+✓ Ziwei uses one non-interactive grid with 14 child buttons including early and late Zi hour
+✓ Bazi hour and minute fields are complete on open and keep node identity when edited
+✓ Full Bazi suite commits minutes and cancellation preserves the original time
+✓ Canonical draws include actual upright/reversed values and normalization preserves them
+✓ Book T procedures stay upright and are explicitly labelled
+✓ Quick completion preserves manually chosen card identities and their directions
+✓ Automatic slot rendering and result display retain inverse image and readable direction
+✓ Real AI payload and final exported prompt agree on every card orientation and method
+✓ Manual pick commits its original reversal and waits for the entire spread before analysis
+✓ Concurrent engine requests share one script and notify every caller; a failed load can retry
+✓ Deferred engines wait for a closed picker and yield between dependent files
+✓ Real OOTK confirmation runs the engine and exposes immediate skip/cancel controls
+✓ Skipping the ritual hands off the same result and exports only actual OOTK operations
+interaction-hotfix: 18 groups passed (offline DOM/runtime contracts; no browser layout or live AI assertion)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:display
+> node tests/display-lifecycle-regression.cjs
+
+✓ Touch, narrow and reduced-motion pages create no canvas, context, polling or input effects
+✓ Desktop 2D fallback initializes without BACK error; picker suspension survives polling and visibility changes
+✓ A desktop viewport becoming narrow suspends its existing background renderer
+✓ Picker close, native close, replacement and failed showModal release the backdrop and focus lock
+✓ All birth picker content is present at native showModal, before any timer or animation frame
+✓ Full analysis module initializes in the real script order without eager optional-engine references
+✓ Mobile styles make the picker opaque and contain no deferred image-paint rule
+display-lifecycle: 7 groups passed (source/runtime contracts; device raster output requires browser/device validation)
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:audit
+> node tests/divination-audit-20260908.cjs
+
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:professional
+> node tests/divination-professional-20260910.cjs
+
+✓ Tarot: 28 natural-language cases select the intended method without altering the question
+✓ Tarot: comparison branches, multiple choices and missing capabilities remain honest
+✓ Tarot: actual resolver → dynamic positions → draw → payload → exported guide agree
+✓ Tarot: each of 14 spread protocols has its own concrete reading sequence
+✓ Lenormand: 28 question cases distinguish focused lines, real branches, facets and panorama
+✓ Lenormand: actual auto/manual casting exports matching positions and complete cards
+✓ Lenormand: methods cannot substitute tarot meanings or each other’s geometry
+✓ Lenormand: all 36 houses, 32 mirror positions and all knight moves are geometrically valid
+✓ Lenormand: preset center is disclosed and optional focus never blocks a panorama
+✓ Lenormand: preview updates with current question without changing a completed draw
+✓ Bazi: each lens and each role scenario injects its distinct guide into the actual export
+✓ Meihua: both prompt paths preserve actual hexagrams, method boundaries and one shop ending
+✓ Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements
+✓ The local API preserves its JSON contract with system-specific depth and honest brand constraints
+professional-regression: 14 groups passed; 56 routing cases plus real draw/export and geometry checks.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:cards
+> node tests/share-card-20260911.cjs && node tests/share-card-preview-20260911.cjs && node tests/astrology-share-20260914.cjs
+
+✓ Fourteen card types and the public render/download APIs exist
+✓ Rendering preserves source data and produces 2160 × 2700
+✓ RWS inverse rotates the actual image; Book T does not inherit an inverse
+✓ Every tarot card survives the 3–54 card layouts
+✓ Lenormand 3/5 stay on one line; comparison has distinct A/shared/B rows
+✓ Lenormand nine-square and 4×8+4 preserve row order and independent tail
+✓ Missing chart/poem data cannot display a fabricated personal result
+✓ All 60 oracle poems retain their exact four columns, right to left
+✓ Long user text is visibly shortened; prompt/result data remains untouched
+✓ Oracle buttons use the unified engine; original question/spread callers remain connected
+share-card-regression: 10 groups passed. Canvas contracts only; real-browser/mobile sharing is a separate gate.
+✓ All fourteen dialogs show their completed image with the production lazy observer active
+✓ Ready Blob and still-loading preview are distinct states; download remains available
+✓ Already-complete cached previews do not depend on a later load event
+✓ Decode error ends loading without discarding a valid downloadable PNG
+✓ Missing image events time out; a late successful image can still recover
+✓ PNG encoding failure ends loading and keeps empty downloads disabled
+✓ Privacy redraw immediately removes the old image and rejects its late events
+✓ Out-of-order privacy renders and stale failures cannot replace the newest card
+✓ Closing during rendering or decoding releases resources and ignores late completion
+✓ Cancelling native share does not start an unwanted download
+share-card-preview: 10 integration groups passed (simulated DOM/image lifecycle).
+PASS Invitation and homepage use the same frozen twelve-method catalogue
+PASS Both native snapshots survive rendering and privacy changes without recalculation
+PASS Indian D1 contains every graha in its real sign, with no tropical substitution
+PASS Western card embeds the exact native noninteractive wheel in all four house systems
+PASS Unknown time shares only the midday reference, without ASC, fixed houses or dasha
+PASS A concentrated D1 conjunction retains all nine grahas instead of truncating the cell
+PASS Absent, crossed-school and nonfinite snapshots never become fabricated birth charts
+Astrology share contracts: 7 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ui
+> node tests/atelier-ui-20260911.cjs
+
+✓ Twelve home entrances are native buttons and reach the right flow; direct compatibility remains separate
+✓ Spread picker preserves incoming options, traps Tab, closes with Escape and restores prior focus/overflow
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+✓ All five Lenormand results keep complete, ordered cards; the grand tableau tail stays independent
+✓ Meihua text survives changing method without becoming markup; the three actual input methods remain available
+✓ Compatibility opens directly with two independent forms; single/personality/tools/history still open
+✓ Tarot home and edit buttons have real handlers and preserve the question and chosen mode
+✓ Returning from Ziwei restores the known or unknown birth time, date, gender and question
+atelier-ui: 7 groups passed (simulated DOM; visual/device checks remain separate).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ritual
+> node tests/ritual-lifecycle-20260911.cjs && node tests/ootk-scroll-20260912.cjs
+
+✓ tarot: user-led scenes never time out; completion, focus and cleanup occur once
+✓ lenormand: user-led scenes never time out; completion, focus and cleanup occur once
+✓ bazi: user-led scenes never time out; completion, focus and cleanup occur once
+✓ compat: user-led scenes never time out; completion, focus and cleanup occur once
+✓ ziwei: user-led scenes never time out; completion, focus and cleanup occur once
+✓ meihua: user-led scenes never time out; completion, focus and cleanup occur once
+✓ oracle: user-led scenes never time out; completion, focus and cleanup occur once
+✓ Skip, cancel, Escape, native close and navigation settle only once, including queued stale callbacks
+✓ Reduced motion preserves user control; hidden tabs cannot complete an untouched ritual
+✓ Partial holds cancel cleanly; release, pointer cancellation and visibility changes never reveal a result
+✓ Card faces are absent before touch; real card order, reversal and callbacks survive sequential reveal
+✓ Recorded sound starts with an interaction; hidden and cancelled rituals stop their own scope
+✓ Native-dialog failure retains keyboard controls and restores existing inert states
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Visible Start Shuffle works with no legacy button, then enables real selection without drawing early
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Stale legacy handlers are bypassed; cancel and return can start another shuffle safely
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Missing ritual reports an error, and changing spread invalidates an in-flight shuffle completion
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Tree of Life → Mathers 21 clears previous cards, derived data, visible meanings and analysis access together
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Reopening a completed spread preserves its cards and count; fresh and minor-only decks stay face down
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ An incomplete draw cannot render stale meanings; return and reselect of the same spread starts empty
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A pick interrupted before flight or before commit never enters the next reading
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Quick completion reveals only after the ceremony, preserves a manual card and cannot commit twice
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+✓ All five Lenormand spread ceremonies keep the original draw, delay results and cancel cleanly
+✓ Bazi, Meihua and Ziwei continuations run after completion only; Ziwei cancel restores the form
+✓ Compatibility commits its real calculation and history only after completion; cancel leaves both empty
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Oracle ceremony returns to its guide, advances to throwing only on completion and stops on close
+ritual-lifecycle: 25 groups passed (simulated DOM; no device-rendering claim).
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+PASS Picker -> Key ritual -> cancel restores original scrolling and removes overlays
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+PASS Repeated launch failure retains selections and one close control, then unlocks on cancel
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:cinematic
+> node tests/cinematic-20260911.cjs && npm run test:shuffle-recovery
+
+✓ All nine experiences have an actor and complete local transparent atlas
+✓ 3D deck moves through stack, split, interleave and fan without calling reading randomness
+✓ Touch gestures drive the scene; no card draw or completion happens before explicit exit
+✓ Wrong gesture direction does not instantly complete; pointer cancellation resets progress
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:40)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:8
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:309:88)
+    at /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/014c15c3c49b/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+✓ A renderer failure never blocks any ritual, and cancellation invalidates pending phase callbacks
+✓ Four-pillar and relationship inputs retain original nodes/values; validation can reveal any earlier field
+✓ Lenormand four sections become three steps; a rerender resumes spread selection
+✓ No WebGL context: real Three.js mount returns usable fallback and removes allocated DOM
+✓ All seven scenes release their Three.js geometries, textures, listeners and frame loop; late loads cannot resurrect them
+✓ Changing Tarot to Opening of the Key updates the guide without touching the question
+cinematic: 10 groups passed; WebGL pixels and physical-device rendering remain unverified.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:shuffle-recovery
+> node tests/shuffle-recovery-20260911.cjs
+
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Home animation failure cannot prevent opening or finishing the shuffle
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Phase initialization failure falls back to the illustrated ritual, never to a completed draw
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure after mounting rolls back its lock; the same visible button retries the same question and deck
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure before a dialog attaches releases the lock and leaves body scrolling intact
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A mixed-version caller throwing after play is cancelled without invoking return-to-input
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Deck preparation failure retries locally without changing question, spread or session epoch
+✓ All seven rituals complete once despite scene disposal and home-resume failures
+✓ Mid-gesture GPU errors leave user-led completion and cancellation available
+✓ Actual home scene clears a failed renderer before suspension, hover or remount can affect a ritual
+✓ Real Three.js resources are still released when renderer.dispose throws
+shuffle-recovery: 10 groups passed (fault injection, not phone-specific error reproduction).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:flow
+> node tests/flow-interaction-20260911.cjs
+
+✓ Native deck has one node per actual card; mouse drag scrolls both rows and cannot pick on release
+✓ Touch delegates panning to the browser; pointer cancellation suppresses accidental card selection
+✓ A vertical gesture leaves the deck still; a later tiny tap selects its original target exactly once
+✓ Browse buttons clamp at both ends; keyboard and repeated initialization leave no duplicate handlers
+✓ Unshuffled cards cannot be selected and browse buttons remain inactive
+✓ Illustrated ritual follows the finger without WebGL; a second pointer cannot hijack it
+✓ Every ritual gives instructions before its interactive surface and the primary action after it
+✓ Changing Tarot / Key changes controls in place with no delayed scroll
+✓ Entering the question page does not focus the textarea or open the soft keyboard
+✓ Secondary AI providers keep the original nodes and handlers, with only one expandable group
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+✓ Lenormand and Meihua keep question text and viewport when changing an option
+✓ AI opens inside the click gesture; clipboard rejection offers the actual prompt instead of a dead end
+✓ Expanding all form fields survives an option rerender
+✓ Changing a compatibility scenario retains the scroll position and both birth forms
+✓ Updated styles parse; the intended gesture surfaces explicitly own touch-action
+flow-interaction: 15 groups passed; rendered layout and physical touch remain separate checks.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:depth
+> node tests/reading-depth-20260912.cjs
+
+✓ A real tap commits its original card once even when the later click is retargeted to the table
+✓ Drag, cancellation, secondary pointers and vertical scrolling never select a card
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A missing destination neither consumes a card nor locks selection; the same question can retry
+✓ Explicit A/B alternatives preserve the full two-week condition in real observed questions
+✓ Civil reference dates survive western and eastern timezones without moving to the previous day
+✓ Stopped Key exports explain validity and cannot turn failed first-operation cards into a reading
+✓ Result question, completion heading and share access follow one payload, including recovery
+✓ Luck handover retains both yearly segments, and null exposed stems cannot become an asserted fact
+✓ Five, nine and thirty-six actual cards reveal in user-controlled pages, without reordering or premature faces
+✓ Action notes never copy automatically, keep literal text and offer a readable clipboard failure
+✓ Each instrument follows a finite distinct motion without using divination randomness
+✓ Quality rules are integrated before system exports; styles parse and current dependencies bypass old caches
+reading-depth: 12/12 groups passed; no claim of physical-device or predictive accuracy.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:flow-polish
+> node tests/flow-polish-20260912.cjs
+
+✓ A fast complete swipe commits before pointer release, across all four gesture rituals
+✓ Partial and cancelled gestures show feedback without false completion or orphaned timers
+✓ Motion switching releases the scene, keeps seal progress and requires an explicit final action
+✓ Card-by-card progress counts unique reveals and never inserts unseen faces
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A manual pick immediately reports busy, rejects a second pick and updates only committed progress
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Cancel and resume reuse the same pending draw and preserve the manually selected first card
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A reveal startup error releases the lock and retries the reserved cards without another draw
+✓ Reading notes persist during a rerender but clear when the reading changes or resets
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Cancelling shuffle returns to the same prepared deck and question without consuming cards
+flow-polish: 9/9 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:accuracy
+> node tests/engine-fixes-20260912.cjs && node tests/accuracy-engine-20260912.cjs && node tests/bazi-regression.cjs && node tests/bazi-suite-regression.cjs && node tests/export-accuracy-prompts-20260912.cjs
+
+PASS iztro 2.5.8: 160 independent frozen charts, both sexes, leap policies and date boundaries
+PASS Li-Chun annual boundary uses actual UTC instants, including explicit offsets
+PASS Calendar rejects invalid dates, NaN fields and unsupported policies
+PASS Month pillar and elapsed Jie days share one ephemeris, including simplified term names
+PASS Infancy before first Yun is represented; leap-day decades clamp to February end
+PASS Explicit chart-wall reference resolves back to the matching actual instant
+PASS 不得地 is weaker than 平, while 得地 is stronger
+PASS Neutral palace input gives neutral annual/monthly model output, not an offset of 50 or 100
+PASS Ziwei exported current year follows saved lunar year before Lunar New Year
+Engine fix groups passed: 9; independent comparisons: 18560
+PASS 紫微定位：五種局 × 三十日，150格固定安星表
+PASS 命身宮：144個月時组合；十四主星不重複、宮位完整
+PASS 五行局：六十甲子納音表，非法干支拒算
+PASS 年系星逐支查表；命主命宮取值；來因宮排除子丑重複干
+PASS 月、日、時系星：解神、天巫、陰煞、天貴、恩光、封誥與天壽
+PASS 曆法：2023閏二月、2025閏六月、2026農曆新年；兩種閏月政策
+PASS 晚子時可分早晚；月底子初換日與正月初一虛歲
+PASS 斗君：2008正月子時生，2026正月命宮午；四月未時生則戌
+PASS 八字：節氣依同一UTC瞬間，時區及真太陽時不改年、月柱
+PASS 八字：日柱基準、23點兩種政策、節氣引擎缺失與不存在日期
+PASS 合盤：100種有方向的十神，不把A看B反寫成B看A
+PASS 起運：分鐘距離按三日一年折算，正逆取節、不偽稱秒級準確
+PASS 香港天文台三年逐月月首：36個獨立日期（含閏月）
+PASS 二十顆星 × 十二宮廟旺表；未知星不虛填平
+PASS 八字命宮與紫微宮位口徑分開；ISO出生瞬間可核對
+PASS 跨系統整合不修改八字分數、不以相同歲數誤配虛歲
+Source arithmetic groups passed: 16
+✓ 台南出生時間真太陽時精確到秒
+✓ 本命四柱不變且起運按分鐘折算法完整保留餘數
+✓ 大運採精確半開區間，命盤牆鐘交界前後不重疊
+✓ 真實 UTC 瞬間先轉台北真太陽牆鐘，再判精確換運點
+✓ 原局作用由核心唯一列出申亥害與亥未拱木，沒有重複
+✓ 天干五合與六合不自動判定成化或灌入分數
+✓ 有根透印的乙庚合採普通格局，保留合化判別且不覆蓋扶抑喜忌
+✓ 調候與扶抑分離，不因火極少便自動加入核心用神
+✓ 23時換日政策可選，午夜派與子初派輸出各自一致
+✓ 流年以立春為界，不以公曆元旦換干支
+✓ IANA 時區能處理紐約夏令時間，固定偏移備援不偽裝成 DST
+✓ DST 重疊與缺口明確標記，秒數不在轉換中遺失
+✓ 流月沖合只列觸發，不以沖喜沖忌自動改分
+✓ 提示詞分離排盤事實與流派模型，包含精確運界及限制
+✓ 未知時辰提示詞明確降級時柱與精確起運可信度
+✓ 固定 UTC 偏移排盤在提示詞明示歷史時區限制
+✓ 精確曆法庫缺席時停止，不輸出預設五歲起運
+✓ 首頁載入本地曆法引擎且版本路徑正確
+
+All 18 regression tests passed.
+✓ 公開情境功能完整列出八種且角色不同
+✓ 單盤提供六種分析入口
+✓ 雙向十神映射不可互換
+✓ 合盤同時輸出日主、日柱、跨盤、五行互補與歲運同步
+✓ 合盤提示詞依角色情境切換並含兩張完整資料
+✓ 六合五合與三合三會只列候選不宣告成化
+✓ 六種單盤提示詞各自載入正確分析範圍
+✓ 五軸人格固定產生32個唯一類型且相同命盤可重現
+✓ 人格提示詞禁止心理診斷與貼死標籤
+✓ 城市時區表公開給完整套件，海外可用IANA/DST
+✓ 首頁保留原版UI為預設並另接完整套件
+✓ 核心與UI JavaScript語法可由Node解析
+✓ 四柱反查可找回已知公曆候選並明示必須真太陽時複核
+✓ 四柱反查拒絕格式錯誤與過大年份範圍
+✓ 公開排盤政策含真太陽時、子初換日、立春與半開大運區間
+✓ 完整UI含曆法工具、真太陽時與四柱反查入口
+✓ 排盤顯示可重算的生肖與八字重量，並將稱骨降為末位輔助
+✓ 未知時辰合盤會排除時柱跨盤訊號並把精確歲運降級
+✓ 單盤、合盤與人格都能生成圖片分享卡，並保留十個AI入口
+✓ 完整套件的日期時間地點全部使用站內自訂UI，不再觸發手機原生日曆
+✓ 單人合盤人格與工具共用同一套自訂出生資料元件
+
+All 21 Bazi suite regression tests passed.
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+PASS OOTK source count: 18 initial landings; five-operation fixed-deck export
+Exported 8 revised prompts to /workspace/scratch/014c15c3c49b/work/mytool-blue-master/review/accuracy-prompts
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:immersive
+> node tests/immersive-experience-20260912.cjs
+
+PASS Auto reveal spans 15 cards; order, reversal and one explicit completion stay intact
+PASS Pause at a page boundary leaves a usable Next Group button and resumes without re-reveals
+PASS Backgrounding pauses auto reveal, while Cancel invalidates all scheduled reveals
+PASS Reveal All handles 54 cards and duplicate clicks without a second draw or hidden-card omission
+PASS Every Lenormand spread supports automatic reveal with the same canonical ids
+PASS Ziwei atlas retains all 12 palaces; each click shows that palace, all stars and real trine/opposition
+PASS Bazi point-and-read preserves canonical values and does not expose a placeholder hour
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+PASS All 384 Meihua combinations preserve actual 本互變 names, moving line and bottom-up order
+PASS Camera choreography is finite at every phase and settles before the next explicit action
+Immersive experience: 9 regression groups passed. Physical Android touch and new WebGL pixels require device QA.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:plain
+> node tests/plain-reading-20260912.cjs
+
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ RWS and Book T prompts ignore stale inventory, preserve actual cards and prefer everyday language
+✓ Five valid OOTK operations retain their record while recommendations do not read inventory
+✓ An invalid OOTK operation stays invalid and does not acquire a sales recommendation
+✓ Shared and standalone brand policies agree; no fixed gemstone or fabricated measurements are injected
+✓ Legacy API entry points send needs-first policy and do not attach catalogue candidates
+plain-reading: stock-independent exports and needs-first policy verified; no external-model claim.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:story
+> node tests/story-immersion-20260912.cjs
+
+✓ tarot: director keeps the scene user-led and settles once after visible shots
+✓ lenormand: director keeps the scene user-led and settles once after visible shots
+✓ bazi: director keeps the scene user-led and settles once after visible shots
+✓ compat: director keeps the scene user-led and settles once after visible shots
+✓ ziwei: director keeps the scene user-led and settles once after visible shots
+✓ meihua: director keeps the scene user-led and settles once after visible shots
+✓ oracle: director keeps the scene user-led and settles once after visible shots
+✓ ootk: director keeps the scene user-led and settles once after visible shots
+✓ Skip and cancellation dispose a live director, including stale callbacks
+✓ Reduced motion can be selected during a shot without completing the reading
+✓ All-reveal keeps actual faces, reversal and order and never invents a new draw
+✓ Failed film playback remains decorative and cannot block the scene
+✓ Late media success after cancellation cannot attach a stale film
+✓ Eight new 3D sets have finite transforms and release every geometry, material and timer
+✓ Opening of the Key starts in manual chapter mode and cancellation releases the scene
+story-immersion: 15 groups passed; simulated DOM and scene structure, not physical-device or generated-film validation.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:free
+> node tests/realtime-free-20260912.cjs
+
+✓ All eight particle paths stay finite and bounded through hold, turn and scene changes
+✓ Local effects load no textures and add at most five drawable objects per scene
+✓ Touch echoes fade out and reduced motion keeps every particle stationary
+✓ Touch feedback does not advance the ritual prematurely and cancellation leaves no timer
+realtime-free: 4 groups passed; geometry and interaction checks, not GPU pixel or phone validation.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:oracle-result
+> node tests/oracle-result-20260912.cjs
+
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ All 60 poems keep their four original lines, number, source and actual prompt
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Question markup is escaped; an unconfirmed or unavailable prompt never gains a confirmation or AI controls
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Horizontal and vertical reading retain the result, prompt, DOM nodes and scroll position without drawing again
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Provider folding is repeatable and preserves all 10 handlers without adding duplicate introductions
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Clipboard success copies the full real prompt; denied APIs and false fallback report manual copying honestly
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ AI tab opens during the original tap, before copying settles; invalid destinations and stale feedback are ignored
+[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Share and image export receive the same poem and question after switching reading direction
+oracle-result: 7 groups passed (simulated DOM; no device-rendering claim).
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:craft
+> node tests/deck-routing-scenes-20260912.cjs
+
+[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine
+PASS Both independent readers use the identical embedded parser
+PASS 40 new questions: continuation, hypotheses, choices, missing operands and three options stay distinct
+PASS Actual Lenormand prompt preserves options, all seven card ids and branch geometry
+PASS Real Key engine retains five operations and valid stopping states without retrying for a match
+PASS Skip before entrance and in each of five operations exports the same immutable calculation exactly once
+PASS A skipped abandoned reading cannot acquire fabricated later operations
+PASS Native picker paints 78 identical opaque backs while keeping only one image per card after reinitialization
+PASS Batched relief geometry and three local textures build without remote resources
+Craft: 8 groups passed; 40 new routing cases. No physical-phone or GPU pixel claim.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:methods
+> node tests/method-engine-20260913.cjs && node tests/method-prompts-20260913.cjs
+
+PASS 120 seasonal references keep stem roles and derived elements consistent
+PASS Text anchors distinguish months, seasonal paragraphs and conditional branches
+PASS Ten birth stems: all decade/year/month layers preserve twelve identities and all four transformations
+PASS Actual composite adapter uses nominal age and lunar reference year across New Year
+PASS Actual composite adapter binds palace names to records, independent of serialization order
+PASS Fourteen native methods reach the API system instructions without a tarot default
+Method/engine regression groups passed: 6
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ All 36 Lenormand cards retain their identity and gain contextual combination roles
+✓ House-Key-Moon retains the exact question/order and asks for a reasoned answer without prescribing relationship status
+✓ RWS and Book T actually send their native method guide and preserve the cast
+✓ Completed Key exports its own procedural guide with full counting/pairing distinctions
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:huaqi
+> node tests/bazi-huaqi-20260913.cjs
+
+PASS Reported birth chart retains two wood roots and two exposed yin-water supports
+PASS A root alone does not reject Ren Tieqiao true-transformation examples
+PASS Potentially constrained support and full branch groups remain explicit open questions
+PASS Same-element day master, missing pillars and non-combinations cannot become false rejections
+PASS Displayed month structure and expanded reasons use the same actual assessment
+PASS Single, complete-suite and unknown-time exports preserve their actual scope
+PASS Actual composite API adapter forwards both the month structure and the full assessment
+Huaqi regression groups passed: 7
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:core-engines
+> node tests/core-engine-20260913.cjs
+
+PASS Reported chart: year/hour roots reach the classifier; neutral is not silently weak
+PASS Position counterexample from Ziping: separated stem combination is not adjacency
+PASS Support lens follows roles and existing channels, independent of invented shortage scores
+PASS 120 seasonal entries resolve actual stems, hidden roots and constraints; exact Yi-Shen branch fires
+PASS Changing prose alone cannot change decade/year scores; transit conditions retain exact stems
+PASS Ziwei flow-star published vectors, two profiles and natal identity remain separate
+PASS Forty-five digital cut settings conserve all 78 cards through real counting and pairing
+PASS Single prompt, composite API and custom report preserve the same core; no second crystal classifier
+PASS All bounded random draws reject the uint32 tail, retain endpoints and reject invalid ranges
+PASS Four digital block outcomes: two holy, one laugh, one dark; no physical probability claim
+Core engine regression groups passed: 10
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:output-consistency
+> node tests/engine-output-consistency-20260913.cjs
+
+PASS 120 root combinations: day sitting root and four-branch root are independent facts
+PASS Actual Bazi standalone and six-lens exports distinguish sitting root from roots elsewhere
+PASS Complete composite payload preserves neutral strength, god identities, Shensha and exact luck dates
+PASS Actual composite Bazi result renderer displays neutral and distinguishes day/other roots
+PASS Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts
+PASS 384 Meihua cases: moving trigram is Yong; changed Yong and both mutual trigrams retain their actual relation to Ti
+PASS Meihua saved casting time reaches initial analysis, enriched season and complete composite output
+PASS 27 tarot mode/spread combinations remain identical through the full composite adapter, including RWS reversals
+PASS Invalid tarot draws and stopped Key cannot leave fabricated or stale composite cards
+Output consistency: 9/9 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:vedic
+> node tests/vedic-engine-20260913.cjs
+
+PASS 167 independent Swiss / Moshier charts: sidereal planets, mean node, ascending intersection and ayanamsa
+PASS All 27 nakshatra and 108 pada boundaries, wrapping and half-open intervals
+PASS 72 polar ascendants and 6 Raman charts agree with separately generated Swiss references
+PASS Sixteen divisional charts: independent textbook examples and documented D3 erratum
+PASS Dignity degree transitions: Moon, Mercury, and moolatrikona end points
+PASS Vimshottari Example 50: 809.55-day remainder, pre-birth MD/AD, full-length proportion and exact transitions
+PASS IANA civil time: Taiwan, India, DST gap/fold, invalid dates and half-hour offset
+PASS Immutable chart: 16 vargas, whole signs, all nine grahas and 36 actual monthly transit samples
+PASS All seven BAV totals, SAV 337, and each prastara contribution independently reconstructed
+PASS Directed drishti and arudha exceptions are geometric, not interchangeable
+PASS Time sensitivity computes alternatives; unknown time omits houses and exact prompt dasha
+PASS Eight topic prompts reuse native facts, exact date anchors, proper method paths and branding
+PASS Input failures are explicit, never silently substitute a different mode/date
+PASS Legacy dasha projection also preserves pre-birth AD and uses the natal UTC Julian day
+{"passed":14,"total":14,"maxErrorArcseconds":{"Sun":1.96296506028375,"Moon":3.067910929075879,"Mars":9.3311763233487,"Mercury":9.026658206130378,"Jupiter":7.505899100260649,"Venus":18.799569845759834,"Saturn":11.24978715843099,"Rahu":0.10775612399811507,"ascendant":6.548065439528727,"ayanamsa":0.18725526279013138}}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:vedic-design
+> node tests/vedic-design-20260914.cjs
+
+PASS Civil date validation: leap centuries, every month end, allowed range, no normalization
+PASS All 1,440 civil minutes survive the local editor without AM/PM or UTC reinterpretation
+PASS Six documented combustion thresholds, retrograde exceptions, wrap and boundary behavior
+PASS Moon phase and Mercury association change natural quality independently of dignity
+PASS Gaja Kesari: quadrant alone cannot pass the full selected definition
+PASS Gaja Kesari rejects combustion, debility and compound enemy placement; friend systems stay distinct
+PASS 167 Swiss reference charts independently check the local ten-minute velocity derivative
+PASS The user example retains its native positions and exposes the missing benefic support
+PASS Birth-time uncertainty propagates into dasha dates, compared with independent endpoint calculations
+PASS All nine selected antardashas subdivide themselves, including the first pre-birth parent
+PASS 3D scene uses nine native longitudes and twelve North Indian house destinations; no chart mutation
+PASS Unknown time omits lagna, house destinations and determinate dasha timing in scene and prompt
+PASS All eight prompt topics consume actual condition checks, solar state and date sensitivity
+{"scope":"Numerical and explicitly selected traditional method agreement, not predictive accuracy","passed":13,"total":13,"maxSpeedErrorDegreesPerDay":{"Sun":0.00004490035033177797,"Moon":0.00029784092155793473,"Mars":0.00008204099857656022,"Mercury":0.000443075976477747,"Jupiter":0.000013916058803770115,"Venus":0.0001601935519490727,"Saturn":0.00007547916948669187,"Rahu":1.924549089399319e-7},"results":[{"name":"Civil date validation: leap centuries, every month end, allowed range, no normalization","status":"passed"},{"name":"All 1,440 civil minutes survive the local editor without AM/PM or UTC reinterpretation","status":"passed"},{"name":"Six documented combustion thresholds, retrograde exceptions, wrap and boundary behavior","status":"passed"},{"name":"Moon phase and Mercury association change natural quality independently of dignity","status":"passed"},{"name":"Gaja Kesari: quadrant alone cannot pass the full selected definition","status":"passed"},{"name":"Gaja Kesari rejects combustion, debility and compound enemy placement; friend systems stay distinct","status":"passed"},{"name":"167 Swiss reference charts independently check the local ten-minute velocity derivative","status":"passed"},{"name":"The user example retains its native positions and exposes the missing benefic support","status":"passed"},{"name":"Birth-time uncertainty propagates into dasha dates, compared with independent endpoint calculations","status":"passed"},{"name":"All nine selected antardashas subdivide themselves, including the first pre-birth parent","status":"passed"},{"name":"3D scene uses nine native longitudes and twelve North Indian house destinations; no chart mutation","status":"passed"},{"name":"Unknown time omits lagna, house destinations and determinate dasha timing in scene and prompt","status":"passed"},{"name":"All eight prompt topics consume actual condition checks, solar state and date sensitivity","status":"passed"}]}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:vedic-palace
+> node tests/vedic-palace-20260914.cjs
+
+PASS Mobile and desktop camera cross the threshold before the instrument reveal
+PASS Camera never jumps at a chapter boundary, and always keeps a finite target
+PASS Twelve physical houses rise after the orbit chapter and settle before the open action
+PASS Touch inspection is bounded; the final twelve-house board stays visible from both sides
+PASS The browser bundle exposes the native-data model without requiring a WebGL context at load
+PASS Palace materials and cache are wired into the delivered entry page
+{"passed":6,"checks":["Mobile and desktop camera cross the threshold before the instrument reveal","Camera never jumps at a chapter boundary, and always keeps a finite target","Twelve physical houses rise after the orbit chapter and settle before the open action","Touch inspection is bounded; the final twelve-house board stays visible from both sides","The browser bundle exposes the native-data model without requiring a WebGL context at load","Palace materials and cache are wired into the delivered entry page"]}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:western
+> node tests/western-engine-20260914.cjs
+
+PASS 167 independent Swiss/Moshier references: ten planets, lunar node, four house systems
+PASS DST gap, fold and civil dates preserve the actual UTC instant
+PASS Unknown clock covers a 23/25-hour day and midnight DST transitions
+PASS Applying/separating handles retrograde, zero crossing, opposition and exactness
+PASS Classical dignities distinguish Mercury domicile plus exaltation and outer planets
+PASS Grand trine, T-square and grand cross require every actual link
+PASS Solar returns and secondary progression use independent Swiss timing references
+PASS Every displayed planet house matches the same snapshot; angles stay distinct from equal cusps
+PASS Unknown time has no houses, ruler, sect, progression or solar return
+PASS Every topic retains the actual question, chart sources and one shop link
+PASS Legacy ephemeris bridge never leaves stale derived fields after partial overwrite
+{
+  "passed": 11,
+  "referenceCases": 167,
+  "maximum": {
+    "longitude": 19.89461493358249,
+    "latitude": 21.13846054662183,
+    "speed": 2.6819158381546666,
+    "node": 0.22919314042155747,
+    "angles": 6.807551076371965,
+    "cusps": 6.807551076371965,
+    "returnMinutes": 0.29524305013020835
+  }
+}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:recommendations
+> node scripts/sync-recommendation-guides.cjs --check && node tests/recommendation-20260914.cjs
+
+Reading v6.0.0 / recommendation v4.3.0: all generated copies match
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ Each reading method receives a different evidence path, with selection before invitation
+✓ All Tarot layouts preserve exact casts while using the method-specific recommendation
+✓ Bazi lenses, compatibility roles and both personality APIs use their own selection basis
+✓ All Lenormand layouts and all 60 poems include justified selection, preserving original data
+✓ Meihua standalone and generic exports keep the same casting facts and selection basis
+✓ Stopped Key cannot turn a failed validation into an accessory remedy
+✓ Crystal/iron/ritual material choices carry actual distinctions, not scored product slots
+✓ Standalone recommendation snapshots survive absent, v3 and earlier v4 shared scripts
+✓ Vedic and Western every topic and unknown-time chart keep native calculations in recommendation exports
+✓ Tarot, Key, Lenormand, oracle and Meihua use current snapshots when v4.1 is still loaded
+✓ Selection guidance has no named default, demands discriminating evidence and preserves explicit choices
+recommendation-20260914: 11 groups passed; actual exports, no external-model compliance claim.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ootk
+> node tests/ootk-flow-20260915.cjs
+
+PASS Default original-manuscript profile completes 512 casts across every court and conflicting expectations
+PASS Ace=5, inclusive counting, first-ring-card start, opposite-end pairing and packet inversion match the manuscript
+PASS Question keywords and preselected destinations never bias the original-manuscript shuffle
+PASS Legacy validation is explicit, still stops, and cannot fabricate later data
+PASS Payload and final prompt retain version-specific counts, the question, five operations and contextual recommendation
+PASS Full automatic playback and skipping before/every stage export the same cast once, with no pending callbacks
+PASS A thrown animation callback and a lost callback recover to complete data; cancellation never exports
+ootk-flow-20260915: 7 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:relationship
+> node tests/relationship-20260917.cjs
+
+PASS 1983 reference: actual minute, natal palaces, transformations and 2026–2029 positions
+PASS 1994 late Zi: current is June 20, explicit local 23-hour policy advances to June 21
+PASS Minute boundaries remain traceable: 14:59 / 15:01, 22:59 / 23:01, midnight
+PASS Leap month day 15/16 follows explicit fixLeap, lunar New Year follows Taipei midnight
+PASS Conflicting policies and mismatched birth minutes stop calculation
+PASS AI facts contain no heuristic scores/levels/themes; geometry and flight origins remain exact
+PASS Cross-chart projections follow the receiving chart; natal state is never overwritten
+PASS Both participants use the same annual windows; each decade is selected for the target year
+PASS Unknown time never creates a noon Ziwei chart, false overlays, or projected transformations
+PASS All eight scenarios retain role focus, complete prompts and one material recommendation ending
+Relationship policy / integration: 10 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:time-ownership
+> node tests/time-ownership-20260920.cjs
+
+PASS 21:00 Changhua uses Bing-Xu Bazi and civil Hai Ziwei; hidden Ding is never declared exposed
+PASS Minutes around the true-solar 21:00 boundary change only the intended chart
+PASS The same LiChun instant has different local solar readings but identical canonical windows
+PASS The 2029 decade transition retains both contiguous UTC segments inside one annual window
+PASS A different civil timezone still resolves the same worldwide annual boundary
+PASS Before LiChun the Bazi year stays previous year; Ziwei waits for lunar New Year
+PASS 23:00 and midnight policies retain the distinct day-pillar date in the audit
+PASS Unknown hour exports only verified three pillars, no surrogate Ziwei chart or precise birth instant
+PASS Wrong pillars, hidden stems, ten gods and birth summaries are rejected before prompting
+PASS Mixing people, timezones or reference instants is rejected
+PASS All production entry points use this release; mirrors match; history cannot silently reuse old prompts
+PASS Actual form submission keeps UI, copied prompt and JSON on the same verified facts
+Time ownership regression: 12 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:question-routing
+> node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs
+
+PASS One canonical question plan in both readers; all method definitions validate
+PASS Same topic different people, outcomes and newlines receive independent branches
+PASS Three to six real options retain their labels and all card branches
+PASS No alternate-person inference from continuation or hypotheses
+PASS Separate deadlines bind locally; months differ from zodiac houses and durations
+PASS Eligibility precedes preference; manual selection preserves honest missing coverage
+PASS New Tarot catalog draws unique cards with identical slot counts in layout, payload and prompt
+PASS Tarot auto mode follows explicit method; ordinary themes keep RWS and drawn mode is immutable
+PASS All Lenormand layouts export the declared count and preserve drawn facts
+PASS 4×9 geometry contains 36 real houses, complete straight paths and only valid knight moves
+PASS System suggestions distinguish requested tradition, reflective questions and concrete events
+PASS Real Lenormand input, manual layout and draw controllers keep preview and saved plan aligned
+PASS Recommendation preview and switching preserve typed text without changing a completed Tarot draw
+question-routing: 13 groups passed.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:gua
+> node scripts/build-yijing-data.cjs --check && node tests/gua-engine-20260922.cjs
+
+Yijing: 64 judgments, 384 yao, 2 uses, exact source labels and revisions verified.
+✓ 八宮全圖：64 卦歸宮、世應、遊魂歸魂；八宮均不重複
+✓ 渾天甲子：八純卦納甲、陰陽順序及六神起例
+✓ 古例：需之訟、夬之姤的變爻六親均沿用坤宮土
+✓ 六沖十卦、六合八卦；日沖不直接定暗動或日破
+✓ 三錢八種結果為 1:3:3:1；缺少安全亂數直接停止
+✓ 4096 組：本變卦逐爻互換、所有動爻保留、擇辭與原文完全相符
+✓ 朱子考變占原例：一爻、五爻、三爻前後十及乾坤二用
+✓ 六十日旬空循環，午夜與子初換日，指定時區不隨電腦時區漂移
+✓ 香港天文台 2026 節令日期；同一瞬間跨時區與交節前後一秒
+✓ 無效日期、爻值、擲錢紀錄、時差不靜默補算
+✓ 解讀提示詞使用同一答案優先規則、精確事實與最後選品；獨立備援一致
+gua-engine: 11 groups passed, including all 4096 casts.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:yarrow
+> node tests/yarrow-20260922.cjs
+
+✓ 64 餘數路徑：老陰／少陽／少陰／老陽 = 1:5:7:3
+✓ 所有合法切點：分二、掛一、四揲、歸餘皆守恆
+✓ 破損紀錄與無安全亂數均拒絕；六爻仍走獨立三錢引擎
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:special-rules
+> node scripts/sync-recommendation-guides.cjs --check && node tests/special-rules-20260922.cjs && node tests/engine-output-consistency-20260913.cjs && node tests/gua-engine-20260922.cjs
+
+Reading v6.0.0 / recommendation v4.3.0: all generated copies match
+PASS Sixyao: role-aware focus does not turn office attraction into a job question
+PASS Sixyao: month-strength, static/moving, weak emptiness and tombs retain distinct effects
+PASS Sixyao: bounded dates follow actual calendar; next-month does not become this-month
+PASS Ziwei: rejects old wrong sun/pearl patterns and three-out-of-four shortcut
+PASS Ziwei: flanking means two neighboring palaces; light levels are actual table values
+PASS Ziwei: source-specific court, carriage, Sun–Liang–Chang–Lu and horse variants keep exclusions
+PASS Bazi: following-output permits rooted peers; the printed season does not create a special pattern
+PASS Bazi: real following-output chart does not restore ordinary support advice in its upgrade
+PASS Bazi: unknown-hour composite exports omit noon-derived structures, timing and cached consensus
+PASS Meihua: all 384 inputs use one nuclear rule and unchanged original body
+PASS Jyotisha: all 32 Naabhasa identities present, shapes and Sankhya priority stay distinct
+PASS Jyotisha: Kemadruma cancellation and unknown time do not report a confirmed bad yoga
+PASS Jyotisha: named dusthana yogas require their own house, export carries all exclusions
+PASS Western: Yod, boomerang, cradle, rectangle, kite and hexagon require all edges
+PASS Lenormand: both full tableaux preserve house cycles, swaps, fixed points and reject damaged decks
+PASS Nameology: real loaded upgrade preserves unknown strokes and compound surname calculation
+PASS Tarot: export blocks duplicate draws, missing positions and mixed traditions
+PASS Coverage register accounts for every active reading method and names its limits
+Special-rule regression groups: 18/18
+PASS 120 root combinations: day sitting root and four-branch root are independent facts
+PASS Actual Bazi standalone and six-lens exports distinguish sitting root from roots elsewhere
+PASS Complete composite payload preserves neutral strength, god identities, Shensha and exact luck dates
+PASS Actual composite Bazi result renderer displays neutral and distinguishes day/other roots
+PASS Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts
+PASS 384 Meihua cases: moving trigram is Yong; changed Yong and both mutual trigrams retain their actual relation to Ti
+PASS Meihua saved casting time reaches initial analysis, enriched season and complete composite output
+PASS 27 tarot mode/spread combinations remain identical through the full composite adapter, including RWS reversals
+PASS Invalid tarot draws and stopped Key cannot leave fabricated or stale composite cards
+Output consistency: 9/9 groups passed.
+✓ 八宮全圖：64 卦歸宮、世應、遊魂歸魂；八宮均不重複
+✓ 渾天甲子：八純卦納甲、陰陽順序及六神起例
+✓ 古例：需之訟、夬之姤的變爻六親均沿用坤宮土
+✓ 六沖十卦、六合八卦；日沖不直接定暗動或日破
+✓ 三錢八種結果為 1:3:3:1；缺少安全亂數直接停止
+✓ 4096 組：本變卦逐爻互換、所有動爻保留、擇辭與原文完全相符
+✓ 朱子考變占原例：一爻、五爻、三爻前後十及乾坤二用
+✓ 六十日旬空循環，午夜與子初換日，指定時區不隨電腦時區漂移
+✓ 香港天文台 2026 節令日期；同一瞬間跨時區與交節前後一秒
+✓ 無效日期、爻值、擲錢紀錄、時差不靜默補算
+✓ 解讀提示詞使用同一答案優先規則、精確事實與最後選品；獨立備援一致
+gua-engine: 11 groups passed, including all 4096 casts.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:astro-bridge
+> node tests/astro-bridge-20260922.cjs && node tests/api-failure-regression.mjs
+
+PASS Native snapshots equal standalone engines; original civil clock reaches both
+PASS Historical IANA offset overrides a stale fixed city offset; DST folds require a choice
+PASS All real composite payload wrappers and reading copy use the native facts without old scores
+PASS Actual renderers use native geometry, safe HTML, no legacy star scores
+PASS Unknown hour uses the whole 25-hour local day and omits noon-derived houses and exact dashas
+PASS Changed birth data is rejected at the API boundary, failed calculation clears the old chart
+PASS Concurrent submissions never commit a cancelled snapshot and recover after failure
+{
+  "passed": 7,
+  "total": 7
+}
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+✓ Native astrology reaches the model once, preserving every structured fact
+✓ Dedicated casts, geometry and stopped operations survive the real API adapter
+✓ API asks for a personal material choice before the shop invitation, independent of stock
+api-failure-regression: 11 groups passed (mocked upstream; no live mutations)

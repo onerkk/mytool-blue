@@ -1,0 +1,706 @@
+{
+  "release": "20260922audit2",
+  "npmTest": {
+    "command": "npm test",
+    "exitCode": 0,
+    "uniqueNodeCommands": 53,
+    "commands": [
+      "node scripts/build-question-planner.cjs --check",
+      "node scripts/build-yijing-data.cjs --check",
+      "node scripts/sync-recommendation-guides.cjs --check",
+      "node tests/accuracy-engine-20260912.cjs",
+      "node tests/api-failure-regression.mjs",
+      "node tests/astro-bridge-20260922.cjs",
+      "node tests/astrology-share-20260914.cjs",
+      "node tests/atelier-ui-20260911.cjs",
+      "node tests/bazi-huaqi-20260913.cjs",
+      "node tests/bazi-regression.cjs",
+      "node tests/bazi-suite-regression.cjs",
+      "node tests/cinematic-20260911.cjs",
+      "node tests/core-engine-20260913.cjs",
+      "node tests/counter-proxy.test.mjs",
+      "node tests/deck-routing-scenes-20260912.cjs",
+      "node tests/display-lifecycle-regression.cjs",
+      "node tests/divination-audit-20260908.cjs",
+      "node tests/divination-professional-20260910.cjs",
+      "node tests/engine-fixes-20260912.cjs",
+      "node tests/engine-output-consistency-20260913.cjs",
+      "node tests/export-accuracy-prompts-20260912.cjs",
+      "node tests/flow-interaction-20260911.cjs",
+      "node tests/flow-polish-20260912.cjs",
+      "node tests/gua-engine-20260922.cjs",
+      "node tests/immersive-experience-20260912.cjs",
+      "node tests/interaction-hotfix-20260906.cjs",
+      "node tests/method-engine-20260913.cjs",
+      "node tests/method-prompts-20260913.cjs",
+      "node tests/ootk-flow-20260915.cjs",
+      "node tests/ootk-scroll-20260912.cjs",
+      "node tests/oracle-result-20260912.cjs",
+      "node tests/picker-and-data-regression.cjs",
+      "node tests/plain-reading-20260912.cjs",
+      "node tests/prompt-accuracy-20260811.test.cjs",
+      "node tests/question-routing-20260922.cjs",
+      "node tests/reading-depth-20260912.cjs",
+      "node tests/realtime-free-20260912.cjs",
+      "node tests/recommendation-20260914.cjs",
+      "node tests/relationship-20260917.cjs",
+      "node tests/ritual-lifecycle-20260911.cjs",
+      "node tests/share-card-20260911.cjs",
+      "node tests/share-card-preview-20260911.cjs",
+      "node tests/shuffle-recovery-20260911.cjs",
+      "node tests/special-rules-20260922.cjs",
+      "node tests/story-immersion-20260912.cjs",
+      "node tests/tarot-v102-method-data-prompt.test.js",
+      "node tests/time-ownership-20260920.cjs",
+      "node tests/vedic-design-20260914.cjs",
+      "node tests/vedic-engine-20260913.cjs",
+      "node tests/vedic-palace-20260914.cjs",
+      "node tests/western-engine-20260914.cjs",
+      "node tests/yarrow-20260922.cjs",
+      "node tests/ziwei-root-spec-v1.test.js"
+    ],
+    "log": "npm-test-20260922.log"
+  },
+  "browser": {
+    "engine": "131.0.6778.0",
+    "platform": "Linux Chromium, mobile viewports and software WebGL; not a physical-device certification",
+    "ui": [
+      {
+        "tool": "tarot",
+        "views": [
+          {
+            "width": 290,
+            "scroll": 290,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 350,
+            "scroll": 350,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 712,
+            "scroll": 712,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 850,
+            "scroll": 850,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "ootk",
+        "views": [
+          {
+            "width": 290,
+            "scroll": 290,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 350,
+            "scroll": 350,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 712,
+            "scroll": 712,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 850,
+            "scroll": 850,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "lenormand",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "bazi",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "compat",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "ziwei",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "meihua",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "oracle",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "vedic",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "western",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "liuyao",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "tool": "yijing",
+        "views": [
+          {
+            "width": 320,
+            "scroll": 320,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 390,
+            "scroll": 390,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 768,
+            "scroll": 768,
+            "inert": false,
+            "bad": []
+          },
+          {
+            "width": 1440,
+            "scroll": 1440,
+            "inert": false,
+            "bad": []
+          }
+        ],
+        "errors": [],
+        "missing": []
+      },
+      {
+        "flow": "tarot → vedic → western → tarot",
+        "questionPreserved": true,
+        "errors": [],
+        "missing": []
+      }
+    ],
+    "recordedAudio": {
+      "decoded": [
+        {
+          "duration": 0.36,
+          "rms": 0.031194040700326685,
+          "peak": 0.5231177806854248
+        },
+        {
+          "duration": 0.85,
+          "rms": 0.018439522076419284,
+          "peak": 0.427825927734375
+        },
+        {
+          "duration": 1.22,
+          "rms": 0.016920135212146394,
+          "peak": 0.532470703125
+        },
+        {
+          "duration": 0.6,
+          "rms": 0.021638067342835913,
+          "peak": 0.5645751953125
+        },
+        {
+          "duration": 0.6201814058956916,
+          "rms": 0.017220733875233256,
+          "peak": 0.568634033203125
+        },
+        {
+          "duration": 0.73,
+          "rms": 0.021729570014452596,
+          "peak": 0.4746238589286804
+        },
+        {
+          "duration": 1.23,
+          "rms": 0.12545603718247772,
+          "peak": 0.5532395243644714
+        },
+        {
+          "duration": 5.5,
+          "rms": 0.03850715322434447,
+          "peak": 0.2471923828125
+        }
+      ],
+      "outputRMS": 0.029480672994684293,
+      "played": {
+        "stems": 4,
+        "paper": 12,
+        "shuffle": 2,
+        "card": 1,
+        "wood": 4,
+        "coins": 4,
+        "bowl": 1
+      },
+      "oscillators": 0,
+      "errors": []
+    },
+    "vedic": {
+      "browser": "131.0.6778.0",
+      "renderer": "webgl",
+      "scenarios": [
+        "custom civil date picker",
+        "custom 24-hour time picker",
+        "cancel and retry",
+        "dedicated complete 3D ceremony",
+        "immutable chart",
+        "north/south D1 D9",
+        "nine grahas",
+        "all nine ADs",
+        "selected AD own PD",
+        "copy prompt",
+        "desktop chart",
+        "scroll release",
+        "leap-century keyboard calendar",
+        "malformed year and invalid hour/minute",
+        "00:00 and 23:59",
+        "real touch wheel",
+        "all sixteen chart views",
+        "all selected AD own PD",
+        "keyboard tabs",
+        "320px four panels",
+        "touch scroll both directions",
+        "reduced motion",
+        "WebGL context loss fallback",
+        "DST gap recovery",
+        "unknown birth time"
+      ],
+      "errors": [],
+      "missing": [],
+      "overflowNodes": []
+    },
+    "western": {
+      "ok": true,
+      "renderer": "webgl",
+      "scene": {
+        "renderer": "webgl",
+        "progress": 1,
+        "camera": [
+          0.40000000000000036,
+          3.6,
+          26.16162088432484
+        ],
+        "turn": 0,
+        "frameCount": 76,
+        "zodiacPlaques": 12,
+        "planetJewels": 10,
+        "irisLeaves": 8,
+        "drawCalls": 175,
+        "triangles": 149680
+      },
+      "overflow": {
+        "client": 390,
+        "scroll": 390
+      },
+      "errors": [],
+      "missing": [],
+      "checks": [
+        "custom date/time picker",
+        "searchable city",
+        "WebGL iris chronology",
+        "touch rotate",
+        "same snapshot through animation and export",
+        "four tabs",
+        "copy prompt",
+        "SVG interaction",
+        "scroll recovery",
+        "skip/cancel lifecycle",
+        "reduced motion",
+        "WebGL context-loss fallback",
+        "unknown clock",
+        "Vedic cities",
+        "desktop"
+      ]
+    },
+    "gua": {
+      "test": "tests/gua-browser-20260922.cjs",
+      "passed": true,
+      "fullProductionEntry": true,
+      "widths": [
+        320,
+        390,
+        768,
+        1440
+      ],
+      "cases": [
+        "manual and random casting",
+        "reduced motion",
+        "cast preservation",
+        "original text",
+        "recommendation",
+        "clipboard fallback",
+        "JSON download",
+        "distinct share cards"
+      ]
+    },
+    "guaCraft": {
+      "test": "tests/gua-craft-browser-20260922.cjs",
+      "passed": true,
+      "cases": [
+        "18 yarrow changes",
+        "cancel/resume partial change",
+        "quick completion keeps prior entropy",
+        "lost WebGL context fallback",
+        "real recording",
+        "distinct Yijing/Liuyao cards",
+        "12-method invitation"
+      ]
+    },
+    "astroBridge": {
+      "test": "tests/astro-bridge-browser-20260922.cjs",
+      "passed": true,
+      "coldSubmit": true,
+      "automaticFlow": true,
+      "unknownResubmit": true,
+      "nativePayload": true,
+      "staleCancellation": true,
+      "oldAstrologyScriptsLoaded": false,
+      "pageErrors": []
+    }
+  },
+  "releaseCheck": {
+    "syntaxFiles": [
+      "ui.js",
+      "bazi-prompt-root.js",
+      "ziwei-prompt-root.js",
+      "prompt-export.js",
+      "meihua-standalone.js",
+      "oracle.js",
+      "tarot-foundation.js",
+      "lenormand.js",
+      "sw.js",
+      "bazi-suite-core.js",
+      "ai-analysis.js",
+      "functions/api/ai.js",
+      "JS/ziwei.js",
+      "JS/meihua_output_layer.js",
+      "JS/render_upgrade.js",
+      "JS/meihua_upgrade2.js",
+      "JS/ui.js",
+      "JS/bazi-standalone.js",
+      "JS/recorded-audio.js",
+      "JS/bazi-prompt-root.js",
+      "JS/ziwei-prompt-root.js",
+      "JS/vedic-scene.js",
+      "JS/relationship-core.js",
+      "JS/bazi.js",
+      "JS/gua-scene-src.mjs",
+      "JS/gua-scene.js",
+      "JS/selftest-core.js",
+      "JS/vedic-standalone.js",
+      "JS/bazi-suite.js",
+      "JS/ziwei-standalone.js",
+      "JS/gua-prompt.js",
+      "JS/reading-recommender.js",
+      "JS/western-prompt.js",
+      "JS/vedic-palace-scene.mjs",
+      "JS/bazi_upgrade.js",
+      "JS/vedic-prompt.js",
+      "JS/western-engine.js",
+      "JS/prompt-export.js",
+      "JS/vedic-engine.js",
+      "JS/meihua-standalone.js",
+      "JS/solar-location.js",
+      "JS/oracle.js",
+      "JS/tarot-reading.js",
+      "JS/tarot-foundation.js",
+      "JS/gua-room.js",
+      "JS/lenormand.js",
+      "JS/reading-quality.js",
+      "JS/sw.js",
+      "JS/vedic-ritual.js",
+      "JS/bazi-suite-core.js",
+      "JS/yarrow-atelier.mjs",
+      "JS/western-standalone.js",
+      "JS/liuyao-core.js",
+      "JS/ai-analysis.js",
+      "JS/tarot.js",
+      "JS/meihua_upgrade.js",
+      "JS/shared/question-planner.js",
+      "workers/ai-proxy.js",
+      "JS/astro-bridge.js"
+    ],
+    "entryAssets": 81,
+    "inlineScripts": 10,
+    "serviceWorker": "jy-main-v97"
+  },
+  "promptReference": {
+    "priorCombinedMarriageChars": 113654,
+    "currentCombinedMarriageChars": 64934,
+    "scenarioRange": [
+      64917,
+      64938
+    ],
+    "scope": "Fixed reference pair from tests/relationship-20260917.cjs; not a universal prompt size limit"
+  },
+  "limits": [
+    "No live paid-model response was requested; API tests use mocked upstream.",
+    "No predictive accuracy or physical iOS/Android speaker certification.",
+    "See data/engine-rule-coverage.json for unsupported rules and selected school profiles."
+  ]
+}

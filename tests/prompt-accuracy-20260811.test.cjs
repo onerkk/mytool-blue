@@ -105,7 +105,7 @@ test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理�
   assert(prompt.includes('格局、扶抑、調候、病藥、通關'));
   assert(!prompt.includes('ROOT-SPEC'));
   assert(!prompt.includes('答案反向稽核'));
-  assert((prompt.match(/不得|嚴禁|禁止|硬規則|帳本|稽核/g) || []).length <= 4);
+  assert.equal(prompt.split('【白話優先】').length-1,1);assert(prompt.includes('正文只呈現結論及必要依據'));
   assert(prompt.includes('工作與現金流兩個問題都請完整判斷'));
 });
 
@@ -116,7 +116,7 @@ test('紫微資料不再截掉第四顆之後的輔星、煞星或第九個格�
   assert(!source.includes('(zw.patterns||[]).slice(0,8)'));
   assert.strictEqual(require('vm').runInNewContext(read('JS/ziwei-prompt-root.js') + ';window.JY_ZIWEI_PROMPT_ROOT.version', {
     window: {}, console
-  }), '6.0.0');
+  }), '6.1.0');
 });
 
 test('梅花兩條 standalone 路徑完全一致，且不製造日曆假精確', () => {
@@ -136,16 +136,16 @@ test('靈籤提示詞保留完整材料並開放 AI 的解籤知識', () => {
   assert(source.includes('逐首核對過的六十甲子籤原詩'));
   assert(!source.includes('var D='));
   assert(source.includes('運用你自身完整的籤詩、典故、象徵、傳統解法'));
-  assert(source.includes('比較四句詩的支持與反向訊號'));
+  assert(source.includes('先回答，再解釋'));assert(source.includes('改變答案的關鍵句'));
   assert(!source.includes('【完整性清單'));
   assert(!source.includes('嚴禁引用籤詩之外'));
 });
 
 test('雷諾曼保留合法幾何，並改為有主次的牌組整合方法', () => {
   const source = read('JS/lenormand.js');
-  assert(source.includes('運用你自身完整的 Petit Lenormand 知識'));
-  assert(source.includes('以相鄰牌組、長線、交會路徑及牌陣位置形成完整牌句'));
-  assert(source.includes('大牌陣另外留意人物牌周圍、宮位、距離、方向與跨線重複'));
+  assert(source.includes('資深 Petit Lenormand（小雷諾曼）讀牌者'));
+  assert(source.includes('相鄰 A→B 是主題與修飾的關係'));
+  assert(source.includes('宮位')&&source.includes('騎士步'));assert(source.includes('只有提供新資訊時才補充'));
   assert(!source.includes('覆蓋帳本與語義飽和'));
   assert(!source.includes('第七輪｜現實轉譯'));
 });
@@ -155,10 +155,10 @@ test('七維 API 以盤面為主並允許模型使用自身跨系統知識', () 
   assert(api.includes('System Prompt v8：知識開放、盤面優先'));
   assert(api.includes('運用你自身完整且可靠的專業知識'));
   assert(api.includes('前端七維摘要（供交叉參考）'));
-  assert(api.includes('各系統先按自身正確方法判讀'));
+  assert(api.includes('多系統先各自成判'));
   assert(!api.includes('不能違反的證據邊界'));
   assert(!api.includes('你怎麼說話'));
-  assert((api.match(/不得|嚴禁|禁止|硬規則|帳本|稽核/g) || []).length === 0);
+  assert(api.includes('正文只呈現結論及必要依據'));assert(api.includes('選品規則不得影響前面的占卜判斷'));
   assert(!read('JS/ai-analysis.js').includes('function capLen('));
 });
 

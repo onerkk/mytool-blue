@@ -1,8 +1,8 @@
 /* Question preview only: never changes a draw or switches a system without a click. */
 (function(root){
   'use strict';
-  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro','ly-q':'liuyao','yj-q':'yijing'};
-  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question',liuyao:'ly-q',yijing:'yj-q'};
+  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro','vd-question':'vedic','ly-q':'liuyao','yj-q':'yijing'};
+  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question',vedic:'vd-question',liuyao:'ly-q',yijing:'yj-q'};
   var pending=null;
   function populate(){
     if(!pending)return;
@@ -13,6 +13,8 @@
     if(typeof root._atelierChoose!=='function')return;
     var close={lenormand:'_lenormandClose',oracle:'_oracleClose',meihua:'_meihuaClose',bazi:'_baziClose',ziwei:'_zwClose',liuyao:'_liuyaoClose',yijing:'_yijingClose'}[from];
     if(close&&typeof root[close]==='function')root[close]();
+    if(from==='astro'&&root.JYWesternUI)root.JYWesternUI.close();
+    if(from==='vedic'&&root.JYVedicUI)root.JYVedicUI.close();
     pending={system:to,question:question};root._atelierChoose(to==='astro'?'western':to);
     populate(); // Current modules open synchronously; enhance() also handles lazy loads.
   }
@@ -34,7 +36,7 @@
       host.appendChild(detail);
     }
     if(rec.birthDataRequired){var birth=document.createElement('p');birth.textContent='排盤前需填寫出生日期、時間等資料。';host.appendChild(birth);}
-    if(rec.system!==system&&targets[rec.system]&&system!=='astro'){
+    if(rec.system!==system&&targets[rec.system]){
       var button=document.createElement('button');button.type='button';button.className='btn btn-outline btn-sm';button.textContent='改用'+rec.label;
       button.addEventListener('click',function(){switchSystem(system,rec.system,q);});host.appendChild(button);
     }

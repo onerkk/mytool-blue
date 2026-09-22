@@ -190,6 +190,12 @@ function assessZiweiPatterns(palaces) {
   add('treasury-minister','府相朝垣',[check('天府在官祿',has(career,'天府')),check('天相在財帛',has(wealth,'天相'))],[ming,wealth,career],['天府','天相'],'採官祿天府、財帛天相拱命的起例');
   add('pearl','明珠出海',[check('未宮空命',ming.branch==='未'&&stars(ming).length===0),check('卯財帛太陽',wealth.branch==='卯'&&has(wealth,'太陽')),check('亥官祿太陰',career.branch==='亥'&&has(career,'太陰')),check('遷移同巨',has(travel,'天同')&&has(travel,'巨門'))],[ming,wealth,career,travel],['太陽','太陰','天同','巨門'],'日月照空命的指定結構');
   var sides=[palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+11)%12;}),palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+1)%12;})];
+  function flanks(a,b){return (has(sides[0],a)&&has(sides[1],b))||(has(sides[1],a)&&has(sides[0],b));}
+  var clearCourt=!sf.some(function(p){return p.stars.some(function(s){return ['擎羊','陀羅','火星','鈴星','地空','地劫'].includes(s.name)||s.hua==='化忌';});});
+  add('minister-flanked','君臣慶會（紫破輔弼夾命）',[check('紫微破軍守命',has(ming,'紫微')&&has(ming,'破軍')),check('左右分居兩側',flanks('左輔','右弼')),check('命宮三方四正無六煞及生年忌',clearCourt)],[ming].concat(sides),['紫微','破軍','左輔','右弼'],'採作者列出的紫破輔弼夾命支線','與紫微左右同守命的古籍起例分列');
+  add('minister-literary','君臣慶會（紫相昌曲命遷）',[check('紫微天相守命',has(ming,'紫微')&&has(ming,'天相')),check('昌曲分居命遷',(has(ming,'文昌')&&has(travel,'文曲'))||(has(ming,'文曲')&&has(travel,'文昌'))),check('命宮三方四正無六煞及生年忌',clearCourt)],[ming,travel],['紫微','天相','文昌','文曲'],'採作者列出的紫相昌曲命遷支線','與紫微左右同守命的古籍起例分列');
+  add('golden-carriage-fu','金輿扶駕（天府日月夾命）',[check('天府守命',has(ming,'天府')),check('日月分居兩側',flanks('太陽','太陰'))],[ming].concat(sides),['天府','太陽','太陰'],'依作者天府守命的修訂解釋，保留原典用字爭議','原文紫微守命被作者指出與安星位置不相容；此項只採天府修訂本');
+  add('sun-beam-literary-lu','陽梁昌祿',[check('命宮三方四正同見四曜',all(['太陽','天梁','文昌','祿存']))],sf,['太陽','天梁','文昌','祿存'],'四曜必須齊備，化祿不能替代祿存；不據此推定學歷或考試結果');
   [['purple-flank','紫府夾命','紫微','天府'],['assist-flank','左右夾命','左輔','右弼'],['literary-flank','昌曲夾命','文昌','文曲'],['noble-flank','魁鉞夾命','天魁','天鉞'],['sunmoon-flank','日月夾命','太陽','太陰'],['firebell-flank','火鈴夾命','火星','鈴星'],['goat-drag-flank','羊陀夾命','擎羊','陀羅'],['empty-rob-flank','空劫夾命','地空','地劫']].forEach(function(g){
     add(g[0],g[1],[check('兩側不同宮各具一星',(has(sides[0],g[2])&&has(sides[1],g[3]))||(has(sides[1],g[2])&&has(sides[0],g[3])))],sides,g.slice(2),'夾宮按命宮兩側地支定位，非命宮同見兩星');
   });
@@ -206,9 +212,10 @@ function assessZiweiPatterns(palaces) {
   add('lights-home','日月照璧',[check('田宅日月同宮',has(home,'太陽')&&has(home,'太陰')),check('田宅在丑未',home&&['丑','未'].includes(home.branch))],[home],['太陽','太陰'],'只記田宅星组，不保證房產或財富');
   // A role pair is a structure in its own palace, never automatically the natal life pattern.
   [['fire-greedy','火貪同宮','火星','貪狼'],['bell-greedy','鈴貪同宮','鈴星','貪狼'],['wu-greedy','武貪同宮','武曲','貪狼'],['ji-liang','機梁同宮','天機','天梁'],['wu-fu','武府同宮','武曲','天府'],['ji-ju','機巨同宮','天機','巨門'],['lian-kill','廉殺同宮','廉貞','七殺'],['sun-moon','日月同宮','太陽','太陰']].forEach(function(g){palaces.forEach(function(p){add(g[0]+'-'+p.branch,g[1],[check('兩曜實際同宮',has(p,g[2])&&has(p,g[3]))],[p],g.slice(2),'此星組落在'+p.name+'，不是自動升格為命宮格局');});});
+  palaces.forEach(function(p){add('beam-horse-'+p.branch,'梁馬同宮',[check('天梁與天馬實際同宮',has(p,'天梁')&&has(p,'天馬'))],[p],['天梁','天馬'],'梁馬飄蕩的同宮結構；只保留遷動取象，不沿用古代人格及性道德斷語');});
   add('xiong-original','雄宿朝元（申未本）',[check('廉貞守命',has(ming,'廉貞')),check('申未本地支',['申','未'].includes(ming.branch))],[ming],['廉貞'],'保留原文申未的異說','《全書》引文申未；iztro 作者用寅申，兩說不合併');
   add('xiong-iztro','雄宿朝元（寅申本）',[check('廉貞守命',has(ming,'廉貞')),check('寅申本地支',['寅','申'].includes(ming.branch))],[ming],['廉貞'],'採作者解說寅申的異說','與申未本並列，禁止以廉貞化祿代替地支条件');
-  return {version:'1.0.0',source:source,patterns:rows,catalog:catalog,policy:'先判位置結構，再列支持和牽制；structural 不等於富貴、疾病、性格或事件事實。'};
+  return {version:'1.1.0',source:source,patterns:rows,catalog:catalog,policy:'先判位置結構，再列支持和牽制；structural 不等於富貴、疾病、性格或事件事實。'};
 }
 
 function computeZiwei(year,month,day,hour,gender,options){

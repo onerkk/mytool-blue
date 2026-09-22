@@ -377,9 +377,20 @@
       '合化判別：'+(typeof root.baziHuaQiLines==='function'?root.baziHuaQiLines(chart).join('\n'):modelText(chart&&chart.huaQiAssessments))+'。',
       '病藥模型：'+modelText(chart&&chart.medicineGod)+'；通關模型：'+modelText(chart&&chart.relayGod)+'。未提供的模型不可補造。',
       '調候鏡頭：候選五行 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+(th.sourceUrl?'；校對來源 '+th.sourceUrl:'')+'。調候與扶抑分開，不自動互相覆蓋。',
-      '已計算特殊規則：'+JSON.stringify(chart&&chart.specialRuleAssessment||null)+'。',
+      '已計算特殊規則：'+specialRuleText(chart&&chart.specialRuleAssessment)+'。',
       '其他特殊格局待判資料：'+(safeArray(chart&&chart.specialStructureCandidates).length?safeArray(chart.specialStructureCandidates).map(function(x){return modelText(x);}).join('、'):'無；以月令一般格局為主')+'。'
     ];
+  }
+
+  function specialRuleText(a){
+    if(!a)return '未提供';
+    var sources=[],scopes=[],rows=(a.rules||[]).map(function(r){
+      if(r.source&&sources.indexOf(r.source)<0)sources.push(r.source);if(r.scope&&scopes.indexOf(r.scope)<0)scopes.push(r.scope);
+      return r.id+' '+r.name+'｜'+r.status+'｜'+(r.checks||[]).map(function(c){return (c.passed===true?'✓':c.passed===false?'×':'?')+c.condition+(c.evidence&&c.evidence.length?'（'+c.evidence.map(function(v){return v&&typeof v==='object'?JSON.stringify(v):String(v);}).join('、')+'）':'');}).join('；')+
+        (r.scope?'；範圍'+(scopes.indexOf(r.scope)+1):'')+(r.variant?'；異說：'+r.variant:'');
+    });
+    // matched repeats whole rule objects; their IDs retain the relationship.
+    return [a.version+'；'+a.policy,'命中：'+(a.matched||[]).map(function(r){return r.id;}).join('、'),a.ordinaryUsePolicy,rows.join('\n'),scopes.map(function(v,i){return '範圍'+(i+1)+'：'+v;}).join('\n'),'合化完整核對見上方「合化判別」，不重複列出同一份資料。','來源：'+sources.join('；')].join('\n');
   }
 
   function buildChartDataBlock(chart, meta) {

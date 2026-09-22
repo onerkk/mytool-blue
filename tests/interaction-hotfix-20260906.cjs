@@ -24,7 +24,7 @@ ctx._selectedTool='ootk';ctx._selectedPresetQ='';ctx._checkQuestionQuality=()=>'
 field('f-question').value='我的真命天女出現了嗎？她差我幾歲？';
 test('Real OOTK entry opens without calling unrelated birth engines',()=>{
  ctx._readBirthForm=()=>{throw Error('Birth fields must not be required');};
- ctx.submitWithTool();const panel=doc.getElementById('ootk-sig-overlay');assert(panel&&panel.open);assert.equal(panel.querySelectorAll('.ootk-manual-sig').length,16);assert.equal(panel.querySelectorAll('select').length,6);assert.equal(alerts.length,0);
+ ctx.submitWithTool();const panel=doc.getElementById('ootk-sig-overlay');assert(panel&&panel.open);assert.equal(panel.querySelectorAll('.ootk-manual-sig').length,16);assert.equal(panel.querySelectorAll('select').length,7);assert(panel.querySelector('#ootk-procedure-profile')); assert.equal(alerts.length,0);
  ctx.submitWithTool();assert.equal(doc.querySelectorAll('#ootk-sig-overlay').length,1);close();
 });
 test('Storage refusal does not break the entry button',()=>{
@@ -84,7 +84,7 @@ test('Automatic slot rendering and result display retain inverse image and reada
 vm.runInContext(functionSource('JS/ai-analysis.js','_buildTarotOnlyPayload'),ctx);ctx._jyTarotQuestionText=()=>ctx.S.form.question;load(ctx,'JS/prompt-export.js');
 test('Real AI payload and final exported prompt agree on every card orientation and method',()=>{
  const payload=ctx._buildTarotOnlyPayload();assert.equal(payload.tarotData.sourceProfile,'rws_reversals');assert.equal(payload.tarotData.cards[0].isUp,false);assert.equal(payload.tarotData.cards[0].direction,'逆位');assert(!JSON.stringify(payload.tarotData.cards).includes('bookTTitle'));
- const p=ctx.JY_buildExportPrompt('tarot');assert(p.includes('Rider–Waite–Smith'));ctx.drawnCards.forEach(c=>assert(p.includes(c.n+'【'+(c.isUp?'正位':'逆位')+'】')));assert(!p.includes('一般牌陣正向展示'));assert(!p.includes('Book T原典核心義'));assert(p.includes('替代解讀'));assert(/(?:驗證|調整)訊號/.test(p));
+ const p=ctx.JY_buildExportPrompt('tarot');assert(p.includes('Rider–Waite–Smith'));ctx.drawnCards.forEach(c=>assert(p.includes(c.n+'【'+(c.isUp?'正位':'逆位')+'】')));assert(!p.includes('一般牌陣正向展示'));assert(!p.includes('Book T原典核心義'));assert(p.includes('替代解讀'));assert(/(?:驗證|調整|觀察)訊號/.test(p));
  const original=ctx.drawnCards.slice();ctx.S.tarot.drawn=original.slice(0,3);assert.throws(()=>ctx._buildTarotOnlyPayload(),/Card count mismatch/);ctx.S.tarot.drawn=original;
 });
 // Test actual manual pick timers, without animation/layout claims.
@@ -105,7 +105,7 @@ test('Concurrent engine requests share one script and notify every caller; a fai
 test('Deferred engines wait for a closed picker and yield between dependent files',()=>{
  const env=environment(),src=read('index.html'),start=src.lastIndexOf('(function(){',src.indexOf('  var DEFERRED = [')),end=src.indexOf('</script>',start);let idle=[],timers=[],loads=[],open=true;
  env.ctx.requestIdleCallback=fn=>idle.push(fn);env.ctx.setTimeout=fn=>timers.push(fn);env.doc.querySelector=()=>open?{}:null;env.ctx._jyLazyScript=(src,done)=>loads.push({src,done});
- vm.runInContext(src.slice(start,end),env.ctx);idle.shift()();assert.equal(loads.length,0);open=false;timers.shift()();idle.shift()();assert.equal(loads.length,1);assert.equal(idle.length,0);loads[0].done(true);assert.equal(loads.length,1);idle.shift()();assert.equal(loads.length,2);assert(loads[0].src.includes('ephemeris'));assert(loads[1].src.includes('solar-location'));
+ vm.runInContext(src.slice(start,end),env.ctx);idle.shift()();assert.equal(loads.length,0);open=false;timers.shift()();idle.shift()();assert.equal(loads.length,1);assert.equal(idle.length,0);loads[0].done(true);assert.equal(loads.length,1);idle.shift()();assert.equal(loads.length,2);assert(loads[0].src.includes('solar-location'));assert(loads[1].src.includes('bazi.js'));assert(!src.slice(start,end).includes('ephemeris-client'));
 });
 test('Real OOTK confirmation runs the engine and exposes immediate skip/cancel controls',()=>{
  ctx.setTimeout=()=>7;const cancelled=[];ctx.clearTimeout=id=>cancelled.push(id);ctx.S.form={question:'工作如何發展？'};ctx.startOOTK();const panel=doc.getElementById('ootk-sig-overlay');click(panel.querySelector('.ootk-manual-sig'));click(panel.querySelector('#ootk-confirm'));
