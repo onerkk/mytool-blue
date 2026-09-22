@@ -7,6 +7,7 @@ const q=require(path.join(root,'JS/reading-quality.js'));
 const textMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationText(k)]));
 const endingMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationEnding(k)]));
 const targets=[
+  ['JS/gua-prompt.js','JY_REC_GUA',{liuyao:q.recommendationEnding('liuyao'),yijing:q.recommendationEnding('yijing')}],
   ['JS/bazi-prompt-root.js','JY_REC_BAZI',textMap(['bazi','compat','personality','chart'])],
   ['JS/ziwei-prompt-root.js','JY_REC_ZIWEI',q.recommendationText('ziwei')],
   ['JS/meihua-standalone.js','JY_REC_MEIHUA',q.recommendationText('meihua')],
@@ -19,6 +20,7 @@ const targets=[
   ['functions/api/ai.js','SYSTEM_RECOMMENDATION',q.recommendationText()]
 ];
 const readingTargets=[
+  ['JS/gua-prompt.js','JY_READING_GUA',{liuyao:q.lines('liuyao'),yijing:q.lines('yijing')}],
   ['JS/bazi-prompt-root.js','JY_READING_BAZI',{bazi:q.lines('bazi'),compat:q.lines('compat'),personality:q.methodLines('personality')}],
   ['JS/ziwei-prompt-root.js','JY_READING_ZIWEI',q.lines('ziwei')],
   ['JS/ziwei-standalone.js','JY_READING_ZIWEI_FALLBACK',q.lines('ziwei').join('\n')],

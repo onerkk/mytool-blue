@@ -1,8 +1,8 @@
 /* Question preview only: never changes a draw or switches a system without a click. */
 (function(root){
   'use strict';
-  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro'};
-  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question'};
+  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro','ly-q':'liuyao','yj-q':'yijing'};
+  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question',liuyao:'ly-q',yijing:'yj-q'};
   var pending=null;
   function populate(){
     if(!pending)return;
@@ -11,7 +11,7 @@
   }
   function switchSystem(from,to,question){
     if(typeof root._atelierChoose!=='function')return;
-    var close={lenormand:'_lenormandClose',oracle:'_oracleClose',meihua:'_meihuaClose',bazi:'_baziClose',ziwei:'_zwClose'}[from];
+    var close={lenormand:'_lenormandClose',oracle:'_oracleClose',meihua:'_meihuaClose',bazi:'_baziClose',ziwei:'_zwClose',liuyao:'_liuyaoClose',yijing:'_yijingClose'}[from];
     if(close&&typeof root[close]==='function')root[close]();
     pending={system:to,question:question};root._atelierChoose(to==='astro'?'western':to);
     populate(); // Current modules open synchronously; enhance() also handles lazy loads.

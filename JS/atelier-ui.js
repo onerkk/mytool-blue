@@ -78,7 +78,7 @@
       return;
     }
     if (tool === 'compat' && window.BaziSuiteUI) { window.BaziSuiteUI.open('compat'); return; }
-    var calls = { lenormand: '_lenormandOpen', bazi: '_baziOpen', ziwei: '_ziweiOpen', vedic: '_vedicOpen', western: '_westernOpen', meihua: '_meihuaOpen', oracle: '_oracleOpen' };
+    var calls = { lenormand: '_lenormandOpen', bazi: '_baziOpen', ziwei: '_ziweiOpen', vedic: '_vedicOpen', western: '_westernOpen', meihua: '_meihuaOpen', oracle: '_oracleOpen', liuyao: '_liuyaoOpen', yijing: '_yijingOpen' };
     if (calls[tool] && typeof window[calls[tool]] === 'function') window[calls[tool]]();
   };
 

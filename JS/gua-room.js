@@ -1,0 +1,162 @@
+/*! Jingyue · Liuyao and Zhouyi chambers / 1.0.0.
+ * A toss is committed BEFORE its animation. Navigation never draws again.
+ */
+(function(root){
+  'use strict';
+  var rooms={},active=null,toastTimer=null,audioContext=null;
+  var TITLES={liuyao:'六爻占卜',yijing:'易經占卜'},IDS={liuyao:'ly',yijing:'yj'};
+  var AI=[['chatgpt','ChatGPT','https://chatgpt.com/'],['claude','Claude','https://claude.ai/new'],['gemini','Gemini','https://gemini.google.com/app']];
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function core(){if(!root.JYLiuyaoCore)throw new Error('卦象元件尚未載入，請重新整理後再試。');return root.JYLiuyaoCore;}
+  function pad(n){return String(n).padStart(2,'0');}
+  function wallNow(offset){var p=core().localTimeAt(Date.now(),offset);return p.year+'-'+pad(p.month)+'-'+pad(p.day)+'T'+pad(p.hour)+':'+pad(p.minute)+':'+pad(p.second);}
+  function create(kind){return {kind:kind,id:IDS[kind],phase:'input',mode:'coins',question:'',focus:'auto',offset:'8',boundary:'MIDNIGHT_00',custom:false,time:wallNow(8),manual:[null,null,null,null,null,null],values:[],records:[],date:null,result:null,busy:false,selected:1,root:null,timer:null,animations:[],sound:false,error:'',focusBefore:null,inert:[],overflow:''};}
+  function reduced(){return !!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);}
+  function note(message){var el=document.getElementById('gw-toast');if(!el){el=document.createElement('div');el.id='gw-toast';el.className='gw-toast';el.setAttribute('role','status');document.body.appendChild(el);}el.textContent=message;clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.remove();},3800);}
+  function error(s,e){s.error=e.message||String(e);var box=s.root&&s.root.querySelector('.gw-error');if(box){box.textContent=s.error;box.hidden=false;box.focus({preventScroll:true});}else note(s.error);}
+  function remember(s){
+    if(s.phase!=='input'||!s.root)return;
+    function val(name){return s.root.querySelector('[data-field="'+name+'"]');}
+    var q=document.getElementById(s.id+'-q');if(q)s.question=q.value;
+    ['focus','offset','boundary','time'].forEach(function(k){if(val(k))s[k]=val(k).value;});
+    if(val('custom'))s.custom=val('custom').checked;
+    s.root.querySelectorAll('[data-manual]').forEach(function(el){s.manual[Number(el.dataset.manual)]=el.value===''?null:Number(el.value);});
+  }
+  function calendar(s){
+    if(!String(s.offset).trim())throw new Error('請填寫 UTC 時差。');
+    var offset=Number(s.offset),p;
+    if(s.custom){var m=String(s.time).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);if(!m)throw new Error('請填寫完整起卦日期與時間。');p={year:+m[1],month:+m[2],day:+m[3],hour:+m[4],minute:+m[5],second:+(m[6]||0),timezoneOffset:offset};}
+    else p=core().localTimeAt(Date.now(),offset);
+    p.dayBoundaryMode=s.boundary;return core().calendar(p);
+  }
+  function yao(yang,moving,empty){return '<span class="gw-yao'+(yang?' is-yang':'')+(moving?' is-moving':'')+(empty?' is-empty':'')+'" aria-hidden="true"><i></i><i></i></span>';}
+  function coinSVG(id,back){
+    var path='M70 5a65 65 0 1 1 0 130a65 65 0 1 1 0-130M53 53v34h34V53z';
+    var details=back?'<g fill="none" stroke="#6b502b" stroke-width="2"><circle cx="70" cy="70" r="50"/><path d="M40 32h60M43 38h54M40 108h60M43 102h54M26 50v40M33 51v15m0 9v14M114 50v40M107 51v15m0 9v14"/></g><path d="M70 18l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#67522e"/>':
+      '<g fill="#5c4528" stroke="#f8e3a4" stroke-width=".3" font-family="Noto Serif TC,serif" font-size="24" text-anchor="middle"><text x="70" y="42">靜</text><text x="70" y="118">月</text><text x="32" y="79">通</text><text x="109" y="79">寶</text></g>';
+    return '<svg viewBox="0 0 140 140" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff1bc"/><stop offset=".25" stop-color="#c4a668"/><stop offset=".47" stop-color="#f7dda0"/><stop offset=".7" stop-color="#b59355"/><stop offset="1" stop-color="#72512e"/></linearGradient></defs><path d="'+path+'" fill="url(#'+id+')" fill-rule="evenodd" stroke="#edcf91" stroke-width="1.5"/><circle cx="70" cy="70" r="59" fill="none" stroke="#74603b" stroke-width="2"/><circle cx="70" cy="70" r="56" fill="none" stroke="#f2dba1" stroke-opacity=".6"/><path d="M51 51h38v38H51z" fill="none" stroke="#82613c" stroke-width="2"/>'+details+'</svg>';
+  }
+  function stage(s){
+    var last=s.records[s.records.length-1],x=[29,52,73],y=[240,202,260],tilt=[-24,14,29];
+    var h='<div class="gw-stage-side"><div class="gw-stage" data-tossing="'+s.busy+'"><div class="gw-stage-heading">'+(s.kind==='liuyao'?'一 事 一 卦 ・ 靜 候 六 爻':'陰 陽 相 生 ・ 萬 象 之 間')+'</div><div class="gw-orbit"></div><div class="gw-moon"></div><div class="gw-table"><div class="gw-trigrams" aria-hidden="true">';
+    ['☰','☱','☲','☳','☷','☶','☵','☴'].forEach(function(t,i){h+='<span style="--a:'+i*45+'deg">'+t+'</span>';});h+='</div></div><div class="gw-coins" aria-hidden="true">';
+    x.forEach(function(v,i){var back=last&&last.coins[i]==='back',id=s.id+'-coin-'+i;h+='<div class="gw-coin-holder" style="--x:'+v+'%;--y:'+y[i]+'px;--tilt:'+tilt[i]+'deg"><div class="gw-coin" data-coin="'+i+'" style="transform:rotateX(22deg) rotateY('+(back?180:0)+'deg) rotateZ('+tilt[i]+'deg)">';
+      [-3,0,3].forEach(function(d,j){h+='<div class="gw-coin-edge" style="--depth:'+d+'px">'+coinSVG(id+'-edge-'+j,false)+'</div>';});
+      h+='<div class="gw-coin-face front">'+coinSVG(id+'-front',false)+'</div><div class="gw-coin-face back">'+coinSVG(id+'-back',true)+'</div></div><span class="gw-coin-caption">'+(s.busy?'':last?(back?'背 · 3':'字 · 2'):'')+'</span></div>';});
+    h+='</div><div class="gw-stage-footer">'+(s.busy?'銅錢落定，這一爻就此留下。':last?'第 '+s.values.length+' 次 · '+last.coins.map(function(c){return c==='back'?'背':'字';}).join('　')+' · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]):'三枚銅錢，一次落定一爻。')+'</div></div><div class="gw-ceremony-tools"><button type="button" data-action="sound" aria-pressed="'+s.sound+'">'+(s.sound?'♫ 音效開啟':'♫ 音效關閉')+'</button>'+(s.busy?'<button type="button" data-action="skip">略過動畫</button>':'')+'</div><p class="gw-lower-caption">'+(s.kind==='liuyao'?'讓心停在一件事上。<br>從初爻到上爻，看見變化的脈絡。':'把問題放在心裡。<br>讓古老的文字，照見此刻的選擇。')+'</p></div>';return h;
+  }
+  function settings(s){
+    var h='<details class="gw-options"><summary>起卦時間'+(s.kind==='liuyao'?'與取用設定':'設定')+'</summary><div class="gw-settings"><label class="gw-check"><input type="checkbox" data-field="custom"'+(s.custom?' checked':'')+'>使用指定起卦時間</label><label>起卦時間（所選 UTC 時差的當地時間）<input type="datetime-local" data-field="time" step="1" min="1900-01-01T00:00" max="2100-12-31T23:59:59" value="'+esc(s.time)+'"'+(!s.custom?' disabled':'')+'></label><div class="gw-time-pair"><label>UTC 時差（台灣 +8）<input type="number" data-field="offset" min="-12" max="14" step="0.25" value="'+esc(s.offset)+'"></label>';
+    if(s.kind==='liuyao')h+='<label>日柱換日<select data-field="boundary"><option value="MIDNIGHT_00"'+(s.boundary==='MIDNIGHT_00'?' selected':'')+'>00:00 午夜</option><option value="ZI_HOUR_23"'+(s.boundary==='ZI_HOUR_23'?' selected':'')+'>23:00 子初</option></select></label>';h+='</div>';
+    if(s.kind==='liuyao'){h+='<label>取用方向<select data-field="focus">';[['auto','依問題提供候選'],['世應','世應 · 自身與對方'],['妻財','妻財 · 財物與收支'],['官鬼','官鬼 · 功名與職位'],['父母','父母 · 文書與長輩'],['兄弟','兄弟 · 同輩'],['子孫','子孫 · 晚輩與福德']].forEach(function(a){h+='<option value="'+a[0]+'"'+(s.focus===a[0]?' selected':'')+'>'+a[1]+'</option>';});h+='</select></label>';}
+    h+='<p class="gw-help">'+(s.kind==='liuyao'?'月建依節氣交節；日柱依所選換日方式。':'日期只記錄這一次起卦；解讀以卦爻辭為主。')+'未指定時間時，在開始起卦的一刻記錄。夏令時間地區請填當時實際 UTC 時差。</p></div></details>';return h;
+  }
+  function inputPanel(s){
+    var h='<section class="gw-panel"><h2>這一刻，你想問什麼？</h2><label class="gw-label" for="'+s.id+'-q">把一件事，說清楚。</label><textarea id="'+s.id+'-q" class="gw-textarea" rows="4" maxlength="1200" placeholder="例如：這次轉職是否值得推進？我最需要留意什麼？">'+esc(s.question)+'</textarea><p class="gw-help">說明對象、目前處境與想了解的時間範圍，讓解讀更貼近你的問題。</p><div class="gw-mode" role="group" aria-label="起卦方式"><button type="button" data-action="mode" data-mode="coins" aria-pressed="'+(s.mode==='coins')+'">三錢起卦</button><button type="button" data-action="mode" data-mode="manual" aria-pressed="'+(s.mode==='manual')+'">手動記卦</button></div>';
+    if(s.mode==='manual'){h+='<p class="gw-help">將你實際擲得的六次結果填入。第一次是最下方的初爻；字面算 2、背面算 3。</p><div class="gw-manual">';for(var i=5;i>=0;i--){h+='<label class="gw-manual-row">'+core().labels[i]+'<select data-manual="'+i+'" aria-label="'+core().labels[i]+'爻值"><option value="">請選第 '+(i+1)+' 次結果</option>';[[6,'6 · 老陰 ×（三字）'],[7,'7 · 少陽（兩字一背）'],[8,'8 · 少陰（一字兩背）'],[9,'9 · 老陽 ○（三背）']].forEach(function(v){h+='<option value="'+v[0]+'"'+(s.manual[i]===v[0]?' selected':'')+'>'+v[1]+'</option>';});h+='</select></label>';}h+='</div>';}
+    h+=settings(s)+'<div class="gw-error" role="alert" tabindex="-1">'+esc(s.error)+'</div><button type="button" class="gw-primary" data-action="start">'+(s.mode==='coins'?'靜心，開始起卦':'完成記卦，展開卦象')+' <span aria-hidden="true">→</span></button><p class="gw-micro">'+(s.kind==='liuyao'?'六爻納甲 · 世應與動變':'六十四卦 · 卦辭與爻辭')+'</p></section>';return h;
+  }
+  function castingPanel(s){
+    var n=s.values.length-(s.busy?1:0),h='<section class="gw-panel"><span class="gw-label">心中所問</span><p class="gw-cast-question">'+esc(s.question)+'</p><div class="gw-count"><span>由下而上，逐爻成卦</span><strong>'+n+' <em>/ 6</em></strong></div><div class="gw-line-list" aria-label="起卦進度">';
+    for(var i=5;i>=0;i--){var v=i<n?s.values[i]:null;h+='<div class="gw-progress-row'+(i===n-1?' is-new':'')+'" data-empty="'+!v+'" data-current="'+(i===n)+'"><span>'+core().labels[i]+'</span>'+yao(v?v%2:1,v===6||v===9,!v)+'<span>'+(v?v+' '+({6:'老陰 ×',7:'少陽',8:'少陰',9:'老陽 ○'}[v]):i===n?'即將落定':'待擲')+'</span></div>';}
+    h+='</div><div class="gw-error" role="alert" tabindex="-1">'+esc(s.error)+'</div><div class="gw-live" role="status" aria-live="polite">'+(s.busy?'正在擲第 '+s.values.length+' 爻…':n===6?'六爻齊備，準備展開。':n?'第 '+n+' 爻已記錄。繼續擲出下一爻。':'慢慢呼吸，讓問題留在心裡。')+'</div><div class="gw-actions"><button type="button" class="gw-primary" data-action="toss"'+(s.busy?' disabled':'')+'>'+(s.busy?'銅錢正在落下…':n===6?'展開本次卦象':'擲出'+core().labels[n])+'</button><button type="button" class="gw-quiet" data-action="quick"'+(s.busy?' disabled':'')+'>快速完成剩餘爻</button></div></section>';return h;
+  }
+  function diagram(s,g,side){
+    var r=s.result,base=side==='original',h='<section class="gw-hex-card"><span class="gw-eyebrow">'+(base?'本 卦<span>THE PRESENT</span>':'之 卦<span>THE CHANGE</span>')+'</span><h2>'+esc(g.fullName)+'</h2><p>第 '+g.number+' 卦 · '+g.lower+'下'+g.upper+'上</p><div class="gw-hex-lines">';
+    for(var i=5;i>=0;i--){var l=r.lines[i],tag=base?'button':'div';h+='<'+tag+(base?' type="button" data-action="line" data-line="'+(i+1)+'" aria-pressed="'+(s.selected===i+1)+'"':'')+' class="gw-hex-line" aria-label="'+esc(l.label+'，'+(g.lines[i]?'陽爻':'陰爻')+(l.moving?'，'+(base?'動爻':'由動爻變出'):'，靜爻')+(base&&l.role?'，'+l.role:''))+'"><span>'+(base&&l.role?l.role:['初','二','三','四','五','上'][i])+'</span>'+yao(g.lines[i],l.moving,false)+'<span>'+(l.moving?(base?l.marker:'↢'):'')+'</span></'+tag+'>';}
+    return h+'</div><p>'+(s.kind==='liuyao'?(base?esc(g.palace.name+'宮'+g.palace.element+' · '+g.palace.generation):'變爻六親沿用本卦卦宮'):(base?'點選爻線，可讀該爻原文':'順著動爻，看變化的方向'))+'</p></section>';
+  }
+  function detail(s){
+    var r=s.result,l=r.lines[s.selected-1],h='<strong>'+esc(l.label+(l.role?' · '+l.role:''))+'</strong><div>';
+    if(s.kind==='liuyao'){h+='<p>'+esc(l.spirit+' · '+l.relative+' '+l.stem+l.branch+l.element+' · '+l.valueName+(l.moving?'，此爻發動。':'，此爻未動。'))+'</p><p>'+esc(root.JYGuaPrompt.status(l.states))+'</p>';if(l.moving)h+='<p>'+esc('動化 '+l.changed.relative+' '+l.changed.stem+l.changed.branch+l.changed.element+'，'+l.transition.returnLabel+(l.transition.advance?'、化進神':'')+(l.transition.retreat?'、化退神':'')+'。')+'</p>';if(l.hidden)h+='<p>'+esc('本宮伏神：'+l.hidden.relative+' '+l.hidden.stem+l.hidden.branch+l.hidden.element)+'</p>';h+='<small>此處呈現盤面關係；事情如何發展，仍須連同用神、月日與全卦判讀。</small>';}
+    else{h+='<p>'+esc(l.text.label+'：'+l.text.text)+'</p><small>本卦原文參閱。正式解讀依下方「本次主讀」，不因點選而更換主爻。</small>';}
+    return h+'</div>';
+  }
+  function table(s){var r=s.result,h='<details class="gw-fold"><summary>完整納甲排盤 · 六神、伏神、世應與動變</summary><div class="gw-fold-body"><div class="gw-scroll" role="region" aria-label="完整六爻排盤表，可左右捲動" tabindex="0"><table class="gw-table-data"><thead><tr><th>爻位／六神</th><th>伏神</th><th>本卦六親納甲</th><th>世應／動靜</th><th>之卦同位</th><th>本爻標記</th></tr></thead><tbody>';
+    r.lines.slice().reverse().forEach(function(l){var tags=[];if(l.states.void)tags.push('旬空');if(l.states.monthBroken)tags.push('月破');if(l.states.dayClash)tags.push('日沖');if(l.states.monthSame)tags.push('臨月');if(l.states.daySame)tags.push('臨日');h+='<tr data-moving="'+l.moving+'"><td>'+l.label+'／'+l.spirit+'</td><td>'+(l.hidden?l.hidden.relative+' '+l.hidden.stem+l.hidden.branch+l.hidden.element:'—')+'</td><td>'+l.relative+' '+l.stem+l.branch+l.element+'</td><td>'+(l.role||'—')+' '+l.valueName+' '+l.marker+'</td><td>'+(r.hasChange?l.changed.relative+' '+l.changed.stem+l.changed.branch+l.changed.element+(l.moving?' ←動化':'（背景）'):'—')+'</td><td>'+(tags.join('、')||'—')+'</td></tr>';});
+    return h+'</tbody></table></div><p class="gw-help">靜爻在之卦的同位資料只供對照，不作動化。日沖尚需旺衰才能判暗動或日破；旬空與月破也不單獨決定吉凶。</p></div></details>';}
+  function scripture(s){var r=s.result,h='<section class="gw-reading-plan"><h2 class="gw-section-title">本次主讀</h2><p>'+esc(r.reading.rule)+'</p>';r.reading.selections.forEach(function(v){h+='<div class="gw-verse"><small>'+esc(v.role+' · '+v.hexagram+'卦 · '+v.label)+'</small><blockquote>'+esc(v.text)+'</blockquote></div>';});h+='</section><details class="gw-fold"><summary>展開本卦'+(r.hasChange?'與之卦':'')+'完整原文</summary><div class="gw-fold-body gw-scripture">';[r.originalText].concat(r.hasChange?[r.changedText]:[]).forEach(function(t){h+='<h3>'+esc(t.name)+'卦</h3><p>'+esc(t.judgment)+'</p><p>大象：'+esc(t.image)+'</p>';t.lines.forEach(function(l){h+='<p>'+esc(l.label+'：'+l.text)+'</p>';});if(t.use)h+='<p>'+esc(t.use.label+'：'+t.use.text)+'</p>';h+='<a href="'+esc(t.source)+'" target="_blank" rel="noopener noreferrer">原文出處 ↗</a>';});return h+'</div></details>';}
+  function resultPanel(s){
+    var r=s.result,d=r.calendar,h='<section class="gw-result"><div class="gw-question-banner"><small>這一次，你想釐清的事</small>'+esc(r.question)+'</div><div class="gw-overview'+(!r.hasChange?' is-static':'')+'">'+diagram(s,r.original,'original')+(r.hasChange?'<div class="gw-transform-arrow" aria-hidden="true">→</div>'+diagram(s,r.changed,'changed'):'')+'</div><div class="gw-metrics"><span>動爻<b>'+(r.movingPositions.join('、')||'無 · 靜卦')+'</b></span>';
+    if(s.kind==='liuyao')h+='<span>月建<b>'+d.monthBranch+'</b></span><span>日辰<b>'+d.day+'</b></span><span>旬空<b>'+d.voidBranches.join('')+'</b></span><span>世／應<b>'+r.original.palace.shi+'／'+r.original.palace.ying+'</b></span>';
+    else h+='<span>讀法<b>卦爻辭</b></span>';
+    h+='</div><div class="gw-detail" aria-live="polite">'+detail(s)+'</div>'+(s.kind==='liuyao'?table(s):scripture(s));
+    h+='<details class="gw-fold"><summary>查看起卦紀錄與方法</summary><div class="gw-fold-body"><p>'+esc(d.wall+' · UTC '+(d.timezoneOffset>=0?'+':'')+d.timezoneOffset)+'<br>'+esc(s.kind==='liuyao'?'節氣月建 · '+(d.dayBoundaryMode==='ZI_HOUR_23'?'23:00':'00:00')+' 換日':'起卦時間僅供記錄')+'</p><p>初爻至上爻：'+r.values.join(' · ')+'</p>';
+    if(r.method==='coins')h+='<ol>'+r.records.map(function(c){return '<li>'+c.coins.map(function(f){return f==='back'?'背（3）':'字（2）';}).join(' + ')+' = '+c.value+'</li>';}).join('')+'</ol>';
+    else h+='<p>本次為手動記卦，沒有模擬擲錢紀錄。</p>';
+    h+='<p>'+(s.kind==='liuyao'?'納甲、世應與動變規則參考《增刪卜易》，月建使用本地節氣曆法。':'卦爻辭採《周易》校錄原文。擇辭依朱子《易學啟蒙・考變占》；三爻變並讀兩卦，前十主貞、後十主悔。')+'</p><p>占卜提供象徵解讀，現實結果仍需由實際互動與行動確認。</p></div></details><div class="gw-error" role="alert" tabindex="-1">'+esc(s.error)+'</div>';
+    h+='<section class="gw-reading-card"><div><span class="gw-eyebrow">LET THE READING BEGIN</span><h2>讓卦象，回到你的問題。</h2><p>複製本次完整卦象與解讀提示詞，貼到你慣用的 AI。先聽核心判斷，再看關鍵轉折與可採取的下一步。</p></div><div><button type="button" class="gw-primary" data-action="copy">複製解讀提示詞 <span aria-hidden="true">↗</span></button><div class="gw-ai-links">';
+    AI.forEach(function(a){h+='<button type="button" data-action="ai" data-ai="'+a[0]+'" aria-label="複製提示詞並開啟 '+a[1]+'"><img src="ai-icons/ai-'+a[0]+'.png" alt="">'+a[1]+'</button>';});
+    h+='</div></div></section><details class="gw-fold gw-prompt-fold"><summary>查看或手動複製完整提示詞</summary><div class="gw-fold-body"><textarea class="gw-prompt-area" readonly aria-label="本次解讀提示詞">'+esc(root.JYGuaPrompt.build(r))+'</textarea></div></details><div class="gw-export-actions"><button type="button" class="gw-secondary" data-action="share">製作分享卡 ↗</button><button type="button" class="gw-secondary" data-action="save">儲存排卦紀錄 ↓</button><button type="button" class="gw-quiet" data-action="reset">開始新的占問</button></div></section>';return h;
+  }
+  function render(s){
+    var w=s.root,scroll=w.scrollTop;w.dataset.system=s.kind;w.dataset.phase=s.phase;
+    var h='<div class="gw-atmosphere" aria-hidden="true"></div><div class="gw-shell"><nav class="gw-topbar" aria-label="占卜導覽"><button type="button" class="gw-back" data-action="close">← 返回首頁</button><span class="gw-brand"><i aria-hidden="true">☾</i>靜月之光</span><a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 ↗</a></nav><header class="gw-head"><div><span class="gw-eyebrow">'+(s.kind==='liuyao'?'LIU YAO · THE CHAMBER OF CHANGE':'I CHING · THE BOOK OF CHANGES')+'</span><h1 id="'+s.id+'-title">'+TITLES[s.kind]+'</h1><p>'+(s.kind==='liuyao'?'六爻成象，看清一件事的進退。':'一卦一境，在變化中找到自己的位置。')+'</p></div><span class="gw-seal" aria-hidden="true">'+(s.kind==='liuyao'?'靜觀其變':'與時偕行')+'</span></header><ol class="gw-steps" aria-label="占卜流程">';
+    ['整理心事','逐爻成卦','展開解讀'].forEach(function(t,i){h+='<li aria-current="'+(i===['input','casting','result'].indexOf(s.phase)?'step':'false')+'"><b>0'+(i+1)+'</b>'+t+'</li>';});h+='</ol>';
+    h+=s.phase==='result'?resultPanel(s):'<div class="gw-main">'+(s.phase==='input'?inputPanel(s):castingPanel(s))+stage(s)+'</div>';
+    h+='<footer class="gw-footer">JINGYUE · THE MOON ATELIER<br>把問題留在此刻，把選擇握在自己手裡。</footer></div>';w.innerHTML=h;w.scrollTop=scroll;
+    if(s.phase==='input'&&root.JYReadingRecommender)root.JYReadingRecommender.enhance(w);
+  }
+  function clearMotion(s){clearTimeout(s.timer);s.timer=null;s.animations.forEach(function(a){try{a.cancel();}catch(_){}});s.animations=[];}
+  function finish(s,paint){
+    clearMotion(s);s.busy=false;
+    if(s.values.length===6){var engine=s.kind==='liuyao'?core():root.JYYijingCore;if(!engine)throw new Error('易經引擎尚未載入');s.result=engine.calculate({values:s.values,records:s.records,method:s.mode,question:s.question,calendar:s.date,focus:s.focus});s.phase='result';s.selected=s.result.movingPositions[0]||(s.kind==='liuyao'?s.result.original.palace.shi:1);}
+    if(paint!==false){render(s);if(s.phase==='result'){s.root.scrollTop=0;s.root.querySelector('h1').tabIndex=-1;s.root.querySelector('h1').focus({preventScroll:true});}else{var b=s.root.querySelector('[data-action=toss]');if(b)b.focus({preventScroll:true});}}
+  }
+  function sound(s){if(!s.sound)return;try{var A=root.AudioContext||root.webkitAudioContext;if(!A)return;if(!audioContext)audioContext=new A();audioContext.resume();var t=audioContext.currentTime;[890,1230,1540].forEach(function(f,i){var o=audioContext.createOscillator(),g=audioContext.createGain();o.type='sine';o.frequency.setValueAtTime(f,t+i*.06);g.gain.setValueAtTime(0,t);g.gain.setValueAtTime(.035,t+i*.06);g.gain.exponentialRampToValueAtTime(.0001,t+i*.06+.25);o.connect(g);g.connect(audioContext.destination);o.start(t+i*.06);o.stop(t+i*.06+.3);});}catch(_){/* Sound is optional; never affects the cast. */}}
+  function toss(s){
+    if(s.busy||s.phase!=='casting')return;
+    if(s.values.length===6){finish(s);return;}
+    var record=core().toss();s.records.push(record);s.values.push(record.value);s.busy=true;s.error='';render(s);sound(s);
+    if(reduced()){finish(s);return;}
+    var coins=s.root.querySelectorAll('[data-coin]'),tilts=[-24,14,29];
+    coins.forEach(function(el,i){if(!el.animate)return;var end=(record.coins[i]==='back'?900:720),tilt=tilts[i];s.animations.push(el.animate([
+      {transform:'translateY(0) rotateX(22deg) rotateY(0deg) rotateZ('+tilt+'deg)',offset:0},
+      {transform:'translateY(-115px) rotateX(150deg) rotateY(310deg) rotateZ('+(tilt+110)+'deg)',offset:.34},
+      {transform:'translateY(8px) rotateX(32deg) rotateY('+(end-45)+'deg) rotateZ('+(tilt+24)+'deg)',offset:.78},
+      {transform:'translateY(-9px) rotateX(15deg) rotateY('+(end-9)+'deg) rotateZ('+(tilt-4)+'deg)',offset:.91},
+      {transform:'translateY(0) rotateX(22deg) rotateY('+end+'deg) rotateZ('+tilt+'deg)',offset:1}
+    ],{duration:1190+i*80,easing:'cubic-bezier(.23,.57,.45,1)',fill:'forwards'}));});
+    s.timer=setTimeout(function(){try{finish(s);}catch(e){error(s,e);}},1490);
+  }
+  function start(s){
+    if(s.busy||s.phase!=='input')return;remember(s);s.question=s.question.trim();if(!s.question)throw new Error('先寫下你想釐清的一件事，再開始起卦。');
+    if(s.mode==='manual'&&s.manual.some(function(v){return !Number.isInteger(v)||v<6||v>9;}))throw new Error('請完整填入初爻至上爻的六次結果。');
+    s.date=calendar(s);s.error='';s.values=s.mode==='manual'?s.manual.slice():[];s.records=[];s.phase='casting';
+    if(s.mode==='manual')finish(s);else{render(s);s.root.scrollTop=0;toss(s);}
+  }
+  function quick(s){if(s.busy||s.phase!=='casting')return;while(s.values.length<6){var r=core().toss();s.records.push(r);s.values.push(r.value);}finish(s);}
+  function reset(s){clearMotion(s);s.busy=false;s.phase='input';s.values=[];s.records=[];s.result=null;s.date=null;s.error='';s.manual=[null,null,null,null,null,null];s.time=wallNow(Number.isFinite(Number(s.offset))?Number(s.offset):8);render(s);s.root.scrollTop=0;var q=document.getElementById(s.id+'-q');if(q)q.focus({preventScroll:true});}
+  async function copyPrompt(s){
+    var text=root.JYGuaPrompt.build(s.result),area=s.root.querySelector('.gw-prompt-area'),ok=false;
+    try{if(root.navigator.clipboard&&root.navigator.clipboard.writeText){await root.navigator.clipboard.writeText(text);ok=true;}}catch(_){}
+    if(!ok){var t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0';s.root.appendChild(t);t.focus();t.select();try{ok=document.execCommand('copy');}catch(_){}t.remove();}
+    if(ok)note('已複製完整卦象與解讀提示詞。');else{var fold=s.root.querySelector('.gw-prompt-fold');fold.open=true;area.focus();area.select();note('無法自動複製，請長按已選取的提示詞複製。');}
+    return ok;
+  }
+  function save(s){var blob=new Blob([JSON.stringify(s.result,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=s.kind+'-'+s.result.calendar.wall.slice(0,10)+'.json';s.root.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
+  function share(s){if(!root.JYShareCard)throw new Error('分享卡尚未載入，請稍後再試。');var r=s.result;root.JYShareCard.open(s.kind,{question:r.question,cards:[{name:r.original.fullName,pos:'本卦',lines:r.original.lines,moving:r.movingPositions}].concat(r.hasChange?[{name:r.changed.fullName,pos:'之卦',lines:r.changed.lines,moving:r.movingPositions}]:[]),date:r.calendar.wall,conclusion:s.kind==='liuyao'?'月建 '+r.calendar.monthBranch+' · 日辰 '+r.calendar.day+' · 旬空 '+r.calendar.voidBranches.join(''):(r.reading.selections[0].hexagram+' · '+r.reading.selections[0].label+'：'+r.reading.selections[0].text),moving:r.movingPositions});}
+  function open(kind){
+    if(!TITLES[kind])return;if(active===kind)return;if(active)close(active);
+    var s=rooms[kind]||(rooms[kind]=create(kind));s.focusBefore=document.activeElement;s.overflow=document.body.style.overflow;
+    if(!s.root){s.root=document.createElement('section');s.root.id=kind+'-screen';s.root.className='gw-room';s.root.hidden=true;s.root.setAttribute('role','dialog');s.root.setAttribute('aria-modal','true');s.root.setAttribute('aria-labelledby',s.id+'-title');document.body.appendChild(s.root);bind(s);}
+    s.inert=Array.from(document.body.children).filter(function(el){return el!==s.root&&!['SCRIPT','STYLE','LINK'].includes(el.tagName);}).map(function(el){var old=el.inert;el.inert=true;return [el,old];});
+    active=kind;document.body.style.overflow='hidden';s.root.hidden=false;render(s);var title=s.root.querySelector('h1');title.tabIndex=-1;title.focus({preventScroll:true});
+  }
+  function close(kind){var s=rooms[kind||active];if(!s)return;remember(s);if(s.busy){try{finish(s,false);}catch(e){s.error=e.message;}}clearMotion(s);s.busy=false;s.root.hidden=true;s.inert.forEach(function(p){p[0].inert=p[1];});s.inert=[];document.body.style.overflow=s.overflow;if(active===s.kind)active=null;clearTimeout(toastTimer);var toast=document.getElementById('gw-toast');if(toast)toast.remove();if(s.focusBefore&&s.focusBefore.isConnected)s.focusBefore.focus({preventScroll:true});}
+  function bind(s){
+    s.root.addEventListener('click',function(e){var b=e.target.closest('[data-action]');if(!b||b.disabled)return;var a=b.dataset.action;try{
+      if(a==='close')close(s.kind);else if(a==='mode'){remember(s);s.mode=b.dataset.mode;render(s);}else if(a==='sound'){s.sound=!s.sound;b.setAttribute('aria-pressed',String(s.sound));b.textContent=s.sound?'♫ 音效開啟':'♫ 音效關閉';sound(s);}
+      else if(a==='start')start(s);else if(a==='toss')toss(s);else if(a==='skip')finish(s);else if(a==='quick')quick(s);else if(a==='reset')reset(s);else if(a==='line'){s.selected=Number(b.dataset.line);s.root.querySelectorAll('[data-line]').forEach(function(el){el.setAttribute('aria-pressed',String(Number(el.dataset.line)===s.selected));});s.root.querySelector('.gw-detail').innerHTML=detail(s);}
+      else if(a==='copy')copyPrompt(s);else if(a==='share')share(s);else if(a==='save')save(s);
+      else if(a==='ai'){var ai=AI.find(function(v){return v[0]===b.dataset.ai;});if(!ai)return;var tab=root.open('about:blank','_blank');if(tab)tab.opener=null;copyPrompt(s).then(function(ok){if(ok&&tab)tab.location.href=ai[2];else if(tab)tab.close();else if(ok)note('已複製；瀏覽器阻擋新分頁，請自行開啟 '+ai[1]+' 貼上。');});}
+    }catch(err){error(s,err);}});
+    s.root.addEventListener('input',function(){remember(s);});
+    s.root.addEventListener('change',function(e){remember(s);if(e.target.dataset.field==='custom'){var date=s.root.querySelector('[data-field=time]');date.disabled=!s.custom;}});
+    s.root.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();close(s.kind);}else if(e.key==='Tab'){var list=Array.from(s.root.querySelectorAll('button:not(:disabled),a,input:not(:disabled),select,textarea,summary')).filter(function(el){return el.offsetParent!==null;});if(!list.length)return;var first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
+  }
+  document.addEventListener('visibilitychange',function(){Object.keys(rooms).forEach(function(k){if(rooms[k].root)rooms[k].root.dataset.paused=String(document.hidden);});});
+  root._liuyaoOpen=function(){open('liuyao');};root._liuyaoClose=function(){close('liuyao');};
+  root._yijingOpen=function(){open('yijing');};root._yijingClose=function(){close('yijing');};
+  root.JYGuaRoom=Object.freeze({open:open,close:close,snapshot:function(kind){var s=rooms[kind];return s?JSON.parse(JSON.stringify({kind:s.kind,phase:s.phase,question:s.question,values:s.values,records:s.records,date:s.date,result:s.result,busy:s.busy})):null;}});
+})(window);

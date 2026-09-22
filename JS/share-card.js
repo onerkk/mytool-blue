@@ -24,6 +24,8 @@
     baziPersonality:{name:'五軸人格',en:'FIVE AXES / SELF EXPLORATION',title:'你的模樣，不只一面',sub:'看見優勢，也接住不同狀態的自己。',accent:'#99cee3',rgb:'153,206,227',deep:'#244458',motif:'prism'},
     ziwei:{name:'紫微斗數',en:'ZI WEI / TWELVE PALACES',title:'展開你的人生星圖',sub:'從十二宮，梳理眼前的人生課題。',accent:'#cbb8ed',rgb:'203,184,237',deep:'#3e335d',motif:'orbit'},
     meihua:{name:'梅花易數',en:'MEI HUA / THE CHANGING MOMENT',title:'變化裡，自有線索',sub:'本、互、變之間，看見轉折的條件。',accent:'#b8d5b1',rgb:'184,213,177',deep:'#304b3d',motif:'yin'},
+    liuyao:{name:'六爻占卜',en:'LIU YAO / THE CHAMBER OF CHANGE',title:'一事一卦，靜觀其變',sub:'從世應與動變，看清進退的條件。',accent:'#9ccdbc',rgb:'156,205,188',deep:'#213f42',motif:'yin'},
+    yijing:{name:'易經占卜',en:'I CHING / THE BOOK OF CHANGES',title:'在變化中，找到分寸',sub:'讓古老的卦爻辭，照見此刻的處境。',accent:'#c6bce8',rgb:'198,188,232',deep:'#333451',motif:'yin'},
     vedic:{name:'印度占星',en:'JYOTISHA / JANMA KUNDALI',title:'讓星圖，照見自己的節奏',sub:'本命星圖 · D1 Rāśi',accent:'#e5c28b',rgb:'229,194,139',deep:'#235451',motif:'orbit'},
     western:{name:'西洋占星',en:'ASTROLOGY / YOUR CELESTIAL SIGNATURE',title:'在星辰之間，認識自己',sub:'本命星圖 · Natal Chart',accent:'#c5cff5',rgb:'197,207,245',deep:'#304066',motif:'orbit'},
     oracle:{name:'靜月靈籤',en:'SACRED VERSE / A QUIET MOMENT',title:'給此刻，一句提醒',sub:'靜下心，讀懂籤詩留給你的話。',accent:'#e4b092',rgb:'228,176,146',deep:'#55322e',motif:'lot'}
@@ -63,10 +65,10 @@
   function missing(c,t,message){plate(c,122,525,836,360,t,28);emblem(c,540,635,76,t);text(c,message||'尚無可分享的結果',540,766,38,WHITE,500,'center',true);note(c,'請先完成抽牌或排盤，再留下這一刻。',t,830);}
   function renderInvite(c,d,t){masthead(c,t,d);text(c,t.title,68,184,75,WHITE,600,'left',true,950);text(c,t.sub,68,278,75,GOLD,600,'left',true,950);var im=cache[HERO];if(im){var art=document.createElement('canvas');art.width=930;art.height=620;var ac=art.getContext('2d');ac.drawImage(im,0,0,930,620);ac.globalCompositeOperation='destination-in';var fade=ac.createLinearGradient(0,0,0,620);fade.addColorStop(0,'rgba(0,0,0,0)');fade.addColorStop(.13,'#000');fade.addColorStop(.83,'#000');fade.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=fade;ac.fillRect(0,0,930,620);var side=ac.createLinearGradient(0,0,930,0);side.addColorStop(0,'rgba(0,0,0,0)');side.addColorStop(.2,'#000');side.addColorStop(.8,'#000');side.addColorStop(1,'rgba(0,0,0,0)');ac.fillStyle=side;ac.fillRect(0,0,930,620);c.drawImage(art,75,319);}else{emblem(c,540,602,246,t);}
     var tag=str(d.tagline)||'感情的靠近，工作的轉彎，或下一個自己。';text(c,tag,540,871,29,WHITE,400,'center',false,930);
-    var systems=window.JYMethodCatalog,columns=5,gap=12,cell=(950-gap*(columns-1))/columns;
+    var systems=window.JYMethodCatalog,columns=4,gap=12,cell=(950-gap*(columns-1))/columns;
     if(!systems||!systems.length)throw new Error('命理清單尚未載入');
-    systems.forEach(function(v,i){var x=65+(i%columns)*(cell+gap),y=918+Math.floor(i/columns)*74,tt=THEMES[v[6]]||t;plate(c,x,y,cell,61,tt,15);text(c,v[3],x+cell/2,y+30,27,WHITE,500,'center',false,cell-16);});
-    note(c,'十種探索，從你最在意的事開始。',t,1090);}
+    systems.forEach(function(v,i){var x=65+(i%columns)*(cell+gap),y=904+Math.floor(i/columns)*60,tt=THEMES[v[6]]||t;plate(c,x,y,cell,49,tt,13);text(c,v[3],x+cell/2,y+24,25,WHITE,500,'center',false,cell-16);});
+    note(c,'從你最在意的事，選一種探索的方式。',t,1090);}
 
   function renderBazi(c,d,t){heading(c,t,d);question(c,d,t);var ps=arr(d.pillars);if(!ps.length){missing(c,t);return;}ps.slice(0,4).forEach(function(p,i){var x=67+i*242;plate(c,x,483,220,347,t,22,p.label==='日柱');text(c,p.label||['年柱','月柱','日柱','時柱'][i],x+110,522,27,t.accent,500,'center');line(c,x+33,555,x+187,555,rgba(t,.25));text(c,p.gan||'—',x+110,627,95,WHITE,600,'center',true);text(c,p.zhi||'—',x+110,745,95,p.label==='日柱'?GOLD:WHITE,600,'center',true);if(p.label==='日柱'){star(c,x+191,508,6,GOLD);}});rows(c,[['日主',d.dayMaster],['喜用候選',d.yongShen],['現行大運',d.dayun]],867,t,218);note(c,'從命盤看傾向，從生活確認方向。',t);}
   function renderBaziPersonality(c,d,t){heading(c,t,d);if(!d.code){missing(c,t);return;}plate(c,66,353,948,322,t,27,true);text(c,'FIVE AXES',96,393,19,t.accent,500);text(c,d.code,540,493,108,WHITE,600,'center',false,866);text(c,d.name||'五軸人格',540,594,46,t.accent,600,'center',true,856);var traits=Array.isArray(d.traits)?d.traits.join('  ·  '):str(d.traits);paragraph(c,traits,91,717,898,30,WHITE,2,41);var strengths=Array.isArray(d.strengths)?d.strengths.join('、'):str(d.strengths),watch=Array.isArray(d.watch)?d.watch.join('、'):str(d.watch);rows(c,[['可用優勢',strengths],['需要留意',watch],['出生資料',d.birthLine||'未顯示']],828,t,230);note(c,'本站五軸模型 · 作自我探索參考，非心理測驗。',t);}
@@ -142,7 +144,23 @@
     summary(c,[['太陽 SUN',ch.planets.Sun.signName+' '+degrees(ch.planets.Sun.degree)],['月亮 MOON',ch.planets.Moon.signName+' '+degrees(ch.planets.Moon.degree)],['上升 ASC',asc===null?'時間不詳':SIGNS[Math.floor(asc/30)]+' '+degrees(asc)]],t);
     note(c,ch.sensitivity.unknownTime?'中午星位參考 · 不排上升與宮位':'本次實際星位與宮界 · 平均月交點',t,1120);
   }
-  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
+  function renderGua(c,d,t){
+    heading(c,t,d);question(c,d,t);var cards=arr(d.cards).slice(0,2);
+    if(!cards.length){missing(c,t,'尚無已完成的卦象');return;}
+    cards.forEach(function(card,i){var w=cards.length===1?520:445,x=cards.length===1?280:65+i*505,y=490;
+      plate(c,x,y,w,465,t,26,i===0);text(c,card.pos||['本卦','之卦'][i],x+w/2,y+43,28,t.accent,500,'center');
+      var ls=arr(card.lines),moving=arr(card.moving),bw=w-150,left=x+75;
+      if(ls.length===6){for(var p=0;p<6;p++){var yy=y+300-p*37,m=moving.indexOf(p+1)>=0,col=m?'#f0c78b':t.accent,g=c.createLinearGradient(left,yy,left+bw,yy+16);g.addColorStop(0,'#f7ebd6');g.addColorStop(.5,col);g.addColorStop(1,t.deep);c.save();c.fillStyle=g;c.shadowColor='#000';c.shadowOffsetY=4;c.shadowBlur=4;
+        if(ls[p]){rr(c,left,yy,bw,16,3);c.fill();}else{rr(c,left,yy,bw*.43,16,3);c.fill();rr(c,left+bw*.57,yy,bw*.43,16,3);c.fill();}c.restore();
+        text(c,['初','二','三','四','五','上'][p],x+41,yy+8,21,MUTED,400,'center');if(m)star(c,x+w-38,yy+8,5,col);
+      }}else text(c,'未提供爻線',x+w/2,y+230,25,MUTED,400,'center');
+      text(c,card.name||'未提供卦名',x+w/2,y+395,39,WHITE,500,'center',true,w-40);
+    });
+    if(cards.length===2)text(c,'→',540,729,30,t.accent,400,'center');
+    if(d.conclusion)paragraph(c,d.conclusion,72,1000,936,26,MUTED,2,37);
+    note(c,arr(d.moving).length?'六爻由下而上 · 暖金標示本次發動的位置':'六爻皆靜 · 依本卦展開解讀',t,1110);
+  }
+  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,liuyao:renderGua,yijing:renderGua,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
   function draw(type,data,canvas,options){var t=THEMES[type]||THEMES.invite,d=data||{},scale=options&&options.scale||SCALE;canvas.width=W*scale;canvas.height=H*scale;var c=canvas.getContext('2d');if(!c)throw new Error('無法建立卡片畫布');c.scale(scale,scale);background(c,t);(RENDER[type]||renderInvite)(c,d,t);footer(c,t,type==='invite');return canvas;}
   function loadImage(src){if(!src)return Promise.resolve(null);if(cache[src])return Promise.resolve(cache[src]);return new Promise(function(resolve){var im=new Image(),done=false,tm=setTimeout(function(){finish(null);},6500);function finish(v){if(done)return;done=true;clearTimeout(tm);im.onload=im.onerror=null;if(v)cache[src]=v;resolve(v);}im.onload=function(){finish(im);};im.onerror=function(){finish(null);};try{var u=new URL(src,document.baseURI);if(!/^(https?:|file:|data:|blob:)$/.test(u.protocol)){finish(null);return;}if(u.protocol!=='data:'&&u.protocol!=='file:'&&u.origin!==location.origin)im.crossOrigin='anonymous';im.src=src;}catch(e){finish(null);}});}
   function fontReady(d){if(!document.fonts)return Promise.resolve();var sample='靜月之光為心裡的問號找到下一步塔羅八字紫微雷諾曼梅花靈籤印度占星西洋占星恆星回歸黃道牡羊金牛雙子巨蟹獅子處女天秤天蠍射手摩羯水瓶雙魚日月水金火木土天海冥羅計上升時間不詳'+JSON.stringify(d||{}).slice(0,5000);return Promise.race([Promise.all([document.fonts.load(font(40,600,true),sample),document.fonts.load(font(30,400,false),sample)]).catch(function(){}),new Promise(function(r){setTimeout(r,4000);})]);}

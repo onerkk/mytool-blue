@@ -48,7 +48,7 @@ test('Bazi lenses, compatibility roles and both personality APIs use their own s
  checkRecommendation(b.BaziSuiteCore.buildPersonalityPrompt(profile,business),'personality');
 });
 test('All Lenormand layouts and all 60 poems include justified selection, preserving original data',()=>{
- for(const [id,sp]of Object.entries(l.__lnAudit.spreads)){if(!sp.count)continue;const cards=l.__lnAudit.cards.slice(0,sp.count),before=JSON.stringify(cards);checkRecommendation(l.__lnAudit.build(business,cards,id),'lenormand');assert.equal(JSON.stringify(cards),before);}
+ for(const id of Object.keys(l.__lnAudit.spreads)){const sp=l.JYLenormand.instantiate(id,business);if(!sp.count)continue;const cards=l.__lnAudit.cards.slice(0,sp.count),before=JSON.stringify(cards);checkRecommendation(l.__lnAudit.build(business,cards,id),'lenormand');assert.equal(JSON.stringify(cards),before);}
  const cards=[4,33,32].map(id=>l.__lnAudit.cards.find(x=>x.id===id));examples.lenormand=l.__lnAudit.build('公司異性女工程師她單身嗎？',cards,'three');assert(examples.lenormand.includes('1.房屋→2.鑰匙→3.月亮'));
  for(const lot of o.__oracleAudit.poems){const before=JSON.stringify(lot);checkRecommendation(o.__oracleAudit.build(lot,business),'oracle');assert.equal(JSON.stringify(lot),before);}
 });

@@ -14,17 +14,17 @@ function load(env, name) { vm.runInContext(read('JS/'+name+'.js'), env.ctx, {fil
 function actualFunction(file, name) { const source=read(file); let found; function walk(node) { if(!node||typeof node!=='object')return; if(node.type==='FunctionDeclaration'&&node.id?.name===name)found=source.slice(node.start,node.end); for(const value of Object.values(node)){if(Array.isArray(value))value.forEach(walk);else if(value&&typeof value==='object')walk(value);} } walk(acorn.parse(source,{ecmaVersion:'latest'})); assert(found,name); return found; }
 function expose(env, file, code) { vm.runInContext(read('JS/'+file+'.js').replace(/\}\)\(\);\s*$/,code+'\n})();'),env.ctx); }
 function add(e, tag, id) { const el=e.doc.body.appendChild(new e.Element(tag)); el.id=id; return el; }
-test('Ten home entrances are native buttons and reach the right flow; direct compatibility remains separate',()=>{
+test('Twelve home entrances are native buttons and reach the right flow; direct compatibility remains separate',()=>{
  const e=environment(),calls=[];add(e,'div','hook-screen');const input=add(e,'section','input-screen'),q=add(e,'textarea','f-question');
  const heading=input.appendChild(new e.Element('header'));heading.className='at-input-head';
  e.ctx._enterFromHome=()=>calls.push('input');e.ctx.pickTool=(tool,options)=>calls.push([tool,options.stayAtQuestion]);
  e.ctx.BaziSuiteUI={open:tab=>calls.push(tab)};
- const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen',vedic:'_vedicOpen',western:'_westernOpen'};
+ const bridges={lenormand:'_lenormandOpen',bazi:'_baziOpen',ziwei:'_ziweiOpen',meihua:'_meihuaOpen',oracle:'_oracleOpen',vedic:'_vedicOpen',western:'_westernOpen',liuyao:'_liuyaoOpen',yijing:'_yijingOpen'};
  for(const [name,key] of Object.entries(bridges))e.ctx[key]=()=>calls.push(name);
  load(e,'method-catalog');load(e,'atelier-ui');vm.runInContext(actualFunction('JS/ui.js','_redesignHomepage')+';_redesignHomepage();',e.ctx);
- const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,10);
+ const tiles=e.doc.getElementById('hook-screen').querySelectorAll('.at-tool');assert.equal(tiles.length,12);
  for(const tile of tiles){assert.equal(tile.tagName,'BUTTON');vm.runInContext(tile.getAttribute('onclick'),e.ctx);}
- assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle','vedic','western']);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls)),['input',['tarot',true],'input',['ootk',true],'lenormand','bazi','compat','ziwei','meihua','oracle','vedic','western','liuyao','yijing']);
  assert.equal(input.getAttribute('data-atelier-mode'),'ootk');assert.equal(e.doc.activeElement,heading);assert.notEqual(e.doc.activeElement,q);
 });
 test('Spread picker preserves incoming options, traps Tab, closes with Escape and restores prior focus/overflow',()=>{
@@ -59,7 +59,9 @@ test('Meihua text survives changing method without becoming markup; the three ac
  assert.equal(read('JS/meihua-standalone.js'),read('meihua-standalone.js'));
 });
 test('Compatibility opens directly with two independent forms; single/personality/tools/history still open',()=>{
- const e=environment();load(e,'atelier-ui');load(e,'bazi-prompt-root');load(e,'bazi-suite-core');load(e,'bazi-suite');
+ const e=environment();load(e,'atelier-ui');load(e,'bazi-prompt-root');load(e,'bazi-suite-core');load(e,'relationship-core');load(e,'relationship-ui');load(e,'bazi-suite');
+ // This light DOM fixture needs explicit support for the new nested brand label.
+ const query=e.Element.prototype.querySelector;e.Element.prototype.querySelector=function(selector){if(/^\.bzs-brand (b|small)$/.test(selector)){const brand=query.call(this,'.bzs-brand');return brand&&query.call(brand,selector.split(' ')[1]);}return query.call(this,selector);};
  e.ctx.BaziSuiteUI.open('compat');assert.equal(e.ctx.BaziSuiteUI.getState().tab,'compat');assert(e.doc.getElementById('a-date'));assert(e.doc.getElementById('b-date'));assert(e.doc.getElementById('c-question'));
  for(const tab of ['single','personality','tools','history']){e.ctx.BaziSuiteUI.open(tab);assert.equal(e.ctx.BaziSuiteUI.getState().tab,tab);assert(e.doc.getElementById('bzs-main').innerHTML.length>0);}
  e.ctx.BaziSuiteUI.open('unknown');assert.equal(e.ctx.BaziSuiteUI.getState().tab,'single');e.ctx.BaziSuiteUI.close();assert.equal(e.doc.body.style.overflow,'');

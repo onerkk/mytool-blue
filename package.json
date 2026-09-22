@@ -49,7 +49,10 @@
     "test:relationship": "node tests/relationship-20260917.cjs",
     "test:time-ownership": "node tests/time-ownership-20260920.cjs",
     "build:questions": "node scripts/build-question-planner.cjs && node scripts/sync-recommendation-guides.cjs",
-    "test:question-routing": "node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs"
+    "test:question-routing": "node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs",
+    "build:yijing": "node scripts/build-yijing-data.cjs",
+    "test:gua": "node scripts/build-yijing-data.cjs --check && node tests/gua-engine-20260922.cjs",
+    "test:gua:browser": "node tests/gua-browser-20260922.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"

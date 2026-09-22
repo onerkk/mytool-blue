@@ -82,7 +82,7 @@ test('4×9 geometry contains 36 real houses, complete straight paths and only va
  assert.equal(new Set(g.lines.map(x=>x.join(','))).size,g.lines.length);
 });
 test('System suggestions distinguish requested tradition, reflective questions and concrete events',()=>{
- for(const [q,want]of [['求籤看今年工作','oracle'],['包裹何時有消息','lenormand'],['我的出生八字命格如何','bazi'],['紫微看我的事業','ziwei'],['起卦看案子','meihua'],['她對我的感受如何','tarot'],['請用雷諾曼看感情','lenormand'],['之前用雷諾曼，這次請用塔羅看感情','tarot']])assert.equal(F.recommendSystem(q).system,want,q);
+ for(const [q,want]of [['求籤看今年工作','oracle'],['包裹何時有消息','lenormand'],['我的出生八字命格如何','bazi'],['紫微看我的事業','ziwei'],['用時間起卦看案子','meihua'],['起卦看案子','liuyao'],['請用六爻看簽約','liuyao'],['易經看下一步','yijing'],['周易看工作','yijing'],['用梅花看工作','meihua'],['之前用易經，這次請用六爻看合約','liuyao'],['不要用六爻，請用塔羅看感情','tarot'],['她對我的感受如何','tarot'],['請用雷諾曼看感情','lenormand'],['之前用雷諾曼，這次請用塔羅看感情','tarot']])assert.equal(F.recommendSystem(q).system,want,q);
 });
 test('Real Lenormand input, manual layout and draw controllers keep preview and saved plan aligned',()=>{
  lc.scrollTo=()=>{};lc._lenormandOpen();const input=lc.document.getElementById('ln-q');assert(input);
