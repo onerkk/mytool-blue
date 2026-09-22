@@ -222,7 +222,7 @@ const indexSource = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'u
 check('v15 source marker', source.includes('Lenormand v15.0（語義產出驅動引擎）'));
 check('v15 console marker', source.includes('semantic-yield completeness engine'));
 check('v15 grand description', api.spreads.grand.desc.includes('完整覆蓋') && api.spreads.grand.desc.includes('不重複'));
-check('v15 cache marker', indexSource.includes('JS/lenormand.js?v=20260715v15_0'));
+check('v15 cache marker', indexSource.includes('JS/lenormand.js?v=20260922rules1'));
 check('v15 changelog marker', indexSource.includes('雷諾曼 v15.0 語義產出驅動引擎'));
 
 console.log(`PASS: ${passed} Lenormand v15 semantic-yield completeness checks.`);

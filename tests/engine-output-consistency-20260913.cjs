@@ -85,7 +85,9 @@ test('384 Meihua cases: moving trigram is Yong; changed Yong and both mutual tri
   assert.equal(a.dongYao.inTi,false);assert.equal(a.dongYao.inYong,true);assert.equal(a.dongYao.side,moving>3?'upper':'lower');
   const changed=bits.map((v,i)=>i===moving-1?1-v:v),ti=trigrams[(moving<=3?bits.slice(3):bits.slice(0,3)).join('')][1],use=trigrams[(moving<=3?changed.slice(0,3):changed.slice(3)).join('')][1];
   assert.equal(a.bianGua.changedUseRelation,rel(ti,use));
-  const lower=rel(ti,trigrams[bits.slice(1,4).join('')][1]),upper=rel(ti,trigrams[bits.slice(2,5).join('')][1]);
+  // Adopted Mei Hua exception: Qian/Kun take the nuclear trigrams of the changed hexagram.
+  const nuclear=bits.every(v=>v===bits[0])?changed:bits;
+  const lower=rel(ti,trigrams[nuclear.slice(1,4).join('')][1]),upper=rel(ti,trigrams[nuclear.slice(2,5).join('')][1]);
   assert.equal(a.huGua.lowerRelation,lower);assert.equal(a.huGua.upperRelation,upper);assert.equal(a.huGua.primaryRelation,lower===upper?lower:'交錯');
   const deep=c.mhHuGuaDeep(r);assert.equal(deep.huGua,r.hu.n);assert.equal(deep.lower.relation,lower);assert.equal(deep.upper.relation,upper);clean(deep);
   if(lower!==upper)conflicts++;if(rel(ti,use)==='A生B'){drain++;example??={input:[up,lo,moving],hexagram:r.ben.n,changed:r.bian.n,body:r.tiG,changedUse:use,relation:a.bianGua.changedUseRelation};}

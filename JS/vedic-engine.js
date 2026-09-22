@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='jy-vedic-1.1.0', DAY=86400000, RAD=Math.PI/180;
+  const VERSION='jy-vedic-1.2.0', DAY=86400000, RAD=Math.PI/180;
   const KEYS=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
   const NAMES=['太陽','月亮','火星','水星','木星','金星','土星','羅睺','計都'];
   const SYMBOLS=['☉','☽','♂','☿','♃','♀','♄','☊','☋'];
@@ -190,7 +190,7 @@
         {key:'notCombust',label:'木星距太陽 '+solar.separationDegrees.toFixed(2)+'°；燃燒門檻 11°',passed:!solar.combust},
         {key:'notEnemy',label:'木星與所在座主的合成關係：'+(dispositor==='Jupiter'?'本垣':rel.label),passed:dispositor==='Jupiter'||rel.compound>=0}];
       const formed=checks.every(c=>c.passed===true);add(formed?'Gaja Kesari（象獅格局）':'月木角宮關係',['Moon','Jupiter'],formed?'符合本版採用的 PVR 條件：月木角宮、吉曜支持，木星未落陷、未燃燒且非合成敵座。':'月木角宮關係成立；未滿足本版 Gaja Kesari 的全部條件，按實際關係解讀。');
-      Object.assign(list[list.length-1],{status:formed?'structural':'relation',checks,definition:'PVR 11.7 / Gaja-Kesari; compound friendship; angular combustion convention'});
+      Object.assign(list[list.length-1],{status:formed?'structural':'relation',checks,definition:'PVR 11.6 / Gaja-Kesari; compound friendship; angular combustion convention'});
     }
     if(planets.Sun.sign===planets.Mercury.sign)add('Budha Aditya（日水同座）',['Sun','Mercury'],'太陽與水星同座；須同看近日距離與宮主角色');
     KEYS.slice(0,7).forEach((a,i)=>KEYS.slice(i+1,7).forEach(b=>{if(LORDS[planets[a].sign]===b&&LORDS[planets[b].sign]===a)add('Parivartana（互容）',[a,b],'兩曜互入對方本垣；依實際掌宮辨別領域與代價');}));
@@ -199,6 +199,63 @@
         (asp.graha.some(a=>a.from===l9&&a.toPlanets.includes(l10))&&asp.graha.some(a=>a.from===l10&&a.toPlanets.includes(l9)));
       if(connected)add('Dharma Karma（九十宮主連結）',[...new Set([l9,l10])],'九、十宮主同曜／同座／互容／互相照見');
     }return list;
+  }
+  // Rule scope: P.V.R. Narasimha Rao, chapters 11.2–11.7, author-hosted edition.
+  // These records describe configurations, never deterministic life events.
+  function specialYogas(ps,asc,asp){
+    const source='https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf',seven=KEYS.slice(0,7),five=seven.slice(2),nature=naturalNatures(ps),checks=[];
+    const record=(id,name,passed,planets,rule,extra={})=>{const r={id,name,status:passed===null?'insufficient-data':passed?'structural':'not-established',planets:[...new Set(planets)],conditions:[...new Set(planets)].map(k=>({planet:k,house:ps[k].house,dignity:ps[k].dignity.label,sunSeparation:ps[k].sunSeparation})),rule,source,...extra};checks.push(r);return r;};
+    const relative=(key,reference)=>mod(ps[key].sign-ps[reference].sign,12)+1;
+    const flank=(reference,h)=>five.filter(k=>relative(k,reference)===h);
+    for(const [reference,names] of [['Sun',['Vesi','Vosi','Ubhayachara']],['Moon',['Sunaphaa','Anaphaa','Duradhara']]]){
+      const next=flank(reference,2),previous=flank(reference,12);
+      record(names[0],names[0],next.length>0,[reference,...next],'五行星有一曜在'+zh(reference)+'第二座；不計另一光體及交點',{reference});
+      record(names[1],names[1],previous.length>0,[reference,...previous],'五行星有一曜在'+zh(reference)+'第十二座',{reference});
+      record(names[2],names[2],!!next.length&&!!previous.length,[reference,...next,...previous],'同時具備第二與第十二座兩側夾持；與前兩項共用證據，不重複加權',{reference});
+    }
+    const moonCompanions=five.filter(k=>[1,2,12].includes(relative(k,'Moon'))),angular=asc==null?null:seven.filter(k=>k!=='Moon'&&[1,4,7,10].includes(ps[k].house));
+    const kem=record('Kemadruma','Kemadruma',moonCompanions.length?false:angular===null?null:angular.length===0,['Moon',...moonCompanions,...angular||[]], '月亮一、二、十二座無日月以外五曜，且上升四角無月亮以外七曜；PVR 11.3.4', {checks:[{label:'月亮近域空缺',passed:moonCompanions.length===0},{label:'上升角宮無其他七曜',passed:angular===null?null:angular.length===0}],cancellations:angular||[]});
+    if(!moonCompanions.length&&angular&&angular.length)kem.status='cancelled';
+    record('ChandraMangala','Chandra Mangala（月火同座）',ps.Moon.sign===ps.Mars.sign,['Moon','Mars'],'月亮與火星同一星座；不把任意單向相位當作同座');
+    const linked=(a,b)=>a!==b&&(ps[a].sign===ps[b].sign||(LORDS[ps[a].sign]===b&&LORDS[ps[b].sign]===a)||(asp.graha.some(x=>x.from===a&&x.toPlanets.includes(b))&&asp.graha.some(x=>x.from===b&&x.toPlanets.includes(a))));
+    const raja=[],yogakaraka=[];
+    if(asc!=null){
+      const lord=h=>LORDS[mod(asc+h-1,12)];
+      for(const h of [1,4,7,10])for(const t of [1,5,9]){
+        const a=lord(h),b=lord(t);if(h===t)continue;
+        if(a===b){if(!yogakaraka.some(x=>x.planet===a))yogakaraka.push({planet:a,houses:[h,t]});}
+        else if(linked(a,b)){const old=raja.find(x=>x.planets.includes(a)&&x.planets.includes(b));if(old)old.housePairs.push([h,t]);else raja.push({planets:[a,b],housePairs:[[h,t]]});}
+      }
+      for(const [h,name] of [[6,'Harsha'],[8,'Sarala'],[12,'Vimala']])record(name,name,ps[lord(h)].house===h,[lord(h)],h+'宮主落回'+h+'宮；本版採 PVR 狹義，不混用三凶宮互落的廣義名稱');
+      const dusthana=[6,8,12].map(h=>({owns:h,planet:lord(h),occupies:ps[lord(h)].house})).filter(x=>[6,8,12].includes(x.occupies));
+      record('Vipareeta','Vipareeta（困難宮主互涉）',dusthana.length>0,dusthana.map(x=>x.planet),'六、八、十二宮主位於這三宮；僅記基本結構，仍查力量、其他宮主牽連及運期',{connections:dusthana});
+    }else for(const name of ['Harsha','Sarala','Vimala','Vipareeta'])record(name,name,null,[],'缺出生時間，無法確定宮主與宮位');
+    record('Raaja','Raaja（角宮與三分宮主連結）',asc==null?null:raja.length>0,raja.flatMap(x=>x.planets),'兩個不同宮主同座、互容或相互行星照見；單向照見不成立',{connections:raja});
+    record('Yogakaraka','Yogakaraka（兼掌角宮與三分宮）',asc==null?null:yogakaraka.length>0,yogakaraka.map(x=>x.planet),'同一星兼掌兩個不同的角宮／三分宮；與兩星互相照見分開',{connections:yogakaraka});
+    // Naabhasa: all 32 named types, evaluated separately from event yogas.
+    const nbStart=checks.length,sevenH=seven.map(k=>ps[k].house),occupied=[...new Set(sevenH)];
+    const inShape=houses=>asc==null?null:sevenH.every(h=>houses.includes(h))&&houses.every(h=>occupied.includes(h));
+    for(const [m,name] of ['Rajju','Musala','Nala'].entries())record('N-'+name,name,seven.every(k=>ps[k].sign%3===m),seven,'七曜全在同一變動／固定／雙體類；交點不計',{family:'Aasraya'});
+    for(const [type,name,opposite] of [['benefic','Maalaa','malefic'],['malefic','Sarpa','benefic']]){
+      const members=KEYS.filter(k=>nature[k]===type&&[1,4,7,10].includes(ps[k].house)),opponents=KEYS.filter(k=>nature[k]===opposite&&[1,4,7,10].includes(ps[k].house));
+      record('N-'+name,name,asc==null?null:new Set(members.map(k=>ps[k].house)).size>=3,members,'同類自然吉／凶曜佔至少三個角宮；Dala 採作者交點入例；反類曜另記削弱條件',{family:'Dala',modifiers:opponents});
+    }
+    const shapes=[['Gadaa',[[1,4],[4,7],[7,10],[10,1]]],['Sakata',[[1,7]]],['Vihanga',[[4,10]]],['Sringaataka',[[1,5,9]]],['Hala',[[2,6,10],[3,7,11],[4,8,12]]],['Kamala',[[1,4,7,10]]],['Vaapi',[[2,5,8,11],[3,6,9,12]]],['Yoopa',[[1,2,3,4]]],['Sara',[[4,5,6,7]]],['Sakti',[[7,8,9,10]]],['Danda',[[10,11,12,1]]]];
+    for(const [name,starts] of [['Naukaa',[1]],['Koota',[4]],['Chatra',[7]],['Chaapa',[10]],['ArdhaChandra',[2,3,5,6,8,9,11,12]]])shapes.push([name,starts.map(s=>Array.from({length:7},(_,i)=>mod(s-1+i,12)+1))]);
+    shapes.push(['Chakra',[[1,3,5,7,9,11]]],['Samudra',[[2,4,6,8,10,12]]]);
+    for(const [name,options] of shapes)record('N-'+name,name,asc==null?null:options.some(h=>inShape(h)),seven,'七曜全部限於指定整宮形狀；本版要求所列各宮實際有曜，保留嚴格分布口徑',{family:'Aakriti',houseOptions:options});
+    for(const [name,good,bad] of [['Vajra',[1,7],[4,10]],['Yava',[4,10],[1,7]]]){
+      const rule=seven.every(k=>(nature[k]==='benefic'?good:nature[k]==='malefic'?bad:[]).includes(ps[k].house))&&[...good,...bad].every(h=>occupied.includes(h));
+      record('N-'+name,name,asc==null?null:rule,seven,'七曜限於四角，自然吉凶依所列兩組宮位分置；混合水星不強判',{family:'Aakriti',beneficHouses:good,maleficHouses:bad});
+    }
+    const preceding=checks.slice(nbStart),other=preceding.filter(x=>x.status==='structural'),unknown=preceding.some(x=>x.status==='insufficient-data'),nSigns=new Set(seven.map(k=>ps[k].sign)).size;
+    for(const [n,name] of ['Gola','Yuga','Soola','Kedaara','Paasa','Daama','Veenaa'].entries()){
+      const r=record('N-'+name,name,nSigns===n+1&&other.length===0?(unknown?null:true):false,seven,'七曜分佔'+(n+1)+'座；只在其他 Naabhasa 不成立時採用',{family:'Sankhya',occupiedSignCount:nSigns,supersededBy:other.map(x=>x.id)});
+      if(nSigns===n+1&&other.length)r.status='superseded';
+    }
+    return {version:'1.0.0',source,profile:'PVR-CH11-EXPLICIT-20260922',checks,matched:checks.filter(x=>x.status==='structural'),
+      limitation:'本命結構清單；不是全流派 Yoga 或完整強度分數。取消、異說與缺資料必須保留；不引用古籍的貧富、疾病或道德斷言為事實。',
+      unavailable:['完整 Shadbala','全派落陷取消 Neechabhanga','Jaimini／其他大運','未實算的 Yoga 不作已驗證格局']};
   }
   function timeSensitivity(input,base,minutes){
     if(minutes===0)return {minutes:0,sampled:false,changes:[],note:'依使用者所填精確時間計算；星曆角度仍有數值誤差'};
@@ -258,6 +315,8 @@
     out.policy.combustion='Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility';
     out.policy.friendship='dignity friend/enemy labels: natural; relationships: compound; Gaja Kesari uses compound as in PVR';
     out.naturalNatures=naturalNatures(planets);
+    out.specialRules=specialYogas(planets,lagna&&lagna.sign,asp);
+    out.yogas.push(...out.specialRules.matched);
     out.sensitivity=timeSensitivity({...input,utc:birth,reference},out,input.unknownTime?720:uncertainty);
     out.sensitivity.angularCheckArcminutes=1;
     out.sensitivity.nearAngularBoundaries=[];
@@ -265,5 +324,5 @@
       Object.keys(VARGAS).forEach(d=>{const left=varga(x-1/60,+d),right=varga(x+1/60,+d);if(left.sign!==right.sign)out.sensitivity.nearAngularBoundaries.push({key:k+'/D'+d,alternatives:[left.signName,right.signName]});});});
     return freeze(out);
   }
-  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
+  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
 })(typeof globalThis!=='undefined'?globalThis:this);

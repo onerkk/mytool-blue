@@ -160,12 +160,13 @@ function mhMultiDongYao(mh) {
 function mhHuGuaDeep(mh) {
   if (!mh || !mh.hu) return null;
   // 六爻卦沒有單一五行：下互取 2/3/4，上互取 3/4/5，各自對原體。
-  var bits=mh.lo.li.concat(mh.up.li),lo=gByL(bits[1],bits[2],bits[3]),up=gByL(bits[2],bits[3],bits[4]);
+  var nuclear=mhNuclearContext(mh),lo=nuclear.lower,up=nuclear.upper;
   var loRel=mhRelation(mh.tiG.el,lo.el),upRel=mhRelation(mh.tiG.el,up.el);
   var wording={'B生A':'生體，過程提供助力','B剋A':'剋體，過程形成壓力','A生B':'受體所生，過程需要投入','A剋B':'受體所剋，過程需要主導處理','比和':'與體比和，作用同類'};
   var meaning='下互'+lo.name+'（'+lo.el+'）'+wording[loRel]+'；上互'+up.name+'（'+up.el+'）'+wording[upRel]+'。'+(loRel===upRel?'上下互作用同向，結合體用旺衰看能否承接。':'上下互作用不同，分別衡量，不以其中一項蓋過另一項。');
   return {
     huGua: mh.hu.n,
+    policy:nuclear.policy,exception:nuclear.exception,source:nuclear.source,
     reference: {name:mh.tiG.name,element:mh.tiG.el,role:'原體'},
     lower: {name:lo.name,element:lo.el,relation:loRel},
     upper: {name:up.name,element:up.el,relation:upRel},

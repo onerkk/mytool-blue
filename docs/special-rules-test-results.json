@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-22",
+  "tests": [
+    {
+      "name": "Sixyao: role-aware focus does not turn office attraction into a job question",
+      "status": "passed"
+    },
+    {
+      "name": "Sixyao: month-strength, static/moving, weak emptiness and tombs retain distinct effects",
+      "status": "passed"
+    },
+    {
+      "name": "Sixyao: bounded dates follow actual calendar; next-month does not become this-month",
+      "status": "passed"
+    },
+    {
+      "name": "Ziwei: rejects old wrong sun/pearl patterns and three-out-of-four shortcut",
+      "status": "passed"
+    },
+    {
+      "name": "Ziwei: flanking means two neighboring palaces; light levels are actual table values",
+      "status": "passed"
+    },
+    {
+      "name": "Bazi: following-output permits rooted peers; the printed season does not create a special pattern",
+      "status": "passed"
+    },
+    {
+      "name": "Bazi: real following-output chart does not restore ordinary support advice in its upgrade",
+      "status": "passed"
+    },
+    {
+      "name": "Bazi: unknown-hour composite exports omit noon-derived structures, timing and cached consensus",
+      "status": "passed"
+    },
+    {
+      "name": "Meihua: all 384 inputs use one nuclear rule and unchanged original body",
+      "status": "passed"
+    },
+    {
+      "name": "Jyotisha: all 32 Naabhasa identities present, shapes and Sankhya priority stay distinct",
+      "status": "passed"
+    },
+    {
+      "name": "Jyotisha: Kemadruma cancellation and unknown time do not report a confirmed bad yoga",
+      "status": "passed"
+    },
+    {
+      "name": "Jyotisha: named dusthana yogas require their own house, export carries all exclusions",
+      "status": "passed"
+    },
+    {
+      "name": "Western: Yod, boomerang, cradle, rectangle, kite and hexagon require all edges",
+      "status": "passed"
+    },
+    {
+      "name": "Lenormand: both full tableaux preserve house cycles, swaps, fixed points and reject damaged decks",
+      "status": "passed"
+    },
+    {
+      "name": "Nameology: real loaded upgrade preserves unknown strokes and compound surname calculation",
+      "status": "passed"
+    },
+    {
+      "name": "Tarot: export blocks duplicate draws, missing positions and mixed traditions",
+      "status": "passed"
+    },
+    {
+      "name": "Coverage register accounts for every active reading method and names its limits",
+      "status": "passed"
+    }
+  ],
+  "scope": "Rule arithmetic, exclusions, adapters; no empirical predictive validation"
+}

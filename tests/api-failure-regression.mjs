@@ -48,6 +48,16 @@ try{
     let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"分析依據","action":null}'}]});};
     const r=await ai({request:air({payload:{question:'工作？'}}),env});assert.equal(r.status,200);assert.equal(writes,1);assert.equal((await r.json()).isAdmin,false);for(const x of ['西洋占星','吠陀','姓名學','未知時辰','個案資料'])assert(sent.system.includes(x));
   });
+  await test('Native astrology reaches the model once, preserving every structured fact',async()=>{
+    let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"接口資料測試"}'}]});};
+    const natal={engine:'jy-western-1.1.0',birth:{utc:'1983-08-25T06:55:00Z'},patterns:[{name:'ASTRO_NATIVE_W',planets:['Sun','Moon','Jupiter']}]};
+    const vedic={engine:'jy-vedic-1.2.0',lagna:null,dasha:{status:'ASTRO_NATIVE_V'},specialRules:{checked:32}};
+    const payload={question:'轉職如何安排？',dims:{natal,vedic},rawReadings:{natal:JSON.stringify(natal),vedic:JSON.stringify(vedic),bazi:'保留八字獨有資料'}};
+    assert.equal((await ai({request:air({payload}),env})).status,200);
+    const content=sent.messages[0].content;assert.equal(content.split('ASTRO_NATIVE_W').length-1,1);assert.equal(content.split('ASTRO_NATIVE_V').length-1,1);
+    assert(content.includes(JSON.stringify(natal)));assert(content.includes(JSON.stringify(vedic)));assert(content.includes('保留八字獨有資料'));
+    payload.rawReadings.natal='不同的獨有補充';assert.equal((await ai({request:air({payload}),env})).status,200);assert(sent.messages[0].content.includes('不同的獨有補充'));
+  });
   await test('Dedicated casts, geometry and stopped operations survive the real API adapter',async()=>{
     const casts=[
       {mode:'tarot',readingDate:'2026-09-13',tarotData:{spreadType:'three_card',cards:[{name:'節制',isUp:false,position:1},{name:'錢幣三',isUp:true,position:2},{name:'寶劍六',isUp:true,position:3}],methodPlan:{structures:[{positions:[1,2,3]}]}}},

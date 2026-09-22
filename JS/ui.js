@@ -51,7 +51,7 @@
 // ── v52 Ayanamsa 模式初始化 ──
 // 讀 localStorage（admin toggle 或進階使用者設定）
 // 預設 Lahiri（業界標準），可切 Raman（Raman 自己使用的版本）
-// 影響：bazi.js computeJyotish 兩個呼叫點會依此計算
+// 綜合占星橋接會把此設定交給原生 JYVedic 引擎
 (function(){
   try {
     var mode = localStorage.getItem('jy_ayanamsa_mode');
@@ -829,6 +829,7 @@ function _readBirthForm() {
   }
   // 兼容老 checkbox(沒 radio 時)
   if (btimeUnsure && timePrecision === 'precise') timePrecision = 'unknown';
+  btimeUnsure = !!btimeUnsure || timePrecision === 'unknown' || h === '' || h == null;
 
   var hh = (h !== '' && h != null && !isNaN(parseInt(h))) ? parseInt(h) : null;
   var mm = (mi !== '' && mi != null && !isNaN(parseInt(mi))) ? parseInt(mi) : 0;
@@ -846,18 +847,74 @@ function _readBirthForm() {
   return { y: y, m: m, d: d, hh: hh, mm: mm, name: name, loc: loc, bdate: bdate, btime: btimeUnsure ? '' : btime, btimeUnknown: btimeUnsure || (h === '' || h == null), timePrecision: timePrecision };
 }
 
+var _jyCompositeAstroRequest = 0;
+async function _jyPrepareCompositeAstro(birth) {
+  var request = ++_jyCompositeAstroRequest;
+  if (birth) {
+    S.form.birthLocation = birth.loc;
+    S.form.timePrecision = birth.timePrecision;
+  }
+  var fold = document.getElementById('jy-astro-fold');
+  if (fold) S.form.astroDisambiguation = fold.value;
+  var form = S.form;
+  var button = document.getElementById('btn-tool-go');
+  if (button) {
+    if (!button._jyAstroIdle) button._jyAstroIdle = {label:button.textContent,disabled:button.disabled};
+    button.disabled = true; button.textContent = '正在展開命盤…';
+  }
+  try {
+    // Idle preloading is optional; an immediate submission must load its own dependencies.
+    var dependencies = [
+      ['JS/vendor/lunar.js?v=1.7.7', function(){return typeof Solar !== 'undefined';}],
+      ['JS/bazi-calendar-core.js?v=20260912engine2', function(){return !!window.BaziCalendarCore;}],
+      ['JS/solar-location.js?v=20260922bridge1', function(){return typeof calcTrueSolarTime === 'function';}],
+      ['JS/bazi.js?v=20260922bridge1', function(){return typeof computeBazi === 'function';}],
+      ['JS/bazi_upgrade.js?v=20260922rules1', function(){return typeof enhanceBazi === 'function';}],
+      ['JS/ziwei.js?v=20260922rules1', function(){return typeof computeZiwei === 'function';}]
+    ];
+    for (var entry of dependencies) {
+      if (!entry[1]()) await new Promise(function(resolve, reject) {
+        window._jyLazyScript(entry[0], function(ok){ ok ? resolve() : reject(new Error('排盤資料載入未完成，請重試')); });
+      });
+      if (S.form !== form) return false;
+    }
+    if (!window.JYAstroBridge) throw new Error('占星元件尚未更新，請重新整理');
+    return !!(await JYAstroBridge.prepare(S));
+  } catch (error) {
+    if (S.form === form) {
+      if (window.JYAstroBridge) JYAstroBridge.clear(S);
+      S.astroError = error.message || String(error);
+      if (/出現兩次/.test(S.astroError) && !fold) {
+        var chooser = document.createElement('label');
+        chooser.className = 'native-astro-intro';
+        chooser.innerHTML = '這個時刻在夏令時間結束當天出現兩次，請核對出生紀錄。<select id="jy-astro-fold" class="jy-select" aria-label="重複出生時刻"><option value="">請選擇</option value="earlier">第一次（夏令時間結束前）</option><option value="later">第二次（夏令時間結束後）</option></select>';
+        var anchor = button || document.getElementById('f-bminute');
+        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(chooser, anchor);
+      }
+      alert('命盤尚未完成：' + S.astroError);
+    }
+    return false;
+  } finally {
+    if (button && request === _jyCompositeAstroRequest && button._jyAstroIdle) {
+      button.disabled = button._jyAstroIdle.disabled; button.textContent = button._jyAstroIdle.label;
+      delete button._jyAstroIdle;
+    }
+  }
+}
+
 function _calcSolarAndCompute(birth, genderValue) {
   var y = birth.y, m = birth.m, d = birth.d, hh = birth.hh, mm = birth.mm, loc = birth.loc;
   // ★ 真太陽時校正（八字 + 紫微用）
   var solarHH = hh, solarMM = mm, solarY = y, solarM = m, solarD = d;
   var solarInfo = null;
   if (loc && typeof calcTrueSolarTime === 'function' && !birth.btimeUnknown) {
-    solarInfo = calcTrueSolarTime(y, m, d, hh, mm, loc.longitude, loc.timezone);
+    solarInfo = calcTrueSolarTime(y, m, d, hh, mm, loc.longitude, { timezone:loc.timezone, timezoneId:loc.timezoneId, disambiguation:S.form.astroDisambiguation });
     solarY = solarInfo.year; solarM = solarInfo.month; solarD = solarInfo.day;
     solarHH = solarInfo.hour; solarMM = solarInfo.minute;
   }
   S.form.trueSolar = solarInfo;
   S.form.birthLocation = loc;
+  S.form.timePrecision = birth.timePrecision;
 
   var geoLon = loc ? loc.longitude : 121.56;
   var geoLat = loc ? loc.latitude : 25.04;
@@ -980,7 +1037,7 @@ function _checkQuestionQuality(question) {
   return '';
 }
 
-function submitWithTool() {
+async function submitWithTool() {
   var question = (document.getElementById('f-question') && document.getElementById('f-question').value) ? document.getElementById('f-question').value.trim() : '';
   if(window.JY_validateReadingQuestion&&!window.JY_validateReadingQuestion(question))return;
   if (!question && typeof selectedPresetQ === 'string') question = selectedPresetQ.trim();
@@ -1110,6 +1167,8 @@ function submitWithTool() {
     S._autoMode = false;
 
     S.form = { type: 'general', question: question, gender: '', bdate: '', btime: '', name: '', btimeUnknown: true };
+    if(window.JYAstroBridge)JYAstroBridge.clear(S);
+    S.bazi=null;S.ziwei=null;
 
     // 啟動 OOTK(含限流檢查;不需出生資料,worker 端容錯處理)
     if (typeof window._jyStartOOTK === 'function') {
@@ -1161,7 +1220,8 @@ function submitWithTool() {
   S.form = { type: type, question: question, gender: gender.value, bdate: birth.bdate, btime: birth.btime, name: birth.name, btimeUnknown: birth.btimeUnknown };
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
 
-  // 真太陽時
+  if (tool === 'ootk' && !(await _jyPrepareCompositeAstro(birth))) return;
+  // 真太陽時供八字／紫微使用
   var c = _calcSolarAndCompute(birth, gender.value);
 
   if (tool === 'ootk') {
@@ -1173,26 +1233,7 @@ function submitWithTool() {
       try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
       S.ziwei = computeZiwei(c.clockY,c.clockM,c.clockD,c.clockHH,gender.value,{minute:c.clockMM,timePrecision:birth.timePrecision,btimeUnknown:birth.btimeUnknown,timezoneId:c.solarInfo&&c.solarInfo.timezoneId});
       try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
-      try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { S.natal = null; }
-      try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) {}
-      try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { S.jyotish = null; }
-      try { if (S.jyotish && typeof enhanceJyotish === 'function') enhanceJyotish(S.jyotish); } catch(e) {}
-      try { if (S.jyotish && typeof enhanceJyotish2 === 'function') enhanceJyotish2(S.jyotish, new Date(c.clockY, c.clockM-1, c.clockD)); } catch(e) {}
-
-      // ★ 升級：選擇性呼叫 worker 拿高精度星曆覆寫 natal/jyotish.planets
-      //   非阻塞：失敗或慢時保持原本 Meeus 結果
-      //   只有在沒設 btimeUnknown 時才升級（時辰未知時 Meeus 跟 JPL 差異不大）
-      try {
-        if (typeof window._JY_EPHEMERIS !== 'undefined' && !birth.btimeUnknown) {
-          // 背景升級,不阻塞 UI
-          (async function() {
-            try {
-              if (S.natal) await window._JY_EPHEMERIS.upgradeNatal(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
-              if (S.jyotish) await window._JY_EPHEMERIS.upgradeJyotish(S.jyotish, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
-            } catch(_eu) { /* 升級失敗保持原本結果 */ }
-          })();
-        }
-      } catch(_eu2) {}
+      
     } catch(e) { console.error('OOTK pre-calc:', e); }
 
     // 啟動 OOTK（_jyStartOOTK 已含限流檢查+出生資料檢查）
@@ -1207,10 +1248,10 @@ function submitWithTool() {
   // 七維度：走 submitStep0Fast
   S._tarotOnlyMode = false;
   S._autoMode = true;
-  submitStep0Fast();
+  return submitStep0Fast();
 }
 
-function submitStep0(){
+async function submitStep0(){
   // ★ v69：focusType 永遠送 'general'，後端 refineFocusType 從 question 文字自動分類
   let type = (document.getElementById('f-type') && document.getElementById('f-type').value) || 'general';
   if (!type) type = 'general';
@@ -1223,31 +1264,14 @@ function submitStep0(){
   S.form.btimeUnknown = birth.btimeUnknown;
   S._autoMode = false;
   S._isAdmin = !!(window._JY_ADMIN_TOKEN);
+  if (!(await _jyPrepareCompositeAstro(birth))) return;
   try {
     var c = _calcSolarAndCompute(birth, gender.value);
     S.bazi=computeBazi(c.solarY,c.solarM,c.solarD,c.solarHH,c.solarMM,gender.value,{birthInstant:c.solarInfo&&c.solarInfo.utcTimestamp,trueSolarTimeApplied:!!c.solarInfo,second:(c.solarInfo&&c.solarInfo.second)||0,civilTimeStatus:c.solarInfo&&c.solarInfo.civilTimeStatus,timezoneId:c.solarInfo&&c.solarInfo.timezoneId,timezoneOffset:c.solarInfo?c.solarInfo.timezoneOffset:8,longitude:c.solarInfo&&c.solarInfo.longitude});
     try { if(S.bazi && typeof enhanceBazi==='function') enhanceBazi(S.bazi); } catch(e) { console.error('enhanceBazi:', e); }
     S.ziwei=computeZiwei(c.clockY,c.clockM,c.clockD,c.clockHH,gender.value,{minute:c.clockMM,timePrecision:birth.timePrecision,btimeUnknown:birth.btimeUnknown,timezoneId:c.solarInfo&&c.solarInfo.timezoneId});
     mergeZiweiIntoBazi();
-    try { S.natal = computeNatalChart(c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, c.geoLon, c.geoLat); } catch(e) { console.error('Natal(manual):', e); S.natal=null; }
-    try { if(S.natal && typeof enhanceNatalChart==='function') enhanceNatalChart(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM); } catch(e) { console.error('enhanceNatal:', e); }
-    try { S.jyotish = S.natal ? computeJyotish(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM) : null; } catch(e) { console.error('Jyotish:', e); S.jyotish=null; window._jyJyotishError=e.message; }
-    try { if(S.jyotish && typeof enhanceJyotish==='function') enhanceJyotish(S.jyotish); } catch(e) { console.error('enhanceJy1:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy1:'+e.message; }
-    try { if(S.jyotish && typeof enhanceJyotish2==='function') enhanceJyotish2(S.jyotish, new Date(c.clockY, c.clockM-1, c.clockD)); } catch(e) { console.error('enhanceJy2:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy2:'+e.message; }
-
-    // ★ 升級：選擇性呼叫 worker 拿高精度星曆
-    //   背景進行（非阻塞），有結果就覆寫 natal/jyotish 的 lon
-    //   只在有精確時辰時升級（btimeUnknown 時 Meeus 與 JPL 差異不大）
-    try {
-      if (typeof window._JY_EPHEMERIS !== 'undefined' && !birth.btimeUnknown) {
-        (async function() {
-          try {
-            if (S.natal) await window._JY_EPHEMERIS.upgradeNatal(S.natal, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
-            if (S.jyotish) await window._JY_EPHEMERIS.upgradeJyotish(S.jyotish, c.clockY, c.clockM, c.clockD, c.clockHH, c.clockMM, 8);
-          } catch(_eu) {}
-        })();
-      }
-    } catch(_eu2) {}
+    
     if (typeof renderDailyFortune==='function') renderDailyFortune();
     if (typeof generateLuckyInfo==='function') generateLuckyInfo();
     if (typeof renderJyotishFunZone==='function') try{renderJyotishFunZone();}catch(e){}
@@ -1466,7 +1490,7 @@ window._jyEnsureLoadingFxCss = function(){
   (document.head || document.documentElement).appendChild(st);
 };
 
-function submitStep0Fast(){
+async function submitStep0Fast(){
   if (window._jyEnsureLoadingFxCss) window._jyEnsureLoadingFxCss(); // v80.44：確保過場 CSS 已注入
   drawnCards=[];
   S.meihua=null;S.tarot={drawn:[],spread:[]};
@@ -1480,9 +1504,15 @@ function submitStep0Fast(){
   if (S._ziweiMode) S.form.name = '';
   S.form.btimeUnknown = birth.btimeUnknown;
   S._autoMode = true; // ★ 自動模式標記：梅花時間起卦 + 塔羅種子抽牌
+  if (!(await _jyPrepareCompositeAstro(birth))) return;
   const overlay = document.createElement('div');
   overlay.className = 'loading-overlay';
   overlay.id = 'loading-overlay';
+  const activeForm=S.form,activeChart=S.astroBundle;
+  function later(fn,ms){return setTimeout(function(){
+    if(S.form===activeForm && S.astroBundle===activeChart) fn();
+    else overlay.remove();
+  },ms);}
   // 六維度節點位置（六芒星分佈）
   const dims = [
     {id:'ld-bazi',  sym:'☰', label:'八字',   angle:-90},
@@ -1632,19 +1662,13 @@ function submitStep0Fast(){
       }
     },
     ()=>{
-      // 西洋星盤計算
-      try { S.natal = computeNatalChart(y, m, d, hh, mm, c.geoLon, c.geoLat); } catch(e) { 
-        console.error('Natal chart error:', e); 
-        S.natal = null;
-        setTimeout(()=>{
-          const el=document.getElementById('d-natal-summary');
-          if(el) el.innerHTML='<p style="color:#f87171">星盤計算錯誤：'+e.message+'</p>';
-        },500);
-      }
-      try { if(S.natal && typeof enhanceNatalChart==='function') enhanceNatalChart(S.natal, y, m, d, hh, mm); } catch(e) { console.error('enhanceNatal:', e); }
-      try { S.jyotish = S.natal ? computeJyotish(S.natal, y, m, d, hh, mm) : null; } catch(e) { console.error('Jyotish:', e); S.jyotish=null; window._jyJyotishError=e.message; }
-      try { if(S.jyotish && typeof enhanceJyotish==='function') enhanceJyotish(S.jyotish); } catch(e) { console.error('enhanceJy1:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy1:'+e.message; }
-      try { if(S.jyotish && typeof enhanceJyotish2==='function') enhanceJyotish2(S.jyotish, new Date(y, m-1, d)); } catch(e) { console.error('enhanceJy2:', e); window._jyJyotishError=(window._jyJyotishError||'')+' | enhanceJy2:'+e.message; }
+      // 提交時已由原生引擎原子產生整張命盤。
+      JYAstroBridge.assertCurrent(S);
+      
+      
+      
+      
+      
     },
     ()=>{
       // 姓名學（此步驟用於觸發最終融合，實際渲染在 runAnalysisV2）
@@ -1660,16 +1684,16 @@ function submitStep0Fast(){
   const stagger=TOTAL_MS/6.5;
   dimIds.forEach((id,i)=>{
     // 開始運算
-    setTimeout(()=>{
+    later(()=>{
       const el=document.getElementById(id);
       if(el) el.classList.add('computing');
       const st=document.getElementById('ld-status');
       const sb=document.getElementById('ld-sub');
-      if(st){st.style.opacity='0';setTimeout(()=>{st.textContent=statusTexts[i];st.style.opacity='1';},200);}
-      if(sb){sb.style.opacity='0';setTimeout(()=>{sb.textContent=subTexts[i];sb.style.opacity='1';},200);}
+      if(st){st.style.opacity='0';later(()=>{st.textContent=statusTexts[i];st.style.opacity='1';},200);}
+      if(sb){sb.style.opacity='0';later(()=>{sb.textContent=subTexts[i];sb.style.opacity='1';},200);}
     }, i*stagger);
     // 完成運算
-    setTimeout(()=>{
+    later(()=>{
       try { fns[i](); } catch(e) { console.error('fn['+i+'] error:', e); }
       const el=document.getElementById(id);
       if(el){el.classList.remove('computing');el.classList.add('done');}
@@ -1685,30 +1709,30 @@ function submitStep0Fast(){
   });
 
   // 全部完成 → 爆發 → 跳轉
-  setTimeout(()=>{
+  later(()=>{
     document.getElementById('ld-center').classList.add('active');
     const st=document.getElementById('ld-status');
-    if(st){st.style.opacity='0';setTimeout(()=>{st.textContent='解讀完成';st.style.opacity='1';},200);}
+    if(st){st.style.opacity='0';later(()=>{st.textContent='解讀完成';st.style.opacity='1';},200);}
     const sb=document.getElementById('ld-sub');
     if(sb) sb.textContent='';
     // 所有線全亮
     document.querySelectorAll('.ld-line').forEach(l=>l.classList.add('lit'));
   }, TOTAL_MS-400);
 
-  setTimeout(()=>{
+  later(()=>{
     const burst=document.getElementById('ld-burst');
-    if(burst){burst.classList.add('go');setTimeout(()=>burst.classList.add('fade'),400);}
+    if(burst){burst.classList.add('go');later(()=>burst.classList.add('fade'),400);}
   }, TOTAL_MS-100);
 
-  setTimeout(()=>{
+  later(()=>{
     const ol=document.getElementById('loading-overlay');
-    if(ol){ol.style.transition='opacity .5s';ol.style.opacity='0';setTimeout(()=>ol.remove(),500);}
+    if(ol){ol.style.transition='opacity .5s';ol.style.opacity='0';later(()=>ol.remove(),500);}
     goStep(3);
 
     // ── OOTK：結果頁載入後啟動開鑰之法（走付費檢查）──
     if (window._pendingOOTK) {
       window._pendingOOTK = false;
-      setTimeout(function() {
+      later(function() {
         if (typeof _jyStartOOTK === 'function') {
           _jyStartOOTK();
         } else if (typeof startOOTK === 'function') {
@@ -1723,9 +1747,9 @@ function submitStep0Fast(){
   }, TOTAL_MS+300);
 
   // ★ v14：超時保護——30秒後強制移除 overlay，防止計算卡死
-  setTimeout(function(){
+  later(function(){
     var ol=document.getElementById('loading-overlay');
-    if(ol){ ol.style.transition='opacity .5s'; ol.style.opacity='0'; setTimeout(function(){ol.remove();},500); goStep(3); }
+    if(ol){ ol.style.transition='opacity .5s'; ol.style.opacity='0'; later(function(){ol.remove();},500); goStep(3); }
   }, 30000);
 }
 
@@ -1800,7 +1824,11 @@ function generateDiagnosticPack(){
   }
 
   // 星盤
-  if(S.natal){
+  if(S.astroBundle && window.JYAstroBridge){
+    JYAstroBridge.assertCurrent(S);
+    pack.push('─── 西洋星盤 ───',JSON.stringify(JYAstroBridge.payload('natal',S.astroBundle.western,S.form.type)));
+    pack.push('─── 印度占星 ───',JSON.stringify(JYAstroBridge.payload('vedic',S.astroBundle.vedic,S.form.type)));
+  } else if(S.natal){
     pack.push('');
     pack.push('─── 西洋星盤 ───');
     pack.push(S.natal.summary);
@@ -4972,9 +5000,9 @@ function resetAF(){
 /* ── Hook into existing system ── */
 (function(){
   var _s0=window.submitStep0;
-  if(_s0)window.submitStep0=function(){_s0.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},500);};
+  if(_s0)window.submitStep0=async function(){var result=await _s0.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},500);return result;};
   var _sf=window.submitStep0Fast;
-  if(_sf)window.submitStep0Fast=function(){_sf.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},4000);};
+  if(_sf)window.submitStep0Fast=async function(){var result=await _sf.apply(this,arguments);setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},4000);return result;};
   var _ei=window.initExtraFeatures;
   if(_ei)window.initExtraFeatures=function(){_ei.apply(this,arguments);try{renderCal30();renderAuraFilter();}catch(e){}};
   if(typeof S!=='undefined'&&S.bazi)setTimeout(function(){try{renderCal30();renderAuraFilter();}catch(e){}},300);
@@ -5784,7 +5812,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260917pair1', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20260922rules1', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5854,7 +5882,7 @@ showAuraResult = function(){
     // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
     if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/meihua-standalone.js?v=20260913output1', function(ok){
+      window._jyLazyScript('JS/meihua-standalone.js?v=20260922rules1', function(ok){
         if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
         else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
       });
@@ -5868,7 +5896,7 @@ showAuraResult = function(){
     // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20260913output1', function(ok){
+      window._jyLazyScript('JS/bazi-standalone.js?v=20260922rules1', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });
@@ -6101,7 +6129,7 @@ showAuraResult = function(){
       if (check.code === 'LOGIN_REQUIRED') { _showLoginModal(); return; }
       _showUsedModal(); return;
     }
-    if (_origSubmit0) _origSubmit0.apply(this, arguments);
+    if (_origSubmit0) return _origSubmit0.apply(this, arguments);
   };
 
   window.submitStep0Fast = async function() {
@@ -6110,14 +6138,14 @@ showAuraResult = function(){
       if (check.code === 'LOGIN_REQUIRED') { _showLoginModal(); return; }
       _showUsedModal(); return;
     }
-    if (_origSubmit0Fast) _origSubmit0Fast.apply(this, arguments);
+    if (_origSubmit0Fast) return _origSubmit0Fast.apply(this, arguments);
   };
 
   // ★ v21：攔截 submitWithTool — 塔羅也需要登入
   var _origSubmitWithTool = window.submitWithTool;
   window.submitWithTool = async function() {
     // ★ 全免費/無登入：塔羅不需登入（移除登入闘門）
-    if (_origSubmitWithTool) _origSubmitWithTool.apply(this, arguments);
+    if (_origSubmitWithTool) return _origSubmitWithTool.apply(this, arguments);
   };
 
   // ══ 執行 ══
@@ -6574,7 +6602,7 @@ showAuraResult = function(){
     if (typeof setCurrentSpread === 'function') setCurrentSpread(fastSpread);
     console.log('[AutoMode] 語義牌陣:', fastSpread);
     // 繼續原始流程
-    if (_prevSubmitFast) _prevSubmitFast.apply(this, arguments);
+    if (_prevSubmitFast) return _prevSubmitFast.apply(this, arguments);
   };
 
   // ── 把牌陣渲染函式換出給另一個 IIFE 的 jyFixChosen 使用 ──
@@ -6963,7 +6991,7 @@ function enterFullAnalysis() {
 // ── enterOOTKFromTarot:從塔羅結果進開鑰之法 ──
 // v69.7:OOTK 不再需要出生資料(正統 Mathers Manuscript Q 不需要)
 //        只檢查問題是否填了;出生資料若有填會帶過去當 decan 法線索,沒填也能跑
-function enterOOTKFromTarot() {
+async function enterOOTKFromTarot() {
   var question = document.getElementById('f2-question').value.trim();
   var gender = document.querySelector('input[name="gender2"]:checked');
   var y2 = parseInt(document.getElementById('f2-byear')?.value);
@@ -6994,6 +7022,7 @@ function enterOOTKFromTarot() {
     if (precRadios2[pi2].checked) { timePrecision2 = precRadios2[pi2].value; break; }
   }
   if (btimeUnsure2 && timePrecision2 === 'precise') timePrecision2 = 'unknown';
+  btimeUnsure2 = !!btimeUnsure2 || timePrecision2 === 'unknown' || h2 === '' || h2 == null;
 
   var hh2 = (h2 !== '' && h2 != null && !isNaN(parseInt(h2))) ? parseInt(h2) : 12;
   var mm2 = (mi2 !== '' && mi2 != null && !isNaN(parseInt(mi2))) ? parseInt(mi2) : 0;
@@ -7015,10 +7044,16 @@ function enterOOTKFromTarot() {
     timePrecision: timePrecision2
   };
 
+  if (hasBirth && hasGender) {
+    if (!(await _jyPrepareCompositeAstro({loc:loc2,timePrecision:timePrecision2}))) return;
+  } else if (window.JYAstroBridge) {
+    JYAstroBridge.clear(S); S.astroError=null; S.bazi=null; S.ziwei=null;
+  }
+
   // v69.7:只有 hasBirth 時才算真太陽時
   var solarInfo = null;
   if (hasBirth && loc2 && typeof calcTrueSolarTime === 'function' && !S.form.btimeUnknown) {
-    solarInfo = calcTrueSolarTime(y2, m2, d2, hh2, mm2, loc2.longitude, loc2.timezone);
+    solarInfo = calcTrueSolarTime(y2, m2, d2, hh2, mm2, loc2.longitude, { timezone:loc2.timezone, timezoneId:loc2.timezoneId, disambiguation:S.form.astroDisambiguation });
   }
   S.form.trueSolar = solarInfo;
   S.form.birthLocation = loc2;
@@ -7065,9 +7100,9 @@ function enterOOTKFromTarot() {
       try { if (S.bazi && typeof enhanceBazi === 'function') enhanceBazi(S.bazi); } catch(e) {}
       S.ziwei = computeZiwei(y2,m2,d2,hh2,gender.value,{minute:mm2,timezoneId:solarInfo&&solarInfo.timezoneId});
       try { if (typeof mergeZiweiIntoBazi === 'function') mergeZiweiIntoBazi(); } catch(e) {}
-      try { S.natal = computeNatalChart(y2, m2, d2, hh2, mm2, geoLon, geoLat); } catch(e) { S.natal = null; }
-      try { if (S.natal && typeof enhanceNatalChart === 'function') enhanceNatalChart(S.natal, y2, m2, d2, hh2, mm2); } catch(e) {}
-      try { S.jyotish = S.natal ? computeJyotish(S.natal, y2, m2, d2, hh2, mm2) : null; } catch(e) { S.jyotish = null; }
+      
+      
+      
     } catch(e) { console.error('enterOOTKFromTarot calc:', e); }
   }
   // 若沒填出生資料,S.bazi/ziwei/natal/jyotish 保持 undefined,worker.js OOTK 路徑容錯處理

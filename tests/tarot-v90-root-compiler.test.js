@@ -154,8 +154,8 @@ test('答案稽核攔截盤外牌與未量測的年齡、人數', () => {
 test('index 以正確順序載入語義引擎', () => {
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sem=html.indexOf('JS/tarot-semantic-engine.js?v=20260715v90_0');
-  const ai=html.indexOf('JS/ai-analysis.js?v=20260715v90_0');
-  const pe=html.indexOf('JS/prompt-export.js?v=20260715v90_0');
+  const ai=html.indexOf('JS/ai-analysis.js?v=20260922rules1');
+  const pe=html.indexOf('JS/prompt-export.js?v=20260922rules1');
   assert(sem>0 && sem<ai && ai<pe);
 });
 

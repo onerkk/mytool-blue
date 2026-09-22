@@ -107,6 +107,16 @@
     if(s.kind==='liuyao')h+='<span>月建<b>'+d.monthBranch+'</b></span><span>日辰<b>'+d.day+'</b></span><span>旬空<b>'+d.voidBranches.join('')+'</b></span><span>世／應<b>'+r.original.palace.shi+'／'+r.original.palace.ying+'</b></span>';
     else h+='<span>讀法<b>卦爻辭</b></span>';
     h+='</div><div class="gw-detail" aria-live="polite">'+detail(s)+'</div>'+(s.kind==='liuyao'?table(s):scripture(s));
+    if(s.kind==='liuyao'&&r.interpretation){
+      var a=r.interpretation,labels={'hidden-movement':'旺靜逢日沖，暗動','day-break':'弱靜逢日沖，日破','clash-with-support':'日沖而有生扶，須合看','moving-not-dispersed':'動爻逢沖，有生扶','moving-clash-unresolved':'動爻受沖，尚待辨沖散'};
+      h+='<details class="gw-fold"><summary>取用、特殊條件與時間線索</summary><div class="gw-fold-body">';
+      a.targets.forEach(function(t){h+='<p><b>'+esc(t.relative+' · '+t.role)+'</b><br>'+esc(t.candidates.map(function(u){return u.position+'爻 '+u.branch+(u.hidden?'（伏神）':'');}).join('、')||'原卦及本宮伏神未見')+(t.status==='multiple'?'；多現，需按本題角色辨別。':'')+'</p>';});
+      a.lines.forEach(function(l){var notes=[labels[l.dayEffect]||''].concat(l.obstacles).filter(Boolean);if(notes.length)h+='<p>'+esc('第'+l.position+'爻：'+notes.join('；'))+'</p>';});
+      var timing=a.timing;
+      if(timing.status==='bounded'){h+='<h3>期限內可留意的日期</h3><p>'+esc(timing.window.start+' 至 '+timing.window.end)+'</p>';timing.candidates.slice(0,12).forEach(function(x){h+='<p><b>'+esc(x.date+' · '+x.day)+'</b><br>'+esc(x.triggers.map(function(t){return t.relative+' '+t.position+'爻：'+t.reasons.join('、');}).join('；'))+'</p>';});if(timing.candidates.length>12)h+='<p>其餘候選隨完整起卦資料一併下載。</p>';h+='<p>這些是條件觸發的候選日，需連同卦中阻力及現實進展確認。</p>';}
+      else h+='<p>問題未提供可辨識的期限，這次保留相對時機。</p>';
+      h+='</div></details>';
+    }
     h+='<details class="gw-fold"><summary>查看起卦紀錄與方法</summary><div class="gw-fold-body"><p>'+esc(d.wall+' · UTC '+(d.timezoneOffset>=0?'+':'')+d.timezoneOffset)+'<br>'+esc(s.kind==='liuyao'?'節氣月建 · '+(d.dayBoundaryMode==='ZI_HOUR_23'?'23:00':'00:00')+' 換日':'起卦時間僅供記錄')+'</p><p>初爻至上爻：'+r.values.join(' · ')+'</p>';
     if(r.method==='coins')h+='<ol>'+r.records.map(function(c){return '<li>'+c.coins.map(function(f){return f==='back'?'背（3）':'字（2）';}).join(' + ')+' = '+c.value+'</li>';}).join('')+'</ol>';
     else if(r.method==='yarrow')h+='<ol>'+r.records.map(function(c){return '<li>'+c.changes.map(function(v){return v.total+'策 → '+v.remaining+'策（歸餘'+v.removed+'）';}).join('；')+'；爻值 '+c.value+'</li>';}).join('')+'</ol><p>大衍蓍法：五十策虛一，每變皆掛一；三變後餘策除四成爻。本次為四種餘數等機率的數位取樣。</p>';

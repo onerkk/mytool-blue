@@ -662,7 +662,7 @@ function baziWuxingStance(bazi) {
     var f=bazi.fuyiAssessment, m=Object.assign({},f.map), es=['木','火','土','金','水'], rs={};
     f.items.forEach(function(i){rs[i.element]=i.role;});
     var xi=es.filter(e=>m[e]==='喜'),ji=es.filter(e=>m[e]==='忌'),ping=es.filter(e=>m[e]==='平');
-    return {map:m,role:rs,xi:xi,ji:ji,ping:ping,conflict:!!bazi.strengthConflict,model:f.model,candidateOnly:false,scope:f.scope,summary:f.conclusion+'；喜向：'+(xi.join('、')||'不預設')+'；忌向：'+(ji.join('、')||'不預設')};
+    return {map:m,role:rs,xi:xi,ji:ji,ping:ping,conflict:!!bazi.strengthConflict,model:f.model,candidateOnly:f.appliesAsFinalUse===false,scope:f.scope,summary:f.conclusion+'；喜向：'+(xi.join('、')||'不預設')+'；忌向：'+(ji.join('、')||'不預設')};
   }
   var dmEl = bazi.dmEl, els = ['木','火','土','金','水'];
   var YIN = {木:'水',火:'木',土:'火',金:'土',水:'金'}, SHENG = {木:'火',火:'土',土:'金',金:'水',水:'木'},

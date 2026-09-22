@@ -33,7 +33,7 @@
       ],
       mustNot: ['_decanToDate','window.ootkAutoSignificator = autoSelectSignificator']
     },
-    'ai-analysis.js?v=20260912accuracy1': {
+    'ai-analysis.js?v=20260922rules1': {
       must: [
         "sourceProfile: 'gd_book_t'",'elementalDignityGroups','reversedCount: 0',
         'opposingPairs = [];','timeConclusion = \'\';','result.semanticContract = _contract',
@@ -49,7 +49,7 @@
       ],
       mustNot: ['Uranus','Neptune','Pluto']
     },
-    'prompt-export.js?v=20260912accuracy1': {
+    'prompt-export.js?v=20260922rules1': {
       must: [
         'Golden Dawn《Book T》塔羅證據整合者','Golden Dawn《Book T》Opening of the Key',
         'ROOT-SPEC v95','QuestionCompiler','GraphBinder','SaturationReviewer','gd_book_t',
@@ -58,7 +58,7 @@
       ],
       mustNot: ['至少自然帶到 2 張 RWS','每張牌都要在正文點到名','Aces 採 count 11（Crowley·Liber 78）']
     },
-    'ui.js?v=20260912accuracy1': {
+    'ui.js?v=20260922rules1': {
       must: ['Golden Dawn Book T','dignityContext(cards, i,','reversed: false','元素尊貴'],
       mustNot: ['結合正逆位']
     },

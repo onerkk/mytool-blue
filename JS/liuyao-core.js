@@ -140,13 +140,129 @@
     if (selected && allowed.indexOf(selected)<0) throw new Error('用神設定無效');
     if (selected && selected!=='auto') return {mode:'manual',candidates:[selected],note:'提問者指定的取用方向；仍須依完整原問句判讀。'};
     var q=String(question||''), candidates=[];
-    if(/營收|收入|獲利|貨款|回款|收款|財運|求財|利潤|賺錢|薪水|資金/.test(q))candidates.push('妻財');
-    if(/求職|錄取|面試|升遷|職位|考公職|轉職|官司|訴訟/.test(q))candidates.push('官鬼');
+    if(/營收|收入|獲利|貨款|回款|收款|財運|求財|利潤|賺錢|薪水|資金|回本|欠款|討債|還錢|拿.*錢|錢.*拿|投資|股票|報酬|借款/.test(q))candidates.push('妻財');
+    if(/求職|錄取|面試|升遷|職位|考公職|轉職|官司|訴訟|找.*工作|工作.*(找到|做下去|穩定|保住)|失業|裁員|辭職|offer|聘用/i.test(q))candidates.push('官鬼');
     if(/合約|簽約|證照|文書|申請|考試|父母|爸爸|媽媽|房屋/.test(q))candidates.push('父母');
     if(/孩子|女兒|兒子|子女|懷孕/.test(q))candidates.push('子孫');
     if(/兄弟|姊妹|姐妹|哥哥|弟弟|姊姊|姐姐|妹妹/.test(q))candidates.push('兄弟');
     if(/交往|感情|伴侶|喜歡|愛我|曖昧|結婚|對方|合作/.test(q) || !candidates.length)candidates.push('世應');
-    return {mode:'suggested',candidates:candidates,note:'依問句提供取用候選，不是已證實的人物角色或吉凶。感情先看已知關係與世應，不由姓名或性別猜配偶爻。'};
+    return {mode:'suggested',candidates:candidates,note:'按問句定位事情，明示親屬另保留人物用神；一題多事或同類多現不暗自挑最吉的一爻。感情用世應，不猜性別配偶爻。'};
+  }
+  // Zeng Shan Bu Yi rule profile. Conditions are retained; no additive fortune score.
+  var RULE_SOURCE='https://zh.wikisource.org/zh-hant/增刪卜易';
+  var LIFE_START={木:11,火:2,土:8,金:5,水:8}; // 土隨水；不混用八字陰干逆行。
+  var LIFE_NAMES=['長生','沐浴','冠帶','臨官','帝旺','衰','病','死','墓','絕','胎','養'];
+  function lifeStage(element,branch){return LIFE_NAMES[mod(ZHI.indexOf(branch)-LIFE_START[element],12)];}
+  function assessLine(line,date,lines){
+    var s=line.states,monthStrong=['比和','生'].includes(s.monthRelation)&&!s.monthBroken;
+    var helpers=lines.filter(function(x){return x.position!==line.position&&x.moving&&!x.states.monthBroken&&(!x.states.void||x.states.daySame||x.states.dayClash)&&(!x.transition||x.transition.returnRelation!=='克')&&relation(x.element,line.element)==='生';}).map(function(x){return x.position;});
+    var supported=monthStrong||s.daySame||s.dayRelation==='生'||helpers.length>0;
+    var opposed=s.monthBroken||s.monthRelation==='克'||s.dayRelation==='克';
+    var state=supported?(opposed?'supported-with-pressure':'supported'):'unsupported';
+    var dayEffect='none';
+    if(s.dayClash){
+      if(line.moving)dayEffect=supported?'moving-not-dispersed':'moving-clash-unresolved';
+      else dayEffect=monthStrong?'hidden-movement':helpers.length?'clash-with-support':'day-break';
+    }
+    var obstacles=[];
+    if(s.void&&!s.daySame&&(!s.dayClash||!supported))obstacles.push(s.dayClash?'衰空逢沖，未作沖實':'旬空待填沖');
+    if(s.monthBroken&&!s.daySame&&!s.dayCombine)obstacles.push('月破待值合或出月');
+    if(line.moving&&s.dayCombine)obstacles.push('動爻日合，合絆待沖');
+    if(line.transition&&line.transition.returnRelation==='克')obstacles.push('回頭克');
+    var stages={day:lifeStage(line.element,date.day[1]),changed:line.moving?lifeStage(line.element,line.changed.branch):null};
+    var tombs=[];
+    if(stages.day==='墓')tombs.push({kind:'日墓',branch:date.day[1]});
+    if(stages.changed==='墓')tombs.push({kind:'化墓',branch:line.changed.branch});
+    lines.filter(function(x){return x.moving&&x.position!==line.position&&lifeStage(line.element,x.branch)==='墓';}).forEach(function(x){tombs.push({kind:'動墓',branch:x.branch,position:x.position});});
+    if(tombs.length&&!supported)obstacles.push('休囚入墓候選，待沖墓及生扶');
+    return {position:line.position,season:{label:{比和:'旺',生:'相',受生:'休',受克:'囚',克:'死'}[s.monthRelation],relation:s.monthRelation},
+      strength:state,supportingMovingPositions:helpers,dayEffect:dayEffect,
+      availability:obstacles.length?'conditional':dayEffect==='day-break'?'impaired':'available',obstacles:obstacles,
+      lifeStages:stages,tombs:tombs,tombStatus:tombs.length?(supported?'旺有生扶，不逕作入墓':'休囚墓候選，待沖墓及生扶'):'無墓支',
+      voidStatus:s.void?(s.daySame?'填實':s.dayClash?(supported?'旺空逢沖':'衰空逢沖，未作沖實'):'旬空，待出旬或填沖'):'非空',
+      policy:'日沖先分動靜與生扶；月日矛盾保留。墓絕為條件，不把長生表直接當吉凶。',source:RULE_SOURCE};
+  }
+  function questionTargets(question,focus){
+    var q=String(question||''),targets=focus.candidates.map(function(x){return {role:'事情',relative:x};});
+    if(focus.mode!=='manual'){
+      [['父母',/爸爸|媽媽|父親|母親|父母/],['子孫',/兒子|女兒|孩子|子女/],['兄弟',/哥哥|弟弟|姐姐|姊姊|妹妹|兄弟|姊妹|姐妹/]].forEach(function(pair){
+        if(pair[1].test(q))targets.push({role:'明示親屬',relative:pair[0]});
+      });
+    }
+    return targets.filter(function(x,i,a){return a.findIndex(function(y){return y.role===x.role&&y.relative===x.relative;})===i;});
+  }
+  function parseWindow(question,date,explicit){
+    if(!date.instant||!Number.isFinite(Date.parse(date.instant)))return {status:'missing-cast-instant',dates:[]};
+    var wall=localTimeAt(Date.parse(date.instant),date.timezoneOffset==null?8:date.timezoneOffset),today=Date.UTC(wall.year,wall.month-1,wall.day),end=null,start=today,why='';
+    function civil(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s))throw new Error('應期範圍請使用 YYYY-MM-DD');var ms=Date.parse(s+'T00:00:00Z');if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,10)!==s)throw new Error('應期日期無效');return ms;}
+    if(explicit){start=explicit.start?civil(explicit.start):today;end=civil(explicit.end);why='明示日期範圍';}
+    else{var q=String(question||''),m=q.match(/(?:未來|接下來|今起|這)\s*(\d{1,3})[天日]/);if(m&&Number(m[1])>0){end=today+(Number(m[1])-1)*86400000;why=m[0];}
+      else if((m=q.match(/(?:未來|接下來|這)\s*([一二兩三四1-4])(?:個)?(?:週|星期)/))){var weeks={'一':1,'二':2,'兩':2,'三':3,'四':4}[m[1]]||Number(m[1]);end=today+(weeks*7-1)*86400000;why=m[0];}
+      else if(/下個月|下月/.test(q)){start=Date.UTC(wall.year,wall.month,1);end=Date.UTC(wall.year,wall.month+1,0);why='下個民用月';}
+      else if(/月底|這個月|本月/.test(q)){end=Date.UTC(wall.year,wall.month,0);why='本月截至月底';}
+      else if((m=q.match(/(\d{4}-\d{2}-\d{2})\s*(?:之前|以前|前|為止|截止)/))){end=civil(m[1]);why=m[0];}}
+    if(end===null)return {status:'unspecified',dates:[],note:'未給期限，不自造精確應期。'};
+    if(start<today||end<start||(end-start)/86400000>365)throw new Error('應期範圍須自起卦當日起，且不超過 366 日');
+    return {status:'bounded',start:new Date(start).toISOString().slice(0,10),end:new Date(end).toISOString().slice(0,10),basis:why,startMs:start,endMs:end};
+  }
+  function interpretation(result,input){
+    var lines=result.lines,date=result.calendar,assessments=lines.map(function(l){return assessLine(l,date,lines);});
+    var targets=questionTargets(result.question,result.focus).map(function(t){
+      var found=lines.filter(function(l){return t.relative==='世應'?!!l.role:l.relative===t.relative;}).map(function(l){return {position:l.position,branch:l.branch,element:l.element,role:l.role,hidden:false,assessment:assessments[l.position-1]};});
+      if(!found.length)lines.forEach(function(l){if(l.hidden&&l.hidden.relative===t.relative)found.push({position:l.position,branch:l.hidden.branch,element:l.hidden.element,hidden:true,flightRelation:l.hidden.flightRelation,states:l.hidden.states});});
+      return {role:t.role,relative:t.relative,status:found.length===1?'unique':found.length?'multiple':'absent',candidates:found,
+        selection:found.length===1?found[0].position:null,policy:'唯一者定位；多現保留各爻、世應角色及旺衰，不以任意分數挑吉爻。'};
+    });
+    var influences=targets.map(function(t){return {relative:t.relative,candidates:t.candidates.map(function(u){return {position:u.position,hidden:u.hidden,branch:u.branch,
+      network:lines.map(function(l){var rel=relation(l.element,u.element),chou=CONTROLS[l.element]===Object.keys(GENERATES).find(function(e){return GENERATES[e]===u.element;});return {position:l.position,relative:l.relative,
+        function:l.position===u.position&&!u.hidden?'用神':rel==='生'?'元神':rel==='克'?'忌神':chou?'仇神':rel==='比和'?'同氣':'其他',
+        movement:l.moving?'明動':assessments[l.position-1].dayEffect==='hidden-movement'?'暗動':'靜',availability:assessments[l.position-1].availability,
+        transition:l.transition,obstacles:assessments[l.position-1].obstacles};})};})};});
+    var combinations=[['申','子','辰','水'],['巳','酉','丑','金'],['寅','午','戌','火'],['亥','卯','未','木']].map(function(g){
+      var members=lines.filter(function(l){return g.slice(0,3).includes(l.branch);}),missing=g.slice(0,3).filter(function(b){return !members.some(function(l){return l.branch===b;});}),active=members.filter(function(l){return l.moving||assessments[l.position-1].dayEffect==='hidden-movement';});
+      return {name:g.slice(0,3).join('')+'三合'+g[3],element:g[3],positions:members.map(function(l){return l.position;}),missing:missing,
+        status:missing.length?'incomplete':active.length>=2?'structure-present':'static-combination',conditions:members.flatMap(function(l){return assessments[l.position-1].obstacles.map(function(s){return l.label+' '+s;});}),
+        policy:'本卦三支齊且至少二爻明暗動為本版成局入口；缺支不借無關變爻拼局；不直接宣告化氣。'};
+    }).filter(function(g){return g.positions.length>=2;});
+    // Original/changed combinations are restricted to the two moving end rows
+    // of an inner or outer trigram, not arbitrary static transformed rows.
+    [0,3].forEach(function(start){var ends=[lines[start],lines[start+2]];if(!ends.every(function(l){return l.moving;}))return;
+      [['申','子','辰','水'],['巳','酉','丑','金'],['寅','午','戌','火'],['亥','卯','未','木']].forEach(function(g){
+        if(!ends.every(function(l){return g.slice(0,3).includes(l.branch);}))return;
+        var branches=ends.map(function(l){return l.branch;}),missing=g.slice(0,3).filter(function(b){return !branches.includes(b);});
+        if(missing.length!==1||!ends.some(function(l){return l.changed.branch===missing[0];}))return;
+        combinations.push({name:g.slice(0,3).join('')+'三合'+g[3],element:g[3],positions:ends.map(function(l){return l.position;}),changedPositions:ends.filter(function(l){return l.changed.branch===missing[0];}).map(function(l){return l.position;}),status:'transformed-structure',conditions:ends.flatMap(function(l){return assessments[l.position-1].obstacles;}),policy:'增刪內初三／外四六爻動化出第三支的指定支線；成象不直接等於成化。'});
+      });
+    });
+    var transformed=[];
+    [0,3].forEach(function(start){var a=lines.slice(start,start+3),changed=a.some(function(l){return l.moving;});if(!changed)return;
+      if(a.every(function(l){return branchLinks(l.branch,l.changed.branch).same;}))transformed.push({name:(start?'外卦':'內卦')+'伏吟',positions:a.map(function(l){return l.position;}),kind:'repeated-branches'});
+      if(a.every(function(l){return branchLinks(l.branch,l.changed.branch).clash;}))transformed.push({name:(start?'外卦':'內卦')+'反吟',positions:a.map(function(l){return l.position;}),kind:'opposed-branches'});
+    });
+    var window=parseWindow(result.question,date,input.timeWindow),timing={window:window,status:window.status,candidates:[],policy:'條件觸發日，不是事件保證；多用神未定者不合併成唯一日期。日界沿用起卦設定，交節日须按瞬間核月。'};
+    if(window.status==='bounded'){
+      var offset=date.timezoneOffset==null?8:date.timezoneOffset,previous=null;
+      for(var ms=window.startMs;ms<=window.endMs;ms+=86400000){
+        var d=new Date(ms),cal=calendar({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'}),triggers=[];
+        targets.forEach(function(t){t.candidates.forEach(function(u){var l=u.hidden?lines[u.position-1].hidden:lines[u.position-1],links=branchLinks(u.branch,cal.day[1]),s=l.states,why=[];
+          var leavesVoid=s.void&&!cal.voidBranches.includes(u.branch)&&(!previous||previous.voidBranches.includes(u.branch));
+          var leavesMonth=s.monthBroken&&cal.monthBranch!==date.monthBranch&&(!previous||previous.monthBranch===date.monthBranch);
+          if(leavesVoid)why.push('起卦旬空解除候選');
+          if(s.monthBroken&&(links.same||links.combine||cal.monthBranch!==date.monthBranch))why.push(links.same?'月破逢值':links.combine?'月破逢合':'已換節令月');
+          if(l.moving){if(links.same)why.push('動爻逢值');if(links.combine)why.push('動爻逢合');if(l.changed&&cal.day[1]===l.changed.branch)why.push('變支逢值');}
+          else{if(links.same)why.push('靜爻逢值');if(links.clash)why.push('靜爻逢沖');}
+          if(!u.hidden){var assessment=assessments[u.position-1];assessment.tombs.forEach(function(tomb){if(branchLinks(tomb.branch,cal.day[1]).clash)why.push('沖'+tomb.kind+'候選');});
+            if(l.moving&&s.dayCombine&&branchLinks(date.day[1],cal.day[1]).clash)why.push('沖開起卦日合候選');
+          }
+          if(why.length&&(leavesVoid||leavesMonth||links.same||links.clash||links.combine||why.some(function(w){return /^沖/.test(w);})||(l.changed&&l.moving&&cal.day[1]===l.changed.branch)))triggers.push({relative:t.relative,position:u.position,hidden:u.hidden,reasons:why,conditions:u.hidden?['伏神待出伏']:assessments[u.position-1].obstacles});
+        });});
+        if(triggers.length)timing.candidates.push({date:d.toISOString().slice(0,10),day:cal.day,month:cal.month,triggers:triggers});
+        previous=cal;
+      }
+    }
+    return {version:'1.0.0',school:'增刪卜易・條件規則',source:RULE_SOURCE,targets:targets,lines:assessments,influences:influences,
+      combinations:combinations,transformations:transformed,independentChanges:{soleMoving:result.movingPositions.length===1?result.movingPositions[0]:null,soleStill:result.movingPositions.length===5?lines.find(function(l){return !l.moving;}).position:null},timing:timing,
+      decisionPolicy:'結構及作用資料供整體判讀；先取事情／角色，再看元忌作用與解除條件。不把規則命中數當成成功機率。'};
   }
   function calculate(input) {
     input=input||{};
@@ -177,14 +293,16 @@
     });
     var links=[0,1,2].map(function(i){return branchLinks(lines[i].branch,lines[i+3].branch);});
     var changedLinks=[0,1,2].map(function(i){return branchLinks(changedLines[i].branch,changedLines[i+3].branch);});
-    return freeze({version:'1.0.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
+    var result={version:'1.1.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
       original:original,changed:changed,hasChange:code!==changedCode,lines:lines,movingPositions:lines.filter(function(l){return l.moving;}).map(function(l){return l.position;}),
       structures:{sixClash:links.every(function(p){return p.clash;}),sixCombine:links.every(function(p){return p.combine;}),changedSixClash:changedLinks.every(function(p){return p.clash;}),changedSixCombine:changedLinks.every(function(p){return p.combine;})},
-      focus:focusFor(input.question,input.focus),policy:{lineOrder:'bottom-up',coinConvention:'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽',relativeBasis:'本卦卦宮五行（變爻亦同）',hiddenRule:'本卦缺六親時，取本宮純卦同位伏神',monthBasis:'節令交節瞬間，不以農曆初一換月',dayClash:'只標日沖；暗動／日破須連同旺衰判定，不直接定論',prediction:'傳統象徵解讀，不是現實事件的保證'}});
+      focus:focusFor(input.question,input.focus),policy:{lineOrder:'bottom-up',coinConvention:'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽',relativeBasis:'本卦卦宮五行（變爻亦同）',hiddenRule:'本卦缺六親時，取本宮純卦同位伏神',monthBasis:'節令交節瞬間，不以農曆初一換月',dayClash:'interpretation.lines 依動靜與月日生扶分類，矛盾不硬判',prediction:'傳統象徵解讀，不是現實事件的保證'}};
+    result.interpretation=interpretation(result,input);
+    return freeze(result);
   }
-  var api={version:'1.0.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
+  var api={version:'1.1.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
     fromCoins:fromCoins,toss:toss,localTimeAt:localTimeAt,calendar:calendar,calculate:calculate,focusFor:focusFor,
-    trigramData:copy(TRIGRAMS),labels:LABELS.slice()};
+    assessLine:assessLine,lifeStage:lifeStage,parseWindow:parseWindow,interpretation:interpretation,trigramData:copy(TRIGRAMS),labels:LABELS.slice()};
   root.JYLiuyaoCore=freeze(api);
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JYLiuyaoCore;
 })(typeof window!=='undefined'?window:globalThis);

@@ -54,6 +54,9 @@
     return h+'<button type="button" class="btn btn-outline" onclick="_tarotShare()">分享這次牌陣</button>';
   }
   function payload(ta,question,drawn,spread,plan,def){
+    if(!Array.isArray(drawn)||!drawn.length||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('抽牌紀錄不完整或有重複牌，請重新核對本次牌陣。');
+    if(drawn.some(function(c){return c.id==null||(c.readingMode&&c.readingMode!==RWS)||(c.isUp!=null&&typeof c.isUp!=='boolean');}))throw new Error('本次塔羅牌的系統或正逆位紀錄不一致。');
+    if(plan.slots&&plan.slots.length&&plan.slots.length!==drawn.length)throw new Error('抽牌張數與已選牌位不一致，不補造缺牌解讀。');
     var s=stats(drawn);
     return {mode:'tarot_only',question:question,focusType:((root.S||{}).form||{}).type||'general',tarotData:{
       spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:RWS,sourceProfile:RWS,

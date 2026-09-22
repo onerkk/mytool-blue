@@ -130,8 +130,10 @@ var calcMH = function(un,ln,dy,castContext){
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
   var benL=lo.li.concat(up.li);
-  var huLo=gByL(benL[1],benL[2],benL[3]);
-  var huUp=gByL(benL[2],benL[3],benL[4]);
+  var nuclear=typeof mhNuclearContext==='function'?mhNuclearContext({lo:lo,up:up,dong:dong}):null;
+  var nuclearBits=benL.slice();if(!nuclear&&nuclearBits.every(function(v){return v===nuclearBits[0];}))nuclearBits[dong-1]^=1;
+  var huLo=nuclear?nuclear.lower:gByL(nuclearBits[1],nuclearBits[2],nuclearBits[3]);
+  var huUp=nuclear?nuclear.upper:gByL(nuclearBits[2],nuclearBits[3],nuclearBits[4]);
   var hu=g64(huUp.n, huLo.n);
   var biL=benL.slice(); biL[dong-1]=biL[dong-1]?0:1;
   var biLo=gByL(biL[0],biL[1],biL[2]);
@@ -139,7 +141,7 @@ var calcMH = function(un,ln,dy,castContext){
   var bian=g64(biUp.n, biLo.n);
   var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   var ty=tiYong(tiG.el,yoG.el);
-  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
+  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,nuclear:nuclear,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
   mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
   if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
   // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）
@@ -301,15 +303,8 @@ function kangxiStroke(ch){
   if(STROKE_OVERRIDE[ch]) return STROKE_OVERRIDE[ch];
   // 3. BIHUA_MAP 輔助
   if(BIHUA_MAP[ch]) return BIHUA_MAP[ch];
-  // 4. CJK fallback（不精確！筆劃可能錯誤，僅防 crash）
-  const code=ch.charCodeAt(0);
-  if(code>=0x4E00&&code<=0x9FFF){
-    console.warn('[姓名學] 字「'+ch+'」不在康熙字典表中，筆劃為估計值，可能影響五格結果');
-    var o=code-0x4E00,t=0x9FFF-0x4E00;
-    return Math.round(4+(o/t)*16);
-  }
-  console.warn('[姓名學] 字「'+ch+'」無法取得筆劃');
-  return 10;
+  // Unlisted glyphs remain unknown. Unicode scalar order is not stroke count.
+  return null;
 }
 
 function bihua(ch){return kangxiStroke(ch)}
@@ -400,6 +395,7 @@ function calcMhChar(){
   const ch=document.getElementById('mh-char').value.trim();
   if(!ch){alert('請輸入漢字');return}
   const chars=[...ch];
+  if(chars.some(c=>!Number.isInteger(bihua(c)))){alert('部分字尚無可靠筆畫，請改用數字或時間起卦。');return;}
   let un,ln,dy;
   if(chars.length===1){un=bihua(chars[0]);ln=un;dy=(un*2)%6||6}
   else if(chars.length===2){un=bihua(chars[0]);ln=bihua(chars[1]);dy=(un+ln)%6||6}

@@ -225,7 +225,7 @@ function _localPartsAt(ms, timeZoneId) {
 }
 
 // 將 IANA 時區的民用牆鐘時間解析成標準偏移與 DST。遇重疊採較早一次；遇缺口採相容模式。
-function resolveCivilTimeOffsets(year, month, day, hour, minute, second, timeZoneId, fallbackOffset) {
+function resolveCivilTimeOffsets(year, month, day, hour, minute, second, timeZoneId, fallbackOffset, disambiguation) {
   second = Math.max(0, Math.min(59, parseInt(second || 0, 10) || 0));
   if (!timeZoneId || typeof Intl === 'undefined' || !Intl.DateTimeFormat) {
     var fixedMinutes = Number(fallbackOffset || 0) * 60;
@@ -251,8 +251,8 @@ function resolveCivilTimeOffsets(year, month, day, hour, minute, second, timeZon
     } catch(e) {}
   });
   candidates.sort(function(a,b){return a.instant-b.instant;});
-  var selected = candidates[0];
-  var civilTimeStatus = candidates.length > 1 ? 'ambiguous-earlier' : 'exact';
+  var selected = disambiguation === 'later' ? candidates[candidates.length-1] : candidates[0];
+  var civilTimeStatus = candidates.length > 1 ? (disambiguation === 'later' ? 'ambiguous-later' : 'ambiguous-earlier') : 'exact';
   if (!selected) {
     // 不存在的民用時間（例如春季 DST 跳時）採 compatible 慣例解析，並明確回報。
     var nearOff = _offsetAtInstant(base - Number(fallbackOffset || 0) * 3600000, timeZoneId);
@@ -282,7 +282,7 @@ function calcTrueSolarTime(year, month, day, hour, minute, longitude, tzOffset, 
   if (longitude == null || (opt.timezone == null && !opt.timezoneId)) {
     return { year:year, month:month, day:day, hour:hour, minute:minute, second:inputSecond, offset_minutes:0, note:'未提供出生地點', algorithm:'none' };
   }
-  var resolved = resolveCivilTimeOffsets(year, month, day, hour, minute, inputSecond, opt.timezoneId, opt.timezone);
+  var resolved = resolveCivilTimeOffsets(year, month, day, hour, minute, inputSecond, opt.timezoneId, opt.timezone, opt.disambiguation);
   var standardMeridian = resolved.standardOffsetMinutes / 60 * 15;
   var rawDiff = longitude - standardMeridian;
   var lonDiff = ((rawDiff + 540) % 360) - 180;
@@ -499,6 +499,10 @@ function _doSolarPreview(yId,mId,dId,hId,miId,cId,ciId,previewId) {
 })();
 
 // ★ v30b：自動初始化出生表單下拉（年月日時分國家城市）
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof initBirthForm === 'function') initBirthForm();
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof initBirthForm === 'function') initBirthForm();
+  }, {once:true});
+} else if (typeof initBirthForm === 'function') {
+  initBirthForm();
+}

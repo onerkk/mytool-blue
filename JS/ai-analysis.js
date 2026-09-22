@@ -440,6 +440,7 @@ window._jyScrollToClosing = window._jyScrollToClosing || function(id) {
 // 西洋星盤渲染 (SVG圓形星盤 + 行星表 + 相位 + 解讀)
 // ══════════════════════════════════════════════════════
 function renderNatalChart(){
+  if (window.JYAstroBridge && JYAstroBridge.render('natal', S.natal)) return;
   const n = S.natal; 
   if(!n){
     const el=document.getElementById('d-natal-summary');
@@ -600,6 +601,7 @@ function renderNatalChart(){
 // 🕉️ JYOTISH RENDERING
 // ══════════════════════════════════════════════════════════════════════
 function renderJyotish(){
+  if (window.JYAstroBridge && JYAstroBridge.render('vedic', S.jyotish)) return;
   var jy = S.jyotish;
   if(!jy){
     var el=document.getElementById('d-jyotish-summary');
@@ -3667,6 +3669,7 @@ function talkTarot(tarot, focusType){
 }
 
 function talkNatal(focusType){
+  if (S.natal && S.natal.nativeAstro && window.JYAstroBridge) return JSON.stringify(JYAstroBridge.payload('natal', S.natal.nativeAstro, focusType));
   if(!S.natal||!S.natal.planets) return '';
   var np=S.natal.planets, n=S.natal;
   var texts=[];
@@ -4000,6 +4003,7 @@ function talkName(focusType){
 
 // ── 7. 吠陀白話讀取 ──
 function talkJyotish(focusType){
+  if (S.jyotish && S.jyotish.nativeAstro && window.JYAstroBridge) return JSON.stringify(JYAstroBridge.payload('vedic', S.jyotish.nativeAstro, focusType));
   if(!S.jyotishResult) return '';
   var jy=S.jyotishResult;
   var texts=[];
@@ -8067,6 +8071,7 @@ function ziweiScoreFromTags(tags) {
 // 吠陀占星 Tag 分析引擎 v1.0 — 宮主+Dignity+Yoga+Dasha+SAV
 // ═══════════════════════════════════════════════════════
 function analyzeJyotishTags(jy, type) {
+  if (jy && jy.nativeAstro) return [];
   if (!jy || !jy.planets || !jy.lagna) return [];
   var tags = [];
   var pl = jy.planets;
@@ -8744,6 +8749,7 @@ function tarotScoreFromTags(tags) {
 // 西洋星盤 Tag 分析引擎 v1.0 — 行星×宮位×相位 依議題分析
 // ═══════════════════════════════════════════════════════
 function analyzeNatalTags(natal, type) {
+  if (natal && natal.nativeAstro) return [];
   if (!natal || !natal.planets) return [];
   var tags = [];
   var np = natal.planets;
@@ -9805,6 +9811,12 @@ function runAnalysisV2(){
   try{ renderJyotish(); }catch(e){ console.error('renderJyotish error:', e); }
   try{ renderName(); }catch(e){ console.error('renderName error:', e); }
 
+  if (S.astroBundle && window.JYAstroBridge) {
+    JYAstroBridge.assertCurrent(S);
+    JYAstroBridge.renderSummary(S);
+    return;
+  }
+
   const b=S.bazi; if(!b)return;
   let type=S.form.type;
   const question=S.form.question;
@@ -9861,8 +9873,9 @@ function runAnalysisV2(){
   if(S.form.name&&S.form.name.length>=2){
     nameResult=analyzeName(S.form.name);
     const [birthY] = S.form.bdate.split('-').map(Number);
-    zodiacNameResult = analyzeZodiacName(S.form.name, birthY);
-    if(zodiacNameResult) S.zodiacNameResult = zodiacNameResult;
+    zodiacNameResult = analyzeZodiacName(S.form.name, birthY, {date:S.form.bdate});
+    S.zodiacNameResult = zodiacNameResult;
+    S.nameResult = nameResult;
   }
   const nameTags = analyzeNameTags(nameResult, zodiacNameResult, type);
   S.nameTags = nameTags;
@@ -10972,10 +10985,11 @@ function renderName(){
 
   // ══ 計算底層資料 ══
   const [y] = S.form.bdate.split('-').map(Number);
-  const zr = analyzeZodiacName(S.form.name, y);
-  if(zr) S.zodiacNameResult = zr;
+  const zr = analyzeZodiacName(S.form.name, y, {date:S.form.bdate});
+  S.zodiacNameResult = zr;
   const r = analyzeName(S.form.name);
-  if(r) S.nameResult = r;
+  S.nameResult = r;
+  if(!r){el.textContent=window._jyNameError||'姓名資料不足，無法計算。';return;}
   // ★ v25c：enhanceName 必須在 S.nameResult 設值後才跑（修正時序 bug）
   try { if(S.nameResult && typeof enhanceName === 'function') enhanceName(S.nameResult, S.bazi); } catch(e) { console.warn('[renderName] enhanceName:', e); }
 
@@ -14872,6 +14886,27 @@ function _buildCrystalCatalog() {
 }
 
 // ── 頂規白話版 payload v5 — 最大化每個系統的細節提取 ──
+// Unknown-hour data must be filtered at the output boundary: later legacy
+// enrichment must not restore the provisional noon chart or its derived verdicts.
+function _jyRespectUnknownBaziPayload(p) {
+  if(!p||!p.btimeUnknown||typeof S==='undefined'||!S.bazi)return p;
+  var note='出生時辰未知；只保留已知三柱。特殊格局、旺衰喜忌及精確交運尚未定，接近換日或交節的日期亦待出生時間核實。';
+  var facts=window.BAZI_CORE.birthFacts(S.bazi,{unknown:true});
+  var partial={status:'BIRTH_TIME_UNKNOWN',birthFacts:facts,rootFacts:baziRootFacts(S.bazi,{unknown:true}),interpretationRules:[note]};
+  p.dims=p.dims||{};p.dims.bazi=partial;
+  var raw=window.BaziSuiteCore?window.BaziSuiteCore.buildChartDataBlock(S.bazi,{unknown:true,birthLine:(S.form||{}).bdate}):note+'\n'+JSON.stringify(facts);
+  p.rawReadings=p.rawReadings||{};p.rawReadings.bazi=raw;
+  if(p.readings)p.readings.bazi=raw;
+  ['systemPayloads','systems'].forEach(function(k){if(p[k]&&p[k].bazi)p[k].bazi=partial;});
+  if(p.reversibility&&p.reversibility.bazi)p.reversibility.bazi={fix:[],time:[],act:['先核實出生時辰']};
+  if(Array.isArray(p.timeline))p.timeline=p.timeline.filter(function(x){return !/^八字/.test(String(x));});
+  if(p.dims.name)delete p.dims.name.geVsFav;
+  // These legacy combined summaries cannot identify which claims used the
+  // provisional hour. Keep individual method facts, discard untraceable blends.
+  delete p.conflictDescriptions;delete p.semanticResonance;
+  return p;
+}
+
 function _buildPayload() {
   var q = S.form ? S.form.question : '';
   var ft = S.form ? S.form.type : 'general';
@@ -16487,6 +16522,7 @@ var NATAL_QUESTION_MAP = {
 };
 
 function analyzeNatalQuestion(natal, type, question) {
+  if (natal && natal.nativeAstro) return {tags:[],factors:[],status:'NATIVE_FACTS_ONLY',summary:natal.summary};
   if (!natal || !natal.planets) return _natQFallback('星盤資料不足');
   var t = type || 'general';
   var map = NATAL_QUESTION_MAP[t] || NATAL_QUESTION_MAP.general;
@@ -17412,6 +17448,7 @@ function _renderZwTimingCard() {
 
 // ═══ 1. 今日吠陀訊號 ═══
 function renderJyotishDailySignal() {
+  if (S.jyotish && S.jyotish.nativeAstro) return;
   var container = document.getElementById('jy-daily-signal-content');
   if (!container) return;
   if (!S || !S.jyotish) {
@@ -17644,6 +17681,7 @@ function renderWeeklyTransitFocus() {
 
 // ═══ 統一觸發：renderJyotishFunZone ═══
 function renderJyotishFunZone() {
+  if (S.jyotish && S.jyotish.nativeAstro) return;
   try { renderJyotishDailySignal(); } catch(e) { console.warn('jyDailySignal err:', e); }
   try { renderNakshatraCard(); } catch(e) { console.warn('naksCard err:', e); }
   try { renderWeeklyTransitFocus(); } catch(e) { console.warn('weeklyTransit err:', e); }
@@ -19061,7 +19099,7 @@ renderTarot = function(){
 
 
       // ═══ 1. 七維綜合分析 ═══
-      var synth = (typeof getSevenDimAnalysis === 'function') ? getSevenDimAnalysis(ft, q) : null;
+      var synth = (!S.astroBundle && typeof getSevenDimAnalysis === 'function') ? getSevenDimAnalysis(ft, q) : null;
 
       // Fix #5: 移除 p.seven 和 p.dimReadings — Worker 不讀這些，
       // 前端結論性摘要反而會浪費 AI tokens 且框住判斷。
@@ -19199,6 +19237,7 @@ renderTarot = function(){
         p.dims.bazi.sittingRoot=p.dims.bazi.rootFacts.sittingRoot;
         p.dims.bazi.hasAnyRoot=p.dims.bazi.rootFacts.hasAnyRoot;
         if (Array.isArray(bz.huaQiAssessments)) p.dims.bazi.huaQiAssessments = bz.huaQiAssessments;
+        p.dims.bazi.specialRuleAssessment = bz.specialRuleAssessment || null;
         if (Array.isArray(bz.specialStructureCandidates)) p.dims.bazi.specialStructureCandidates = bz.specialStructureCandidates;
         // 用神忌神（最核心的判斷依據）
         if (bz.fav && bz.fav.length) p.dims.bazi.favEls = bz.fav.join('、');
@@ -19717,7 +19756,7 @@ renderTarot = function(){
       }
 
       // ═══ 7. 西洋占星結構化 dims（#11: 讓 AI 快速抓到關鍵行星位置和行運）═══
-      if (typeof S !== 'undefined' && S.natal && S.natal.planets) {
+      if (typeof S !== 'undefined' && S.natal && !S.natal.nativeAstro && S.natal.planets) {
         try {
           p.dims.natal = {};
           var np = S.natal.planets;
@@ -19858,7 +19897,7 @@ renderTarot = function(){
       }
 
       // ═══ v30：西洋占星數據補齊 ═══
-      if (typeof S !== 'undefined' && S.natal) {
+      if (typeof S !== 'undefined' && S.natal && !S.natal.nativeAstro) {
         try {
           p.dims.natal = p.dims.natal || {};
           var np2 = S.natal.planets || {};
@@ -19914,7 +19953,7 @@ renderTarot = function(){
       }
 
       // ═══ 8. 吠陀占星結構化 dims（#11: Dasha 週期 + 關鍵 Yoga + Sade Sati）═══
-      if (typeof S !== 'undefined' && S.jyotish) {
+      if (typeof S !== 'undefined' && S.jyotish && !S.jyotish.nativeAstro) {
         try {
           var jy = S.jyotish;
           p.dims.vedic = {};
@@ -20059,7 +20098,7 @@ renderTarot = function(){
       }
 
       // ═══ v30：吠陀占星數據補齊 ═══
-      if (typeof S !== 'undefined' && S.jyotish) {
+      if (typeof S !== 'undefined' && S.jyotish && !S.jyotish.nativeAstro) {
         try {
           var jy2 = S.jyotish;
           p.dims.vedic = p.dims.vedic || {};
@@ -20227,7 +20266,7 @@ renderTarot = function(){
           }
         }
         // 吠陀時間線
-        if (typeof S !== 'undefined' && S.jyotish) {
+        if (typeof S !== 'undefined' && S.jyotish && !S.jyotish.nativeAstro) {
           var _jy = S.jyotish;
           if (_jy.currentMD) {
             var _mdText = '吠陀主運：' + (_jy.currentMD.zh || _jy.currentMD.lord || '');
@@ -20247,7 +20286,7 @@ renderTarot = function(){
           }
         }
         // 西洋行運時間線
-        if (typeof S !== 'undefined' && S.natal && S.natal.transits && S.natal.transits.aspects) {
+        if (typeof S !== 'undefined' && S.natal && !S.natal.nativeAstro && S.natal.transits && S.natal.transits.aspects) {
           var _slowTr = S.natal.transits.aspects.filter(function(a){return a.isSlow;}).slice(0,3);
           if (_slowTr.length) {
             _tlLines.push('星盤行運：' + _slowTr.map(function(a){
@@ -20297,7 +20336,7 @@ renderTarot = function(){
             }
           }
           // 西洋：第七宮+金星
-          if (typeof S !== 'undefined' && S.natal && S.natal.planets) {
+          if (typeof S !== 'undefined' && S.natal && !S.natal.nativeAstro && S.natal.planets) {
             var _h7planets = [];
             Object.keys(S.natal.planets).forEach(function(pn) {
               var pp = S.natal.planets[pn];
@@ -20431,7 +20470,7 @@ renderTarot = function(){
     } catch (e) {
       console.warn('[buildPayload v2] error:', e.message);
     }
-    return p;
+    return _jyRespectUnknownBaziPayload(p);
   };
 
 
@@ -22769,6 +22808,7 @@ function generateShareImage() {
       };
       var systemEvidence = {};
       Object.keys(sysMap).forEach(function(key){
+        if(key==='bazi'&&p.btimeUnknown){systemEvidence[key]={supports:[],risks:[],variables:[],tags:[]};return;}
         var dim = _sbArr(dims).find(function(d){
           var dk = ({'八字':'bazi','紫微':'ziwei','梅花':'meihua','塔羅':'tarot','星盤':'natal','吠陀':'vedic','姓名':'name'})[d.dim] || d.key || '';
           return dk === key || (key === 'vedic' && ((d.key || '') === 'jyotish'));
@@ -22865,7 +22905,7 @@ function generateShareImage() {
     } catch(e){
       console.warn('[buildPayload v5 framework] error:', e);
     }
-    return p;
+    return window.JYAstroBridge ? JYAstroBridge.project(p, S) : p;
   };
 })();
 

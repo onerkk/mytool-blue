@@ -70,21 +70,31 @@ function mhRelation(elA, elB){
 }
 
 // ═══ 起卦計算 ═══
+// 《梅花易數》卷一互卦起例；乾坤採「互其變卦」支線。
+function mhNuclearContext(mh){
+  var original=mh.lo.li.concat(mh.up.li),bits=original.slice();
+  var pure=bits.every(function(v){return v===bits[0];});
+  if(pure)bits[mh.dong-1]=bits[mh.dong-1]?0:1;
+  var lower=gByL(bits[1],bits[2],bits[3]),upper=gByL(bits[2],bits[3],bits[4]);
+  return {lower:lower,upper:upper,lines:lower.li.concat(upper.li),hexagram:g64(upper.n,lower.n),
+    exception:pure,reference:pure?'changed':'original',policy:'QIAN_KUN_CHANGED_NUCLEAR',
+    source:'https://www.eee-learning.com/book/4080',
+    note:pure?'乾坤無互：本版改取變卦的二三四、三四五爻；不是多翻一爻。':'下互取二三四爻，上互取三四五爻。'};
+}
 function calcMH(un,ln,dy,castContext){
   if(![un,ln,dy].every(function(n){return Number.isInteger(n)&&n>0;}))throw new Error('卦數與動爻必須是正整數。');
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
   var benL=lo.li.concat(up.li);
-  var huLo=gByL(benL[1],benL[2],benL[3]);
-  var huUp=gByL(benL[2],benL[3],benL[4]);
-  var hu=g64(huUp.n, huLo.n);
+  var nuclear=mhNuclearContext({lo:lo,up:up,dong:dong});
+  var hu=nuclear.hexagram;
   var biL=benL.slice(); biL[dong-1]=biL[dong-1]?0:1;
   var biLo=gByL(biL[0],biL[1],biL[2]);
   var biUp=gByL(biL[3],biL[4],biL[5]);
   var bian=g64(biUp.n, biLo.n);
   var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   var ty=tiYong(tiG.el,yoG.el);
-  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
+  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,nuclear:nuclear,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
   mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
   if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
   // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）
@@ -383,8 +393,9 @@ function analyzeMeihua(mh, type){
   let huLoG=null, huUpG=null, huTiRel='無', huYoRel='無';
   const benLines=mh.ben?[...mh.lo.li,...mh.up.li]:null;
   if(benLines){
-    huLoG=gByL(benLines[1],benLines[2],benLines[3]);
-    huUpG=gByL(benLines[2],benLines[3],benLines[4]);
+    const nuclear=mhNuclearContext(mh);
+    huLoG=nuclear.lower;
+    huUpG=nuclear.upper;
     if(huLoG&&huUpG){
       huTiRel=mhRelation(tiEl, huLoG.el);
       huYoRel=mhRelation(tiEl, huUpG.el);
@@ -409,16 +420,7 @@ function analyzeMeihua(mh, type){
   const bianRelPrimary=dong<=3?bianTiRel:bianYoRel;
   score+={'B生A':8,'比和':2,'A剋B':1,'A生B':-3,'B剋A':-8}[bianRelPrimary]||0;
 
-  // ── 動爻爻辭加分 ──
-  if(mh.ben&&mh.dong&&typeof getYaoCi==='function'){
-    const yc=getYaoCi(mh.ben.n, mh.dong);
-    if(yc&&!yc.includes('擴充中')){
-      if(yc.includes('元吉')||yc.includes('大吉')) score+=3;
-      else if(yc.includes('吉')) score+=1;
-      if(yc.includes('凶')) score-=3;
-      if(yc.includes('厲')) score-=1;
-    }
-  }
+  // 爻辭須連條件讀，不用「吉／凶」字串為幾何關係加減分。
   score=Math.max(10,Math.min(90,score));
 
   // ── 六大判斷層輸出 ──
@@ -467,6 +469,8 @@ function analyzeMeihua(mh, type){
   return {
     // 向下相容欄位
     score,
+    scorePolicy:'站內關係摘要指標，非原典分數、機率或精確結果；不按爻辭關鍵字計分',
+    nuclear:mhNuclearContext(mh),
     narrative: Object.values(narrativeBlocks).join(' '),
     tiYong:{rel, judge:mh.ty.f, desc:mh.ty.d, tiEl, yoEl, tiName, yoName},
     dongYao:{pos:dong, inTi:false, inYong:true, side:dong>3?'upper':'lower', desc:dongStage.meaning, stage:dongStage},
@@ -487,7 +491,7 @@ function analyzeMeihua(mh, type){
 
     // 新增完整結構
     dir: score>=65?'吉':score>=50?'小吉':score>=38?'平':score>=28?'小凶':'凶',
-    confidence: (Math.abs(score-50)>20)?'高':'中',
+    confidence: '未量化',
     phase: dongStage.stage,
     structure: {
       benGua:{name:mh.ben&&mh.ben.n, type:guaType, el:mh.up&&mh.up.el},

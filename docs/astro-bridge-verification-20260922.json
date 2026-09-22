@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-09-22T21:59:30.074Z",
+  "results": [
+    {
+      "name": "Native snapshots equal standalone engines; original civil clock reaches both",
+      "status": "passed"
+    },
+    {
+      "name": "Historical IANA offset overrides a stale fixed city offset; DST folds require a choice",
+      "status": "passed"
+    },
+    {
+      "name": "All real composite payload wrappers and reading copy use the native facts without old scores",
+      "status": "passed"
+    },
+    {
+      "name": "Actual renderers use native geometry, safe HTML, no legacy star scores",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown hour uses the whole 25-hour local day and omits noon-derived houses and exact dashas",
+      "status": "passed"
+    },
+    {
+      "name": "Changed birth data is rejected at the API boundary, failed calculation clears the old chart",
+      "status": "passed"
+    },
+    {
+      "name": "Concurrent submissions never commit a cancelled snapshot and recover after failure",
+      "status": "passed"
+    }
+  ],
+  "release": "20260922bridge1",
+  "browser": {
+    "passed": true,
+    "coldSubmit": true,
+    "automaticFlow": true,
+    "unknownResubmit": true,
+    "nativePayload": true,
+    "staleCancellation": true,
+    "oldAstrologyScriptsLoaded": false,
+    "pageErrors": []
+  },
+  "api": {
+    "groups": 11,
+    "status": "passed",
+    "upstream": "mocked; no paid-model request"
+  },
+  "regressions": {
+    "specialRules": 17,
+    "outputConsistency": 9,
+    "guaGroups": 11,
+    "guaCasts": 4096,
+    "coreGroups": 10,
+    "calendarFixGroups": 9
+  }
+}

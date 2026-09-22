@@ -1,0 +1,229 @@
+{
+  "release": "20260922bridge1",
+  "claim": "明列已驗證範圍；不是所有流派窮盡",
+  "sourceReview": "docs/engine-rules-20260922.md",
+  "methods": [
+    {
+      "method": "tarot",
+      "engine": "JS/tarot-reading.js",
+      "profile": "draw-and-export-validation",
+      "implemented": [
+        "RWS正逆位",
+        "不重複",
+        "牌位數",
+        "拒絕混用BookT"
+      ],
+      "limits": [
+        "依問題整合牌義不屬確定性預測"
+      ]
+    },
+    {
+      "method": "ootk",
+      "engine": "JS/golden-dawn-tarot.js",
+      "profile": "existing-verified",
+      "implemented": [
+        "BookT五輪",
+        "切牌守恆",
+        "計數與配對"
+      ],
+      "limits": [
+        "未完成輪次不補結論"
+      ]
+    },
+    {
+      "method": "lenormand",
+      "engine": "JS/lenormand.js",
+      "profile": "geometry-and-house-relations",
+      "implemented": [
+        "36牌宮位映射",
+        "本位",
+        "互宮",
+        "閉合鏈",
+        "鄰域與騎士步"
+      ],
+      "limits": [
+        "無全派固定全部牌陣清單"
+      ]
+    },
+    {
+      "method": "liuyao",
+      "engine": "JS/liuyao-core.js",
+      "profile": "explicit-condition-profile",
+      "implemented": [
+        "用神多現",
+        "元忌仇",
+        "旺衰日沖",
+        "旬空月破",
+        "墓合",
+        "三合動化",
+        "反伏吟",
+        "有期限應期"
+      ],
+      "limits": [
+        "出伏及作用矛盾仍須合判",
+        "每日中午取樣不是日內事件時刻"
+      ]
+    },
+    {
+      "method": "yijing",
+      "engine": "JS/yijing-core.js",
+      "profile": "existing-exhaustive-cast-check",
+      "implemented": [
+        "4096本變卦",
+        "0–6動爻",
+        "乾坤二用",
+        "三動前後十"
+      ],
+      "limits": [
+        "採朱子變占"
+      ]
+    },
+    {
+      "method": "meihua",
+      "engine": "JS/meihua_upgrade.js",
+      "profile": "shared-nuclear-context",
+      "implemented": [
+        "乾坤互變卦",
+        "原體不換",
+        "上下互分判",
+        "不按爻辭字串評分"
+      ],
+      "limits": [
+        "數值摘要非預測機率"
+      ]
+    },
+    {
+      "method": "bazi",
+      "engine": "JS/bazi.js",
+      "profile": "explicit-condition-profile",
+      "implemented": [
+        "從格嚴格支線",
+        "五種專旺起例",
+        "建祿陽刃",
+        "十神作用線",
+        "化氣否決與待判",
+        "未知時辰綜合輸出不帶暫排衍生結論"
+      ],
+      "limits": [
+        "不涵蓋所有假從及救應分支"
+      ]
+    },
+    {
+      "method": "compat",
+      "engine": "JS/bazi-suite-core.js",
+      "profile": "shared-native-facts",
+      "implemented": [
+        "雙方各自原局",
+        "新增特殊條件傳遞",
+        "跨盤作用方向",
+        "時間歸屬"
+      ],
+      "limits": [
+        "不把八柱拼為一人命盤"
+      ]
+    },
+    {
+      "method": "ziwei",
+      "engine": "JS/ziwei.js",
+      "profile": "actual-star-position-profile",
+      "implemented": [
+        "陽梁卯",
+        "明珠出海",
+        "機月同梁四曜",
+        "日月亮度",
+        "八種夾宮",
+        "同宮星組",
+        "生年三奇雙祿",
+        "雄宿異說"
+      ],
+      "limits": [
+        "位置成立與吉凶成色分開",
+        "不包含所有欽天及飛星流派"
+      ]
+    },
+    {
+      "method": "vedic",
+      "engine": "JS/vedic-engine.js",
+      "profile": "PVR-CH11-EXPLICIT-20260922",
+      "implemented": [
+        "32Naabhasa",
+        "日月兩側",
+        "Kemadruma取消",
+        "月火",
+        "角宮三分宮主",
+        "困難宮格局",
+        "綜合與獨立入口共用原生引擎",
+        "民用時區與夏令重複時刻",
+        "原子重算及未知時辰輸出邊界"
+      ],
+      "limits": [
+        "全量Neechabhanga",
+        "完整Shadbala",
+        "Jaimini等其他大運未實算"
+      ]
+    },
+    {
+      "method": "astro",
+      "engine": "JS/western-engine.js",
+      "profile": "geometric-pattern-and-angular-solar-profile",
+      "implemented": [
+        "9種主要結構",
+        "日心燃燒日光下",
+        "無主要相位",
+        "跨座相位",
+        "近停滯",
+        "綜合與獨立入口共用原生引擎",
+        "民用時區與夏令重複時刻",
+        "原子重算及未知時辰輸出邊界"
+      ],
+      "limits": [
+        "非偕日可見性",
+        "五角形及信封等和諧相位格局未實作"
+      ]
+    },
+    {
+      "method": "oracle",
+      "engine": "JS/oracle.js",
+      "profile": "edition-and-procedure-validation",
+      "implemented": [
+        "60首原詩版本",
+        "擲筊程序",
+        "錯版不匯出",
+        "附記與正文分開"
+      ],
+      "limits": [
+        "本輪未重爬全部60首",
+        "未核對別廟典故不自填"
+      ]
+    },
+    {
+      "method": "name",
+      "engine": "JS/ziwei.js",
+      "profile": "explicit-input-and-stroke-scope",
+      "implemented": [
+        "拒絕猜筆畫",
+        "複姓單名",
+        "明示姓與名",
+        "失敗清舊資料",
+        "農曆生肖年界"
+      ],
+      "limits": [
+        "字表非全字庫",
+        "81數理是流派分類"
+      ]
+    },
+    {
+      "method": "personality",
+      "engine": "JS/bazi-suite-core.js",
+      "profile": "declared-site-model",
+      "implemented": [
+        "未知時間不固定人格",
+        "原局資料一致"
+      ],
+      "limits": [
+        "32型非經驗證心理測驗"
+      ]
+    }
+  ],
+  "integrationVerification": "docs/astro-bridge-verification-20260922.json"
+}

@@ -4,7 +4,7 @@
  */
 (function(root){
   'use strict';
-  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.0.0';
+  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.1.0';
   const KEYS=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
   const NAMES=['太陽','月亮','水星','金星','火星','木星','土星','天王星','海王星','冥王星'];
   const SYMBOLS=['☉','☽','☿','♀','♂','♃','♄','♅','♆','♇'];
@@ -81,8 +81,42 @@
     return out.sort((a,b)=>a.orb-b.orb);
   }
   function patterns(list){const out=[],pairs=new Map(list.filter(a=>KEYS.includes(a.a)&&KEYS.includes(a.b)).map(a=>[[a.a,a.b].sort().join('/'),a]));const find=(a,b,angle)=>pairs.get([a,b].sort().join('/'))?.angle===angle;
-    for(let i=0;i<10;i++)for(let j=i+1;j<10;j++)for(let k=j+1;k<10;k++){const trio=[KEYS[i],KEYS[j],KEYS[k]];if(find(trio[0],trio[1],120)&&find(trio[0],trio[2],120)&&find(trio[1],trio[2],120))out.push({name:'大三角',planets:trio});for(let apex=0;apex<3;apex++){const a=trio[apex],b=trio[(apex+1)%3],c=trio[(apex+2)%3];if(find(b,c,180)&&find(a,b,90)&&find(a,c,90))out.push({name:'T 三角',planets:trio,apex:a});}}
-    for(let i=0;i<10;i++)for(let j=i+1;j<10;j++)for(let k=j+1;k<10;k++)for(let l=k+1;l<10;l++){const group=[KEYS[i],KEYS[j],KEYS[k],KEYS[l]];let squares=0,oppositions=0;for(let x=0;x<4;x++)for(let y=x+1;y<4;y++){squares+=find(group[x],group[y],90);oppositions+=find(group[x],group[y],180);}if(squares===4&&oppositions===2)out.push({name:'大十字',planets:group});}return out;
+    for(let i=0;i<10;i++)for(let j=i+1;j<10;j++)for(let k=j+1;k<10;k++){const trio=[KEYS[i],KEYS[j],KEYS[k]];if(find(trio[0],trio[1],120)&&find(trio[0],trio[2],120)&&find(trio[1],trio[2],120))out.push({name:'大三角',planets:trio});for(let apex=0;apex<3;apex++){const a=trio[apex],b=trio[(apex+1)%3],c=trio[(apex+2)%3];if(find(b,c,180)&&find(a,b,90)&&find(a,c,90))out.push({name:'T 三角',planets:trio,apex:a});if(find(b,c,60)&&find(a,b,150)&&find(a,c,150))out.push({name:'Yod',planets:trio,apex:a,source:'https://cafeastrology.com/articles/aspectpatterns.html'});}}
+    for(let i=0;i<10;i++)for(let j=i+1;j<10;j++)for(let k=j+1;k<10;k++)for(let l=k+1;l<10;l++){
+      const group=[KEYS[i],KEYS[j],KEYS[k],KEYS[l]],counts={60:0,90:0,120:0,180:0};
+      for(let x=0;x<4;x++)for(let y=x+1;y<4;y++)for(const angle of [60,90,120,180])counts[angle]+=find(group[x],group[y],angle)?1:0;
+      if(counts[90]===4&&counts[180]===2)out.push({name:'大十字',planets:group});
+      if(counts[60]===3&&counts[120]===2&&counts[180]===1)out.push({name:'搖籃',planets:group,source:'https://cafeastrology.com/articles/aspectpatterns.html'});
+      if(counts[60]===2&&counts[120]===2&&counts[180]===2)out.push({name:'神秘矩形',planets:group});
+      for(const tip of group){const triangle=group.filter(p=>p!==tip);if(!find(triangle[0],triangle[1],120)||!find(triangle[0],triangle[2],120)||!find(triangle[1],triangle[2],120))continue;
+        const tail=triangle.find(p=>find(p,tip,180));if(tail&&triangle.filter(p=>p!==tail).every(p=>find(p,tip,60)))out.push({name:'風箏',planets:group,apex:tip,tail});
+      }
+    }
+    // The hexagon needs all 15 internal relationships, not just two triangles.
+    for(let i=0;i<10;i++)for(let j=i+1;j<10;j++)for(let k=j+1;k<10;k++)for(let l=k+1;l<10;l++)for(let m=l+1;m<10;m++)for(let n=m+1;n<10;n++){
+      const group=[KEYS[i],KEYS[j],KEYS[k],KEYS[l],KEYS[m],KEYS[n]],counts={60:0,120:0,180:0};
+      for(let a=0;a<6;a++)for(let b=a+1;b<6;b++)for(const angle of [60,120,180])counts[angle]+=find(group[a],group[b],angle)?1:0;
+      if(counts[60]===6&&counts[120]===6&&counts[180]===3)out.push({name:'大六分相',planets:group,source:'https://cafeastrology.com/articles/aspectpatterns.html'});
+    }
+    for(const y of out.filter(p=>p.name==='Yod'))for(const tip of KEYS.filter(k=>!y.planets.includes(k))){
+      const base=y.planets.filter(k=>k!==y.apex);if(find(tip,y.apex,180)&&base.every(k=>find(tip,k,30)))out.push({name:'迴力鏢 Yod',planets:y.planets.concat(tip),apex:y.apex,response:tip,source:'https://cafeastrology.com/articles/aspectpatterns.html'});
+    }
+    return out.map(p=>({...p,status:'structural',source:p.source||'https://www.skyscript.co.uk/aspects2.html',edges:list.filter(a=>p.planets.includes(a.a)&&p.planets.includes(a.b)),interpretation:'依參與行星、宮位及實際容許度合看；不是事件保證'}));
+  }
+  function solarConditions(ps){
+    return ['Mercury','Venus','Mars','Jupiter','Saturn'].map(key=>{
+      const separation=Math.abs(diff(ps[key].longitude,ps.Sun.longitude));
+      const state=separation<=17/60?'cazimi':separation<8.5?'combust':separation<17?'under-beams':'clear';
+      return {planet:key,separationDegrees:separation,state,label:{cazimi:'日心',combust:'燃燒','under-beams':'日光下',clear:'日光外'}[state],sameSign:ps[key].sign===ps.Sun.sign,
+        nearBoundary:[17/60,8.5,17].some(v=>Math.abs(separation-v)<=1/60),
+        policy:'Lilly 常用角距口徑：日心 ≤17′，燃燒 <8°30′，日光下 <17°；跨星座仍依角距，另保留同座欄位。非偕日可見性。',source:'https://www.skyscript.co.uk/glossary/combust/'};
+    });
+  }
+  function aspectExceptions(ps,list){
+    const major=list.filter(a=>a.kind==='本命行星'&&KEYS.includes(a.a)&&KEYS.includes(a.b)&&ASPECTS.some(d=>d.angle===a.angle));
+    return {unaspected:KEYS.filter(k=>!major.some(a=>a.a===k||a.b===k)),outOfSign:major.filter(a=>a.outOfSign),
+      nearStations:KEYS.filter(k=>ps[k].nearStation),solar:solarConditions(ps),
+      policy:'無主要相位只按本版五種主要相位及容許度，不等於孤立、沒有作用或沒有任何小相位；停滯採既有速度閾值。'};
   }
   function dispositors(ps){return KEYS.map(key=>{const path=[],seen=new Map();let at=key;while(!seen.has(at)){seen.set(at,path.length);path.push(at);at=LORDS[ps[at].sign];}const cycle=path.slice(seen.get(at));return {planet:key,path,cycle,kind:cycle.length===1?'終端定位星':cycle.length===2?'廟位互容':'循環定位'};});}
   function sect(ms,lat,lon){const A=setup(),t=A.MakeTime(instant(ms)),sun=A.Ecliptic(A.GeoVector('Sun',t,true)),a=angles(ms,lat,lon),eps=a.obliquity*RAD,l=sun.elon*RAD,b=sun.elat*RAD,dec=Math.asin(Math.sin(b)*Math.cos(eps)+Math.cos(b)*Math.sin(eps)*Math.sin(l)),ra=Math.atan2(Math.sin(l)*Math.cos(eps)-Math.tan(b)*Math.sin(eps),Math.cos(l)),ha=a.ramc*RAD-ra,alt=Math.asin(Math.sin(lat*RAD)*Math.sin(dec)+Math.cos(lat*RAD)*Math.cos(dec)*Math.cos(ha))/RAD;return {name:alt>=0?'日間盤':'夜間盤',solarAltitude:alt,nearHorizon:Math.abs(alt)<.25,policy:'幾何太陽中心高度，未加大氣折射'};}
@@ -102,7 +136,7 @@
     const progressMs=+birth+(+reference-birth)/YEAR,progressed=unknown?null:planets(progressMs),progressions=progressed?{utc:new Date(progressMs).toISOString(),yearDays:YEAR,policy:'次限推運：出生後一日象徵一年，只推行星；未推進角點與宮位',planets:progressed,aspects:crossAspects(progressed,natalTargets,1).map(a=>({...a,kind:'次限對本命',phase:null}))}:null;
     const returns=unknown?null:solarReturn(birth,reference.getUTCFullYear(),latitude,longitude,system);
     const distribution={elements:{火:0,土:0,風:0,水:0},modalities:{基本:0,固定:0,變動:0},policy:'十顆行星各計一次，交點與角點不計入；是分布而非能力分數'};for(const k of KEYS){distribution.elements[ps[k].element]++;distribution.modalities[ps[k].modality]++;}
-    return freeze({version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,location:input.location||'自訂出生地',civil:input.civil||null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],chartType:'本命盤；不是卜卦、合盤或印度分盤'},planets:ps,houses:hs,aspects:asp,patterns:patterns(asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns});
+    return freeze({version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,location:input.location||'自訂出生地',civil:input.civil||null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],patternAspects:'格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算',chartType:'本命盤；不是卜卦、合盤或印度分盤'},planets:ps,houses:hs,aspects:asp,patterns:patterns(aspects(ps,null,{minor:true})),specialConditions:aspectExceptions(ps,asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns});
   }
-  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,houses,houseOf,dignity,pairAspect,aspects,patterns,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
+  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,houses,houseOf,dignity,pairAspect,aspects,patterns,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
 })(globalThis);

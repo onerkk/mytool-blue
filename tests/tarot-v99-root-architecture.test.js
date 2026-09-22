@@ -149,7 +149,7 @@ test('Tarot and OOTK AI payloads use current inventory candidates, not the legac
  const ootk=src.slice(src.indexOf('function _buildOOTKPayload'),src.indexOf('function _buildMeihuaPayload'));assert(ootk.includes('JYShopInventory'));assert(ootk.includes('shopRecommendation'));assert(!ootk.includes('payload.crystalCatalog'));
 });
 test('Index loads semantic foundation and inventory before AI with coherent v99.2 cache tags',()=>{
- const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),a=html.indexOf('tarot-foundation.js?v=20260718v99_2'),b=html.indexOf('tarot-semantic-engine.js?v=20260718v99_2'),c=html.indexOf('tarot-inventory.js?v=20260718v99_2'),d=html.indexOf('ai-analysis.js?v=20260718v99_2');assert(a>=0&&a<b&&b<c&&c<d);assert(html.includes('prompt-export.js?v=20260718v99_2'));
+ const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8'),a=html.indexOf('tarot-foundation.js?v=20260718v99_2'),b=html.indexOf('tarot-semantic-engine.js?v=20260718v99_2'),c=html.indexOf('tarot-inventory.js?v=20260718v99_2'),d=html.indexOf('ai-analysis.js?v=20260922rules1');assert(a>=0&&a<b&&b<c&&c<d);assert(html.includes('prompt-export.js?v=20260922rules1'));
 });
 test('Assembled tarot prompt preserves compound query and ends with the natural recommendation contract',()=>{
  const q='今年會有非現任的肉體桃花嗎？她幾歲？',r=route(q),cards=dummyCards(r.methodPlan,['權杖九','命運之輪','權杖十','寶劍五','金幣皇后']);

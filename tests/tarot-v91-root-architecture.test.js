@@ -234,8 +234,8 @@ test('ROOT-SPEC v91提示包含原句關係、語義義務、量測邊界與非�
 test('index 依正確順序載入v91語義引擎與提示詞', () => {
   const html = fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
   const sem = html.indexOf('JS/tarot-semantic-engine.js?v=20260715v91_0');
-  const ai = html.indexOf('JS/ai-analysis.js?v=20260715v91_0');
-  const pe = html.indexOf('JS/prompt-export.js?v=20260715v91_0');
+  const ai = html.indexOf('JS/ai-analysis.js?v=20260922rules1');
+  const pe = html.indexOf('JS/prompt-export.js?v=20260922rules1');
   assert(sem > 0 && sem < ai && ai < pe);
 });
 

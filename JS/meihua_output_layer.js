@@ -377,7 +377,7 @@ function buildMeihuaRisk(mh, type, analysis) {
   if (t === 'wealth' && (rel === '用克體' || bianTrend.type === '惡化'))
     points.push('財務有風險，不宜冒進或過度槓桿');
   if (t === 'health' && (tiWS.level === '死' || tiWS.level === '囚'))
-    points.push('身體能量偏弱，注意免疫力和慢性消耗');
+    points.push('健康題不以體卦旺衰診斷免疫力或疾病；持續不適應依症狀就醫');
   if (t === 'love' && (bianTrend.type === '反覆' || rel === '用克體'))
     points.push('感情有反覆或外力阻礙的風險，注意自我保護');
 
@@ -517,16 +517,15 @@ function calcMH(un,ln,dy,castContext){
   var up=gByN(un),lo=gByN(ln),dong=((dy-1)%6)+1;
   var ben=g64(up.n, lo.n);
   var benL=lo.li.concat(up.li);
-  var huLo=gByL(benL[1],benL[2],benL[3]);
-  var huUp=gByL(benL[2],benL[3],benL[4]);
-  var hu=g64(huUp.n, huLo.n);
+  var nuclear=mhNuclearContext({lo:lo,up:up,dong:dong});
+  var hu=nuclear.hexagram;
   var biL=benL.slice(); biL[dong-1]=biL[dong-1]?0:1;
   var biLo=gByL(biL[0],biL[1],biL[2]);
   var biUp=gByL(biL[3],biL[4],biL[5]);
   var bian=g64(biUp.n, biLo.n);
   var tiG=dong<=3?up:lo, yoG=dong<=3?lo:up;
   var ty=tiYong(tiG.el,yoG.el);
-  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
+  var mh={up:up,lo:lo,dong:dong,ben:ben,hu:hu,nuclear:nuclear,bian:bian,tiG:tiG,yoG:yoG,ty:ty};
   mh.castContext=castContext?Object.assign({},castContext):{timestamp:new Date().toISOString(),method:'provided-trigrams',upperTrigram:up.n,lowerTrigram:lo.n,movingLine:dong};
   if(!Number.isFinite(Date.parse(mh.castContext.timestamp)))throw new Error('起卦時間格式無效。');
   // 自動掛輸出層（general 先跑，結果頁再用真實 type 覆蓋）

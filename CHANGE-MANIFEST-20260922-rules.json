@@ -1,0 +1,422 @@
+{
+  "release": "20260922bridge1",
+  "base": "Installed project after gua.zip audio/3D update; includes previous fix.zip rules",
+  "scope": "Changed/new files only; retain paths. Source, scope and verification are in docs/engine-rules-20260922.md and docs/astro-bridge-20260922.md. Not deployed.",
+  "deleted": [],
+  "files": [
+    {
+      "path": "CSS/astro-bridge.css",
+      "status": "added",
+      "sha256": "224e7ea84029689d1dd55acdaceb5ba805dfeae2d4e2390759705153f00f80d9",
+      "bytes": 1313
+    },
+    {
+      "path": "JS/ai-analysis.js",
+      "status": "modified",
+      "sha256": "07cf8403bed4782c3d41ac0d75507c8ae5cab08123d8975ec864ace586380082",
+      "bytes": 1562194
+    },
+    {
+      "path": "JS/astro-bridge.js",
+      "status": "added",
+      "sha256": "d26dc220ef8621740a76faa7aa7051792b6b7f97b2346c7f0e2c31f011f00d86",
+      "bytes": 15288
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "status": "modified",
+      "sha256": "1d5a6a580b146cd71e33a477f5a46088f56abd0ae349efce56dd2df8e3a74dca",
+      "bytes": 51112
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "status": "modified",
+      "sha256": "9cb8c28d3e31a15b05b1740060a37bc40d9b28648dcd79ee63396f70eeb880c5",
+      "bytes": 82642
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "status": "modified",
+      "sha256": "5064e7079f62c87236b5e65589dea7caf2942d66a4b6472c1419a87c2dedee79",
+      "bytes": 54959
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "status": "modified",
+      "sha256": "ecd2cda347ce5841a4b86a4c10a63e74e39917f2234551da072b4d9c4f9bf32f",
+      "bytes": 76137
+    },
+    {
+      "path": "JS/bazi.js",
+      "status": "modified",
+      "sha256": "85baf744b4df79a7ba50106622fb7afd9a5c643df822aa4f4d075af1519bb11b",
+      "bytes": 341247
+    },
+    {
+      "path": "JS/bazi_upgrade.js",
+      "status": "modified",
+      "sha256": "005db796bde2a8683c82b802ba208950406d7d70c3b3f3a9c604de8ce2ef0d77",
+      "bytes": 47185
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "status": "modified",
+      "sha256": "39bdfb60a92e5d38ae5bebd93c02962c23cf13127ff67b86d7055b0b39d1a262",
+      "bytes": 28489
+    },
+    {
+      "path": "JS/gua-room.js",
+      "status": "modified",
+      "sha256": "6ed48ff57e0036875455e1b4afccd1b7084725e6769b7b3c79b690cf751bfad3",
+      "bytes": 35812
+    },
+    {
+      "path": "JS/lenormand.js",
+      "status": "modified",
+      "sha256": "74201ad15004f6a9f7f59effa331de1089c54238c4c5983917bb7f2eff88ba65",
+      "bytes": 129521
+    },
+    {
+      "path": "JS/liuyao-core.js",
+      "status": "modified",
+      "sha256": "9b8620a76f67c35d340209e6e8d263946fe4d14f3025adf277a708e2fb934294",
+      "bytes": 27976
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "status": "modified",
+      "sha256": "a61e80870aefcf066fb9ef3b131b76ce355d532238b4a8b06f4872eb3e380418",
+      "bytes": 72926
+    },
+    {
+      "path": "JS/meihua_output_layer.js",
+      "status": "modified",
+      "sha256": "4ba836642dfdd9ced0f103d835b1fe71ed5f911245c0942b017ae18401b23262",
+      "bytes": 27951
+    },
+    {
+      "path": "JS/meihua_upgrade.js",
+      "status": "modified",
+      "sha256": "f1c5c98aa0fdc7f7014545789f3d584088523b10f39377f78ef8e647dc7727bd",
+      "bytes": 33822
+    },
+    {
+      "path": "JS/meihua_upgrade2.js",
+      "status": "modified",
+      "sha256": "9119d001d2a16fabeb338b326b4a044ad908f184ad4257e8819a9f490028064e",
+      "bytes": 19764
+    },
+    {
+      "path": "JS/oracle.js",
+      "status": "modified",
+      "sha256": "8d981b8078928ec6655234122a4dd5b12df7ff6b1a1a17bd3bd8fefaef2674f8",
+      "bytes": 145028
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "status": "modified",
+      "sha256": "a6608cb5fe3778d07e2c204f8554573184368f62239679995dbb6b24f3167cea",
+      "bytes": 118310
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "status": "modified",
+      "sha256": "e321e17d41b7ecb679aed48f52da50754aee0893ab43811ececaba29feb2b3d4",
+      "bytes": 28990
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "status": "modified",
+      "sha256": "3537cb907f42af6085d10e35cc7494f65d07ff54ccce0ab599db42cebf8878a9",
+      "bytes": 25562
+    },
+    {
+      "path": "JS/render_upgrade.js",
+      "status": "modified",
+      "sha256": "32b9d2410cd8bd1633f820ad2aa198637dc544b28415c9c7c28fd70094c9b6cf",
+      "bytes": 627770
+    },
+    {
+      "path": "JS/selftest-core.js",
+      "status": "modified",
+      "sha256": "209609f29dffce4cc1225bda087d1826cf3cb2a6e79fdd044bbbd7fcafbb61b6",
+      "bytes": 29878
+    },
+    {
+      "path": "JS/solar-location.js",
+      "status": "modified",
+      "sha256": "f04edbdb07acd4a223e9cc3e8b06ab7eebde7bbb6070bbc29ce53b5d8e334327",
+      "bytes": 25131
+    },
+    {
+      "path": "JS/sw.js",
+      "status": "modified",
+      "sha256": "ec5dae1da0d7684689d43ac405e328e878d6c25999789c64fe0080d56a793222",
+      "bytes": 5457
+    },
+    {
+      "path": "JS/tarot-reading.js",
+      "status": "modified",
+      "sha256": "367381a25daf053c077fa343a1d0149a088f0035e494674b65ed3ebaba27672f",
+      "bytes": 13981
+    },
+    {
+      "path": "JS/tarot.js",
+      "status": "modified",
+      "sha256": "4e252030a8d69edca21ae38e792b5684378a11d4b0f652bdb4edc082820f51ce",
+      "bytes": 388616
+    },
+    {
+      "path": "JS/ui.js",
+      "status": "modified",
+      "sha256": "bd2df7e04fa8342439ce80c5daf2076d07ce64b8e670a41b2dc49027a2425abd",
+      "bytes": 432446
+    },
+    {
+      "path": "JS/vedic-engine.js",
+      "status": "modified",
+      "sha256": "92774023e79539f29b65fe398592e63e0142818e771628c1dff9c50e73e595e0",
+      "bytes": 37871
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "status": "modified",
+      "sha256": "36defc1d9804fae834ead0ca25b2d67a513619e5d85712fc8f372a4816f31f09",
+      "bytes": 28740
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "status": "modified",
+      "sha256": "84c95c0334519037a32b73355b9d6027acc9e18bfb44847f57d899702732f8db",
+      "bytes": 41099
+    },
+    {
+      "path": "JS/western-engine.js",
+      "status": "modified",
+      "sha256": "468d0ad81d35f304a118ab8476e63f80cd9c0dadbe868fdcd7fd24711dcfe284",
+      "bytes": 19965
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "status": "modified",
+      "sha256": "5030a623fd36c63ec05b2a008724b54cb7fdb204f88f2d14eee7643f84b4e0c4",
+      "bytes": 21509
+    },
+    {
+      "path": "JS/western-standalone.js",
+      "status": "modified",
+      "sha256": "19a48926b790a8f549d48ede72ab851bcb4677a6a7e7fb747dccf27814a7b6dc",
+      "bytes": 29630
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "status": "modified",
+      "sha256": "3dc4901ce0f2c7dca62d7f0e8c7eb1319bfd4fa85ef7d466bee5108aa1491246",
+      "bytes": 20967
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "status": "modified",
+      "sha256": "f374166adc8f2b895313e2d6a1923fb5343901d770e08394123820ad98b059b3",
+      "bytes": 86288
+    },
+    {
+      "path": "JS/ziwei.js",
+      "status": "modified",
+      "sha256": "c09920814383043b862ee66ce366b6c7548da63849269e458e1f19ceb9e98666",
+      "bytes": 243077
+    },
+    {
+      "path": "ai-analysis.js",
+      "status": "modified",
+      "sha256": "07cf8403bed4782c3d41ac0d75507c8ae5cab08123d8975ec864ace586380082",
+      "bytes": 1562194
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "status": "modified",
+      "sha256": "1d5a6a580b146cd71e33a477f5a46088f56abd0ae349efce56dd2df8e3a74dca",
+      "bytes": 51112
+    },
+    {
+      "path": "bazi-suite-core.js",
+      "status": "modified",
+      "sha256": "5064e7079f62c87236b5e65589dea7caf2942d66a4b6472c1419a87c2dedee79",
+      "bytes": 54959
+    },
+    {
+      "path": "data/engine-rule-coverage.json",
+      "status": "added",
+      "sha256": "c13109a0f4f5c6cd01bb39dc656515ffc18f3cad4090284d712b1bf621982f77",
+      "bytes": 5717
+    },
+    {
+      "path": "docs/astro-bridge-20260922.md",
+      "status": "added",
+      "sha256": "ec86dfc5fabea946dae1c1eeb855cef72265de0c882ef10700538bdadc253cfe",
+      "bytes": 3840
+    },
+    {
+      "path": "docs/astro-bridge-verification-20260922.json",
+      "status": "added",
+      "sha256": "b7245b76b68172a7a9abac59b4240db64ba3dba32ee5fabebfee889d93d70279",
+      "bytes": 1591
+    },
+    {
+      "path": "docs/engine-rules-20260922.md",
+      "status": "added",
+      "sha256": "45ab069b5e074fbd8cf0320f04640e5e79c87958ef52903f22141182eb9d465f",
+      "bytes": 10789
+    },
+    {
+      "path": "docs/engine-verification-20260922.json",
+      "status": "added",
+      "sha256": "6da51b799fe2fd58b82ccf8a9559b5116b424fc1fb729100d4fc4e5f3f574eb0",
+      "bytes": 1755
+    },
+    {
+      "path": "docs/special-rules-test-results.json",
+      "status": "added",
+      "sha256": "7d91d7714cf4a6077006a674f8d31343ca76b58484214cfa5476d8bc4d287872",
+      "bytes": 2512
+    },
+    {
+      "path": "functions/api/ai.js",
+      "status": "modified",
+      "sha256": "142a15c2d1e2fcfbcf9a7eb2e8e1a7277a5f49c1ce714a789a1bbceae33e55b7",
+      "bytes": 40046
+    },
+    {
+      "path": "index.html",
+      "status": "modified",
+      "sha256": "67cdf2096c4eb25ca082abd428f81c4331d75a32f291bb9d74e7fa4c07101123",
+      "bytes": 147903
+    },
+    {
+      "path": "lenormand.js",
+      "status": "modified",
+      "sha256": "74201ad15004f6a9f7f59effa331de1089c54238c4c5983917bb7f2eff88ba65",
+      "bytes": 129521
+    },
+    {
+      "path": "meihua-standalone.js",
+      "status": "modified",
+      "sha256": "a61e80870aefcf066fb9ef3b131b76ce355d532238b4a8b06f4872eb3e380418",
+      "bytes": 72926
+    },
+    {
+      "path": "oracle.js",
+      "status": "modified",
+      "sha256": "8d981b8078928ec6655234122a4dd5b12df7ff6b1a1a17bd3bd8fefaef2674f8",
+      "bytes": 145028
+    },
+    {
+      "path": "package.json",
+      "status": "modified",
+      "sha256": "9dc6f0ce7a1aa495f5ea7061f81e0912c8dfcb96f3861b217dd212e9cf81b172",
+      "bytes": 5255
+    },
+    {
+      "path": "prompt-export.js",
+      "status": "modified",
+      "sha256": "a6608cb5fe3778d07e2c204f8554573184368f62239679995dbb6b24f3167cea",
+      "bytes": 118310
+    },
+    {
+      "path": "sw.js",
+      "status": "modified",
+      "sha256": "ec5dae1da0d7684689d43ac405e328e878d6c25999789c64fe0080d56a793222",
+      "bytes": 5457
+    },
+    {
+      "path": "tests/api-failure-regression.mjs",
+      "status": "modified",
+      "sha256": "8d4fbcdcacb787ab9f96eab134d70f2ce1cec7aa4c62cb2251369c1ef4eddcf1",
+      "bytes": 9934
+    },
+    {
+      "path": "tests/astro-bridge-20260922.cjs",
+      "status": "added",
+      "sha256": "d45df86e97aad106ec245cf78b2538cf6e25f733d28d85d8d8291fdcad7d59d3",
+      "bytes": 8020
+    },
+    {
+      "path": "tests/astro-bridge-browser-20260922.cjs",
+      "status": "added",
+      "sha256": "b7161bbcc936b8f613a10f23309b87abecddbccea6929588d143b68cc9142272",
+      "bytes": 5663
+    },
+    {
+      "path": "tests/bazi-suite.js",
+      "status": "modified",
+      "sha256": "3e7bfb1e3d3e59688f50640a806bebb74b10e20bd08447ae007172e7e55a79f0",
+      "bytes": 46611
+    },
+    {
+      "path": "tests/engine-output-consistency-20260913.cjs",
+      "status": "modified",
+      "sha256": "b986969251aa38a03ce1cbe47fa3f3cee4d8531890e39e46c35490fddd455661",
+      "bytes": 15173
+    },
+    {
+      "path": "tests/lenormand-v7-principle-engine.test.js",
+      "status": "modified",
+      "sha256": "22616a6e44229c5c58aab55eedd106340064293fd34d50e79bc931306858f523",
+      "bytes": 15181
+    },
+    {
+      "path": "tests/special-rules-20260922.cjs",
+      "status": "added",
+      "sha256": "022a1c811a64ea05c34dcbda5a5b1abee0cb9d55eb0602db8b5a69c6825b86a0",
+      "bytes": 16762
+    },
+    {
+      "path": "tests/special-rules-browser-20260922.cjs",
+      "status": "added",
+      "sha256": "86227302d733b769cd4ac3ef006c91248d754738d1b7c23cbd14abb07cc6c335",
+      "bytes": 3418
+    },
+    {
+      "path": "tests/tarot-v90-root-compiler.test.js",
+      "status": "modified",
+      "sha256": "d6e78eed410d98f444a68ff164877abc4665e5331a78bd7e80273a9008af87f4",
+      "bytes": 12242
+    },
+    {
+      "path": "tests/tarot-v91-root-architecture.test.js",
+      "status": "modified",
+      "sha256": "b344689b8137798376278001e81336e15c5f2f7b7b331f3763a3fb3308d69134",
+      "bytes": 14795
+    },
+    {
+      "path": "tests/tarot-v98-root-architecture.test.js",
+      "status": "modified",
+      "sha256": "b7203c03d30b7e4920e38bc879bf9f29bf2841f2e8f04c9343efc6b544092382",
+      "bytes": 14760
+    },
+    {
+      "path": "tests/tarot-v99-root-architecture.test.js",
+      "status": "modified",
+      "sha256": "6308531fb654556683439d28571c590427bca1978fe4f0aefaeb21730c5ce396",
+      "bytes": 19291
+    },
+    {
+      "path": "ui.js",
+      "status": "modified",
+      "sha256": "bd2df7e04fa8342439ce80c5daf2076d07ce64b8e670a41b2dc49027a2425abd",
+      "bytes": 432446
+    },
+    {
+      "path": "workers/ai-proxy.js",
+      "status": "modified",
+      "sha256": "800f4f78664cb34d4295580f71a677efe8a1eb67858b92138d1d82ca41db9a3d",
+      "bytes": 40217
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "status": "modified",
+      "sha256": "3dc4901ce0f2c7dca62d7f0e8c7eb1319bfd4fa85ef7d466bee5108aa1491246",
+      "bytes": 20967
+    }
+  ]
+}

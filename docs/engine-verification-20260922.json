@@ -1,0 +1,60 @@
+{
+  "release": "20260922bridge1",
+  "verification": [
+    {
+      "command": "npm run test:special-rules",
+      "status": "passed",
+      "groups": {
+        "special": 17,
+        "outputConsistency": 9,
+        "gua": 11
+      },
+      "exhaustiveCases": {
+        "meihua": 384,
+        "gua": 4096
+      }
+    },
+    {
+      "command": "node tests/core-engine-20260913.cjs",
+      "status": "passed",
+      "groups": 10
+    },
+    {
+      "command": "node tests/vedic-engine-20260913.cjs",
+      "status": "passed",
+      "groups": 14,
+      "independentPositions": 167
+    },
+    {
+      "command": "node tests/western-engine-20260914.cjs",
+      "status": "passed",
+      "groups": 11,
+      "independentPositions": 167
+    },
+    {
+      "command": "node tests/special-rules-browser-20260922.cjs",
+      "status": "passed",
+      "scope": "actual index, lazy Jyotisha, mobile 六爻 condition panel, no page errors or overflow"
+    },
+    {
+      "check": "Changed script syntax and inline index scripts",
+      "status": "passed"
+    },
+    {
+      "check": "Generated prompt copies",
+      "status": "passed"
+    },
+    {
+      "command": "npm test",
+      "status": "failed-existing-assertions",
+      "reason": "Old exact prompt strings were already absent from pre-change releases. Full suite not reported as passing."
+    },
+    {
+      "check": "Legacy time-ownership suite",
+      "status": "11-passed-1-stale-version-assertion",
+      "reason": "Hardcoded v90; baseline used v94, release uses v96."
+    }
+  ],
+  "limitation": "傳統規則與計算回歸，不是命理預測準確率驗證。具體分支及尚未覆蓋範圍見 engine-rules-20260922.md。",
+  "integrationVerification": "docs/astro-bridge-verification-20260922.json"
+}

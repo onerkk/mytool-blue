@@ -3730,6 +3730,7 @@ var JY_QUESTION_MAP = {
 
 // ═══ 二、統一訊號函式 analyzeJyotishQuestion ═══
 function analyzeJyotishQuestion(jy, type, userQuestion) {
+  if (jy && jy.nativeAstro) return {tags:[],factors:[],status:'NATIVE_FACTS_ONLY',summary:jy.summary};
   if (!jy || !jy.planets || !jy.lagna) {
     return _jyqFallback('資料不足，無法進行完整判讀');
   }
@@ -4967,6 +4968,39 @@ function baziHuaQiLines(chart){
   return (chart&&chart.huaQiAssessments||[]).map(function(a){return '合化審查：'+a.status+'。'+a.conclusion+' 支持：'+a.evidence.join('；')+'。取捨依據：'+(a.blockingEvidence.join('；')||'未由本規則判定普通格局優先')+'。'+(a.requiredChecks.length?'未裁決部分：'+a.requiredChecks.join('；')+'。':'')+'採用判法：'+a.policy+'；'+a.policyNote;});
 }
 
+// Explicit traditional structures. Each condition is evaluated from the same
+// position facts; relative scores cannot establish, remove or transform a root.
+function assessBaziSpecialRules(pillars) {
+  var f=getBaziStructureFacts(pillars);if(!f)return {status:'missing-pillars',rules:[]};
+  var source='https://zh.wikisource.org/zh-hant/滴天髓闡微',zp='https://www.donglishuzhai.net/chapter/3722.html',sm='https://zh.wikisource.org/zh-hant/三命通會/卷六';
+  var dm=f.dmEl,yin=BE_SHENG[dm],out=SHENG[dm],wealth=KE[dm],officer=BE_KE[dm],month=WX_G[CG[pillars.month.zhi][0]],rules=[];
+  var points=f.stems.filter(function(s){return s.pillar!=='day';}).concat(f.hidden),branches=['year','month','day','hour'].map(function(k){return pillars[k].zhi;});
+  function evidence(els){return points.filter(function(s){return els.includes(s.element);}).map(function(s){return s.label;});}
+  function c(id,ok,items){return {condition:id,passed:!!ok,evidence:items||[]};}
+  function rule(id,name,checks,ref,note,variant){var fail=checks.filter(function(x){return !x.passed;});rules.push({id:id,name:name,status:fail.length?'not-established':variant?'variant-structure':'structural',checks:checks,source:ref,scope:note,variant:variant||null,failedConditions:fail.map(function(x){return x.condition;})});}
+  var noSupport=evidence([dm,yin]).length===0;
+  [['follow-wealth','從財',wealth],['follow-officer','從官殺',officer]].forEach(function(x){
+    rule(x[0],x[1]+'（純勢嚴格支線）',[c('四支及他干全無印比',noSupport,evidence([dm,yin])),c('所從之神秉月令',month===x[2],[pillars.month.zhi]),c('其餘透藏皆為所從之神或生它之神',points.every(function(p){return p.element===x[2]||SHENG[p.element]===x[2];}),points.map(function(p){return p.label;}))],source,'只判無根無扶的充分入口；有根被制或假從另列，不由此否定所有從格流派。');
+  });
+  rule('follow-force','從勢（嚴格支線）',[c('無根無印比',noSupport,evidence([dm,yin])),c('食傷財官三方有氣',[out,wealth,officer].every(function(e){return evidence([e]).length>0;}),evidence([out,wealth,officer]))],source,'均停及主從輕重仍據實際月令與位置，不以元素百分比替代。');
+  rule('follow-output','從兒（順局）',[c('食傷秉令',month===out,[pillars.month.zhi]),c('食傷接續財氣',evidence([wealth]).length>0,evidence([wealth])),c('無印與官殺介入',!evidence([yin,officer]).length,evidence([yin,officer]))],source,'依順局章，不以身弱或沒有比劫作門檻；存在逆神時另審制合，不硬定成立。');
+  rule('follow-strong','從強（印比純勢）',[c('日主當令',month===dm,[pillars.month.zhi]),c('透藏只有印比',points.every(function(p){return [dm,yin].includes(p.element);}),points.map(function(p){return p.label;})),c('印比皆見',evidence([yin]).length>0&&evidence([dm]).length>0,evidence([dm,yin]))],source,'本版嚴格取印比無財官食傷的支線；不由格名自動給全季節相同喜忌。');
+  var specials=[['曲直','木',['亥','卯','未'],['寅','卯','辰']],['炎上','火',['寅','午','戌'],['巳','午','未']],['從革','金',['巳','酉','丑'],['申','酉','戌']],['潤下','水',['申','子','辰'],['亥','子','丑']],['稼穡','土',['辰','戌','丑','未'],[]]];
+  specials.forEach(function(x){var exact=x[2].every(function(z){return branches.includes(z);}),meeting=x[3].length&&x[3].every(function(z){return branches.includes(z);});
+    rule('special-'+x[1],x[0]+'結構',[c('日主五行',dm===x[1],[pillars.day.gan]),c('指定三合／三會／四庫齊',exact||meeting,branches)],sm,'核起例並保留原典變體，並非五行占比高便成專旺。',x[1]==='金'?'卷六從革容少量火煉金，不採一見官殺即破格':x[1]==='土'?'卷六稼穡有一木及四庫兩種取法，不合併喜忌':x[1]==='火'?'炎上原文論寅印、亥濟及忌土晦，不套所有官殺皆忌':x[1]==='水'?'潤下原文容土制泛，土的有無須看全局':!exact?'寅卯辰為仁壽另說；亥卯未為曲直原起例':null);
+  });
+  var lu={甲:'寅',乙:'卯',丙:'巳',丁:'午',戊:'巳',己:'午',庚:'申',辛:'酉',壬:'亥',癸:'子'},blade={甲:'卯',丙:'午',戊:'午',庚:'酉',壬:'子'};
+  rule('jianlu','建祿',[c('月建為日主祿位',pillars.month.zhi===lu[f.dm],[f.dm+pillars.month.zhi])],zp,'月令取格入口，財官食傷的成敗救應另查。');
+  rule('yangren','陽刃',[c('五陽干帝旺月',pillars.month.zhi===blade[f.dm],[f.dm+pillars.month.zhi])],zp,'採五陽干陽刃，不混入陰干羊刃異說。');
+  [['food-kill','食神制殺','食神','七殺','剋'],['hurt-seal','傷官佩印','正印','傷官','剋'],['kill-seal','殺印相生','七殺','正印','生'],['officer-seal','官印相生','正官','正印','生'],['food-wealth','食神生財','食神','正財','生'],['hurt-wealth','傷官生財','傷官','正財','生'],['owl-food','梟印奪食','偏印','食神','剋'],['hurt-officer','傷官見官','傷官','正官','剋']].forEach(function(x){
+    var left=f.stems.filter(function(p){return p.god===x[2];}),right=f.stems.filter(function(p){return p.god===x[3]||x[3]==='正財'&&p.god==='偏財'||x[3]==='正印'&&p.god==='偏印'&&x[0]!=='hurt-seal';});
+    var links=[];left.forEach(function(a){right.forEach(function(b){var hit=f.links.find(function(l){return l.from===a.pillar&&l.to===b.pillar&&l.relation===x[4];});if(hit)links.push({from:a.label,to:b.label,adjacent:hit.adjacent,rooted:a.rooted&&b.rooted,interference:a.constraints.concat(b.constraints.filter(function(v){return v!==hit.label;}))});});});
+    rule(x[0],x[1]+'作用',[c('相關十神透干',left.length>0&&right.length>0,left.concat(right).map(function(s){return s.label;})),c('近位且雙方有根的作用線',links.some(function(l){return l.adjacent&&l.rooted;}),links)],zp,'本條判實際作用入口，不等於整格成立；月令、身的承受力、制合和救應另列。');
+  });
+  return {version:'1.0.0',policy:'原典分支逐條核對；不以神煞或分數取代格局，structural 不等於事件吉凶。',rules:rules,matched:rules.filter(function(r){return r.status!=='not-established';}),huaQi:assessBaziHuaQi(pillars),
+    ordinaryUsePolicy:rules.some(function(r){return /^follow-/.test(r.id)&&r.status==='structural';})?'符合嚴格從勢支線；一般扶抑喜忌僅供對照，主取用須按所從之神的季節與通路重審':'一般格局先行，特殊分支按各條結果參照'};
+}
+
 function computeBazi(year,month,day,hour,minute,gender,options){
   options=Object.assign({timezoneOffset:8},options||{});
   minute=minute==null?0:minute;
@@ -5169,9 +5203,11 @@ function computeBazi(year,month,day,hour,minute,gender,options){
 
   // ═══ 特殊格局候選：從格／化氣格只提示，不自動定格 ═══
   // 從格、專旺與化氣格在不同子平流派間條件差異很大，不能只以本系統百分比門檻定案。
-  // 本層只列候選證據與待審條件；specialStructure 保持 null，不覆蓋一般扶抑喜忌。
+  // 本層列明結構與待審條件；specialStructure 保持 null。嚴格從格命中時，
+  // 普通扶抑只存為對照，不把補身結論套到順勢分支。
   let specialStructure = null;
   let specialStructureCandidates = [];
+  var specialRuleAssessment=assessBaziSpecialRules(pillars);
   var huaQiAssessments = assessBaziHuaQi(pillars);
 
   (function detectSpecialStructureCandidates(){
@@ -5198,6 +5234,17 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   // mutually inconsistent partial-print thresholds. Seasonal use stays separate.
   const fuyiAssessment=assessBaziFuyi(structureFacts,strong,isNeutral);
   let fav=fuyiAssessment.fav.slice(), unfav=fuyiAssessment.unfav.slice();
+  fuyiAssessment.specialRulePolicy=specialRuleAssessment.ordinaryUsePolicy;
+  fuyiAssessment.appliesAsFinalUse=!specialRuleAssessment.matched.some(function(r){return /^follow-/.test(r.id)&&r.status==='structural';});
+  if(!fuyiAssessment.appliesAsFinalUse){
+    fuyiAssessment.ordinaryComparison={fav:fav.slice(),unfav:unfav.slice(),map:Object.assign({},fuyiAssessment.map),conclusion:fuyiAssessment.conclusion,items:fuyiAssessment.items,mechanisms:fuyiAssessment.mechanisms};
+    fuyiAssessment.fav=[];fuyiAssessment.unfav=[];fav=[];unfav=[];
+    fuyiAssessment.map={木:'待定',火:'待定',土:'待定',金:'待定',水:'待定'};
+    fuyiAssessment.items=fuyiAssessment.items.map(function(i){return Object.assign({},i,{stance:'待定'});});
+    fuyiAssessment.mechanisms=[];
+    fuyiAssessment.scope='特殊順勢支線已命中；普通扶抑僅供對照';
+    fuyiAssessment.conclusion='原局命中'+specialRuleAssessment.matched.filter(function(r){return /^follow-/.test(r.id)&&r.status==='structural';}).map(function(r){return r.name;}).join('、')+'的表列條件；取用須按順勢、逆神及救應合判，普通扶抑的補身或洩身方向不作最終喜忌。';
+  }
   const woSheng=SHENG[dmEl], woKe=KE[dmEl], keWo=BE_KE[dmEl];
   // A numeric maximum is not sufficient to diagnose a "disease" or an absent remedy.
   // Concrete support and control mechanisms are carried by fuyiAssessment instead.
@@ -5481,7 +5528,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
+  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialRuleAssessment:specialRuleAssessment,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
 }
 
 

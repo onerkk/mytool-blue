@@ -145,8 +145,70 @@ function ziweiCalculatedFacts(chart) {
       selfTransformation:t.self?'CENTRIFUGAL':null,convention:'飛星口徑；本宮干飛入本宮標為離心自化，不與生年四化混層'};});}),
     selfTransformations:chart.selfHua.map(function(h){return Object.assign({sourceType:'NATAL_PALACE_STEM',convention:'飛星自化口徑'},h);}),
     laiYin:chart.laiYin?Object.assign({school:'欽天',scope:'僅限欽天體系內解釋，不作三合派共同定義'},chart.laiYin):null,
+    patternAssessment:chart.patternAssessment,
     decades:chart.daXian.map(function(p){return ziweiPeriodFacts(p,'DECADAL_STEM');})
   };
+}
+
+// Named structures are geometrical facts, with support/affliction kept separate.
+// Adopted profile: iztro author's pattern catalogue; disputed names keep a variant.
+function assessZiweiPatterns(palaces) {
+  var source='https://iztro.com/zh_TW/learn/pattern',rows=[],catalog=[];
+  var at=function(name){return palaces.find(function(p){return p.name===name;});};
+  var ming=at('命宮'),wealth=at('財帛'),career=at('官祿'),travel=at('遷移');
+  if(!ming||!wealth||!career||!travel)throw new Error('特殊格局缺少十二宮定位');
+  function has(p,n){return !!p&&p.stars.some(function(s){return s.name===n;});}
+  function stars(p){return p.stars.filter(function(s){return s.type==='major';}).map(function(s){return s.name;});}
+  function four(p){var i=DZ.indexOf(p.branch);return [0,4,8,6].map(function(d){return palaces.find(function(x){return x.branch===DZ[(i+d)%12];});});}
+  function witnesses(ps,ns){return ps.flatMap(function(p){return p.stars.filter(function(s){return !ns||ns.includes(s.name);}).map(function(s){return {palace:p.name,branch:p.branch,star:s.name,brightness:typeof getStarBright==='function'?getStarBright(s.name,DZ.indexOf(p.branch)).label:null,hua:s.hua||null};});});}
+  function add(id,name,checks,ps,ns,note,variant){
+    catalog.push({id:id,name:name,checks:checks,matched:checks.every(function(c){return c.passed===true;}),source:source});
+    if(!catalog[catalog.length-1].matched)return;
+    var region=[...new Set(ps.flatMap(four))],support=witnesses(region).filter(function(w){return ['左輔','右弼','文昌','文曲','天魁','天鉞','祿存'].includes(w.star)||['化祿','化權','化科'].includes(w.hua);});
+    var blockers=witnesses(region).filter(function(w){return ['擎羊','陀羅','火星','鈴星','地空','地劫'].includes(w.star)||w.hua==='化忌';});
+    rows.push({id:id,name:name,status:variant?'variant-structure':'structural',classification:'位置結構',palaces:ps.map(function(p){return p.name;}),checks:checks,
+      evidence:witnesses(ps,ns),support:support,modifiers:blockers,source:source,variant:variant||null,
+      desc:note+'；依實際落宮、廟旺、輔煞與四化判成色，不以格名保證事件。',
+      observedStructure:witnesses(ps,ns).map(function(w){return w.palace+'('+w.branch+') '+w.star+(w.hua||'');}),
+      review:blockers.length?'三方四正見 '+blockers.map(function(w){return w.palace+' '+w.star+(w.hua||'');}).join('、'):'三方四正未見本表六煞或生年忌；仍合看星性與運限'});
+  }
+  function check(label,passed){return {label:label,passed:!!passed};}
+  var sf=four(ming),all=function(ns){return ns.every(function(n){return sf.some(function(p){return has(p,n);});});};
+  function same(id,name,ns,note,branches){add(id,name,[check('命宮同見 '+ns.join('、'),ns.every(function(n){return has(ming,n);})),check('地支條件',!branches||branches.includes(ming.branch))],[ming],ns,note);}
+  same('purple-treasury','紫府同宮',['紫微','天府'],'領導與資源承接並見',['寅','申']);
+  same('purple-greedy','極居卯酉',['紫微','貪狼'],'主導與探索的星組',['卯','酉']);
+  same('sun-thunder','日照雷門',['太陽','天梁'],'公開表達與原則性的星組',['卯']);
+  same('moon-heaven','月朗天門',['太陰'],'太陰居亥的結構',['亥']);
+  same('sun-noon','日麗中天',['太陽'],'太陽午宮；吉輔與煞忌另列',['午']);
+  same('purple-noon','極向離明',['紫微'],'紫微在午坐命',['午']);
+  same('hidden-jade','石中隱玉',['巨門'],'巨門在子午；科權祿另列支持',['子','午']);
+  same('horse-arrow','馬頭帶箭',['擎羊'],'擎羊午宮坐命；不推定職業或災害',['午']);
+  same('minister','君臣慶會',['紫微','左輔','右弼'],'採紫微左右同守命的起例');
+  add('empty','命無正曜',[check('命宮無十四主星',stars(ming).length===0)],[ming,travel],null,'參照對宮主星，保留本宮輔煞；不搬移原盤');
+  add('jiyuetongliang','機月同梁格',[check('四曜齊全，不以三曜代替',all(['天機','太陰','天同','天梁']))],sf,['天機','太陰','天同','天梁'],'三方四正四曜俱備');
+  add('kill-break-greedy','殺破狼星系',[check('三曜齊全',all(['七殺','破軍','貪狼']))],sf,['七殺','破軍','貪狼'],'變動型主星相互呼應');
+  add('treasury-minister','府相朝垣',[check('天府在官祿',has(career,'天府')),check('天相在財帛',has(wealth,'天相'))],[ming,wealth,career],['天府','天相'],'採官祿天府、財帛天相拱命的起例');
+  add('pearl','明珠出海',[check('未宮空命',ming.branch==='未'&&stars(ming).length===0),check('卯財帛太陽',wealth.branch==='卯'&&has(wealth,'太陽')),check('亥官祿太陰',career.branch==='亥'&&has(career,'太陰')),check('遷移同巨',has(travel,'天同')&&has(travel,'巨門'))],[ming,wealth,career,travel],['太陽','太陰','天同','巨門'],'日月照空命的指定結構');
+  var sides=[palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+11)%12;}),palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+1)%12;})];
+  [['purple-flank','紫府夾命','紫微','天府'],['assist-flank','左右夾命','左輔','右弼'],['literary-flank','昌曲夾命','文昌','文曲'],['noble-flank','魁鉞夾命','天魁','天鉞'],['sunmoon-flank','日月夾命','太陽','太陰'],['firebell-flank','火鈴夾命','火星','鈴星'],['goat-drag-flank','羊陀夾命','擎羊','陀羅'],['empty-rob-flank','空劫夾命','地空','地劫']].forEach(function(g){
+    add(g[0],g[1],[check('兩側不同宮各具一星',(has(sides[0],g[2])&&has(sides[1],g[3]))||(has(sides[1],g[2])&&has(sides[0],g[3])))],sides,g.slice(2),'夾宮按命宮兩側地支定位，非命宮同見兩星');
+  });
+  var transformations=['化祿','化權','化科'];
+  add('three-transformations','三奇加會',[check('生年祿權科齊會',transformations.every(function(h){return sf.some(function(p){return p.stars.some(function(s){return s.hua===h;});});}))],sf,null,'只合看同一生年層祿權科；不跨層湊格');
+  add('double-fortune','雙祿交流',[check('祿存會命',all(['祿存'])),check('生年化祿會命',sf.some(function(p){return p.stars.some(function(s){return s.hua==='化祿';});}))],sf,null,'祿存與生年化祿並見，成色不相加成機率');
+  var lightPalaces=['太陽','太陰'].map(function(n){return sf.find(function(p){return has(p,n);});});
+  var lightLevels=lightPalaces.map(function(p,i){return p&&typeof getStarBright==='function'?getStarBright(['太陽','太陰'][i],DZ.indexOf(p.branch)).label:null;});
+  var bothFallen=lightLevels.every(function(b){return b==='陷'||b==='落陷';});
+  add('sunmoon-bright','日月並明',[check('日月同在命宮三方四正且均廟旺',lightLevels.every(function(b){return b==='廟'||b==='旺';}))],sf,['太陽','太陰'],'採實際亮度表，不以吉星個數代替廟旺');
+  add('sunmoon-fallen','日月反背',[check('日月同在命宮三方四正且均落陷',bothFallen)],sf,['太陽','太陰'],'表示所採亮度條件；不推定命主成就或人格');
+  add('hidden-lights','日月藏輝',[check('日月反背',bothFallen),check('巨門同會',all(['巨門']))],sf,['太陽','太陰','巨門'],'採《全書》日月反背又逢巨門的分支');
+  var home=at('田宅');
+  add('lights-home','日月照璧',[check('田宅日月同宮',has(home,'太陽')&&has(home,'太陰')),check('田宅在丑未',home&&['丑','未'].includes(home.branch))],[home],['太陽','太陰'],'只記田宅星组，不保證房產或財富');
+  // A role pair is a structure in its own palace, never automatically the natal life pattern.
+  [['fire-greedy','火貪同宮','火星','貪狼'],['bell-greedy','鈴貪同宮','鈴星','貪狼'],['wu-greedy','武貪同宮','武曲','貪狼'],['ji-liang','機梁同宮','天機','天梁'],['wu-fu','武府同宮','武曲','天府'],['ji-ju','機巨同宮','天機','巨門'],['lian-kill','廉殺同宮','廉貞','七殺'],['sun-moon','日月同宮','太陽','太陰']].forEach(function(g){palaces.forEach(function(p){add(g[0]+'-'+p.branch,g[1],[check('兩曜實際同宮',has(p,g[2])&&has(p,g[3]))],[p],g.slice(2),'此星組落在'+p.name+'，不是自動升格為命宮格局');});});
+  add('xiong-original','雄宿朝元（申未本）',[check('廉貞守命',has(ming,'廉貞')),check('申未本地支',['申','未'].includes(ming.branch))],[ming],['廉貞'],'保留原文申未的異說','《全書》引文申未；iztro 作者用寅申，兩說不合併');
+  add('xiong-iztro','雄宿朝元（寅申本）',[check('廉貞守命',has(ming,'廉貞')),check('寅申本地支',['寅','申'].includes(ming.branch))],[ming],['廉貞'],'採作者解說寅申的異說','與申未本並列，禁止以廉貞化祿代替地支条件');
+  return {version:'1.0.0',source:source,patterns:rows,catalog:catalog,policy:'先判位置結構，再列支持和牽制；structural 不等於富貴、疾病、性格或事件事實。'};
 }
 
 function computeZiwei(year,month,day,hour,gender,options){
@@ -938,245 +1000,9 @@ function computeZiwei(year,month,day,hour,gender,options){
     return { age: targetAge, palace: xxPalace.name, branch: DZ[xxBranchIdx], score: xxAnalysis.score, notes: xxAnalysis.notes };
   }
 
-  // ═══ 特殊格局偵測 ═══
-  function _hasStar(palaceIdx, starName) {
-    var p = palaces[palaceIdx];
-    return p && p.stars && p.stars.some(function(s) { return s.name === starName; });
-  }
-  function _hasStarType(palaceIdx, type) {
-    var p = palaces[palaceIdx];
-    return p && p.stars ? p.stars.filter(function(s) { return s.type === type; }) : [];
-  }
-  function _getMajors(palaceIdx) {
-    return _hasStarType(palaceIdx, 'major').map(function(s) { return s.name; });
-  }
-  function _getShas(palaceIdx) {
-    return _hasStarType(palaceIdx, 'sha').map(function(s) { return s.name; });
-  }
-  function _hasHua(palaceIdx, huaType) {
-    var p = palaces[palaceIdx];
-    return p && p.stars ? p.stars.some(function(s) { return s.hua === huaType; }) : false;
-  }
-  function _starHua(starName) {
-    for (var pi = 0; pi < 12; pi++) {
-      var found = palaces[pi].stars.find(function(s) { return s.name === starName && s.hua; });
-      if (found) return found.hua;
-    }
-    return null;
-  }
-  // 三方四正宮位索引（命宮=0, 財帛=4, 官祿=8, 遷移=6）
-  function _sanFangIdx(pIdx) {
-    return [pIdx, (pIdx + 4) % 12, (pIdx + 8) % 12, (pIdx + 6) % 12];
-  }
-  function _sanFangMajors(pIdx) {
-    var idxs = _sanFangIdx(pIdx);
-    var all = [];
-    idxs.forEach(function(i) { all = all.concat(_getMajors(i)); });
-    return all;
-  }
-
-  var patterns = [];
-  var mingMajors = _getMajors(0);
-  var mingShas = _getShas(0);
-  var mingBranch = palaces[0] ? palaces[0].branch : '';
-  var sfMajors = _sanFangMajors(0); // 命宮三方四正所有主星
-
-  // ─── 經典大格局 ───
-  // 1. 紫府同宮
-  if (mingMajors.indexOf('紫微') >= 0 && mingMajors.indexOf('天府') >= 0) {
-    patterns.push({ name: '紫府同宮', level: '大吉', desc: '帝星與庫星同坐命宮，格局宏大，適合管理與統御，但須防安逸不進。' });
-  }
-  // 2. 紫府朝垣（紫微和天府在三方四正拱命）
-  if (mingMajors.indexOf('紫微') < 0 && mingMajors.indexOf('天府') < 0 &&
-      sfMajors.indexOf('紫微') >= 0 && sfMajors.indexOf('天府') >= 0) {
-    patterns.push({ name: '紫府朝垣', level: '吉', desc: '帝星庫星從三方四正拱照命宮，得貴人之力，格局不差但要自己爭取。' });
-  }
-  // 3. 府相朝垣
-  if (sfMajors.indexOf('天府') >= 0 && sfMajors.indexOf('天相') >= 0) {
-    patterns.push({ name: '府相朝垣', level: '吉', desc: '天府天相拱命，主一生得體制內助力、有靠山、資源穩定。' });
-  }
-  // 4. 殺破狼格（七殺、破軍、貪狼在命宮三方四正）
-  if (sfMajors.indexOf('七殺') >= 0 && sfMajors.indexOf('破軍') >= 0 && sfMajors.indexOf('貪狼') >= 0) {
-    patterns.push({ name: '殺破狼格', level: '雙面', desc: '三大變動之星拱命，一生起伏大、適合創業與變革，但穩定性差。怕煞星加會更凶，逢吉星則化危為機。' });
-  }
-  // 5. 機月同梁格（天機、太陰、天同、天梁在三方四正）
-  if (sfMajors.indexOf('天機') >= 0 && sfMajors.indexOf('天梁') >= 0 &&
-      (sfMajors.indexOf('太陰') >= 0 || sfMajors.indexOf('天同') >= 0)) {
-    patterns.push({ name: '機月同梁格', level: '吉', desc: '主才思敏捷、善於企劃分析，適合幕僚、公職、專業技術。不適合衝鋒陷陣。' });
-  }
-  // 6. 日月並明（太陽在命or身旺位，太陰也在旺位）
-  var sunPalIdx = -1, moonPalIdx = -1;
-  for (var _pi = 0; _pi < 12; _pi++) {
-    if (_hasStar(_pi, '太陽')) sunPalIdx = _pi;
-    if (_hasStar(_pi, '太陰')) moonPalIdx = _pi;
-  }
-  if (sunPalIdx >= 0 && moonPalIdx >= 0) {
-    var sunBr = DZ.indexOf(palaces[sunPalIdx].branch);
-    var moonBr = DZ.indexOf(palaces[moonPalIdx].branch);
-    var sunBright = (typeof getStarBright === 'function') ? getStarBright('太陽', sunBr) : null;
-    var moonBright = (typeof getStarBright === 'function') ? getStarBright('太陰', moonBr) : null;
-    if (sunBright && moonBright && /廟|旺/.test(sunBright.label || '') && /廟|旺/.test(moonBright.label || '')) {
-      patterns.push({ name: '日月並明', level: '大吉', desc: '太陽太陰同時廟旺，主光明磊落、貴人運強、事業與感情兼顧。' });
-    }
-    // 7. 日月反背
-    if (sunBright && moonBright && /落陷|陷/.test(sunBright.label || '') && /落陷|陷/.test(moonBright.label || '')) {
-      patterns.push({ name: '日月反背', level: '凶', desc: '太陽太陰同時落陷，主光明受損，表裡不一，做事有始無終。' });
-    }
-  }
-  // 8. 日照雷門（太陽+巨門同宮在卯）
-  if (mingMajors.indexOf('太陽') >= 0 && mingMajors.indexOf('巨門') >= 0 && mingBranch === '卯') {
-    patterns.push({ name: '日照雷門', level: '大吉', desc: '太陽巨門同在卯宮，光明照破暗曜，主口才好、公開場合發達。' });
-  }
-  // 9. 月朗天門（太陰在亥宮命宮）
-  if (mingMajors.indexOf('太陰') >= 0 && mingBranch === '亥') {
-    patterns.push({ name: '月朗天門', level: '大吉', desc: '太陰在亥宮得廟旺，主內秀聰慧、財運佳、異性緣好。' });
-  }
-  // 10. 明珠出海（天機太陰在寅宮命宮）
-  if (mingMajors.indexOf('天機') >= 0 && mingMajors.indexOf('太陰') >= 0 && mingBranch === '寅') {
-    patterns.push({ name: '明珠出海', level: '吉', desc: '天機太陰同在寅宮，智慧與計畫力俱佳，宜策略性工作。' });
-  }
-  // 11. 極居卯酉（紫微+貪狼在卯或酉）
-  if (mingMajors.indexOf('紫微') >= 0 && mingMajors.indexOf('貪狼') >= 0 && (mingBranch === '卯' || mingBranch === '酉')) {
-    patterns.push({ name: '極居卯酉', level: '凶', desc: '紫微貪狼在卯酉，帝星沾染慾望，主好面子、耽於享樂，需化祿或化權才能解。' });
-  }
-  // 12. 馬頭帶箭（擎羊在命宮+午宮）
-  if (mingShas.indexOf('擎羊') >= 0 && mingBranch === '午') {
-    patterns.push({ name: '馬頭帶箭', level: '雙面', desc: '擎羊在午宮坐命，主衝勁十足但易招是非，軍警武職大利，文職反為刑剋。' });
-  }
-  // 13. 火貪格（火星+貪狼同宮）
-  for (var _fp = 0; _fp < 12; _fp++) {
-    if (_hasStar(_fp, '火星') && _hasStar(_fp, '貪狼')) {
-      var _isM = _fp === 0 ? '坐命' : '在' + palaces[_fp].name;
-      patterns.push({ name: '火貪格', level: '大吉', desc: '火星貪狼' + _isM + '，暴發之格，主意外之財或快速崛起。' });
-      break;
-    }
-  }
-  // 14. 鈴貪格（鈴星+貪狼同宮）
-  for (var _lp = 0; _lp < 12; _lp++) {
-    if (_hasStar(_lp, '鈴星') && _hasStar(_lp, '貪狼')) {
-      var _isM2 = _lp === 0 ? '坐命' : '在' + palaces[_lp].name;
-      patterns.push({ name: '鈴貪格', level: '大吉', desc: '鈴星貪狼' + _isM2 + '，同火貪格，暴起之象。' });
-      break;
-    }
-  }
-  // 15. 泛水桃花（貪狼+陀羅在子宮）
-  for (var _tw = 0; _tw < 12; _tw++) {
-    if (_hasStar(_tw, '貪狼') && _hasStar(_tw, '陀羅') && palaces[_tw].branch === '子') {
-      patterns.push({ name: '泛水桃花', level: '凶', desc: '貪狼陀羅在子宮，桃花泛濫不可收，主感情混亂、沉迷酒色。' });
-      break;
-    }
-  }
-  // 16. 石中隱玉（巨門+化權 or 化祿 in 命宮）
-  if (mingMajors.indexOf('巨門') >= 0 && (_starHua('巨門') === '化祿' || _starHua('巨門') === '化權')) {
-    patterns.push({ name: '石中隱玉', level: '吉', desc: '巨門得化祿/化權，暗曜化為明用，主先難後成、大器晚成。' });
-  }
-  // 17. 雄宿朝元（廉貞+化祿 or 化權 in 命宮）
-  if (mingMajors.indexOf('廉貞') >= 0 && (_starHua('廉貞') === '化祿' || _starHua('廉貞') === '化權')) {
-    patterns.push({ name: '雄宿朝元', level: '吉', desc: '廉貞得化祿/化權，囚星化為將星，主有魄力、能在逆境中翻盤。' });
-  }
-  // 18. 武曲天府（武曲+天府同宮）
-  for (var _wt = 0; _wt < 12; _wt++) {
-    if (_hasStar(_wt, '武曲') && _hasStar(_wt, '天府')) {
-      patterns.push({ name: '武府同宮', level: '吉', desc: '武曲天府同宮，可觀察執行、資源管理與守成的配合；須依實際落宮、四化及三方覆核，不保證理財成果。' });
-      break;
-    }
-  }
-  // 19. 廉貞七殺（路上埋屍格 — 只在特定宮位才算凶）
-  if (mingMajors.indexOf('廉貞') >= 0 && mingMajors.indexOf('七殺') >= 0) {
-    if (mingShas.length >= 2) {
-      patterns.push({ name: '廉殺同宮（凶）', level: '凶', desc: '廉貞七殺坐命且煞星加會，主剛烈衝動、易犯刑剋，須注意安全。' });
-    } else {
-      patterns.push({ name: '廉殺同宮', level: '雙面', desc: '廉貞七殺坐命，有決斷力和衝勁，但過於剛硬，有吉星化解則轉為將才。' });
-    }
-  }
-  // 20. 天梁坐命（蔭星坐命，有貴人庇護）
-  if (mingMajors.indexOf('天梁') >= 0 && mingShas.length === 0) {
-    patterns.push({ name: '天梁坐命', level: '吉', desc: '天梁坐命無煞，主一生有貴人蔭庇、逢凶化吉。適合公職或專業領域。' });
-  }
-  // 21. 機巨同宮
-  for (var _mj = 0; _mj < 12; _mj++) {
-    if (_hasStar(_mj, '天機') && _hasStar(_mj, '巨門')) {
-      var _mjNote = _mj === 0 ? '坐命' : '在' + palaces[_mj].name;
-      patterns.push({ name: '機巨同宮', level: '雙面', desc: '天機巨門' + _mjNote + '，可觀察分析、調整與表達的配合；是否反覆或形成爭論，須結合四化及現實溝通方式，不直接指定職業。' });
-      break;
-    }
-  }
-  // 22. 紫微在午（紫微天府各在午或子 = 紫微在天）
-  if (_hasStar(0, '紫微') && mingBranch === '午') {
-    patterns.push({ name: '紫微在天', level: '大吉', desc: '紫微在午宮坐命，帝星居正位，主格局極大、氣度非凡。' });
-  }
-  // 23. 命無正曜（空宮坐命）
-  if (mingMajors.length === 0) {
-    patterns.push({ name: '命無正曜', level: '中性', desc: '命宮無十四主星，參照對宮並合看本宮輔煞與三方；空宮本身不能判定缺乏主見或人生缺陷。' });
-  }
-  // 24. 六煞星集命（命宮3煞以上）
-  if (mingShas.length >= 3) {
-    patterns.push({ name: '煞星雲集', level: '凶', desc: '命宮三煞以上（' + mingShas.join('、') + '），阻力重重，需有化祿/化權化解才能轉危為安。' });
-  }
-  // 25. 祿權科三奇加會（三方四正有化祿+化權+化科）
-  var sfIdxs = _sanFangIdx(0);
-  var hasLu = false, hasQuan = false, hasKe = false;
-  sfIdxs.forEach(function(si) {
-    if (_hasHua(si, '化祿')) hasLu = true;
-    if (_hasHua(si, '化權')) hasQuan = true;
-    if (_hasHua(si, '化科')) hasKe = true;
-  });
-  if (hasLu && hasQuan && hasKe) {
-    patterns.push({ name: '三奇加會', level: '大吉', desc: '化祿、化權、化科同時在命宮三方四正，主才華出眾、名利雙收、機運極佳。' });
-  }
-  // 26. 雙祿交流（祿存+化祿在命宮或三方四正）
-  var hasLucun = sfIdxs.some(function(si) { return _hasStar(si, '祿存'); });
-  if (hasLu && hasLucun) {
-    patterns.push({ name: '雙祿交流', level: '大吉', desc: '祿存與化祿同拱命宮，雙重財氣加持，主財運亨通。' });
-  }
-  // 27. 命逢四煞（擎羊、陀羅、火星、鈴星任兩個以上在命宮）
-  var _fourSha = ['擎羊','陀羅','火星','鈴星'].filter(function(n) { return mingShas.indexOf(n) >= 0; });
-  if (_fourSha.length >= 2) {
-    patterns.push({ name: '四煞夾命', level: '凶', desc: '命宮有' + _fourSha.join('、') + '，阻力與挫折明顯，需要更多努力才能突破。' });
-  }
-
-  // ═══ 星曜組合特殊論述 ═══
-  var starComboNotes = [];
-  // 紫微+天相 = 聽話的帝王，主被人左右
-  for (var _sc = 0; _sc < 12; _sc++) {
-    var _scM = _getMajors(_sc);
-    if (_scM.indexOf('紫微') >= 0 && _scM.indexOf('天相') >= 0) {
-      starComboNotes.push('紫微天相同宮（' + palaces[_sc].name + '）：主依賴他人決策，表面主導實際被掌控。');
-    }
-    if (_scM.indexOf('太陽') >= 0 && _scM.indexOf('太陰') >= 0) {
-      starComboNotes.push('日月同宮（' + palaces[_sc].name + '）：陰陽同處，性格多面，男命偏柔、女命偏強。');
-    }
-    if (_scM.indexOf('武曲') >= 0 && _scM.indexOf('貪狼') >= 0) {
-      starComboNotes.push('武貪同宮（' + palaces[_sc].name + '）：能賺能花，中年後發，但年輕時多辛勞。');
-    }
-    if (_scM.indexOf('天同') >= 0 && _scM.indexOf('巨門') >= 0) {
-      starComboNotes.push('同巨同宮（' + palaces[_sc].name + '）：內心矛盾大，想安逸又多疑慮。');
-    }
-    if (_scM.indexOf('天同') >= 0 && _scM.indexOf('天梁') >= 0) {
-      starComboNotes.push('同梁同宮（' + palaces[_sc].name + '）：性格溫和保守，適合穩定環境，但缺乏衝勁。');
-    }
-    if (_scM.indexOf('武曲') >= 0 && _scM.indexOf('七殺') >= 0) {
-      starComboNotes.push('武殺同宮（' + palaces[_sc].name + '）：剛硬果斷，財務上大進大出，適合投資或軍警。');
-    }
-    if (_scM.indexOf('太陽') >= 0 && _scM.indexOf('天梁') >= 0) {
-      starComboNotes.push('陽梁同宮（' + palaces[_sc].name + '）：正直有擔當，適合法律、教育、公務。');
-    }
-    if (_scM.indexOf('廉貞') >= 0 && _scM.indexOf('天府') >= 0) {
-      starComboNotes.push('廉府同宮（' + palaces[_sc].name + '）：進取中帶穩重，有企圖心但不衝動。');
-    }
-    if (_scM.indexOf('廉貞') >= 0 && _scM.indexOf('貪狼') >= 0) {
-      starComboNotes.push('廉貪同宮（' + palaces[_sc].name + '）：慾望交織理想，桃花旺，需小心感情糾紛。');
-    }
-    if (_scM.indexOf('廉貞') >= 0 && _scM.indexOf('破軍') >= 0) {
-      starComboNotes.push('廉破同宮（' + palaces[_sc].name + '）：破壞力強，人生大起大落，敢拼但風險高。');
-    }
-    if (_scM.indexOf('武曲') >= 0 && _scM.indexOf('破軍') >= 0) {
-      starComboNotes.push('武破同宮（' + palaces[_sc].name + '）：財來財去，破舊立新的模式，投資要特別審慎。');
-    }
-    if (_scM.indexOf('天機') >= 0 && _scM.indexOf('天梁') >= 0) {
-      starComboNotes.push('機梁同宮（' + palaces[_sc].name + '）：善於謀略和分析，適合研究或顧問型工作。');
-    }
-  }
+  var patternAssessment=assessZiweiPatterns(palaces);
+  var patterns=patternAssessment.patterns;
+  var starComboNotes=patterns.map(function(p){return p.name+'：'+p.desc;});
 
   // ═══ 來因宮（欽天派：宮干 == 生年天干 那一宮 = 此生課題與內在驅力的根源）═══
   var laiYin = null;
@@ -1205,12 +1031,11 @@ function computeZiwei(year,month,day,hour,gender,options){
 
   const integrity=validateZiweiPlacements(palaces,huaMap);
   const result={integrity,palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260917-policy1', birthInput:birthInput,birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
+  result.patternAssessment=patternAssessment;
   result.calculatedFacts=ziweiCalculatedFacts(result);
   // Legacy rendering properties above remain aliases for existing screens only.
   result.heuristics={patterns:patterns,starComboNotes:starComboNotes,decades:daXian.map(function(d){return {ageStart:d.ageStart,score:d.score,level:d.level,theme:d.theme};})};
-  result.candidateInterpretation=patterns.map(function(g){return {name:g.name,status:'待覆核',
-    observedStructure:palaces.filter(function(p){return [0,4,6,8].includes((DZ.indexOf(p.branch)-mingIdx+12)%12);}).map(function(p){return p.name+'('+p.branch+')：'+p.stars.filter(function(s){return s.type==='major'||s.type==='sha'||s.hua;}).map(function(s){return s.name+(s.hua||'');}).join('、');}),
-    review:'按本候選實際起例覆核主星位置、廟旺、三方煞曜、生年四化與破格；候選不等於成格或事件。'};});
+  result.candidateInterpretation=patterns;
   return result;
   } catch(_zwErr) {
     console.error('[computeZiwei] 排盤失敗:', _zwErr && _zwErr.message ? _zwErr.message : _zwErr, _zwErr && _zwErr.stack ? _zwErr.stack : '');
@@ -1945,37 +1770,23 @@ const STROKE_OVERRIDE={
 // This old location is kept as a redirect for any other callers
 // (actual implementation is in the bihua/kangxiStroke block above)
 
-function analyzeName(fullName){
-  if(!fullName||fullName.length<2)return null;
-  const chars=[...fullName];
+function analyzeName(fullName,options){
+  options=options||{};window._jyNameError=null;
+  if(typeof fullName!=='string')return null;
+  var segments=fullName.trim().split(/\s+/),normalized=segments.join(''),chars=[...normalized];
+  if(chars.length<2||chars.length>6){window._jyNameError='姓名長度超出本版支援範圍，請核對姓與名。';return null;}
   const strokes=chars.map(c=>kangxiStroke(c));
-
-  let tianGe,renGe,diGe,waiGe,zongGe;
-
-  if(chars.length===2){
-    // 單姓單名
-    tianGe=strokes[0]+1;
-    renGe=strokes[0]+strokes[1];
-    diGe=strokes[1]+1;
-    zongGe=strokes[0]+strokes[1];
-    waiGe=2;
-  }else if(chars.length===3){
-    // 單姓雙名（最常見）
-    tianGe=strokes[0]+1;
-    renGe=strokes[0]+strokes[1];
-    diGe=strokes[1]+strokes[2];
-    zongGe=strokes[0]+strokes[1]+strokes[2];
-    waiGe=strokes[2]+1; // 單姓雙名外格=名末字+1
-  }else if(chars.length===4){
-    // 複姓雙名
-    tianGe=strokes[0]+strokes[1];
-    renGe=strokes[1]+strokes[2];
-    diGe=strokes[2]+strokes[3];
-    zongGe=strokes.reduce((a,b)=>a+b,0);
-    waiGe=strokes[0]+strokes[3];
-  }else{
-    return null;
-  }
+  if(strokes.some(n=>!Number.isInteger(n)||n<1)){window._jyNameError='字表尚無「'+chars.filter((c,i)=>!Number.isInteger(strokes[i])||strokes[i]<1).join('、')+'」的可靠筆畫，請核對字形；本次不估算五格。';return null;}
+  var compound=['歐陽','司馬','上官','諸葛','東方','皇甫','尉遲','公孫','慕容','司徒','司空','夏侯','令狐','宇文','長孫','南宮','獨孤','西門','軒轅','端木','公羊','公冶','澹臺','赫連','聞人','申屠','仲孫','拓跋','公西','呼延'];
+  var declared=options.surnameLength!=null?Number(options.surnameLength):segments.length===2?[...segments[0]].length:null;
+  var surnameLength=declared==null?(compound.includes(chars.slice(0,2).join(''))?2:1):declared;
+  if(![1,2].includes(surnameLength)||chars.length<=surnameLength||chars.length-surnameLength>3){window._jyNameError='請以「姓 名」分隔，或核對單姓／複姓與名字長度。';return null;}
+  var surname=chars.slice(0,surnameLength).join(''),given=chars.slice(surnameLength).join(''),sum=a=>a.reduce((x,y)=>x+y,0);
+  let tianGe=sum(strokes.slice(0,surnameLength))+(surnameLength===1?1:0);
+  let renGe=strokes[surnameLength-1]+strokes[surnameLength];
+  let diGe=sum(strokes.slice(surnameLength))+(chars.length-surnameLength===1?1:0);
+  let zongGe=sum(strokes),waiGe=tianGe+diGe-renGe;
+  fullName=normalized;
 
   // 五行
   function geWuxing(ge){
@@ -2032,7 +1843,8 @@ function analyzeName(fullName){
   let sanCaiLevel=_SC[sanCai.join('')]||'平';
 
   return{
-    name:fullName, strokes,
+    name:fullName, strokes,surname,given,surnameLength,
+    inputPolicy:{split:declared==null?'常見複姓表／其餘暫按單姓；可用姓與名間的空白明示':'使用者明示',strokeBasis:'本站康熙姓名學字表及數字特規；不是 Unicode 現代字形筆畫',unlisted:'停止五格，不猜數',numberCycle:'原數保留；81以上採本站減80循環口徑',fortuneBasis:'本站81數理及125三才表；流派分類，不是客觀命運'},
     tianGe:{num:tianGe,el:geWuxing(tianGe),fortune:geFortune(tianGe)},
     renGe:{num:renGe,el:geWuxing(renGe),fortune:geFortune(renGe)},
     diGe:{num:diGe,el:geWuxing(diGe),fortune:geFortune(diGe)},
@@ -5105,27 +4917,17 @@ function decomposeChar(ch){
   // 絕不回傳空（guessRoots 已保證不回傳空陣列）
   return { struct:'獨體', yang:ch, yin:'—', roots:[ch] };
 }
-function analyzeZodiacName(fullName, birthYear){
-  if(!fullName || fullName.length<2 || !birthYear) return null;
-  const zodiac = getChineseZodiac(birthYear);
-  const db = ZODIAC_NAME_DB[zodiac];
-  if(!db) return null;
-
-  const chars = [...fullName];
-  // 姓名位置定義
-  const positions = [];
-  if(chars.length===2){
-    positions.push({char:chars[0], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
-    positions.push({char:chars[1], label:'名字', lifeStage:'21-60歲（一生格局）'});
-  } else if(chars.length===3){
-    positions.push({char:chars[0], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
-    positions.push({char:chars[1], label:'名一', lifeStage:'21-40歲（情志格）'});
-    positions.push({char:chars[2], label:'名二', lifeStage:'41-60歲（事業財富格）'});
-  } else if(chars.length===4){
-    positions.push({char:chars[0]+chars[1], label:'姓氏', lifeStage:'0-20歲（祖德天運）'});
-    positions.push({char:chars[2], label:'名一', lifeStage:'21-40歲（情志格）'});
-    positions.push({char:chars[3], label:'名二', lifeStage:'41-60歲（事業財富格）'});
-  }
+function analyzeZodiacName(fullName, birthYear, options){
+  if(!fullName || !birthYear) return null;
+  options=options||{};
+  const nameFacts=analyzeName(fullName,options);if(!nameFacts)return null;
+  var yearBasis='僅提供公曆年份，年界尚未核對';
+  if(options.date){var parts=String(options.date).split('-').map(Number);if(parts.length!==3||parts.some(x=>!Number.isInteger(x)))return null;birthYear=approxLunar(parts[0],parts[1],parts[2]).year;yearBasis='農曆正月初一換生肖年；與八字立春年界分開';}
+  const zodiac = getChineseZodiac(birthYear),db=ZODIAC_NAME_DB[zodiac];
+  if(!db)return null;
+  fullName=nameFacts.name;
+  const chars=[...fullName],positions=[{char:nameFacts.surname,label:'姓氏',lifeStage:'姓氏字義參考'}];
+  [...nameFacts.given].forEach(function(ch,i){positions.push({char:ch,label:'名字第'+(i+1)+'字',lifeStage:'名字字義參考；不由字位指定年齡事件'});});
 
   // 逐字拆解＋比對
   const results = [];
@@ -5258,7 +5060,8 @@ function analyzeZodiacName(fullName, birthYear){
 
   return {
     name: fullName,
-    zodiac,
+    zodiac,yearBasis,
+    splitPolicy:nameFacts.inputPolicy.split,
     emoji: ZODIAC_EMOJI[zodiac],
     dizhi: ZODIAC_DIZHI[zodiac],
     positions: results,

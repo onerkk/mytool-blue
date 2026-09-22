@@ -55,7 +55,10 @@
     "test:gua:browser": "node tests/gua-browser-20260922.cjs",
     "build:gua-scene": "node scripts/build-gua-scene.mjs",
     "test:yarrow": "node tests/yarrow-20260922.cjs",
-    "test:gua:craft": "node tests/gua-craft-browser-20260922.cjs"
+    "test:gua:craft": "node tests/gua-craft-browser-20260922.cjs",
+    "test:special-rules": "node scripts/sync-recommendation-guides.cjs --check && node tests/special-rules-20260922.cjs && node tests/engine-output-consistency-20260913.cjs && node tests/gua-engine-20260922.cjs",
+    "test:astro-bridge": "node tests/astro-bridge-20260922.cjs && node tests/api-failure-regression.mjs",
+    "test:astro-bridge:browser": "node tests/astro-bridge-browser-20260922.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"
