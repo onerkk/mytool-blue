@@ -1031,9 +1031,14 @@ function _oracleSendFeedback(rating){
   }catch(e){}
 }
 
-function _playThrow(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=800;g.gain.setValueAtTime(0.25,c.currentTime);g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+0.25);o.start();o.stop(c.currentTime+0.25)}catch(e){}}
-function _playHoly(){try{var c=new(window.AudioContext||window.webkitAudioContext)();[523,659,784].forEach(function(f,i){var o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.15,c.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+i*0.12+0.35);o.start(c.currentTime+i*0.12);o.stop(c.currentTime+i*0.12+0.35)})}catch(e){}}
-function _playShake(){try{var c=new(window.AudioContext||window.webkitAudioContext)();for(var i=0;i<6;i++){var o=c.createOscillator(),g=c.createGain(),f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=2000+Math.random()*1500;o.type='sawtooth';o.frequency.value=100+Math.random()*80;o.connect(f);f.connect(g);g.connect(c.destination);var t=c.currentTime+i*0.3;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.06,t+0.05);g.gain.exponentialRampToValueAtTime(0.001,t+0.25);o.start(t);o.stop(t+0.25)}}catch(e){}}
+// Cancel queued transitions as well as currently sounding recordings.
+var _oracleEpoch=0,_oracleTimers=new Set(),_oracleShakePending=false;
+function _oracleVisible(){return _wrap&&_wrap.style.display!=='none';}
+function _oracleCancelPending(){_oracleEpoch++;_oracleShakePending=false;_oracleTimers.forEach(clearTimeout);_oracleTimers.clear();if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null;}if(window.JYFoley)window.JYFoley.stop('oracle');}
+function _oracleLater(fn,ms){var epoch=_oracleEpoch,id=setTimeout(function(){_oracleTimers.delete(id);if(epoch===_oracleEpoch&&_oracleVisible())fn(epoch);},ms);_oracleTimers.add(id);return id;}
+function _playThrow(){if(window.JYFoley){window.JYFoley.unlock(['wood']);window.JYFoley.play('wood',{scope:'oracle',delay:.72,volume:.8});}}
+function _playHoly(){/* The landed wooden blocks already sounded; no synthetic success jingle. */}
+function _playShake(){if(window.JYFoley){window.JYFoley.play('stems',{scope:'oracle',volume:.8});window.JYFoley.play('stems',{scope:'oracle',delay:.95,volume:.72,throttle:0});}}
 
 function $(id){return document.getElementById(id)}
 function _rc(r){if(r.indexOf('上上')>=0)return{c:'#8b1a1a',bg:'rgba(212,175,55,0.18)',bd:'rgba(139,26,26,0.5)'};if(r.indexOf('下下')>=0)return{c:'#e74c3c',bg:'rgba(231,76,60,0.12)',bd:'rgba(231,76,60,0.35)'};if(r.indexOf('上')>=0)return{c:'var(--c-gold)',bg:'rgba(201,168,76,0.12)',bd:'rgba(201,168,76,0.35)'};if(r.indexOf('下')>=0)return{c:'#e74c3c',bg:'rgba(231,76,60,0.12)',bd:'rgba(231,76,60,0.35)'};return{c:'#95a5a6',bg:'rgba(149,165,166,0.12)',bd:'rgba(149,165,166,0.35)'}}
@@ -1081,6 +1086,7 @@ var w=_getWrap(),h='',previousPhase=w.getAttribute('data-oracle-phase');
 w.setAttribute('data-oracle-phase',_phase);
 h+='<div class="orc-temple-overlay"></div>';
 h+='<div class="orc-topbar"><button type="button" class="orc-back at-back" onclick="_oracleClose()">← 返回首頁</button><span class="orc-topbar-title">靜月靈籤</span><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></div>';
+if(window.JYFoley)h+='<div class="orc-audio-row">'+window.JYFoley.controls('wood','oracle')+'</div>';
 h+='<div class="orc-body">';
 
 if(_phase==='intro'){
@@ -1236,7 +1242,7 @@ var _aiPrompt=_buildOraclePrompt(_poem,_qText);
 h+=_oracleResultHTML({poem:_poem,numberLabel:'第'+(CN[_poem.n]||_poem.n)+'籤',question:_qText,confirmed:_holy>=3,hasPrompt:!!_aiPrompt,art:IMG.cardWm});
 }
 
-h+='</div>';w.innerHTML=h;
+h+='</div>';w.innerHTML=h;if(window.JYFoley){window.JYFoley.prepare(['wood','stems','paper']);window.JYFoley.sync();}
 if(window.JYCinemaUI)window.JYCinemaUI.oracle(w,_phase);
 if(_phase==='poem'&&previousPhase!=='poem')w.scrollTop=0;
 }
@@ -1317,6 +1323,7 @@ window._oracleViewLocked=function(){
 })();
 
 window._oracleOpen=function(){
+  _oracleCancelPending();
   // v66:今日已鎖(連三無聖筊過)→ 直接進「今日靜心」畫面
   if(_oracleIsTodayLocked()){
     _phase='todayClosed';
@@ -1329,7 +1336,7 @@ window._oracleOpen=function(){
   }
   _phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_allowNoShengCount=0;_rejectedLots=[];var w=_getWrap();w.style.display='block';_render();var hk=$('hook-screen');if(hk)hk.style.display='none';document.body.style.overflow='hidden';
 };
-window._oracleClose=function(){if(window.JYRitual)window.JYRitual.cancel('oracle');var w=_getWrap();w.style.display='none';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
+window._oracleClose=function(){_oracleCancelPending();if(window.JYRitual)window.JYRitual.cancel('oracle');var w=_getWrap();w.style.display='none';if(window.JY_ATELIER)window.JY_ATELIER.restoreEntrance();document.body.style.overflow='';var hk=$('hook-screen');if(hk)hk.style.display='';if(_prayTimer){clearInterval(_prayTimer);_prayTimer=null}};
 // ★ v6c: intro → guide → pray → allowAsk → allowThrow → shake → rise → drawn
 window._oracleShowGuide=function(){_phase='guide';_render()};
 // v63: 儀式過場強化 —— 文字三階段呈現,3.6 秒總時長維持
@@ -1360,7 +1367,7 @@ window._oracleStartPray=function(){
         // 用淡出淡入過場
         line.style.transition='opacity .35s';
         line.style.opacity='0';
-        setTimeout(function(){
+        _oracleLater(function(){
           line.innerHTML=stages[stageIdx]+'<span class="orc-dots"></span>';
           line.style.opacity='1';
         },350);
@@ -1374,8 +1381,8 @@ _phase='allowThrowing';_render();_playThrow();
 // Step 1: toss animation plays via CSS (1.2s)
 // Step 2: at 1.2s, swap jiao zone to result images + show label
 // v63: 使用已聲明的數位雙面等機率模型計算筊象
-setTimeout(async function(){
-_allowResult=await _v63ThrowJiao();
+_oracleLater(async function(epoch){
+var result=await _v63ThrowJiao();if(epoch!==_oracleEpoch||!_oracleVisible())return;_allowResult=result;
 if(_allowResult==='holy'){
   _playHoly();
   _allowNoShengCount=0;  // v66:聖筊重置計數
@@ -1402,7 +1409,7 @@ if(lb){
   lb.style.color=aco;
 }
 // Step 3: at 1.8s, fade in button(或進入今日靜心畫面)
-setTimeout(function(){
+_oracleLater(function(){
 // ═══ v66:連三次無聖筊 → 進入「今日靜心」鎖定畫面 ═══
 if(_allowNoShengCount>=3){
   _oracleLockToday();
@@ -1425,6 +1432,9 @@ ui.style.opacity='1';}
 },1200);
 };
 window._oracleStartShake=async function(){
+  if(!_oracleVisible()||_oracleShakePending||_phase==='shaking'||_phase==='rising')return;
+  var epoch=_oracleEpoch;_oracleShakePending=true;
+  if(window.JYFoley)window.JYFoley.unlock(['stems']);
   // v65u: lock/pending 機制 + 已否決排除
   // 重要:不能讓 lock/pending 給出已被使用者否決的籤
   var lockedPoem=null;
@@ -1469,17 +1479,19 @@ window._oracleStartShake=async function(){
       for(var ai2=0;ai2<60;ai2++)available.push(ai2);
     }
     var pickIdx=await _v63FairRandom(available.length);
+    if(epoch!==_oracleEpoch||!_oracleVisible())return;
     var idx=available[pickIdx];
     _poem=P[idx];
     _oracleSavePendingLock(_qType,_qText,_poem.n);
   }
+  if(epoch!==_oracleEpoch||!_oracleVisible())return;_oracleShakePending=false;
   _drawAt=Date.now();
-  _phase='shaking';_render();
-  var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();setTimeout(function(){_phase='drawn';_render()},2200)}},400)
+  _phase='shaking';_render();_playShake();
+  var sc=0;_prayTimer=setInterval(function(){sc++;var d2=_getWrap().querySelector('.orc-dots');if(d2){var s2='';for(var j=0;j<(sc%4);j++)s2+='．';d2.textContent=s2}if(sc>=5){clearInterval(_prayTimer);_prayTimer=null;_phase='rising';_render();if(window.JYFoley)window.JYFoley.play('bamboo',{scope:'oracle',volume:.55});_oracleLater(function(){_phase='drawn';_render()},2200)}},400)
 };
 window._oracleThrow=function(){_phase='throwing';_render();_playThrow();
-setTimeout(async function(){
-_throwResult=await _v63ThrowJiao();
+_oracleLater(async function(epoch){
+var result=await _v63ThrowJiao();if(epoch!==_oracleEpoch||!_oracleVisible())return;_throwResult=result;
 if(_throwResult==='holy'){_playHoly();_holy++;} else{_holy=0;_laughDarkCount++;}
 var rJL=_throwResult==='holy'?IMG.jiaoFlat:_throwResult==='laugh'?IMG.jiaoFlat:IMG.jiaoRound;
 var rJR=_throwResult==='holy'?IMG.jiaoRound:_throwResult==='laugh'?IMG.jiaoFlatR:IMG.jiaoRoundR;
@@ -1494,7 +1506,7 @@ if(lb){
     '<span class="orc-jiao-count">'+_holy+' / 3 聖筊</span>';
   lb.style.color=co;
 }
-setTimeout(function(){
+_oracleLater(function(){
 var ui=document.getElementById('orc-throw-ui');
 if(ui){
 if(_throwResult==='holy'&&_holy>=3){ui.innerHTML='<button class="orc-btn-primary" onclick="_oracleViewPoem()">查看籤詩</button>';}
@@ -1534,7 +1546,7 @@ window._oracleViewPoem=function(){
   }
   // v65: 聖筊牌位過場 → 2 秒後進入解籤頁
   _phase='shengjia';_render();
-  setTimeout(function(){_phase='poem';_render();},2400);
+  _oracleLater(function(){_phase='poem';_render();},2400);
 };
 // Moon Atelier: 靈籤與其他九類共用高清分享引擎，保留本次完整原詩。
 function _oracleShareData(){
@@ -1577,6 +1589,7 @@ window._oracleRedraw=function(){
   _oracleStartShake();
 };
 window._oracleReset=function(){
+  _oracleCancelPending();
   // v65t: 重新求籤 = 徹底重來,清掉所有 lock(pending + 正式)+ rejected + counts
   try{
     var keys=Object.keys(localStorage);

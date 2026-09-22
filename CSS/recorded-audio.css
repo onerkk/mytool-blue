@@ -1,0 +1,12 @@
+/* The same physical-sound controls in every room. */
+.jy-foley-controls{display:flex;align-items:center;justify-content:center;gap:8px;position:relative;z-index:8;flex-wrap:wrap}
+.jy-foley-button,.jy-foley-settings summary{font:500 12px/1.4 var(--f-body,system-ui);color:#f0d6a5;letter-spacing:.5px;min-height:40px;border:1px solid #d3b88760;border-radius:99px;padding:9px 14px;background:linear-gradient(145deg,#5145338c,#15191fe8);box-shadow:inset 0 1px 0 #fff2,0 3px 0 #080b0fcc,0 6px 14px #0003;cursor:pointer;white-space:nowrap}
+.jy-foley-button[aria-pressed=false]{color:#b2aca1;border-color:#a99a7940;background:#13161caa}
+.jy-foley-button:active,.jy-foley-settings summary:active{transform:translateY(2px)}
+.jy-foley-button:focus-visible,.jy-foley-settings summary:focus-visible{outline:2px solid #ffe0a4;outline-offset:3px}
+.jy-foley-settings{position:static;line-height:1.5;color:#efe0c6}.jy-foley-settings summary{list-style:none;min-width:40px;text-align:center;font-size:18px;padding:5px 9px}.jy-foley-settings summary::-webkit-details-marker{display:none}
+.jy-foley-settings>div{position:absolute;bottom:48px;left:50%;transform:translateX(-50%);width:min(260px,calc(100vw - 44px));box-sizing:border-box;padding:17px;border:1px solid #c5a87570;border-radius:14px;background:#192024f5;box-shadow:0 14px 35px #0009;backdrop-filter:blur(20px)}
+.gw-ceremony-tools{position:relative}.gw-ceremony-tools .jy-foley-controls{position:static}
+.jy-foley-settings label{display:flex;align-items:center;gap:12px;font:13px/1.5 system-ui}.jy-foley-settings input{accent-color:#dfbd7d;width:143px;min-height:32px}.jy-foley-settings button{width:100%;background:#a7864d21;border:1px solid #c5a87555;border-radius:8px;color:#efdcbb;padding:9px;font:12px system-ui;margin-top:10px;cursor:pointer}.jy-foley-settings p{font:12px/1.7 system-ui;max-width:220px;white-space:normal}.jy-foley-settings p:empty{display:none}
+.jr-preferences .jy-foley-button{min-height:36px;padding:7px 10px;font-size:11px}.wx-ceremony-top,.vdr-header{gap:10px;flex-wrap:wrap}.wx-ceremony-top .jy-foley-button,.vdr-header .jy-foley-button{margin-left:auto}.orc-audio-row{padding:4px 16px 10px;display:flex;justify-content:center}
+@media(max-width:400px){.jr-header{gap:6px}.jr-preferences{gap:5px}.jy-foley-controls{gap:6px}.wx-ceremony-top>span{font-size:10px}}

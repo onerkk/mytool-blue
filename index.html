@@ -387,7 +387,8 @@
 <link rel="stylesheet" href="CSS/oracle-result.css?v=20260912oracle1">
 <link rel="stylesheet" href="CSS/celestial-craft.css?v=20260912jewel2">
 <link rel="stylesheet" href="CSS/relationship.css?v=20260917pair1">
-<link rel="stylesheet" href="CSS/gua-room.css?v=20260922gua2">
+<link rel="stylesheet" href="CSS/recorded-audio.css?v=20260922foley1">
+<link rel="stylesheet" href="CSS/gua-room.css?v=20260922foley1">
 <style>.jy-question-recommendation{margin-top:.75rem;padding:.75rem;border:1px solid rgba(201,168,76,.3);border-radius:12px;font-size:.8rem;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}.jy-question-recommendation p{margin:0 0 .4rem}.jy-question-recommendation[hidden]{display:none}</style>
 </head>
 <body class="jy-atelier">
@@ -684,6 +685,7 @@
     <p class="text-dim text-xs" style="text-align:center" id="t-remain-text">已選 <strong id="t-remain-picked" class="text-gold">0</strong> / 10 張</p>
 
     <div class="text-center jy-autodraw-top" style="margin:8px 0 10px">
+      <button type="button" class="jy-foley-button" data-foley-toggle data-foley-preview="card" data-foley-scope="tarot-cards" aria-pressed="true">♫ 音效開</button>
       <button class="btn btn-outline btn-sm" onclick="autoDraw()" style="opacity:.6"><i class="fas fa-bolt"></i> 快速抽牌</button>
     </div>
 
@@ -1417,16 +1419,17 @@
 <!-- ★ v75 修正：tarot.js 必須在 tarot_upgrade.js 之前載入，
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
+<script src="JS/recorded-audio.js?v=20260922foley1" defer></script>
 <script src="JS/reading-quality.js?v=20260922gua2" defer></script>
 <script src="JS/tarot-foundation.js?v=20260922gua2" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260906fix2" defer></script>
 <script src="JS/cinematic-stage.js?v=20260913vedic1" defer></script>
 <script src="JS/ritual-story.js?v=20260913vedic1" defer></script>
 <script src="JS/relationship-ui.js?v=20260920time1" defer></script>
-<script src="JS/ritual-ateliers.js?v=20260917pair1" defer></script>
-<script src="JS/tarot.js?v=20260913output1" defer></script>
+<script src="JS/ritual-ateliers.js?v=20260922foley1" defer></script>
+<script src="JS/tarot.js?v=20260922foley1" defer></script>
 <script src="JS/tarot-reading.js?v=20260922cards1" defer></script>
-<script src="JS/tarot_upgrade.js?v=20260922cards1" defer></script>
+<script src="JS/tarot_upgrade.js?v=20260922foley1" defer></script>
 <!-- v95：先載入 Golden Dawn Book T 單一來源、方法觀測模型與證據契約，再由 ai-analysis 建立牌陣資料。 -->
 <script src="JS/tarot-semantic-engine.js?v=20260915rec2" defer></script>
 <script src="JS/tarot-inventory.js?v=20260717v98_0" defer></script>
@@ -1441,7 +1444,7 @@
 <script src="JS/ai-analysis.js?v=20260922direct1" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <script src="JS/api_upgrade.js?v=20260507v69_3_0" defer></script>
-<script src="JS/oracle.js?v=20260922direct1" defer></script>
+<script src="JS/oracle.js?v=20260922foley1" defer></script>
 <script src="JS/lenormand.js?v=20260922gua2" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
 <script src="JS/ink-flow.js?v=20260911celestial1" defer></script>
@@ -1454,9 +1457,9 @@
 <script src="JS/ziwei-standalone.js?v=20260922direct1" defer></script>
 <script src="JS/bazi-standalone.js?v=20260920time1" defer></script>
 <script src="JS/vedic-picker.js?v=20260914western1" defer></script>
-<script src="JS/vedic-ritual.js?v=20260914palace1" defer></script>
+<script src="JS/vedic-ritual.js?v=20260922foley1" defer></script>
 <script src="JS/vedic-standalone.js?v=20260922direct1" defer></script>
-<script src="JS/western-ritual.js?v=20260914western1" defer></script>
+<script src="JS/western-ritual.js?v=20260922foley1" defer></script>
 <script src="JS/western-standalone.js?v=20260922direct1" defer></script>
 <!-- v87_0(2026/6/26)：八字完整功能套件——單盤六主題、八種角色情境合盤、雙向十神與跨盤作用、五行互補、雙方歲運同步、本地五軸32型人格、歷史/匯出。第三方未公開私有演算法不冒充搬運，採本地可檢查規則重建。 -->
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
@@ -1543,9 +1546,9 @@
 <script src="JS/yarrow-core.js?v=20260922gua2" defer></script>
 <script src="JS/yijing-core.js?v=20260922gua2" defer></script>
 <script src="JS/gua-prompt.js?v=20260922gua2" defer></script>
-<script src="JS/gua-scene.js?v=20260922gua2" defer></script>
-<script src="JS/gua-audio.js?v=20260922gua2" defer></script>
-<script src="JS/gua-room.js?v=20260922gua2" defer></script>
+<script src="JS/gua-scene.js?v=20260922foley1" defer></script>
+<script src="JS/gua-audio.js?v=20260922foley1" defer></script>
+<script src="JS/gua-room.js?v=20260922foley1" defer></script>
 <script>
 /* ★ v80.19 根治：lunar-javascript 1.7.7 的 UMD 會把 Solar / Lunar 各自掛到 window（即 window.Solar、window.Lunar），
    但全站程式碼（紫微 approxLunar、梅花時間起卦）用的是 Lunar.Solar.fromYmd。Lunar.Solar 其實 undefined → 起盤/起卦丟錯。

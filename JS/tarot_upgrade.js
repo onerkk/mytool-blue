@@ -3669,7 +3669,7 @@ enhanceTarot = function(tarot) {
     function sequenceTimeout(fn,delay){var generation=stageGeneration;var id=window.setTimeout(function(){runSequenceCallback(fn,generation);},delay);sequenceTimers.push(id);return id;}
     function sequenceFrame(fn){var generation=stageGeneration;var id=window.requestAnimationFrame(function(){runSequenceCallback(fn,generation);});sequenceFrames.push(id);return id;}
     function closeSequence(){
-      if(sequenceClosed)return;sequenceClosed=true;releaseSequenceStage();
+      if(sequenceClosed)return;sequenceClosed=true;if(window.JYFoley)window.JYFoley.stop('ootk');releaseSequenceStage();
       if(window.JYRitual)window.JYRitual.cancel('ootk');
       sequenceTimers.forEach(function(id){window.clearTimeout(id);});sequenceFrames.forEach(function(id){window.cancelAnimationFrame(id);});
       overlay.remove();
@@ -3769,6 +3769,7 @@ enhanceTarot = function(tarot) {
     html += '</div>';
 
     overlay.innerHTML = html;
+    if(window.JYFoley){overlay.querySelector('.ootk-sequence-actions').insertAdjacentHTML('beforeend',window.JYFoley.button('shuffle','ootk'));window.JYFoley.prepare(['shuffle','card']);}
     document.body.appendChild(overlay);
 
     // ──────────────────────────────────────────────────────────────
@@ -4055,6 +4056,7 @@ enhanceTarot = function(tarot) {
     // ② 洗牌儀式 — 78 張螺旋洗牌 + 真實牌照閃現
     // ════════════════════════════════════════════════════════════════
     function ritualShuffle(stage, caption, onDone) {
+      if(window.JYFoley){window.JYFoley.play('shuffle',{scope:'ootk',volume:.7});window.JYFoley.play('shuffle',{scope:'ootk',delay:.8,volume:.6,throttle:0});}
       // ★ v63E 正統 Book T:每階段都重新洗整副 78 張牌
       //   Mathers Book T 原文五階段都明寫「Shuffle, etc., as before」
       //   這不是「續上一階段」,是新的一次完整讀盤
@@ -4089,6 +4091,7 @@ enhanceTarot = function(tarot) {
     // ③ 發牌儀式 + ④ 找 Significator — 各階段獨有
     // ════════════════════════════════════════════════════════════════
     function ritualDeal(phaseIdx, stage, caption, onDone) {
+      if(window.JYFoley)window.JYFoley.play('card',{scope:'ootk',volume:.65});
       if (phaseIdx === 0) ritualDealOp1(stage, caption, onDone);
       else if (phaseIdx === 1) ritualDealOp2(stage, caption, onDone);
       else if (phaseIdx === 2) ritualDealOp3(stage, caption, onDone);

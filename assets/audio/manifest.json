@@ -1,0 +1,116 @@
+{
+  "verified": "2026-09-22",
+  "synthesized": false,
+  "playbackRate": 1,
+  "recordings": [
+    {
+      "file": "assets/audio/stems-recorded.mp3",
+      "start": 1.9,
+      "duration": 1.22,
+      "gain": 0.630601172064906,
+      "sha256": "27159d87bc95f8317f169d1a76b57eda7b211ca6b4326dc1653c9e07b78e111a",
+      "bytes": 25645,
+      "author": "breadparticles",
+      "source": "https://freesound.org/people/breadparticles/sounds/575329/",
+      "preview": "https://cdn.freesound.org/previews/575/575329_9246516-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/bamboo-recorded.mp3",
+      "start": 7.0,
+      "duration": 0.36,
+      "gain": 0.5045496315426509,
+      "sha256": "32b63a05a8a0f9393aad77a16f314c45da4bf801d6c34b21a185fe22421b3258",
+      "bytes": 8404,
+      "author": "breadparticles",
+      "source": "https://freesound.org/people/breadparticles/sounds/575329/",
+      "preview": "https://cdn.freesound.org/previews/575/575329_9246516-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/shuffle-recorded.mp3",
+      "start": 2.28,
+      "duration": 0.6,
+      "gain": 0.6433952339178828,
+      "sha256": "88f565c30ade6049120fe2646b4ae94a2c70db553ead699e81eb5248ce32b038",
+      "bytes": 13106,
+      "author": "Nox_Sound",
+      "source": "https://freesound.org/people/Nox_Sound/sounds/562179/",
+      "preview": "https://cdn.freesound.org/previews/562/562179_9250976-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/card-recorded.mp3",
+      "start": 8.36,
+      "duration": 0.73,
+      "gain": 1.2543843417952296,
+      "sha256": "e5bb4edf7b9110209d3adaf0d7f41768c45c85c336538d95ec4b802d9fb89548",
+      "bytes": 15718,
+      "author": "Cultureshock007",
+      "source": "https://freesound.org/people/Cultureshock007/sounds/719539/",
+      "preview": "https://cdn.freesound.org/previews/719/719539_7382637-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/wood-recorded.mp3",
+      "start": 0.68,
+      "duration": 1.23,
+      "gain": 0.7969948248418793,
+      "sha256": "538fb01d8ebbcd20de9ddd7c88b42c154a79594ac22fc12f2055825796b61fd9",
+      "bytes": 26167,
+      "author": "RossBell",
+      "source": "https://freesound.org/people/RossBell/sounds/389431/",
+      "preview": "https://cdn.freesound.org/previews/389/389431_5103176-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/paper-recorded.mp3",
+      "start": 0,
+      "duration": 0.85,
+      "gain": 0.9768966220081486,
+      "sha256": "3f028206f8386958552e2f1744904024cf50157d672e5d6b6588736023285e86",
+      "bytes": 18330,
+      "author": "LilMati",
+      "source": "https://freesound.org/people/LilMati/sounds/397551/",
+      "preview": "https://cdn.freesound.org/previews/397/397551_6142149-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/bowl-recorded.mp3",
+      "start": 0,
+      "duration": 5.5,
+      "gain": 0.7543841076559271,
+      "sha256": "c8ea70c1fa0c5873d9cf4e9cc63465966e712a0371f487a2f2425af6ba66fe01",
+      "bytes": 111326,
+      "author": "dersinnsspace",
+      "source": "https://freesound.org/people/dersinnsspace/sounds/421829/",
+      "preview": "https://cdn.freesound.org/previews/421/421829_8224400-hq.mp3",
+      "license": "CC0-1.0",
+      "processing": "crop, gain, 6 ms fade-in, 30 ms fade-out (bowl: 700 ms), mono 44100 Hz MP3 160 kb/s; no pitch shift"
+    },
+    {
+      "file": "assets/audio/coins-recorded.mp3",
+      "author": "Jesús Lastra (jalastram)",
+      "source": "https://freesound.org/people/jalastram/sounds/223343/",
+      "license": "CC0-1.0",
+      "processing": "Original HQ preview encoding, unchanged; playback starts at 90 ms",
+      "bytes": 18318,
+      "sha256": "0b46840d5362fac5a594ed9082248103e0af57c64fe00ee6eb2f8b0010700cb2"
+    },
+    {
+      "file": "assets/audio/coins-recorded.ogg",
+      "author": "Jesús Lastra (jalastram)",
+      "source": "https://freesound.org/people/jalastram/sounds/223343/",
+      "license": "CC0-1.0",
+      "processing": "Original HQ preview encoding, unchanged; playback starts at 90 ms",
+      "bytes": 22674,
+      "sha256": "b50d2fb176db0d0bde36a5f502b7841ce2b88095715b3e0b46f7c9dcb0dc798f"
+    }
+  ]
+}

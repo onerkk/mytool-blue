@@ -2950,6 +2950,7 @@ function invalidateTarotDraw() {
   if (_deck3dRAF) { cancelAnimationFrame(_deck3dRAF); _deck3dRAF = null; }
   document.querySelectorAll('.tarot-fly-card,.tarot-particle').forEach(function(el){ el.remove(); });
   if (window.JYRitual) window.JYRitual.cancel('tarot');
+  if(window.JYFoley)window.JYFoley.stop('tarot-cards');
 }
 function clearTarotSpreadView() {
   var section = document.getElementById('t-spread-sec');
@@ -3487,6 +3488,7 @@ function pickCard(deckIdx,deckEl){
   var _maxC=(S.tarot&&S.tarot.spreadDef&&S.tarot.spreadDef.count)||10;
   if(!deckEl || !deckShuffled[deckIdx] || pickAnimating||_tarotPendingDraw||drawnCards.length>=_maxC||deckEl.classList.contains('picked')) return;
   pickAnimating=true;
+  if(window.JYFoley)window.JYFoley.play('card',{scope:'tarot-cards',volume:.8});
   if(window.JY_ATELIER&&window.JY_ATELIER.syncTarot)window.JY_ATELIER.syncTarot();
   var drawEpoch = _tarotEpoch;
 

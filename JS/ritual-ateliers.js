@@ -42,7 +42,10 @@
     if(active)return active.handle;
     var cfg=themes[kind],doc=root.document,previous=doc.activeElement;
     var reduced=!!options.reduced||!!(root.matchMedia&&root.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,audio=null,audioOn=false,stage=null;
+    var phase=0,settled=false,timers=[],frame=0,holding=false,holdAt=0,lit=0,stage=null;
+    var foley=root.JYFoley,scope='ritual-'+kind,physicalCards=['tarot','lenormand','ootk'].includes(kind);
+    var soundKeys=physicalCards?['shuffle','card','paper']:kind==='oracle'?['stems','wood','paper']:['paper','wood','bowl'];
+    if(foley)foley.prepare(soundKeys);
     var story=null;
     var gesture=null,travel=0,turn=0,intent='clarity';
     var bodyOverflow=doc.body.style.overflow,inertSiblings=[],fallback=false;
@@ -114,20 +117,10 @@
       if(label)response.querySelector('.jr-response-label').textContent=label;
     }
     function stopHold(){holding=false;gesture=null;travel=0;if(frame)root.cancelAnimationFrame(frame);frame=0;if(phase===1&&mode==='hold'){dialog.style.setProperty('--hold','0');dialog.style.setProperty('--gesture-x','0px');dialog.style.setProperty('--gesture-y','0px');dialog.style.setProperty('--gesture-tilt','0deg');stageCall('setPower',0);showProgress(0,'再觸碰一次，或用下方按鈕繼續');}dialog.classList.remove('is-holding');}
-    function disposeAudio(){if(!audio)return;var ctx=audio;audio=null;audioOn=false;try{var p=ctx.close();if(p&&p.catch)p.catch(function(){});}catch(e){}}
-    function bell(){if(!audioOn||!audio||doc.hidden)return;try{var t=audio.currentTime,g=audio.createGain(),o=audio.createOscillator();o.type='sine';o.frequency.setValueAtTime(kind==='lenormand'?659.25:523.25,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.035,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+1.5);o.connect(g);g.connect(audio.destination);o.start(t);o.stop(t+1.6);}catch(e){}}
-    function toggleSound(){
-      if(audioOn){disposeAudio();sound.textContent='聲音：關';sound.setAttribute('aria-pressed','false');return;}
-      var Audio=root.AudioContext||root.webkitAudioContext;
-      if(!Audio){sound.textContent='此裝置無音效';sound.disabled=true;return;}
-      try{
-        audio=new Audio();audioOn=true;
-        var context=audio,g=context.createGain();g.gain.value=.015;g.connect(context.destination);
-        [130.81,196,261.63].forEach(function(f){var o=context.createOscillator();o.type='sine';o.frequency.value=f;o.connect(g);o.start();});
-        var resume=context.resume();if(resume&&resume.catch)resume.catch(function(){if(audio===context){disposeAudio();sound.textContent='聲音：關';sound.setAttribute('aria-pressed','false');}});
-        sound.textContent='聲音：開';sound.setAttribute('aria-pressed','true');bell();
-      }catch(e){disposeAudio();sound.textContent='此裝置無音效';sound.disabled=true;}
-    }
+    function disposeAudio(){if(foley)foley.stop(scope);}
+    function soundCue(key,volume){if(foley&&!settled)foley.play(key,{scope:scope,volume:volume==null?.65:volume});}
+    function bell(){soundCue(physicalCards?'card':kind==='oracle'?'wood':mode==='seals'?'wood':'paper',.6);}
+    if(foley){sound.setAttribute('data-foley-toggle','');sound.setAttribute('data-foley-preview',physicalCards?'shuffle':kind==='oracle'?'stems':'paper');sound.setAttribute('data-foley-scope',scope);sound.classList.add('jy-foley-button');}
     function cleanup(){
       stopHold();pauseReveal();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
       if(story){story.dispose();story=null;}releaseStage();
@@ -154,7 +147,7 @@
     }
     function onVisibility(){
       stopHold();if(doc.hidden)pauseReveal();dialog.classList.toggle('is-paused',!!doc.hidden);
-      if(audio){try{var p=doc.hidden?audio.suspend():audio.resume();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+      if(doc.hidden)disposeAudio();
       // No elapsed-time completion: returning to a tab must never bypass an unanswered interaction.
     }
     function setCopy(title,note){dialog.querySelector('#jr-title').textContent=title;dialog.querySelector('#jr-note').textContent=note;}
@@ -188,7 +181,7 @@
         hint.textContent=options.spreadName?String(options.spreadName):'';next.disabled=false;next.textContent=(options.finishLabel||(dealing?'查看本次牌陣':cfg.finish))+' →';focus(next);
       }
     }
-    function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);bell();if(!story)schedule(function(){if(phase===2)updatePhase(3);},reduced?0:2700);}
+    function awaken(){if(settled||phase!==1)return;stopHold();dialog.style.setProperty('--hold','1');updatePhase(2);soundCue(physicalCards?'shuffle':kind==='oracle'?'stems':'paper',.65);if(!story)schedule(function(){if(phase===2)updatePhase(3);},reduced?0:2700);}
     // Commit the threshold in the input event itself. A quick swipe followed by
     // release must not lose completion while waiting for the next animation frame.
     function applyHoldProgress(){
@@ -207,6 +200,7 @@
         holding=true;holdAt=Date.now();travel=0;turn=0;
         gesture={x:event.clientX||0,y:event.clientY||0,startX:event.clientX||0,startY:event.clientY||0,id:event.pointerId};
         dialog.classList.add('is-holding');
+        soundCue(physicalCards?'shuffle':kind==='oracle'?'stems':'paper',.75);
         contact(event,touch);
         showProgress(0,'已感應你的觸碰');
         try{touch.setPointerCapture(event.pointerId);}catch(e){}
@@ -225,6 +219,8 @@
         dialog.style.setProperty('--gesture-y',(kind==='oracle'?Math.max(-35,Math.min(35,y-gesture.startY)):0)+'px');
         dialog.style.setProperty('--gesture-tilt',(offset/7)+'deg');
         stageCall('setTurn',turn);
+        if(physicalCards&&Math.abs(dx)>8&&foley)foley.play('shuffle',{scope:scope,volume:.55,throttle:900});
+        if(kind==='oracle'&&Math.abs(dy)>8&&foley)foley.play('stems',{scope:scope,volume:.65,throttle:900});
         contact(event,touch);
         applyHoldProgress();
       };
@@ -290,7 +286,7 @@
       cards.forEach(function(c,i){revealCard(i,true);});
       hint.textContent='本次 '+cards.length+' 張牌已全部揭開，牌序保持不變。';
     };
-    next.onclick=function(){if(settled||next.disabled)return;if(phase===0)updatePhase(1);else if(phase===1&&mode==='hold')awaken();else if(phase===1&&mode==='cards'&&lit<cards.length){cardPage++;showCardPage();next.disabled=true;next.textContent='等待你揭開牌面';var card=dialog.querySelector('.jr-reveal:not([hidden])');focus(card);}else if(phase===3)finish(true,false);};
+    next.onclick=function(){if(settled||next.disabled)return;if(phase===0){soundCue('paper',.55);updatePhase(1);}else if(phase===1&&mode==='hold')awaken();else if(phase===1&&mode==='cards'&&lit<cards.length){cardPage++;showCardPage();next.disabled=true;next.textContent='等待你揭開牌面';var card=dialog.querySelector('.jr-reveal:not([hidden])');focus(card);}else if(phase===3)finish(true,false);};
     dialog.querySelectorAll('[data-intent]').forEach(function(btn){btn.onclick=function(){if(phase!==0)return;intent=btn.getAttribute('data-intent');dialog.querySelectorAll('[data-intent]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});setCopy(intent==='action'?'好，我們一起找一個起點。':cfg.title,intent==='action'?'帶著你真正能改變的部分進入探索。解讀之後，我們再把提醒整理成可以採取的行動。':cfg.intro);};});
     dialog.querySelector('.jr-motion').onclick=function(){
       if(settled)return;stopHold();reduced=!reduced;dialog.setAttribute('data-motion',reduced?'still':'full');
@@ -300,12 +296,14 @@
       if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
       if(reduced&&phase===2)updatePhase(3);
     };
-    sound.onclick=toggleSound;dialog.querySelector('.jr-cancel').onclick=function(){finish(false,true);};dialog.querySelector('.jr-skip').onclick=function(){finish(true,false);};
+    dialog.addEventListener('click',function(e){if(foley&&!e.target.closest('[data-foley-toggle]'))foley.unlock(soundKeys);},true);
+    dialog.querySelector('.jr-cancel').onclick=function(){finish(false,true);};dialog.querySelector('.jr-skip').onclick=function(){finish(true,false);};
     dialog.addEventListener('cancel',function(event){event.preventDefault();finish(false,true);});dialog.addEventListener('close',onNativeClose);dialog.addEventListener('keydown',onKeyDown);
     // Acquire the lock only when the detached dialog is ready. Roll back every
     // mounted resource on startup failure so the same question can be retried.
     try{
     active=entry;doc.body.appendChild(dialog);doc.body.style.overflow='hidden';
+    if(foley)foley.sync();
     suspendHome(true);
     try{if(typeof dialog.showModal!=='function')throw new Error('Native dialog unavailable');dialog.showModal();}catch(e){fallback=true;dialog.setAttribute('open','');dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');Array.prototype.forEach.call(doc.body.children,function(node){if(node!==dialog){inertSiblings.push({node:node,value:node.inert});node.inert=true;}});}
     if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});}catch(e){fallbackStage(e);}}

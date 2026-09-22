@@ -41,7 +41,7 @@
   var phase='idle';
   var finished=false;
   var soundOn=true;
-  var audioCtx=null,master=null,ambience=null;
+  if(window.JYFoley){soundOn=window.JYFoley.enabled();window.JYFoley.prepare(['paper','bowl']);}
   var timers=[];
   var holdRAF=0,holdStart=0,holdPointer=null,holdDone=false;
   var raf=0,w=0,h=0,dpr=1,last=0,burst=0;
@@ -67,65 +67,13 @@
     if(soundLabel)soundLabel.textContent=soundOn?'音效':'靜音';
   }
 
-  function ensureAudio(){
-    if(!soundOn||reduced)return false;
-    try{
-      var AC=window.AudioContext||window.webkitAudioContext;
-      if(!AC)return false;
-      if(!audioCtx||audioCtx.state==='closed'){
-        audioCtx=new AC();
-        master=audioCtx.createGain();
-        master.gain.value=.0001;
-        master.connect(audioCtx.destination);
-      }
-      if(audioCtx.state==='suspended')audioCtx.resume();
-      return true;
-    }catch(_){soundOn=false;setSoundUI();return false;}
-  }
-
-  function tone(freq,delay,dur,vol,type,detune){
-    if(!ensureAudio())return;
-    var now=audioCtx.currentTime+(delay||0);
-    var o=audioCtx.createOscillator(),g=audioCtx.createGain();
-    o.type=type||'sine';o.frequency.setValueAtTime(freq,now);if(detune)o.detune.setValueAtTime(detune,now);
-    g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol||.03),now+.035);g.gain.exponentialRampToValueAtTime(.0001,now+(dur||.5));
-    o.connect(g).connect(master);o.start(now);o.stop(now+(dur||.5)+.08);
-  }
-
-  function swell(){
-    if(!ensureAudio())return;
-    var now=audioCtx.currentTime;
-    master.gain.cancelScheduledValues(now);master.gain.setValueAtTime(.0001,now);master.gain.exponentialRampToValueAtTime(.095,now+.18);
-    if(ambience){try{ambience.stop();}catch(_){}}
-    var o=audioCtx.createOscillator(),g=audioCtx.createGain(),f=audioCtx.createBiquadFilter();
-    o.type='sine';o.frequency.setValueAtTime(73.42,now);o.frequency.exponentialRampToValueAtTime(110,now+2.2);
-    f.type='lowpass';f.frequency.value=380;g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.055,now+.35);g.gain.exponentialRampToValueAtTime(.012,now+3.4);
-    o.connect(f).connect(g).connect(master);o.start(now);ambience=o;
-    tone(392,.04,1.4,.06,'sine');tone(587.33,.1,1.1,.035,'triangle');tone(783.99,.72,1.5,.055,'sine');
-  }
-
-  function choiceSound(kind){
-    if(!ensureAudio())return;
-    var map={love:[440,659.25,880],career:[392,587.33,783.99],wealth:[329.63,493.88,739.99],moon:[349.23,523.25,783.99]};
-    var a=map[kind]||map.moon;
-    tone(a[0],0,.9,.045,'sine');tone(a[1],.08,.78,.038,'triangle');tone(a[2],.16,1.1,.032,'sine');
-  }
-
-  function enterSound(){
-    if(!ensureAudio())return;
-    tone(523.25,0,1.15,.06,'sine');tone(783.99,.05,1.05,.055,'triangle');tone(1046.5,.14,1.25,.045,'sine');tone(1567.98,.2,.85,.025,'sine');
-    var now=audioCtx.currentTime;master.gain.cancelScheduledValues(now+.55);master.gain.setValueAtTime(.08,now+.55);master.gain.exponentialRampToValueAtTime(.0001,now+1.25);
-  }
-
-  function stopAudio(){
-    if(!audioCtx||!master)return;
-    try{var now=audioCtx.currentTime;master.gain.cancelScheduledValues(now);master.gain.setValueAtTime(Math.max(.0001,master.gain.value||.04),now);master.gain.exponentialRampToValueAtTime(.0001,now+.28);later(function(){try{audioCtx.suspend();}catch(_){}},360);}catch(_){}
-  }
-
-  function toggleSound(){
-    soundOn=!soundOn;setSoundUI();
-    if(!soundOn)stopAudio();else if(phase!=='idle'&&!finished){ensureAudio();tone(659.25,0,.65,.045,'sine');tone(987.77,.08,.5,.025,'triangle');}
-  }
+  function ensureAudio(){if(window.JYFoley){window.JYFoley.unlock(['paper','bowl']);return window.JYFoley.enabled();}return false;}
+  function introCue(key,volume){if(window.JYFoley)window.JYFoley.play(key,{scope:'intro',volume:volume});}
+  function swell(){introCue('bowl',.23);}
+  function choiceSound(){introCue('paper',.5);}
+  function enterSound(){introCue('paper',.7);}
+  function stopAudio(){if(window.JYFoley)window.JYFoley.stop('intro');}
+  function toggleSound(){if(!window.JYFoley)return;window.JYFoley.setEnabled(!window.JYFoley.enabled());soundOn=window.JYFoley.enabled();setSoundUI();if(soundOn)introCue('paper',.55);}
 
   function typeText(text,done){
     typedToken++;

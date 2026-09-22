@@ -27,7 +27,8 @@
 // v90: 20260922direct1 單一解讀輸出規則、精簡正文與選品後置。
 // v91: 20260922cards1 問題分題、系統推薦與新增牌陣。
 // v93: 20260922gua2 蓍草十八變、真 3D 器物、實錄音效與十二種分享卡。
-const CACHE_NAME = 'jy-main-v93';
+// v94: 20260922foley1 全站實物錄音、可記憶音量與蓍草書齋。
+const CACHE_NAME = 'jy-main-v94';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
@@ -91,7 +92,7 @@ self.addEventListener('fetch', event => {
   }
 
   // 圖片/字型 → cache-first（不常變）
-  if (path.match(/\.(png|jpg|jpeg|webp|gif|svg|ico|woff2?|ttf|eot)$/)) {
+  if (path.match(/\.(png|jpg|jpeg|webp|gif|svg|ico|woff2?|ttf|eot|mp3|ogg)$/)) {
     event.respondWith(
       caches.match(event.request)
         .then(cached => {

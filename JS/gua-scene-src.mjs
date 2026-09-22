@@ -1,9 +1,11 @@
 import * as T from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {createYarrow} from './yarrow-atelier.mjs';
 
 // Real mesh geometry and local PBR lighting. No random values are used here.
 const mix=(a,b,t)=>a+(b-a)*t,clamp=v=>Math.min(1,Math.max(0,v)),ease=v=>{v=clamp(v);return v*v*(3-2*v);};
 export function create(host,kind){
+ if(kind==='yarrow')return createYarrow(host);
  let disposed=false,raf=0,last=0,motion=null,visible=true,paused=false,contextLost=false,turn=0,target=0,drag=null,state={kind,values:[]};
  const resources=new Set(),keep=x=>(resources.add(x),x),scene=new T.Scene(),camera=new T.PerspectiveCamera(37,1,.1,60);
  const renderer=new T.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power'});

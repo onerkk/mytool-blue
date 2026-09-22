@@ -37,14 +37,21 @@
     return '<svg viewBox="0 0 140 140" aria-hidden="true"><defs><linearGradient id="'+id+'" x1="0" y1="0" x2=".8" y2="1"><stop stop-color="#fff1bc"/><stop offset=".25" stop-color="#c4a668"/><stop offset=".47" stop-color="#f7dda0"/><stop offset=".7" stop-color="#b59355"/><stop offset="1" stop-color="#72512e"/></linearGradient></defs><path d="'+path+'" fill="url(#'+id+')" fill-rule="evenodd" stroke="#edcf91" stroke-width="1.5"/><circle cx="70" cy="70" r="59" fill="none" stroke="#74603b" stroke-width="2"/><circle cx="70" cy="70" r="56" fill="none" stroke="#f2dba1" stroke-opacity=".6"/><path d="M51 51h38v38H51z" fill="none" stroke="#82613c" stroke-width="2"/>'+details+'</svg>';
   }
   function isYarrow(s){return s.kind==='yijing'&&s.mode!=='coins';}
+  function sounds(s){return isYarrow(s)?['stems','bamboo','paper']:['coins'];}
+  function cue(s,key,options){if(root.JYFoley)root.JYFoley.play(key,Object.assign({scope:'gua-'+s.kind},options||{}));}
+  function yarrowPhase(s,p){
+    var box=s.root.querySelector('.gw-yarrow-action');if(!box)return;var ch=s.lastChange;
+    var titles=['聚策','分二','掛一','揲四','歸餘'];box.querySelectorAll('span').forEach(function(el,i){el.classList.toggle('is-active',i===p);el.classList.toggle('is-past',i<p);});
+    var line=box.querySelector('p');if(line&&ch)line.textContent=[ch.total+' 策，重新聚攏','左 '+ch.left+' 策 · 右 '+ch.right+' 策','自右側取一策，暫置案前','左右各以四策成組','歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策'][p];
+  }
   function stage(s){
-    var grass=isYarrow(s),last=s.records[s.records.length-1],ch=s.lastChange;
+    var grass=isYarrow(s),last=s.records[s.records.length-1],ch=s.part.length?s.lastChange:null;
     var message=grass?(ch?'本次 '+ch.total+' 策 · 歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策':'五十策虛一，以四十九策候一卦。'):(last?'第 '+s.values.length+' 爻 · '+last.coins.map(function(c){return c==='back'?'背':'字';}).join('　')+' · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]):'三枚銅錢，六次落定一件心事。');
     var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-render="fallback" role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
     if(grass){h+='<div class="gw-fallback-scroll">周 易</div><div class="gw-fallback-stalks">';for(var i=0;i<31;i++)h+='<i style="--i:'+i+'"></i>';h+='</div>';}
     else{h+='<div class="gw-fallback-tray"></div><div class="gw-fallback-coins">';for(var j=0;j<3;j++)h+='<div style="--i:'+j+'">'+coinSVG(s.id+'-fallback-'+j,!!(last&&last.coins[j]==='back'))+'</div>';h+='</div>';}
     h+='</div></div><p class="gw-scene-instruction">輕拖器物，換個角度看見細節</p><p class="gw-stage-summary">'+message+'</p>'+(s.mode==='yarrow'&&s.phase==='casting'?yarrowProgress(s):'')+'<div class="gw-ceremony-tools">';
-    if(!grass)h+='<button type="button" data-action="sound" aria-pressed="'+s.sound+'">'+(s.sound?'♫ 實錄音效開啟':'♫ 開啟硬幣音效')+'</button>';
+    if(root.JYFoley)h+=root.JYFoley.controls(grass?'stems':'coins','gua-'+s.kind);
     if(s.busy)h+='<button type="button" data-action="skip">略過動畫</button>';
     h+='</div><div class="gw-method-note"><span>'+ (grass?'大衍蓍法':s.kind==='liuyao'?'三錢納甲':'三錢取象')+'</span><p>'+(grass?'分二、掛一、揲四、歸餘。三變成一爻，以卦爻辭讀懂此刻的進退。':(s.kind==='liuyao'?'銅錢定陰陽，六爻成一卦。以世應、六親與月日，辨一件事的推進與阻力。':'三枚銅錢取六爻；解讀仍依周易卦爻辭，與六爻納甲分開。'))+'</p></div></div>';return h;
   }
@@ -55,7 +62,7 @@
     try{
       if(s.scene&&s.sceneKind!==kind){s.scene.dispose();s.scene=null;}
       if(!s.scene){s.scene=root.JYGuaScene.create(host,kind);s.sceneKind=kind;}else s.scene.attach(host);
-      s.scene.update({kind:s.kind,values:s.values,record:s.records[s.records.length-1]||null,change:s.lastChange,reduced:reduced()});
+      s.scene.update({kind:s.kind,values:s.values,part:s.part,record:s.records[s.records.length-1]||null,change:s.part.length?s.lastChange:null,reduced:reduced(),onPhase:function(p){yarrowPhase(s,p);},onCue:function(key,pan){if(s.busy&&active===s.kind)cue(s,key,{pan:pan,volume:key==='stems'?.85:.55});}});
     }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用靜態器物畫面，起卦照常進行。';}
   }
   function settings(s){
@@ -76,7 +83,7 @@
     h+='<div class="gw-error" role="alert" tabindex="-1">'+esc(s.error)+'</div><div class="gw-live" role="status" aria-live="polite">'+(s.busy?(s.mode==='yarrow'?'蓍草正在分策、歸餘…':'銅錢正在落下…'):n===6?'六爻齊備，準備展開。':s.mode==='yarrow'?'三變成一爻；每一步都會留下紀錄。':n?'第 '+n+' 爻已記錄，繼續擲出下一爻。':'慢慢呼吸，讓問題留在心裡。')+'</div><div class="gw-actions"><button type="button" class="gw-primary" data-action="toss"'+(s.busy?' disabled':'')+'>'+(s.busy?'靜候落定…':n===6?'展開本次卦象':s.mode==='yarrow'?'揲蓍 · '+core().labels[n]+'第'+(s.part.length+1)+'變':'擲出'+core().labels[n])+'</button><button type="button" class="gw-quiet" data-action="quick"'+(s.busy?' disabled':'')+'>快速完成剩餘爻</button></div></section>';return h;
   }
   function yarrowProgress(s){
-    var count=s.part.length,steps=['第一變','第二變','第三變'],h='<div class="gw-yarrow-progress" aria-label="每爻三變">';
+    var count=s.part.length,steps=['第一變','第二變','第三變'],h='<div class="gw-yarrow-action"><div>'+['聚策','分二','掛一','揲四','歸餘'].map(function(t,i){return '<span class="'+(!s.busy&&count&&i===4?'is-active':'')+'">'+t+'</span>';}).join('')+'</div><p>'+(s.busy?'蓍草入案，候一變':count?'這一變已落定，依你的節奏繼續。':'四十九策入案，準備'+core().labels[s.values.length]+'。')+'</p></div><div class="gw-yarrow-progress" aria-label="每爻三變">';
     steps.forEach(function(t,i){h+='<span class="'+(i<count?'is-done':i===count?'is-current':'')+'">'+t+'<b>'+(s.part[i]?s.part[i].remaining+' 策':i===count?(count?s.part[count-1].remaining:49)+' 策待分':'待續')+'</b></span>';});
     return h+'</div>';
   }
@@ -116,19 +123,14 @@
     h+=s.phase==='result'?resultPanel(s):'<div class="gw-main">'+(s.phase==='input'?inputPanel(s):castingPanel(s))+stage(s)+'</div>';
     h+='<footer class="gw-footer">JINGYUE · THE MOON ATELIER<br>把問題留在此刻，把選擇握在自己手裡。</footer></div>';w.innerHTML=h;w.scrollTop=scroll;
     syncScene(s);
+    if(root.JYFoley)root.JYFoley.sync();
     if(s.phase==='input'&&root.JYReadingRecommender)root.JYReadingRecommender.enhance(w);
   }
-  function clearMotion(s){clearTimeout(s.timer);s.timer=null;if(s.scene)s.scene.finish();if(root.JYGuaAudio)root.JYGuaAudio.stop();s.animations.forEach(function(a){try{a.cancel();}catch(_){}});s.animations=[];}
+  function clearMotion(s){clearTimeout(s.timer);s.timer=null;if(s.scene)s.scene.finish();if(root.JYFoley)root.JYFoley.stop('gua-'+s.kind);s.animations.forEach(function(a){try{a.cancel();}catch(_){}});s.animations=[];}
   function finish(s,paint){
     clearMotion(s);s.busy=false;s.commit=false;if(s.part.length===3)s.part=[];
     if(s.values.length===6){var engine=s.kind==='liuyao'?core():root.JYYijingCore;if(!engine)throw new Error('易經引擎尚未載入');s.result=engine.calculate({values:s.values,records:s.records,method:s.mode,question:s.question,calendar:s.date,focus:s.focus});s.phase='result';s.selected=s.result.movingPositions[0]||(s.kind==='liuyao'?s.result.original.palace.shi:1);}
     if(paint!==false){render(s);if(s.phase==='result'){s.root.scrollTop=0;s.root.querySelector('h1').tabIndex=-1;s.root.querySelector('h1').focus({preventScroll:true});}else{var b=s.root.querySelector('[data-action=toss]');if(b)b.focus({preventScroll:true});}}
-  }
-  function toggleSound(s,b){
-    if(s.sound){s.sound=false;if(root.JYGuaAudio)root.JYGuaAudio.stop();b.setAttribute('aria-pressed','false');b.textContent='♫ 開啟硬幣音效';return;}
-    if(!root.JYGuaAudio){note('音效尚未載入，請稍後重試。');return;}
-    b.disabled=true;b.textContent='載入實錄音效…';
-    root.JYGuaAudio.unlock().then(function(){s.sound=true;if(b.isConnected){b.disabled=false;b.setAttribute('aria-pressed','true');b.textContent='♫ 實錄音效開啟';}if(active===s.kind)root.JYGuaAudio.preview();}).catch(function(){s.sound=false;if(b.isConnected){b.disabled=false;b.textContent='♫ 重試載入音效';}note('無法載入音效；起卦仍可正常進行。');});
   }
   function nextYarrow(s){
     var total=s.part.length?s.part[s.part.length-1].remaining:49,ch=root.JYYarrowCore.change(total);
@@ -137,19 +139,22 @@
   }
   function toss(s){
     if(s.busy||s.phase!=='casting')return;if(s.values.length===6){finish(s);return;}
+    if(root.JYFoley)root.JYFoley.unlock(sounds(s));
     s.commit=true;
     if(s.mode==='yarrow')nextYarrow(s);else{var record=core().toss();s.records.push(record);s.values.push(record.value);}
     s.busy=true;s.error='';render(s);
-    if(reduced()){finish(s);if(s.sound&&s.mode==='coins'&&root.JYGuaAudio)root.JYGuaAudio.preview();return;}
+    if(reduced()){finish(s);cue(s,s.mode==='coins'?'coins':'stems',{volume:.75});return;}
     if(s.scene){s.scene.animate();}
-    if(s.sound&&s.mode==='coins'&&root.JYGuaAudio)root.JYGuaAudio.toss();
-    s.timer=setTimeout(function(){try{finish(s);}catch(e){s.busy=false;error(s,e);}},s.mode==='yarrow'?1800:1650);
+    if(s.mode==='coins'){[0,1,2].forEach(function(i){cue(s,'coins',{delay:.99+i*.07,volume:.62,offset:.09,duration:.48,pan:(i-1)*.3,throttle:0});});}
+    else if(!s.scene||s.scene.mode!=='webgl'){cue(s,'stems',{volume:.8});cue(s,'bamboo',{delay:1.5,volume:.55});}
+    s.timer=setTimeout(function(){try{finish(s);}catch(e){s.busy=false;error(s,e);}},s.mode==='yarrow'?3700:1650);
   }
   function start(s){
     if(s.busy||s.phase!=='input')return;remember(s);s.question=s.question.trim();if(!s.question)throw new Error('先寫下你想釐清的一件事，再開始起卦。');
     if(s.mode==='manual'&&s.manual.some(function(v){return !Number.isInteger(v)||v<6||v>9;}))throw new Error('請完整填入初爻至上爻的六次結果。');
+    if(root.JYFoley)root.JYFoley.unlock(sounds(s));
     s.date=calendar(s);s.error='';s.values=s.mode==='manual'?s.manual.slice():[];s.records=[];s.part=[];s.lastChange=null;s.phase='casting';
-    if(s.mode==='manual')finish(s);else{render(s);s.root.scrollTop=0;var button=s.root.querySelector('[data-action=toss]');if(button)button.focus({preventScroll:true});}
+    if(s.mode==='manual')finish(s);else{render(s);cue(s,s.mode==='yarrow'?'paper':'coins',{volume:.50});s.root.scrollTop=0;var button=s.root.querySelector('[data-action=toss]');if(button)button.focus({preventScroll:true});}
   }
   function quick(s){if(s.busy||s.phase!=='casting')return;while(s.values.length<6){if(s.mode==='yarrow'){nextYarrow(s);if(s.part.length===3)s.part=[];}else{var r=core().toss();s.records.push(r);s.values.push(r.value);}}finish(s);}
   function reset(s){clearMotion(s);s.busy=false;s.commit=false;if(s.part.length===3)s.part=[];s.phase='input';s.values=[];s.records=[];s.part=[];s.lastChange=null;s.result=null;s.date=null;s.error='';s.manual=[null,null,null,null,null,null];s.time=wallNow(Number.isFinite(Number(s.offset))?Number(s.offset):8);render(s);s.root.scrollTop=0;var q=document.getElementById(s.id+'-q');if(q)q.focus({preventScroll:true});}
@@ -165,6 +170,7 @@
   function open(kind){
     if(!TITLES[kind])return;if(active===kind)return;if(active)close(active);
     var s=rooms[kind]||(rooms[kind]=create(kind));s.focusBefore=document.activeElement;s.overflow=document.body.style.overflow;
+    if(root.JYFoley)root.JYFoley.prepare(sounds(s));
     if(!s.root){s.root=document.createElement('section');s.root.id=kind+'-screen';s.root.className='gw-room';s.root.hidden=true;s.root.setAttribute('role','dialog');s.root.setAttribute('aria-modal','true');s.root.setAttribute('aria-labelledby',s.id+'-title');document.body.appendChild(s.root);bind(s);}
     s.inert=Array.from(document.body.children).filter(function(el){return el!==s.root&&!['SCRIPT','STYLE','LINK'].includes(el.tagName);}).map(function(el){var old=el.inert;el.inert=true;return [el,old];});
     active=kind;document.body.style.overflow='hidden';s.root.hidden=false;render(s);var title=s.root.querySelector('h1');title.tabIndex=-1;title.focus({preventScroll:true});
@@ -172,7 +178,7 @@
   function close(kind){var s=rooms[kind||active];if(!s)return;remember(s);if(s.busy){try{finish(s,false);}catch(e){s.error=e.message;}}clearMotion(s);s.busy=false;s.commit=false;if(s.part.length===3)s.part=[];s.root.hidden=true;if(s.scene){s.scene.dispose();s.scene=null;}s.inert.forEach(function(p){p[0].inert=p[1];});s.inert=[];document.body.style.overflow=s.overflow;if(active===s.kind)active=null;clearTimeout(toastTimer);var toast=document.getElementById('gw-toast');if(toast)toast.remove();if(s.focusBefore&&s.focusBefore.isConnected)s.focusBefore.focus({preventScroll:true});}
   function bind(s){
     s.root.addEventListener('click',function(e){var b=e.target.closest('[data-action]');if(!b||b.disabled)return;var a=b.dataset.action;try{
-      if(a==='close')close(s.kind);else if(a==='mode'){remember(s);if(!['coins','manual','yarrow'].includes(b.dataset.mode)||s.kind==='liuyao'&&b.dataset.mode==='yarrow')return;s.mode=b.dataset.mode;render(s);}else if(a==='sound')toggleSound(s,b);
+      if(a==='close')close(s.kind);else if(a==='mode'){remember(s);if(!['coins','manual','yarrow'].includes(b.dataset.mode)||s.kind==='liuyao'&&b.dataset.mode==='yarrow')return;s.mode=b.dataset.mode;render(s);}
       else if(a==='start')start(s);else if(a==='toss')toss(s);else if(a==='skip')finish(s);else if(a==='quick')quick(s);else if(a==='reset')reset(s);else if(a==='line'){s.selected=Number(b.dataset.line);s.root.querySelectorAll('[data-line]').forEach(function(el){el.setAttribute('aria-pressed',String(Number(el.dataset.line)===s.selected));});s.root.querySelector('.gw-detail').innerHTML=detail(s);}
       else if(a==='copy')copyPrompt(s);else if(a==='share')share(s);else if(a==='save')save(s);
       else if(a==='ai'){var ai=AI.find(function(v){return v[0]===b.dataset.ai;});if(!ai)return;var tab=root.open('about:blank','_blank');if(tab)tab.opener=null;copyPrompt(s).then(function(ok){if(ok&&tab)tab.location.href=ai[2];else if(tab)tab.close();else if(ok)note('已複製；瀏覽器阻擋新分頁，請自行開啟 '+ai[1]+' 貼上。');});}
