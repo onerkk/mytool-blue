@@ -34,7 +34,21 @@
     { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
   ];
 
-  function defOf(id) { return (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[id]) ? SPREAD_DEFS[id] : null; }
+  if(window.JYTarotFoundation){
+    var added=[];Object.keys(window.JYTarotFoundation.METHODS).forEach(function(id){var m=window.JYTarotFoundation.METHODS[id];if(m.picker){META[id]=m.picker;added.push(id);}});
+    GROUPS.push({label:'主題與分題',ids:added});
+  }
+  var previewInput=null;
+  function questionInput(){
+    if(previewInput&&previewInput.isConnected)return previewInput;
+    var a=document.getElementById('f-question'),b=document.getElementById('f2-question');
+    return b&&b.getClientRects().length&&(!a||!a.getClientRects().length)?b:a||b;
+  }
+  function defOf(id) {
+    var def=typeof SPREAD_DEFS!=='undefined'?SPREAD_DEFS[id]:null,input=questionInput(),F=window.JYTarotFoundation;
+    if(def&&input&&input.value.trim()&&F){var plan=F.instantiateMethod(id,F.compileQuestion(input.value));if(plan)return Object.assign({},def,{count:plan.count,zh:plan.label});}
+    return def;
+  }
 
   // detectSpreadType 不再包裝（跨檔重新指派在實機不可靠）。
   // 手動選定的牌陣改由 ui.js 各偵測點直接讀 window._forcedSpread 強制套用。
@@ -129,13 +143,14 @@
   }
 
   function updateTrigger() {
+    if(window.JYReadingRecommender){var qi=questionInput();if(qi)window.JYReadingRecommender.render(qi);}
     var nameEl = document.getElementById('jy-spread-cur-name');
     var subEl = document.getElementById('jy-spread-cur-sub');
     var iconEl = document.getElementById('jy-spread-cur-icon');
     if (!nameEl) return;
 
     if (!window._forcedSpread) {
-      var qEl=document.getElementById('f-question')||document.getElementById('f2-question');
+      var qEl=questionInput();
       var liveQuestion=qEl?String(qEl.value||'').trim():'';
       var preview=qEl&&liveQuestion&&window.JYTarotFoundation?window.JYTarotFoundation.routeQuestion(liveQuestion):null;
       var autoId=qEl?(preview&&preview.spreadId||''):(window._autoDetectedSpread||'');
@@ -167,7 +182,7 @@
 
   // ★ v75.6：暴露給 resetAll 使用，保證同一函數管同一個按鈕
   window._jyUpdateSpreadTrigger = updateTrigger;
-  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question'))updateTrigger();});
+  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question')){previewInput=e.target;updateTrigger();}});
 
   var pickerFocus = null, pickerOverflow = '';
   function pickerKeyboard(e) {
@@ -211,7 +226,7 @@
       var q = '';
       var t = 'general';
       try {
-        var qEl = document.getElementById('f-question') || document.getElementById('f2-question');
+        var qEl = questionInput();
         if (qEl && qEl.value) q = qEl.value.trim();
         if (!q) q = (typeof S !== 'undefined' && S.form && S.form.question) ? S.form.question : '';
         var tEl = document.getElementById('f-type');

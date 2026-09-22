@@ -21,9 +21,9 @@ c._jyTarotQuestionText=()=>c.S.form.question;
 vm.runInContext(read('JS/prompt-export.js'),c);
 const question='今年工作與感情的主要條件？';
 function draw(spread,mode='rws_reversals'){
-  const f=c.JYTarotFoundation,compiled=f.compileQuestion(question,{referenceDate:'2026-09-08T12:00:00Z'}),plan=f.instantiateMethod(spread,compiled),def=c.__defs[spread];
+  const f=c.JYTarotFoundation,compiled=f.compileQuestion(question,{referenceDate:'2026-09-08T12:00:00Z'}),plan=f.instantiateMethod(spread,compiled),def=c._jyBuildDynamicSpreadDef(spread,plan);
   c.S.form={question};c.S.tarot={spreadType:spread,spreadDef:def,compiledQuestion:compiled,methodPlan:plan};
-  c.setCurrentSpread(spread);
+  c.setCurrentSpread(spread,def);
   let rng=0;c._secRand=()=>++rng%2?0.2:0.8;
   const deck=def.deckFilter==='minor_only'?c.__deck.filter(x=>x.suit!=='major'):c.__deck;
   const cards=c.JY_buildCanonicalTarotDraw(deck,spread,def,'fixture','general',question);
@@ -150,7 +150,7 @@ test('Ziwei serialization locates Ming by palace identity, independent of array 
 const l=runtime([]).ctx;
 expose(l,'JS/lenormand.js','window.__lnAudit={build:buildPrompt,cards:CARDS,spreads:SPREADS};');
 test('Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export',()=>{
-  for(const [id,sp] of Object.entries(l.__lnAudit.spreads)){if(!sp.count)continue;const cards=l.__lnAudit.cards.slice(0,sp.count),p=l.__lnAudit.build('如何推進？',cards,id);assert(p.includes(sp.name));cards.forEach(x=>assert(p.includes(x.id+'.'+x.name)));assert.throws(()=>l.__lnAudit.build('如何推進？',cards.slice(1),id),/未完成/);}
+  for(const [id,catalog] of Object.entries(l.__lnAudit.spreads)){const sp=l.JYLenormand.instantiate(id,'如何推進？');if(!sp.count)continue;const cards=l.__lnAudit.cards.slice(0,sp.count),p=l.__lnAudit.build('如何推進？',cards,id);assert(p.includes(sp.name));cards.forEach(x=>assert(p.includes(x.id+'.'+x.name)));assert.throws(()=>l.__lnAudit.build('如何推進？',cards.slice(1),id),/未完成/);}
   assert.throws(()=>l.__lnAudit.build('測試',[l.__lnAudit.cards[0],l.__lnAudit.cards[0],l.__lnAudit.cards[2]],'three'),/重複/);assert.throws(()=>l.__lnAudit.build('測試',[],'missing'),/未完成/);
 });
 const o=runtime([]).ctx;

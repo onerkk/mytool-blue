@@ -25,7 +25,8 @@
 // v86: 20260915rec2 選品具體依據、移除預設材質引導與舊指引版本檢查。
 // v87: 20260917pair1 紫微政策、原始時分、雙系統合盤與立體雙星介面。
 // v90: 20260922direct1 單一解讀輸出規則、精簡正文與選品後置。
-const CACHE_NAME = 'jy-main-v90';
+// v91: 20260922cards1 問題分題、系統推薦與新增牌陣。
+const CACHE_NAME = 'jy-main-v91';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

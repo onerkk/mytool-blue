@@ -22,7 +22,7 @@ var JY_REC_LENORMAND = "【延伸選品】（規則版本 4.3.0）\n【從解讀
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v17.0 loaded — knowledge-open combination engine');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -174,6 +174,44 @@ var SPREADS = {
     layout:'8-8-8-8-4'
   }
 };
+SPREADS.two={id:'two',name:'雙牌組合',en:'Card Pair',count:2,positions:['主題','修飾'],desc:'以主題與修飾讀一句話；適合日常短問'};
+SPREADS.seven={id:'seven',name:'七張線',en:'Line of Seven',count:7,positions:['第1張','第2張','第3張','中心第4張','第5張','第6張','第7張'],desc:'單一事件的較長發展線；中心與鏡像輔讀'};
+SPREADS.grand_nines={id:'grand_nines',name:'大牌陣・4×9',en:'Grand Tableau of Nines',count:36,positions:null,layout:'4x9',desc:'四排各九張；全盤落宮、近域、鏡像與騎士步'};
+SPREADS.branches={id:'branches',name:'多子題／多選項分線',en:'Independent Lines',count:6,positions:null,layout:'branches',desc:'本站自訂：每個子題或選項各抽三張，抽牌前固定人物與問題；最多六路'};
+SPREADS.three.desc='以相鄰組合與完整三張句回答單一短問';
+SPREADS.five.desc='單一事件的中心、發展與轉折；以完整五張句形成主判';
+SPREADS.grand.name='大牌陣・4×8＋4';
+var _lnReadingPlan=null;
+function _lnBuildSpreadDef(id,question){
+  if(!SPREADS[id])throw new Error('雷諾曼牌陣未完成或未知牌陣');
+  var def=JSON.parse(JSON.stringify(SPREADS[id])),plan=analyzeReadingQuestion(question);
+  def.questionPlan=plan;
+  if(id==='branches'){
+    if(!plan.ready)throw new Error(plan.notes.join(' '));
+    var branches=plan.branches.length?plan.branches:[{id:'SUBJECT_1',question:'原問題',entity:'',scope:''}];
+    def.count=branches.length*3;def.positions=[];def.branches=branches;
+    branches.forEach(function(b,i){for(var j=0;j<3;j++)def.positions.push('第'+(i+1)+'路・'+(b.entity||b.question)+'・'+(j+1));});
+    def.name=SPREADS.branches.name+'（'+branches.length+'路）';
+  }
+  return def;
+}
+function _lnGrandNineGeometry(drawn){
+  function coord(i){return {row:Math.floor(i/9),col:i%9};}
+  function index(r,c){return r>=0&&r<4&&c>=0&&c<9?r*9+c:-1;}
+  var cells=drawn.map(function(card,i){
+    var c=coord(i),neighbors=[],knights=[];
+    for(var dr=-1;dr<=1;dr++)for(var dc=-1;dc<=1;dc++){var n=index(c.row+dr,c.col+dc);if((dr||dc)&&n>=0)neighbors.push(n);}
+    [[1,2],[1,-2],[-1,2],[-1,-2],[2,1],[2,-1],[-2,1],[-2,-1]].forEach(function(d){var n=index(c.row+d[0],c.col+d[1]);if(n>=0)knights.push(n);});
+    return {index:i,row:c.row,col:c.col,house:i+1,cardId:card.id,neighbors:neighbors,knights:knights,horizontal:index(c.row,8-c.col),vertical:index(3-c.row,c.col)};
+  }),lines=[];
+  [[0,1],[1,0],[1,1],[1,-1]].forEach(function(d){
+    cells.forEach(function(c){if(index(c.row-d[0],c.col-d[1])>=0)return;var line=[],r=c.row,k=c.col,n;
+      while((n=index(r,k))>=0){line.push(n);r+=d[0];k+=d[1];}if(line.length>=2)lines.push(line);
+    });
+  });
+  return {width:9,height:4,cells:cells,lines:lines,corners:[0,8,27,35]};
+}
+
 
 // ════════════════════════════════════
 // 三、洗牌與抽牌
@@ -247,6 +285,8 @@ function _lnCountMatches(text, re) {
 // 問句只作方法選擇；原文完整保留。不是以牌陣大小表示準確率。
 function _lnSpreadDirectives(q) {
   var defs = [
+    ['grand_nines',/4\s*[x×]\s*9|9\s*[x×]\s*4|九張大牌陣|Grand Tableau of Nines/ig],
+    ['seven',/七張線|7\s*張線/ig],['two',/雙牌組合|雙牌|兩張線|2\s*張線/ig],['branches',/分線解讀|多子題牌陣|多選項分線/ig],
     ['grand', /大牌陣|Grand\s*Tableau|(?:36|三十六)\s*張(?:牌陣|牌)?/ig],
     ['nine', /九宮格|(?:9|九)\s*(?:宮|張牌陣)|3\s*[x×]\s*3/ig],
     ['choice', /雙路比較|七張比較|二選一牌陣|A\s*\/\s*B牌陣/ig],
@@ -259,6 +299,7 @@ function _lnSpreadDirectives(q) {
     var requested=/(?:請(?:幫我)?|麻煩(?:幫我)?)?(?:改用|使用|採用|選擇|選|用)\s*$/.test(prefix) && !/上次|之前|曾經|昨天/.test(prefix);
     if(negative||requested||q.trim()===m[0])events.push({id:d[0],at:m.index,negative:negative});
   }});
+  if(events.some(function(e){return e.id==='grand_nines'&&!e.negative;}))events=events.filter(function(e){return e.id!=='grand'||e.negative;});
   events.sort(function(a,b){return a.at-b.at;});
   var excluded=[], explicit=null;
   events.forEach(function(e){if(e.negative){if(excluded.indexOf(e.id)<0)excluded.push(e.id);if(explicit===e.id)explicit=null;}else{explicit=e.id;excluded=excluded.filter(function(id){return id!==e.id;});}});
@@ -338,6 +379,88 @@ function classifyDecisionQuestion(question) {
   return result('none');
 }
 // END SHARED DECISION PARSER
+
+// BEGIN SHARED QUESTION PLANNER
+// Canonical question planner; embedded so both readers also work independently.
+// Conservative rules expose the parsed subjects before drawing; they do not infer minds.
+function analyzeReadingQuestion(value) {
+  var raw=String(value||'').trim(), q=raw;
+  try { q=q.normalize('NFKC'); } catch (_) {}
+  var conversions={'选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','工作机会':'工作機會'};
+  Object.keys(conversions).forEach(function(k){q=q.split(k).join(conversions[k]);});
+  function unique(xs){return xs.filter(function(x,i){return x&&xs.indexOf(x)===i;});}
+  function clean(s){return s.replace(/^\s*(?:[①②③④⑤⑥]|\d+[.、)）]|(?:另外|還有|以及|也想問|請問))\s*/,'').replace(/[？?。；;]+$/,'').trim();}
+  function scope(s){return (s.match(/(?:20\d{2}年|今年|明年|未來一年|未來十二個月|未來12個月|本月|下個月|本週|下週|今天|明天|年底前|月底前|(?:未來|接下來)?[一二三四五六七八九十兩\d]+(?:個月|週|天|年)(?:內|後)?)/g)||[]).join('、');}
+  var decision=classifyDecisionQuestion(q), options=[];
+  // Named options retain the user's exact labels and do not swallow a trailing question.
+  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=(?:[\s，,；;、]+[A-F]\s*[:：])|$)/g));
+  if(labels.length>=2) options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
+  if(decision.kind==='binary')options=[decision.left,decision.right];
+  if(decision.kind==='multiple'&&options.length<3){
+    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
+    options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);
+    if(options.some(function(s){return s.length>60;})||options.length<3)options=[];
+  }
+  options=unique(options);
+  var parts=q.split(/[？?。；;\n]+|[，,](?=(?:另外|還有|以及|也想問|至於))/).map(clean).filter(Boolean);
+  var peoplePattern=/(?:女友|男友|伴侶|朋友)的?(?:閨蜜|好友|朋友)|(?:[A-F甲乙丙丁]\s*)?(?:公司)?(?:異性|女性|男性|女|男)?同事(?:\s*[A-F甲乙丙丁])?|前任|前男友|前女友|女友|男友|伴侶|主管|客戶/g;
+  function people(s){var matches=s.match(peoplePattern)||[];return unique(matches);}
+  var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
+  var globalScope=scope(parts[0]||q), groups=[];
+  function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
+  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
+  if(!options.length&&parts.length){
+    parts.forEach(function(part){
+      if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
+      var prev=groups[groups.length-1], ps=people(part), distinct=prev&&ps.length&&ps.some(function(p){return prev.entity.indexOf(p)<0;});
+      var isQuestion=/嗎|是否|會不會|有沒有|能不能|可不可以|能否|會否|如何|怎樣|怎麼|運勢|走向|發展|何時|多久|哪|誰|請分析|幫我看|結婚|交往|同意/.test(part);
+      if(prev&&!distinct&&(follow.test(part)||!isQuestion))prev.question+='；'+part;
+      else groups.push(group(part,ps.join('、')));
+    });
+    // Only explicit distributive language splits several named people in one sentence.
+    if(groups.length===1&&actors.length>=2&&/各自|分別|每個|每位/.test(q)){
+      groups=actors.map(function(actor,i){return {id:'SUBJECT_'+(i+1),question:actor+'：'+q,entity:actor,scope:globalScope,scopeInherited:false};});
+    }
+  }
+  var notes=[];
+  if(options.length>6||groups.length>6)notes.push('本次最多分開六個分支；請將問題分批，避免省略後面的子題。');
+  if(decision.kind==='multiple'&&!options.length)notes.push('尚未辨識完整選項；請用 A：…；B：…；C：… 列出。');
+  var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';
+  var firstOptionAt=options.length?q.indexOf(options[0]):-1,choiceScope=firstOptionAt>=0?scope(q.slice(0,firstOptionAt)):'';
+  var branches=options.length?options.map(function(s,i){return {id:'OPTION_'+(i+1),question:s,entity:s,scope:scope(s)||choiceScope,scopeInherited:!scope(s)&&!!choiceScope};}):groups;
+  return {version:'1.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:/今天|今日|每日|日常提醒/.test(q)&&!/嗎|會不會|是否|結果|何時/.test(q)};
+}
+function recommendReadingSystem(question) {
+  var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
+  if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan};
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花|易經|易经|起卦/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['astro','西洋占星',/星盤|星盘|占星|行星|上升星座/]];
+  var requests=[];
+  q.split(/[，,。；;！？?\n]/).forEach(function(clause,order){
+    rules.forEach(function(rule){var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
+      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)||/以前|上次|之前|曾經/.test(before))return;
+      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before))requests.push({rule:rule,order:order,at:m.index});
+    });
+  });
+  requests.sort(function(a,b){return a.order-b.order||a.at-b.at;});
+  var explicit=requests.length?requests[requests.length-1].rule:null;
+  var result;
+  if(explicit)result={system:explicit[0],label:explicit[1],reason:'依你明確指定的解讀系統',explicit:true};
+  else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
+  else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
+  else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
+  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
+  else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
+  result.plan=plan;result.readingMode='rws_reversals';
+  q.split(/[，,。；;！？?\n]/).forEach(function(clause){
+    var m=clause.match(/Book\s*T|Golden\s*Dawn|黃金黎明|元素尊貴|RWS|正逆位/i);if(!m)return;
+    var before=clause.slice(0,m.index);if(/以前|上次|之前|曾經/.test(before))return;
+    var neg=/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before),rws=/RWS|正逆位/i.test(m[0]);
+    if(!neg)result.readingMode=rws?'rws_reversals':'gd_book_t';
+  });
+  result.birthDataRequired=/^(bazi|ziwei|astro)$/.test(result.system);
+  return result;
+}
+// END SHARED QUESTION PLANNER
 function _lnAnalyzeQuestion(q) {
   var originalQuestion = String(q || '').trim();
   q = _lnQuestionFocus(originalQuestion);
@@ -427,15 +550,19 @@ function _lnAnalyzeQuestion(q) {
   if (explicitMultiAspect) facetCount = Math.max(facetCount, 3);
   if (isConditionalProfileBundle) facetCount = Math.max(facetCount, 3);
 
+  var sharedQuestion=analyzeReadingQuestion(originalQuestion);
+  independentMulti=independentMulti||sharedQuestion.mode==='multi_question';
   var questionShape = '一般單一議題';
-  if (isChoice) questionShape = '雙路決策比較';
+  if(sharedQuestion.mode==='multi_question')questionShape='多人物／多事件分題';
+  else if(sharedQuestion.mode==='multi_option')questionShape='多選項獨立比較';
+  else if (isChoice) questionShape = '雙路決策比較';
   else if (isGlobal) questionShape = '多領域／全景問題';
   else if (explicitMultiAspect || facetCount >= 3) questionShape = '單一議題多面向全貌';
   else if (asksWhy || asksHow || asksWhen || asksPersonProfile || facetCount >= 2) questionShape = '需要脈絡的單一議題';
   else if (isYesNo) questionShape = '單一可裁決命題';
 
   return {
-    q:originalQuestion, analysisQuestion:q, compact:compact, parts:parts, empty:!originalQuestion,
+    questionPlan:sharedQuestion, q:originalQuestion, analysisQuestion:q, compact:compact, parts:parts, empty:!originalQuestion,
     domainIds:domainIds, hypothesisChoice:hypothesisChoice,
     isChoice:isChoice, choiceA:choiceA, choiceB:choiceB,
     moreThanTwoOptions:moreThanTwoOptions, incompleteChoice:incompleteChoice,
@@ -597,6 +724,11 @@ function _lnValidateQuestion(q) {
 
 // 自動選陣依問句幾何與所需敘事容量選擇牌陣；題材關鍵字不直接決定牌義。
 function _lnRecommendSpread(x) {
+  var plan=x.questionPlan;
+  if(plan&&(plan.mode==='multi_question'||plan.mode==='multi_option')&&plan.ready)return {id:'branches',why:'每個人物、獨立子題或選項各有一條三張線，先固定問題再抽牌，避免混用同一組結論'};
+  if(plan&&plan.daily)return {id:'two',why:'單一日常提醒，以雙牌的主題與修飾形成一句話'};
+  if(plan&&plan.mode==='single'&&x.asksWhen&&(x.asksWhy||x.asksHow)&&!x.isGlobal)return {id:'seven',why:'同一事件同時需要階段、原因與行動脈絡，七張線保留較長的發展與轉折'};
+
   if (x.moreThanTwoOptions) return {id:'nine',why:'問題超過兩個方案，九宮格先釐清共同條件與阻力；本盤不為每個方案配置獨立支線，不合併選項或編造排名'};
   if (x.incompleteChoice) return {id:'five',why:'比較選項尚未完整，五張線先分析已說明的處境；不代你補出另一個方案'};
   if (x.hypothesisChoice) return {id:'five',why:'先分析同一件事的不同可能解釋，沒有確認是兩個可選行動，因此不建立 A／B 支線'};
@@ -631,10 +763,11 @@ function _lnDetectSpread(q) {
   q = String(q || '').trim();
   var v = _lnValidateQuestion(q);
   if (!v.ok) return {id:null,why:v.reason,code:v.code};
+  if(!v.x.questionPlan.ready)return {id:null,why:v.x.questionPlan.notes.join(' '),code:'INCOMPLETE_BRANCHES',x:v.x};
   var directives=_lnSpreadDirectives(q), rec=_lnRecommendSpread(v.x);
   if(directives.explicit) return {id:directives.explicit,why:'依你明確指定的'+SPREADS[directives.explicit].name+'解讀；仍以實際可用牌位為限',x:v.x};
   if(directives.excluded.indexOf(rec.id)>=0){
-    var alternatives={three:['five','nine','grand'],five:['nine','three','grand'],choice:['nine','five','grand','three'],nine:['grand','five','three'],grand:['nine','five','three']}[rec.id];
+    var alternatives={three:['five','nine','grand'],five:['nine','three','grand'],choice:['nine','five','grand','three'],nine:['grand','five','three'],grand:['nine','five','three']}[rec.id]||Object.keys(SPREADS).filter(function(id){return id!==rec.id;});
     var id=alternatives.filter(function(id){return directives.excluded.indexOf(id)<0;})[0];
     if(!id)return {id:null,why:'目前可用牌陣都被排除，請保留一個牌陣或手動選擇。',code:'ALL_EXCLUDED'};
     return {id:id,why:'已排除你不想使用的牌陣，改以'+SPREADS[id].name+'回答可支持的部分；不足以獨立判斷的分支會明示',x:v.x};
@@ -644,11 +777,11 @@ function _lnDetectSpread(q) {
 
 function _lnPushReaderKernel(lines) {
   lines.push('<系統設定與方法參考>');
-  lines.push('使用正位 Petit Lenormand；牌名、順序與下方幾何是本次事實。三張線、五張線、雙路、九宮格與4×8＋4各依原版式，不套塔羅正逆位。');
+  lines.push('使用正位 Petit Lenormand；牌名、順序與下方幾何是本次事實。雙牌、三／五／七張線、各獨立分線、九宮格及兩種大牌陣各依本次明示版式，不套塔羅正逆位。');
   lines.push('相鄰、落宮、鏡像及騎士步是不同關係；只使用已提供的幾何。圖像朝向未提供時不推造面向。下方牌陣模組供全盤判讀，並不要求正文依技法逐項報告。');
   lines.push('</系統設定與方法參考>','');
 }
-function _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId) {
+function _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId, def) {
   var guides={
   "three": [
     "先把第1張視作起始語境、第2張作連接與修飾、第3張作句子落點，依題目調整主詞與修飾關係；位置不預設過去／現在／未來。",
@@ -681,6 +814,10 @@ function _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId)
     "全景題依實際提問分生活領域，說明跨領域的共同影響與分開的限制；不得因全36張必然包含某牌，便認定使用者必有該事件。時間不從格數直接換算月份。"
   ]
 };
+  guides.two=['第一張定主題，第二張修飾；結合問句讀成一句生活語言，不把兩張當二選一或吉凶投票。'];
+  guides.seven=['先讀完整1→2→3→4→5→6→7與相鄰組合，第四張為中心；非相鄰鏡像1↔7、2↔6、3↔5僅作補充。沒有預設日期，也沒有七個獨立語義牌位。'];
+  guides.grand_nines=['固定四排九張，四角是1、9、28、36；36格全部屬主盤，沒有獨立尾排。先看人物／主題近域，再讀通過焦點的連續線、落宮與必要的鏡像或騎士步。','落宮以格號為固定背景，牌號是實際內容；主盤中心沒有單一中心牌，人物缺少預選身分時不自行指認。欄數不直接換算日期。'];
+  guides.branches=['本站現代自訂分線：每三張只回答抽牌前綁定的那個問題或選項，先相鄰組合，再合讀該路完整三張句。不同路不相鄰，不設跨路鏡像、宮位或騎士步；不得把某一路的好感移到另一位人物。','比較選項時採相同尺度與題目期限；對不同子題各先回答，再整理相互影響。不能以牌面替代他人現實意願或同意。'];
   lines.push('<牌陣模組 name="'+SPREADS[spreadId].name+'">');
   (guides[spreadId]||[]).forEach(function(step,i){lines.push((i+1)+'. '+step);});
   if(spreadId==='nine'&&drawn[4]&&drawn[4]._presetSig)lines.push('中心牌是抽牌前置入的閱讀焦點；置中本身不是隨機徵兆，但它與周圍牌形成的實際牌句仍照常解讀。');
@@ -702,9 +839,20 @@ function _lnPushCardData(lines, drawn, sp) {
   lines.push('');
 }
 
-function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId) {
+function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId, def) {
   lines.push('<合法幾何>');
-  if (spreadId === 'three') {
+  if(spreadId==='two'||spreadId==='seven'){
+    lines.push('唯一完整主線：'+drawn.map(function(c,i){return (i+1)+'.'+c.name;}).join('→'));
+    if(spreadId==='seven')lines.push('中心：4；鏡像：1↔7、2↔6、3↔5。鏡像不是相鄰。');
+  }else if(spreadId==='branches'){
+    (def.branches||[]).forEach(function(b,i){var offset=i*3;lines.push('第'+(i+1)+'路綁定：'+b.question+(b.scope?'；範圍：'+b.scope:'')+'；合法主線：'+drawn.slice(offset,offset+3).map(function(c,j){return (offset+j+1)+'.'+c.name;}).join('→'));});
+    lines.push('各路獨立；每路只有三張內部的相鄰關係，沒有跨路連線。');
+  }else if(spreadId==='grand_nines'){
+    var g=_lnGrandNineGeometry(drawn);
+    g.cells.forEach(function(c){lines.push('格'+(c.index+1)+' R'+(c.row+1)+'C'+(c.col+1)+'：'+CARDS[c.index].name+'宮 ← '+drawn[c.index].name+'；近鄰 '+c.neighbors.map(function(n){return n+1;}).join('、')+'；水平鏡像 '+(c.horizontal===c.index?'位於中軸（無另一格）':c.horizontal+1)+'；垂直鏡像 '+(c.vertical+1)+'；騎士步 '+c.knights.map(function(n){return n+1;}).join('、'));});
+    lines.push('合法最大路徑：'+g.lines.map(function(line){return line.map(function(i){return i+1;}).join('-');}).join('；'));
+    lines.push('四角框架：1、9、28、36；沒有獨立尾排。');
+  }else if (spreadId === 'three') {
     lines.push('最大路徑：1.' + drawn[0].name + '→2.' + drawn[1].name + '→3.' + drawn[2].name);
     lines.push('全部連續片段：1-2、2-3、1-2-3。');
     lines.push('非相鄰鏡像：1↔3。');
@@ -774,8 +922,8 @@ function _lnPushBrandModule(lines) {
   lines.push('</品牌附加層>','');
 }
 
-function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
-  var sp = SPREADS[spreadId];
+function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readingPlan) {
+  var sp = readingPlan||_lnBuildSpreadDef(spreadId,question);
   if(!sp||!Array.isArray(drawn)||drawn.length!==sp.count||drawn.some(function(c){return !c||!Number.isInteger(c.id)||c.id<1||c.id>36||!c.name;})||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('雷諾曼牌陣未完成或牌面資料重複，請重新抽牌');
   var lines = [];
   var legalNames = drawn.map(function(c){ return c.name; });
@@ -796,20 +944,21 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender) {
   if(questionModel.moreThanTwoOptions)lines.push('問題有三個以上方案：逐一保留原方案，這個版式沒有每方案獨立的可比支線；先回答共同條件，若仍需逐路比較，請使用者選定兩個明確方案再另起一次占卜。');
   if(questionModel.hypothesisChoice)lines.push('問題比較的是同一事件的不同解釋，並非使用者可各自採取的兩個方案；以牌句比較可能解釋與可觀察證據，不冒充已證實對方心意。');
   lines.push('人物歸屬：問卜者本人代表為' + personRep + '。這只建立角色資料；該牌實際出現在本盤時才能進入牌句。其他人物僅在已有明確角色對應時綁定。若同時問多位對象而未分配各自牌位，不自行把不同線派給不同人物或比較誰的支持較強；可答共同局勢，個別差異保留未定。');
-  if (_lnSignif && spreadId !== 'nine' && spreadId !== 'grand') {
+  if (_lnSignif && spreadId !== 'nine' && !/^grand/.test(spreadId)) {
     lines.push('使用者選擇的指示牌' + _lnSignif + '.' + ((CARDS[_lnSignif-1] || {}).name || '') + '未被預置本牌陣；若自然抽到，僅依其實際位置與已聲明角色解讀，未抽到則不加入牌句。');
   }
   lines.push('</本次任務>');
   lines.push('');
 
   lines.push('雷諾曼以本次牌序形成組合語法；指示牌有明確角色才綁定。蛇、狐狸、棺材等象徵先依題目及相鄰牌分辨情境，不憑單牌認定第三者、欺騙、疾病或死亡。');
+  if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
-  lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採9×4；本站採4×8＋4，因此只參考宮位、距離及騎士步等技法，實際連線以本次提供的設定為準；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
+  lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
   lines=lines.concat(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
-  _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId);
+  _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);
-  _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId);
+  _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushOutputContract(lines, legalNames);
   _lnPushBrandModule(lines);
 
@@ -920,10 +1069,10 @@ function _render() {
     h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選陣與抽牌</span><span><b>03</b> 探索解讀</span></div>';
     // Question
     h += '<div class="ln-section"><div class="ln-section-title">✦ 你想問什麼？</div>';
-    h += '<textarea class="ln-q-input" id="ln-q" aria-label="雷諾曼想釐清的問題" rows="2" maxlength="200" placeholder="例如：這份工作值得繼續嗎？請寫下你最在意的事。">' + _lnEscapeHTML(_lnQuestion) + '</textarea></div>';
+    h += '<textarea class="ln-q-input" id="ln-q" aria-label="雷諾曼想釐清的問題" rows="2" maxlength="1000" placeholder="例如：這份工作值得繼續嗎？請寫下你最在意的事。">' + _lnEscapeHTML(_lnQuestion) + '</textarea></div>';
     // Spread
     h += '<div class="ln-section"><div class="ln-section-title">✦ 選擇牌陣</div><div class="ln-spread-grid">';
-    var sps = [{id:'auto',n:'✦ 自動判斷',d:'依問題重點選擇牌陣（可手動調整）'},{id:'three',n:'三張線',d:'單一聚焦命題'},{id:'five',n:'五張線',d:'單一議題脈絡'},{id:'choice',n:'雙路比較',d:'兩個可替代方案'},{id:'nine',n:'九宮格',d:'同一議題多面向'},{id:'grand',n:'大牌陣',d:'多領域全景／手動深讀'}];
+    var sps=[{id:'auto',n:'✦ 自動判斷',d:'依問題重點選擇牌陣（可手動調整）'}].concat(Object.keys(SPREADS).map(function(id){var sp=SPREADS[id];return {id:id,n:sp.name,d:sp.desc};}));
     for (var i=0;i<sps.length;i++) {
       h += '<button class="ln-spread-btn' + (sps[i].id===_lnSpread?' active':'') + (sps[i].id==='auto'?' ln-spread-auto':'') + '" onclick="_lnSetSpread(\''+sps[i].id+'\')">' + sps[i].n + '<br><span style="font-size:.6rem;opacity:.6">' + sps[i].d + '</span></button>';
     }
@@ -950,11 +1099,17 @@ function _render() {
     h += '<button class="ln-draw-btn" onclick="_lnDoDraw()">✦ 抽 牌 ✦</button>';
   } else {
     // Results
-    var sp = SPREADS[_lnResolved];
+    var sp = _lnReadingPlan||SPREADS[_lnResolved];
     h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
     if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
-    if (_lnSignif) h += '<div class="ln-auto-note">✦ ' + ((_lnSignif===28||_lnSignif===29)?'本人定位牌':'議題定位牌') + '：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・現代焦點九宮格）' : _lnResolved==='grand' ? '（於36張中定位讀取）' : '（本牌陣不置入）') + '</div>';
-    if (_lnResolved === 'grand') {
+    if (_lnSignif) h += '<div class="ln-auto-note">✦ ' + ((_lnSignif===28||_lnSignif===29)?'本人定位牌':'議題定位牌') + '：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・現代焦點九宮格）' : /^grand/.test(_lnResolved) ? '（於36張中定位讀取）' : '（本牌陣不置入）') + '</div>';
+    if(_lnResolved==='grand_nines'){
+      h+='<p class="at-result-note">四排各九張，橫向滑動查看完整盤面。</p><div class="at-chart-scroll" tabindex="0" role="region" aria-label="四排九張大牌陣"><div style="display:grid;grid-template-columns:repeat(9,72px);gap:8px;width:max-content">';
+    }else if(_lnResolved==='seven'){
+      h+='<div class="at-chart-scroll" tabindex="0" role="region" aria-label="七張線"><div style="display:flex;gap:8px;width:max-content">';
+    }else if(_lnResolved==='branches'){
+      h+='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
+    }else if (_lnResolved === 'grand') {
       h += '<p class="at-result-note">依 8 × 4 ＋底部 4 張排列。橫向滑動可查看完整牌陣，牌位編號對應解讀提示詞。</p><div class="at-chart-scroll" tabindex="0" role="region" aria-label="可橫向捲動的大牌陣"><div class="ln-grand-layout">';
     } else if (_lnResolved === 'nine') {
       h += '<div class="ln-grid-3x3">';
@@ -971,13 +1126,13 @@ function _render() {
       var imgSrc = IMG_MAP[c.id] || '';
       var _choicePos = ''; if (_lnResolved === 'choice') { if (j === 3) _choicePos='grid-column:2;grid-row:2;'; else if (j >= 4) _choicePos='grid-column:'+(j-3)+';grid-row:3;'; }
       h += '<div class="ln-card" style="'+_choicePos+'animation-delay:'+j*0.05+'s">' + (c._presetSig ? '<div style="font-size:.6rem;color:#e8d28a;letter-spacing:.12em;margin-bottom:2px">★ 指示牌</div>' : '');
-      h += '<div class="at-card-position">' + (sp.positions ? sp.positions[j] : ('牌位 ' + (j+1))) + '</div>';
+      h += '<div class="at-card-position">' + _lnEscapeHTML(sp.positions ? sp.positions[j] : ('牌位 ' + (j+1))) + '</div>';
       if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'">';
       h += '<div class="ln-card-name">' + c.id + '. ' + c.name + '</div>';
       h += '<div class="ln-card-en">' + c.en + '</div></div>';
     }
     h += '</div>';
-    if (_lnResolved === 'grand') h += '</div>';
+    if (/^(grand|grand_nines|seven)$/.test(_lnResolved)) h += '</div>';
     h += '</div>';
 
     // AI card
@@ -1011,9 +1166,11 @@ function _lnUpdateSpreadPreview() {
   if(!input||!host)return;
   var q=input.value.trim();
   if(!q){host.textContent='寫下問題後，這裡會顯示建議牌陣與原因。';return;}
-  if(_lnSpread!=='auto'){host.textContent='手動選擇：'+SPREADS[_lnSpread].name+'（'+SPREADS[_lnSpread].count+'張）。依實際牌位解讀。';return;}
+  if(_lnSpread!=='auto'){try{var manual=_lnBuildSpreadDef(_lnSpread,q);host.textContent='手動選擇：'+manual.name+'（'+manual.count+'張）。依實際牌位解讀。';if(manual.branches)host.textContent+='\n'+manual.branches.map(function(b,i){return (i+1)+'. '+b.question;}).join('\n');}catch(e){host.textContent=e.message;}return;}
   var pick=_lnDetectSpread(q);
   host.textContent=pick.id?'建議：'+SPREADS[pick.id].name+'（'+SPREADS[pick.id].count+'張）・'+pick.why:pick.why;
+  if(pick.id){var pd=_lnBuildSpreadDef(pick.id,q);host.textContent='建議：'+pd.name+'（'+pd.count+'張）・'+pick.why;if(pd.branches)host.textContent+='\n'+pd.branches.map(function(b,i){return (i+1)+'. '+b.question+(b.scope?'〔'+b.scope+'〕':'');}).join('\n');}
+  var sys=recommendReadingSystem(q);host.textContent+='\n系統建議：'+sys.label+'・'+sys.reason;
   if(pick.x&&pick.x.isChoice)host.textContent+='\nA：'+pick.x.choiceA+'\nB：'+pick.x.choiceB+'\n請核對這是否就是你想比較的兩條路；可直接修改上方問題。';
 }
 
@@ -1022,6 +1179,7 @@ window._lenormandOpen = function() {
   _lnPhase = 'input';
   _lnQuestion = '';
   _lnSpread = 'auto';
+  _lnReadingPlan=null;
   _lnResolved = 'three';
   _lnAutoPick = null;
   _lnDrawn = [];
@@ -1034,7 +1192,7 @@ window._lenormandOpen = function() {
 
 window._lenormandShare = function() {
   if (!window.JYShareCard) { alert('\u5206\u4EAB\u5143\u4EF6\u8F09\u5165\u4E2D\uFF0C\u8ACB\u7A0D\u5019\u518D\u8A66'); return; }
-  var sp = SPREADS[_lnResolved] || {};
+  var sp = _lnReadingPlan||SPREADS[_lnResolved] || {};
   var pos = sp.positions || [];
   var cards = (_lnDrawn || []).map(function(c, i) {
     var pl = (pos[i] || ('\u7B2C' + (i + 1) + '\u5F35'));
@@ -1082,7 +1240,8 @@ window._lnDoDraw = function() {
     var _fit = _lnCheckSpreadFit(_lnQuestion, _lnResolved);
     if (!_fit.ok) { alert(_fit.reason || '這個問題不適合目前選擇的牌陣。'); return; }
   }
-  var sp = SPREADS[_lnResolved];
+  var sp;try{sp=_lnBuildSpreadDef(_lnResolved,_lnQuestion);}catch(e){alert(e.message);return;}
+  _lnReadingPlan=JSON.parse(JSON.stringify(sp));
   var _personRepId = _lnPersonRepId(_lnGender);
   // 未指定本人牌仍可作主題全景；提示詞明示未指定，絕不暗中以性別猜代表牌。
   // v4.0：九宮格＋指示牌＝現代焦點九宮格；池先移除指示牌避免重複
@@ -1096,8 +1255,9 @@ window._lnDoDraw = function() {
   } else {
     drawCards(sp.count);
   }
+  if(sp.branches)_lnDrawn.forEach(function(c,i){c.questionBinding=JSON.parse(JSON.stringify(sp.branches[Math.floor(i/3)]));});
   if (_lnGender) _lnSigGender = _lnGender; // v3.1：聲明性別優先
-  _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender, _lnGender);
+  _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender, _lnGender,_lnReadingPlan);
   function reveal(){
     _lnPhase = 'result'; _render(); _getWrap().scrollTop = 0;
   }
@@ -1246,6 +1406,7 @@ window._lnPrimeAICopy = function(ev, link) {
   }
 };
 window._lnReset = function() {
+  _lnReadingPlan=null;
   if(window.JYRitual)window.JYRitual.cancel('lenormand');
   _lnDrawn=[];_lastPrompt='';
   _lnPhase = 'input';
@@ -1253,4 +1414,5 @@ window._lnReset = function() {
   _getWrap().scrollTop = 0;
 };
 
+window.JYLenormand={analyze:_lnAnalyzeQuestion,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,spreads:SPREADS};
 })();

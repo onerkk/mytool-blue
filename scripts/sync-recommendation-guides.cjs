@@ -32,7 +32,7 @@ const readingTargets=[
   ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()],
   ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().map(k=>q.methodLines(k).join('\n')).join('\n\n')]
 ];
-const mirrors=['bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
+const mirrors=['ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
 function persist(file,next){
   const full=path.join(root,file),old=fs.existsSync(full)?fs.readFileSync(full,'utf8'):null;

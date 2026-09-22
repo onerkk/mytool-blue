@@ -397,7 +397,7 @@ var JY_REC_EXPORT = {
         protocol.structures.forEach(function(st){
           var detail='';
           if(st.type==='semantic_pairing') detail=pairSummary(st.pairs);
-          else if(st.type==='dependency_network'||st.type==='dyad'||st.type==='cross'||st.type==='synthesis'||st.type==='house_wheel') detail=members(st.indices);
+          else if(st.type==='dependency_network'||st.type==='semantic_group'||st.type==='dyad'||st.type==='cross'||st.type==='synthesis'||st.type==='house_wheel') detail=members(st.indices);
           else if(st.indices&&st.indices.length) detail=seq(st.indices);
           lines.push('・'+st.label+'〔'+st.type+'〕'+(detail?'：'+detail:'')+'。'+(st.instruction||''));
           (st.links||[]).forEach(function(link){

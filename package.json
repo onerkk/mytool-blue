@@ -47,7 +47,9 @@
     "test:recommendations": "node scripts/sync-recommendation-guides.cjs --check && node tests/recommendation-20260914.cjs",
     "test:ootk": "node tests/ootk-flow-20260915.cjs",
     "test:relationship": "node tests/relationship-20260917.cjs",
-    "test:time-ownership": "node tests/time-ownership-20260920.cjs"
+    "test:time-ownership": "node tests/time-ownership-20260920.cjs",
+    "build:questions": "node scripts/build-question-planner.cjs && node scripts/sync-recommendation-guides.cjs",
+    "test:question-routing": "node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs"
   },
   "devDependencies": {
     "vite": "8.3.0"

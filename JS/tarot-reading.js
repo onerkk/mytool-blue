@@ -1,7 +1,7 @@
 /*! Reading mode, immutable draw orientation and presentation. 2026-09-06 */
 (function(root){
   'use strict';
-  var RWS='rws_reversals',GD='gd_book_t',requested=RWS;
+  var RWS='rws_reversals',GD='gd_book_t',requested='auto';
   var nativeGD=['ootk','fifteen_card'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function currentSpread(){return typeof getCurrentSpread==='function'?getCurrentSpread():((root.S||{}).tarot||{}).spreadType||'five_card';}
@@ -9,7 +9,9 @@
   function mode(spread,cards){
     if(nativeGD.indexOf(spread)>=0)return GD;
     if(cards&&cards.length&&cards[0].readingMode)return cards[0].readingMode;
-    return requested;
+    if(requested!=='auto')return requested;
+    var f=root.JYTarotFoundation,q=((root.S||{}).form||{}).question||'';
+    return f?f.recommendSystem(q).readingMode||RWS:RWS;
   }
   function orientation(spread,rng){return mode(spread)===GD || (rng||root._secRand||Math.random)()>=0.5;}
   function apply(card,isUp,spread,chosenMode){
@@ -63,7 +65,7 @@
         position:slot.label||pos.name||c.pos||('位置'+(i+1)),positionMeaning:slot.label||pos.zh||c.pos||'',
         suit:c.suit,rank:c.rank||'',image:typeof getTarotCardImage==='function'?getTarotCardImage(c):'',
         // Core facts only: AI uses its own RWS knowledge, without legacy Book T meanings.
-        slotKind:slot.slotKind||'semantic_position'
+        binding:slot.binding||{eventId:'QUERY_EVENT'},slotKind:slot.slotKind||'semantic_position'
       };}),preStats:{upCount:s.upCount,reversedCount:s.rvCount,suitCounts:s.suitCounts}
     }};
   }
@@ -81,6 +83,7 @@
     var L=['牌陣：'+td.spreadZh+'（'+td.cards.length+' 張）','讀牌體系：Rider–Waite–Smith・使用正逆位','下列牌名、順序與方向為本次實際抽牌紀錄：'];
     td.cards.forEach(function(c,i){L.push((i+1)+'. '+c.position+'：'+c.name+'【'+c.direction+'】');});
     if(td.drawProcedure){L.push('【本次發牌程序】'+td.drawProcedure.description);if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；選牌方式：'+td.drawProcedure.significator.policy);}
+    if(td.methodPlan&&td.methodPlan.branches){L.push('抽牌前固定的分題：');td.methodPlan.branches.forEach(function(b,i){L.push((i+1)+'. '+b.question+(b.scope?'；範圍：'+b.scope:''));});}
     var s=td.preStats||{};L.push('正位 '+s.upCount+' 張；逆位 '+s.reversedCount+' 張。這是抽牌統計，不換算事件機率。');
     return L.join('\n');
   }
@@ -95,16 +98,16 @@
     var host=root.document.getElementById('tarot-reading-controls');if(!host)return;
     var sid=currentSpread(),cards=currentCards(),fixed=nativeGD.indexOf(sid)>=0;
     var selector=host.querySelector('select');
-    if(!selector){host.innerHTML='<label for="tarot-reading-mode">讀牌方式</label><select id="tarot-reading-mode"><option value="rws_reversals">RWS 塔羅・正位與逆位</option><option value="gd_book_t">Golden Dawn・元素尊貴</option></select><p id="tarot-reading-help"></p>';selector=host.querySelector('select');selector.addEventListener('change',function(){
+    if(!selector){host.innerHTML='<label for="tarot-reading-mode">讀牌方式</label><select id="tarot-reading-mode"><option value="auto">自動建議・依問題與牌陣</option><option value="rws_reversals">RWS 塔羅・正位與逆位</option><option value="gd_book_t">Golden Dawn・元素尊貴</option></select><p id="tarot-reading-help"></p>';selector=host.querySelector('select');selector.addEventListener('change',function(){
       if(currentCards().length){syncControls();return;}
-      requested=selector.value===GD?GD:RWS;
+      requested=selector.value==='auto'?'auto':selector.value===GD?GD:RWS;
       if(root.S&&root.S.tarot)root.S.tarot.readingMode=requested;
       syncControls();
     });}
-    selector.value=mode(sid,cards);selector.disabled=fixed||cards.length>0;
+    selector.value=fixed||cards.length?mode(sid,cards):requested;selector.disabled=fixed||cards.length>0;
     var summary=root.document.getElementById('tarot-mode-summary');
     if(summary)summary.textContent=mode(sid,cards)===RWS?'RWS・正逆位':'Golden Dawn・元素尊貴';
-    host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'先選方式，再洗牌、選牌。本站藝術牌面翻開後明示正位／逆位；點牌可放大。';
+    host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'自動模式一般採 RWS 正逆位；明確指定 Book T／元素尊貴時採對應讀法。也可手動選擇，抽牌後固定本輪方式。';
     var sigWrap=host.querySelector('#jy-mathers-sig-wrap');
     if(sid==='mathers_21'&&!sigWrap){
       sigWrap=root.document.createElement('div');sigWrap.id='jy-mathers-sig-wrap';

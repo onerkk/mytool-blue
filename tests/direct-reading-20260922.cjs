@@ -30,7 +30,8 @@ test('All tarot layouts use one output contract without changing cards, position
  }
 });
 test('Lenormand keeps real geometry and unbound people distinct across all layouts and fallbacks',()=>{
- for(const [id,sp]of Object.entries(l.__lnAudit.spreads)){
+ for(const [id,catalog]of Object.entries(l.__lnAudit.spreads)){
+  const sp=l.JYLenormand.instantiate(id,'公司同事與女友閨蜜，分別有交往機會嗎？');
   if(!sp.count)continue;
   const cards=l.__lnAudit.cards.slice(0,sp.count),before=JSON.stringify(cards);
   checkFallback(l,()=>l.__lnAudit.build('公司同事與女友閨蜜，分別有交往機會嗎？',cards,id));

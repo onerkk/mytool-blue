@@ -460,6 +460,12 @@ var SPREAD_DEFS = {
     positions: []
   }
 };
+// New definitions are generated from the method registry used by routing and export.
+if(window.JYTarotFoundation)Object.keys(window.JYTarotFoundation.METHODS).forEach(function(id){
+  var m=window.JYTarotFoundation.METHODS[id];if(!m.picker)return;
+  SPREAD_DEFS[id]={id:id,zh:m.label,en:m.label,count:m.count,desc:m.picker.suited,positions:m.slots.map(function(s){return {name:s.label,zh:s.label};})};
+});
+
 
 // ── 問題性質偵測 → 牌陣匹配（金色黎明系統）──
 // Three-Card: 單一短問、快速判斷
@@ -510,11 +516,18 @@ function _jyBuildDynamicSpreadDef(spreadId, methodPlan) {
   return def;
 }
 
+window.JY_validateReadingQuestion=function(question){
+  if(!String(question||'').trim()||!window.JYTarotFoundation)return true;
+  var plan=window.JYTarotFoundation.analyzeReadingQuestion(question);
+  if(plan.ready)return true;
+  alert(plan.notes.join(' '));return false;
+};
 function resolveTarotSpread(question, type) {
   var foundation=(typeof window!=='undefined'&&window.JYTarotFoundation)?window.JYTarotFoundation:null;
   if(!foundation)throw new Error('JYTarotFoundation is required before spread resolution');
   var raw=String(question||'').trim(), forced=(typeof window!=='undefined')?window._forcedSpread:null;
   var route=foundation.routeQuestion(raw,{type:String(type||'general'),referenceDate:new Date().toISOString()});
+  if(route.ready===false)throw new Error((route.questionPlan.notes||[]).join(' ')||'請先補齊選項。');
   var spreadId=route.spreadId, plan=route.methodPlan;
   if(forced){
     if(!SPREAD_DEFS[forced])throw new Error('Unknown forced spread: '+forced);
@@ -1066,6 +1079,7 @@ enhanceTarot = function(tarot) {
   function S(id, num, label) {
     // ★ 已抽到該位置的牌時，直接畫牌面（修正「快速全抽 / 重渲染後格子留空」）。
     //   drawnCards[id] = 該位置的牌（canonical 全抽與逐張選都以位置索引對齊 t-slot-id）。
+    label=String(label||'').replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});
     var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
     var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
     var _ic = (_jyCurSpreadId === 'celtic_cross' && id === 1); // 凱爾特「跨越牌」橫置
@@ -1252,8 +1266,8 @@ enhanceTarot = function(tarot) {
     else if (spreadId === 'either_or') {
       h += S(0,1,pn(0));
       h += '<div class="jy-row" style="gap:24px">';
-      h += '<div class="jy-col"><div class="jy-lbl">A 選項</div>' + S(1,2,pn(1)) + S(3,4,pn(3)) + '</div>';
-      h += '<div class="jy-col"><div class="jy-lbl">B 選項</div>' + S(2,3,pn(2)) + S(4,5,pn(4)) + '</div>';
+      h += '<div class="jy-col"><div class="jy-lbl">A 選項</div>' + S(1,2,pn(1)) + S(3,4,pn(3)) + (def.count>5?S(5,6,pn(5)):'') + '</div>';
+      h += '<div class="jy-col"><div class="jy-lbl">B 選項</div>' + S(2,3,pn(2)) + S(4,5,pn(4)) + (def.count>6?S(6,7,pn(6)):'') + '</div>';
       h += '</div>';
     }
     else if (spreadId === 'relationship') {
@@ -1263,6 +1277,9 @@ enhanceTarot = function(tarot) {
       h += '</div>';
       h += S(2,3,pn(2));
       h += '<div class="jy-row">' + S(3,4,pn(3)) + S(4,5,pn(4)) + S(5,6,pn(5)) + '</div>';
+    }
+    else if(spreadId==='multi_question'||spreadId==='multi_option'){
+      var last='';P.forEach(function(pos,i){var event=(pos.binding||{}).eventId||'SUBJECT';if(event!==last){if(last)h+='</div>';h+='<div class="jy-row" style="padding:12px 0;border-bottom:1px solid rgba(201,168,76,.2)">';last=event;}h+=S(i,i+1,pn(i));});if(last)h+='</div>';
     }
     else if (spreadId === 'timeline') {
       h += '<div class="jy-row">';

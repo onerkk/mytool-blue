@@ -1,4 +1,4 @@
-/*! tarot-foundation.js — Tarot v103 method-data foundation
+/*! tarot-foundation.js — Tarot v104 method-data foundation
  * 單一真相來源：問題型別化、觀測需求、牌陣能力、動態牌位綁定與自動路由。
  * 牌義不在本檔；Book T 由 golden-dawn-tarot.js 提供；RWS 正逆位由 tarot-reading.js 處理。
  */
@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '103.1.0';
+  var VERSION = '104.0.0';
   var SCHEMA = 'jy.tarot.foundation/6';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
@@ -31,7 +31,7 @@
       '为什么':'為什麼','为何':'為何','什么时候':'什麼時候','关系':'關係','选择':'選擇','还是':'還是','整体':'整體','发展':'發展','事业':'事業','财运':'財運','结果':'結果','复合':'復合','对象':'對象','对方':'對方','问题':'問題','建议':'建議','阻碍':'阻礙','未来':'未來','现在':'現在','过去':'過去','职业':'職業','离职':'離職','创业':'創業','全年':'全年','运势':'運勢','营业额':'營業額','营收':'營收','利润':'利潤','这月':'這月','这个月':'這個月','下个月':'下個月','本月':'本月'
     };
     Object.keys(map).forEach(function(k){q=q.split(k).join(map[k]);});
-    return q.replace(/[\u3000\t\r\n]+/g,' ').replace(/\s+/g,' ').trim();
+    return q.replace(/\r?\n+/g,'；').replace(/[\u3000\t]+/g,' ').replace(/\s+/g,' ').trim();
   }
   function dateParts(value) {
     // A civil date is not a UTC midnight. Preserve the stated day in every TZ.
@@ -44,7 +44,7 @@
   function addMonths(year,month,offset){var d=new Date(year,month-1+offset,1);return {year:d.getFullYear(),month:d.getMonth()+1};}
 
   var OBSERVABLES = {
-    state:'現況／核心狀態', realization:'成立與否的定性裁決', trajectory:'後續發展傾向', conditional_outcome:'維持條件下的結果',
+    independent_subjects:'各人物／子題獨立位置', independent_options:'每個選項獨立位置', state:'現況／核心狀態', realization:'成立與否的定性裁決', trajectory:'後續發展傾向', conditional_outcome:'維持條件下的結果',
     bounded_outcome:'明示期限終點的條件性結果', threshold_outcome:'單一指標對固定門檻的跨越', comparison_outcome:'兩個獨立對象或路徑的同尺度比較',
     cause:'形成機制', antecedent:'前置影響', obstacle:'阻礙／限制', enabler:'助力／推動力', advice:'可介入行動',
     dyad:'已知雙方與關係通道', temporal_sequence:'相對時間序列', annual_overview:'年度跨領域總覽', domain_coverage:'多領域分隔觀測',
@@ -405,6 +405,29 @@
     "https://www.learntarot.com/less18.htm"
   ]
 };
+  // Explicitly registered modern layouts. Metadata feeds the picker and actual slots.
+  function addModernMethod(id,label,labels,authorities,provides,overview,source){
+    var slots=labels.map(function(label,i){return {label:label,authority:authorities[i],role:id+'_'+(i+1)};});
+    METHODS[id]=methodDef(id,label,labels.length,slots,[],[],provides,[],source);
+    METHODS[id].picker={cn:label,suited:overview,accent:'187,166,223',icon:'fa-layer-group'};
+    METHOD_PROTOCOLS[id]=protocolDef(id,'named_positions','semantic_position',overview,
+      ['先按抽牌前明示的牌位回答問題，再以主要支持和阻力形成主判'],
+      [{type:'semantic_group',label:label,indices:range(0,labels.length),elementalDignity:false,instruction:overview}],
+      '只按實際牌位權限收束，不把提醒、身心狀態或月份傾向冒充確定結果。',
+      '衝突時指出關鍵條件，不以吉凶張數投票。',
+      '依抽牌前綁定的範圍；未明示日期時不補出日曆。',source);
+    READING_PLANS[id]=[overview]; METHOD_REFERENCES[id]=[source];
+  }
+  var simpleSource='https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/3-card-tarot-spreads-simple-tarot-spreads-organized-by-layout';
+  addModernMethod('single_card','單牌提醒',['此刻最需要注意的主題'],['advice'],['advice'],'一個主題的提醒；不提供獨立原因、人物或結果位。','https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/seven-daily-tarot-spreads-to-add-to-your-tarot-practice-this-year');
+  addModernMethod('action_three','現況・行動・結果',['目前處境','可採取的行動','採取行動後的條件性走向'],['state','advice','outcome'],['state','advice','trajectory','conditional_outcome','realization'],'需要簡潔行動建議的單一事件；第三張以第二張的行動條件為前提。',simpleSource);
+  addModernMethod('mind_body_spirit','身心靈三牌',['思考與信念','身體照顧與日常感受','價值與內在需求'],['state','state','state'],['state'],'三個平行自我整理面向，沒有時間線；身體牌不能用來診斷疾病。',simpleSource);
+  addModernMethod('daily_action','每日行動三牌',['今天可以做的事','今天適合避免的做法','今天滋養自己的方式'],['advice','advice','advice'],['advice'],'日常行動提醒；三張是不同建議，不是過去現在未來。','https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/seven-daily-tarot-spreads-to-add-to-your-tarot-practice-this-year');
+  addModernMethod('year_review','年度回顧與展望',['過去一年的課題','過去一年的收穫','適合放下的慣性','新一年的準備方向','新一年的挑戰','新一年的主題','新一年的行動建議','過渡期的調整'],['antecedent','antecedent','advice','development','obstacle','state','advice','development'],['state','antecedent','advice','obstacle','trajectory','annual_overview'],'適用跨年回顧與新年規劃，不把八張牌當八個月份。','https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/a-new-years-tarot-spread-lessons-from-the-past-and-looking-ahead');
+  addModernMethod('monthly','十二月趨勢與年度主題',range(0,12).map(function(i){return '第'+(i+1)+'個月的主題';}).concat(['年度主題']),range(0,12).map(function(){return 'timeline';}).concat(['synthesis']),['state','temporal_sequence','trajectory','annual_overview'],'本站月份規劃版：抽牌前確定起始月份，十二張各屬一個月，第十三張統整；不同於黃道十二宮的生活領域。','本站自訂月份版式；不宣稱古典來源');
+  addModernMethod('multi_option','多選項比較',range(0,9).map(function(i){return '方案'+(Math.floor(i/3)+1)+'・'+['現況','限制','條件性走向'][i%3];}),range(0,9).map(function(i){return ['state','obstacle','outcome'][i%3];}),['state','obstacle','trajectory','conditional_outcome','realization','comparison_outcome'],'本站自訂：每個完整選項各配現況、限制、走向三張；先綁定方案再抽牌，最多六路。','本站自訂多路比較；每路獨立，不宣稱傳統牌陣');
+  addModernMethod('multi_question','多子題分開解讀',range(0,10).map(function(i){return '子題'+(Math.floor(i/5)+1)+'・'+['現況','形成因素','阻力','建議','條件性走向'][i%5];}),range(0,10).map(function(i){return ['state','cause','obstacle','advice','outcome'][i%5];}),['state','cause','obstacle','advice','trajectory','conditional_outcome','realization','domain_coverage'],'本站自訂：每位人物或獨立子題各配五張事件牌，不以同一牌位推定不同人的內心；最多六題。','本站自訂分題事件陣');
+
   Object.keys(METHOD_PROTOCOLS).forEach(function(id){
     METHOD_PROTOCOLS[id].readingPlan=READING_PLANS[id]||[];
     METHOD_PROTOCOLS[id].references=METHOD_REFERENCES[id]||[];
@@ -625,6 +648,88 @@ function classifyDecisionQuestion(question) {
   return result('none');
 }
 // END SHARED DECISION PARSER
+
+// BEGIN SHARED QUESTION PLANNER
+// Canonical question planner; embedded so both readers also work independently.
+// Conservative rules expose the parsed subjects before drawing; they do not infer minds.
+function analyzeReadingQuestion(value) {
+  var raw=String(value||'').trim(), q=raw;
+  try { q=q.normalize('NFKC'); } catch (_) {}
+  var conversions={'选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','工作机会':'工作機會'};
+  Object.keys(conversions).forEach(function(k){q=q.split(k).join(conversions[k]);});
+  function unique(xs){return xs.filter(function(x,i){return x&&xs.indexOf(x)===i;});}
+  function clean(s){return s.replace(/^\s*(?:[①②③④⑤⑥]|\d+[.、)）]|(?:另外|還有|以及|也想問|請問))\s*/,'').replace(/[？?。；;]+$/,'').trim();}
+  function scope(s){return (s.match(/(?:20\d{2}年|今年|明年|未來一年|未來十二個月|未來12個月|本月|下個月|本週|下週|今天|明天|年底前|月底前|(?:未來|接下來)?[一二三四五六七八九十兩\d]+(?:個月|週|天|年)(?:內|後)?)/g)||[]).join('、');}
+  var decision=classifyDecisionQuestion(q), options=[];
+  // Named options retain the user's exact labels and do not swallow a trailing question.
+  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=(?:[\s，,；;、]+[A-F]\s*[:：])|$)/g));
+  if(labels.length>=2) options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
+  if(decision.kind==='binary')options=[decision.left,decision.right];
+  if(decision.kind==='multiple'&&options.length<3){
+    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
+    options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);
+    if(options.some(function(s){return s.length>60;})||options.length<3)options=[];
+  }
+  options=unique(options);
+  var parts=q.split(/[？?。；;\n]+|[，,](?=(?:另外|還有|以及|也想問|至於))/).map(clean).filter(Boolean);
+  var peoplePattern=/(?:女友|男友|伴侶|朋友)的?(?:閨蜜|好友|朋友)|(?:[A-F甲乙丙丁]\s*)?(?:公司)?(?:異性|女性|男性|女|男)?同事(?:\s*[A-F甲乙丙丁])?|前任|前男友|前女友|女友|男友|伴侶|主管|客戶/g;
+  function people(s){var matches=s.match(peoplePattern)||[];return unique(matches);}
+  var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
+  var globalScope=scope(parts[0]||q), groups=[];
+  function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
+  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
+  if(!options.length&&parts.length){
+    parts.forEach(function(part){
+      if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
+      var prev=groups[groups.length-1], ps=people(part), distinct=prev&&ps.length&&ps.some(function(p){return prev.entity.indexOf(p)<0;});
+      var isQuestion=/嗎|是否|會不會|有沒有|能不能|可不可以|能否|會否|如何|怎樣|怎麼|運勢|走向|發展|何時|多久|哪|誰|請分析|幫我看|結婚|交往|同意/.test(part);
+      if(prev&&!distinct&&(follow.test(part)||!isQuestion))prev.question+='；'+part;
+      else groups.push(group(part,ps.join('、')));
+    });
+    // Only explicit distributive language splits several named people in one sentence.
+    if(groups.length===1&&actors.length>=2&&/各自|分別|每個|每位/.test(q)){
+      groups=actors.map(function(actor,i){return {id:'SUBJECT_'+(i+1),question:actor+'：'+q,entity:actor,scope:globalScope,scopeInherited:false};});
+    }
+  }
+  var notes=[];
+  if(options.length>6||groups.length>6)notes.push('本次最多分開六個分支；請將問題分批，避免省略後面的子題。');
+  if(decision.kind==='multiple'&&!options.length)notes.push('尚未辨識完整選項；請用 A：…；B：…；C：… 列出。');
+  var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';
+  var firstOptionAt=options.length?q.indexOf(options[0]):-1,choiceScope=firstOptionAt>=0?scope(q.slice(0,firstOptionAt)):'';
+  var branches=options.length?options.map(function(s,i){return {id:'OPTION_'+(i+1),question:s,entity:s,scope:scope(s)||choiceScope,scopeInherited:!scope(s)&&!!choiceScope};}):groups;
+  return {version:'1.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:/今天|今日|每日|日常提醒/.test(q)&&!/嗎|會不會|是否|結果|何時/.test(q)};
+}
+function recommendReadingSystem(question) {
+  var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
+  if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan};
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花|易經|易经|起卦/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['astro','西洋占星',/星盤|星盘|占星|行星|上升星座/]];
+  var requests=[];
+  q.split(/[，,。；;！？?\n]/).forEach(function(clause,order){
+    rules.forEach(function(rule){var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
+      if(/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before)||/以前|上次|之前|曾經/.test(before))return;
+      if(!before.trim()||/(?:用|使用|採用|改用|想用|請)\s*$/.test(before))requests.push({rule:rule,order:order,at:m.index});
+    });
+  });
+  requests.sort(function(a,b){return a.order-b.order||a.at-b.at;});
+  var explicit=requests.length?requests[requests.length-1].rule:null;
+  var result;
+  if(explicit)result={system:explicit[0],label:explicit[1],reason:'依你明確指定的解讀系統',explicit:true};
+  else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
+  else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
+  else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
+  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
+  else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
+  result.plan=plan;result.readingMode='rws_reversals';
+  q.split(/[，,。；;！？?\n]/).forEach(function(clause){
+    var m=clause.match(/Book\s*T|Golden\s*Dawn|黃金黎明|元素尊貴|RWS|正逆位/i);if(!m)return;
+    var before=clause.slice(0,m.index);if(/以前|上次|之前|曾經/.test(before))return;
+    var neg=/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before),rws=/RWS|正逆位/i.test(m[0]);
+    if(!neg)result.readingMode=rws?'rws_reversals':'gd_book_t';
+  });
+  result.birthDataRequired=/^(bazi|ziwei|astro)$/.test(result.system);
+  return result;
+}
+// END SHARED QUESTION PLANNER
   function detectRelation(q,scopes){
     var numeric=detectNumericThreshold(q,scopes);if(numeric)return numeric;
     var core=cleanCore(q,scopes);
@@ -808,11 +913,15 @@ function classifyDecisionQuestion(question) {
     graph.subquestions=clauses.map(function(c,i){return {id:c.id,surface:c.surface,eventId:events[i]&&events[i].id,order:i+1};});
     graph.completionRules=['每個會改變答案真值的自然語言成分都必須成為 essential atom，且綁定其 eventId 與 role／scope。','多子題不得合併成單一 target；指示詞人物只能建立條件性 UNBOUND_ENTITY，並以明示 coreference 關係承接。','原句未明示的前提只能列為 assumption；附屬人物屬性問題必須受主要事件與實體共指是否成立所限制。'];
     graph.validationRules={roundTrip:'依各子問句的事件角色圖重建，須保留原順序、主體、事件、屬性、比較、門檻、模態、期限、否定與排除。',deletionSensitivity:'逐一刪除 essential atom；刪除任何原子都必須改變該事件或附屬查詢的真值條件。',sameEventTest:'同一完整事件的角色、作用、結果與期限共享其 eventId；附屬人物屬性查詢另建 event，透過明示 conditional_coreference 承接。',noAddedPremise:'原句未含且牌面未建立的前提不得進入完整命題。'};
+    var readingQuestion=analyzeReadingQuestion(text(question));
+    if(readingQuestion.monthly&&readingQuestion.mode==='single')reqObs=['state','temporal_sequence','trajectory','annual_overview'];
+    if(readingQuestion.daily&&/提醒|指引|建議|該做什麼/.test(q))reqObs=['advice'];
+    graph.requiredObservables=reqObs;graph.readingBranches=clone(readingQuestion.branches);
     var riskDomains=domains.filter(function(id){return /^(?:health|legal|finance)$/.test(id);});
     if(/犯罪|暴力|威脅|跟蹤|自殺|自傷|人身安全|失蹤/.test(q))riskDomains.push('personal_safety');
     riskDomains=uniq(riskDomains);
     var features=Object.assign({},intent,{domains:domains,domainCount:domains.length,relationType:relation?relation.type:null,hasRelation:!!relation,hasThreshold:!!(relation&&relation.type==='fixed_numeric_threshold'),shape:shape,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains,highRisk:riskDomains.length>0,referenceDate:dateParts(options.referenceDate).iso,questionLength:q.length,subquestionCount:clauses.length,compoundQuestion:clauses.length>1});
-    return {originalQuestion:q,normalizedQuestion:q,requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
+    return {originalQuestion:text(question),normalizedQuestion:q,readingQuestion:analyzeReadingQuestion(text(question)),requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
   }
 
   function spreadDirectives(q) {
@@ -824,6 +933,7 @@ function classifyDecisionQuestion(question) {
       ['minor_arcana',/小阿卡那|小牌牌陣|minor arcana/i],['celtic_cross',/凱爾特(?:十字)?|celtic(?: cross)?/i],
       ['tree_of_life',/生命之樹|卡巴拉牌陣|tree of life/i],['zodiac',/(?:黃道十二宮|黃道|十二宮|星座)牌陣|黃道十二宮|zodiac spread/i],
       ['horseshoe',/七張馬蹄|馬蹄形牌陣|seven.?card horseshoe/i],['relationship',/關係牌陣|relationship spread/i],
+      ['single_card',/單牌提醒|單張牌陣/],['action_three',/現況.?行動.?結果/],['mind_body_spirit',/身心靈三牌/],['daily_action',/每日行動三牌/],['year_review',/年度回顧與展望/],['monthly',/月份牌陣|十二月趨勢|逐月牌陣/],['multi_option',/多選項比較牌陣/],['multi_question',/多子題牌陣|分題事件陣/],
       ['timeline',/時間線牌陣|timeline spread/i],['cross',/十字牌陣|cross spread/i],
       ['three_card',/(?:三牌|三張牌)陣|three.?card spread/i],['five_card',/(?:五牌|五張牌)陣|five.?card spread/i],
       ['either_or',/二選一牌陣|雙路比較牌陣|either.?or spread/i]
@@ -868,18 +978,58 @@ function classifyDecisionQuestion(question) {
     }else if(base.id==='timeline'){
       ['前置階段','近期階段','轉折階段','後續階段','較後段走向'].forEach(function(l,i){s(i,i===0?'antecedent':(i===4?'development':'timeline'),['prior_stage','near_stage','turning_point','later_stage','terminal_tendency'][i],l);});
     }
+    if(base.id==='either_or'){var qb=(compiled.readingQuestion||analyzeReadingQuestion(compiled.originalQuestion)).branches;slots.forEach(function(slot){var b=slot.binding&&slot.binding.eventId==='BRANCH_A_EVENT'?qb[0]:slot.binding&&slot.binding.eventId==='BRANCH_B_EVENT'?qb[1]:null;if(b)slot.binding.scope=b.scope;});}
     // 通用截止範圍綁定：只有原本已具 outcome 權限的位置才可升為 bounded_outcome。
     // 不因「未來／發展」字樣把 development 或 timeline 位置冒充最終結果。
     if(scope&&scope.bounded){
       slots=slots.map(function(slot){
         if(!slot||slot.authority!=='outcome')return slot;
-        var bound=Object.assign({},slot.binding||{eventId:'QUERY_EVENT'},{scope:scopeLabel});
-        return Object.assign({},slot,{authority:'bounded_outcome',label:'截至'+scopeLabel+'的'+(slot.label||'條件性結果'),binding:bound});
+        if(slot.binding&&Object.prototype.hasOwnProperty.call(slot.binding,'scope')&&!slot.binding.scope)return slot;
+        var ownScope=slot.binding&&slot.binding.scope||scopeLabel;var bound=Object.assign({},slot.binding||{eventId:'QUERY_EVENT'},{scope:ownScope});
+        return Object.assign({},slot,{authority:'bounded_outcome',label:'截至'+ownScope+'的'+(slot.label||'條件性結果'),binding:bound});
       });
     }
     return slots;
   }
-  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
+  function prepareQuestionMethod(base,compiled){
+    var qp=compiled.readingQuestion||analyzeReadingQuestion(compiled.originalQuestion);
+    if(base.id==='either_or'&&compiled.requiredObservables.indexOf('advice')>=0){
+      qp.branches.slice(0,2).forEach(function(b,i){base.slots.push({authority:'advice',role:'branch_'+(i?'B':'A')+'_advice',label:b.question+'・下一步',binding:{eventId:i?'BRANCH_B_EVENT':'BRANCH_A_EVENT',entity:b.question}});});
+      base.count=base.slots.length;base.provides=uniq(base.provides.concat(['advice']));
+      base.protocol.structures.push({type:'semantic_group',label:'各方案的行動建議',indices:[5,6],elementalDignity:false,instruction:'兩個新增位置各自回應已綁定的方案，不串成時間線。'});
+    }
+    if(base.id==='multi_option'||base.id==='multi_question'){
+      var size=base.id==='multi_option'?3:5, branches=qp.branches;
+      if(!branches.length)branches=[{id:'SUBJECT_1',question:compiled.originalQuestion||'原問題',entity:'',scope:''}];
+      if(branches.length>6){base.invalidQuestion=true;return base;}
+      var labels=size===3?['現況','限制','條件性走向']:['現況','形成因素','阻力','建議','條件性走向'];
+      var authorities=size===3?['state','obstacle','outcome']:['state','cause','obstacle','advice','outcome'];
+      if(base.id==='multi_option'){
+        [['advice','下一步'],['cause','形成因素'],['enabler','助力'],['external','外在條件'],['hidden','未明條件'],['temporal_sequence','階段與轉折']].forEach(function(pair){
+          if(compiled.requiredObservables.indexOf(pair[0])<0)return;
+          labels.splice(labels.length-1,0,pair[1]);authorities.splice(authorities.length-1,0,pair[0]==='external'?'environment':pair[0]==='temporal_sequence'?'timeline':pair[0]==='hidden'?'state':pair[0]);base.provides=uniq(base.provides.concat([pair[0]]));
+        });
+      }
+      if(base.id==='multi_question'&&compiled.features.knownDyad){labels=['自己在此互動中的狀態','對象在此互動中的表現'].concat(labels);authorities=['state','person_known'].concat(authorities);base.provides=uniq(base.provides.concat(['dyad']));}
+      base.slots=[];base.protocol.structures=[];
+      branches.forEach(function(branch,b){
+        var indices=[];
+        labels.forEach(function(label,i){indices.push(base.slots.length);base.slots.push({authority:authorities[i],role:'branch_'+(b+1)+'_'+authorities[i],label:(branch.entity||branch.question)+'・'+label,binding:{eventId:branch.id,entity:branch.entity,question:branch.question,scope:branch.scope}});});
+        base.protocol.structures.push({type:'dependency_network',label:branch.question,indices:indices,elementalDignity:false,instruction:'此組只回答綁定的子題；不得跨組把人物或結果互換。'});
+      });
+      base.count=base.slots.length;base.branches=clone(branches);base.label+=(branches.length+'路・'+base.count+'張');
+      base.protocol.summary+=' 本次子題：'+branches.map(function(b){return b.question;}).join('；');
+    }
+    if(base.id==='monthly'){
+      var q=compiled.originalQuestion,dp=dateParts(compiled.features.referenceDate),ym=q.match(/(20\d{2})年(?:\s*(\d{1,2})月)?/),rolling=/未來|接下來/.test(q);
+      var year=ym?Number(ym[1]):/明年/.test(q)?dp.year+1:dp.year,month=ym&&ym[2]?Number(ym[2]):rolling?dp.month:1;
+      if(month<1||month>12)month=1;
+      base.slots.forEach(function(slot,i){if(i<12){var at=addMonths(year,month,i);slot.label=at.year+'年'+at.month+'月的主題';slot.binding={eventId:'MONTH_'+(i+1),scope:monthBounds(at.year,at.month).label};}else slot.label='以上十二個月的統整主題';});
+      base.timeBasis={start:year+'-'+pad(month,2),source:ym||/今年|明年/.test(q)?'question':'reference_date',rolling:rolling};
+    }
+    return base;
+  }
+  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base=prepareQuestionMethod(base,compiled);base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);if((compiled.readingQuestion||{}).mode==='multi_question'&&id!=='multi_question')base.missingObservables.push('independent_subjects');if((compiled.readingQuestion||{}).mode==='multi_option'&&id!=='multi_option')base.missingObservables.push('independent_options');base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
 
   function routeQuestion(input,options){
     options=options||{};
@@ -903,28 +1053,35 @@ function classifyDecisionQuestion(question) {
     if(f.location&&f.practical)preferred='minor_arcana';
     if((f.pattern||f.spiritual)&&kind!=='binary'&&!f.timing)preferred='tree_of_life';
     if(f.deepOverview&&(preferred==='three_card'||preferred==='relationship'))preferred='celtic_cross';
+    var qp=compiled.readingQuestion||analyzeReadingQuestion(compiled.originalQuestion);
+    if(qp.mode==='multi_option'&&qp.ready)preferred='multi_option';
+    else if(qp.mode==='multi_question'&&qp.ready)preferred='multi_question';
+    else if(qp.monthly)preferred='monthly';
+    else if(/身心靈|身心灵|mind.*body.*spirit/i.test(active))preferred='mind_body_spirit';
+    else if(qp.daily&&/提醒|指引|建議|該做什麼/.test(active))preferred='daily_action';
+    else if(qp.mode==='single'&&f.advice&&!f.causal&&!f.hidden&&!f.external&&!f.knownDyad&&!f.deepOverview&&!f.timing)preferred='action_three';
     if(directive.selected)preferred=directive.selected;
-    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&directive.excluded.indexOf(id)<0;}).map(function(id){
-      var m=METHODS[id],missing=difference(required,m.provides);
+    var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&(directive.selected===id||!/^fifteen_card$|^mathers_/.test(id))&&directive.excluded.indexOf(id)<0;}).map(function(id){
+      var m=instantiateMethod(id,compiled),missing=m.missingObservables;
       // Historical large procedures are opt-in, never triggered by ordinary numbers or adjectives such as "thorough".
       var rank=missing.length*40+(m.count||80)+(id==='mathers_21'||id==='mathers_horseshoe'?300:0);
       if(id===preferred)rank-=150;
       return {id:id,eligible:!missing.length,missing:missing,rank:rank,cards:m.count,provides:m.provides};
     }).sort(function(a,b){return a.rank-b.rank||a.cards-b.cards;});
-    var selected=directive.selected||((directive.excluded.indexOf(preferred)<0)?preferred:(candidates[0]&&candidates[0].id));
+    var eligible=candidates.filter(function(c){return c.eligible;});var preferredFit=candidates.find(function(c){return c.id===preferred&&c.eligible;});var selected=directive.selected||(preferredFit?preferredFit.id:(eligible[0]||candidates[0]||{}).id);
     if(!selected)return {spreadId:null,methodPlan:null,reason:'目前可用牌陣都已被排除，請保留至少一種牌陣。',selectedBy:'all_methods_excluded',coverage:{complete:false,missing:required},compiledQuestion:compiled};
     var plan=instantiateMethod(selected,compiled),missing=plan.missingObservables||[];
     if(missing.length)notes.push('本陣未設獨立牌位的面向：'+missing.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。完整保留原問句；可由整體結構作條件性討論，無資料可判的部分明說，不新增牌位或假裝已量測。');
     if(f.knownDyad&&selected==='timeline')notes.push('本次優先讀相對階段與轉折，沒有獨立的雙方內心牌位；不以階段牌認定對方意願。');
     var reasons={three_card:'單一焦點，先看既有基礎、現況與條件性走向',five_card:'需要分辨現況、形成因素、阻礙、可做的事與走向',cross:'重點是卡住的核心、拉扯力量與可介入方向',either_or:'兩個可辨識的選項，需要用相同標準比較兩條路',relationship:'問題聚焦已指明的雙方、互動原因、限制及下一步',timeline:'主要想了解階段順序與轉折條件',horseshoe:'需要同時查看盲點、外在影響、阻礙與可採取行動',celtic_cross:'需要整合根基、目標、近程、本人、環境及整體走向',tree_of_life:'問題聚焦反覆模式、內在需求或深層課題',zodiac:'需要分開檢視多個生活領域，再整合整體重點',minor_arcana:'具體日常事件，適合整理操作、資源與搜尋線索',fifteen_card:'依指定的五個三牌組比較核心、發展、決策與外在條件',mathers_21:'依指定的歷史三排七與首尾配對程序',mathers_horseshoe:'依指定的歷史三輪分堆與配對程序',ootk:'依指定的五次開鑰操作'};
-    plan.routingNotes=notes.slice();plan.selectionReason=reasons[selected]+'。';
-    if(!directive.selected&&kind==='multiple')plan.selectionReason='這題有三個以上選項，先整理共同局勢與取捨；沒有替每個選項抽獨立結果牌。需要逐路比較時，請先選定兩個方案。';
+    plan.routingNotes=notes.concat(qp.notes);plan.systemRecommendation=recommendReadingSystem(compiled.originalQuestion);plan.selectionReason=(reasons[selected]||(METHODS[selected].picker||{}).suited||METHODS[selected].label)+'。';
+    if(!directive.selected&&kind==='multiple'&&selected!=='multi_option')plan.selectionReason='這題有三個以上選項，先整理共同局勢與取捨；沒有替每個選項抽獨立結果牌。需要逐路比較時，請先選定兩個方案。';
     if(!directive.selected&&(kind==='ambiguous'||kind==='incomplete'))plan.selectionReason='尚未確認兩個完整方案，先看原問題的處境。若要雙路比較，請明寫「A：…，B：…」，再核對下方建議。';
     if(selected==='either_or'){
       var branch=compiled.relations.find(function(r){return r.type==='alternative_comparison';});
       if(branch)plan.selectionReason+='本次比較 A：「'+branch.left+'」；B：「'+branch.right+'」。請核對是否符合你的原意。';
     }
-    return {version:VERSION,engine:'question_structure_router_v7',spreadId:selected,reason:(directive.selected?'你已指定此牌陣；':'')+plan.selectionReason,selectedBy:directive.selected?'explicit':'question_structure',compiledQuestion:compiled,methodPlan:plan,ready:true,coverage:{required:required,provided:plan.provides,missing:missing,complete:!missing.length},readingNotes:notes,unsupportedDimensions:compiled.unsupportedDimensions||[],excludedMethods:directive.excluded,candidates:candidates.slice(0,8)};
+    return {version:VERSION,engine:'question_structure_router_v7',spreadId:selected,reason:(directive.selected?'你已指定此牌陣；':'')+plan.selectionReason,selectedBy:directive.selected?'explicit':'question_structure',compiledQuestion:compiled,methodPlan:plan,ready:qp.ready,questionPlan:qp,systemRecommendation:plan.systemRecommendation,coverage:{required:required,provided:plan.provides,missing:missing,complete:!missing.length},readingNotes:notes,unsupportedDimensions:compiled.unsupportedDimensions||[],excludedMethods:directive.excluded,candidates:candidates.slice(0,8)};
   }
 
   function validateMethodRegistry(){
@@ -956,5 +1113,5 @@ function classifyDecisionQuestion(question) {
     return {ok:!errors.length,errors:errors};
   }
 
-  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,questionFocus:questionFocus,spreadDirectives:spreadDirectives,parseChineseNumber:parseChineseNumber,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
+  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,questionFocus:questionFocus,spreadDirectives:spreadDirectives,parseChineseNumber:parseChineseNumber,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,analyzeReadingQuestion:analyzeReadingQuestion,recommendSystem:recommendReadingSystem,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
 });

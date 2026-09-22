@@ -60,6 +60,7 @@
         var label = field.querySelector('label'), control = field.querySelector('button,input:not([type="hidden"]),select,textarea');
         if (label && control && control.id && !label.getAttribute('for')) label.setAttribute('for', control.id);
       });
+      if(window.JYReadingRecommender)window.JYReadingRecommender.enhance(root);
       if(window.JYCinemaUI)window.JYCinemaUI.enhance(root);
       if(window.JYExperience)window.JYExperience.enhance(root);
     }

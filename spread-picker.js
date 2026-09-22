@@ -34,7 +34,21 @@
     { label: '進階・專門', ids: ['tree_of_life', 'zodiac', 'minor_arcana', 'fifteen_card', 'mathers_21', 'mathers_horseshoe'] }
   ];
 
-  function defOf(id) { return (typeof SPREAD_DEFS !== 'undefined' && SPREAD_DEFS[id]) ? SPREAD_DEFS[id] : null; }
+  if(window.JYTarotFoundation){
+    var added=[];Object.keys(window.JYTarotFoundation.METHODS).forEach(function(id){var m=window.JYTarotFoundation.METHODS[id];if(m.picker){META[id]=m.picker;added.push(id);}});
+    GROUPS.push({label:'主題與分題',ids:added});
+  }
+  var previewInput=null;
+  function questionInput(){
+    if(previewInput&&previewInput.isConnected)return previewInput;
+    var a=document.getElementById('f-question'),b=document.getElementById('f2-question');
+    return b&&b.getClientRects().length&&(!a||!a.getClientRects().length)?b:a||b;
+  }
+  function defOf(id) {
+    var def=typeof SPREAD_DEFS!=='undefined'?SPREAD_DEFS[id]:null,input=questionInput(),F=window.JYTarotFoundation;
+    if(def&&input&&input.value.trim()&&F){var plan=F.instantiateMethod(id,F.compileQuestion(input.value));if(plan)return Object.assign({},def,{count:plan.count,zh:plan.label});}
+    return def;
+  }
 
   // detectSpreadType 不再包裝（跨檔重新指派在實機不可靠）。
   // 手動選定的牌陣改由 ui.js 各偵測點直接讀 window._forcedSpread 強制套用。
@@ -124,17 +138,19 @@
     var items = document.querySelectorAll('#jy-spread-list .jym-item');
     for (var i = 0; i < items.length; i++) {
       items[i].classList.toggle('jym-item-on', items[i].getAttribute('data-id') === cur);
+      items[i].setAttribute('aria-pressed', String(items[i].getAttribute('data-id') === cur));
     }
   }
 
   function updateTrigger() {
+    if(window.JYReadingRecommender){var qi=questionInput();if(qi)window.JYReadingRecommender.render(qi);}
     var nameEl = document.getElementById('jy-spread-cur-name');
     var subEl = document.getElementById('jy-spread-cur-sub');
     var iconEl = document.getElementById('jy-spread-cur-icon');
     if (!nameEl) return;
 
     if (!window._forcedSpread) {
-      var qEl=document.getElementById('f-question')||document.getElementById('f2-question');
+      var qEl=questionInput();
       var liveQuestion=qEl?String(qEl.value||'').trim():'';
       var preview=qEl&&liveQuestion&&window.JYTarotFoundation?window.JYTarotFoundation.routeQuestion(liveQuestion):null;
       var autoId=qEl?(preview&&preview.spreadId||''):(window._autoDetectedSpread||'');
@@ -145,7 +161,8 @@
         nameEl.textContent = '自動 → ' + autoMeta.cn + '（' + autoDef.count + ' 張）';
         if (subEl) {
           var reason = decision && decision.spreadId === autoId ? decision.reason : '';
-          subEl.textContent = reason ? '判斷依據：' + reason : '已依目前問題自動選擇';
+          var publicReasons={three_card:'聚焦一件事，先看現況、關鍵與下一步。',five_card:'把現況、原因、阻礙與行動方向一起釐清。',relationship:'從雙方與互動關係，整理這段關係的線索。',either_or:'分別看兩條路的條件、代價與可能發展。',cross:'聚焦目前的卡點，對照助力與阻力。',timeline:'依相對階段，整理事情的變化脈絡。',horseshoe:'把事件背景、外在影響與下一步一起看。',celtic_cross:'從多個相關面向，梳理整件事的脈絡。'};
+          subEl.textContent = reason || publicReasons[autoId] || '已依問題重點推薦；也可以自行更換牌陣。';
         }
         if (iconEl) iconEl.className = 'fas ' + autoMeta.icon;
       } else {
@@ -165,19 +182,40 @@
 
   // ★ v75.6：暴露給 resetAll 使用，保證同一函數管同一個按鈕
   window._jyUpdateSpreadTrigger = updateTrigger;
-  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question'))updateTrigger();});
+  document.addEventListener('input',function(e){if(e.target&&(e.target.id==='f-question'||e.target.id==='f2-question')){previewInput=e.target;updateTrigger();}});
 
+  var pickerFocus = null, pickerOverflow = '';
+  function pickerKeyboard(e) {
+    if (e.key === 'Escape') { e.preventDefault(); window.closeSpreadPicker(); return; }
+    if (e.key !== 'Tab') return;
+    var root = document.getElementById('jy-spread-modal');
+    if (!root) return;
+    var buttons = Array.prototype.filter.call(root.querySelectorAll('button'), function (button) { return !button.disabled && button.getClientRects().length; });
+    var first = buttons[0], last = buttons[buttons.length - 1];
+    if (!first) return;
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
   window.openSpreadPicker = function () {
     var o = document.getElementById('jy-spread-modal');
     if (!o) return;
+    if (o.style.display === 'flex') return;
+    pickerFocus = document.activeElement;
+    pickerOverflow = document.body.style.overflow;
     renderList();
     o.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', pickerKeyboard);
+    var closeButton = o.querySelector('.jym-close');
+    if (closeButton) closeButton.focus();
   };
   window.closeSpreadPicker = function () {
     var o = document.getElementById('jy-spread-modal');
     if (o) o.style.display = 'none';
-    document.body.style.overflow = '';
+    document.body.style.overflow = pickerOverflow;
+    document.removeEventListener('keydown', pickerKeyboard);
+    if (pickerFocus && pickerFocus.isConnected) pickerFocus.focus();
+    pickerFocus = null;
   };
   window.selectSpread = function (id) {
     var resolvedId = null;
@@ -188,7 +226,7 @@
       var q = '';
       var t = 'general';
       try {
-        var qEl = document.getElementById('f-question') || document.getElementById('f2-question');
+        var qEl = questionInput();
         if (qEl && qEl.value) q = qEl.value.trim();
         if (!q) q = (typeof S !== 'undefined' && S.form && S.form.question) ? S.form.question : '';
         var tEl = document.getElementById('f-type');
@@ -212,6 +250,7 @@
     }
 
     // 清牌堆，讓下次抽牌（或返回抽牌頁）依新牌陣重建。
+    if(window.JYTarotSession)window.JYTarotSession.reset();
     try { if (typeof deckShuffled !== 'undefined') deckShuffled = []; } catch (e) {}
     if (resolvedId) {
       try { if (typeof drawnCards !== 'undefined') drawnCards = []; } catch (e) {}
@@ -246,9 +285,10 @@
       window._pickToolWrappedForSpread = true;
       var _op = window.pickTool;
       window.pickTool = function (tool) {
-        _op(tool);
+        var result = _op.apply(this, arguments);
         var c = document.getElementById('jy-spread-card');
         if (c) c.style.display = (tool === 'tarot') ? '' : 'none';
+        return result;
       };
     }
     // 初始可見性：預設工具為塔羅
