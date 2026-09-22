@@ -12,12 +12,12 @@ test('House-Key-Moon retains the exact question/order and asks for a reasoned an
  const cards=[4,33,32].map(id=>l.__lnAudit.cards.find(card=>card.id===id));
  const prompt=l.__lnAudit.build('公司異性女工程師她單身嗎？',cards,'three');
  assert(prompt.includes('公司異性女工程師她單身嗎？'));assert(prompt.includes('1.房屋→2.鑰匙→3.月亮'));
- for(const text of ['充分解釋','相鄰 A→B','中間牌要有實際功能','部分現代讀法','該作者頁面採9×4'])assert(prompt.includes(text),text);
+ for(const text of ['先回答，再解釋','相鄰 A→B','中間牌要有實際功能','部分現代讀法','該作者頁面採9×4'])assert(prompt.includes(text),text);
  assert(!prompt.includes('不讀塔羅式潛意識'));assert(!/偏向非單身|偏向單身|非單身的可能性/.test(prompt));
  if(process.env.JY_METHOD_OUTPUT){fs.mkdirSync(process.env.JY_METHOD_OUTPUT,{recursive:true});fs.writeFileSync(path.join(process.env.JY_METHOD_OUTPUT,'09-house-key-moon-prompt.txt'),prompt);}
 });
 test('RWS and Book T actually send their native method guide and preserve the cast',()=>{
- for(const mode of ['rws_reversals','gd_book_t']){const r=draw('five_card',mode),before=JSON.stringify(r.payload.tarotData);assert(r.payload.readingGuide.methods.tarot.length>=5);assert(r.prompt.includes('充分解釋'));assert(r.prompt.includes('建議說明如何介入'));assert.equal(JSON.stringify(r.payload.tarotData),before);}
+ for(const mode of ['rws_reversals','gd_book_t']){const r=draw('five_card',mode),before=JSON.stringify(r.payload.tarotData);assert(r.payload.readingGuide.methods.tarot.length>=5);assert(r.prompt.includes('先回答，再解釋'));assert(r.prompt.includes('建議說明如何介入'));assert.equal(JSON.stringify(r.payload.tarotData),before);}
 });
 test('Completed Key exports its own procedural guide with full counting/pairing distinctions',()=>{
  const before=c.Math.random;c.Math.random=()=>0.999999;

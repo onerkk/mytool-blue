@@ -11,12 +11,12 @@ function checkRecommendation(prompt,kind){
  assert(marker>=0,kind+' missing recommendation workflow');
  assert(prompt.includes(selectionGuide.recommendationText(kind)),kind+' wrong method branch');
  assert(prompt.includes('利於銷售某類商品不等於本人適合佩戴該材質'));
- assert(prompt.includes('三至五句'));assert(prompt.includes('有理由的主推薦'));
+ assert(prompt.includes('二至三句'));assert(prompt.includes('有理由的主推薦'));
  assert.equal(prompt.split(shop).length-1,1,kind+' duplicate shop URL');
  assert(prompt.indexOf(shop)>marker,kind+' invitation must follow selection');
  assert.equal(prompt.trim().split('\n').at(-1),'願你諸事順遂。',kind+' footer order');
  assert(!prompt.includes('[object Object]'));assert(!prompt.includes('需要時依已說清楚的生活需求'));
- assert(prompt.includes('規則版本 4.2.0'),kind+' missing current version');
+ assert(prompt.includes('規則版本 '+selectionGuide.version),kind+' missing current version');
  assert(!prompt.includes('STALE_RECOMMENDATION'),kind+' accepted stale instructions');
 }
 function staleGuide(base,version){return {...base,version,recommendationText:()=> 'STALE_RECOMMENDATION',recommendationEnding:()=> 'STALE_RECOMMENDATION',recommendationPolicy:()=>({version,outputRule:'STALE_RECOMMENDATION'})};}
@@ -71,7 +71,7 @@ test('Crystal/iron/ritual material choices carry actual distinctions, not scored
 test('Standalone recommendation snapshots survive absent, v3 and earlier v4 shared scripts',()=>{
  for(const [ctx,spec,kind]of [[b,b.JY_BAZI_PROMPT_ROOT,'bazi'],[z,z.JY_ZIWEI_PROMPT_ROOT,'ziwei']]){
   const guide=ctx.JY_READING_QUALITY,expected=spec.brandTailLines().join('\n');
-  try{for(const fallback of [undefined,...['3.0.0','4.0.0','4.1.0'].map(v=>staleGuide(guide,v))]){ctx.JY_READING_QUALITY=fallback;assert.equal(spec.brandTailLines().join('\n'),expected);}}finally{ctx.JY_READING_QUALITY=guide;}
+  try{for(const fallback of [undefined,...['3.0.0','4.0.0','4.1.0','4.2.0'].map(v=>staleGuide(guide,v))]){ctx.JY_READING_QUALITY=fallback;assert.equal(spec.brandTailLines().join('\n'),expected);}}finally{ctx.JY_READING_QUALITY=guide;}
  }
 });
 test('Vedic and Western every topic and unknown-time chart keep native calculations in recommendation exports',()=>{
@@ -85,7 +85,7 @@ test('Vedic and Western every topic and unknown-time chart keep native calculati
    for(const topic of Object.keys(topics)){const p=builder(topic);checkRecommendation(p,kind);assert(p.includes(business));assert(p.includes(new Date(input.utc).toISOString()));if(!unknownTime&&topic==='wealth')examples[kind]=p;}
    assert.equal(JSON.stringify(chart),before);
    const shared=x.JY_READING_QUALITY,expected=builder('bracelet');
-   for(const fallback of [undefined,...['3.0.0','4.0.0','4.1.0'].map(v=>staleGuide(shared,v))]){x.JY_READING_QUALITY=fallback;assert.equal(builder('bracelet'),expected);}
+   for(const fallback of [undefined,...['3.0.0','4.0.0','4.1.0','4.2.0'].map(v=>staleGuide(shared,v))]){x.JY_READING_QUALITY=fallback;assert.equal(builder('bracelet'),expected);}
    x.JY_READING_QUALITY=shared;
   }
  }
@@ -109,7 +109,7 @@ test('Tarot, Key, Lenormand, oracle and Meihua use current snapshots when v4.1 i
   [o,()=>o.__oracleAudit.build(lot,business),'oracle'],
   [m,()=>m.__mhAudit.build(business,cast),'meihua']
  ];
- try{for(const [ctx,build,kind]of checks){const current=ctx.JY_READING_QUALITY;try{for(const v of ['4.0.0','4.1.0']){ctx.JY_READING_QUALITY=staleGuide(current,v);checkRecommendation(build(),kind);}}finally{ctx.JY_READING_QUALITY=current;}}}
+ try{for(const [ctx,build,kind]of checks){const current=ctx.JY_READING_QUALITY;try{for(const v of ['4.0.0','4.1.0','4.2.0']){ctx.JY_READING_QUALITY=staleGuide(current,v);checkRecommendation(build(),kind);}}finally{ctx.JY_READING_QUALITY=current;}}}
  finally{c._ootkResults=savedOotk;}
  assert.equal(JSON.stringify(r.cards),before,'fallback must not redraw');
 });
@@ -118,9 +118,9 @@ test('Selection guidance has no named default, demands discriminating evidence a
   const rules=selectionGuide.recommendationText(kind);
   assert(!rules.includes('紫水晶'),'general guidance must not prime the reported default');
   assert(!rules.includes('amethyst-care-cleaning'));
-  assert(rules.includes('至少一處可在本次資料核對'));
-  assert(rules.includes('正文用一句交代主選比另一候選更貼合哪個條件'));
-  assert(rules.includes('資料不足以區分候選時'));
+  assert(rules.includes('正文一處可核對'));
+  assert(rules.includes('正文只寫主選理由'));
+  assert(rules.includes('欠缺區分條件'));
   assert(rules.includes('相同有效依據可以再次選同一材質'));
  }
  const cases=[

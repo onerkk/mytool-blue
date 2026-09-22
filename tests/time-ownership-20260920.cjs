@@ -111,9 +111,9 @@ test('Mixing people, timezones or reference instants is rejected',()=>{
  const later=person(bi,'2027-09-19T04:00:00Z');assert.throws(()=>c.BaziSuiteCore.createCompatibility(a.chart,later.chart),/參考時刻不一致/);
 });
 test('All production entry points use this release; mirrors match; history cannot silently reuse old prompts',()=>{
- const html=read('index.html');for(const f of ['bazi.js','bazi-suite-core.js','bazi-suite.js','bazi-standalone.js','relationship-core.js','relationship-ui.js','ai-analysis.js']){const release=['relationship-core.js','ai-analysis.js'].includes(f)?'20260922reading1':'20260920time1';assert(html.includes('JS/'+f+'?v='+release),f);}
+ const html=read('index.html');for(const f of ['bazi.js','bazi-suite-core.js','bazi-suite.js','bazi-standalone.js','relationship-core.js','relationship-ui.js','ai-analysis.js']){const release=['relationship-core.js','ai-analysis.js'].includes(f)?'20260922direct1':'20260920time1';assert(html.includes('JS/'+f+'?v='+release),f);}
  for(const f of ['ai-analysis.js','bazi-suite-core.js'])assert.equal(read(f),read('JS/'+f));
- assert(read('sw.js').includes('jy-main-v89'));assert.equal(read('sw.js'),read('JS/sw.js'));
+ assert(read('sw.js').includes('jy-main-v90'));assert.equal(read('sw.js'),read('JS/sw.js'));
  assert(read('JS/bazi-suite.js').includes('item.timeDataVersion!==TIME_DATA_VERSION'));
 });
 

@@ -65,6 +65,6 @@ test('Twelve native methods reach the API system instructions without a tarot de
  const server=read('functions/api/ai.js'),serverAst=acorn.parse(server,{ecmaVersion:'latest',sourceType:'module'}),methodNode=serverAst.body.find(n=>n.type==='VariableDeclaration'&&n.declarations.some(d=>d.id.name==='SYSTEM_METHODS'));
  const methodCtx=vm.createContext({});vm.runInContext(server.slice(methodNode.start,methodNode.end)+';globalThis.value=SYSTEM_METHODS;',methodCtx);
  for(const kind of q.methodKinds())for(const step of q.methodLines(kind))assert(methodCtx.value.includes(step),'missing '+kind+' method step');
- assert(q.plainText().includes('充分解釋'));assert(!/接著說明現在能做什麼，再用一小段/.test(q.plainText()));
+ assert(q.plainText().includes('先回答，再解釋'));assert(!/接著說明現在能做什麼，再用一小段/.test(q.plainText()));
 });
 console.log('Method/engine regression groups passed: '+passed);

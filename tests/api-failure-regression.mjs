@@ -59,8 +59,9 @@ try{
       const payload={question:'請依本次原始盤面解讀',...cast},before=JSON.stringify(payload);
       assert.equal((await ai({request:air({payload}),env})).status,200);assert.equal(JSON.stringify(payload),before);
       const message=sent.messages[0].content;
-      for(const key of ['tarotData','ootkData','rawReadings','readingGuide'])if(cast[key])assert(message.includes(JSON.stringify(cast[key])),key+' was omitted or rewritten');
-      assert.equal(sent.max_tokens,8192);assert(sent.system.includes('充分解釋'));assert(sent.system.includes('計數跳轉不當成元素相鄰'));
+      for(const key of ['tarotData','ootkData','rawReadings'])if(cast[key])assert(message.includes(JSON.stringify(cast[key])),key+' was omitted or rewritten');
+      if(cast.readingGuide)assert(!message.includes(JSON.stringify(cast.readingGuide)),'client style must not duplicate the server contract');
+      assert.equal(sent.max_tokens,8192);assert(sent.system.includes('先回答，再解釋'));assert(sent.system.includes('計數跳轉不當成元素相鄰'));
     }
   });
   await test('API asks for a personal material choice before the shop invitation, independent of stock',async()=>{
@@ -68,7 +69,7 @@ try{
     const question='我經營水晶、天鐵與龍宮舍利，該如何安排銷售方向？';
     const payload={mode:'full',question,shopRecommendation:{allowedItems:['STALE_STOCK_ONLY_14MM']}};
     assert.equal((await ai({request:air({payload}),env})).status,200);
-    for(const rule of ['個人選品','不等於本人適合佩戴該材質','功能吉凶','月光石硬度6–6.5','鎳過敏','沒有具體商品鑑別報告','有理由的個人主推薦與承接邀請'])assert(sent.system.includes(rule),rule);
+    for(const rule of ['選品規則不得影響','不等於本人適合佩戴該材質','功能吉凶','月光石硬度6–6.5','鎳過敏','沒有具體商品鑑別報告','有理由的個人主推薦與承接邀請'])assert(sent.system.includes(rule),rule);
     assert.equal(sent.system.split('https://shopee.tw/a50h95648d?tab=shop').length-1,1);
     assert(sent.messages[0].content.includes(question));assert(!JSON.stringify(sent).includes('STALE_STOCK_ONLY_14MM'));
   });
