@@ -5366,6 +5366,19 @@ function _normalizeCounterData(data, action){
 }
 
 var _counterError='';
+function _counterFailureMessage(status,reason){
+  if(status===403)return reason==='origin_not_allowed'?'統計服務未允許這個網站來源':'管理權限驗證失敗';
+  if(status===404||status===405)return '統計服務路由未部署';
+  if(reason==='upstream_timeout')return '統計資料來源逾時，後端已重試一次仍未成功';
+  if(reason==='upstream_invalid_url')return 'Apps Script 統計網址設定錯誤';
+  if(reason==='upstream_invalid_json')return '統計資料來源回傳非 JSON，請檢查 Apps Script 部署權限與網址';
+  if(reason==='upstream_invalid_data')return '統計資料來源回傳欄位不完整或格式錯誤';
+  if(reason==='upstream_network')return '統計後端連不上 Google Apps Script';
+  if(/^upstream_http_5\d\d$/.test(reason))return 'Google Apps Script 暫時錯誤（'+reason.slice(-3)+'）';
+  if(/^upstream_http_4\d\d$/.test(reason))return 'Google Apps Script 拒絕請求（'+reason.slice(-3)+'），請檢查部署權限';
+  if(status===502)return '統計服務上游暫時無法讀取（HTTP 502）';
+  return '統計服務暫時無法讀取（HTTP '+status+'）';
+}
 // 讀取可嘗試另一個已設定代理；寫入只在明確未進入路由時切換，避免重複計數。
 async function _gasCall(action){
   var isRead=action==='get';
@@ -5381,9 +5394,16 @@ async function _gasCall(action){
     var canRetry=isRead;
     try{
       var response=await fetch(endpoints[i]+(isRead?'?action=get&_t=':'?_t=')+Date.now(),options);
-      canRetry=isRead || response.status===404 || response.status===405;
+      canRetry=response.status===404 || response.status===405 || (isRead && response.status>=500);
       if(!response.ok){
-        _counterError=response.status===403?'管理權限驗證失敗':response.status===404||response.status===405?'統計服務路由未部署':'統計服務暫時無法讀取（HTTP '+response.status+'）';
+        var failureBody=null;
+        if(response.status===502){
+          try{failureBody=await response.json();}catch(_){}
+          // A structured proxy 502 means the route worked and its GAS upstream
+          // failed; calling the same upstream through another hostname won't help.
+          if(failureBody&&failureBody.error==='counter_upstream_failed')canRetry=false;
+        }
+        _counterError=_counterFailureMessage(response.status,failureBody&&failureBody.reason);
       }else{
         var data=_normalizeCounterData(await response.json(),action);
         if(data){_counterError='';return data;}

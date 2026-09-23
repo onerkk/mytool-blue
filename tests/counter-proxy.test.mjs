@@ -66,7 +66,28 @@ async function run() {
   });
   assert.equal(blockedResponse.status, 403);
 
-  globalThis.fetch = async () => new Response('<html>error</html>', { status: 500 });
+  let transientReadAttempts = 0;
+  globalThis.fetch = async () => {
+    transientReadAttempts += 1;
+    if (transientReadAttempts === 1) return new Response('temporary upstream error', { status: 503 });
+    return new Response(JSON.stringify({ total: 1234, today: 56 }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  const recoveredRead = await onRequest({
+    request: siteRequest('/api/pulse?action=get'),
+    env: { COUNTER_GAS_URL: 'https://script.google.com/macros/s/test/exec' },
+  });
+  assert.equal(recoveredRead.status, 200);
+  assert.deepEqual(await recoveredRead.json(), { total: 1234, today: 56 });
+  assert.equal(transientReadAttempts, 2, 'a transient GET failure is retried once');
+
+  let persistentReadAttempts = 0;
+  globalThis.fetch = async () => {
+    persistentReadAttempts += 1;
+    return new Response('<html>error</html>', { status: 500 });
+  };
   const realConsoleError = console.error;
   console.error = () => {};
   const upstreamFailure = await onRequest({
@@ -75,7 +96,26 @@ async function run() {
   });
   console.error = realConsoleError;
   assert.equal(upstreamFailure.status, 502);
-  assert.deepEqual(await upstreamFailure.json(), { error: 'counter_upstream_failed' });
+  assert.deepEqual(await upstreamFailure.json(), { error: 'counter_upstream_failed', reason: 'upstream_http_500' });
+  assert.equal(persistentReadAttempts, 2, 'a persistent GET failure stops after one retry');
+
+  let writeAttempts = 0;
+  globalThis.fetch = async () => {
+    writeAttempts += 1;
+    return new Response('<html>error</html>', { status: 500 });
+  };
+  console.error = () => {};
+  const uncertainWrite = await onRequest({
+    request: siteRequest('/api/pulse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'increment' }),
+    }),
+    env: { COUNTER_GAS_URL: 'https://script.google.com/macros/s/test/exec' },
+  });
+  console.error = realConsoleError;
+  assert.equal(uncertainWrite.status, 502);
+  assert.equal(writeAttempts, 1, 'an uncertain counter write is never retried');
 
   console.log('counter-proxy: all assertions passed');
 }

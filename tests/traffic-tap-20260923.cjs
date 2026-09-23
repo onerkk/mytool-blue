@@ -24,6 +24,7 @@ elements.set(badge.id, badge);
 for (const id of ['counter-num', 'counter-today']) elements.set(id, { id, textContent: '' });
 
 const calls = [];
+let upstreamFailure = false;
 const context = {
   window: { JY_PROMPT_ONLY: true, location: { hostname: 'jingyue.uk' } },
   document: {
@@ -45,6 +46,9 @@ const context = {
   },
   fetch: async (url, options) => {
     calls.push({ url: String(url), method: options.method, body: options.body });
+    if (upstreamFailure && String(url).includes('action=get')) {
+      return { ok: false, status: 502, json: async () => ({ error: 'counter_upstream_failed', reason: 'upstream_http_503' }) };
+    }
     return { ok: true, status: 200, json: async () => ({ total: 128, today: 7 }) };
   },
   AbortController,
@@ -73,7 +77,15 @@ async function run() {
   assert(elements.get('admin-overlay').classList.contains('visible'));
   vm.runInContext('_maybeCountVisit()', context);
   assert.equal(calls.filter(call => call.method === 'POST').length, 1, 'repeated load hook cannot double-count');
-  console.log('traffic tap: prompt-only homepage counts visits and opens the live stats panel after five taps');
+
+  upstreamFailure = true;
+  const readsBeforeFailure = calls.filter(call => call.url.includes('action=get')).length;
+  await vm.runInContext('openAdmin()', context);
+  assert.equal(calls.filter(call => call.url.includes('action=get')).length, readsBeforeFailure + 1,
+    'a structured upstream 502 does not call the same backend again through another hostname');
+  assert.match(elements.get('admin-status').textContent, /Google Apps Script 暫時錯誤（503）/,
+    'the admin panel translates the proxy error into its actual upstream category');
+  console.log('traffic tap: hidden entry works, visits count once, and upstream failures are identified without duplicate reads');
 }
 
 run().catch(error => { console.error(error); process.exitCode = 1; });

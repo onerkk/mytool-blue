@@ -1,4 +1,4 @@
-// 靜月之光 — Pages Function: visitor tally proxy v1.2.0
+// 靜月之光 — Pages Function: visitor tally proxy v1.3.0
 // Browser -> same-origin Pages Function -> Google Apps Script.
 // This keeps Google redirects/CORS out of the browser and preserves the
 // existing spreadsheet + LockService counter implementation.
@@ -14,6 +14,8 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const VALID_ACTIONS = new Set(['get', 'increment', 'reset']);
+const READ_TIMEOUT_MS = 5200;
+const WRITE_TIMEOUT_MS = 9000;
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin') || '';
@@ -65,13 +67,20 @@ async function readAction(request) {
   }
 }
 
-async function requestGas(baseUrl, action) {
-  const url = new URL(baseUrl);
+async function requestGas(baseUrl, action, attempt = 0) {
+  let url;
+  try {
+    url = new URL(baseUrl);
+  } catch (_) {
+    const error = new Error('Google Apps Script URL is invalid');
+    error.counterFailure = 'upstream_invalid_url';
+    throw error;
+  }
   url.searchParams.set('action', action);
   url.searchParams.set('_t', String(Date.now()));
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 9000);
+  const timer = setTimeout(() => controller.abort(), action === 'get' ? READ_TIMEOUT_MS : WRITE_TIMEOUT_MS);
   try {
     const response = await fetch(url.toString(), {
       method: 'GET',
@@ -79,13 +88,46 @@ async function requestGas(baseUrl, action) {
       headers: { Accept: 'application/json' },
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error(`Google Apps Script HTTP ${response.status}`);
+    if (!response.ok) {
+      const error = new Error(`Google Apps Script HTTP ${response.status}`);
+      error.counterHttpStatus = response.status;
+      throw error;
+    }
     const text = (await response.text()).replace(/^\uFEFF/, '').trim();
     if (!text) return {};
-    return JSON.parse(text);
+    try {
+      return JSON.parse(text);
+    } catch (_) {
+      const error = new Error('Google Apps Script returned non-JSON data');
+      error.counterFailure = 'upstream_invalid_json';
+      throw error;
+    }
+  } catch (error) {
+    // Counter reads are idempotent. Retry one transient read failure, but never
+    // retry increment/reset: a timed-out write may already have committed.
+    const retryable = error && (
+      error.name === 'AbortError' ||
+      error.counterHttpStatus >= 500 ||
+      error.counterFailure === 'upstream_invalid_json' ||
+      error instanceof TypeError
+    );
+    if (action === 'get' && attempt === 0 && retryable) {
+      clearTimeout(timer);
+      await new Promise(resolve => setTimeout(resolve, 250));
+      return requestGas(baseUrl, action, attempt + 1);
+    }
+    throw error;
   } finally {
     clearTimeout(timer);
   }
+}
+
+function counterFailureReason(error) {
+  if (error && error.name === 'AbortError') return 'upstream_timeout';
+  if (error && Number.isInteger(error.counterHttpStatus)) return `upstream_http_${error.counterHttpStatus}`;
+  if (error && error.counterFailure) return error.counterFailure;
+  if (error && error.message === 'Google Apps Script returned invalid counter data') return 'upstream_invalid_data';
+  return 'upstream_network';
 }
 
 export async function onRequest(context) {
@@ -131,11 +173,14 @@ export async function onRequest(context) {
     if (!payload || upstream.error ||
         ((action === 'get' || action === 'reset') && (payload.total === undefined || payload.today === undefined)) ||
         (action === 'increment' && payload.total === undefined)) {
-      throw new Error('Google Apps Script returned invalid counter data');
+      const error = new Error('Google Apps Script returned invalid counter data');
+      error.counterFailure = 'upstream_invalid_data';
+      throw error;
     }
     return jsonResponse(request, payload);
   } catch (error) {
-    console.error('[counter] upstream failed:', error && error.message ? error.message : error);
-    return jsonResponse(request, { error: 'counter_upstream_failed' }, 502);
+    const reason = counterFailureReason(error);
+    console.error('[counter] upstream failed:', reason, error && error.message ? error.message : error);
+    return jsonResponse(request, { error: 'counter_upstream_failed', reason }, 502);
   }
 }
