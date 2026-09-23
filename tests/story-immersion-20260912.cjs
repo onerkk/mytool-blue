@@ -1,5 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),acorn=require('acorn');
+const postcss=require('postcss');
 const {fixture,load,add}=require('./ritual-lifecycle-20260911.cjs');
 const project=path.resolve(__dirname,'..'),read=f=>fs.readFileSync(path.join(project,f),'utf8');
 let passed=0;
@@ -9,6 +10,13 @@ function enter(e,kind,options={}){load(e,'ritual-story');load(e,'ritual-ateliers
 function activate(d){d.querySelector('.jr-next').click();const seals=d.querySelectorAll('.jr-seal');if(seals.length)seals.forEach(b=>b.click());else d.querySelector('.jr-next').click();}
 function extract(file,name){const src=read(file);let found;function walk(n){if(!n||typeof n!=='object')return;if(n.type==='FunctionDeclaration'&&n.id?.name===name)found=src.slice(n.start,n.end);for(const v of Object.values(n))if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);}walk(acorn.parse(src,{ecmaVersion:'latest'}));assert(found);return found;}
 (async()=>{
+ await test('Mobile completion action stays reachable while the story dialog scrolls',()=>{
+  const css=postcss.parse(read('CSS/ritual-story.css'));
+  const mobile=css.nodes.find(node=>node.type==='atrule'&&node.name==='media'&&node.params.includes('max-width:849px'));assert(mobile);
+  const declarations=selector=>{const rule=mobile.nodes.find(node=>node.type==='rule'&&node.selector===selector);assert(rule,selector);return Object.fromEntries(rule.nodes.filter(node=>node.type==='decl').map(node=>[node.prop,node.value+(node.important?'!important':'')]));};
+  const dialog=declarations('.jy-atelier .jr-dialog[data-story]');assert.equal(dialog['overflow-y'],'auto!important');assert.equal(dialog['touch-action'],'pan-y pinch-zoom');
+  const action=declarations('.jy-atelier .jr-dialog[data-story][data-phase="3"] .jr-next');assert.equal(action.position,'fixed!important');assert.match(action.bottom,/safe-area-inset-bottom/);assert.equal(action['z-index'],'20!important');
+ });
  for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle','ootk'])await test(kind+': director keeps the scene user-led and settles once after visible shots',async()=>{
   const e=dom(),shots=[];let done=0,disposals=0;
   e.ctx.JYCinema={mount:()=>({setPhase(){},setLit(){},setPower(){},setTurn(){},setShot:s=>shots.push(s.name),dispose:()=>disposals++})};
