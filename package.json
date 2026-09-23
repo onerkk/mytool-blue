@@ -64,7 +64,7 @@
     "test:vedic:browser": "node tests/vedic-browser-20260914.cjs",
     "test:western:browser": "node tests/western-browser-20260914.cjs",
     "test:browser": "npm run test:ui:browser && npm run test:foley:browser && npm run test:gua:craft && npm run test:vedic:browser && npm run test:western:browser && npm run test:astro-bridge:browser && npm run test:prompt-only:browser && npm run test:gua:mobile && npm run test:tarot:browser && npm run test:share:browser",
-    "test:latest-audit": "node tests/chinese-engine-rules-20260923.cjs && node tests/birth-audit-20260923.cjs && node tests/astro-rules-audit-20260923.cjs && node tests/card-audit-20260923.cjs && node tests/card-audit-mathers-third-20260923.cjs && node tests/card-audit-legacy-meanings-20260923.cjs && node tests/prompt-only-audit-20260923.cjs && node tests/prompt-only-shop-20260923.cjs && node tests/admin-updater-20260923.cjs",
+    "test:latest-audit": "node tests/chinese-engine-rules-20260923.cjs && node tests/birth-audit-20260923.cjs && node tests/astro-rules-audit-20260923.cjs && node tests/card-audit-20260923.cjs && node tests/card-audit-mathers-third-20260923.cjs && node tests/card-audit-legacy-meanings-20260923.cjs && node tests/prompt-only-audit-20260923.cjs && node tests/prompt-only-shop-20260923.cjs && node tests/reader-voice-20260923.cjs && node tests/traffic-tap-20260923.cjs && node tests/admin-updater-20260923.cjs",
     "test:prompt-only:browser": "node tests/prompt-only-network-20260923.cjs",
     "test:gua:mobile": "node tests/gua-mobile-browser-20260923.cjs",
     "test:tarot:browser": "node tests/card-audit-mathers-browser-20260923.cjs",

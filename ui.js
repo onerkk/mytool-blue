@@ -5368,7 +5368,6 @@ function _normalizeCounterData(data, action){
 var _counterError='';
 // 讀取可嘗試另一個已設定代理；寫入只在明確未進入路由時切換，避免重複計數。
 async function _gasCall(action){
-  if (window.JY_PROMPT_ONLY) return null;
   var isRead=action==='get';
   var endpoints=CTR_ENDPOINT===CTR_FALLBACK_ENDPOINT?[CTR_ENDPOINT]:[CTR_ENDPOINT,CTR_FALLBACK_ENDPOINT];
   _counterError='';
@@ -5413,14 +5412,13 @@ async function _countVisitor(){
 
 // ── 連進首頁即計數（每次頁面載入只觸發一次）──
 let _visitCounted=false;
-function _maybeCountVisit(){ if(_visitCounted || window.JY_PROMPT_ONLY) return; _visitCounted=true; _countVisitor(); }
+function _maybeCountVisit(){ if(_visitCounted) return; _visitCounted=true; _countVisitor(); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _maybeCountVisit);
 else _maybeCountVisit();
 
 // ── 左上角品牌連點 5 下（保留舊月亮入口）──
 let _moonTapCount=0, _moonTapTimer=null;
 function _moonTap(){
-  if (window.JY_PROMPT_ONLY) return false;
   _moonTapCount++;
   clearTimeout(_moonTapTimer);
   if(_moonTapCount>=5){

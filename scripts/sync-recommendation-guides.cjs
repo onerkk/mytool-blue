@@ -16,7 +16,8 @@ const targets=[
   ['JS/prompt-export.js','JY_REC_EXPORT',endingMap(['tarot','ootk','meihua'])],
   ['JS/vedic-prompt.js','JY_REC_VEDIC',q.recommendationEnding('vedic')],
   ['JS/western-prompt.js','JY_REC_WESTERN',q.recommendationEnding('astro')],
-  ['JS/ai-analysis.js','JY_REC_API',{composite:q.recommendationPolicy(),tarot:q.recommendationPolicy('tarot'),ootk:q.recommendationPolicy('ootk')}]
+  ['JS/ai-analysis.js','JY_REC_API',{composite:q.recommendationPolicy(),tarot:q.recommendationPolicy('tarot'),ootk:q.recommendationPolicy('ootk')}],
+  ['functions/api/ai.js','SYSTEM_RECOMMENDATION',q.recommendationText()]
 ];
 const readingTargets=[
   ['JS/gua-prompt.js','JY_READING_GUA',{liuyao:q.lines('liuyao'),yijing:q.lines('yijing')}],
@@ -29,7 +30,8 @@ const readingTargets=[
   ['JS/prompt-export.js','JY_READING_EXPORT',Object.fromEntries(['tarot','ootk','meihua'].map(k=>[k,q.lines(k)]))],
   ['JS/vedic-prompt.js','JY_READING_VEDIC',q.lines('vedic').join('\n')],
   ['JS/western-prompt.js','JY_READING_WESTERN',q.lines('astro').join('\n')],
-  ['JS/relationship-core.js','JY_READING_RELATIONSHIP',q.lines('compat').concat(q.methodLines('bazi'),q.methodLines('ziwei')).join('\n')]
+  ['JS/relationship-core.js','JY_READING_RELATIONSHIP',q.lines('compat').concat(q.methodLines('bazi'),q.methodLines('ziwei')).join('\n')],
+  ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()]
 ];
 const mirrors=['ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
