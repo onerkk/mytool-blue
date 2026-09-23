@@ -94,4 +94,34 @@ test('解讀提示詞使用同一答案優先規則、精確事實與最後選�
     if(r.system==='yijing'){assert(!a.includes('【六爻排盤'));r.reading.selections.forEach(s=>assert(a.includes(s.text)));}else assert(a.includes('之卦同位背景'));
   }
 });
+test('實際六爻案例：生克方向、世應雙向作用、三合空爻條件都清楚呈現',()=>{
+  const calendar=L.calendar({year:2026,month:9,day:24,hour:1,minute:35,second:27,timezoneOffset:8});
+  const coins=[['front','front','back'],['back','back','back'],['front','back','back'],['back','back','front'],['back','back','front'],['front','front','front']];
+  const records=coins.map(c=>({coins:c,value:L.fromCoins(c)}));
+  const r=L.calculate({values:records.map(x=>x.value),records,method:'coins',calendar,question:'現任近期會願意跟我3p嗎？再找一個她認識的女性'});
+  assert.equal(calendar.day,'辛丑');assert.equal(calendar.monthBranch,'酉');assert.deepEqual(Array.from(calendar.voidBranches),['辰','巳']);
+  assert.equal(r.original.name,'臨');assert.equal(r.changed.name,'頤');assert.deepEqual(Array.from(r.movingPositions),[2,6]);
+  assert.equal(r.lines[1].states.monthRelation,'克');assert.equal(r.lines[1].states.dayRelation,'受克');
+  assert.equal(ctx.JYGuaPrompt.status(r.lines[1].states),'月破、月令克爻、爻克日辰');
+  assert(ctx.JYGuaPrompt.status(r.lines[3].states).includes('爻生月令'));
+  assert(ctx.JYGuaPrompt.status(r.lines[5].states).includes('日辰生爻'));
+  const triad=r.interpretation.combinations.find(x=>x.name==='巳酉丑三合金');
+  assert.equal(triad.status,'conditional-structure');assert.deepEqual(Array.from(triad.activePositions),[6]);
+  assert(triad.conditions.includes('初爻 旬空待填沖'));
+  const network=r.interpretation.influences[0].candidates;
+  const effect=(role)=>network.find(x=>x.position===(role==='世'?2:5)).network.find(n=>n.position===6);
+  assert.equal(effect('世').function,'忌神');assert.equal(effect('世').movement,'明動');
+  assert.equal(effect('應').function,'元神');assert.equal(effect('應').movement,'明動');
+  const prompt=ctx.JYGuaPrompt.build(r);
+  assert(prompt.includes('月令克爻、爻克日辰'));
+  assert(prompt.includes('世｜明現候選第2爻 卯：'));
+  assert(prompt.includes('第6爻 子孫 癸酉金（明動）對此候選：忌神'));
+  assert(prompt.includes('應｜明現候選第5爻 亥：'));
+  assert(prompt.includes('第6爻 子孫 癸酉金（明動）對此候選：元神'));
+  assert(prompt.includes('conditional-structure'));
+  assert(prompt.includes('變爻只回作用本位動爻'));
+  assert(!prompt.includes('她正在擔心')&&!prompt.includes('她其實想'));
+  const staticTriad=L.calculate({values:[7,7,7,7,7,7],calendar,question:'工作是否值得推進？'}).interpretation.combinations.find(x=>x.name==='申子辰三合水');
+  assert.equal(staticTriad.status,'static-background');assert.deepEqual(Array.from(staticTriad.activePositions),[]);
+});
 console.log('gua-engine: '+passed+' groups passed, including all 4096 casts.');

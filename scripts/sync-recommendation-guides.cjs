@@ -31,6 +31,7 @@ const readingTargets=[
   ['JS/vedic-prompt.js','JY_READING_VEDIC',q.lines('vedic').join('\n')],
   ['JS/western-prompt.js','JY_READING_WESTERN',q.lines('astro').join('\n')],
   ['JS/relationship-core.js','JY_READING_RELATIONSHIP',q.lines('compat').concat(q.methodLines('bazi'),q.methodLines('ziwei')).join('\n')],
+  ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().flatMap(k=>q.methodLines(k)).join('\n')],
   ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()]
 ];
 const mirrors=['ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];

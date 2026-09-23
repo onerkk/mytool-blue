@@ -13,6 +13,9 @@
   var SPIRITS = ['青龍','朱雀','勾陳','螣蛇','白虎','玄武'];
   var SPIRIT_START = [0,0,1,1,2,3,4,4,5,5];
   var LABELS = ['初爻','二爻','三爻','四爻','五爻','上爻'];
+  function relationDirection(source, relationName) {
+    return ({'比和':source+'與爻同氣','生':source+'生爻','克':source+'克爻','受生':'爻生'+source,'受克':'爻克'+source})[relationName]||source+'關係未明';
+  }
   // Numeric bit 0 is the bottom line, bit 2 the top of a trigram.
   var TRIGRAMS = [
     {id:7,name:'乾',image:'天',element:'金',stems:['甲','壬'],branches:[0,2,4,6,8,10]},
@@ -175,7 +178,8 @@
     if(stages.changed==='墓')tombs.push({kind:'化墓',branch:line.changed.branch});
     lines.filter(function(x){return x.moving&&x.position!==line.position&&lifeStage(line.element,x.branch)==='墓';}).forEach(function(x){tombs.push({kind:'動墓',branch:x.branch,position:x.position});});
     if(tombs.length&&!supported)obstacles.push('休囚入墓候選，待沖墓及生扶');
-    return {position:line.position,season:{label:{比和:'旺',生:'相',受生:'休',受克:'囚',克:'死'}[s.monthRelation],relation:s.monthRelation},
+    return {position:line.position,season:{label:{比和:'旺',生:'相',受生:'休',受克:'囚',克:'死'}[s.monthRelation],relation:s.monthRelation,direction:relationDirection('月令',s.monthRelation)},
+      monthInfluence:relationDirection('月令',s.monthRelation),dayInfluence:relationDirection('日辰',s.dayRelation),
       strength:state,supportingMovingPositions:helpers,dayEffect:dayEffect,
       availability:obstacles.length?'conditional':dayEffect==='day-break'?'impaired':'available',obstacles:obstacles,
       lifeStages:stages,tombs:tombs,tombStatus:tombs.length?(supported?'旺有生扶，不逕作入墓':'休囚墓候選，待沖墓及生扶'):'無墓支',
@@ -243,9 +247,11 @@
         transition:l.transition,obstacles:assessments[l.position-1].obstacles};})};})};});
     var combinations=[['申','子','辰','水'],['巳','酉','丑','金'],['寅','午','戌','火'],['亥','卯','未','木']].map(function(g){
       var members=lines.filter(function(l){return g.slice(0,3).includes(l.branch);}),missing=g.slice(0,3).filter(function(b){return !members.some(function(l){return l.branch===b;});}),active=members.filter(function(l){return l.moving||assessments[l.position-1].dayEffect==='hidden-movement';});
+      var conditions=members.flatMap(function(l){return assessments[l.position-1].obstacles.map(function(s){return l.label+' '+s;});});
       return {name:g.slice(0,3).join('')+'三合'+g[3],element:g[3],positions:members.map(function(l){return l.position;}),missing:missing,
-        status:missing.length?'incomplete':active.length>=2?'structure-present':'static-combination',conditions:members.flatMap(function(l){return assessments[l.position-1].obstacles.map(function(s){return l.label+' '+s;});}),
-        policy:'本卦三支齊且至少二爻明暗動為本版成局入口；缺支不借無關變爻拼局；不直接宣告化氣。'};
+        status:missing.length?'incomplete':active.length===0?'static-background':conditions.length?'conditional-structure':'structure-present',
+        activePositions:active.map(function(l){return l.position;}),conditions:conditions,
+        policy:'依《增刪卜易》三合章：本卦三支俱全且至少一爻明動或暗動，列為動局候選；一支旬空或月破則保留待填／出月條件。三支皆靜只作靜態背景；缺支不借無關變爻拼局；不直接宣告化氣。'};
     }).filter(function(g){return g.positions.length>=2;});
     // Original/changed combinations are restricted to the two moving end rows
     // of an inner or outer trigram, not arbitrary static transformed rows.
