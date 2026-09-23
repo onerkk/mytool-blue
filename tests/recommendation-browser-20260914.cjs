@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'..'),runtime=process.env.JY_QA_RUNTIME,out=pr
   });
   await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copied.push(text);}}});});
   await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.0.0');
+  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.4.0');
   const question='我經營水晶、天鐵與龍宮舍利，應如何安排銷售方向？我偏好綠色、日常常碰撞手腕。';
   for(const type of ['vedic','western']){
    const prefix=type==='vedic'?'vd':'wx',api=type==='vedic'?'JYVedicUI':'JYWesternUI',container=type+'-page';
@@ -40,8 +40,9 @@ const root=path.resolve(__dirname,'..'),runtime=process.env.JY_QA_RUNTIME,out=pr
    await page.locator('[data-'+prefix+'-tab="reading"]').tap();
    await page.locator('[data-'+prefix+'-action="copy"]').tap();
    const prompt=await page.evaluate(()=>__copied.at(-1));
-   assert(prompt.includes(question));assert(prompt.includes('利於銷售某類商品不等於本人適合佩戴該材質'));
-   assert(prompt.includes('【材質參考'));assert(prompt.includes('鎳過敏'));assert(prompt.includes('最後兩行'));
+   assert(prompt.includes(question));assert(prompt.includes('本題延伸手鍊建議'));
+   assert(prompt.includes('理由須引用本次一項有效盤面發現'));assert(prompt.includes('印度占星：先核本題宮主職能及有效分盤、運期')||prompt.includes('西洋占星：依本題宮主、相位或已算行運取材'));
+   assert(prompt.includes('手鍊建議放在分析與行動之後'));assert(prompt.includes('不捏造商品庫存、價格、成分、產地或認證'));
    assert.equal(prompt.split('https://shopee.tw/a50h95648d?tab=shop').length-1,1);assert(prompt.endsWith('願你諸事順遂。'));
    assert.equal(prompt,await page.evaluate(api=>window[api].getPrompt(),api));
    const event=page.waitForEvent('download');await page.locator('[data-'+prefix+'-action="download"]').tap();

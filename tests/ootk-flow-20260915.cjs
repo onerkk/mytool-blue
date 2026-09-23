@@ -68,7 +68,7 @@ test('Payload and final prompt retain version-specific counts, the question, fiv
  assert.equal(Object.keys(p.ootkData.operations).length,5);assert.equal(p.ootkData.methodRules.aceCount,5);assert.equal(p.ootkData.operations.op4.countingStart,'first_ring_card');
  for(const op of Object.values(p.ootkData.operations))for(const c of op.activeCards)if(c.rank==='ace')assert.equal(c.countValue,5);
  assert(prompt.includes(r.questionText));assert(prompt.includes('Mathers'));assert(prompt.includes('Ace=5'));assert(!prompt.includes('本輪不能提供'));
- for(const text of ['此模組只在解讀正文與行動完成後啟動','具體依據','水晶','天鐵','龍宮舍利','不先選商品再反推需求','只有程序有效的操作','四堆翻面初示牌'])assert(prompt.includes(text),text);
+ for(const text of ['【本題延伸手鍊建議】','有效盤面發現','具體手鍊','不捏造商品庫存','只採完成且有效操作中的主線','四堆翻面初示牌'])assert(prompt.includes(text),text);
  assert.equal(prompt.split('https://shopee.tw/a50h95648d?tab=shop').length-1,1);assert.equal(JSON.stringify(r),before);
 });
 test('Full automatic playback and skipping before/every stage export the same cast once, with no pending callbacks',()=>{

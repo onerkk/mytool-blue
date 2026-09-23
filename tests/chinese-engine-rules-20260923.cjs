@@ -74,7 +74,7 @@ for(const oldRecommendation of ['4.0.0','4.1.0','4.2.0']){
   c.JY_READING_QUALITY={...quality,version:oldRecommendation,recommendationText:()=> 'STALE_RECOMMENDATION'};
   const fallback=c.__chineseTestMeihuaPrompt('工作如何？',versionCast);
   assert(!fallback.includes('STALE_RECOMMENDATION'));
-  assert(fallback.includes('【從解讀到適合你的配戴選擇】'));
+  assert(fallback.includes('【本題延伸手鍊建議】'));
   assert.equal(fallback,currentPrompt);
 }
 c.JY_READING_QUALITY={...quality,readingVersion:'9.0.0',lines:k=>['FUTURE_QUALITY_'+k],methodKinds:()=>['meihua','liuyao','yijing'],recommendationEnding:()=> 'FUTURE_END',recommendationText:()=> 'FUTURE_REC'};

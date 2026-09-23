@@ -79,7 +79,7 @@ try{
     const question='我經營水晶、天鐵與龍宮舍利，該如何安排銷售方向？';
     const payload={mode:'full',question,shopRecommendation:{allowedItems:['STALE_STOCK_ONLY_14MM']}};
     assert.equal((await ai({request:air({payload}),env})).status,200);
-    for(const rule of ['選品規則不得影響','不等於本人適合佩戴該材質','功能吉凶','月光石硬度6–6.5','鎳過敏','沒有具體商品鑑別報告','有理由的個人主推薦與承接邀請'])assert(sent.system.includes(rule),rule);
+    for(const rule of ['選品規則不得影響前面的占卜判斷','命理取象不代表礦物有療效','不捏造商品庫存、價格、成分、產地或認證','手鍊建議放在分析與行動之後','有理由的個人主推薦與承接邀請'])assert(sent.system.includes(rule),rule);
     assert.equal(sent.system.split('https://shopee.tw/a50h95648d?tab=shop').length-1,1);
     assert(sent.messages[0].content.includes(question));assert(!JSON.stringify(sent).includes('STALE_STOCK_ONLY_14MM'));
   });

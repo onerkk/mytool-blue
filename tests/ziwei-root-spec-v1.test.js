@@ -48,7 +48,7 @@ const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
 [
   '運用你自身完整的命理知識', '實際三方四正', '星曜組合與廟旺',
   '三合派作整體骨架', '宮干飛化、自化與來因宮',
-  '原局看長期底色', '前端摘要或模型標籤', '延伸選品'
+  '原局看長期底色', '前端摘要或模型標籤', '本題延伸手鍊建議'
 ].forEach(x => assert((head + tail).includes(x), 'missing v4 principle: ' + x));
 [
   '化忌沖命就是卡', '空宮無主就是飄', '配偶年齡差：由夫妻宮主星',
@@ -57,7 +57,7 @@ const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
 assert(!(head + tail).includes('ROOT-SPEC'));
 assert(!(head + tail).includes('證據帳本'));
 assert((head + tail).replace(ctx.JY_ZIWEI_PROMPT_ROOT.brandTailLines().join('\n'),'').length < 5000, 'analysis root stays concise; reviewed material guidance has its own scope');
-assert.equal(tail.split('【從解讀到適合你的配戴選擇】').length-1,1, 'selection method is included once');
+assert.equal(tail.split('【本題延伸手鍊建議】').length-1,1, 'bracelet guidance is included once');
 assert(tail.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
 assert(tail.includes('願你諸事順遂。'));
 

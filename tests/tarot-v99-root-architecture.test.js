@@ -139,7 +139,7 @@ test('Recommendation candidates are exact positive-stock variants without URLs o
 });
 test('Prompt tail requires a natural question-linked recommendation section with clean spacing',()=>{
  const src=fs.readFileSync(path.join(ROOT,'JS/prompt-export.js'),'utf8'),frag=src.slice(src.indexOf('var FRAG_TAROT_INVENTORY'),src.indexOf('// ④b 紫微專用'));
- assert(frag.includes('延伸選品'));assert(frag.includes('融入使用者原問句'));assert(frag.includes('本盤已成立的核心提醒或行動重點'));assert(frag.includes('段落間各保留一個空行'));
+ assert(frag.includes('本題延伸手鍊建議'));assert(frag.includes('融入使用者原問句'));assert(frag.includes('本盤已成立的核心提醒或行動重點'));assert(frag.includes('段落間各保留一個空行'));
  assert(frag.includes('[前往靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));assert(frag.includes('連結之後不得再有任何內容'));
  assert(!frag.includes('全文最後兩行'));assert(!frag.includes('第一行：推薦品項'));
 });
@@ -157,7 +157,7 @@ test('Assembled tarot prompt preserves compound query and ends with the natural 
  const payload={mode:'tarot',methodPlan:r.methodPlan,semanticContract:contract,tarotData:{spreadType:r.spreadId,spreadZh:r.methodPlan.label,cards,methodPlan:r.methodPlan,semanticContract:contract,readingDate:'2026-07-18'},shopRecommendation:{sourceFile:I.SOURCE_FILE,allowedItems:I.recommendCandidates(q,['relationship'],3)}};
  const context=vmContext('_buildTarotOnlyPayload',payload,q),prompt=context.JY_buildExportPrompt('tarot');
  assert(prompt.includes('ROOT-SPEC v99'));assert(prompt.includes('predicate=query_person_attribute'));assert(prompt.includes('conditional_coreference'));assert(prompt.includes('exact_age'));assert(prompt.includes('【可推薦庫存品項】'));
- assert(prompt.includes('延伸選品'));assert(prompt.includes('承接原問句'));assert(prompt.trimEnd().endsWith('連結之後不得再有任何內容。'));
+ assert(prompt.includes('本題延伸手鍊建議'));assert(prompt.includes('承接原問句'));assert(prompt.trimEnd().endsWith('連結之後不得再有任何內容。'));
 });
 test('Assembled stopped OOTK prompt lists only generated operations and carries the same recommendation tail',()=>{
  const q='請用開鑰之法看今年工作如何',ootkData={significator:{name:'權杖國王'},operations:{op1:{valid:false,abandoned:true,abandonReason:'主要線索不符',activePile:'fire',activeCards:[{name:'權杖國王'}],countingPath:[],pairs:[]}},procedureStatus:{completedOperations:1,abandoned:true,abandonedAt:'op1',reason:'主要線索不符'}};

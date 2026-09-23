@@ -323,7 +323,7 @@ test('Non-Book-T relationship labels such as 正緣 are operationalized without 
 
 test('Recommendation contract naturally closes from the actual question and remains independent from divination evidence', () => {
   const prompt = assembledPrompt('relationship', '現任是正緣嗎？');
-  assert(prompt.includes('延伸選品'));
+  assert(prompt.includes('本題延伸手鍊建議'));
   assert(prompt.includes('先用一句承接使用者這次真正問的事'));
   assert(prompt.includes('本盤已成立的一個核心提醒或可行方向'));
   assert(prompt.includes('不得把商品說成牌面證據或改變結果的工具'));

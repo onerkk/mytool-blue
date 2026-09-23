@@ -5394,8 +5394,8 @@ async function _gasCall(action){
     var canRetry=isRead;
     try{
       var response=await fetch(endpoints[i]+(isRead?'?action=get&_t=':'?_t=')+Date.now(),options);
-      canRetry=response.status===404 || response.status===405 || (isRead && response.status>=500);
       if(!response.ok){
+        canRetry=response.status===404 || response.status===405 || (isRead && response.status>=500);
         var failureBody=null;
         if(response.status===502){
           try{failureBody=await response.json();}catch(_){}

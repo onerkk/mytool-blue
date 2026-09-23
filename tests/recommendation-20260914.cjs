@@ -7,29 +7,31 @@ const beforeRecommendation=passed,examples={},selectionGuide=c.JY_READING_QUALIT
 const shop='https://shopee.tw/a50h95648d?tab=shop';
 const business='我經營水晶、天鐵與龍宮舍利，應如何安排銷售方向？我偏好綠色、日常常碰撞手腕。';
 function checkRecommendation(prompt,kind){
- const marker=prompt.indexOf('【從解讀到適合你的配戴選擇】');
+ const marker=prompt.indexOf('【本題延伸手鍊建議】');
  assert(marker>=0,kind+' missing recommendation workflow');
  assert(prompt.includes(selectionGuide.recommendationText(kind)),kind+' wrong method branch');
- assert(prompt.includes('利於銷售某類商品不等於本人適合佩戴該材質'));
- assert(prompt.includes('二至三句'));assert(prompt.includes('有理由的主推薦'));
+ assert(prompt.includes('本次一項有效盤面發現'));
+ assert(prompt.includes('真正面對的需要與可採取的行動'));
+ assert(prompt.includes('具體手鍊'));
+ assert(prompt.includes('象徵性提醒'));
  assert.equal(prompt.split(shop).length-1,1,kind+' duplicate shop URL');
  assert(prompt.indexOf(shop)>marker,kind+' invitation must follow selection');
  assert.equal(prompt.trim().split('\n').at(-1),'願你諸事順遂。',kind+' footer order');
  assert(!prompt.includes('[object Object]'));assert(!prompt.includes('需要時依已說清楚的生活需求'));
- assert(prompt.includes('規則版本 '+selectionGuide.version),kind+' missing current version');
+ assert(!prompt.includes('【材質參考：事實與適用條件】'),kind+' contains the unrelated material encyclopedia');
  assert(!prompt.includes('STALE_RECOMMENDATION'),kind+' accepted stale instructions');
 }
 function staleGuide(base,version){return {...base,version,recommendationText:()=> 'STALE_RECOMMENDATION',recommendationEnding:()=> 'STALE_RECOMMENDATION',recommendationPolicy:()=>({version,outputRule:'STALE_RECOMMENDATION'})};}
-test('Each reading method receives a different evidence path, with selection before invitation',()=>{
- for(const kind of ['bazi','compat','personality','chart','ziwei','astro','vedic','tarot','ootk','lenormand','meihua','oracle','name']){
+test('Each reading method receives a question-grounded bracelet recommendation after analysis',()=>{
+ for(const kind of selectionGuide.methodKinds()){
   const p=c.JY_READING_QUALITY.recommendationPolicy(kind);
   assert.equal(p.requiredForValidReading,true);assert.equal(p.mode,'needs_first');
   assert(!('allowedItems' in p));assert(!('crystalRec' in p));checkRecommendation(p.outputRule,kind);
  }
- assert(c.JY_READING_QUALITY.recommendationText('vedic').includes('功能吉凶'));
- assert(c.JY_READING_QUALITY.recommendationText('astro').includes('西洋尊貴也不直接套印度行星寶石表'));
- assert(c.JY_READING_QUALITY.recommendationText('ziwei').includes('五行局是排盤參數'));
- assert(c.JY_READING_QUALITY.recommendationText('lenormand').includes('月亮不是必選月光石'));
+ assert(c.JY_READING_QUALITY.recommendationText('vedic').includes('宮主職能'));
+ assert(c.JY_READING_QUALITY.recommendationText('astro').includes('不按太陽星座或生日月份直接套寶石'));
+ assert(c.JY_READING_QUALITY.recommendationText('ziwei').includes('五行局'));
+ assert(c.JY_READING_QUALITY.recommendationText('lenormand').includes('月亮不自動配月光石'));
 });
 test('All Tarot layouts preserve exact casts while using the method-specific recommendation',()=>{
  const ids=Object.keys(c.__defs).filter(id=>c.__defs[id].count>0);
@@ -61,12 +63,16 @@ test('Stopped Key cannot turn a failed validation into an accessory remedy',()=>
  const payload={mode:'ootk',question:business,ootkData:{procedureStatus:{abandoned:true,abandonedAt:'op1'},divinationValidity:{valid:false},operations:{op1:{abandoned:true}}}};
  const p=c.JY_buildExportPrompt('ootk',payload);assert(!p.includes(shop));assert(!p.includes('【材質參考'));assert(p.includes('本輪不能提供'));
 });
-test('Crystal/iron/ritual material choices carry actual distinctions, not scored product slots',()=>{
+test('Recommendation prompt stays compact and avoids turning every reading into a material lecture',()=>{
  const p=c.JY_READING_QUALITY.recommendationText('bazi');
- for(const str of ['月光石硬度6–6.5','韌性較差','碧璽硬度7–7.5','鐵鎳金屬','藏式天鐵／托查','本次沒有具體商品鑑別報告','鎳過敏','日後參考','使用者明確拒絕選品','不等於本人適合佩戴'])assert(p.includes(str),str);
- assert(p.includes('未確認的模型候選先比較根據'));
- assert(!p.includes('先完成原問句。需要時'));
- const both=c.JY_READING_QUALITY.recommendationText(['vedic','astro','vedic']);assert.equal(both.split('採P.V.R.').length-1,1);
+ assert(p.length<600, 'recommendation guide must not swamp the reading prompt');
+ assert(p.includes('不按缺行直接補石'));
+ assert(p.includes('一小段自然對話推薦一款具體手鍊'));
+ assert(!p.includes('月光石硬度'));
+ assert(!p.includes('GIA'));
+ const both=c.JY_READING_QUALITY.recommendationText(['vedic','astro','vedic']);
+ assert.equal(both.split('印度占星：').length-1,1);
+ assert(both.includes('西洋占星：'));
 });
 test('Standalone recommendation snapshots survive absent, v3 and earlier v4 shared scripts',()=>{
  for(const [ctx,spec,kind]of [[b,b.JY_BAZI_PROMPT_ROOT,'bazi'],[z,z.JY_ZIWEI_PROMPT_ROOT,'ziwei']]){
@@ -113,15 +119,15 @@ test('Tarot, Key, Lenormand, oracle and Meihua use current snapshots when v4.1 i
  finally{c._ootkResults=savedOotk;}
  assert.equal(JSON.stringify(r.cards),before,'fallback must not redraw');
 });
-test('Selection guidance has no named default, demands discriminating evidence and preserves explicit choices',()=>{
+test('Selection guidance does not hard-code a stone and follows the actual question',()=>{
  for(const kind of selectionGuide.methodKinds()){
   const rules=selectionGuide.recommendationText(kind);
-  assert(!rules.includes('紫水晶'),'general guidance must not prime the reported default');
-  assert(!rules.includes('amethyst-care-cleaning'));
-  assert(rules.includes('正文一處可核對'));
-  assert(rules.includes('正文只寫主選理由'));
-  assert(rules.includes('欠缺區分條件'));
-  assert(rules.includes('相同有效依據可以再次選同一材質'));
+  assert(!rules.includes('紫水晶'),'general guidance must not prime a default stone');
+  if(kind==='lenormand')assert(rules.includes('月亮不自動配月光石'));
+  else assert(!rules.includes('月光石'),'methods should not hard-code named stones');
+  assert(rules.includes('本次一項有效盤面發現'));
+  assert(rules.includes('具體手鍊'));
+  assert(rules.includes('【本法選材提醒】'));
  }
  const cases=[
   '我喜歡紫色，手上已有紫水晶。依這個命盤，是否繼續佩戴？',

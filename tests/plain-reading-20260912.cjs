@@ -49,13 +49,14 @@ test('Shared and standalone brand policies agree; no fixed gemstone or fabricate
   assert(spec.answerContractLines('single').join('\n').includes('【白話優先】'));
  }
  // The prompt also must avoid turning symbolic interpretation into a sales diagnosis.
- assert(policy.outputRule.includes('財務困難者先用已有物品'));
- assert(policy.outputRule.includes('不宣稱命盤能證明人體缺某種礦物'));
+ assert(policy.outputRule.includes('若提問者提到預算吃緊或暫不想購買'));
+ assert(policy.outputRule.includes('不把五行／星盤象徵說成身體實際缺少某種礦物'));
  assert(!/手圍16cm|14mm/.test(policy.outputRule));
  assert.equal(policy.requiredForValidReading,true);
  assert.deepEqual(Array.from(policy.outputOrder),['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing']);
- // Material names are now source-reviewed comparison knowledge, never selected inventory.
- assert(policy.outputRule.includes('材料參考表不是賣場庫存'));
+ // A shared encyclopedic material appendix would distract every reading.
+ assert(!policy.outputRule.includes('材料參考表'));
+ assert(!policy.outputRule.includes('GIA'));
 });
 test('Legacy API entry points send needs-first policy and do not attach catalogue candidates',()=>{
  const follow=actualFunction('JS/ai-analysis.js','_triggerTarotFollowUp');
