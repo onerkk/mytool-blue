@@ -504,6 +504,7 @@
   };
 
   function sendFeedback(rating, reasons, comment) {
+    if (window.JY_PROMPT_ONLY) return;
     var url = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
     // ★ v43：從 _jyFeedbackSnapshot 讀完整上下文（跟 ui.js 一致）
     var snap = window._jyFeedbackSnapshot || {};

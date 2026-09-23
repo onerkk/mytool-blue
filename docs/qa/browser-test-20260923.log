@@ -1,0 +1,93 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:browser
+> npm run test:ui:browser && npm run test:foley:browser && npm run test:gua:craft && npm run test:vedic:browser && npm run test:western:browser && npm run test:astro-bridge:browser && npm run test:prompt-only:browser && npm run test:gua:mobile && npm run test:tarot:browser && npm run test:share:browser
+
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ui:browser
+> node tests/full-ui-audit-20260922.cjs
+
+PASS tarot entry, controls and assets at 320/390/768/1440px
+PASS ootk entry, controls and assets at 320/390/768/1440px
+PASS lenormand entry, controls and assets at 320/390/768/1440px
+PASS bazi entry, controls and assets at 320/390/768/1440px
+PASS compat entry, controls and assets at 320/390/768/1440px
+PASS ziwei entry, controls and assets at 320/390/768/1440px
+PASS meihua entry, controls and assets at 320/390/768/1440px
+PASS oracle entry, controls and assets at 320/390/768/1440px
+PASS vedic entry, controls and assets at 320/390/768/1440px
+PASS western entry, controls and assets at 320/390/768/1440px
+PASS liuyao entry, controls and assets at 320/390/768/1440px
+PASS yijing entry, controls and assets at 320/390/768/1440px
+PASS edited recommendations, distinct astrology routes, text preservation and modal focus restoration
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:foley:browser
+> node tests/foley-browser-20260922.cjs
+
+PASS 8 real MP3s decode to non-silent PCM and reach the output; no sound before a gesture.
+PASS Yarrow split/group/return cues, mobile layout, reduced-motion sound, remembered mute and volume.
+PASS Tarot, OOTK, Lenormand, Bazi, compatibility, Ziwei, Meihua and Oracle use physical recordings and stop on exit.
+PASS Oracle stale transitions, three physical coin cues, Vedic and Western controls, visibility cleanup, original playback pitch.
+PASS corrupt-file refetch, decode cancellation and missing-audio fallback.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:gua:craft
+> node tests/gua-craft-browser-20260922.cjs
+
+PASS: WebGL scenes, 18 yarrow changes, partial resume, all three widths, real audio decode/play/stop, reduced motion, distinct cards, twelve-tool PNG, context loss.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:vedic:browser
+> node tests/vedic-browser-20260914.cjs
+
+Ceremony renderer: webgl
+Horizontal overflow: []
+{"browser":"131.0.6778.0","renderer":"webgl","scenarios":["custom civil date picker","custom 24-hour time picker","cancel and retry","dedicated complete 3D ceremony","immutable chart","north/south D1 D9","nine grahas","all nine ADs","selected AD own PD","copy prompt","desktop chart","scroll release","leap-century keyboard calendar","malformed year and invalid hour/minute","00:00 and 23:59","real touch wheel","all sixteen chart views","all selected AD own PD","keyboard tabs","320px four panels","touch scroll both directions","reduced motion","WebGL context loss fallback","DST gap recovery","unknown birth time"],"errors":[],"missing":[],"overflowNodes":[]}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:western:browser
+> node tests/western-browser-20260914.cjs
+
+PASS Western desktop and mobile browser flows
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:astro-bridge:browser
+> node tests/astro-bridge-browser-20260922.cjs
+
+{
+  "passed": true,
+  "coldSubmit": true,
+  "automaticFlow": true,
+  "unknownResubmit": true,
+  "nativePayload": true,
+  "staleCancellation": true,
+  "oldAstrologyScriptsLoaded": false,
+  "pageErrors": [],
+  "screenshots": "/tmp/jy-astro-bridge"
+}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:prompt-only:browser
+> node tests/prompt-only-network-20260923.cjs
+
+PASS prompt-only with stale session/pricing, tool selection and unmatched question: zero API requests
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:gua:mobile
+> node tests/gua-mobile-browser-20260923.cjs
+
+PASS yarrow and three-coin rooms: 320x480, 320x568, 390x844; visible audio and skip controls, preserved cast, no overflow or browser errors.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:tarot:browser
+> node tests/card-audit-mathers-browser-20260923.cjs
+
+{"status":"pass","viewport":"390x844","spread":"mathers_66","selectedSignificator":"權杖皇后","drawn":68,"remainingUnused":9,"visibleSlots":68,"promptChars":10682,"paidRequests":0}
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:share:browser
+> node tests/share-mathers-browser-20260923.cjs
+
+PASS Mathers 68 cards in a zoomable 320/390 long PNG, plus native Zhouyi two readings and Liuyao Na Jia sharing.

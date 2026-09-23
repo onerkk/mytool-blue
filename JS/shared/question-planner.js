@@ -10,11 +10,14 @@ function analyzeReadingQuestion(value) {
   function scope(s){return (s.match(/(?:20\d{2}年|今年|明年|未來一年|未來十二個月|未來12個月|本月|下個月|本週|下週|今天|明天|年底前|月底前|(?:未來|接下來)?[一二三四五六七八九十兩\d]+(?:個月|週|天|年)(?:內|後)?)/g)||[]).join('、');}
   var decision=classifyDecisionQuestion(q), options=[];
   // Named options retain the user's exact labels and do not swallow a trailing question.
-  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=(?:[\s，,；;、]+[A-F]\s*[:：])|$)/g));
+  // A/B/C 標籤可在末一項之後接「哪個較好？」；不要把問句當第 4 個方案。
+  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=[\n，,；;]|(?:\s+[A-F]\s*[:：])|$)/g));
   if(labels.length>=2) options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
+  // Bare A、B、C are stable option IDs even when the question adds “三個方案”.
+  if(!options.length){var bare=q.match(/(?:^|[^A-Za-z])([A-F])\s*、\s*([A-F])\s*、\s*([A-F])(?:$|[^A-Za-z])/i);if(bare)options=bare.slice(1,4);}
   if(decision.kind==='binary')options=[decision.left,decision.right];
   if(decision.kind==='multiple'&&options.length<3){
-    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
+    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/^(?:我)?(?:有|的)?(?:選項|方案)(?:是|有|為)?\s*/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
     options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);
     if(options.some(function(s){return s.length>60;})||options.length<3)options=[];
   }

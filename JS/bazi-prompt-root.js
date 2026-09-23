@@ -176,8 +176,8 @@ var JY_REC_BAZI = {
     if(mode==='chart')return ['【排盤呈現】以資料校核為主，指出可確認與仍需確認的欄位；未另問人生議題時，不輸出人生預測。'];
     var lines = [];
     var readingKind=mode==='compatibility'?'compat':'bazi';
-    lines=lines.concat(root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
-    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
+    lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
+    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.methodLines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
     lines.push('參考脈絡：《子平真詮·論用神》https://www.donglishuzhai.net/chapter/3721.html；香港天文台曆法與視太陽時 https://www.hko.gov.hk/tc/gts/time/basicterms-apparentsolartime.htm。前者是傳統判法，後者只支持時間概念；列出書目不表示本次已即時查網。');
     if (mode === 'compatibility') {
       lines.push('6. 合盤請清楚區分 A 方、B 方與共同關係層，說明吸引、支持、摩擦、溝通、時間節奏與長期相處條件。');
@@ -191,7 +191,7 @@ var JY_REC_BAZI = {
     var kind=mode==='compatibility'?'compat':(mode==='personality'?'personality':(mode==='chart'?'chart':'bazi'));
     return [
       '【延伸選品】',
-      (root.JY_READING_QUALITY&&root.JY_READING_QUALITY.version==="4.3.0"&&root.JY_READING_QUALITY.recommendationEnding?root.JY_READING_QUALITY.recommendationText(kind):JY_REC_BAZI[kind]),
+      (root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationText(kind):JY_REC_BAZI[kind]),
       '最後保留以下兩行：\n' + SHOP_LINK + '\n' + FINAL_WISH
     ];
   }

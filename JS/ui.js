@@ -2,6 +2,10 @@
 // ui.js — 靜月之光模組化拆分
 // ═══════════════════════════════════════════════════════════════
 
+// 此發行版在瀏覽器本地起盤並匯出提示詞。舊付費服務僅供歷史相容，
+// 任何頁面入口都不可因舊登入快取或配額檢查向解讀 Worker 發送資料。
+window.JY_PROMPT_ONLY = true;
+
 // ═══════════════════════════════════════════════════════════════
 // 【v52 中央定價表】fallback 機制
 // v62 修補：pricing-loader.js 已在 ui.js 之前載入並設定 window.JY_PRICES。
@@ -107,6 +111,11 @@
 
 // ── Google OAuth Session：從 URL #jy_session=xxx 或 localStorage 讀取 ──
 (function(){
+  if (window.JY_PROMPT_ONLY) {
+    window._JY_SESSION_TOKEN = '';
+    window._JY_SESSION_NAME = '';
+    return;
+  }
   var sessionToken = '';
   var userName = '';
   
@@ -468,13 +477,13 @@ function renderRemedy(bazi,type){
     return `<strong>${stones}</strong>`;
   }
   const typeRemedy={
-    love:{title:'增強桃花 / 感情磁場',desc:`建議佩戴${safeStone('粉晶','火')}於左手增強異性緣，臥室西南方（坤位）可擺放水晶球，週五（金星日）是約會好日子。`},
-    career:{title:'提升事業貴人運',desc:`辦公桌左上角放${safeStone('綠幽靈','木')}招貴人，重要會議佩戴${avoidSet.has('金')?`${mainFav}行系`:'金色系'}飾品增強氣場。`},
-    wealth:{title:'開啟正偏財運通道',desc:`錢包內放小片${safeStone('黃水晶','土')}碎石招偏財，每月農曆初二、十六「做牙」，家中財位（大門斜對角）保持明亮。`},
-    health:{title:'五行養生調理方案',desc:`根據你的命盤，${mainFav}行不足可能影響相關臟腑。建議從飲食（${fc.food}）、作息（${mainFav==='水'?'早睡養腎':mainFav==='木'?'舒肝勿怒':mainFav==='火'?'午休養心':mainFav==='金'?'深呼吸養肺':'飲食規律養脾'}）著手。`},
-    general:{title:'全方位運勢提升',desc:`今年最重要的是穩住${mainFav}行能量。選一條符合喜用神的水晶手鏈隨身佩戴，等於時刻在補運。`},
-    relationship:{title:'改善人際磁場',desc:`佩戴${safeStone('粉晶','火')}增加親和力，${safeStone('海藍寶','水')}幫助溝通表達。`},
-    family:{title:'穩固家庭和諧能量',desc:`家中客廳放${avoidSet.has('火')?`${mainFav}行水晶`:'<strong>紫水晶洞</strong>'}淨化磁場，臥室避免放太多電子產品。`}
+    love:{title:'把關係說清楚',desc:`可把${safeStone('粉晶','火')}當作提醒自己坦誠交流的配色；真正要看對方是否願意主動互動。`},
+    career:{title:'把工作下一步定下來',desc:`先確認能掌握的時程與資源；若喜歡${mainFav}行配色，可選喜歡的飾品作個人風格。`},
+    wealth:{title:'先核對收支',desc:`列出實際收入、支出及風險，再作金錢決定。${safeStone('黃水晶','土')}是五行風格選項，沒有招財保證。`},
+    health:{title:'照顧作息與身體',desc:`五行配色只是一種傳統象徵，不能從${mainFav}行推定器官狀況；健康不適應依實際症狀處理。`},
+    general:{title:'找一件今天能做的事',desc:`先做可確認的小步驟；若偏好${mainFav}行的色彩，可以自行挑選飾品，無須購買才能轉運。`},
+    relationship:{title:'建立清楚的互動',desc:`把需求講明白，觀察對方的回應。${safeStone('海藍寶','水')}可作喜歡的色彩提醒，不會代替溝通。`},
+    family:{title:'從實際相處開始',desc:`安排一次不被打擾的談話；若喜歡${mainFav}行配色，可用作居家佈置的靈感。`}
   };
   const tr=typeRemedy[type]||typeRemedy.general;
   actions.push({title:tr.title,desc:tr.desc,crystal:null});
@@ -595,7 +604,18 @@ function goStep(n){
           return;
         }
       }
-      runAnalysis();
+      if (window.JY_PROMPT_ONLY) {
+        // 結果是本次已計算盤面資料與可複製提示詞；不啟動舊七維分數裁決。
+        window._jyResultModes = window._jyResultModes || {};
+        window._jyResultModes.full = true;
+        var questionHero = document.getElementById('r-question-hero');
+        if (questionHero) questionHero.textContent = '「' + ((S.form && S.form.question) || '') + '」';
+        if (typeof window.JY_renderFullExportPrompt === 'function') window.JY_renderFullExportPrompt('ai-deep-wrap');
+        else {
+          var resultMount = document.getElementById('ai-deep-wrap');
+          if (resultMount) resultMount.textContent = '本次提示詞組件載入未完成，請重新整理後重試。';
+        }
+      } else runAnalysis();
       // ★ v28：sticky-cta 和回饋區都不在這裡顯示——等 AI 分析完成後由 ai-analysis.js 觸發
       // 如果有多種結果，刷新導航
       if (S._fromTarot || (window._jyResultModes && window._jyResultModes.tarot)) {
@@ -867,10 +887,10 @@ async function _jyPrepareCompositeAstro(birth) {
     var dependencies = [
       ['JS/vendor/lunar.js?v=1.7.7', function(){return typeof Solar !== 'undefined';}],
       ['JS/bazi-calendar-core.js?v=20260912engine2', function(){return !!window.BaziCalendarCore;}],
-      ['JS/solar-location.js?v=20260922bridge1', function(){return typeof calcTrueSolarTime === 'function';}],
-      ['JS/bazi.js?v=20260922bridge1', function(){return typeof computeBazi === 'function';}],
-      ['JS/bazi_upgrade.js?v=20260922rules1', function(){return typeof enhanceBazi === 'function';}],
-      ['JS/ziwei.js?v=20260922audit2', function(){return typeof computeZiwei === 'function';}]
+      ['JS/solar-location.js?v=20260923final1', function(){return typeof calcTrueSolarTime === 'function';}],
+      ['JS/bazi.js?v=20260923final1', function(){return typeof computeBazi === 'function';}],
+      ['JS/bazi_upgrade.js?v=20260923final1', function(){return typeof enhanceBazi === 'function';}],
+      ['JS/ziwei.js?v=20260923final1', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
       if (!entry[1]()) await new Promise(function(resolve, reject) {
@@ -984,6 +1004,7 @@ function pickTool(tool, options) {
 }
 
 function _checkToolQuota(tool) {
+  if (window.JY_PROMPT_ONLY) return;
   // ★ v70 全免費/無登入：塔羅與開鑰皆為「複製提示詞」模式，不打 worker、不查配額/登入
   //   → 保留 index.html 靜態的「完全免費」徽章，不再被 LOGIN_REQUIRED 覆蓋成「需登入 Google 帳號」
   if (tool === 'tarot' || tool === 'ootk') return;
@@ -1938,6 +1959,7 @@ function _reportAnalysisResult(question, type, prob){
 
 // ── 回饋提交到 Worker KV ──
 function _sendFeedbackToForms(rating,reasons,comment,actual){
+  if (window.JY_PROMPT_ONLY) return;
   if(S._isAdmin) return;
   const WORKER_URL='https://jy-ai-proxy.onerkk.workers.dev';
   const reasonStr=Array.isArray(reasons)?reasons.join('、'):(reasons||'');
@@ -2071,6 +2093,7 @@ function _sendFeedbackToForms(rating,reasons,comment,actual){
 
 // ── 結果頁顯示時自動顯示回饋區 ──
 function showFeedbackSection(){
+  if (window.JY_PROMPT_ONLY) return;
   var fb=document.getElementById('feedback-section');
   if(!fb) return;
   // 判斷當前結果頁：step-tarot（塔羅/OOTK）或 step-3（七維度）
@@ -2266,7 +2289,7 @@ function getTodayGanZhi(){
   };
 }
 
-/* 依命主八字×當日干支計算真實運勢 */
+/* 依命主八字×當日干支產生傳統象徵參考分 */
 function computeRealFortune(bazi){
   // ── 新邏輯：以 analyzeBaziTags + analyzeZiweiTags + analyzeJyotishTags + analyzeNatalTags + analyzeNameTags 為核心 ──
   // 今日運勢是「general」類型的短線判斷，用全系統 tag 加權
@@ -2303,27 +2326,18 @@ function computeRealFortune(bazi){
   score = Math.max(10, Math.min(95, score));
 
   // ── B. 新多維度 tag 引擎加成（取代舊的各系統獨立加法）──
-  // 優先從 S._uResult 取（問答已跑過），否則即時計算
+  // 即時計算原生星命資料；舊合成問答分數可能混入姓名字根，不作今日來源。
   var tagBonus = 0;
   var tagSources = [];
-  if(typeof S !== 'undefined' && S._uResult && S._uResult.comb){
-    // 已有問答結果：直接用 finalDir 和 rawStrength 推算加成
-    var rs = S._uResult.comb.rawStrength || 0.5;
-    var fd = S._uResult.comb.finalDir || 'mid';
-    var baseAdj = (rs - 0.5) * 20; // ±10
-    tagBonus += fd === 'pos' ? Math.abs(baseAdj) : fd === 'neg' ? -Math.abs(baseAdj) : 0;
-  } else {
-    // 即時計算七系統 tags（'general' 類型）
+  {
     try { tagSources.push(analyzeBaziTags(bazi, 'general')); } catch(e){}
     try { if(S.ziwei) tagSources.push(analyzeZiweiTags(S.ziwei, 'general')); } catch(e){}
     try { if(S.natal) tagSources.push(analyzeNatalTags(S.natal, 'general')); } catch(e){}
     try { if(S.jyotish) tagSources.push(analyzeJyotishTags(S.jyotish, 'general')); } catch(e){}
-    var nr = (typeof S !== 'undefined' && S.nameResult) ? S.nameResult : null;
-    var znr = (typeof S !== 'undefined' && S.zodiacNameResult) ? S.zodiacNameResult : null;
-    try { if(nr || znr) tagSources.push(analyzeNameTags(nr, znr, 'general')); } catch(e){}
     tagSources.forEach(function(tags){
       if(!tags || !tags.length) return;
       tags.forEach(function(t){
+        if(t.sys === 'name') return;
         var w = t.weight || 1;
         if(t.direction === 'pos') tagBonus += w * 0.8;
         else if(t.direction === 'neg') tagBonus -= w * 0.8;
@@ -2373,18 +2387,18 @@ function computeRealFortune(bazi){
 
   // ── 籤等 ──
   var sign, icon, msg;
-  if(score>=85){sign='上上籤';icon='🌟';msg='諸事皆宜，今日天時與命盤高度契合，把握機會！';}
-  else if(score>=75){sign='大吉籤';icon='🍊';msg='天時地利人和，今日運勢旺盛，適合重要決定。';}
-  else if(score>=65){sign='上吉籤';icon='✨';msg='貴人星動，行動力強，積極推進事務有佳績。';}
-  else if(score>=55){sign='中吉籤';icon='🌙';msg='穩中求進，內在能量充沛，適合規劃與學習。';}
-  else if(score>=45){sign='小吉籤';icon='🌤️';msg='小有進展，耐心等待時機，勿急躁冒進。';}
-  else if(score>=35){sign='中平籤';icon='☁️';msg='順其自然，今日宜守不宜攻，韜光養晦。';}
-  else if(score>=25){sign='小凶籤';icon='🌊';msg='運勢低迷，注意人際摩擦，凡事多留退路。';}
-  else{sign='凶籤';icon='⚡';msg='沖煞之日，宜靜不宜動，避免重大決策與衝突。';}
+  if(score>=85){sign='上上籤';icon='🌟';msg='今天的干支象徵偏向推進，挑一件有準備的事行動。';}
+  else if(score>=75){sign='大吉籤';icon='🍊';msg='盤面有助力的象徵，重要決定仍要核對現實資料。';}
+  else if(score>=65){sign='上吉籤';icon='✨';msg='適合整理下一步，現實進展以實際行動與回應為準。';}
+  else if(score>=55){sign='中吉籤';icon='🌙';msg='這段時間適合把計畫寫清楚，留意真正可用的資源。';}
+  else if(score>=45){sign='小吉籤';icon='🌤️';msg='先完成能掌握的事情，再根據新資訊調整。';}
+  else if(score>=35){sign='中平籤';icon='☁️';msg='節奏放慢一點，為重要安排預留彈性。';}
+  else if(score>=25){sign='小凶籤';icon='🌊';msg='盤面有阻力的象徵，與人協作時先釐清期待。';}
+  else{sign='凶籤';icon='⚡';msg='盤面阻力較多；重要決定依實際條件與可核對資料處理。';}
 
   var favEl = bazi.fav[0] || dmEl;
   // 從 REAL_PRODUCTS 取喜用神五行的水晶（取代舊硬編碼）
-  var crystal = {n:'白水晶', reason:'補充喜用神能量'};
+  var crystal = {n:'白水晶', reason:'依五行象徵挑選的配色'};
   try {
     if (typeof REAL_PRODUCTS !== 'undefined') {
       var _prods = REAL_PRODUCTS[favEl] || REAL_PRODUCTS['土'] || [];
@@ -2395,7 +2409,7 @@ function computeRealFortune(bazi){
         return pa - pb;
       });
       var _mid = _sorted[Math.floor(_sorted.length * 0.3)] || _sorted[0];
-      if (_mid) crystal = { n: _mid.n, reason: _mid.d || '補充' + favEl + '行能量' };
+      if (_mid) crystal = { n: _mid.n, reason: '五行文化配色選項；材質與價格請向賣家核對' };
     }
   } catch(e) {}
 
@@ -2445,8 +2459,8 @@ function computeRealFortune(bazi){
 
   // ── 動態提示 ──
   var dynNote = '';
-  if(isChong && score<=40) dynNote = '今天日支逢沖且運勢偏低，建議重要事情延後處理';
-  else if(score>=75) dynNote = '今日多維度訊號一致偏正面，適合積極行動';
+  if(isChong && score<=40) dynNote = '日支逢沖是變動象徵；重要事情仍須按現實條件決定時機';
+  else if(score>=75) dynNote = '多項盤面訊號偏向推進；先做有準備的一步';
 
   // ── 月令提示 ──
   var monthNote = '';
@@ -2463,7 +2477,7 @@ function computeRealFortune(bazi){
 
   return {
     score:score, sign:sign, icon:icon, msg:msg, tip:tip,
-    crystal:crystal.n||crystal, crystalReason:crystal.reason||'補充喜用神能量',
+    crystal:crystal.n||crystal, crystalReason:crystal.reason||'五行文化配色選項',
     god:god, cs:csState, csState:csState, gz:tG+tZ, todayGZ:tG+tZ,
     tEl:tEl, el:favEl, favEl:favEl,
     isChong:isChong, isHe:isHe,
@@ -2908,8 +2922,7 @@ function showCrystalDetail(name){
       </div>
       <p class="cdm-desc">${crystal.d}</p>
       <div class="cdm-info">
-        <div class="cdm-row"><i class="fas fa-tag"></i> 價格：<strong>${crystal.price}</strong></div>
-        <div class="cdm-row"><i class="fas fa-hand-holding-heart"></i> 佩戴方式：${crystal.wear}</div>
+        <div class="cdm-row"><i class="fas fa-tag"></i> 材質、尺寸、價格與庫存請以店家頁面為準</div>
       </div>
       <div class="cdm-actions">
         <a href="${(function(){
@@ -4079,7 +4092,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 /* =============================================================
    FEATURE: 能量行事曆 + 靈氣濾鏡 v2
-   八字×姓名學交叉驗證
+   當日干支參考與視覺濾鏡
    ============================================================= */
 
 /* ── 任意日期干支計算 ── */
@@ -4091,7 +4104,7 @@ function getDateGZ(y,m,d){
   return{gan:TG[gi],zhi:DZ[zi],el:WX_G[TG[gi]],gi:gi,zi:zi};
 }
 
-/* ── 每日運勢計算（八字×姓名學交叉驗證）── */
+/* ── 每日傳統干支參考，不以字根推算當日運勢 ── */
 function computeDateFortune(bazi, dateObj){
   var y=dateObj.getFullYear(), m=dateObj.getMonth()+1, d=dateObj.getDate();
   var gz=getDateGZ(y,m,d);
@@ -4150,15 +4163,7 @@ function computeDateFortune(bazi, dateObj){
     if([6,8,12].indexOf(sunH)>=0) score-=2;
   }catch(e){}}
 
-  // 姓名學
-  if(typeof S!=='undefined'&&S.zodiacNameResult){
-    var zn=S.zodiacNameResult;
-    if(zn.overallLevel==='大吉') score+=3;
-    else if(zn.overallLevel==='吉') score+=1;
-    else if(zn.overallLevel&&zn.overallLevel.indexOf('凶')>=0) score-=3;
-    if(zn.isSacrifice) score-=2;
-  }
-
+  // 姓名字根是流派象徵，不換算成某天的事件分數。
   // 新 tag 引擎（修正 direction 'pos'/'neg'，移除舊 'positive'/'negative' 死碼）
   var tagBonus=0;
   var tagSrcs=[];
@@ -4166,14 +4171,10 @@ function computeDateFortune(bazi, dateObj){
   try{ if(typeof S!=='undefined'&&S.ziwei) tagSrcs.push(analyzeZiweiTags(S.ziwei,'general')); }catch(e){}
   try{ if(typeof S!=='undefined'&&S.natal) tagSrcs.push(analyzeNatalTags(S.natal,'general')); }catch(e){}
   try{ if(typeof S!=='undefined'&&S.jyotish) tagSrcs.push(analyzeJyotishTags(S.jyotish,'general')); }catch(e){}
-  try{
-    var _nr=typeof S!=='undefined'?S.nameResult:null;
-    var _znr=typeof S!=='undefined'?S.zodiacNameResult:null;
-    if(_nr||_znr) tagSrcs.push(analyzeNameTags(_nr,_znr,'general'));
-  }catch(e){}
   tagSrcs.forEach(function(tags){
     if(!tags||!tags.length) return;
     tags.forEach(function(t){
+      if(t.sys==='name') return;
       var w=t.weight||1;
       if(t.direction==='pos') tagBonus+=w*0.6;
       else if(t.direction==='neg') tagBonus-=w*0.6;
@@ -4378,16 +4379,16 @@ function dlCal30(mode){
 
 /* ── 靈氣濾鏡 ── */
 /* ═══════════════════════════════════════════════════════
-   靈氣濾鏡 v4 — 七脈輪×八字×姓名學 當日能量分析
+   靈氣濾鏡 v4 — 以當日干支做象徵配色的照片濾鏡
    ═══════════════════════════════════════════════════════ */
 
 /*
   核心邏輯：
   1. 算出當日干支的五行
-  2. 結合八字日主、喜忌神、十神、沖合、姓名學
+  2. 結合八字日主、喜忌神、十神、沖合；不以姓名字根推斷現實事件
   3. 計算五行能量分佈（金木水火土各多少%）
   4. 最強五行 → 對應脈輪（五行→脈輪映射）
-  5. 水晶推薦依「喜用神」，絕不推忌神的水晶
+  5. 水晶配色參照五行喜忌作傳統象徵，並非療效或購買必要條件
 */
 
 /* 七脈輪資料（真實脈輪體系） */
@@ -4444,7 +4445,7 @@ var EL_CHAKRA={
   '\u91D1':['crown']
 };
 
-/* 水晶推薦（按喜用神五行，絕不推忌神五行的水晶）*/
+/* 水晶名稱配色（傳統五行喜忌供外觀參考） */
 var CRYSTAL_BY_FAV={
   '\u91D1':['\u9226\u6676','\u767D\u6C34\u6676','\u9280\u9AEE\u6676','\u767D\u5E7B\u5F71\u6C34\u6676'],
   '\u6728':['\u7DA0\u5E7D\u9748','\u6771\u9675\u7389','\u7DA0\u78A7\u74BD','\u7FE0\u9285\u7926'],
@@ -4549,14 +4550,10 @@ function analyzeTodayChakra(bazi){
   try{ if(typeof S!=='undefined'&&S.ziwei) tagSrcs.push(analyzeZiweiTags(S.ziwei,'general')); }catch(e){}
   try{ if(typeof S!=='undefined'&&S.natal) tagSrcs.push(analyzeNatalTags(S.natal,'general')); }catch(e){}
   try{ if(typeof S!=='undefined'&&S.jyotish) tagSrcs.push(analyzeJyotishTags(S.jyotish,'general')); }catch(e){}
-  try{
-    var _nr=typeof S!=='undefined'?S.nameResult:null;
-    var _znr=typeof S!=='undefined'?S.zodiacNameResult:null;
-    if(_nr||_znr) tagSrcs.push(analyzeNameTags(_nr,_znr,'general'));
-  }catch(e){}
   tagSrcs.forEach(function(tags){
     if(!tags||!tags.length) return;
     tags.forEach(function(t){
+      if(t.sys==='name') return;
       var w=t.weight||1;
       if(t.direction==='pos') tagBonus+=w*0.7;
       else if(t.direction==='neg') tagBonus-=w*0.7;
@@ -4597,7 +4594,7 @@ function renderAuraFilter(){
     box.innerHTML='<div class="text-center" style="padding:var(--sp-lg)"><p class="text-dim text-sm mb-md">\u9700\u8981\u5148\u5B8C\u6210\u57FA\u672C\u8CC7\u6599\uFF08\u751F\u65E5\u6642\u8FB0\uFF09</p><button class="btn btn-gold btn-sm" onclick="goStep(0)"><i class="fas fa-pen"></i> \u524D\u5F80\u586B\u5BEB</button></div>';
     return;
   }
-  box.innerHTML='<div class="aura-up" id="aura-uz" onclick="document.getElementById(\'aura-fi\').click()"><div style="font-size:2.5rem;color:var(--c-gold);opacity:.6;margin-bottom:var(--sp-sm)"><i class="fas fa-cloud-arrow-up"></i></div><p class="text-sm text-dim">\u9EDE\u64CA\u4E0A\u50B3\u6216\u62D6\u66F3\u81EA\u62CD\u7167</p><p style="color:var(--c-gold);font-weight:700;margin-top:4px">\u5206\u6790\u7576\u65E5\u4E03\u8108\u8F2A\u80FD\u91CF\u8272</p><p class="text-xs text-muted mt-xs">\u652F\u63F4 JPG / PNG\uFF0C\u4E0A\u50B3\u5F8C\u81EA\u52D5\u5206\u6790</p></div><input type="file" id="aura-fi" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAF(this.files[0])"><div id="aura-progress" style="display:none"></div><div id="aura-result" style="display:none"></div>';
+  box.innerHTML='<div class="aura-up" id="aura-uz" onclick="document.getElementById(\'aura-fi\').click()"><div style="font-size:2.5rem;color:var(--c-gold);opacity:.6;margin-bottom:var(--sp-sm)"><i class="fas fa-cloud-arrow-up"></i></div><p class="text-sm text-dim">\u9EDE\u64CA\u4E0A\u50B3\u6216\u62D6\u66F3\u81EA\u62CD\u7167</p><p style="color:var(--c-gold);font-weight:700;margin-top:4px">依當日干支製作藝術濾鏡</p><p class="text-xs text-muted mt-xs">照片在裝置內套用色彩濾鏡；不分析健康或能量場</p></div><input type="file" id="aura-fi" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleAF(this.files[0])"><div id="aura-progress" style="display:none"></div><div id="aura-result" style="display:none"></div>';
   setTimeout(function(){
     var uz=document.getElementById('aura-uz');if(!uz)return;
     uz.addEventListener('dragover',function(e){e.preventDefault();uz.style.borderColor='var(--c-gold)';});
@@ -4614,8 +4611,8 @@ function handleAF(file){
   document.getElementById('aura-uz').style.display='none';
   var prog=document.getElementById('aura-progress');
   prog.style.display='block';
-  prog.innerHTML='<div style="text-align:center;padding:var(--sp-xl) var(--sp-md)"><div class="aura-orb" style="width:48px;height:48px;background:radial-gradient(circle,'+ch.color+','+ch.glow+'0.15));box-shadow:0 0 30px '+ch.glow+'0.4);margin:0 auto var(--sp-md)"></div><p class="text-sm" style="color:'+ch.color+'">\u6B63\u5728\u5206\u6790\u80FD\u91CF\u5834\u2026</p><div style="width:80%;max-width:300px;margin:var(--sp-sm) auto 0;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div id="aura-bar" style="width:0%;height:100%;background:linear-gradient(90deg,'+ch.color+','+ch.glow+'0.5));border-radius:3px;transition:width 0.3s"></div></div><p id="aura-pct" class="text-xs text-muted mt-xs">0%</p></div>';
-  [{t:200,p:15,s:'\u8B80\u53D6\u7576\u65E5\u5E72\u652F\u2026'},{t:600,p:35,s:'\u5206\u6790\u4E94\u884C\u80FD\u91CF\u5206\u4F48\u2026'},{t:1000,p:55,s:'\u4EA4\u53C9\u59D3\u540D\u5B78\u9A57\u8B49\u2026'},{t:1400,p:75,s:'\u5C0D\u61C9\u4E03\u8108\u8F2A\u2026'},{t:1800,p:90,s:'\u5408\u6210\u6C23\u5834\u7167\u7247\u2026'}].forEach(function(x){
+  prog.innerHTML='<div style="text-align:center;padding:var(--sp-xl) var(--sp-md)"><div class="aura-orb" style="width:48px;height:48px;background:radial-gradient(circle,'+ch.color+','+ch.glow+'0.15));box-shadow:0 0 30px '+ch.glow+'0.4);margin:0 auto var(--sp-md)"></div><p class="text-sm" style="color:'+ch.color+'">正在製作象徵配色照片…</p><div style="width:80%;max-width:300px;margin:var(--sp-sm) auto 0;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden"><div id="aura-bar" style="width:0%;height:100%;background:linear-gradient(90deg,'+ch.color+','+ch.glow+'0.5));border-radius:3px;transition:width 0.3s"></div></div><p id="aura-pct" class="text-xs text-muted mt-xs">0%</p></div>';
+  [{t:200,p:15,s:'\u8B80\u53D6\u7576\u65E5\u5E72\u652F\u2026'},{t:600,p:35,s:'整理五行色彩參考…'},{t:1000,p:55,s:'計算當日干支象徵…'},{t:1400,p:75,s:'調整濾鏡色彩…'},{t:1800,p:90,s:'繪製照片光暈…'}].forEach(function(x){
     setTimeout(function(){
       var b=document.getElementById('aura-bar'),p=document.getElementById('aura-pct');
       if(b)b.style.width=x.p+'%';if(p)p.textContent=x.p+'% '+x.s;
@@ -4648,10 +4645,7 @@ function showAuraResult(){
   var today=new Date();var ds=(today.getMonth()+1)+'/'+today.getDate();
 
   var znLine='';
-  if(S.zodiacNameResult){
-    var zn=S.zodiacNameResult;
-    znLine='<div style="font-size:.75rem;color:var(--c-text-muted);margin-top:4px">\u59D3\u540D\u5B78\uFF1A'+zn.emoji+zn.zodiac+'\u5E74\u751F\u4EBA\u3010'+zn.overallLevel+'\u3011\u5DF2\u7D0D\u5165\u8A08\u7B97</div>';
-  }
+  // 濾鏡不讀姓名結果；不顯示舊版「已納入計算」的錯誤宣稱。
 
   /* 五行能量條 */
   var elNames={'\u91D1':'\u91D1','\u6728':'\u6728','\u6C34':'\u6C34','\u706B':'\u706B','\u571F':'\u571F'};
@@ -4672,17 +4666,17 @@ function showAuraResult(){
 
   // ── 行動導向的一句話 ──
   var actionLine='';
-  if(tc.score>=65) actionLine='\u4ECA\u5929\u80FD\u91CF\u72C0\u614B\u4E0D\u932F\uFF0C\u9069\u5408\u53BB\u884C\u52D5\u3001\u505A\u6C7A\u5B9A\u3001\u898B\u91CD\u8981\u7684\u4EBA\u3002';
-  else if(tc.score>=45) actionLine='\u4ECA\u5929\u80FD\u91CF\u5E73\u7A69\uFF0C\u8655\u7406\u65E5\u5E38\u4E8B\u52D9\u6C92\u554F\u984C\uFF0C\u4F46\u91CD\u5927\u6C7A\u5B9A\u5EFA\u8B70\u7DE9\u7DE9\u3002';
-  else actionLine='\u4ECA\u5929\u80FD\u91CF\u504F\u4F4E\uFF0C\u5EFA\u8B70\u653E\u6162\u8173\u6B65\uFF0C\u907F\u514D\u885D\u52D5\u6D88\u8CBB\u6216\u91CD\u8981\u8AC7\u5224\u3002';
+  if(tc.score>=65) actionLine='本次干支象徵偏向推進；可選一件有準備的事先動手。';
+  else if(tc.score>=45) actionLine='本次干支象徵偏向整理；先把眼前的事情理出順序。';
+  else actionLine='本次干支象徵偏向收斂；重要決定仍以現實資料與你的安排為準。';
 
   res.innerHTML='<div class="aura-cw" style="overflow:hidden"><canvas id="aura-cv" style="display:block;margin:0 auto;max-width:100%;height:auto"></canvas></div>'
     +'<div class="aura-nfo" style="margin-top:var(--sp-md)">'
     +'<div class="aura-orb" style="background:radial-gradient(circle,#fff,'+ch.color+');box-shadow:0 0 40px '+ch.glow+'0.5),0 0 80px '+ch.glow+'0.25)"></div>'
-    +'<div class="aura-cn" style="color:'+ch.color+'">'+ds+' \u7576\u65E5\u80FD\u91CF\uFF1A'+ch.name+'</div>'
+    +'<div class="aura-cn" style="color:'+ch.color+'">'+ds+' 象徵配色：'+ch.name+'</div>'
     +'<div style="font-size:.9rem;font-weight:600;color:'+ch.color+';margin-top:2px">'+ch.en+' \u2502 '+tc.fIcon+' '+tc.fortune+'</div>'
     +'<div style="font-size:.95rem;color:var(--c-text);margin-top:var(--sp-sm);line-height:1.7;font-weight:600">'+actionLine+'</div>'
-    +'<div style="font-size:.85rem;color:var(--c-text-dim);margin-top:var(--sp-xs);line-height:1.6">\u4F60\u7684\u559C\u7528\u795E\u662F<strong style="color:var(--c-gold)">'+tc.favEl+'\u884C</strong>\uFF0C\u4ECA\u5929\u5EFA\u8B70\u914D\u6234\uFF1A<strong style="color:var(--c-gold)">'+tc.crystal+'</strong></div>'
+    +'<div style="font-size:.85rem;color:var(--c-text-dim);margin-top:var(--sp-xs);line-height:1.6">以<strong style="color:var(--c-gold)">'+tc.favEl+'行</strong>為本次傳統配色參考；飾品示例：<strong style="color:var(--c-gold)">'+tc.crystal+'</strong>（自由選擇）</div>'
     +barsHtml
     +'<div style="font-size:.72rem;color:var(--c-text-muted);margin-top:var(--sp-xs)">'
     +'\u65E5\u4E3B\u300C'+dm+'\u300D('+dmEl+') \u2502 \u7576\u65E5\uFF1A'+tc.gz+'('+tc.tEl+') \u2502 \u5341\u795E\uFF1A'+tc.god+' \u2502 '+tc.score+'/100'
@@ -4704,10 +4698,10 @@ function showAuraResult(){
     })()
     +'</div></div>'
     +'<div style="display:flex;gap:var(--sp-xs);margin-top:var(--sp-md);justify-content:center;flex-wrap:wrap">'
-    +'<button class="btn btn-gold btn-sm" onclick="dlAura()"><i class="fas fa-download"></i> \u4E0B\u8F09\u80FD\u91CF\u7167\u7247</button>'
+    +'<button class="btn btn-gold btn-sm" onclick="dlAura()"><i class="fas fa-download"></i> 下載象徵配色照片</button>'
     +'<button class="btn btn-outline btn-sm" onclick="resetAF()"><i class="fas fa-redo"></i> \u91CD\u65B0\u4E0A\u50B3</button>'
     +'</div>'
-    +'<div class="aura-sh" style="margin-top:var(--sp-sm)"><strong>#\u975C\u6708\u4E4B\u5149 #\u80FD\u91CF\u5149\u74B0 #'+ch.name+' #\u6C34\u6676\u7642\u7652</strong></div>';
+    +'<div class="aura-sh" style="margin-top:var(--sp-sm)"><strong>#靜月之光 #五行配色 #'+ch.name+'</strong></div>';
 
   setTimeout(genAura,120);
 }
@@ -5374,6 +5368,7 @@ function _normalizeCounterData(data, action){
 var _counterError='';
 // 讀取可嘗試另一個已設定代理；寫入只在明確未進入路由時切換，避免重複計數。
 async function _gasCall(action){
+  if (window.JY_PROMPT_ONLY) return null;
   var isRead=action==='get';
   var endpoints=CTR_ENDPOINT===CTR_FALLBACK_ENDPOINT?[CTR_ENDPOINT]:[CTR_ENDPOINT,CTR_FALLBACK_ENDPOINT];
   _counterError='';
@@ -5418,13 +5413,14 @@ async function _countVisitor(){
 
 // ── 連進首頁即計數（每次頁面載入只觸發一次）──
 let _visitCounted=false;
-function _maybeCountVisit(){ if(_visitCounted) return; _visitCounted=true; _countVisitor(); }
+function _maybeCountVisit(){ if(_visitCounted || window.JY_PROMPT_ONLY) return; _visitCounted=true; _countVisitor(); }
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', _maybeCountVisit);
 else _maybeCountVisit();
 
 // ── 左上角品牌連點 5 下（保留舊月亮入口）──
 let _moonTapCount=0, _moonTapTimer=null;
 function _moonTap(){
+  if (window.JY_PROMPT_ONLY) return false;
   _moonTapCount++;
   clearTimeout(_moonTapTimer);
   if(_moonTapCount>=5){
@@ -5812,7 +5808,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20260922audit2', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20260923final1', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5882,7 +5878,7 @@ showAuraResult = function(){
     // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
     if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/meihua-standalone.js?v=20260922rules1', function(ok){
+      window._jyLazyScript('JS/meihua-standalone.js?v=20260923final1', function(ok){
         if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
         else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
       });
@@ -5896,7 +5892,7 @@ showAuraResult = function(){
     // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20260922rules1', function(ok){
+      window._jyLazyScript('JS/bazi-standalone.js?v=20260923final1', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });
@@ -6209,6 +6205,8 @@ showAuraResult = function(){
   function jySetIntro(count, isMinor) {
     var dt = isMinor ? '56' : '78';
     var html = '感受牌陣意象，從 <strong class="text-gold">' + dt + '</strong> 張塔羅牌中選出 <strong class="text-gold">' + count + '</strong> 張與你共鳴的牌';
+    var current = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+    if (current && current.id === 'mathers_66') html = '從 <strong class="text-gold">78</strong> 張牌先確定問者代表牌；其餘發 <strong class="text-gold">66</strong> 張主盤，再從未發的牌另抽 <strong class="text-gold">2</strong> 張意外牌。觸碰牌堆一次完成發牌。';
     var el = document.getElementById('t-deck-intro');
     if (!el) {
       var ps = document.querySelectorAll('p');
@@ -6223,15 +6221,19 @@ showAuraResult = function(){
   function jyBuildSlot(spreadId, def) {
       // v80.38 治本：版面以牌陣定義為準，避免傳入的 spreadId 失準導致掉進通用方格。
       if (def && def.id && def.id !== spreadId) spreadId = def.id;
-      // v80.14：優先使用 tarot_upgrade.js 的正統版面（含凱爾特、Mathers 21、Mathers 54；牌義統一 Book T）。
+      // 優先使用 tarot_upgrade.js 的正統版面（含 Mathers 第三法的 66 張拱形與獨立意外牌）。
       // v80.40：包 try/catch — 萬一 buildSlotLayout 內部丟例外，退回本函式自己的正統分支，
       //   不讓錯誤往上炸成「通用方格」。
       if (typeof window.buildSlotLayout === 'function') {
         try {
           var _orthodoxLayout = window.buildSlotLayout(spreadId, def);
           if (_orthodoxLayout) return _orthodoxLayout;
-        } catch (_e) { /* 落到下方本檔內建的正統排版 */ }
+        } catch (_e) {
+          if (spreadId === 'mathers_66') return '<div class="jy-tarot-error" role="alert">牌陣畫面暫時無法顯示，請重新載入頁面。</div>';
+          /* 落到下方本檔內建的正統排版 */
+        }
       }
+      if (spreadId === 'mathers_66') return '<div class="jy-tarot-error" role="alert">牌陣畫面暫時無法顯示，請重新載入頁面。</div>';
       function S(id, num, label) {
         var _dc = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards[id]) ? drawnCards[id] : null;
         var _di = (_dc && typeof getTarotCardImage === 'function') ? getTarotCardImage(_dc) : '';
@@ -6367,7 +6369,7 @@ showAuraResult = function(){
       }
       else if (spreadId === 'mathers_21') {
         // ── Mathers 1888 第二法：3 排 × 7，問者(Significator)在最右 ──
-        // 原典：21 張排在問者左側，每排「由右至左」讀（card 1 最靠右）；過去/現在/未來 三排
+        // 原典：21 張排在問者左側，每排「由右至左」讀（card 1 最靠右）。
         h += '<div class="jy-m21"><div class="m21-grid">';
         for (var mr = 0; mr < 3; mr++) {
           h += '<div class="m21-row">';
@@ -6375,7 +6377,7 @@ showAuraResult = function(){
           h += '</div>';
         }
         h += '</div><div class="m21-sig"><div class="sig-card">問者<br>Sig</div></div></div>';
-        h += '<div class="jy-arrow">每排由右至左讀（1→7）・過去／現在／未來 三排・配對 1↔21 解</div>';
+        h += '<div class="jy-arrow">三排牌由右至左讀（1→7）・配對 1↔21 解</div>';
       }
       else {
         h += '<div class="jy-row">';
@@ -6438,6 +6440,7 @@ showAuraResult = function(){
     try {
       var hint = document.getElementById('pick-hint');
       if (hint) hint.textContent = '觸碰任一張你有感覺的牌，選出 ' + count + ' 張';
+      if (hint && def && def.id === 'mathers_66') hint.textContent = '洗牌後觸碰牌堆一次，發出 66 張主盤及 2 張意外牌';
       var tgtCount = document.getElementById('t-target-count');
       if (tgtCount) tgtCount.textContent = String(count);
       var remainText = document.getElementById('t-remain-text');
@@ -6479,6 +6482,8 @@ showAuraResult = function(){
       }
       // 文字一律以「當前牌陣」為準，最後再校正一次
       jySetIntro(_cnt, !!(_def2 && _def2.deckFilter === 'minor_only'));
+      var finalHint = document.getElementById('pick-hint');
+      if (finalHint && _def2 && _def2.id === 'mathers_66') finalHint.textContent = '洗牌後觸碰牌堆一次，發出 66 張主盤及 2 張意外牌';
       var remain2 = document.getElementById('t-remain-text');
       if (remain2) remain2.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + _cnt + ' 張';
       var tgt2 = document.getElementById('t-target-count');
@@ -6513,8 +6518,8 @@ showAuraResult = function(){
     if (!deckShuffled.length) initTarotDeck();
     if (drawnCards.length >= targetCount) return;
 
-    // v80.14：Mathers 21 / 54 的自動抽牌必須走正統建構器，不能只從畫面前 N 張一路點。
-    if (typeof window.JY_buildCanonicalTarotDraw === 'function' && (def && (def.id === 'mathers_21' || def.id === 'mathers_horseshoe' || def.id === 'fifteen_card'))) {
+    // Mathers 原生牌陣與儀式牌陣必須保留代表牌、留牌和序列結構。
+    if (typeof window.JY_buildCanonicalTarotDraw === 'function' && (def && (def.id === 'mathers_21' || def.id === 'mathers_horseshoe' || def.id === 'mathers_66' || def.id === 'fifteen_card'))) {
       var _seed = String(Date.now()) + '|' + ((S.form && S.form.question) || '') + '|' + ((S.form && S.form.type) || 'tarot');
       var _canonical = window.JY_buildCanonicalTarotDraw(deckShuffled.slice(), def.id, def, _seed, (S.form && S.form.type) || 'general', (S.form && S.form.question) || '');
       if (_canonical && _canonical.length) {
@@ -6899,6 +6904,8 @@ window._tarotShare = function () {
   }
 
   var def = (S.tarot && (S.tarot.dynamicSpreadDef || S.tarot.spreadDef)) || {};
+  var shareMethodId = (S.tarot && S.tarot.spreadType) || def.id || '';
+  var shareSignificator = shareMethodId === 'mathers_66' ? window._jyLastMathersSignificator : null;
   var cards = ((S.tarot && S.tarot.drawn) || drawnCards || []).map(function (c, i) {
     var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
@@ -6910,6 +6917,8 @@ window._tarotShare = function () {
     cardTitle: cards[0]&&cards[0].sourceProfile==='rws_reversals'?'RWS 正逆位塔羅':'Golden Dawn Book T 塔羅',
     question: (S.form && S.form.question) || '',
     spread: (def.zh || '塔羅牌陣') + (cards[0]&&cards[0].sourceProfile==='rws_reversals'?'｜正逆位':'｜Book T'),
+    methodId: shareMethodId,
+    significator: shareSignificator ? { name: shareSignificator.n || shareSignificator.name || '', img: typeof getTarotCardImage === 'function' ? getTarotCardImage(shareSignificator) || '' : '' } : null,
     cards: cards
   });
 };
@@ -7850,6 +7859,8 @@ function resetToHome() {
       var hh = window.jyBuildSlot(sid, def);
       if (hh) { chosen.innerHTML = hh; var fc = chosen.firstElementChild; if (fc) fc.setAttribute('data-jyfix', sid); }
       if (typeof window.jySetIntro === 'function') window.jySetIntro(def.count, !!(def.deckFilter === 'minor_only'));
+      var ph = document.getElementById('pick-hint');
+      if (ph && sid === 'mathers_66') ph.textContent = '洗牌後觸碰牌堆一次，發出 66 張主盤及 2 張意外牌';
       var rt = document.getElementById('t-remain-text');
       if (rt) rt.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + def.count + ' 張';
       var tc = document.getElementById('t-target-count');
@@ -8014,7 +8025,7 @@ function jyTarotBuildDraw(def, sid){
   if (def && def.deckFilter === 'minor_only') deck = deck.filter(function(c){ return c && c.suit !== 'major'; });
   // Quick completion preserves cards already chosen, including their direction.
   var existing=typeof drawnCards!=='undefined'&&drawnCards?drawnCards.slice():[];
-  if(existing.length && ['mathers_21','mathers_horseshoe','fifteen_card'].indexOf(sid)<0){
+  if(existing.length && ['mathers_21','mathers_horseshoe','mathers_66','fifteen_card'].indexOf(sid)<0){
     var used={};existing.forEach(function(c){used[c.id]=true;});
     var available=deck.filter(function(c){return !used[c.id];});
     while(existing.length<targetCount && available.length){

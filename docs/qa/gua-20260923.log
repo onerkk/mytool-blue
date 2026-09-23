@@ -1,0 +1,18 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:gua
+> node scripts/build-yijing-data.cjs --check && node tests/gua-engine-20260922.cjs
+
+Yijing: 64 judgments, 384 yao, 2 uses, exact source labels and revisions verified.
+✓ 八宮全圖：64 卦歸宮、世應、遊魂歸魂；八宮均不重複
+✓ 渾天甲子：八純卦納甲、陰陽順序及六神起例
+✓ 古例：需之訟、夬之姤的變爻六親均沿用坤宮土
+✓ 六沖十卦、六合八卦；日沖不直接定暗動或日破
+✓ 三錢八種結果為 1:3:3:1；缺少安全亂數直接停止
+✓ 4096 組：本變卦逐爻互換、所有動爻保留、擇辭與原文完全相符
+✓ 朱子考變占原例：一爻、五爻、三爻前後十及乾坤二用
+✓ 六十日旬空循環，午夜與子初換日，指定時區不隨電腦時區漂移
+✓ 香港天文台 2026 節令日期；同一瞬間跨時區與交節前後一秒
+✓ 無效日期、爻值、擲錢紀錄、時差不靜默補算
+✓ 解讀提示詞使用同一答案優先規則、精確事實與最後選品；獨立備援一致
+gua-engine: 11 groups passed, including all 4096 casts.

@@ -19,7 +19,7 @@ function classifyDecisionQuestion(question) {
   }
   if (!raw) return result('none');
   // Labels and their time qualifiers are part of the user's options. Do not strip dates/durations.
-  if (/\bA(?:\s*[：:.、]|\s+)[\s\S]+\bB(?:\s*[：:.、]|\s+)[\s\S]+\bC(?:\s*[：:.、]|\s+)/i.test(raw) || /(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案)|三選一|三擇一|四選一/.test(raw)) return result('multiple', null, null, '超過兩個方案，不能套成只有 A、B 的牌位。');
+  if (/\bA(?:\s*[：:.、]|\s+)[\s\S]+\bB(?:\s*[：:.、]|\s+)[\s\S]+\bC(?:\s*[：:.、]|\s+)/i.test(raw) || /(?:^|[^A-Za-z])A\s*、\s*B\s*、\s*C(?:$|[^A-Za-z])/i.test(raw) || /(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案|選擇)|三選一|三擇一|四選一/.test(raw)) return result('multiple', null, null, '超過兩個方案，不能套成只有 A、B 的牌位。');
   if(/(?:^|[，,：:\s])A(?:\s*[：:.、]|\s+)[\s\S]*B\s*[：:.、]\s*[？?]?\s*$/i.test(raw))return result('incomplete');
   var labelled = raw.match(/(?:^|[，,：:\s])A(?:\s*[：:.、]\s*|\s+)([\s\S]+?)\s*(?:還是|或者|或是|或|與|和|跟|vs\.?|versus)?\s*B(?:\s*[：:.、]\s*|\s+)([\s\S]+?)(?:[。！？?]|$)/i);
   if (labelled && !/^(?:還是|或者|或是|或|or|vs\.?)\s*$/i.test(labelled[1].trim())) {
@@ -30,7 +30,7 @@ function classifyDecisionQuestion(question) {
   var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
   var matches = [], m;
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
-  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {

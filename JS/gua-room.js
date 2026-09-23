@@ -114,6 +114,7 @@
       var a=r.interpretation,labels={'hidden-movement':'旺靜逢日沖，暗動','day-break':'弱靜逢日沖，日破','clash-with-support':'日沖而有生扶，須合看','moving-not-dispersed':'動爻逢沖，有生扶','moving-clash-unresolved':'動爻受沖，尚待辨沖散'};
       h+='<details class="gw-fold"><summary>取用、特殊條件與時間線索</summary><div class="gw-fold-body">';
       a.targets.forEach(function(t){h+='<p><b>'+esc(t.relative+' · '+t.role)+'</b><br>'+esc(t.candidates.map(function(u){return u.position+'爻 '+u.branch+(u.hidden?'（伏神）':'');}).join('、')||'原卦及本宮伏神未見')+(t.status==='multiple'?'；多現，需按本題角色辨別。':'')+'</p>';});
+      if(a.targets.some(function(t){return t.status==='hidden-only';}))h+='<p>此題用神目前只見伏神：仍要合看飛伏生剋、月日旺衰與出伏；月日代取屬另一候選，不直接當作明現唯一用神。</p>';
       a.lines.forEach(function(l){var notes=[labels[l.dayEffect]||''].concat(l.obstacles).filter(Boolean);if(notes.length)h+='<p>'+esc('第'+l.position+'爻：'+notes.join('；'))+'</p>';});
       var timing=a.timing;
       if(timing.status==='bounded'){h+='<h3>期限內可留意的日期</h3><p>'+esc(timing.window.start+' 至 '+timing.window.end)+'</p>';timing.candidates.slice(0,12).forEach(function(x){h+='<p><b>'+esc(x.date+' · '+x.day)+'</b><br>'+esc(x.triggers.map(function(t){return t.relative+' '+t.position+'爻：'+t.reasons.join('、');}).join('；'))+'</p>';});if(timing.candidates.length>12)h+='<p>其餘候選隨完整起卦資料一併下載。</p>';h+='<p>這些是條件觸發的候選日，需連同卦中阻力及現實進展確認。</p>';}
@@ -145,8 +146,12 @@
   function frameStage(s){
     var stage=s.root.querySelector('.gw-stage-side'),scene=s.root.querySelector('.gw-scene'),actions=s.root.querySelector('.gw-actions');
     if(!stage||!scene)return;var r=scene.getBoundingClientRect(),room=s.root.getBoundingClientRect(),a=actions&&actions.getBoundingClientRect();
-    var bottom=a&&getComputedStyle(actions).position==='fixed'?a.top:room.bottom;
-    if(r.top<room.top+8||r.bottom>bottom-8)s.root.scrollTop+=stage.getBoundingClientRect().top-room.top-12;
+    var bottom=a&&getComputedStyle(actions).position==='fixed'?a.top:room.bottom,stageTop=stage.getBoundingClientRect().top;
+    // A short viewport can show the instrument while hiding its sound and skip controls behind the dock.
+    // Frame the whole interactive portion where possible; otherwise favour reachable controls.
+    var controls=s.root.querySelector('.gw-ceremony-tools');
+    if(r.top<room.top+8||r.bottom>bottom-8)s.root.scrollTop+=stageTop-room.top-12;
+    if(controls){var overflow=controls.getBoundingClientRect().bottom-bottom+8;if(overflow>0)s.root.scrollTop+=overflow;}
   }
   function yarrowTimeline(s){
     s.cueTimers=[];

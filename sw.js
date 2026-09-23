@@ -30,7 +30,8 @@
 // v94: 20260922foley1 全站實物錄音、可記憶音量與蓍草書齋。
 // v96: 20260922bridge1 綜合占星共用原生引擎、民用時區與原子結果。
 // v97: 20260922audit2 選陣、分線與合盤提示詞、蓍草聲畫分離及手機視窗。
-const CACHE_NAME = 'jy-main-v97';
+// v98: 20260923final1 純提示詞輸出、實際特殊格局、經典牌陣與手機操作。
+const CACHE_NAME = 'jy-main-v98';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

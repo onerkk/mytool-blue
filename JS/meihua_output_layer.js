@@ -41,11 +41,11 @@ function buildMeihuaTags(mh, type, analysis) {
 
   // ── 1. 方向類（source: tiYong + bian）──
   var dirMap = {
-    '用生體': { label: '推進',     dir: 'positive', w: 8 },
-    '比和':   { label: '有機會',   dir: 'positive', w: 6 },
-    '體克用': { label: '推進',     dir: 'positive', w: 5 },
-    '體生用': { label: '停滯',     dir: 'neutral',  w: 4 },
-    '用克體': { label: '不宜妄動', dir: 'negative', w: 8 }
+    '用生體': { label: '用卦生體', dir: 'positive', w: 8 },
+    '比和':   { label: '體用同類', dir: 'positive', w: 6 },
+    '體克用': { label: '體克用',   dir: 'positive', w: 5 },
+    '體生用': { label: '體生用',   dir: 'neutral',  w: 4 },
+    '用克體': { label: '用卦克體', dir: 'negative', w: 8 }
   };
   var de = dirMap[rel] || { label: '觀望', dir: 'neutral', w: 3 };
   pt(de.label, de.dir, de.w,
@@ -53,58 +53,57 @@ function buildMeihuaTags(mh, type, analysis) {
 
   // 變卦走向補充
   var bianDirMap = {
-    '好轉':    { label: '好轉',    dir: 'positive', w: 7 },
-    '惡化':    { label: '惡化',    dir: 'negative', w: 7 },
-    '拖延':    { label: '拖延',    dir: 'negative', w: 5 },
-    '反覆':    { label: '反覆',    dir: 'neutral',  w: 4 },
-    '平穩':    { label: '停滯',    dir: 'neutral',  w: 3 },
-    '另有出口':{ label: '有機會',  dir: 'positive', w: 5 }
+    '好轉':    { label: '變後生體', dir: 'positive', w: 7 },
+    '惡化':    { label: '變後克體', dir: 'negative', w: 7 },
+    '拖延':    { label: '變後耗力', dir: 'negative', w: 5 },
+    '反覆':    { label: '象義待合參', dir: 'neutral',  w: 4 },
+    '平穩':    { label: '變後比和',   dir: 'neutral',  w: 3 },
+    '另有出口':{ label: '體克變後用卦', dir: 'positive', w: 5 }
   };
   var bdt = bianDirMap[bianTrend.type];
   if (bdt) pt(bdt.label, bdt.dir, bdt.w, '中', 'bian');
 
   // 先吉後阻 / 先難後易
   if (huHidden.cat === '暗中有助' && (bianTrend.type === '惡化' || bianTrend.type === '拖延'))
-    pt('先吉後阻', 'negative', 6, '中', 'hu');
+    pt('互助後受制象', 'negative', 6, '中', 'hu');
   else if (huHidden.cat === '外部壓制' && (bianTrend.type === '好轉' || bianTrend.type === '另有出口'))
-    pt('先難後易', 'positive', 6, '中', 'hu');
+    pt('互制後生體象', 'positive', 6, '中', 'hu');
 
   // ── 2. 主客類（source: tiYong + hu）──
   var subjectMap = {
-    '體克用': { label: '我方主動',   dir: 'positive', w: 7 },
-    '用生體': { label: '對方主導',   dir: 'neutral',  w: 6 },
-    '用克體': { label: '外部壓制',   dir: 'negative', w: 8 },
+    '體克用': { label: '體方可介入', dir: 'positive', w: 7 },
+    '用生體': { label: '用卦生體',   dir: 'neutral',  w: 6 },
+    '用克體': { label: '用卦克體',   dir: 'negative', w: 8 },
     '體生用': { label: '自耗',       dir: 'negative', w: 5 },
     '比和':   { label: '拉鋸',       dir: 'neutral',  w: 4 }
   };
   var se = subjectMap[rel];
   if (se) pt(se.label, se.dir, se.w, '高', 'tiYong');
 
-  if (huHidden.cat === '外部壓制') pt('外部壓制', 'negative', 5, '中', 'hu');
+  if (huHidden.cat === '外部壓制') pt('互卦克體', 'negative', 5, '中', 'hu');
   if (huHidden.cat === '自耗')     pt('自耗',     'negative', 4, '中', 'hu');
-  if (huHidden.cat === '可控')     pt('可控局面', 'positive', 4, '中', 'hu');
+  if (huHidden.cat === '可控')     pt('體克互卦', 'positive', 4, '中', 'hu');
 
   // ── 3. 障礙類（source: hu + ben + season + dong）──
   var obstacleMap = {
-    '外部壓制': '外力阻礙',
-    '自耗':     '情緒干擾',
-    '拉鋸':     '溝通不順',
-    '變數':     '隱情未明'
+    '外部壓制': '互卦克體',
+    '自耗':     '互卦耗力',
+    '拉鋸':     '互卦相持',
+    '變數':     '條件待明'
   };
   var obs = obstacleMap[huHidden.cat];
   if (obs) pt(obs, 'negative', 4, '中', 'hu');
 
   if (tiWS.level === '死' || tiWS.level === '囚') {
-    pt('時機未到', 'negative', 5, '高', 'season');
-    pt('當下不利', 'negative', 4, '高', 'season');
+    pt('體卦節令偏弱', 'negative', 5, '中', 'season');
   }
   if (yoWS.level === '旺' && (tiWS.level === '死' || tiWS.level === '囚'))
-    pt('現實壓力', 'negative', 5, '中', 'season');
+    pt('用卦節令較強', 'negative', 5, '中', 'season');
 
   var benObstacles = {
     '訟': '溝通不順', '困': '現實壓力', '蹇': '外力阻礙',
-    '否': '外力阻礙', '剝': '現實壓力', '蒙': '隱情未明',
-    '睽': '溝通不順', '旅': '第三方因素', '遁': '隱情未明'
+    '否': '外力阻礙', '剝': '現實壓力', '蒙': '資訊待明',
+    '睽': '立場待合', '旅': '距離與環境待核', '遁': '界線待核'
   };
   var benObs = Object.keys(benObstacles).filter(function(k){ return benName.indexOf(k) !== -1; })[0];
   if (benObs) pt(benObstacles[benObs], 'negative', 4, '中', 'ben');
@@ -113,37 +112,37 @@ function buildMeihuaTags(mh, type, analysis) {
 
   // ── 4. 時間類（source: dong + season + bian）──
   var tSpeed = timingObj.score || 0;
-  if      (tSpeed >= 2)  pt('短期有動', 'positive', 6, '高', 'dong');
-  else if (tSpeed <= -2) pt('短期無動', 'negative', 6, '高', 'dong');
-  else                   pt('短期有動', 'neutral',  3, '低', 'dong');
+  if      (tSpeed >= 2)  pt('象徵節奏偏快', 'neutral', 4, '低', 'dong');
+  else if (tSpeed <= -2) pt('象徵節奏偏慢', 'neutral', 4, '低', 'dong');
+  else                   pt('時間未定', 'neutral', 3, '低', 'dong');
 
-  if (timingObj.label === '拖延型') pt('延後有利', 'neutral',  4, '中', 'bian');
-  if (timingObj.label === '反覆型') pt('反覆',     'negative', 5, '中', 'bian');
+  if (timingObj.label === '拖延型') pt('節奏取象偏慢', 'neutral',  4, '低', 'dong');
+  if (timingObj.label === '反覆型') pt('節奏取象未定', 'neutral', 5, '低', 'dong');
   if (tiWS.level === '死' || tiWS.level === '囚')
-    pt('當下不利', 'negative', 5, '高', 'season');
+    pt('體卦節令偏弱', 'negative', 5, '中', 'season');
 
   // ── 5. 類型專屬標籤（source: tiYong + bian + hu + dong + ben）──
   if (t === 'love') {
     if (rel === '用生體' && dong >= 3 && dong <= 4)
-      pt('曖昧升溫', 'positive', 7, '中', 'tiYong');
+      pt('互動待核', 'neutral', 5, '低', 'tiYong');
     if (rel === '比和' || huHidden.cat === '拉鋸')
-      pt('對方觀望', 'neutral', 5, '中', 'hu');
+      pt('雙方意願待確認', 'neutral', 5, '低', 'hu');
     if (rel === '體生用' && bianTrend.type === '好轉')
-      pt('有互動但難落實', 'neutral', 5, '中', 'tiYong');
+      pt('投入與回應待核', 'neutral', 5, '低', 'tiYong');
     if (bianTrend.type === '反覆' || timingObj.label === '反覆型')
-      pt('關係反覆', 'negative', 6, '中', 'bian');
+      pt('互動進展待核', 'neutral', 6, '低', 'bian');
     if (rel === '用生體' && (bianTrend.type === '惡化' || bianTrend.type === '拖延'))
-      pt('有桃花但不穩', 'neutral', 6, '中', 'bian');
+      pt('回應與推進未定', 'neutral', 5, '低', 'bian');
     if (benName.indexOf('旅') !== -1 || benName.indexOf('姤') !== -1 || bianName.indexOf('睽') !== -1)
-      pt('第三方因素', 'negative', 5, '中', 'ben');
+      pt('界線與情境待確認', 'neutral', 3, '低', 'ben');
 
   } else if (t === 'career') {
     if (rel === '用克體')
-      pt('上位壓力', 'negative', 7, '高', 'tiYong');
+      pt('職場阻力待核', 'negative', 7, '中', 'tiYong');
     if (tiWS.level === '死' || tiWS.level === '囚')
-      pt('制度卡住', 'negative', 5, '中', 'season');
+      pt('體卦節令偏弱', 'negative', 5, '中', 'season');
     if (huHidden.cat === '外部壓制' && bianTrend.type === '好轉')
-      pt('先卡後動', 'positive', 6, '中', 'hu');
+      pt('互制後生體象', 'positive', 6, '中', 'hu');
     if (rel === '用生體' || rel === '體克用')
       pt('適合轉動', 'positive', 5, '中', 'tiYong');
     if (rel === '用克體' || rel === '體生用')
@@ -151,27 +150,27 @@ function buildMeihuaTags(mh, type, analysis) {
 
   } else if (t === 'wealth') {
     if (rel === '用生體')
-      pt('偏財虛', 'neutral', 4, '中', 'tiYong');
+      pt('用卦生體', 'neutral', 4, '中', 'tiYong');
     if (rel === '體克用' || rel === '比和')
-      pt('正財穩', 'positive', 5, '中', 'tiYong');
+      pt('收入須核帳', 'neutral', 5, '低', 'tiYong');
     if (rel === '體生用' || rel === '用克體')
-      pt('財來財去', 'negative', 6, '中', 'tiYong');
+      pt('支出須核帳', 'neutral', 6, '低', 'tiYong');
     if (rel === '用克體' || bianTrend.type === '惡化')
       pt('不宜冒進', 'negative', 7, '高', 'bian');
 
   } else if (t === 'health') {
     if (rel === '用克體' || tiWS.level === '死')
-      pt('現實壓力', 'negative', 5, '中', 'tiYong');
+      pt('健康不能據卦診斷', 'neutral', 5, '高', 'tiYong');
     if (tiWS.level === '囚' || tiWS.level === '死')
-      pt('當下不利', 'negative', 5, '高', 'season');
+      pt('體卦節令偏弱', 'neutral', 5, '中', 'season');
     if (huHidden.cat === '自耗')
-      pt('情緒干擾', 'negative', 4, '中', 'hu');
+      pt('具體症狀待核', 'neutral', 4, '低', 'hu');
 
   } else if (t === 'relationship') {
     if (rel === '用克體')
-      pt('外力阻礙', 'negative', 6, '高', 'tiYong');
+      pt('用卦克體', 'negative', 6, '中', 'tiYong');
     if (rel === '體克用')
-      pt('我方主動', 'positive', 5, '中', 'tiYong');
+      pt('體方可介入', 'positive', 5, '中', 'tiYong');
     if (benName.indexOf('訟') !== -1 || bianName.indexOf('訟') !== -1)
       pt('溝通不順', 'negative', 6, '中', 'ben');
 
@@ -179,9 +178,9 @@ function buildMeihuaTags(mh, type, analysis) {
     if (rel === '體生用')
       pt('自耗', 'negative', 5, '中', 'tiYong');
     if (dong === 5)
-      pt('第三方因素', 'neutral', 4, '低', 'dong');
+      pt('決策層待釐清', 'neutral', 3, '低', 'dong');
     if (bianTrend.type === '好轉')
-      pt('延後有利', 'positive', 5, '中', 'bian');
+      pt('變後生體', 'positive', 5, '中', 'bian');
   }
 
   // ── 去重（同 label 只保留 weight 最高者），按 weight 降冪 ──
@@ -224,23 +223,22 @@ function buildMeihuaSummary(mh, type, analysis) {
 
   // ── shortVerdict ──
   var shortVerdict = '';
-  if      (isGood && isQuick && bGood)         shortVerdict = '短期有動，方向正確，可以推進';
-  else if (isGood && isQuick && bRepeats)       shortVerdict = '短期有動，但進展不穩，別過度期待';
-  else if (isGood && isSlow)                    shortVerdict = '事情有機會，但需等條件成熟';
-  else if (isGood && bBad)                      shortVerdict = '現在看起來順，但走向不樂觀，要留後路';
-  else if (isBad  && isQuick && bGood)          shortVerdict = '現在有阻力，但後續有轉機';
-  else if (isBad  && bBad)                      shortVerdict = '局面受阻，短期難以改變，先退守';
-  else if (isBad  && seasonBad)                 shortVerdict = '時機與局面都不利，不宜強推';
-  else if (bRepeats)                            shortVerdict = '結果反覆，不穩定，觀察為主';
-  else if (seasonBad && isGood)                 shortVerdict = '局面可以，但當下時機偏弱，慢慢來';
-  else if (seasonBad)                           shortVerdict = '時機不對，暫時按兵不動';
-  else if (isGood)                              shortVerdict = '局面對你有利，可以主動推進';
-  else                                          shortVerdict = '局面暫時受阻，宜觀望';
+  if      (isGood && bGood)                      shortVerdict = '卦象有承接的方向，可小步驗證現實條件';
+  else if (isGood && bBad)                      shortVerdict = '本卦有推進力，變後受制，先核對阻力';
+  else if (isGood && isSlow)                    shortVerdict = '卦象有助力，但尚不能換算事件時點';
+  else if (isBad && bGood)                      shortVerdict = '本卦有阻力，變後有改善空間，仍待實際落實';
+  else if (isBad && bBad)                       shortVerdict = '本變皆有受制象，先處理可核對的阻力';
+  else if (isBad && seasonBad)                  shortVerdict = '體卦節令偏弱，分段處理較穩妥';
+  else if (bRepeats)                            shortVerdict = '卦象作用未定，先看實際進展';
+  else if (seasonBad && isGood)                 shortVerdict = '卦象有助力，體卦節令偏弱，宜保留餘裕';
+  else if (seasonBad)                           shortVerdict = '體卦節令偏弱，先核對現實條件';
+  else if (isGood)                              shortVerdict = '卦象有推進空間，成事仍需實際條件';
+  else                                          shortVerdict = '卦象偏受制，先觀察實際阻力';
 
   // ── summary ──
   var relLabel = {
-    '用生體': '外力助你', '比和': '勢均力敵',
-    '體克用': '你可主導', '體生用': '你在付出', '用克體': '外在壓制'
+    '用生體': '用卦生體', '比和': '體用同類',
+    '體克用': '體克用', '體生用': '體生用', '用克體': '用卦克體'
   }[rel] || '局勢不明';
 
   var typeFocusMap = {
@@ -248,12 +246,12 @@ function buildMeihuaSummary(mh, type, analysis) {
     health: '身體', relationship: '人際', family: '家庭', general: '事情'
   };
   var focusWord = typeFocusMap[t] || '事情';
-  var tiWsLabel = (tiWS.level === '旺' || tiWS.level === '相') ? '，當下月令有利' :
-                  (tiWS.level === '死' || tiWS.level === '囚') ? '，當下月令不利' : '';
+  var tiWsLabel = (tiWS.level === '旺' || tiWS.level === '相') ? '，體卦月令較有力' :
+                  (tiWS.level === '死' || tiWS.level === '囚') ? '，體卦月令較弱' : '';
 
-  var summary = focusWord + '目前「' + benName + '」，' +
-    '體用：' + relLabel + '，動爻第' + dong + '爻（' + (dongStage.stage||'起步') + '階段），' +
-    '走向偏「' + (bianTrend.type||'反覆') + '」' + tiWsLabel + '。' + shortVerdict;
+  var summary = focusWord + '本卦「' + benName + '」，' +
+    '體用：' + relLabel + '，動爻第' + dong + '爻（爻位取象為' + (dongStage.stage||'起步') + '），' +
+    '變後用卦取象為「' + (bianTrend.type||'待合參') + '」' + tiWsLabel + '。' + shortVerdict;
 
   // ── decisionHint ──
   var decisionHint = 'now-wait';
@@ -319,8 +317,8 @@ function buildMeihuaTiming(mh, type, analysis) {
     else if (speed === 'unstable') note = '時間不定，可能走走停停，準備好長期應對';
     else                           note = '卦象層次偏後，需等待條件改變；不得自行換算月份';
   }
-  if (tiWS.level === '旺' || tiWS.level === '相') note += '（月令有利，時機靠近）';
-  else if (tiWS.level === '死' || tiWS.level === '囚') note += '（月令不利，應期可能再延後）';
+  if (tiWS.level === '旺' || tiWS.level === '相') note += '（體卦在月令較有力，不等於已能換算日期）';
+  else if (tiWS.level === '死' || tiWS.level === '囚') note += '（體卦在月令較弱，不等於必然延後）';
 
   return {
     speed:       speed,
@@ -360,30 +358,36 @@ function buildMeihuaRisk(mh, type, analysis) {
   var level = riskScore >= 5 ? 'high' : riskScore >= 2 ? 'mid' : 'low';
 
   if (rel === '用克體')
-    points.push('外在壓力明顯，有被壓制或阻礙的風險');
+    points.push('用克體有受制的卦象，實際壓力來源仍須核對');
   if (rel === '體生用')
-    points.push('你持續付出，回報不明確，能量有消耗過度的風險');
+    points.push('體生用偏向需要投入，先核對真實成本與回報');
   if (tiWS.level === '死' || tiWS.level === '囚')
-    points.push('月令對你不利，當下動作容易事倍功半');
+    points.push('體卦節令偏弱，對實際成敗仍需另有資料');
   if (bianTrend.type === '惡化')
-    points.push('若不調整策略，走向會繼續惡化');
+    points.push('變後用卦克體，若現實阻力持續，可考慮調整策略');
   if (bianTrend.type === '反覆')
-    points.push('結果容易反覆，需防情緒性決策');
+    points.push('卦象訊號未明，留意情緒性決策');
   if (huHidden.cat === '外部壓制')
-    points.push('有看不到的外力在壓著這件事，注意隱性阻礙');
+    points.push('互卦有克體意象，可檢查是否有具體阻力');
   if (huHidden.cat === '自耗')
-    points.push('內耗風險高，注意不要因猶豫焦慮消耗自己');
+    points.push('互卦有持續投入的象，留意是否付出過多');
 
   if (t === 'wealth' && (rel === '用克體' || bianTrend.type === '惡化'))
-    points.push('財務有風險，不宜冒進或過度槓桿');
+    points.push('卦象偏受制；真實投資風險、資金缺口與槓桿須依帳目和交易條件核對');
   if (t === 'health' && (tiWS.level === '死' || tiWS.level === '囚'))
     points.push('健康題不以體卦旺衰診斷免疫力或疾病；持續不適應依症狀就醫');
   if (t === 'love' && (bianTrend.type === '反覆' || rel === '用克體'))
-    points.push('感情有反覆或外力阻礙的風險，注意自我保護');
+    points.push('感情題先核對雙方意願與界線，卦象不能證實第三人想法');
 
-  if (points.length === 0) points.push('整體風險偏低，保持現有方向即可');
+  if (points.length === 0) points.push('此層未見明顯克體象；實際風險仍須依情境核對');
 
-  return { level: level, points: points };
+  // 體用分數不得變成醫療風險分級。
+  if (t === 'health') return {
+    level: 'unknown', precision: 'not-clinical',
+    points: ['卦象不能診斷疾病或評估醫療風險；持續不適須按具體症狀就醫']
+  };
+
+  return { level: level, precision: 'symbolic-only', points: points };
 }
 
 function buildMeihuaStrategy(mh, type, analysis, decisionHint) {
@@ -408,8 +412,8 @@ function buildMeihuaStrategy(mh, type, analysis, decisionHint) {
     : ['維持現狀，觀察局勢變化', '不急著做大決定', '等待更明確的訊號'];
 
   var modeHint = {
-    push:      '時機對你有利，主動出擊效果最好',
-    wait:      '等待比強推效果更好，耐心是關鍵',
+    push:      '卦象偏有施力空間，可小步測試並觀察回應',
+    wait:      '先觀察有無實際回應，再決定是否推進',
     stabilize: '守住現有局面，避免不必要的消耗',
     retreat:   '先退一步，保護好自己再說',
     observe:   '先觀察清楚再決定，不要被情緒帶著走'
@@ -422,10 +426,9 @@ function buildMeihuaStrategy(mh, type, analysis, decisionHint) {
 
 
 // ─────────────────────────────────────────────────────────────────
-// 【新增6・v2】buildMeihuaYingQi — 正統應期
-// 《梅花易數·占卦訣》：「看卦中有生體之卦，則事應於生體卦氣之日；
-//   有剋體之卦，則事敗於剋體卦氣之日。」另：用卦主近期、互卦主中期、變卦主遠期。
-// 取代「用卦五行→季節」的非原典斷法。
+// buildMeihuaYingQi — 依實際卦中生／克體三爻給相對應期候選。
+// 《梅花易數》卷三〈占卦訣〉先要求「看卦中有生體之卦」及「有克體之卦」，
+// 再討論卦氣；不得只由體五行理論推導一個盤中不存在的生體卦或克體卦。
 // ─────────────────────────────────────────────────────────────────
 function buildMeihuaYingQi(mh) {
   try {
@@ -439,14 +442,40 @@ function buildMeihuaYingQi(mh) {
       金:'申酉之月氣（未換算實際月界）', 水:'亥子之月氣（未換算實際月界）'
     };
     var shengEl = SHENG_ME[ti], keEl = KE_ME[ti];
-
+    var up=mh.up, lo=mh.lo, nuclear=mh.nuclear;
+    if (!up || !lo || !Array.isArray(up.li) || !Array.isArray(lo.li) ||
+        !Number.isInteger(mh.dong) || mh.dong<1 || mh.dong>6 ||
+        !nuclear || !nuclear.upper || !nuclear.lower || !mh.yoG) {
+      return {tiEl:ti,precision:'insufficient',jiTxt:'卦象資料不全，不能計算生體卦氣候選',
+        baiTxt:'卦象資料不全，不能計算克體卦氣候選',layerTxt:'待補齊本卦、互卦與動爻後再談相對層次'};
+    }
+    var changed=lo.li.concat(up.li);
+    changed[mh.dong-1]=changed[mh.dong-1]?0:1;
+    var changedUse=mh.dong<=3?gByL(changed[0],changed[1],changed[2]):gByL(changed[3],changed[4],changed[5]);
+    if (!changedUse || !changedUse.el) return null;
+    var tiInUpper=mh.dong<=3;
+    var sources=[
+      {layer:'用卦',element:mh.yoG.el,relative:'近期'},
+      {layer:'體互',element:tiInUpper?nuclear.upper.el:nuclear.lower.el,relative:'中間'},
+      {layer:'用互',element:tiInUpper?nuclear.lower.el:nuclear.upper.el,relative:'中間'},
+      {layer:'變後用卦',element:changedUse.el,relative:'後段'}
+    ];
+    var help=sources.filter(function(s){return s.element===shengEl;});
+    var restraint=sources.filter(function(s){return s.element===keEl;});
+    function where(list){return list.map(function(s){return s.layer+'（'+s.relative+'）';}).join('、');}
     return {
-      tiEl: ti, shengEl: shengEl, keEl: keEl, precision:'traditional-qi-candidate-only',
-      jiTxt:  '生體之氣為' + shengEl + '，當令於' + EL_TXT[shengEl] +
-              '；體旺之氣（' + ti + '）當令於' + EL_TXT[ti] + '。這是傳統卦氣候選，不是已換算的最近月份或日期',
-      baiTxt: '剋體之氣為' + keEl + '，當令於' + EL_TXT[keEl] +
-              '。這是傳統卦氣候選，不是已換算的最近月份或日期',
-      layerTxt: '用卦主近期、互卦主中期、變卦主遠期；若沒有可靠曆法與起卦時間基準，只能給相對層次，不得編最近幾個月或精確日期'
+      tiEl:ti, shengEl:shengEl, keEl:keEl, sources:sources,
+      supportSources:help, challengeSources:restraint,
+      precision:'traditional-qi-candidate-only',
+      jiTxt:help.length?
+        '盤中生體卦見於'+where(help)+'，其'+shengEl+'氣可作'+EL_TXT[shengEl]+'的傳統候選；未換算實際日期':
+        '盤中用卦、兩互及變後用卦未見生體，暫無生體卦氣候選；不能由理論五行另造吉應日期',
+      baiTxt:restraint.length?
+        '盤中克體卦見於'+where(restraint)+'，其'+keEl+'氣可作'+EL_TXT[keEl]+'的傳統候選；未換算實際日期':
+        '盤中用卦、兩互及變後用卦未見克體，暫無克體卦氣候選；不能由理論五行另造敗應日期',
+      layerTxt:'用卦、互卦、變後用卦依此次卦象分別取近期、中間、後段；'+
+        (help.length&&restraint.length?'盤中同見生體與克體，須分別看作用，不能挑一個元素硬斷日期；':'')+
+        '尚無足以換算最近幾個月或精確日期的資料'
     };
   } catch (e) { return null; }
 }

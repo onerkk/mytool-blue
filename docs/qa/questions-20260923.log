@@ -1,0 +1,19 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:question-routing
+> node scripts/build-question-planner.cjs --check && node tests/question-routing-20260922.cjs
+
+PASS One canonical question plan in both readers; all method definitions validate
+PASS Same topic different people, outcomes and newlines receive independent branches
+PASS Three to six real options retain their labels and all card branches
+PASS No alternate-person inference from continuation or hypotheses
+PASS Separate deadlines bind locally; months differ from zodiac houses and durations
+PASS Eligibility precedes preference; manual selection preserves honest missing coverage
+PASS New Tarot catalog draws unique cards with identical slot counts in layout, payload and prompt
+PASS Tarot auto mode follows explicit method; ordinary themes keep RWS and drawn mode is immutable
+PASS All Lenormand layouts export the declared count and preserve drawn facts
+PASS 4×9 geometry contains 36 real houses, complete straight paths and only valid knight moves
+PASS System suggestions distinguish requested tradition, reflective questions and concrete events
+PASS Real Lenormand input, manual layout and draw controllers keep preview and saved plan aligned
+PASS Recommendation preview and switching preserve typed text without changing a completed Tarot draw
+question-routing: 13 groups passed.

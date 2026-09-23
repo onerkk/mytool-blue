@@ -57,6 +57,10 @@
     if(!Array.isArray(drawn)||!drawn.length||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('抽牌紀錄不完整或有重複牌，請重新核對本次牌陣。');
     if(drawn.some(function(c){return c.id==null||(c.readingMode&&c.readingMode!==RWS)||(c.isUp!=null&&typeof c.isUp!=='boolean');}))throw new Error('本次塔羅牌的系統或正逆位紀錄不一致。');
     if(plan.slots&&plan.slots.length&&plan.slots.length!==drawn.length)throw new Error('抽牌張數與已選牌位不一致，不補造缺牌解讀。');
+    if(spread==='mathers_66'){
+      var proc=drawn[0]&&drawn[0].drawProcedure,surprises=proc&&proc.surprises;
+      if(drawn.length!==68||!proc||proc.id!=='mathers_66'||proc.initialDealtCount!==66||proc.initialUnusedCount!==11||proc.remainingUnusedCount!==9||!proc.significator||!surprises||!surprises.fromUnused||surprises.left.id!==drawn[66].id||surprises.right.id!==drawn[67].id||drawn.some(function(c){return c.id===proc.significator.id;}))throw new Error('Mathers 第三法的代表牌、66張主盤或從未用牌抽出的兩張紀錄不一致，請重新發牌。');
+    }
     var s=stats(drawn);
     return {mode:'tarot_only',question:question,focusType:((root.S||{}).form||{}).type||'general',tarotData:{
       spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:RWS,sourceProfile:RWS,
@@ -85,7 +89,7 @@
   function formatData(td){
     var L=['牌陣：'+td.spreadZh+'（'+td.cards.length+' 張）','讀牌體系：Rider–Waite–Smith・使用正逆位','下列牌名、順序與方向為本次實際抽牌紀錄：'];
     td.cards.forEach(function(c,i){L.push((i+1)+'. '+c.position+'：'+c.name+'【'+c.direction+'】');});
-    if(td.drawProcedure){L.push('【本次發牌程序】'+td.drawProcedure.description);if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；選牌方式：'+td.drawProcedure.significator.policy);}
+    if(td.drawProcedure){L.push('【本次發牌程序】'+td.drawProcedure.description);if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；選牌方式：'+td.drawProcedure.significator.policy);if(td.drawProcedure.surprises){L.push('保留牌另抽：右側「'+td.drawProcedure.surprises.right.name+'」、左側「'+td.drawProcedure.surprises.left.name+'」；初次留11張、另抽2張後仍未使用'+td.drawProcedure.remainingUnusedCount+'張。');}}
     if(td.methodPlan&&td.methodPlan.branches){L.push('抽牌前固定的分題：');td.methodPlan.branches.forEach(function(b,i){L.push((i+1)+'. '+b.question+(b.scope?'；範圍：'+b.scope:''));});}
     var s=td.preStats||{};L.push('正位 '+s.upCount+' 張；逆位 '+s.reversedCount+' 張。這是抽牌統計，不換算事件機率。');
     return L.join('\n');
@@ -112,10 +116,10 @@
     if(summary)summary.textContent=mode(sid,cards)===RWS?'RWS・正逆位':'Golden Dawn・元素尊貴';
     host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'自動模式一般採 RWS 正逆位；明確指定 Book T／元素尊貴時採對應讀法。也可手動選擇，抽牌後固定本輪方式。';
     var sigWrap=host.querySelector('#jy-mathers-sig-wrap');
-    if(sid==='mathers_21'&&!sigWrap){
+    if((sid==='mathers_21'||sid==='mathers_66')&&!sigWrap){
       sigWrap=root.document.createElement('div');sigWrap.id='jy-mathers-sig-wrap';
       var deck=typeof TAROT!=='undefined'?TAROT:[];
-      sigWrap.innerHTML='<label for="jy-mathers-significator">代表牌（國王／皇后）</label><select id="jy-mathers-significator"><option value="auto">自動選取・不作人物性格配牌</option>'+deck.filter(function(c){return /^(king|queen)$/.test(c.rank||'');}).map(function(c){return '<option value="'+c.id+'">'+esc(c.n)+'</option>';}).join('')+'</select><p>可依你認同的角色特質選牌，代表牌另置於牌陣右側，不計入21張。自動選取會明示在本次紀錄。</p>';
+      sigWrap.innerHTML='<label for="jy-mathers-significator">代表牌（國王／皇后）</label><select id="jy-mathers-significator"><option value="auto">自動選取・不作人物性格配牌</option>'+deck.filter(function(c){return /^(king|queen)$/.test(c.rank||'');}).map(function(c){return '<option value="'+c.id+'">'+esc(c.n)+'</option>';}).join('')+'</select><p id="jy-mathers-significator-help">代表牌另置於牌陣中央或一側，不計入序列張數。自動選取方式會記在本次抽牌紀錄。</p>';
       host.appendChild(sigWrap);
       sigWrap.querySelector('select').addEventListener('change',function(event){
         if(currentCards().length){syncControls();return;}
@@ -124,7 +128,7 @@
         syncControls();
       });
     }
-    if(sigWrap){sigWrap.style.display=sid==='mathers_21'?'':'none';var sigSelect=sigWrap.querySelector('select');sigSelect.value=root._jyMathersSignificatorId==null?'auto':String(root._jyMathersSignificatorId);sigSelect.disabled=cards.length>0;}
+    if(sigWrap){sigWrap.style.display=sid==='mathers_21'||sid==='mathers_66'?'':'none';var sigSelect=sigWrap.querySelector('select');sigSelect.value=root._jyMathersSignificatorId==null?'auto':String(root._jyMathersSignificatorId);sigSelect.disabled=cards.length>0;var help=sigWrap.querySelector('#jy-mathers-significator-help');if(help)help.textContent=sid==='mathers_66'?'代表牌置於拱形中央，66張主盤之外；另從保留11張抽2張作意外結語。':'代表牌置於三排右側，21張序列之外。';}
   }
   function preview(id){
     var card=currentCards().find(function(c){return c.id===id;});if(!card||!root.JY_PICKER)return;

@@ -1,11 +1,11 @@
-/*! 靜月之光 · Moon Atelier share cards v4.0.0 / 20260922gua2
+/*! 靜月之光 · Moon Atelier share cards v4.1.0 / 20260923mathers1
  * Twelve result/invitation renderers; decorative art never substitutes live data.
  * Golden Dawn Book T：牌面物理方向不建立固定逆位字典；RWS 保留實際逆位。
  * Public API: open, close, render (async), download; legacy _draw remains available.
  */
 (function () {
   'use strict';
-  if (window.JYShareCard && window.JYShareCard.version === '4.0.0') return;
+  if (window.JYShareCard && window.JYShareCard.version === '4.1.0') return;
   var W=1080, H=1350, SCALE=2, INK='#090f19', GOLD='#eed299', WHITE='#f7f1e6', MUTED='#b1b6c0';
   var SERIF='"Noto Serif TC","Songti TC","PMingLiU",serif';
   var SANS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
@@ -56,11 +56,11 @@
     else {orb(c,x,y,r*.3,t);ring(c,x,y,r*.63,r*.63,0,t,2);for(var n=0;n<12;n++){var ang=n*Math.PI/6;star(c,x+Math.cos(ang)*r*.63,y+Math.sin(ang)*r*.63,4,t.accent);}}
     c.restore();
   }
-  function background(c,t){var g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,'#172232');g.addColorStop(.46,INK);g.addColorStop(1,'#090d16');c.fillStyle=g;c.fillRect(0,0,W,H);var gl=c.createRadialGradient(920,100,0,920,100,720);gl.addColorStop(0,rgba(t,.13));gl.addColorStop(1,rgba(t,0));c.fillStyle=gl;c.fillRect(0,0,W,H);c.save();var seed=37;function rnd(){seed=(seed*16807)%2147483647;return(seed-1)/2147483646;}for(var i=0;i<76;i++){var x=rnd()*W,y=rnd()*H;c.fillStyle='rgba(229,217,188,'+(rnd()*.22+.06)+')';c.beginPath();c.arc(x,y,rnd()*1.3+.3,0,7);c.fill();}c.restore();line(c,40,40,360,40,rgba(t,.25));line(c,40,40,40,226,rgba(t,.25));line(c,W-40,H-40,W-360,H-40,rgba(t,.25));line(c,W-40,H-40,W-40,H-226,rgba(t,.25));}
+  function background(c,t,height){height=height||H;var g=c.createLinearGradient(0,0,W,height);g.addColorStop(0,'#172232');g.addColorStop(.46,INK);g.addColorStop(1,'#090d16');c.fillStyle=g;c.fillRect(0,0,W,height);var gl=c.createRadialGradient(920,100,0,920,100,720);gl.addColorStop(0,rgba(t,.13));gl.addColorStop(1,rgba(t,0));c.fillStyle=gl;c.fillRect(0,0,W,height);c.save();var seed=37;function rnd(){seed=(seed*16807)%2147483647;return(seed-1)/2147483646;}for(var i=0;i<76;i++){var x=rnd()*W,y=rnd()*height;c.fillStyle='rgba(229,217,188,'+(rnd()*.22+.06)+')';c.beginPath();c.arc(x,y,rnd()*1.3+.3,0,7);c.fill();}c.restore();line(c,40,40,360,40,rgba(t,.25));line(c,40,40,40,226,rgba(t,.25));line(c,W-40,height-40,W-360,height-40,rgba(t,.25));line(c,W-40,height-40,W-40,height-226,rgba(t,.25));}
   function masthead(c,t,d){star(c,81,83,15,GOLD);text(c,'靜月之光',113,83,31,GOLD,600,'left',true);text(c,'JINGYUE',336,83,15,MUTED,500,'left',false);plate(c,818,60,198,46,t,23,false);text(c,d.demo?'設計示意・非占卜':t.name,917,83,d.demo?20:23,t.accent,500,'center');}
   function heading(c,t,d){masthead(c,t,d);text(c,t.en,68,156,17,t.accent,500);text(c,t.title,65,230,61,WHITE,600,'left',true,733);text(c,t.sub,68,299,27,MUTED,400,'left',false,738);emblem(c,910,233,94,t);}
   function question(c,d,t){var q=str(d.question);plate(c,64,347,952,108,t,20);text(c,q?'這一次，我想問':'留下這一刻',87,369,18,t.accent,500);paragraph(c,q||'把問題交給此刻，把選擇留給自己。',87,407,905,28,WHITE,2,32);return 469;}
-  function footer(c,t,invite){line(c,64,1139,1016,1139,rgba(t,.35));text(c,invite?'從你最在意的事，開始。':'你的問題，也值得被好好聽見。',67,1193,35,WHITE,500,'left',true,740);text(c,'jingyue.uk',68,1244,33,t.accent,500,'left',false);text(c,'免費抽牌・排盤',310,1244,25,MUTED);text(c,'掃描 QR，開啟你的命理探索',68,1290,24,MUTED);var im=cache[QR_SRC],qx=855,qy=1162,sz=152;c.save();c.fillStyle='#fff';rr(c,qx-10,qy-10,sz+20,sz+20,15);c.fill();if(im){c.imageSmoothingEnabled=false;c.drawImage(im,qx,qy,sz,sz);}else{text(c,'jingyue.uk',qx+sz/2,qy+sz/2,22,'#14202b',600,'center');}c.restore();}
+  function footer(c,t,invite,height){var dy=(height||H)-H;line(c,64,1139+dy,1016,1139+dy,rgba(t,.35));text(c,invite?'從你最在意的事，開始。':'你的問題，也值得被好好聽見。',67,1193+dy,35,WHITE,500,'left',true,740);text(c,'jingyue.uk',68,1244+dy,33,t.accent,500,'left',false);text(c,'免費抽牌・排盤',310,1244+dy,25,MUTED);text(c,'掃描 QR，開啟你的命理探索',68,1290+dy,24,MUTED);var im=cache[QR_SRC],qx=855,qy=1162+dy,sz=152;c.save();c.fillStyle='#fff';rr(c,qx-10,qy-10,sz+20,sz+20,15);c.fill();if(im){c.imageSmoothingEnabled=false;c.drawImage(im,qx,qy,sz,sz);}else{text(c,'jingyue.uk',qx+sz/2,qy+sz/2,22,'#14202b',600,'center');}c.restore();}
   function note(c,s,t,y){text(c,s,540,y||1098,23,rgba(t,.9),400,'center',false,944);}
   function rows(c,items,y,t,maxH){var h=Math.min(80,(maxH||240)/Math.max(1,items.length));items.forEach(function(it,i){plate(c,66,y+i*h,948,h-10,t,15);text(c,it[0],87,y+i*h+(h-10)/2,23,t.accent,500,'left',false,180);text(c,it[1]||'未提供',991,y+i*h+(h-10)/2,27,WHITE,500,'right',false,694);});}
   function missing(c,t,message){plate(c,122,525,836,360,t,28);emblem(c,540,635,76,t);text(c,message||'尚無可分享的結果',540,766,38,WHITE,500,'center',true);note(c,'請先完成抽牌或排盤，再留下這一刻。',t,830);}
@@ -82,6 +82,43 @@
   function cardCell(c,card,x,y,w,h,t,i,opts){opts=opts||{};var dense=w<130,lh=opts.noLabels?0:(dense?34:69),pad=dense?5:9,bw=w-pad*2,bh=h-pad*2-lh,rev=reversed(card,opts.source);plate(c,x,y,w,h,t,Math.min(16,w*.08),!!card.sig);var im=card._im||cache[card.img],ix=x+pad,iy=y+pad;c.save();rr(c,ix,iy,bw,bh,7);c.clip();c.fillStyle='#0c1220';c.fillRect(ix,iy,bw,bh);if(im){var iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height;if(iw&&ih){var sc=Math.min(bw/iw,bh/ih),dw=iw*sc,dh=ih*sc;c.translate(ix+bw/2,iy+bh/2);if(rev)c.rotate(Math.PI);c.drawImage(im,-dw/2,-dh/2,dw,dh);}}else{star(c,ix+bw/2,iy+bh*.44,Math.min(26,w*.11),t.accent);text(c,card.name||'未提供牌面',ix+bw/2,iy+bh*.66,dense?14:22,MUTED,400,'center',false,bw-8);}c.restore();if(!opts.noLabels){var nm=str(card.name)||'未提供牌名';text(c,nm,x+w/2,y+h-(dense?24:47),dense?17:27,WHITE,500,'center',true,w-12);text(c,(i+1)+'. '+str(card.pos||'')+(rev?' · 逆位':''),x+w/2,y+h-(dense?9:19),dense?12:18,rev?'#efb1bd':t.accent,500,'center',false,w-12);}if(card.sig){c.save();c.fillStyle=t.accent;rr(c,x+5,y+5,25,25,6);c.fill();text(c,'★',x+17,y+18,15,INK,600,'center');c.restore();}}
   function bestGrid(n,w,h,maxCols,ratio){var best=null;for(var cols=1;cols<=Math.min(n,maxCols||9);cols++){var rowsN=Math.ceil(n/cols),cw=(w-(cols-1)*13)/cols,ch=(h-(rowsN-1)*18)/rowsN;cw=Math.min(cw,ch/(ratio||1.7));ch=cw*(ratio||1.7);if(!best||cw>best.w)best={cols:cols,rows:rowsN,w:cw,h:ch};}return best;}
   function renderTarot(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards);if(!cards.length){missing(c,t);return;}text(c,d.spread||'塔羅牌陣',67,483,28,t.accent,500,'left',false,743);text(c,cards.length+' 張',1009,483,25,MUTED,500,'right');var large=cards.length>15,grid=bestGrid(cards.length,946,large?544:511,9,large?1.58:1.82);cards.forEach(function(card,i){var col=i%grid.cols,row=Math.floor(i/grid.cols),nrow=Math.min(grid.cols,cards.length-row*grid.cols),x=(W-(nrow*grid.w+(nrow-1)*13))/2+col*(grid.w+13),y=527+row*(grid.h+18);cardCell(c,card,x,y,grid.w,grid.h,t,i,{source:d.sourceProfile});});if(d.conclusion&&!large)paragraph(c,d.conclusion,68,1060,944,26,MUTED,2,31);else note(c,'依抽牌順序展示 · 牌位與方向依本次紀錄',t);}
+  // The 66-card arch plus two new surprises cannot fit in the standard 4:5
+  // preview. Preserve every numbered card and both arcs in a readable long PNG.
+  function mathersCardRow(c,card,n,x,y,w,t,accent){
+    c.save();c.fillStyle='rgba(10,17,29,.65)';rr(c,x,y,w,40,8);c.fill();c.strokeStyle=accent+'66';c.lineWidth=1;rr(c,x,y,w,40,8);c.stroke();c.restore();
+    text(c,String(n).padStart(2,'0'),x+12,y+20,20,accent,600);
+    var im=card&&cache[card.img],ix=x+52,iy=y+3;
+    if(im){c.save();rr(c,ix,iy,27,34,3);c.clip();var iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height;if(iw&&ih){var k=Math.min(27/iw,34/ih);c.translate(ix+13.5,iy+17);if(reversed(card))c.rotate(Math.PI);c.drawImage(im,-iw*k/2,-ih*k/2,iw*k,ih*k);}c.restore();}
+    else star(c,ix+13,iy+17,5,accent);
+    text(c,card&&card.name||'未提供牌面',x+91,y+20,23,WHITE,500,'left',true,w-105);
+    if(reversed(card))text(c,'逆',x+w-14,y+20,16,'#efb1bd',500,'right');
+  }
+  function renderMathers66(c,d,t){
+    var cards=arr(d.cards);if(cards.length!==68)throw new Error('Mathers 第三法分享卡需要完成的 66 張主盤與 2 張意外牌。');
+    heading(c,t,d);question(c,d,t);
+    plate(c,66,485,948,184,t,23,true);
+    text(c,'MATHERS · THIRD METHOD',90,515,20,t.accent,500);
+    text(c,'六十六張拱形主盤',90,560,39,WHITE,600,'left',true,730);
+    text(c,'過去、現在、未來各分外弧與內弧；最下方兩張另抽。',90,616,23,MUTED,400,'left',false,750);
+    var sig=d.significator||{},im=cache[sig.img];
+    c.save();c.fillStyle='#090e19';rr(c,837,502,146,148,12);c.fill();c.strokeStyle=t.accent;c.lineWidth=1.5;rr(c,837,502,146,148,12);c.stroke();c.restore();
+    if(im){var iw=im.naturalWidth||im.width,ih=im.naturalHeight||im.height,scale=Math.min(102/iw,105/ih);c.drawImage(im,910-iw*scale/2,513,iw*scale,ih*scale);}
+    else emblem(c,910,560,32,t);
+    text(c,sig.name||'代表牌未提供',910,626,20,WHITE,500,'center',true,132);
+    var groups=[{title:'過去',outer:1,inner:34,shade:'#dfbb85'},{title:'現在',outer:23,inner:56,shade:'#b0cde7'},{title:'未來',outer:12,inner:45,shade:'#c7abd7'}];
+    groups.forEach(function(group,g){var y=698+g*605;
+      plate(c,66,y,948,590,t,21,g===1);c.save();c.fillStyle=group.shade;rr(c,86,y+26,5,33,2);c.fill();c.restore();
+      text(c,group.title+' · '+String(group.outer).padStart(2,'0')+'—'+String(group.outer+10).padStart(2,'0')+' ／ '+String(group.inner).padStart(2,'0')+'—'+String(group.inner+10).padStart(2,'0'),107,y+43,30,WHITE,600,'left',true,850);
+      text(c,'外弧',92,y+78,20,group.shade,500);text(c,'內弧',557,y+78,20,group.shade,500);
+      for(var row=0;row<11;row++){
+        mathersCardRow(c,cards[group.outer+row-1],group.outer+row,91,y+91+row*44,434,t,group.shade);
+        mathersCardRow(c,cards[group.inner+row-1],group.inner+row,555,y+91+row*44,434,t,group.shade);
+      }
+    });
+    text(c,'另外抽取 · 兩張意外牌',76,2544,30,t.accent,600,'left',true);
+    [66,67].forEach(function(i){var card=cards[i],x=i===66?66:554;plate(c,x,2582,460,136,t,18,true);text(c,(i===66?'左側':'右側')+'意外牌 · 第'+(i+1)+'張',x+22,2617,23,t.accent,500);text(c,card.name||'未提供牌面',x+22,2669,34,WHITE,600,'left',true,410);if(reversed(card,d.sourceProfile))text(c,'逆位',x+429,2617,19,'#efb1bd',500,'right');});
+    text(c,'主盤 66 張 · 意外牌 2 張 · 中央代表牌另列',540,2774,22,MUTED,400,'center');
+  }
   function renderLenormand(c,d,t){heading(c,t,d);question(c,d,t);var cards=arr(d.cards),n=cards.length;if(!n){missing(c,t);return;}text(c,d.spread||'雷諾曼牌陣',67,483,28,t.accent,500,'left',false,900);var i,x,y,w,h,g;
     if(n===36){w=107;h=96;g=12;for(i=0;i<36;i++){var row=Math.floor(i/8),col=i%8;x=row===4?308+col*(w+g):70+col*(w+g);y=531+row*113+(row===4?9:0);cardCell(c,cards[i],x,y,w,h,t,i);}note(c,'4 × 8 主盤 + 4 張獨立收束 · 依實際落宮排列',t);}
     else if(n===9){w=165;h=173;g=17;for(i=0;i<n;i++){x=(W-3*w-2*g)/2+(i%3)*(w+g);y=526+Math.floor(i/3)*(h+14);cardCell(c,cards[i],x,y,w,h,t,i);}note(c,'九宮格 · 中心、四角與行列關係保留',t);}
@@ -166,29 +203,29 @@
     note(c,'六爻納甲 · 世應、六親、月日與動變',t,1110);
   }
   function renderYijing(c,d,t){
-    if(!guaDiagrams(c,d,t))return;var r=d.gua,v=r&&r.reading.selections[0];plate(c,66,825,948,250,t,18,true);
+    if(!guaDiagrams(c,d,t))return;var r=d.gua,selections=r&&r.reading?arr(r.reading.selections):[],v=selections[0];plate(c,66,825,948,250,t,18,true);
     text(c,r&&r.method==='yarrow'?'大衍蓍草 · 十八變成卦':r&&r.method==='coins'?'三錢取象 · 周易卦爻辭':'周易 · 卦爻辭',91,851,18,t.accent,500);
-    text(c,v?v.hexagram+'卦 · '+v.label+' · 主讀':'本次主讀',91,894,29,GOLD,500,'left',true);
-    paragraph(c,v?v.text:d.conclusion||'依本次卦象展開解讀。',91,941,895,31,WHITE,3,45,500,true);
+    if(selections.length>1){selections.slice(0,2).forEach(function(p,i){var y=888+i*94;text(c,p.role+' · '+p.hexagram+'卦 · '+p.label,91,y,26,i?MUTED:GOLD,500,'left',true,890);paragraph(c,p.text,91,y+35,895,25,WHITE,2,29,500,true);});}
+    else{text(c,v?v.hexagram+'卦 · '+v.label+' · 主讀':'本次主讀',91,894,29,GOLD,500,'left',true);paragraph(c,v?v.text:d.conclusion||'依本次卦象展開解讀。',91,941,895,31,WHITE,3,45,500,true);}
     note(c,'以卦爻辭讀進退 · '+(arr(d.moving).length?'動爻 '+d.moving.join('、'):'六爻皆靜'),t,1110);
   }
   var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,liuyao:renderLiuyao,yijing:renderYijing,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
-  function draw(type,data,canvas,options){var t=THEMES[type]||THEMES.invite,d=data||{},scale=options&&options.scale||SCALE;canvas.width=W*scale;canvas.height=H*scale;var c=canvas.getContext('2d');if(!c)throw new Error('無法建立卡片畫布');c.scale(scale,scale);background(c,t);(RENDER[type]||renderInvite)(c,d,t);footer(c,t,type==='invite');return canvas;}
+  function draw(type,data,canvas,options){var t=THEMES[type]||THEMES.invite,d=data||{},scale=options&&options.scale||SCALE,mathers=type==='tarot'&&d.methodId==='mathers_66',height=mathers?3050:H;canvas.width=W*scale;canvas.height=height*scale;var c=canvas.getContext('2d');if(!c)throw new Error('無法建立卡片畫布');c.scale(scale,scale);background(c,t,height);(mathers?renderMathers66:RENDER[type]||renderInvite)(c,d,t);footer(c,t,type==='invite',height);return canvas;}
   function loadImage(src){if(!src)return Promise.resolve(null);if(cache[src])return Promise.resolve(cache[src]);return new Promise(function(resolve){var im=new Image(),done=false,tm=setTimeout(function(){finish(null);},6500);function finish(v){if(done)return;done=true;clearTimeout(tm);im.onload=im.onerror=null;if(v)cache[src]=v;resolve(v);}im.onload=function(){finish(im);};im.onerror=function(){finish(null);};try{var u=new URL(src,document.baseURI);if(!/^(https?:|file:|data:|blob:)$/.test(u.protocol)){finish(null);return;}if(u.protocol!=='data:'&&u.protocol!=='file:'&&u.origin!==location.origin)im.crossOrigin='anonymous';im.src=src;}catch(e){finish(null);}});}
   function fontReady(d){if(!document.fonts)return Promise.resolve();var sample='靜月之光為心裡的問號找到下一步塔羅八字紫微雷諾曼梅花靈籤六爻易經蓍草銅錢納甲世應十二種印度占星西洋占星恆星回歸黃道牡羊金牛雙子巨蟹獅子處女天秤天蠍射手摩羯水瓶雙魚日月水金火木土天海冥羅計上升時間不詳'+JSON.stringify(window.JYMethodCatalog||[])+JSON.stringify(d||{}).slice(0,5000);return Promise.race([Promise.all([document.fonts.load(font(40,600,true),sample),document.fonts.load(font(30,400,false),sample)]).catch(function(){}),new Promise(function(r){setTimeout(r,4000);})]);}
-  function render(type,data,options){var d=Object.assign({},data||{});d.cards=arr(d.cards).map(function(c){return Object.assign({},c);});var jobs=[loadImage(QR_SRC),fontReady(d)];if(type==='invite')jobs.push(loadImage(HERO));if(type==='western'&&nativeChart(type,d)){if(!window.JYWesternChart)return Promise.reject(new Error('星盤繪圖元件尚未載入')); var svg=window.JYWesternChart.wheel(d.chart,{selected:null,interactive:false,id:'share-western',margin:16,centerLabel:d.chart.sensitivity.unknownTime?'REFERENCE':'NATAL'});jobs.push(loadImage('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)).then(function(im){if(!im)throw new Error('星盤圖像未完成');d._wheel=im;}));}d.cards.forEach(function(c){if(c.img)jobs.push(loadImage(c.img));});return Promise.all(jobs).then(function(){return draw(type,d,document.createElement('canvas'),options);});}
+  function render(type,data,options){var d=Object.assign({},data||{});d.cards=arr(d.cards).map(function(c){return Object.assign({},c);});var jobs=[loadImage(QR_SRC),fontReady(d)];if(type==='invite')jobs.push(loadImage(HERO));if(d.methodId==='mathers_66'&&d.significator&&d.significator.img)jobs.push(loadImage(d.significator.img));if(type==='western'&&nativeChart(type,d)){if(!window.JYWesternChart)return Promise.reject(new Error('星盤繪圖元件尚未載入')); var svg=window.JYWesternChart.wheel(d.chart,{selected:null,interactive:false,id:'share-western',margin:16,centerLabel:d.chart.sensitivity.unknownTime?'REFERENCE':'NATAL'});jobs.push(loadImage('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)).then(function(im){if(!im)throw new Error('星盤圖像未完成');d._wheel=im;}));}d.cards.forEach(function(c){if(c.img)jobs.push(loadImage(c.img));});return Promise.all(jobs).then(function(){return draw(type,d,document.createElement('canvas'),options);});}
   function fileName(type){return '靜月之光_'+(THEMES[type]||THEMES.invite).name+'_'+new Date().toISOString().slice(0,10)+'.png';}
   function blobOf(canvas){return new Promise(function(resolve,reject){try{canvas.toBlob(function(b){b?resolve(b):reject(new Error('圖片轉檔未完成'));},'image/png');}catch(e){reject(e);}});}
   function saveBlob(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u);},10000);}
   function download(type,data){return render(type,data).then(blobOf).then(function(blob){saveBlob(blob,fileName(type));return blob;});}
-  function css(){if(document.getElementById('jysc-css'))return;var link=document.createElement('link');link.id='jysc-css';link.rel='stylesheet';link.href=BASE+'assets/share/share-cards-20260911.css?v=20260922gua2';document.head.appendChild(link);}
+  function css(){if(document.getElementById('jysc-css'))return;var link=document.createElement('link');link.id='jysc-css';link.rel='stylesheet';link.href=BASE+'assets/share/share-cards-20260911.css?v=20260923mathers1';document.head.appendChild(link);}
   function close(){serial++;if(!active)return;var cur=active;active=null;if(cur.stopPreview)cur.stopPreview();cur.bd.remove();if(cur.inert)cur.inert.forEach(function(p){p[0].inert=p[1];});document.removeEventListener('keydown',cur.key);document.body.style.overflow=cur.overflow;if(cur.focus&&cur.focus.isConnected)cur.focus.focus();}
-  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" loading="eager" decoding="async" hidden></div><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine&&type!=='vedic'&&type!=='western')?' hidden':'')+'><input type="checkbox" id="jysc-personal"'+(type==='vedic'||type==='western'?'':' checked')+'> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
+  function open(type,data){css();close();var id=++serial,t=THEMES[type]||THEMES.invite,d=Object.assign({},data||{}),dense=type==='tarot'&&d.methodId==='mathers_66',bd=document.createElement('div');bd.id='jysc-bd';bd.className='jysc-bd';bd.innerHTML='<section class="jysc-box" role="dialog" aria-modal="true" aria-labelledby="jysc-title"><header class="jysc-head"><div><span class="jysc-eyebrow">JINGYUE · MOON ATELIER</span><h2 id="jysc-title">把這一刻，分享出去</h2></div><button type="button" class="jysc-x" id="jysc-close" aria-label="關閉分享卡">×</button></header><div class="jysc-stage" id="jysc-stage"><div class="jysc-loading" role="status">正在製作你的卡片…</div><img class="jysc-img" alt="'+t.name+'分享卡" loading="eager" decoding="async" hidden></div><button type="button" class="jysc-zoom" id="jysc-zoom" hidden>放大檢視 68 張牌位</button><p class="jysc-status" id="jysc-status" role="status" aria-live="polite">等待畫面與字體就緒</p><label class="jysc-privacy"'+(type==='invite'||type==='oracle'||(!d.question&&!d.nameA&&!d.nameB&&!d.birthLine&&type!=='vedic'&&type!=='western')?' hidden':'')+'><input type="checkbox" id="jysc-personal"'+(type==='vedic'||type==='western'?'':' checked')+'> 顯示問題、姓名與出生資料</label><div class="jysc-row"><button type="button" class="jysc-btn jysc-primary" id="jysc-share" disabled>分享這張卡片 ↗</button><button type="button" class="jysc-btn" id="jysc-dl" disabled>下載高清圖片 ↓</button></div><p class="jysc-tip">長按圖片也可儲存 · 適合 IG / Threads / LINE</p></section>';
     var focus=document.activeElement,overflow=document.body.style.overflow;document.body.appendChild(bd);document.body.style.overflow='hidden';var el={bd:bd,focus:focus,overflow:overflow,url:null,key:null};active=el;el.inert=Array.from(document.body.children).filter(function(n){return n!==bd&&['SCRIPT','STYLE','LINK'].indexOf(n.tagName)<0;}).map(function(n){var prior=n.inert;n.inert=true;return[n,prior];});var share=bd.querySelector('#jysc-share'),dl=bd.querySelector('#jysc-dl'),status=bd.querySelector('#jysc-status'),img=bd.querySelector('img'),checkbox=bd.querySelector('#jysc-personal'),prepared=null,drawId=0;bd.querySelector('#jysc-close').onclick=close;bd.onclick=function(e){if(e.target===bd)close();};el.key=function(e){if(e.key==='Escape'){close();return;}if(e.key==='Tab'){var list=Array.from(bd.querySelectorAll('button:not(:disabled),input')).filter(function(n){return n.offsetParent!==null;}),first=list[0],last=list[list.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};document.addEventListener('keydown',el.key);bd.querySelector('#jysc-close').focus();
     function refresh(){
       var mine=++drawId,timer=null;
       if(el.stopPreview)el.stopPreview();
-      prepared=null;
+      prepared=null;var dimensions='2160 × 2700';
       share.disabled=dl.disabled=true;
       // ui.js adds loading="lazy" to dynamic images without an explicit policy.
       // A hidden lazy image waits for visibility while our UI waits for its load.
@@ -201,7 +238,7 @@
       var loading=bd.querySelector('.jysc-loading'),tip=bd.querySelector('.jysc-tip');
       if(!loading){loading=document.createElement('div');loading.className='jysc-loading';loading.setAttribute('role','status');stage.appendChild(loading);}
       loading.textContent='正在製作你的卡片…';status.textContent='正在製作你的卡片…';
-      tip.textContent='適合 IG / Threads / LINE';stage.setAttribute('aria-busy','true');
+      tip.textContent=dense?'長版牌位卡 · 放大後可上下左右滑動查看':'適合 IG / Threads / LINE';stage.setAttribute('aria-busy','true');
       function current(){return id===serial&&mine===drawId&&active===el;}
       function clearPreviewTimer(){if(timer!==null){clearTimeout(timer);timer=null;}}
       el.stopPreview=function(){
@@ -211,8 +248,8 @@
       function previewReady(){
         if(!current()||!preview.naturalWidth)return;
         clearPreviewTimer();preview.onload=preview.onerror=null;loading.remove();preview.hidden=false;
-        stage.setAttribute('aria-busy','false');status.textContent='2160 × 2700 高清圖片 · '+t.name;
-        tip.textContent='長按圖片也可儲存 · 適合 IG / Threads / LINE';
+        stage.setAttribute('aria-busy','false');status.textContent=dimensions+' 高清圖片 · '+t.name;
+        tip.textContent=dense?'長版牌位卡 · 放大後可上下左右滑動查看':'長按圖片也可儲存 · 適合 IG / Threads / LINE';
       }
       function previewFailed(){
         if(!current())return;
@@ -223,7 +260,7 @@
       }
       var payload=Object.assign({},d);payload.showPersonal=checkbox.checked;
       if(!checkbox.checked){payload.question='';payload.nameA='A 方';payload.nameB='B 方';payload.birthLine='未顯示';}
-      render(type,payload).then(function(cv){if(current())return blobOf(cv);}).then(function(blob){
+      render(type,payload).then(function(cv){if(current()){dimensions=cv.width+' × '+cv.height;return blobOf(cv);}}).then(function(blob){
         if(!current())return;
         prepared=blob;share.disabled=dl.disabled=false;
         loading.textContent='正在載入卡片預覽…';status.textContent='高清圖片已完成，正在載入預覽…';
@@ -241,6 +278,6 @@
       });
     }
     checkbox.onchange=refresh;dl.onclick=function(){if(prepared)saveBlob(prepared,fileName(type));};share.onclick=function(){if(!prepared)return;try{var f=new File([prepared],fileName(type),{type:'image/png'});if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:'靜月之光',text:'為心裡的問號，找到下一步的光。jingyue.uk'}).catch(function(e){if(e&&e.name==='AbortError')return;status.textContent='此環境無法直接分享，可使用「下載高清圖片」。';});return;}}catch(e){}saveBlob(prepared,fileName(type));status.textContent='圖片已下載，可貼到你想分享的社群。';};
-    var stage=bd.querySelector('#jysc-stage');if(window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){stage.onpointermove=function(e){var r=stage.getBoundingClientRect();img.style.transform='perspective(1000px) rotateX('+(-(e.clientY-r.top-r.height/2)/r.height*4)+'deg) rotateY('+((e.clientX-r.left-r.width/2)/r.width*4)+'deg)';};stage.onpointerleave=function(){img.style.transform='';};}refresh();return bd;}
-  window.JYShareCard={version:'4.0.0',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
+    var stage=bd.querySelector('#jysc-stage'),zoom=bd.querySelector('#jysc-zoom');if(dense){stage.classList.add('is-dense');zoom.hidden=false;zoom.onclick=function(){var expanded=stage.classList.toggle('is-zoomed');zoom.textContent=expanded?'縮回總覽':'放大檢視 68 張牌位';stage.scrollLeft=stage.scrollTop=0;};}if(!dense&&window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){stage.onpointermove=function(e){var r=stage.getBoundingClientRect();img.style.transform='perspective(1000px) rotateX('+(-(e.clientY-r.top-r.height/2)/r.height*4)+'deg) rotateY('+((e.clientX-r.left-r.width/2)/r.width*4)+'deg)';};stage.onpointerleave=function(){img.style.transform='';};}refresh();return bd;}
+  window.JYShareCard={version:'4.1.0',open:open,close:close,render:render,download:download,_draw:draw,_W:W,_H:H,types:Object.keys(RENDER)};
 })();

@@ -1,0 +1,25 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:latest-audit
+> node tests/chinese-engine-rules-20260923.cjs && node tests/birth-audit-20260923.cjs && node tests/astro-rules-audit-20260923.cjs && node tests/card-audit-20260923.cjs && node tests/card-audit-mathers-third-20260923.cjs && node tests/card-audit-legacy-meanings-20260923.cjs && node tests/prompt-only-audit-20260923.cjs && node tests/prompt-only-shop-20260923.cjs
+
+Chinese engines: hidden focus, calendar timing, Meihua season and 384 symbolic reading regressions passed.
+PASS birth audit: Ziwei geometry and Bazi month/interaction assertions
+PASS astrology source backed chart patterns, time integrity, and prompt handoff
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+card-audit: 7 real routing and completed oracle flow checks passed.
+card-audit-mathers-third: 78-card conservation, period ranges, 68 real UI slots, source ambiguity, routing and failures passed.
+card-audit-legacy-meanings: live card meanings, RWS payload, Mei Hua mirror and love/wealth/health counterexamples passed.
+PASS No chart yields no fabricated reading and no remote request
+PASS Single real Bazi chart produces a fully local answer-first prompt without running score fusion
+PASS A second completed chart is included without fabricating uncomputed methods
+PASS Unknown birth hour excludes provisional hour from the exported chart
+PASS Unknown birth hour does not present a provisional Ziwei chart as finished
+PASS Failed astrology reports status without a fabricated horoscope
+PASS Stale native astrology is rejected when birth inputs change
+PASS Mathers Third Method export reflects only the implemented 66-card arches and two separate surprises
+PASS The legacy Opus and tarot entry points stay local even with admin flags
+PASS Store links and dynamic prices cannot be presented as verified
+PASS Product cards render price and inventory verification without promises
+PASS Legacy stone panel is a neutral style sample without efficacy or old prices
+PASS Sacrifice and clash labels never change name score or predict incidents

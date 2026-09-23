@@ -82,7 +82,7 @@ var JY_REC_ZIWEI = "【延伸選品】（規則版本 4.3.0）\n【從解讀到�
 
   function answerContractLines() {
     return [
-      root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
+      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
       '數量與角色邊界：星曜、宮位或四化不推算性伴侶人數、婚姻次數、子女人數、外遇次數，也不給「不只一個」「至少兩次」等下限；命盤可談關係趨勢，不證明特定人的身分、愛意或同意。已知次數須來自使用者自述。'
     ];
   }
@@ -90,7 +90,7 @@ var JY_REC_ZIWEI = "【延伸選品】（規則版本 4.3.0）\n【從解讀到�
   function brandTailLines() {
     return [
       '【延伸選品】',
-      (root.JY_READING_QUALITY&&root.JY_READING_QUALITY.version==="4.3.0"&&root.JY_READING_QUALITY.recommendationEnding?root.JY_READING_QUALITY.recommendationText('ziwei'):JY_REC_ZIWEI),
+      (root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationText('ziwei'):JY_REC_ZIWEI),
       '最後保留以下兩行：\n' + SHOP_LINK + '\n' + FINAL_WISH
     ];
   }
@@ -103,7 +103,7 @@ var JY_REC_ZIWEI = "【延伸選品】（規則版本 4.3.0）\n【從解讀到�
   }
 
   function allCoreLines() {
-    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
+    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
   }
 
   function composeHead() {

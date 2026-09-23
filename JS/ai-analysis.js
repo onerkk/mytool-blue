@@ -1260,60 +1260,50 @@ function renderJyotish(){
   var cvHtml='';
   try{
     var cv=jyCrossValidation(jy, S.bazi, S.ziwei, type);
-    if(cv && cv.signals.length){
-      cvHtml+='<p class="text-dim text-xs" style="margin-bottom:.5rem">用三套完全不同的命理系統（印度吠陀、中國八字、紫微斗數）交叉比對你的命盤。三套系統說法一致時，結論的可信度更高</p>';
-      cvHtml+='<div style="display:flex;gap:8px;margin-bottom:.6rem">'+
-        '<div style="padding:4px 8px;border-radius:4px;background:rgba(74,222,128,.1);font-size:.7rem">一致 '+cv.agreements+'</div>'+
-        '<div style="padding:4px 8px;border-radius:4px;background:rgba(251,191,36,.1);font-size:.7rem">分歧 '+cv.disagreements+'</div>'+
-        '<div style="padding:4px 8px;border-radius:4px;background:rgba(255,255,255,.05);font-size:.7rem">共識度：'+cv.consensus+'</div>'+
-        '</div>';
+    if(cv && Array.isArray(cv.signals) && cv.signals.length){
+      cvHtml+='<p class="text-dim text-xs" style="margin-bottom:.5rem">各系統依自己的計算條件與題目各自解讀；下列只列可核對的角度，不將說法相近當成獨立證據或可信度分數。</p>';
       cv.signals.forEach(function(s){
-        cvHtml+='<p style="line-height:1.7;font-size:.85rem;margin-bottom:.3rem">'+s.zh+'</p>';
+        cvHtml+='<p style="line-height:1.7;font-size:.85rem;margin-bottom:.3rem">'+_jyShopHtml(s.zh||s.detail||'')+'</p>';
       });
     } else {
-      cvHtml='<p class="text-dim">需要八字資料才能進行交叉驗證</p>';
+      cvHtml='<p class="text-dim">本次沒有足夠的跨系統可核對資料，請先分別閱讀各盤結果。</p>';
     }
-  }catch(e){ cvHtml='<p class="text-dim">交叉驗證計算中…</p>'; }
+  }catch(e){ cvHtml='<p class="text-dim">跨系統資料未能整理；仍可分別閱讀各盤結果。</p>'; }
   document.getElementById('d-jyotish-crossval').innerHTML=cvHtml;
 
   // ── Remedy ──
   var remHtml='';
-  var remedies=jyRemedySuggestions(jy, type);
+  var remedies=jyRemedySuggestions(jy, type)||[];
   if(remedies.length){
-    remHtml+='<p class="text-dim text-xs" style="margin-bottom:.5rem">根據功能吉凶星分類 × 大運加權 × 刑沖扣減，綜合判斷哪些行星值得補強</p>';
+    remHtml+='<p class="text-dim text-xs" style="margin-bottom:.5rem">下列是傳統占星流派中的寶石與行星對應參考；這些資料不會自動證明需要購買、佩戴後有效，或有任何「最佳佩戴日」。個別條件還需核對相關宮位、分盤與運期。</p>';
     remedies.forEach(function(r){
       if(r.dangerIfStrengthened){
-        // Danger warning card
         remHtml+='<div style="padding:.5rem;margin-bottom:.4rem;background:rgba(248,113,113,.06);border-left:3px solid #f87171;border-radius:0 6px 6px 0">'+
-          '<p style="margin:0;font-weight:600;font-size:.85rem;color:#f87171">🚫 '+r.zh+' — '+r.fnLabel+'</p>'+
-          '<p style="margin:2px 0 0;font-size:.78rem;color:#fca5a5">'+r.reason+'</p>'+
-          '<p style="margin:2px 0 0;font-size:.75rem;opacity:.7">'+r.gem+'</p>'+
+          '<p style="margin:0;font-weight:600;font-size:.85rem;color:#f87171">'+_jyShopHtml(r.zh)+' — 本盤補救條件待核</p>'+
+          '<p style="margin:2px 0 0;font-size:.78rem;color:#fca5a5">不宜只看單一強弱或寶石名稱，就推斷個人需要補強。</p>'+
           '</div>';
       } else {
-        // Normal recommendation card
         remHtml+='<div style="padding:.5rem;margin-bottom:.4rem;background:rgba(255,255,255,.03);border-left:3px solid var(--c-gold);border-radius:0 6px 6px 0">'+
-          '<p style="margin:0;font-weight:600;font-size:.85rem">💎 '+r.zh+'能量補強 <span style="font-size:.7rem;opacity:.6">'+r.fnLabel+'</span></p>'+
-          '<p style="margin:2px 0 0;font-size:.78rem;opacity:.8">'+r.reason+'</p>'+
-          '<p style="margin:2px 0 0;font-size:.75rem;color:var(--c-gold)">建議寶石：'+r.gem+(r.day?' ｜ 最佳佩戴日：'+r.day:'')+'</p>'+
-          (r.mantra?'<p style="margin:1px 0 0;font-size:.68rem;opacity:.5">Mantra：'+r.mantra+'</p>':'')+
+          '<p style="margin:0;font-weight:600;font-size:.85rem">'+_jyShopHtml(r.zh)+'・傳統寶石對應</p>'+
+          '<p style="margin:2px 0 0;font-size:.75rem;color:var(--c-gold)">流派參考：'+_jyShopHtml(r.gem||'未提供')+'；不等於本次佩戴處方。</p>'+
           '</div>';
       }
     });
   } else {
-    remHtml='<p style="color:var(--c-gold)">✨ 行星力量整體均衡，無需特別補強。</p>';
+    remHtml='<p style="color:var(--c-gold)">本次資料不足以指定個人寶石配戴方案；可依喜歡的外觀選日常飾品。</p>';
   }
   
   // Show functional nature summary table
   if(jy.functionalNature){
     remHtml+='<details style="margin-top:.6rem"><summary style="font-size:.75rem;opacity:.6;cursor:pointer">展開：你的行星功能分類明細</summary>';
-    remHtml+='<table style="width:100%;font-size:.7rem;border-collapse:collapse;margin-top:.3rem"><tr style="opacity:.5;border-bottom:1px solid rgba(255,255,255,.1)"><th>行星</th><th>管轄宮位</th><th>功能分類</th><th>有效力量</th><th>受傷度</th><th>可否補強</th></tr>';
+    remHtml+='<table style="width:100%;font-size:.7rem;border-collapse:collapse;margin-top:.3rem"><tr style="opacity:.5;border-bottom:1px solid rgba(255,255,255,.1)"><th>行星</th><th>管轄宮位</th><th>功能分類</th><th>模型力量</th><th>模型受剋</th><th>條件提示</th></tr>';
     ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'].forEach(function(p){
       var fnP=jy.functionalNature[p];
       var esP=jy.effectiveStrength?jy.effectiveStrength[p]:null;
       var affP=jy.afflictions?jy.afflictions[p]:null;
       if(!fnP) return;
       var fnColor = fnP.canStrengthen ? '#4ade80' : fnP.dangerToStrengthen ? '#f87171' : 'var(--c-text-dim)';
-      var canStr = fnP.canStrengthen ? '✅ 可補' : fnP.dangerToStrengthen ? '❌ 危險' : '⚪ 中性';
+      var canStr = fnP.canStrengthen ? '依全盤核對' : fnP.dangerToStrengthen ? '不能單看此星' : '資料未定';
       remHtml+='<tr style="border-bottom:1px solid rgba(255,255,255,.05)">'+
         '<td>'+JY_PLANETS[p].sym+' '+JY_PLANETS[p].zh+'</td>'+
         '<td>'+fnP.houses.map(function(h){return h;}).join(',')+'宮</td>'+
@@ -3045,462 +3035,37 @@ function talkDayun(bazi, focusType){
 //   3. 格局是否被破（相剋的十神太旺）
 // ═══════════════════════════════════════════════════════════════════
 
-function detectGeJu(bazi){
-  if(!bazi || !bazi.pillars || !bazi.gods) return null;
-  
-  var dm = bazi.dm, dmEl = bazi.dmEl;
-  var strong = bazi.strong;
-  var gods = bazi.gods;
-  var pillars = bazi.pillars;
-  var ep = bazi.ep || {};
-  
-  // 月柱天干十神（月干透出什麼）
-  var monthGanGod = gods.month ? gods.month.gan : '';
-  // 月支藏干十神（月令本氣）
-  var monthZhiGods = gods.month ? gods.month.zhi : [];
-  var monthMainGod = monthZhiGods[0] || ''; // 月令本氣十神
-  
-  // 年干、時干的十神
-  var yearGanGod = gods.year ? gods.year.gan : '';
-  var hourGanGod = gods.hour ? gods.hour.gan : '';
-  
-  // 所有透出的天干十神
-  var allGanGods = [yearGanGod, monthGanGod, hourGanGod].filter(function(g){return g && g!=='日主' && g!=='—';});
-  
-  // 統計各十神出現次數
-  var godStats = {};
-  allGanGods.forEach(function(g){ godStats[g] = (godStats[g]||0) + 1; });
-  monthZhiGods.forEach(function(g){ if(g && g!=='—') godStats[g] = (godStats[g]||0) + 1; });
-  // 加上其他地支藏干
-  ['year','day','hour'].forEach(function(p){
-    if(gods[p] && gods[p].zhi){
-      gods[p].zhi.forEach(function(g){ if(g && g!=='—') godStats[g] = (godStats[g]||0) + 0.5; });
-    }
-  });
-  
-  // ── 格局判定邏輯 ──
-  var geju = null;
-  var gejuType = '';
-  var gejuDesc = '';
-  var gejuGrade = ''; // 成格、破格、半成
-  
-  // 先看月令本氣，再看是否天干透出
-  var hasTransparent = allGanGods.includes(monthMainGod);
-  
-  // 月令為比劫（建祿格/陽刃格）
-  if(monthMainGod === '比肩' || monthMainGod === '劫財'){
-    // 建祿格/月刃格：看其他透出的十神決定取用
-    if(godStats['正官'] >= 1 || godStats['七殺'] >= 1){
-      gejuType = '建祿用官殺';
-      gejuDesc = '月令建祿，天干透官殺為用。你天生有根基、有底氣，事業上適合在體制內發展或被拔擢。';
-    } else if(godStats['食神'] >= 1 || godStats['傷官'] >= 1){
-      gejuType = '建祿用食傷';
-      gejuDesc = '月令建祿，天干透食傷為用。你的才華和表達力是最大的武器，適合靠技術或創意吃飯。';
-    } else if(godStats['偏財'] >= 1 || godStats['正財'] >= 1){
-      gejuType = '建祿用財';
-      gejuDesc = '月令建祿，天干透財星為用。你有根基也有賺錢的動力，適合穩扎穩打地累積財富。';
-    } else {
-      gejuType = '建祿格';
-      gejuDesc = '月令建祿，你天生有底氣和資源，但需要找到一個明確的方向來發揮。';
-    }
-  }
-  // 正官格
-  else if(monthMainGod === '正官'){
-    gejuType = '正官格';
-    if(godStats['傷官'] >= 2){
-      gejuGrade = '破格';
-      gejuDesc = '正官格但傷官太旺，格局被破。代表你有被管理和規範的機會，但你的叛逆和創意會跟體制衝突。適合在自由度高的環境工作。';
-    } else if(godStats['正印'] >= 1 || godStats['偏印'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '正官配印，這是八字裡最經典的好格局之一。代表你有「被提拔、被重用」的命格。適合在大組織裡穩步上升，走管理路線。';
-    } else if(godStats['正財'] >= 1 || godStats['偏財'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '正官配財，財生官旺。代表你有能力在職場上靠實績升遷，錢和地位會同步增長。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '正官格，你天生適合有規範的環境——公務體系、大企業、專業機構。穩定是你的強項。';
-    }
-  }
-  // 七殺格
-  else if(monthMainGod === '七殺'){
-    gejuType = '七殺格';
-    if(godStats['食神'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '七殺配食神，「食神制殺」是名格局。代表你有魄力也有智慧，能把壓力轉化為動力。適合競爭激烈的行業，越有挑戰越能發揮。';
-    } else if(godStats['正印'] >= 1 || godStats['偏印'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '七殺配印，「殺印相生」也是好格局。代表你有膽識也有背景支撐。適合做需要權威和專業的工作。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '七殺格，你天生有領導力和行動力，但壓力也大。找到「制」住七殺的方法（學歷、專業證照、靠山），你就能翻身。';
-    }
-  }
-  // 食神格
-  else if(monthMainGod === '食神'){
-    gejuType = '食神格';
-    if(godStats['偏財'] >= 1 || godStats['正財'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '食神生財，這是「靠才華賺錢」的經典格局。你的創意、手藝、表達力就是你的搖錢樹。適合自由業、創作、餐飲、教育。';
-    } else if(godStats['偏印'] >= 2){
-      gejuGrade = '破格';
-      gejuDesc = '食神被梟印奪（梟神奪食），格局破損。代表你的才華容易被壓制或自我懷疑。打破心裡的框架是你最重要的功課。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '食神格，你天生有才華和創造力，享受生活、懂吃懂玩。把興趣發展成事業是最好的路線。';
-    }
-  }
-  // 傷官格
-  else if(monthMainGod === '傷官'){
-    gejuType = '傷官格';
-    if(godStats['正印'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '傷官配印，「傷官佩印」是大格局。代表你既有創新的衝勁，又有學識和修養來駕馭它。適合學術、法律、藝術、技術研發。';
-    } else if(godStats['偏財'] >= 1 || godStats['正財'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '傷官生財，你的表達力和創新能力是賺錢的利器。適合業務、自媒體、設計、諮詢。口才和腦子就是你的資本。';
-    } else if(godStats['正官'] >= 1 && godStats['正印'] < 1){
-      gejuGrade = '破格';
-      gejuDesc = '傷官見官，格局不穩。代表你容易跟上司或體制起衝突。不是你不好，是你不適合被管。自由的環境更適合你。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '傷官格，你有強烈的表達慾和反叛精神。把這股能量引到正確的方向，你會是很有影響力的人。';
-    }
-  }
-  // 正財格
-  else if(monthMainGod === '正財'){
-    gejuType = '正財格';
-    if(godStats['正官'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '正財配官，「財官雙美」是好格局。代表你有穩定的收入和社會地位。適合金融、管理、經商，走正路越走越寬。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '正財格，你天生財運穩健，靠勤勞和規劃賺錢。不是暴富型，而是細水長流、越來越有的類型。';
-    }
-  }
-  // 偏財格
-  else if(monthMainGod === '偏財'){
-    gejuType = '偏財格';
-    gejuGrade = '半成';
-    gejuDesc = '偏財格，你的財運來源多元、社交能力強。適合做生意、業務、投資。你的錢跟「人脈」直接掛鉤——認識越多人、賺越多錢。';
-    if(godStats['七殺'] >= 1 || godStats['正官'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '偏財配官殺，你有賺錢的本事也有社會地位。適合做老闆或高階管理。';
-    }
-  }
-  // 正印格
-  else if(monthMainGod === '正印'){
-    gejuType = '正印格';
-    if(godStats['正官'] >= 1){
-      gejuGrade = '成格';
-      gejuDesc = '正印配官，「官印相生」是八字裡最穩的格局。代表你一路有貴人、有背景支撐。適合學術、公務、大企業，走越穩越好的路線。';
-    } else {
-      gejuGrade = '半成';
-      gejuDesc = '正印格，你天生有貴人運、學習能力強。適合靠學歷和專業吃飯。';
-    }
-    if(godStats['偏財'] >= 2 || godStats['正財'] >= 2){
-      gejuGrade = '破格';
-      gejuDesc += ' 但財星太旺克印，代表物質追求可能干擾你的學業或專業發展。不要為了賺快錢而放棄長期累積。';
-    }
-  }
-  // 偏印格
-  else if(monthMainGod === '偏印'){
-    gejuType = '偏印格';
-    gejuGrade = '半成';
-    gejuDesc = '偏印格，你思維獨特、有靈感，適合非傳統的領域——藝術、神秘學、技術研究、冷門專業。但容易三分鐘熱度，堅持下去才看得到成果。';
-    if(godStats['食神'] >= 1){
-      gejuDesc += ' 偏印遇食神（梟神奪食），注意不要讓自我懷疑吃掉你的才華。';
-    }
-  }
-  
-  // 如果月令沒有明確格局，嘗試從透出天干找
-  if(!gejuType){
-    // 找透出最旺的十神
-    var sortedGods = Object.keys(godStats).sort(function(a,b){return godStats[b]-godStats[a];});
-    var topGod = sortedGods[0] || '';
-    if(topGod === '食神' || topGod === '傷官'){
-      gejuType = '食傷旺';
-      gejuDesc = '食傷旺，你的才華和表達力是最大的優勢。適合靠腦力和創意賺錢。';
-    } else if(topGod === '正官' || topGod === '七殺'){
-      gejuType = '官殺旺';
-      gejuDesc = '官殺旺，你有管理能力和事業心，適合在有組織的環境中發展。';
-    } else if(topGod === '偏財' || topGod === '正財'){
-      gejuType = '財星旺';
-      gejuDesc = '財星旺，你天生有賺錢的嗅覺和動力。';
-    } else if(topGod === '正印' || topGod === '偏印'){
-      gejuType = '印星旺';
-      gejuDesc = '印星旺，你的學習能力和貴人運都不錯。適合靠專業和學歷發展。';
-    }
-  }
-  
-  if(!gejuType) return null;
-  
-  // ── 格局 × 領域交叉解讀 ──
-  var readings = {
-    career: '', love: '', wealth: '', health: ''
-  };
-  
-  // 事業解讀
-  if(gejuType.includes('正官')){
-    readings.career = '你的八字格局偏「管理型」，適合在大組織裡穩定發展。官印相生的人升遷靠的是人品和能力，不用刻意經營。';
-  } else if(gejuType.includes('七殺')){
-    readings.career = '你的八字格局偏「戰將型」，適合競爭激烈的環境。越有壓力越能激發你的潛力，平淡反而讓你退步。';
-  } else if(gejuType.includes('食神') || gejuType.includes('食傷')){
-    readings.career = '你的八字格局偏「創意型」，靠才華和手藝吃飯最適合你。把興趣變成事業，你會做得又開心又有錢。';
-  } else if(gejuType.includes('傷官')){
-    readings.career = '你的八字格局偏「改革型」，有強烈的創新衝動。傳統的環境壓不住你，找一個讓你發揮的舞台最重要。';
-  } else if(gejuType.includes('正財')){
-    readings.career = '你的八字格局偏「穩健型」，靠勤勞和計畫取勝。不搶風頭但做事靠譜，是老闆最信任的類型。';
-  } else if(gejuType.includes('偏財')){
-    readings.career = '你的八字格局偏「社交型」，人脈就是你的命脈。做生意、拉業務、談合作都是你的強項。';
-  } else if(gejuType.includes('正印') || gejuType.includes('印星')){
-    readings.career = '你的八字格局偏「學者型」，適合靠專業知識和學歷發展。醫療、法律、教育、研究都適合。';
-  } else if(gejuType.includes('偏印')){
-    readings.career = '你的八字格局偏「非主流型」，傳統行業未必適合你。冷門專業、自由業、新興領域更能讓你發光。';
-  } else if(gejuType.includes('建祿')){
-    readings.career = '月令建祿，你天生有根基和底氣。事業的關鍵不在「起步」而在「方向」——選對了就很穩。';
-  }
-  
-  // 感情解讀
-  if(gejuType.includes('食神') || gejuType.includes('食傷')){
-    readings.love = '食傷旺的人在感情裡表達力強、有魅力，但也容易「說太多」或「要求太多」。學會「只聽不說」有時候更有用。';
-  } else if(gejuType.includes('傷官')){
-    readings.love = '傷官旺的人在感情裡有強烈的個人主張，容易跟另一半起衝突。你需要的不是聽你話的人，而是能跟你平等對話的人。';
-  } else if(gejuType.includes('正官')){
-    readings.love = '正官格的人在感情裡偏傳統穩重，對另一半有一定的期待和標準。門當戶對、互相尊重是你的理想模式。';
-  } else if(gejuType.includes('七殺')){
-    readings.love = '七殺格的人在感情裡來得猛烈。你喜歡有個性有能力的對象，平淡的感情留不住你。但要注意「猛」不等於「好」。';
-  } else if(gejuType.includes('偏財')){
-    readings.love = '偏財旺的人異性緣好、選擇多，但也容易花心。感情上最大的功課是「選了就專注」。';
-  } else if(gejuType.includes('正印') || gejuType.includes('印星')){
-    readings.love = '印星旺的人在感情裡偏被動，習慣被照顧。找一個願意主動付出的另一半最適合你。';
-  }
-  
-  // 財運解讀
-  if(gejuType.includes('食神') && (godStats['偏財']>=1 || godStats['正財']>=1)){
-    readings.wealth = '食神生財的格局，你的才華就是你的提款機。把技能變現的能力是你最大的財運保障。';
-  } else if(gejuType.includes('傷官') && (godStats['偏財']>=1 || godStats['正財']>=1)){
-    readings.wealth = '傷官生財的格局，你的口才和創新能力能直接變現。業務、自媒體、諮詢都是好的收入管道。';
-  } else if(gejuType.includes('正財')){
-    readings.wealth = '正財格的人財運穩健，不會大起大落。靠薪水、靠規劃、靠長期投資是最適合你的理財模式。';
-  } else if(gejuType.includes('偏財')){
-    readings.wealth = '偏財格的人有偏財運，意外收入不少。但「來得快去得也快」，強制儲蓄是你必須養成的習慣。';
-  } else if(gejuType.includes('正官') && (godStats['正財']>=1 || godStats['偏財']>=1)){
-    readings.wealth = '財官雙美的格局，收入和地位同步增長。你越往上走，錢越不是問題。';
-  } else if(strong){
-    readings.wealth = '身強能扛大財，可以做較大的投資和生意。但「能扛」不等於「該扛」，風險管理還是要做好。';
-  } else {
-    readings.wealth = '身弱的人理財要保守，先確保現金流穩定再說投資。你適合「先存再投」的模式。';
-  }
-  
-  return {
-    type: gejuType,
-    grade: gejuGrade,
-    desc: gejuDesc,
-    readings: readings,
-    godStats: godStats,
-    isSuccess: gejuGrade === '上格' || gejuGrade === '中上',
-    isBroken: gejuGrade === '下格' || gejuGrade === '破格'
-  };
-}
+// 舊版依十神「出現次數」斷成格、事業、婚戀與財富，無法核對通路與破格條件。
+// 保留函式名稱供舊的七維顯示呼叫；格局候選請讀 bazi.specialRuleAssessment，
+// 其 matched/status/checks 才是本次引擎實際核對過的條件。
+function detectGeJu(bazi){ return null; }
 
 function talkBaziFor(bazi, focusType){
-  if(!bazi) return '';
-  var ep=bazi.ep||{};
-  var strong=bazi.strong;
-  var texts=[];
-  // ★ Bug #41 fix: 補回 dmEl/yinEl 宣告（之前在三合局/三會局分支用到但函式內未宣告，造成 ReferenceError）
-  var dmEl = bazi.dmEl || '';
-  var _BS_TALK = {木:'水',火:'木',土:'火',金:'土',水:'金'}; // 生我者（印星）
-  var yinEl = dmEl ? (_BS_TALK[dmEl] || '') : '';
-  
-  // ── 特殊格局（從格/化氣格）優先描述 ──
-  if(bazi.specialStructure){
-    var _ss = bazi.specialStructure;
-    texts.push(_ss.desc);
-    // 特殊格局的用神忌神提示
-    if(_ss.favEls && _ss.favEls.length){
-      texts.push('這個格局喜'+_ss.favEls.join('、')+'行方向，忌'+(_ss.unfavEls||[]).join('、')+'行干擾。走對了運特別順，破格則反覆。');
-    }
-  }
-  
-  // ── 地支合沖刑害白話 ──
-  if(bazi.branchInteractions && bazi.branchInteractions.length){
-    bazi.branchInteractions.forEach(function(bi){
-      if(bi.type === '三合局' || bi.type === '三會局'){
-        if(bi.el === yinEl || bi.el === dmEl){
-          texts.push('地支'+bi.desc+'，對你的根基是很大的加持——'+bi.el+'行力量凝聚，底氣足。');
-        } else {
-          texts.push('地支'+bi.desc+'，'+bi.el+'行的能量在你的命盤裡特別集中。');
-        }
-      } else if(bi.type === '六沖'){
-        if(focusType==='love' && bi.desc.includes('日支')){
-          texts.push(bi.desc+'，婚姻宮被沖動，感情上容易有波動和變化。');
-        } else if(focusType==='career' && bi.desc.includes('月支')){
-          texts.push(bi.desc+'，事業宮被沖，工作環境容易有變動。');
-        }
-      } else if(bi.isXing && bi.type === '三刑全'){
-        texts.push(bi.desc+'，命帶三刑，做事要格外注意法律風險和人際摩擦。');
-      }
+  if (!bazi || !bazi.pillars) return '';
+  var lines=[];
+  var unknownHour=typeof S!=='undefined' && S.form && (S.form.btimeUnknown || S.form.timePrecision==='unknown');
+  var labels={year:'年',month:'月',day:'日',hour:'時'};
+  ['year','month','day','hour'].forEach(function(k){
+    if (unknownHour && k==='hour') return;
+    var p=bazi.pillars[k];
+    if (p && p.gan && p.zhi) lines.push(labels[k]+'柱 '+p.gan+p.zhi);
+  });
+  if (bazi.fuyiAssessment && bazi.fuyiAssessment.conclusion)
+    lines.push('扶抑模型：'+bazi.fuyiAssessment.conclusion);
+  if (bazi.seasonalAssessment && bazi.seasonalAssessment.conclusion)
+    lines.push('調候：'+bazi.seasonalAssessment.conclusion);
+  var assessment=bazi.specialRuleAssessment;
+  if (assessment && Array.isArray(assessment.matched)) {
+    assessment.matched.forEach(function(item){
+      if (!item || item.status!=='structural') return;
+      lines.push((item.name||item.id||'特殊作用')+'符合本次已列的結構條件；是否成格、成事及歲運承接仍須逐項審核');
     });
   }
-  
-  // ── 先嘗試格局推理 ──
-  var geju = detectGeJu(bazi);
-  if(geju){
-    // 優先用格局 × 領域的特定解讀（更精準）
-    if(geju.readings[focusType]){
-      texts.push(geju.readings[focusType]);
-    } else if(focusType==='love' || focusType==='career' || focusType==='wealth'){
-      // 只有感情/事業/財運才 fallback 到通用格局描述
-      // 健康/家庭/人際跟格局描述關聯性低，不輸出
-      texts.push(geju.desc);
-    }
-  }
-  
-  // ── 補充十神百分比分析（作為格局解讀的輔助）──
-  if(focusType==='love'){
-    var caiXing=(ep['財']||0)+(ep['才']||0);
-    var guanXing=(ep['官']||0)+(ep['殺']||0);
-    var shiShang=(ep['食']||0)+(ep['傷']||0);
-    var pk=bazi.shensha&&(bazi.shensha.includes('桃花')||bazi.shensha.includes('紅鸞')||bazi.shensha.includes('天喜'));
-    if(pk) texts.push('命帶桃花星，異性緣底子好');
-    // 只在沒有格局感情解讀時才用百分比
-    if(!geju || !geju.readings.love){
-      if(bazi.gender==='male'){
-        if(caiXing>=25) texts.push('財星旺，代表身邊不缺異性緣');
-        else if(caiXing<=10) texts.push('財星偏弱，感情需要主動爭取');
-      } else {
-        if(guanXing>=25) texts.push('官星旺，容易吸引到有能力的對象');
-        else if(guanXing<=10) texts.push('官星偏弱，另一半可能需要時間才能遇到');
-      }
-    }
-    // 日支藏干 → 配偶特質
-    if(bazi.cangGan && bazi.cangGan.day){
-      var dayBrGan=bazi.cangGan.day;
-      if(dayBrGan.length){
-        var mainGan=dayBrGan[0];
-        var ganTrait={'甲':'正直有主見','乙':'溫柔有彈性','丙':'熱情開朗','丁':'細膩浪漫','戊':'穩重踏實','己':'溫和包容','庚':'果斷有魄力','辛':'精緻有品味','壬':'聰明靈活','癸':'內斂感性'};
-        if(ganTrait[mainGan]) texts.push('日支藏'+mainGan+'，配偶性格偏'+ganTrait[mainGan]+'的類型');
-      }
-    }
-    // 食傷旺 → 個人魅力來源
-    // ★ Bug #42 fix: shiShang 已在 line 3225 宣告，這裡是重複宣告（var hoist 不會錯但邏輯混亂）
-    if(shiShang>=20) texts.push('食傷旺，你本身就有吸引異性的魅力和表達力');
-    else if(shiShang<=5) texts.push('食傷弱，感情表達比較含蓄，需要學習主動釋放信號');
-  } else if(focusType==='career'){
-    // 只在沒有格局事業解讀時用百分比
-    if(!geju || !geju.readings.career){
-      var guan=(ep['官']||0)+(ep['殺']||0);
-      var shi=(ep['食']||0)+(ep['傷']||0);
-      if(guan>=25) texts.push('官殺旺，有管理能力和事業心');
-      if(shi>=25) texts.push('食傷旺，有創造力和表達能力');
-      if(strong) texts.push('身強，適合獨當一面、做決策者');
-      else texts.push('身弱，適合在團隊中發揮專業，找靠山合作');
-    }
-  } else if(focusType==='wealth'){
-    // 只在沒有格局財運解讀時用百分比
-    if(!geju || !geju.readings.wealth){
-      var cai=(ep['財']||0)+(ep['才']||0);
-      if(cai>=25) texts.push('命帶財星，賺錢能力不差');
-      else if(cai<=10) texts.push('財星弱，收入要靠專業能力而非運氣');
-      if(strong) texts.push('身強，扛得住大財，可以做較大的投資');
-      else texts.push('身弱，財來了要守住，不適合太激進的投資');
-    }
-  } else if(focusType==='health'){
-    var wk=Object.keys(ep).sort(function(a,b){return (ep[a]||0)-(ep[b]||0);})[0]||'土';
-    var bodyMap={木:'肝膽、眼睛',火:'心臟、血壓',土:'脾胃、消化',金:'肺部、呼吸道、皮膚',水:'腎臟、泌尿系統'};
-    texts.push('五行最弱：'+wk+'行，對應'+(bodyMap[wk]||'脾胃')+'，是你天生比較需要注意的部位');
-  } else if(focusType==='relationship'){
-    // 人際：看比劫、食傷、官殺的平衡
-    var bijie=(ep['比']||0)+(ep['劫']||0);
-    var shiShangR=(ep['食']||0)+(ep['傷']||0);
-    var guanShaR=(ep['官']||0)+(ep['殺']||0);
-    if(!geju || !geju.readings.relationship){
-      if(bijie>=25) texts.push('比劫旺，你有很強的同儕吸引力，朋友多但也容易有競爭');
-      else if(bijie<=8) texts.push('比劫弱，獨立性強但朋友圈偏小，需要主動經營人脈');
-      if(shiShangR>=20) texts.push('食傷旺，表達力好、有親和力，天生有社交魅力');
-      else if(shiShangR<=5) texts.push('食傷弱，表達偏含蓄，人際上需要主動釋放善意');
-      if(guanShaR>=25) texts.push('官殺旺，容易遇到「管你的人」，人際上有壓力但也有人幫你指路');
-    }
-    if(bazi.shensha&&bazi.shensha.includes('天乙貴人')) texts.push('命帶天乙貴人，關鍵時刻總有人拉你一把');
-    if(bazi.shensha&&bazi.shensha.includes('劫煞')) texts.push('命帶劫煞，注意小人口舌，重要事情留底');
-  } else if(focusType==='family'){
-    // 家庭：看印星、財星
-    var yinXingF=(ep['印']||0)+(ep['梟']||0);
-    var caiXingF=(ep['財']||0)+(ep['才']||0);
-    if(!geju || !geju.readings.family){
-      if(yinXingF>=25) texts.push('印星旺，家庭支持力強，跟長輩關係密切');
-      else if(yinXingF<=8) texts.push('印星弱，從小獨立性強，跟家裡的羈絆較淡');
-      if(caiXingF>=25) texts.push('財星旺（代表父親），父親對你的人生影響大');
-    }
-  } else if(focusType==='lifelesson'){
-    // ★ v69：今生課題 — 看日主五行（靈魂底色）+ 月令格局（使命方向）+ 用神（此生需補的）+ 華蓋/偏印（修行印記）
-    var dayMaster = bazi.day && bazi.day[0] ? bazi.day[0] : '';
-    var dayMasterEl = {'甲':'木','乙':'木','丙':'火','丁':'火','戊':'土','己':'土','庚':'金','辛':'金','壬':'水','癸':'水'}[dayMaster] || '';
-    var soulColor = {'木':'成長型靈魂—這輩子的核心是「持續向上、突破限制」','火':'熱情型靈魂—這輩子要學的是「點燃別人也照亮自己」','土':'承載型靈魂—這輩子的功課是「穩定中創造、扎根中收穫」','金':'銳利型靈魂—這輩子要學的是「斷捨離、做純粹的決定」','水':'流動型靈魂—這輩子的功課是「智慧的流動、深入而不執著」'}[dayMasterEl];
-    if(soulColor) texts.push('日主五行＝'+dayMasterEl+'，'+soulColor);
-    // 偏印或華蓋 → 修行體質
-    var pianYin = (ep['梟']||0);
-    if(pianYin>=15) texts.push('偏印偏旺，前世帶著修行/學者印記，這輩子對玄學/哲學/獨處特別有共鳴');
-    if(bazi.shensha && bazi.shensha.includes('華蓋')) texts.push('命帶華蓋星，與宗教/藝術/玄學/獨處有特殊緣分，這是修行型體質');
-    // 用神方向 → 此生要補的能量
-    if(bazi.favEls && bazi.favEls.length){
-      var favTalk = {'木':'仁與成長','火':'熱情與表達','土':'務實與穩定','金':'紀律與決斷','水':'智慧與流動'};
-      texts.push('喜用＝'+bazi.favEls.join('/')+'，這輩子要補足的能量是「'+bazi.favEls.map(function(e){return favTalk[e]||e}).join('、')+'」—往這個方向走，會感覺對');
-    }
-    // 七殺 + 偏印 → 業力鍛造型
-    var qiShaCount = (ep['殺']||0);
-    if(qiShaCount>=15 && pianYin>=10) texts.push('殺印相生格局浮現—這輩子靈魂選擇了用壓力來鍛造特質，痛苦不是懲罰，是設計');
-  } else if(focusType==='karmic'){
-    // ★ v69：業力前世 — 看偏印（前世印記）+ 七殺（前世業力壓力）+ 比劫（手足業力）+ 神煞（華蓋孤辰）
-    var pianYinK = (ep['梟']||0);
-    var qiShaK = (ep['殺']||0);
-    var biJieK = (ep['比']||0)+(ep['劫']||0);
-    if(pianYinK>=15) texts.push('偏印旺—前世修行人/學者轉世，今世帶著舊有的內省習慣');
-    if(qiShaK>=20) texts.push('七殺重—前世可能是軍人/競爭者/領袖，今生繼續扛壓力是熟悉模式');
-    if(biJieK>=25) texts.push('比劫重—與手足/同儕有強業力連結，這輩子人際課題重');
-    if(bazi.shensha){
-      if(bazi.shensha.includes('華蓋')) texts.push('華蓋星—靈魂層的孤獨者，前世與信仰/藝術深度連結');
-      if(bazi.shensha.includes('孤辰')||bazi.shensha.includes('寡宿')) texts.push('帶孤寡星—靈魂選擇單獨修行的設定，配偶緣需更多用心經營');
-    }
-    // 雙忌 / 沖剋日支 → 業力引爆點
-    if(bazi.cangGan && bazi.cangGan.day && bazi.cangGan.day.length){
-      texts.push('日支藏干＝'+bazi.cangGan.day.join('、')+'，這是業力連結最深的位置（婚姻/夥伴/前世債主常從這裡來）');
-    }
-  } else if(focusType==='spiritual'){
-    // ★ v69：靈性題（當下修行/能量狀態）— 看食神（才華能量）+ 偏印（直覺）+ 用神方向（能量補益）
-    var shiShenS = (ep['食']||0);
-    var pianYinS = (ep['梟']||0);
-    if(shiShenS>=15) texts.push('食神旺—才華能量充沛，靈性修行透過創造力會最快進步');
-    if(pianYinS>=15) texts.push('偏印旺—直覺與第六感強，適合冥想/塔羅/靈性學習');
-    if(bazi.shensha && bazi.shensha.includes('華蓋')) texts.push('華蓋星—天生的修行體質，獨處時能量最高');
-    if(bazi.favEls && bazi.favEls.length){
-      texts.push('現階段能量補益方向＝'+bazi.favEls.join('/')+'，往這方向的修行/活動會明顯提升頻率');
-    }
-  } else if(focusType==='reconcile' || focusType==='thirdparty'){
-    // ★ v69：復合 / 第三者 — 走愛情邏輯（與 love 相同），但補充流年觸動位
-    var caiXingR = (ep['財']||0)+(ep['才']||0);
-    var guanXingR = (ep['官']||0)+(ep['殺']||0);
-    if(focusType==='reconcile'){
-      if(bazi.gender==='male' && caiXingR>=20) texts.push('財星仍旺—配偶緣分能量未斷，復合機率有');
-      if(bazi.gender==='female' && guanXingR>=20) texts.push('官星仍旺—配偶緣分能量未斷，復合機率有');
-      if(bazi.shensha && bazi.shensha.includes('紅鸞')) texts.push('命帶紅鸞—感情星仍亮，但要看當前流年是否觸動');
-    } else { // thirdparty
-      if(bazi.gender==='male'){
-        var pianCai = (ep['才']||0);
-        var zhengCai = (ep['財']||0);
-        if(pianCai>=15 && zhengCai>=15) texts.push('正偏財同時透出—容易出現多角關係或情感選擇困難');
-      } else {
-        if(guanXingR>=25) texts.push('官殺混雜偏旺—感情上容易有多個對象同時出現的狀況');
-      }
-    }
-    // 日支沖剋 = 婚姻宮被觸動
-    if(bazi.cangGan && bazi.cangGan.day && bazi.cangGan.day.length){
-      texts.push('婚姻宮藏干＝'+bazi.cangGan.day.join('、')+'，是觀察感情變動的核心位置');
-    }
-  }
-  
-  return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
+  if (Array.isArray(bazi.specialStructureCandidates) && bazi.specialStructureCandidates.length)
+    lines.push('待審格局候選：'+bazi.specialStructureCandidates.map(function(x){return x.type||'';}).filter(Boolean).join('、'));
+  var dayun=Array.isArray(bazi.dayun)?bazi.dayun.find(function(d){return d && (d.isCurrent || d.active);}):null;
+  if (dayun && dayun.gz) lines.push('本次記錄的大運 '+dayun.gz+'；干支要與原局及所問時段合看');
+  return lines.join('。')+(lines.length?'。':'');
 }
 
 // ── 3. 梅花易數白話讀取 ──
@@ -3885,120 +3450,15 @@ function talkNatal(focusType){
 // ── 6. 姓名白話讀取 ──
 function talkName(focusType){
   if(!S.nameResult && !S.zodiacNameResult) return '';
-  var nr=S.nameResult;
-  var zr=S.zodiacNameResult;
   var texts=[];
-  
-  // ── 1. 三才五格分析 × focusType ──
-  if(nr){
-    // 人格（主運·中年）
-    if(nr.renGe&&nr.renGe.fortune){
-      var renLvl=nr.renGe.fortune.level||'';
-      var renEl=nr.renGe.el||'';
-      if(focusType==='career'){
-        if(renLvl==='大吉'||renLvl==='吉') texts.push('姓名人格數理'+nr.renGe.num+'（'+renLvl+'），事業方面有名字能量加持');
-        else texts.push('姓名人格數理偏弱，事業上需要靠實力補強');
-      } else if(focusType==='love'){
-        if(renLvl==='大吉'||renLvl==='吉') texts.push('人格數理好，個人魅力是感情加分項');
-      }
-    }
-    
-    // 地格（前運·青年）
-    if(nr.diGe&&nr.diGe.fortune){
-      var diLvl=nr.diGe.fortune.level||'';
-      if(focusType==='career' && (diLvl==='凶'||diLvl==='大凶')){
-        texts.push('地格偏弱，年輕時事業起步可能較辛苦，但中年後會好轉');
-      }
-    }
-    
-    // 外格（人際·副運）
-    if(nr.waiGe&&nr.waiGe.fortune){
-      var waiLvl=nr.waiGe.fortune.level||'';
-      if(focusType==='love' || focusType==='relationship'){
-        if(waiLvl==='大吉'||waiLvl==='吉') texts.push('外格數理好，人際關係和社交運有姓名加持');
-        else if(waiLvl==='凶') texts.push('外格偏弱，人際方面需要主動經營');
-      }
-    }
-    
-    // 總格（後運·晚年）
-    if(nr.zongGe&&nr.zongGe.fortune){
-      var zongLvl=nr.zongGe.fortune.level||'';
-      if(focusType==='wealth'){
-        if(zongLvl==='大吉'||zongLvl==='吉') texts.push('總格數理'+nr.zongGe.num+'（'+zongLvl+'），晚年財運有福氣');
-        else texts.push('總格偏弱，長期財富需要靠規劃和紀律');
-      }
-    }
-    
-    // 三才配置
-    if(nr.sanCaiLevel){
-      if(nr.sanCaiLevel==='大吉') texts.push('三才配置大吉（'+nr.sanCai.join('→')+'），天地人相生，名字能量流通順暢');
-      else if(nr.sanCaiLevel==='吉') texts.push('三才配置吉（'+nr.sanCai.join('→')+'），姓名能量是加分項');
-      else if(nr.sanCaiLevel==='凶') texts.push('三才配置有相剋（'+nr.sanCai.join('→')+'），姓名能量受阻，但不影響根本');
-    }
-    
-    // 八字喜忌交叉
-    if(S.bazi && S.bazi.fav && nr.sanCai){
-      var fav=S.bazi.fav, unfav=S.bazi.unfav||[];
-      var renGeEl=nr.sanCai[1]; // 人格五行
-      if(renGeEl && fav.includes(renGeEl)){
-        texts.push('人格五行'+renGeEl+'正好是八字喜用神，名字與命盤互相加持');
-      } else if(renGeEl && unfav.includes(renGeEl)){
-        texts.push('人格五行'+renGeEl+'是八字忌神，名字能量與命盤有些拉扯');
-      }
-    }
+  var nr=S.nameResult, zr=S.zodiacNameResult;
+  if(nr && Array.isArray(nr.sanCai)) texts.push('筆劃派三才配置為'+nr.sanCai.join('→')+'，屬這一流派的分類參考');
+  if(zr) {
+    texts.push('生肖形義派把這些字形與'+(zr.zodiac||'生肖')+'的傳統意象連結');
+    if(zr.isSacrifice || zr.isSnakePigClash) texts.push('其中部分字形另有「犧牲格」或「巳亥六衝」稱呼，僅是流派標記，不能推定人際衝突、意外或付出回報');
   }
-  
-  // ── 2. 生肖姓名學 ──
-  if(zr){
-    var olevel = zr.overallLevel||'';
-    if(olevel.includes('大吉')||olevel.includes('旺')){
-      texts.push('生肖姓名學判定'+olevel+'，名字環境非常適合'+zr.zodiac+'生存');
-    } else if(olevel.includes('吉')){
-      texts.push('生肖姓名學判定'+olevel+'，名字環境對'+zr.zodiac+'有利');
-    } else if(olevel.includes('凶')||olevel.includes('犧牲')){
-      texts.push('生肖姓名學判定'+olevel+'，名字字根與'+zr.zodiac+'有衝突，但不需過度焦慮');
-    }
-    
-    // 犧牲格警告
-    if(zr.isSacrifice){
-      texts.push('⚠ 名字含犧牲格字根，容易付出多回報少，做事前先評估值不值得');
-    }
-    
-    // 巳亥六衝
-    if(zr.isSnakePigClash){
-      texts.push('⚠ 名字含巳亥六衝字根，注意人際衝突和意外');
-    }
-    
-    // 吉凶命中統計
-    if(zr.positions){
-      var totalGood=0, totalBad=0;
-      zr.positions.forEach(function(pos){
-        pos.charResults.forEach(function(cr){
-          cr.hits.forEach(function(h){
-            if(h.type==='吉') totalGood++;
-            else totalBad++;
-          });
-        });
-      });
-      if(totalGood>0 && totalBad===0) texts.push('名字字根全部命中吉象，是難得的好名');
-      else if(totalGood > totalBad + 2) texts.push('名字吉象字根多於凶象，整體能量偏正面');
-      else if(totalBad > totalGood + 2) texts.push('名字凶象字根偏多，但名字只是命運的一小部分');
-    }
-  }
-  
-  // ── 3. 兩派整合 ──
-  if(nr && zr){
-    var scGood = nr.sanCaiLevel && (nr.sanCaiLevel.includes('吉'));
-    var scBad = nr.sanCaiLevel === '凶';
-    var znGood = (zr.overallLevel||'').includes('吉') || (zr.overallLevel||'').includes('旺');
-    var znBad = (zr.overallLevel||'').includes('凶') || (zr.overallLevel||'').includes('犧牲');
-    
-    if(scGood && znGood) texts.push('兩派姓名學都判定吉象，名字能量是你的助力');
-    else if(scBad && znBad) texts.push('兩派都判定偏弱，但名字影響有限，命運主要靠行動決定');
-    else if((scGood && znBad)||(scBad && znGood)) texts.push('兩派結論相反，代表名字的影響較中性，不用太放在心上');
-  }
-  
-  return texts.map(function(t){return t.replace(/[。．.]+$/,'');}).join('。')+(texts.length?'。':'');
+  texts.push('名字無法單獨判定'+({career:'事業',love:'感情',relationship:'人際',wealth:'財務',health:'健康'}[focusType]||'現實結果')+'，仍要看實際情況');
+  return texts.join('。')+'。';
 }
 
 // ── 7. 吠陀白話讀取 ──
@@ -8989,24 +8449,25 @@ function analyzeNameTags(nameResult, zodiacNameResult, type) {
 
   // ══ B. 生肖姓名學 ══
   if (zodiacNameResult) {
+    var zodiacTagStart = tags.length;
     // B1. 整體評級
     var olLevel = zodiacNameResult.overallLevel || '平';
-    var olDir = (olLevel.includes('大吉') || olLevel === '吉' || olLevel === '小吉') ? 'pos' : (olLevel.includes('凶') || olLevel.includes('險') || olLevel.includes('犧牲')) ? 'neg' : 'neutral';
+    var olDir = 'neutral';
     tags.push({
       sys: 'name', tag: 'zodiac_name_' + olDir,
       label: zodiacNameResult.zodiac + '生肖姓名學：' + olLevel,
       category: 'structure', direction: olDir, weight: 3,
-      detail: '吉字根' + (zodiacNameResult.totalLike || 0) + '個，凶字根' + (zodiacNameResult.totalDislike || 0) + '個'
+      detail: '此流派記錄偏好字根' + (zodiacNameResult.totalLike || 0) + '個、避用字根' + (zodiacNameResult.totalDislike || 0) + '個；不是每日運勢或事件機率'
     });
 
     // B2. 犧牲格
     if (zodiacNameResult.isSacrifice) {
-      tags.push({ sys: 'name', tag: 'sacrifice', label: '犧牲格', category: 'structure', direction: 'neg', weight: 4, detail: zodiacNameResult.sacrificeNote || '外表風光，內心承受極大壓力' });
+      tags.push({ sys: 'name', tag: 'sacrifice', label: '形義派犧牲字根', category: 'structure', direction: 'neutral', weight: 0, detail: zodiacNameResult.sacrificeNote || '此為字根象徵，不能推定本人經歷' });
     }
 
     // B3. 蛇豬衝
     if (zodiacNameResult.isSnakePigClash) {
-      tags.push({ sys: 'name', tag: 'snake_pig_clash', label: '蛇豬衝', category: 'structure', direction: 'neg', weight: 4, detail: zodiacNameResult.clashNote || '易犯小人、注意意外' });
+      tags.push({ sys: 'name', tag: 'snake_pig_clash', label: '形義派蛇豬衝', category: 'structure', direction: 'neutral', weight: 0, detail: zodiacNameResult.clashNote || '此為字根象徵，不能推定事故或他人行為' });
     }
 
     // B4. 警告
@@ -9044,6 +8505,8 @@ function analyzeNameTags(nameResult, zodiacNameResult, type) {
         });
       });
     });
+    // 字根吉凶只是一個流派的分類，不得跨方法加權成「今天會順／不順」。
+    tags.slice(zodiacTagStart).forEach(function(tag) { tag.direction = 'neutral'; tag.weight = 0; });
   }
 
   // ══ C. [v5.0] 三才五行流通度 → timing tag ══
@@ -10464,8 +9927,8 @@ function runAnalysisV2(){
   if(S.zodiacNameResult){
     const zn=S.zodiacNameResult;
     concl+=`<p class="mt-sm">姓名學（生肖派）：${zn.emoji}${zn.zodiac}年生人，姓名判定「${zn.overallLevel}」。`;
-    if(zn.isSacrifice) concl+=`<span style="color:var(--c-danger)">⚠ 犧牲格：外表風光，內在辛苦。</span>`;
-    if(zn.isSnakePigClash) concl+=`<span style="color:var(--c-danger)">⚠ 巳亥六衝：注意小人與意外。</span>`;
+    if(zn.isSacrifice) concl+=`<span>「犧牲格」屬形義派字形標記。</span>`;
+    if(zn.isSnakePigClash) concl+=`<span>「巳亥六衝」屬形義派字形標記，不能據此預測意外。</span>`;
     concl+=`</p>`;
   }
   document.getElementById('r-conclusion').innerHTML=concl;
@@ -11142,9 +10605,7 @@ function renderName(){
           html += `<p class="text-dim text-sm" style="margin:.2rem 0">　→ 對${zr.zodiac}屬<strong>中性</strong></p>`;
         } else {
           cr.hits.forEach(h => {
-            const icon = h.type==='吉' ? '✅' : '❌';
-            const cls = h.type==='吉' ? 'color:#4ade80' : 'color:#f87171';
-            html += `<p style="margin:.2rem 0;font-size:0.88rem">　<span style="${cls};font-weight:700">${icon} ${h.type}【${h.label}】</span> <span class="text-dim">含${h.matchedRoots.join('/')} → ${h.reason}</span></p>`;
+            html += `<p style="margin:.2rem 0;font-size:0.88rem">　<span class="text-dim">流派分類【${h.label}】；對應字根 ${h.matchedRoots.join('/')}，不能據此預測個人事件。</span></p>`;
           });
         }
         html += `</div>`;
@@ -11152,26 +10613,9 @@ function renderName(){
       html += `</div>`;
     });
 
-    if(zr.isSacrifice){
-      html += `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-md) 0">
-        <p style="color:#f87171;font-weight:700">⚠ 犧牲格警告</p>
-        <p class="text-sm" style="margin-top:.3rem">${zr.sacrificeNote}</p></div>`;
+    if(zr.isSacrifice || zr.isSnakePigClash || (zr.warnings||[]).length){
+      html += `<p class="text-xs text-muted mt-md">「犧牲格」與「巳亥六衝」是生肖形義派的字形稱呼，並非健康、安全、人際或財運預測。原流派警語不作個人事實陳述。</p>`;
     }
-    if(zr.isSnakePigClash){
-      html += `<div style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:var(--r-md);padding:var(--sp-md);margin:var(--sp-md) 0">
-        <p style="color:#f87171;font-weight:700">⚠ 巳亥六衝</p>
-        <p class="text-sm" style="margin-top:.3rem">${zr.clashNote}</p></div>`;
-    }
-    if(zr.warnings.length){
-      html += `<div style="margin-top:var(--sp-md)"><p class="text-warn" style="font-weight:600;font-size:0.9rem">🔔 禁忌提醒：</p>
-        <ul style="padding-left:1.2rem;margin-top:.3rem">${zr.warnings.map(w=>`<li class="text-sm" style="margin:.2rem 0;color:var(--c-text-dim)">${w}</li>`).join('')}</ul></div>`;
-    }
-    if(zr.baziOverride && zr.baziOverrideNote){
-      html += `<div style="margin-top:var(--sp-md);padding:.7rem .9rem;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.3);border-radius:var(--r-md)">
-        <p style="color:#4ade80;font-weight:700;font-size:0.9rem">🔄 八字覆寫</p>
-        <p class="text-sm" style="margin-top:.3rem;line-height:1.7">${zr.baziOverrideNote}</p></div>`;
-    }
-    html += `<p class="text-xs text-muted mt-md" style="line-height:1.6">⚠️ 本分析基於「生肖形義派」之單一學理，僅供參考。</p>`;
     html += `</div></details>`;
   }
 
@@ -11256,73 +10700,16 @@ function renderName(){
 // ══════════════════════════════════════════════════════════════════════
 function buildNameNarrative(qr, nr, zr, type) {
   if (!qr) return null;
-  var t = type || 'general';
-  var out = { situation:'', coreConflict:'', risk:'', advice:'', timing:'' };
-  var posEv = (qr.evidence||[]).filter(function(e){return e.dir==='pos';});
-  var negEv = (qr.evidence||[]).filter(function(e){return e.dir==='neg';});
-  var score = qr.score || 50;
-  var dir = qr.direction || 'neutral';
-
-  // situation
-  var sitParts = [];
-  if (nr && nr.sanCai) {
-    var scLevel = nr.sanCaiLevel || '平';
-    sitParts.push('你的三才配置為「' + nr.sanCai.join('') + '」（' + scLevel + '），' +
-      (scLevel.includes('吉') ? '五行流通順暢，整體基底穩固' :
-       scLevel === '凶' ? '五行有衝剋，基底承壓' : '五行流通普通，中規中矩'));
-  }
-  if (zr) {
-    sitParts.push('生肖姓名學判定為「' + zr.overallLevel + '」（吉字根' + (zr.totalLike||0) + '個、凶字根' + (zr.totalDislike||0) + '個）');
-  }
-  if (qr.geSupport && qr.geSupport.length > 0) {
-    var focusGe = qr.geSupport[0];
-    sitParts.push(focusGe.label + focusGe.num + '劃（' + focusGe.level + '），五行屬' + focusGe.el);
-  }
-  out.situation = sitParts.join('。') + '。';
-
-  // coreConflict
-  if (posEv.length > 0 && negEv.length > 0) {
-    out.coreConflict = '你的名字有加分項（' + posEv.slice(0,2).map(function(e){return e.text;}).join('；') + '），' +
-      '同時也有扣分項（' + negEv.slice(0,2).map(function(e){return e.text;}).join('；') + '）。' +
-      (score >= 55 ? '整體正面力量佔上風。' : score < 45 ? '負面因素暫時佔上風。' : '正負接近平衡。');
-  } else if (posEv.length > 0) {
-    out.coreConflict = '名字整體能量正面，主要的加分來自：' + posEv.slice(0,3).map(function(e){return e.text;}).join('；') + '。';
-  } else if (negEv.length > 0) {
-    out.coreConflict = '名字有壓力訊號：' + negEv.slice(0,3).map(function(e){return e.text;}).join('；') + '。但記住，名字影響的是「呈現方式」，不是「命運本身」。';
-  } else {
-    out.coreConflict = '名字的能量偏中性，沒有明顯的大好或大壞訊號。';
-  }
-
-  // risk
-  var riskParts = [];
-  if (zr && zr.isSacrifice) riskParts.push('犧牲格：容易過度付出、壓力內化');
-  if (zr && zr.isSnakePigClash) riskParts.push('巳亥六衝：注意小人和意外');
-  if (negEv.length > 0 && !zr) riskParts.push(negEv[0].text);
-  var typeRisks = {
-    love: '感情上要注意：名字帶來的壓力可能讓你在關係中過度隱忍或過度付出',
-    career: '事業上要注意：名字能量不足時容易感到疲倦或被忽略，需要更主動表達',
-    wealth: '財務上要注意：若總格或人格偏弱，存錢容易被意外消耗',
-    health: '健康上要注意：三才衝剋長期下來可能影響睡眠和免疫力'
+  var parts = [];
+  if (nr && Array.isArray(nr.sanCai)) parts.push('筆劃派三才為'+nr.sanCai.join('→'));
+  if (zr) parts.push('生肖形義派另有字形與生肖象徵對應');
+  return {
+    situation: parts.join('；') + (parts.length ? '。' : '目前沒有足夠資料作姓名分類。'),
+    coreConflict: '這些流派採用不同的分類規則，不能相互投票或提高現實預測可信度。',
+    risk: '字形和筆劃不構成健康、財務、人際或安全風險的證據。',
+    advice: '若想調整名字，可從讀音、字義、書寫和個人喜好出發；現實決策依實際資料判斷。',
+    timing: '姓名分類不提供可驗證的事件日期。'
   };
-  if (score < 50 && typeRisks[t]) riskParts.push(typeRisks[t]);
-  out.risk = riskParts.length > 0 ? riskParts.join('。') + '。' : '目前沒有特別嚴重的名字風險訊號。';
-
-  // advice
-  var advParts = [];
-  if (dir === 'positive') {
-    advParts.push('你的名字在這個議題上是加分的，善加發揮');
-  } else if (dir === 'negative') {
-    advParts.push('名字有拖累，但不是不可逆。暱稱、署名、印章都可以微調能量');
-    if (zr && zr.isSacrifice) advParts.push('犧牲格的化解方式：學會說「不」，設立邊界，不要把所有壓力往自己身上扛');
-  } else {
-    advParts.push('名字影響中性，不是主要因素，關鍵在你自己的行動');
-  }
-  advParts.push('姓名學不是命運的決定者，而是影響運勢呈現的方式。好名放大優勢，弱名增加阻力，但核心永遠是你自己的選擇');
-  out.advice = advParts.join('。') + '。';
-
-  out.timing = '姓名影響屬長期基礎層，不隨時間劇烈變化，但在運勢低谷期影響會更明顯。';
-
-  return out;
 }
 
 // ── Crystal analysis + product recommend + smartRecommend (lines 31741-35125) ──
@@ -12023,7 +11410,7 @@ function analyzeFullCrystal(bazi, ziwei, type, question){
     result.ziwei.sihua=ziwei.sihua||[];
   }
   result.designBrief='先從這次原局作用與問題形成個人的選材主判，再比較實際佩戴條件。五行取用、色彩象徵與材質物性各自說清。';
-  result.recommendationGuide=window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationText(['bazi','ziwei']):JY_REC_API.composite.outputRule;
+  result.recommendationGuide=window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText(['bazi','ziwei']):JY_REC_API.composite.outputRule;
   result.nextStep='確認預算、手圍、常戴哪手、金屬接觸反應與現有飾品，再定材料與尺寸。';
   return result;
 }
@@ -12089,33 +11476,35 @@ function sendCustomOrderEmail(){
     // 格式化報告
     var msg=formatCrystalReport(r, form);
 
-    // 靜默提交 Google Form（管理員跳過）
-    if(!S._isAdmin){
-    var FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLSdKrOA6yEsHZW-QPRXf7OYjCVVfIClRYN17X6IW09CL3Xzlcg/formResponse';
-    try{
-      var fd=new FormData();
-      fd.append('entry.743285707', msg);
-      fd.append('entry.403770236', '🔮客製手鍊');
-      fd.append('entry.972007534', new Date().toISOString());
-      fetch(FORM_URL,{method:'POST',mode:'no-cors',body:fd});
-      console.log('客製訂單已靜默提交(v3)');
-    }catch(e){console.warn('Google Forms提交失敗:',e);}
-    } else { console.log('[管理員] 跳過客製訂單提交'); }
-
-    // localStorage 備份
-    try{
-      var stored=JSON.parse(localStorage.getItem('jy_custom_orders')||'[]');
-      stored.push({name:form.name||'',bdate:form.bdate||'',msg:msg,ts:new Date().toISOString()});
-      if(stored.length>30) stored.splice(0,stored.length-30);
-      localStorage.setItem('jy_custom_orders',JSON.stringify(stored));
-    }catch(e){}
-
-    window.open('https://shopee.tw/a50h95648d?tab=shop','_blank');
+    // 個人出生資料只留在本次草稿畫面；不在背景持久保存或送出。
     closeCustomModal();
+    var handoff=document.createElement('div');
+    handoff.id='jy-custom-draft';
+    handoff.style.cssText='position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);padding:1rem';
+    var sheet=document.createElement('section');
+    sheet.style.cssText='width:min(480px,96vw);max-height:90vh;overflow:auto;padding:1.4rem;background:#161b29;color:#f5eadb;border:1px solid rgba(232,195,129,.42);border-radius:18px;box-shadow:0 20px 65px rgba(0,0,0,.6)';
+    var title=document.createElement('h3');title.textContent='客製需求草稿已備妥';sheet.appendChild(title);
+    var help=document.createElement('p');help.textContent='請檢查內容。本站沒有替你送出或儲存資料；複製後可自行貼給商家。';sheet.appendChild(help);
+    var preview=document.createElement('textarea');preview.readOnly=true;preview.value=msg;
+    preview.setAttribute('aria-label','本次客製需求草稿');
+    preview.style.cssText='display:block;width:100%;min-height:180px;box-sizing:border-box;background:#0f1420;color:#f5eadb;border:1px solid #736654;border-radius:10px;padding:.75rem;margin-bottom:1rem';
+    sheet.appendChild(preview);
+    var copy=document.createElement('button');copy.type='button';copy.textContent='複製需求草稿';
+    copy.className='jy-ex-btn';copy.addEventListener('click',function(){
+      if(navigator.clipboard&&navigator.clipboard.writeText)
+        navigator.clipboard.writeText(msg).then(function(){copy.textContent='✓ 已複製';},function(){preview.focus();preview.select();copy.textContent='請長按上方文字複製';});
+      else{preview.focus();preview.select();copy.textContent='請長按上方文字複製';}
+    });sheet.appendChild(copy);
+    var link=document.createElement('a');link.href='https://shopee.tw/a50h95648d?tab=shop';
+    link.target='_blank';link.rel='noopener noreferrer';link.textContent='自行前往靜月之光蝦皮賣場';
+    link.style.cssText='display:block;color:#ebca86;margin-top:1rem';sheet.appendChild(link);
+    var done=document.createElement('button');done.type='button';done.textContent='關閉';
+    done.style.cssText='display:block;margin-top:1rem;color:#f5eadb;background:transparent;border:1px solid #736654;border-radius:9px;padding:.5rem 1rem';
+    done.addEventListener('click',function(){handoff.remove();});sheet.appendChild(done);
+    handoff.appendChild(sheet);document.body.appendChild(handoff);
   }catch(err){
     console.error('sendCustomOrderEmail error:',err);
-    window.open('https://shopee.tw/a50h95648d?tab=shop','_blank');
-    closeCustomModal();
+    alert('客製需求草稿無法組裝，請稍後重新排盤。');
   }
 }
 window.showCustomOrders=function(){
@@ -12177,6 +11566,24 @@ document.addEventListener('keydown',function(e){
 // 產品類型對應的 SVG 圖示（手鍊/手排/項鍊/雕刻件）
 const SITE_URL = 'https://jingyue-blue.netlify.app';
 const catIcon = {手鏈:'📿', 手排:'⌚', 項鍊:'🔗', 雕刻件:'🗿', 吊墜:'🏷️', 裸石:'💍', 客製:'✨'};
+const JY_SHOP_HOME = 'https://shopee.tw/a50h95648d?tab=shop';
+function _jyShopHtml(value){
+  return String(value==null?'':value).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function _jyShopLink(value){
+  try{
+    const url=new URL(value);
+    if(url.protocol==='https:'&&(url.hostname==='shopee.tw'||url.hostname.endsWith('.shopee.tw')))
+      return _jyShopHtml(url.href);
+  }catch(_){}
+  return JY_SHOP_HOME;
+}
+function _jyShopStyle(item){
+  const category=item&&item.cat||'飾品';
+  return category+'款式示例；實際材質、尺寸、配件、售價與庫存請在賣場頁確認。';
+}
 function getProductSVG(cat, name){
   // 根據產品名稱判斷顏色
   const colorMap = [
@@ -12219,68 +11626,53 @@ function getProductSVG(cat, name){
 }
 const PRODUCT_DB={
   金:[
-    {n:'白水晶手鏈',cat:'手鏈',icon:'💍',el:'金',d:'淨化能量場，增強思維清晰度',price:'$580-$1,280',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'左手佩戴',img:''},
-    {n:'鈦晶吊墜',cat:'吊墜',icon:'⚡',el:'金',d:'招正財偏財，增強領導氣魄',price:'$1,580-$3,800',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'貼近心輪佩戴',img:''},
-    {n:'白水晶裸石',cat:'裸石',icon:'🔮',el:'金',d:'淨化空間磁場，鍮宅開運',price:'$380-$1,200',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'放客廳或書桌',img:''}
+    {n:'白水晶手鏈',cat:'手鏈',icon:'💍',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'鈦晶吊墜',cat:'吊墜',icon:'⚡',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'白水晶裸石',cat:'裸石',icon:'🔮',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''}
   ],
   木:[
-    {n:'綠幽靈手鏈',cat:'手鏈',icon:'💚',el:'木',d:'招正財，事業穩步上升',price:'$680-$2,200',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'左手佩戴',img:''},
-    {n:'東陵玉吊墜',cat:'吊墜',icon:'🌿',el:'木',d:'舒緩壓力，帶來好運',price:'$480-$1,500',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'項鍊佩戴',img:''},
-    {n:'翡翠裸石擺件',cat:'裸石',icon:'💎',el:'木',d:'護身辟邪，增強健康運',price:'$1,200-$5,000',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'放書桌或財位',img:''}
+    {n:'綠幽靈手鏈',cat:'手鏈',icon:'💚',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'東陵玉吊墜',cat:'吊墜',icon:'🌿',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'翡翠裸石擺件',cat:'裸石',icon:'💎',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''}
   ],
   水:[
-    {n:'海藍寶手鏈',cat:'手鏈',icon:'💙',el:'水',d:'增強溝通力，平靜情緒',price:'$780-$2,500',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'左手佩戴',img:''},
-    {n:'月光石吊墜',cat:'吊墜',icon:'🌙',el:'水',d:'增強直覺，助感情運',price:'$580-$1,800',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'滿月佩戴更佳',img:''},
-    {n:'藍紋瑪瑙裸石',cat:'裸石',icon:'🔵',el:'水',d:'穩定情緒，增強表達力',price:'$350-$980',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'放臥室床頭',img:''}
+    {n:'海藍寶手鏈',cat:'手鏈',icon:'💙',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'月光石吊墜',cat:'吊墜',icon:'🌙',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'藍紋瑪瑙裸石',cat:'裸石',icon:'🔵',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''}
   ],
   火:[
-    {n:'紅瑪瑙手鏈',cat:'手鏈',icon:'❤️',el:'火',d:'激發熱情，增強行動力與勇氣',price:'$480-$1,500',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'右手佩戴增行動力',img:''},
-    {n:'石榴石吊墜',cat:'吊墜',icon:'🔴',el:'火',d:'提升活力，增強桃花運',price:'$680-$2,200',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'貼身佩戴',img:''},
-    {n:'紅碧璽裸石',cat:'裸石',icon:'💗',el:'火',d:'強力招桃花，增強人際魅力',price:'$1,500-$4,500',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'放桃花位',img:''}
+    {n:'紅瑪瑙手鏈',cat:'手鏈',icon:'❤️',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'石榴石吊墜',cat:'吊墜',icon:'🔴',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'紅碧璽裸石',cat:'裸石',icon:'💗',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''}
   ],
   土:[
-    {n:'黃水晶手鏈',cat:'手鏈',icon:'💛',el:'土',d:'招偏財，提升自信與魅力',price:'$580-$1,800',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'左手佩戴',img:''},
-    {n:'虎眼石吊墜',cat:'吊墜',icon:'🐅',el:'土',d:'增強決斷力，招財辟邪',price:'$480-$1,500',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'出門佩戴',img:''},
-    {n:'茶晶裸石擺件',cat:'裸石',icon:'🍵',el:'土',d:'排除負能量，穩定心性',price:'$680-$2,800',
-     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',
-     wear:'放客廳',img:''}
+    {n:'黃水晶手鏈',cat:'手鏈',icon:'💛',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'虎眼石吊墜',cat:'吊墜',icon:'🐅',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''},
+    {n:'茶晶裸石擺件',cat:'裸石',icon:'🍵',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',
+     shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',img:''}
   ]
 };
 
 // 問題類型特殊商品
 const TYPE_PRODUCTS={
-  love:[{n:'粉晶手鏈',cat:'手鏈',icon:'💕',el:'火',d:'招桃花首選！增強異性緣',price:'$480-$1,500',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'左手佩戴，約會必備'}],
-  career:[{n:'鈦晶手鏈',cat:'手鏈',icon:'⚡',el:'金',d:'事業晉升首選！領導力UP',price:'$1,800-$5,000',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'面試/開會佩戴'}],
-  wealth:[{n:'綠幽靈聚寶盆',cat:'裸石',icon:'💰',el:'木',d:'招正財偏財！放辦公桌超旺',price:'$1,200-$3,800',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'放財位或收銀台'}],
-  health:[{n:'紫水晶手鏈',cat:'手鏈',icon:'💜',el:'火',d:'安神助眠，促進身心平衡',price:'$580-$1,800',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232',wear:'睡前佩戴或放枕下'}]
+  love:[{n:'粉晶手鏈',cat:'手鏈',icon:'💕',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}],
+  career:[{n:'鈦晶手鏈',cat:'手鏈',icon:'⚡',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}],
+  wealth:[{n:'綠幽靈聚寶盆',cat:'裸石',icon:'💰',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}],
+  health:[{n:'紫水晶手鏈',cat:'手鏈',icon:'💜',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop',seven:'https://myship.7-11.com.tw/seller/profile?id=GM2601091690232'}]
 };
 
 /* ═══ renderActionCard: 多維度交叉行動指令 ═══ */
@@ -12504,18 +11896,8 @@ function renderActionCard(bazi, type, answer){
   var _bt=_bst[type]||_bst.career;
   actions.push('<strong>提升：</strong>'+(_bt[strong?'s':'w']||_bt.s));
 
-  /* 8. 能量水晶（缺行×塔羅能量狀態）*/
-  var _crN='';
-  if(S.tarot&&S.tarot.drawn&&S.tarot.drawn.length>=3){
-    var _td2=S.tarot.drawn;
-    var _selfUp=_td2[6].isUp; // 自身位
-    var _envUp=_td2[7].isUp;  // 環境位
-    var _outUp=_td2[9].isUp;  // 結果位
-    if(!_selfUp&&!_envUp) _crN='，自身＋環境能量都偏弱，水晶補強很重要';
-    else if(!_selfUp) _crN='，自身能量場需補強（「'+_td2[6].n+'」逆位）';
-    else if(_outUp&&_selfUp) _crN='，能量場正面，水晶輔助維持好狀態';
-  }
-  actions.push('<strong>能量：</strong>佩戴 '+recData.crystal.join('、')+' 補強'+recEl+'行'+_crN);
+  /* 8. 穿搭顏色只作文化象徵，不以五行比例推定佩戴療效。 */
+  actions.push('<strong>配件：</strong>若喜歡 '+recData.mc+' 配色，可從已有飾品挑一件作日常提醒；飾品本身不會補強命盤或改變事件結果。');
 
   /* 9. 時機（大運+梅花變卦 交叉）*/
   var curDy=bazi.dayun?bazi.dayun.find(function(d){return d.isCurrent;}):null;
@@ -12538,422 +11920,36 @@ function renderActionCard(bazi, type, answer){
   var actionsEl = document.getElementById('r-actions');
   actionsEl.innerHTML = actions.filter(function(a){return a;}).map(function(a,i){return '<div class="action-item"><div class="action-num">'+(i+1)+'</div><div class="action-text">'+a+'</div></div>';}).join('');
 
-  // 嵌入式水晶推薦 — 直接從缺行/喜用行的 REAL_PRODUCTS 抓
-  const crystalEl = document.getElementById('r-action-crystal');
-  try{
-    // 直接取缺行對應的產品，不走 smartRecommend（避免喜用神覆蓋）
-    let inlinePicks = (REAL_PRODUCTS[recEl]||[]).filter(p=> {
-      if(avoidEls.has(p.el) && p.el!=='全') return false;
-      // 雙屬性檢查
-      const DUAL={'月光石':['金','水'],'海藍寶':['水','金'],'草莓晶':['木','火'],'捷克隕石':['木','火'],'紫水晶':['火'],'金太陽石':['火','土'],'金鈦晶':['金']};
-      const de=DUAL[p.n];
-      if(de && de.some(e=>avoidEls.has(e))) return false;
-      return true;
-    });
-    if(inlinePicks.length===0) inlinePicks = (REAL_PRODUCTS[favEl]||[]);
-    const recs = inlinePicks.slice(0,2);
-    if(recs.length > 0){
-      const p = recs[0];
-      // v68.21 Bug #66 修:p.shopee 可能被 admin 改成 javascript: URL,加 https 驗證 + HTML escape
-      function _safeUrlInline(u) {
-        if (!u || typeof u !== 'string') return 'https://shopee.tw/a50h95648d?tab=shop';
-        try {
-          var _pu = new URL(u);
-          if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://shopee.tw/a50h95648d?tab=shop';
-          return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-        } catch(_) { return 'https://shopee.tw/a50h95648d?tab=shop'; }
-      }
-      const shopUrl = _safeUrlInline(p.shopee);
-      const shopUrl2 = recs.length > 1 ? _safeUrlInline(recs[1].shopee) : shopUrl;
-      crystalEl.innerHTML = `
-        <div style="border-top:1px solid rgba(212,175,55,0.15);padding-top:var(--sp-md);margin-top:var(--sp-sm)">
-          <p class="text-xs text-dim" style="margin-bottom:8px"><i class="fas fa-gem"></i> 依你的八字體質，最適合的水晶：</p>
-          <a href="${shopUrl}" target="_blank" rel="noopener" class="inline-crystal">
-            <span class="inline-crystal-icon">${getProductSVG(p.cat||'手鍊',p.n)}</span>
-            <div class="inline-crystal-info">
-              <div class="inline-crystal-name">${p.n}</div>
-              <div class="inline-crystal-desc">${p.d ? p.d.substring(0,30)+'…' : p.el+'行能量水晶'}</div>
-            </div>
-            <span class="inline-crystal-price">${p.price||''}</span>
-            <i class="fas fa-chevron-right inline-crystal-arrow"></i>
-          </a>
-          ${recs.length > 1 ? `<a href="${shopUrl2}" target="_blank" rel="noopener" class="inline-crystal" style="margin-top:6px">
-            <span class="inline-crystal-icon">${getProductSVG(recs[1].cat||'手鍊',recs[1].n)}</span>
-            <div class="inline-crystal-info">
-              <div class="inline-crystal-name">${recs[1].n}</div>
-              <div class="inline-crystal-desc">${recs[1].d ? recs[1].d.substring(0,30)+'…' : recs[1].el+'行能量水晶'}</div>
-            </div>
-            <span class="inline-crystal-price">${recs[1].price||''}</span>
-            <i class="fas fa-chevron-right inline-crystal-arrow"></i>
-          </a>` : ''}
-          <div style="text-align:center;margin-top:var(--sp-sm)">
-            <a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener" class="text-xs" style="color:var(--c-gold)">
-              查看更多適合你的水晶 →
-            </a>
-          </div>
-        </div>`;
-    }
-  }catch(e){ console.error('inline crystal:', e); }
-
-  // ── Quick Shop 快捷導購 ──
-  try{
-    const qs = document.getElementById('qs-products');
-    const qsTitle = document.getElementById('qs-title');
-    const qsSub = document.getElementById('qs-subtitle');
-    if(qs){
-      const ep = bazi.ep||{};
-      const tot = Object.values(ep).reduce((a,b)=>a+b,0)||60;
-      const weakEls = Object.entries(ep).filter(([e,v])=>(v/tot)<0.12).map(([e])=>e);
-      const avoidEls = new Set(bazi.unfav||[]);
-
-      /* ══════════════════════════════════════════════════════════
-         九階段指令：水晶推薦核心邏輯
-         規則零：量比公式重要 — 過量的用神降級，極缺的忌神可能升級
-         規則一：雙系統驗證 — 八字×紫微交叉
-         規則四：先活命再打仗 — 身弱先補身（比劫），不直接補財
-         規則五：全身是一個系統
-         ══════════════════════════════════════════════════════════ */
-
-      // 八字用神忌神數據
-      const favEls = bazi.fav || [favEl]; // 可能有多個用神
-      const unfavEls = bazi.unfav || [];
-      const isWeak = (bazi.strength && bazi.strength < 50);
-
-      // 修正規則一：過量印星降級（但不要太激進，30%以上才降級）
-      let validFavEls = favEls.filter(e => {
-        const pct = (ep[e]||0)/tot;
-        return pct < 0.30; // 佔比<30%才保留（放寬到30%，避免正常用神被誤殺）
-      });
-      if(validFavEls.length===0) validFavEls = [...favEls]; // 全被過濾就恢復原始
-
-      // 修正規則四：身弱求財不補財星
-      // 日主五行：bazi.dm 的五行
-      const dmEl = bazi.dmEl || favEl; // 日主五行
-      const caiEl = {'木':'土','火':'金','土':'水','金':'木','水':'火'}[dmEl]; // 財星五行
-      if(isWeak && type==='wealth'){
-        // 身弱不直接推薦財星五行的水晶
-        avoidEls.add(caiEl);
-      }
-
-      // 調候用神（季節性急需）
-      if(bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need){
-        bazi.tiaohou.need.forEach(e => { if(!validFavEls.includes(e) && !avoidEls.has(e)) validFavEls.splice(1, 0, e); });
-        if(bazi.tiaohou.avoid) bazi.tiaohou.avoid.forEach(e => avoidEls.add(e));
-      }
-
-      // 構建 targetEls：只允許用神方向的五行
-      let targetEls = [];
-      validFavEls.forEach(e => { if(!avoidEls.has(e) && !targetEls.includes(e)) targetEls.push(e); });
-
-      // 修正規則二：極缺五行升級 — 如果某忌神極缺(<5%)且能制衡最旺忌神，可升級
-      const strongestUnfav = unfavEls.length > 0 ? unfavEls.reduce((a,b) => ((ep[a]||0)>(ep[b]||0)?a:b)) : null;
-      weakEls.forEach(e => {
-        if(avoidEls.has(e)) return;
-        if(targetEls.includes(e)) return;
-        const pct = (ep[e]||0)/tot;
-        if(pct <= 0.05 && strongestUnfav){
-          // 檢查該五行是否能直接剋制最旺忌神
-          const keMap = {'木':'土','火':'金','土':'水','金':'木','水':'火'};
-          if(keMap[e]===strongestUnfav){
-            targetEls.push(e); // 升級為推薦
-          }
-        }
-      });
-
-      // 如果 targetEls 為空（極端情況），fallback
-      if(targetEls.length===0) targetEls = [favEl];
-
-      // 反向檢驗：targetEls 中不能有忌神
-      targetEls = targetEls.filter(e => !avoidEls.has(e));
-      if(targetEls.length===0) targetEls = [favEl];
-
-      /* ═══ 三層裁決制：八字 vs 吠陀衝突仲裁 ═══
-         第一層（生存層）：八字忌神 → 一票否決，不管吠陀多缺
-         第二層（功能層）：吠陀功能吉星偏弱 → 如果不踩忌神，可以加入推薦
-         第三層（安全層）：吠陀功能凶星 → 即使弱也不補（補了反而出事）*/
-      if(S.jyotish && S.jyotish.effectiveStrength && S.jyotish.functionalNature){
-        const es = S.jyotish.effectiveStrength;
-        const fn = S.jyotish.functionalNature;
-        // 行星→五行對照
-        const planetEl = {Sun:'火',Moon:'水',Mars:'火',Mercury:'水',Jupiter:'木',Venus:'金',Saturn:'土'};
-        
-        // 找出值得補強的行星：功能吉星 + 有效力量弱 + 按優先度排序
-        const strengthenCandidates = Object.entries(es)
-          .filter(([p,v]) => {
-            const fnP = fn[p];
-            if(!fnP) return false;
-            // 只補功能吉星（包含瑜伽卡拉卡、吉星、中性偏吉）
-            if(!fnP.canStrengthen) return false;
-            // 有效力量偏弱才需要補
-            if(v.effective >= 1.3) return false;
-            return true;
-          })
-          .sort((a,b) => {
-            // 優先度：瑜伽卡拉卡 > 主運星 > 功能吉星 > 弱度
-            const fnA = fn[a[0]], fnB = fn[b[0]];
-            if(fnA.isYogaKaraka && !fnB.isYogaKaraka) return -1;
-            if(!fnA.isYogaKaraka && fnB.isYogaKaraka) return 1;
-            var dwA = S.jyotish.dashaWeights[a[0]]||1, dwB = S.jyotish.dashaWeights[b[0]]||1;
-            if(dwA !== dwB) return dwB - dwA;
-            return a[1].effective - b[1].effective; // weaker first
-          });
-        
-        // 前兩名候選行星的五行
-        strengthenCandidates.slice(0,2).forEach(function(entry){
-          const weakestEl = planetEl[entry[0]];
-          if(!weakestEl) return;
-          
-          // 第一層：八字忌此五行 → 一票否決
-          if(avoidEls.has(weakestEl)) return;
-          
-          // 第二層：不是忌神且不在列表 → 加入輔助推薦
-          if(!targetEls.includes(weakestEl)){
-            targetEls.push(weakestEl);
-          }
-        });
-        
-        // 第三層（安全檢查）：如果 targetEls 裡有五行對應到吠陀功能凶星，發出警告
-        // 但不移除（因為八字用神仍然有效，只是提醒要注意）
-      }
-      // 確保 targetEls 不超過3個五行（太多反而稀釋效果）
-      targetEls = targetEls.slice(0,3);
-
-      const typeAction={'love':'讓感情能量流動起來','career':'推一把你的事業運','wealth':'穩住你的財氣','health':'幫身體補能量','general':'平衡你的五行磁場','relationship':'提升人際好感度','family':'穩住家庭和諧能量'};
-      const wearNote = isWeak ? `（左手佩戴${targetEls[0]}行 = 補命根）` : '';
-      if(targetEls.length > 0){
-        const thNote = bazi.tiaohou ? `（調候：${bazi.tiaohou.reason}）` : '';
-        const elListStr = targetEls.length > 1 ? targetEls.slice(0,2).join('＋') : targetEls[0];
-        
-        // 【問題3修正】主副防三層推薦制
-        const mainEl = targetEls[0];
-        const subEl = targetEls.length > 1 ? targetEls[1] : null;
-        const protectCrystal = (function(){
-          // 防護層：根據問題類型選擇防護石
-          const protectMap = {
-            love: '黑曜石（擋爛桃花）',
-            career: '黑碧璽（防小人）',
-            wealth: '茶晶（防衝動投資）',
-            health: '黑曜石（排濁氣）',
-            general: '黑曜石（淨化磁場）',
-            relationship: '煙晶（防能量消耗）',
-            family: '煙晶（穩定情緒）'
-          };
-          return protectMap[type] || '黑曜石（淨化防護）';
-        })();
-        
-        qsTitle.textContent = `你最需要的：${elListStr}行能量${thNote}`;
-        const layerText = `主補：${mainEl}行（穩定核心）` + 
-          (subEl ? ` ｜ 副補：${subEl}行（加速）` : '') + 
-          ` ｜ 防護：${protectCrystal}`;
-        qsSub.textContent = layerText + wearNote;
-      }else{
-        qsTitle.textContent = `${favEl}行水晶 — ${typeAction[type]||'佩戴補強'}`;
-        qsSub.textContent = '挑一條有眼緣的，日常戴著就有效';
-      }
-
-      // 從 REAL_PRODUCTS 直接抓對應五行的產品
-      let picks = [];
-      const seen2 = new Set();
-
-      // 雙屬性材質忌神檢查表（第四階段4.1）
-      const DUAL_EL = {
-        '月光石':['金','水'],'海藍寶':['水','金'],'草莓晶':['木','火'],
-        '捷克隕石':['木','火'],'紫水晶':['火'],'金太陽石':['火','土'],
-        '金鈦晶':['金'],'紫牙烏':['火','水']
-      };
-
-      function addPick(item){
-        if(seen2.has(item.n)) return;
-        // 只允許用神五行或五行全的產品
-        if(item.el !== '全' && !targetEls.includes(item.el)) return;
-        // 基本忌神過濾
-        if(avoidEls.has(item.el) && item.el !== '全') return;
-        // 雙屬性材質檢查：如果材質有忌神成分，排除
-        const dualEls = DUAL_EL[item.n];
-        if(dualEls && dualEls.some(e => avoidEls.has(e))) return;
-        seen2.add(item.n);
-        picks.push(item);
-      }
-
-      // 優先：第一目標五行（第一用神）的產品 — 取前3個
-      (REAL_PRODUCTS[targetEls[0]]||[]).slice(0,4).forEach(p => addPick(p));
-      // 第二用神一定要有產品（九階段指令5.1：步驟二確定第二用神→輔石材質）
-      if(targetEls.length > 1 && !avoidEls.has(targetEls[1])){
-        (REAL_PRODUCTS[targetEls[1]]||[]).slice(0,2).forEach(p => addPick(p));
-      }
-      // 補充：五行「全」的永遠可以
-      (REAL_PRODUCTS.special||[]).filter(p=>p.el==='全').forEach(p=>addPick(p));
-      // 如果還不夠5個，從第一用神補齊
-      if(picks.length < 5){
-        (REAL_PRODUCTS[targetEls[0]]||[]).forEach(p => addPick(p));
-      }
-      // 最後補：喜用神產品（保險）
-      if(picks.length < 3){
-        (REAL_PRODUCTS[favEl]||[]).forEach(p => addPick(p));
-      }
-
-      // 最終反向檢驗：移除任何忌神五行的產品（防漏）
-      picks = picks.filter(p => !avoidEls.has(p.el) || p.el === '全');
-
-      // 價格多樣化：低中高各取，但確保第二用神產品不被擠掉
-      if(picks.length > 5){
-        const parseP = s => parseInt((s||'0').replace(/[^0-9]/g,''))||0;
-        // 分離第一用神和第二用神的產品
-        const firstElPicks = picks.filter(p => p.el === targetEls[0]);
-        const secondElPicks = targetEls.length > 1 ? picks.filter(p => p.el === targetEls[1]) : [];
-        const otherPicks = picks.filter(p => p.el !== targetEls[0] && (targetEls.length < 2 || p.el !== targetEls[1]));
-        
-        // 第一用神按價格取3個（低中高）
-        firstElPicks.sort((a,b) => parseP(a.price) - parseP(b.price));
-        const f1Low = firstElPicks.filter(p => parseP(p.price) < 500).slice(0,1);
-        const f1Mid = firstElPicks.filter(p => parseP(p.price) >= 500 && parseP(p.price) < 3000).slice(0,1);
-        const f1High = firstElPicks.filter(p => parseP(p.price) >= 3000).slice(0,1);
-        let f1Final = [...f1Low, ...f1Mid, ...f1High];
-        if(f1Final.length === 0) f1Final = firstElPicks.slice(0,2);
-        
-        // 第二用神至少保留1-2個
-        const f2Final = secondElPicks.slice(0,2);
-        
-        // 合併 + 補充
-        picks = [...f1Final, ...f2Final, ...otherPicks].slice(0,6);
-        
-        if(picks.length < 5){
-          // 補到5個
-          (REAL_PRODUCTS[targetEls[0]]||[]).forEach(p=>{
-            if(picks.length<5 && !seen2.has(p.n+'_qs')){picks.push(p);seen2.add(p.n+'_qs');}
-          });
-        }
-      }
-
-      if(picks.length > 0){
-        // 生成推薦理由 → 使用情境（成交語言）
-        const SCENE_MAP={
-          love:{'金':'談判場合穩住氣場','木':'約會增添親和力','水':'溝通時穩住情緒','火':'告白壯膽','土':'穩定關係不焦慮'},
-          career:{'金':'面試/談判增強決斷','木':'創業找方向','水':'思考策略時佩戴','火':'業務衝刺用','土':'穩住根基不內耗'},
-          wealth:{'金':'投資決策時佩戴','木':'開源找新機會','水':'理財規劃時冷靜','火':'抓風口要快狠準','土':'守財不漏'},
-          health:{'金':'提升免疫防護力','木':'舒緩壓力放鬆','水':'助眠安神','火':'運動時增強活力','土':'腸胃調理接地氣'},
-          general:{'金':'日常決策加持','木':'成長期隨身戴','水':'冥想靜心用','火':'需要行動力時戴','土':'穩定情緒接地氣'}
-        };
-        const scenes=SCENE_MAP[type]||SCENE_MAP.general;
-        const getPickReason = (p) => {
-          // 左右手配置規則（第五階段5.2）
-          // 左手=進入位=第一用神（補命根）
-          // 右手=排出位=第二用神（制忌神）
-          const isFirstFav = (p.el === targetEls[0]);
-          const isSecondFav = (targetEls.length > 1 && p.el === targetEls[1]);
-          let handHint = '';
-          if(isWeak){
-            if(isFirstFav) handHint = '（左手佩戴·補命根）';
-            else if(isSecondFav) handHint = '（右手佩戴·制忌神）';
-          }
-          if(scenes[p.el]) return scenes[p.el] + handHint;
-          if(p.el === favEl) return '日常佩戴補'+favEl+'行' + handHint;
-          if(p.el === '全') return '全方位平衡';
-          return '補'+p.el+'行能量' + handHint;
-        };
-        qs.innerHTML = picks.slice(0,5).map(p => {
-          // v68.21 Bug #66:同 12808 邏輯,p.shopee 加 https 驗證 + escape
-          var _ps = '';
-          try {
-            if (p.shopee && typeof p.shopee === 'string') {
-              var _pu = new URL(p.shopee);
-              if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-                _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-              }
-            }
-          } catch(_) {}
-          if (!_ps) _ps = 'https://shopee.tw/a50h95648d?tab=shop';
-          return `
-          <a href="${_ps}" target="_blank" rel="noopener" class="qs-item">
-            <div class="qs-item-icon">${getProductSVG(p.cat||'手鍊',p.n)}</div>
-            <div class="qs-item-name">${p.n}</div>
-            <div class="qs-item-el"><span class="el-tag el-${p.el}" style="font-size:.6rem">${p.el}行</span></div>
-            <div class="qs-item-reason" style="font-size:.55rem;color:var(--c-gold);margin-top:2px">★ ${getPickReason(p)}</div>
-            <div class="qs-item-price">${p.price||''}</div>
-          </a>
-        `;
-        }).join('');
-      }
-    }
-  }catch(e){ console.error('quick shop:', e); }
-}
-
-function renderProductCrystal(bazi,type){
-  const need=bazi.fav[0];
-  const unfavSet = new Set(bazi.unfav||[]);
-  const isW = (bazi.strength && bazi.strength < 50);
-  const dE = bazi.dmEl || need;
-  const cE = {'木':'土','火':'金','土':'水','金':'木','水':'火'}[dE];
-  if(isW && type==='wealth' && cE) unfavSet.add(cE);
-
-  // 從 REAL_PRODUCTS 取喜用神五行的商品
-  var candidates = [];
-  var favEls = bazi.fav || [need];
-  for (var fi = 0; fi < favEls.length; fi++) {
-    var prods = REAL_PRODUCTS[favEls[fi]] || [];
-    for (var pi = 0; pi < prods.length; pi++) {
-      if (!unfavSet.has(prods[pi].el) || prods[pi].el === '全') candidates.push(prods[pi]);
-    }
+  // 結果頁只列款式示例；真實材質、尺寸、售價與庫存都需打開賣場頁核對。
+  const crystalEl=document.getElementById('r-action-crystal');
+  if(crystalEl){
+    const previews=smartRecommend(null,null,2);
+    crystalEl.innerHTML='<p class="text-xs text-dim">飾品是個人喜好與提醒，不是命盤、醫療或財務處方。</p>'+
+      previews.map(function(item){
+        const href=_jyShopLink(item.shopee);
+        return '<a href="'+href+'" target="_blank" rel="noopener noreferrer" class="inline-crystal">'+
+          '<span class="inline-crystal-icon">'+getProductSVG(item.cat||'手鏈',item.n)+'</span>'+
+          '<span class="inline-crystal-info"><span class="inline-crystal-name">'+_jyShopHtml(item.n)+'</span>'+
+          '<span class="inline-crystal-desc">'+_jyShopHtml(_jyShopStyle(item))+'</span></span>'+
+          '<span class="inline-crystal-price">到賣場核對</span></a>';
+      }).join('');
   }
-  if (!candidates.length) candidates = REAL_PRODUCTS[need] || REAL_PRODUCTS['土'] || [];
 
-  // 選一條主推（中間價位，避免太便宜或太貴）
-  var sorted = candidates.slice().sort(function(a,b) {
-    var pa = parseInt((a.price||'0').replace(/[^0-9]/g,'')) || 0;
-    var pb = parseInt((b.price||'0').replace(/[^0-9]/g,'')) || 0;
-    return pa - pb;
-  });
-  var midIdx = Math.min(Math.floor(sorted.length * 0.4), sorted.length - 1);
-  var pick = sorted[midIdx] || sorted[0];
-  // v68.21 Bug #66:URL 驗證 helper(同上邏輯)
-  function _safeShopeeUrlReco(u) {
-    if (!u || typeof u !== 'string') return 'https://shopee.tw/a50h95648d?tab=shop';
-    try {
-      var _pu = new URL(u);
-      if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return 'https://shopee.tw/a50h95648d?tab=shop';
-      return u.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    } catch(_) { return 'https://shopee.tw/a50h95648d?tab=shop'; }
+  const qs=document.getElementById('qs-products');
+  const qsTitle=document.getElementById('qs-title');
+  const qsSub=document.getElementById('qs-subtitle');
+  if(qsTitle)qsTitle.textContent='從喜歡的配色與款式挑選';
+  if(qsSub)qsSub.textContent='此處只是設計示例；售價、現貨、材質、珠徑與圈徑請依賣場當頁資訊確認。';
+  if(qs){
+    qs.innerHTML=smartRecommend(null,null,5).map(function(item){
+      return '<a href="'+_jyShopLink(item.shopee)+'" target="_blank" rel="noopener noreferrer" class="qs-item">'+
+        '<div class="qs-item-icon">'+getProductSVG(item.cat||'手鏈',item.n)+'</div>'+
+        '<div class="qs-item-name">'+_jyShopHtml(item.n)+'</div>'+
+        '<div class="qs-item-reason">'+_jyShopHtml(_jyShopStyle(item))+'</div>'+
+        '<div class="qs-item-price">價格及庫存依賣場</div></a>';
+    }).join('');
   }
-  var shopeeUrl = _safeShopeeUrlReco(pick && pick.shopee);
 
-  // 額外推薦 2 條（不同價位帶）
-  var others = sorted.filter(function(p){ return p.n !== pick.n; });
-  var lowPick = others[0] || null;
-  var highPick = others.length > 2 ? others[others.length - 1] : (others[1] || null);
-  var _lowUrl = lowPick ? _safeShopeeUrlReco(lowPick.shopee) : '';
-  var _highUrl = highPick ? _safeShopeeUrlReco(highPick.shopee) : '';
-
-  var _EM = {'金':'決斷力與原則','木':'成長力與行動','水':'智慧與靈活','火':'熱情與正向','土':'穩定與安全感'};
-
-  var _rcEl=document.getElementById('r-crystal');if(_rcEl) _rcEl.innerHTML=
-    '<div style="margin-bottom:.8rem">' +
-      '<div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem">' +
-        '<span style="font-size:.7rem;font-weight:700;color:rgba(212,175,55,.7);background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);border-radius:20px;padding:2px 10px;letter-spacing:.05em">✦ 能量處方</span>' +
-      '</div>' +
-      '<p style="font-size:.85rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:.6rem">你的命盤喜用 <strong style="color:var(--c-gold)">' + need + '行</strong>（' + (_EM[need]||need) + '），以下是最適合你的能量石：</p>' +
-    '</div>' +
-    // 主推
-    '<div style="padding:.9rem 1rem;background:linear-gradient(135deg,rgba(212,175,55,.06),rgba(139,92,246,.03));border-radius:14px;border:1px solid rgba(212,175,55,.2);margin-bottom:.6rem">' +
-      '<div style="font-size:.95rem;font-weight:700;color:var(--c-gold);margin-bottom:.2rem">💎 ' + pick.n + '</div>' +
-      '<div style="font-size:.72rem;color:var(--c-text-muted);margin-bottom:.3rem">' + (pick.price||'') + '</div>' +
-      '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.6;margin-bottom:.6rem">' + (pick.d||'') + '</div>' +
-      '<a href="' + shopeeUrl + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);text-decoration:none;font-size:.82rem;font-weight:700;border:1px solid rgba(212,175,55,.3)"><i class="fas fa-gem"></i> 去蝦皮看看</a>' +
-    '</div>' +
-    // 其他選擇（精簡）
-    (lowPick || highPick ?
-      '<div style="font-size:.75rem;color:var(--c-text-muted);margin-bottom:.4rem">其他同五行選擇：</div>' +
-      '<div style="display:flex;gap:.5rem;flex-wrap:wrap">' +
-        (lowPick ? '<a href="' + _lowUrl + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + lowPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (lowPick.price||'') + '</span></a>' : '') +
-        (highPick ? '<a href="' + _highUrl + '" target="_blank" rel="noopener" style="flex:1;min-width:140px;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);text-decoration:none;color:var(--c-text-dim);font-size:.78rem;line-height:1.5">' + highPick.n + '<br><span style="color:var(--c-text-muted);font-size:.7rem">' + (highPick.price||'') + '</span></a>' : '') +
-      '</div>'
-    : '') +
-    '<div style="margin-top:.8rem">' +
-      '<button class="btn btn-gold btn-full" onclick="openCustomModal()" style="width:100%">' +
-        '<i class="fas fa-magic"></i> 依你五行專屬搭配 ─ 點我客製' +
-      '</button>' +
-      '<p class="text-xs text-muted mt-sm text-center">預算版 $1,000 起 ｜ 48hr 內回覆</p>' +
-    '</div>' +
-    '<p class="text-xs text-muted mt-md text-center"><i class="fas fa-info-circle"></i> 本建議僅供能量校準參考，不具醫療或命運保證效力。</p>';
 }
 
 /* =============================================================
@@ -13018,7 +12014,7 @@ function generateResultCard(){
   // Five elements bar
   const y3=560;
   ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
-  ctx.fillText('🔮 五行能量',60,y3);
+  ctx.fillText('🔮 五行比例模型',60,y3);
   if(S.bazi){
     const els=['金','木','水','火','土'];
     const colors={金:'#c0c0c0',木:'#22c55e',水:'#3b82f6',火:'#ef4444',土:'#a78b5a'};
@@ -13032,16 +12028,15 @@ function generateResultCard(){
     });
   }
 
-  // Crystal recommendation
+  // 飾品資料沒有即時庫存或有效性驗證；分享圖只介紹視覺款式。
   const y4=760;
   ctx.font='bold 20px "Noto Sans TC",sans-serif';ctx.fillStyle='#D4AF37';
-  ctx.fillText('💍 專屬水晶處方',60,y4);
+  ctx.fillText('💍 飾品款式示例',60,y4);
   if(S.bazi){
-    const need=S.bazi.fav[0];
-    const prods=PRODUCT_DB[need]||PRODUCT_DB['土'];
+    const prods=smartRecommend(null,null,3);
     ctx.font='16px "Noto Sans TC",sans-serif';ctx.fillStyle='rgba(255,255,255,0.85)';
     prods.slice(0,3).forEach((p,i)=>{
-      ctx.fillText(`${catIcon[p.cat]||'💎'} ${p.n}（${p.cat}）— ${p.d}`,60,y4+30+i*28);
+      ctx.fillText(`${catIcon[p.cat]||'💎'} ${p.n}（${p.cat}）— 售價與庫存請至賣場核對`,60,y4+30+i*28,630);
     });
   }
 
@@ -13171,27 +12166,10 @@ function updateShareGate(){
       retestBtn.classList.remove('hidden');
       // 同時解鎖趣味功能
       unlockExtraFeatures();
-      // 折扣碼區水晶推薦
-      try{
-        const recDiv=document.getElementById('discount-crystal-rec');
-        if(recDiv && S.bazi){
-          const recs=(typeof smartRecommend==='function')?smartRecommend(S.bazi,S.form.type||'career',3):[];
-          if(recs.length>0){
-            const p=recs[0];
-            recDiv.innerHTML=`
-              <p class="text-sm" style="color:var(--c-text-dim);margin-bottom:8px"><i class="fas fa-gem" style="color:var(--c-gold)"></i> 用折扣碼購買最適合你的水晶：</p>
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:1.5rem">${getProductSVG(p.cat||'手鍊',p.n)}</span>
-                <div style="flex:1">
-                  <div style="font-weight:600;color:var(--c-gold-light);font-size:.9rem">${p.n}</div>
-                  <div class="text-xs text-dim">${p.d||''}</div>
-                </div>
-                <div style="font-weight:700;color:var(--c-gold)">${p.price||''}</div>
-              </div>
-              ${recs.length>1?`<div style="margin-top:6px;font-size:.78rem;color:var(--c-text-muted)">也推薦：${recs.slice(1,3).map(r=>r.n).join('、')}</div>`:''}`;
-          }
-        }
-      }catch(e){}
+      const recDiv=document.getElementById('discount-crystal-rec');
+      if(recDiv){
+        recDiv.textContent='款式、材質、價格與目前優惠，請至商家賣場頁確認。';
+      }
     }
   }
 }
@@ -13199,304 +12177,168 @@ function updateShareGate(){
 // 實際商品庫 — 依五行分類，取代表性品項（同名取價格帶）
 const REAL_PRODUCTS = {
   金: [
-    {n:'鐵膽石手排',cat:'手排',el:'金',d:'沉穩接地能量，增強意志力與穩定性',price:'$185',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'鐵膽石圓珠手鍊',cat:'手鏈',el:'金',d:'鐵膽護身，強化金行決斷力',price:'$185',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白水晶手鍊',cat:'手鏈',el:'金',d:'萬能調和石，淨化能量場，增強思維清晰度',price:'$339',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白阿賽設計款手鍊',cat:'手鏈',el:'金',d:'高頻水晶，靈性提升與淨化',price:'$420',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'超八手鍊',cat:'手鏈',el:'金',d:'超級八面體，多礦物共生全能型能量石',price:'$454',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白水茶晶設計款手鍊',cat:'手鏈',el:'金',d:'白水晶+茶晶設計款，淨化+穩定',price:'$506',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'金髮晶手鍊',cat:'手鏈',el:'金',d:'招正財，增強領導力與自信',price:'$761',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩超七圓珠手鍊',cat:'手鏈',el:'金',d:'七種礦物共生，全面提升身心靈',price:'$1,387',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'利比亞黃金隕石手鍊',cat:'手鏈',el:'金',d:'隕石級能量，提升意志力與財運',price:'$1,644',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白水晶鳳凰項鍊',cat:'項鍊',el:'金',d:'鳳凰涅槃，淨化+重生能量，收藏級',price:'$3,372',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'鈦晶手排',cat:'手排',el:'金',d:'招正財偏財首選！增強領導力與決斷力',price:'$3,334~$21,950',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩色天鐵手鍊',cat:'手鏈',el:'金',d:'宇宙隕鐵能量，全方位防護與提升',price:'$4,548',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩閃靈手鍊',cat:'手鏈',el:'金',d:'彩色閃靈鑽，全頻譜能量淨化',price:'$4,908',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'多寶隕石手鍊',cat:'手鏈',el:'金',d:'多種隕石能量集合，宇宙級全方位防護',price:'$5,484',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩髮圓珠手鍊',cat:'手鏈',el:'金',d:'多色髮晶，招財+人緣+事業全面提升',price:'$5,868',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩色天鐵手排',cat:'手排',el:'金',d:'宇宙級能量手排，天鐵+彩色美感',price:'$10,308',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩超七手鍊',cat:'手鏈',el:'金',d:'頂級彩超七，收藏級全能能量石',price:'$41,325',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
+    {n:'鐵膽石手排',cat:'手排',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'鐵膽石圓珠手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白水晶手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白阿賽設計款手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'超八手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白水茶晶設計款手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'金髮晶手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩超七圓珠手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'利比亞黃金隕石手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白水晶鳳凰項鍊',cat:'項鍊',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'鈦晶手排',cat:'手排',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩色天鐵手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩閃靈手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'多寶隕石手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩髮圓珠手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩色天鐵手排',cat:'手排',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩超七手鍊',cat:'手鏈',el:'金',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
   ],
   木: [
-    {n:'綠檀木手鍊',cat:'手鏈',el:'木',d:'天然檀木清香，安神定氣，適合修行佩戴',price:'$224',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅花碧玉手排',cat:'手排',el:'土',d:'碧玉養心，紅花增添活力與熱情',price:'$464',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'沉香無事牌項鍊',cat:'項鍊',el:'木',d:'沉香安神定氣，無事牌寓意平安',price:'$492',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'綠檀木手鍊三圈',cat:'手鏈',el:'木',d:'三圈檀木，加強安神接地能量',price:'$492',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'綠幽靈手鍊',cat:'手鏈',el:'木',d:'正財之石，事業穩步上升，聚財守財',price:'$684~$10,668',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'綠龍晶手鍊',cat:'手鏈',el:'木',d:'龍脈能量，增強事業運與領導力',price:'$1,068~$2,028',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'綠碧璽手鍊',cat:'手鏈',el:'木',d:'心輪之石，療癒情緒、增強包容力',price:'$1,644',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'綠水晶隨型手鍊',cat:'手鏈',el:'木',d:'隨形自然美，木行能量充沛',price:'$2,028',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'四季幽靈手排',cat:'手排',el:'木',d:'四季輪轉能量，全面平衡身心',price:'$2,988',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'老山檀香圓珠手鍊',cat:'手鏈',el:'木',d:'百年老山檀，安神定氣，修行者首選',price:'$3,756',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'抹茶幽靈手鍊',cat:'手鏈',el:'木',d:'稀有抹茶色幽靈，事業財運雙強化',price:'$8,748',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
+    {n:'綠檀木手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅花碧玉手排',cat:'手排',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'沉香無事牌項鍊',cat:'項鍊',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'綠檀木手鍊三圈',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'綠幽靈手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'綠龍晶手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'綠碧璽手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'綠水晶隨型手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'四季幽靈手排',cat:'手排',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'老山檀香圓珠手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'抹茶幽靈手鍊',cat:'手鏈',el:'木',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
   ],
   水: [
-    {n:'黑曜磨砂心經手鍊',cat:'手鏈',el:'水',d:'心經加持，辟邪擋煞，淨化負能量',price:'$204~$377',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'藍方解石手鍊',cat:'手鏈',el:'水',d:'清澈藍色，舒緩焦慮、增強表達力',price:'$300',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'藍磷灰手鍊',cat:'手鏈',el:'水',d:'激發潛能，增強學習力與專注力',price:'$396',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白松石x黑曜石設計款手鍊',cat:'手鏈',el:'水',d:'白松石安神+黑曜辟邪，雙重守護',price:'$400',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'金曜石手鍊',cat:'手鏈',el:'水',d:'頂級辟邪石，金色光澤增強財運與氣場',price:'$416',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'銀曜項鍊（關公）',cat:'項鍊',el:'水',d:'關公護身，辟邪擋煞，增強正氣',price:'$492',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'金曜項鍊（龍牌）',cat:'項鍊',el:'水',d:'龍牌護身符，氣場強大，事業亨通',price:'$492',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'黑碧璽三圈手鍊',cat:'手鏈',el:'水',d:'頂級辟邪石，三圈加強防護能量',price:'$588',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彼得石手排',cat:'手排',el:'水',d:'暴風雨之石，增強勇氣與果斷力',price:'$681',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'鷹眼堇青石設計款手鍊',cat:'手鏈',el:'水',d:'鷹眼般銳利洞察力，提升判斷力',price:'$780',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'堇青石手鍊',cat:'手鏈',el:'水',d:'水手之石，指引方向、增強直覺',price:'$875',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'黑閃靈手鍊',cat:'手鏈',el:'水',d:'閃靈鑽能量，淨化+轉化負能量',price:'$1,798',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩虹黑曜石手鍊',cat:'手鏈',el:'水',d:'彩虹光辟邪，轉化負能量為正能量',price:'$1,882',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'海藍寶手鍊',cat:'手鏈',el:'水',d:'勇氣之石，增強溝通力與平靜心',price:'$2,028~$23,825',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'藍彼得算盤珠手鍊',cat:'手鏈',el:'水',d:'彼得石算盤珠款，智慧與勇氣並存',price:'$2,604',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'青晶石手鍊',cat:'手鏈',el:'水',d:'深邃藍色，增強洞察力與智慧',price:'$2,604',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'藍虎眼手鍊',cat:'手鏈',el:'水',d:'藍色虎眼增強洞察力與決斷力',price:'$7,600',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'黑髮手排',cat:'手排',el:'水',d:'黑髮晶辟邪擋煞，排除負能量首選',price:'$9,708~$16,620',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'藍彼得圓珠手鍊',cat:'手鏈',el:'水',d:'頂級彼得石，暴風雨能量守護',price:'$9,708',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'月光石手鍊',cat:'手鏈',el:'水',d:'女性守護石，增強直覺與柔性能量（金+水雙屬性）',price:'$9,708',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
+    {n:'黑曜磨砂心經手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'藍方解石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'藍磷灰手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白松石x黑曜石設計款手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'金曜石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'銀曜項鍊（關公）',cat:'項鍊',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'金曜項鍊（龍牌）',cat:'項鍊',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'黑碧璽三圈手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彼得石手排',cat:'手排',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'鷹眼堇青石設計款手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'堇青石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'黑閃靈手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩虹黑曜石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'海藍寶手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'藍彼得算盤珠手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'青晶石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'藍虎眼手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'黑髮手排',cat:'手排',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'藍彼得圓珠手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'月光石手鍊',cat:'手鏈',el:'水',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
   ],
   火: [
-    {n:'粉晶手鍊',cat:'手鏈',el:'火',d:'愛情之石，招桃花、增強人緣與魅力',price:'$204',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'粉晶手排',cat:'手排',el:'火',d:'大顆粉晶，愛情能量加倍',price:'$272',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅龍宮舍利手鍊',cat:'手鏈',el:'火',d:'佛門聖物，護身增運，火行能量',price:'$281~$431',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅瑪腦手鍊',cat:'手鏈',el:'火',d:'穩定情緒，增強活力與正向能量',price:'$300~$454',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'摩根石手鍊',cat:'手鏈',el:'火',d:'心輪療癒石，增強愛的能量與包容力',price:'$300',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'星光草莓晶手鍊',cat:'手鏈',el:'火',d:'星光閃耀，增強桃花與人際魅力',price:'$300~$454',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫金砂手鍊',cat:'手鏈',el:'火',d:'金砂閃耀，穩定心性增強信念',price:'$339',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'糖果碧璽手鍊',cat:'手鏈',el:'火',d:'繽紛碧璽，增強桃花魅力與正向能量',price:'$395~$18,825',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'摩根石設計款手鍊',cat:'手鏈',el:'火',d:'摩根石設計款，柔美療癒能量',price:'$400',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫黃白水設計款手鍊',cat:'手鏈',el:'火',d:'三色水晶設計款，全面平衡能量',price:'$400',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅虎眼手鍊',cat:'手鏈',el:'火',d:'紅色虎眼石，增強果斷力與熱情行動力',price:'$435',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅幽靈設計款手鍊',cat:'手鏈',el:'火',d:'紅幽靈招財補火，設計款獨特美感',price:'$450',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫黃晶設計款手鍊',cat:'手鏈',el:'火',d:'紫黃雙色，智慧與財運兼具',price:'$450',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紅膠花設計款手鍊',cat:'手鏈',el:'火',d:'紅膠花水晶，獨特紅色內含物',price:'$506',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫水晶三圈手鍊',cat:'手鏈',el:'火',d:'紫水晶三圈加強版，提升智慧與靈性',price:'$588',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩色草莓晶手鍊',cat:'手鏈',el:'火',d:'彩色草莓晶，增強桃花與人際魅力',price:'$608',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫龍晶手鍊',cat:'手鏈',el:'火',d:'紫色龍脈能量，靈性提升',price:'$646',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'紫水晶手鍊',cat:'手鏈',el:'火',d:'智慧之石，增強直覺、提升專注力與貴人運',price:'$875~$1,606',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'彩銅超七手鍊',cat:'手鏈',el:'火',d:'含銅礦超七，七種礦物共生能量全面',price:'$972',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'波斯瑪腦設計款手鍊',cat:'手鏈',el:'火',d:'異域風情紅瑪腦，穩定情緒增強熱情',price:'$1,260',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'薔薇石手鍊',cat:'手鏈',el:'火',d:'療癒情傷，重建自信與自愛',price:'$1,798',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'煙花雨薔葳石手鍊',cat:'手鏈',el:'火',d:'如煙花般絢爛，增強魅力與吸引力',price:'$2,220',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'骨幹太陽石手鍊',cat:'手鏈',el:'火',d:'太陽般溫暖能量，驅散負面、增強正氣',price:'$2,777',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'草莓晶手鍊',cat:'手鏈',el:'火',d:'招桃花增人緣，甜蜜能量之石',price:'$2,988~$3,948',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'阿富汗碧璽手鍊',cat:'手鏈',el:'火',d:'稀有阿富汗碧璽，強力補火提升正能量',price:'$5,484',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'金太陽手鍊',cat:'手鏈',el:'火',d:'太陽般溫暖能量，招貴人、增自信',price:'$8,748~$21,325',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'粉紅碧璽圓珠手鍊',cat:'手鏈',el:'火',d:'頂級粉紅碧璽，招正緣、增強愛情能量',price:'$13,548',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
+    {n:'粉晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'粉晶手排',cat:'手排',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅龍宮舍利手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅瑪腦手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'摩根石手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'星光草莓晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫金砂手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'糖果碧璽手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'摩根石設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫黃白水設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅虎眼手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅幽靈設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫黃晶設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紅膠花設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫水晶三圈手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩色草莓晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫龍晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'紫水晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'彩銅超七手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'波斯瑪腦設計款手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'薔薇石手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'煙花雨薔葳石手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'骨幹太陽石手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'草莓晶手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'阿富汗碧璽手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'金太陽手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'粉紅碧璽圓珠手鍊',cat:'手鏈',el:'火',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
   ],
   土: [
-    {n:'黃龍宮舍利手鍊',cat:'手鏈',el:'土',d:'佛門聖物，穩定磁場、增強財運',price:'$262~$423',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'阿拉善手鍊',cat:'手鏈',el:'土',d:'戈壁精華，穩定能量、增強接地力',price:'$281~$454',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'黃水晶手鍊',cat:'手鏈',el:'土',d:'招偏財之石，提升自信與財運',price:'$233~$262',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'白龍宮舍利手鍊',cat:'手鏈',el:'土',d:'佛門聖物，淨化磁場、增強靈性',price:'$231',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'茶晶手鍊',cat:'手鏈',el:'土',d:'接地之石，穩定情緒、增強安全感',price:'$684~$742',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
-    {n:'咖啡鈦太陽花手排',cat:'手排',el:'土',d:'咖啡鈦+太陽花，招財+穩定雙效',price:'$2,988',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
+    {n:'黃龍宮舍利手鍊',cat:'手鏈',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'阿拉善手鍊',cat:'手鏈',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'黃水晶手鍊',cat:'手鏈',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'白龍宮舍利手鍊',cat:'手鏈',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'茶晶手鍊',cat:'手鏈',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'},
+    {n:'咖啡鈦太陽花手排',cat:'手排',el:'土',d:'款式示例；實際材質、尺寸與配件請於賣場頁核對',shopee:'https://shopee.tw/a50h95648d?tab=shop'}
   ]
-}
-
-/* =============================================================
-   智慧推薦引擎 — 取代 PRODUCT_DB + TYPE_PRODUCTS
-   根據：喜用神 × 問題類型 × 價格帶分佈 推薦最佳商品
-   ============================================================= */
-function smartRecommend(bazi, type, maxItems){
-  maxItems = maxItems || 6;
-  const need = bazi.fav[0]; // 喜用神第一位
-  const need2 = bazi.fav[1]; // 喜用神第二位
-  
-  // ** 關鍵修正：取得忌神列表，排除忌神五行的商品 **
-  const avoidEls = new Set();
-  if(bazi.unfav){
-    bazi.unfav.forEach(u => avoidEls.add(u));
-  }
-  // 九階段指令·規則四：身弱求財不補財星
-  const isWeak = (bazi.strength && bazi.strength < 50);
-  const dmEl = bazi.dmEl || need;
-  const caiEl = {'木':'土','火':'金','土':'水','金':'木','水':'火'}[dmEl];
-  if(isWeak && type==='wealth' && caiEl){
-    avoidEls.add(caiEl);
-  }
-  // 調候忌神
-  if(bazi.tiaohou && bazi.tiaohou.avoid){
-    bazi.tiaohou.avoid.forEach(e => avoidEls.add(e));
-  }
-  
-  const results = [];
-  const seen = new Set();
-
-  const favSet = new Set(bazi.fav || []);
-  function isAllowed(item){
-    // 五行「全」的商品永遠允許
-    if(item.el === '全') return true;
-    // 忌神五行的商品排除
-    if(avoidEls.has(item.el)) return false;
-    // 非用神五行的商品排除（嚴格模式：只推用神方向）
-    if(!favSet.has(item.el)) return false;
-    // 雙屬性材質檢查（第四階段4.1）
-    const DUAL={'月光石':['金','水'],'海藍寶':['水','金'],'草莓晶':['木','火'],'捷克隕石':['木','火'],'紫水晶':['火'],'金太陽石':['火','土'],'金鈦晶':['金']};
-    const de=DUAL[item.n];
-    if(de && de.some(e=>avoidEls.has(e))) return false;
-    return true;
-  }
-
-  function add(item, priority){
-    if(seen.has(item.n)) return;
-    if(!isAllowed(item)) return; // 忌神排除
-    seen.add(item.n);
-    results.push({...item, _priority: priority||0});
-  }
-
-  // 1) 問題類型特殊推薦（最高優先，但仍受忌神過濾）
-  if(type==='love'){
-    (REAL_PRODUCTS.love_special||[]).forEach(p=>add(p,100));
-    (REAL_PRODUCTS.necklace||[]).filter(p=>(p.tags||[]).includes('愛情')).forEach(p=>add(p,90));
-    (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('愛情')).forEach(p=>add(p,85));
-  }
-  if(type==='career'){
-    (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,100));
-    /* 鈦晶屬金，只有喜用神含金才推 */
-    if(!avoidEls.has('金')) (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,95));
-    /* 水行的黑髮晶也適合事業 */
-    (REAL_PRODUCTS.水||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,90));
-    (REAL_PRODUCTS.necklace||[]).filter(p=>(p.tags||[]).includes('事業')).forEach(p=>add(p,85));
-  }
-  if(type==='wealth'){
-    /* 招財水晶要過忌神濾：黃水晶屬土、鈦晶屬金、綠幽靈屬木 */
-    if(!avoidEls.has('土')) (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('黃水晶')).forEach(p=>add(p,100));
-    if(!avoidEls.has('木')) (REAL_PRODUCTS.木||[]).filter(p=>p.n.includes('綠幽靈')||p.n.includes('抹茶')).forEach(p=>add(p,95));
-    (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('財運')).forEach(p=>add(p,90));
-    if(!avoidEls.has('金')) (REAL_PRODUCTS.金||[]).filter(p=>p.n.includes('鈦晶')).forEach(p=>add(p,85));
-  }
-  if(type==='health'){
-    (REAL_PRODUCTS.special||[]).filter(p=>(p.tags||[]).includes('健康')).forEach(p=>add(p,100));
-    // 紫水晶是火行，火是用神時推
-    if(favSet.has('火')) (REAL_PRODUCTS.火||[]).filter(p=>p.n.includes('紫水晶')).forEach(p=>add(p,95));
-    if(favSet.has('土')) (REAL_PRODUCTS.土||[]).filter(p=>p.n.includes('茶晶')).forEach(p=>add(p,85));
-  }
-
-  // 2) 喜用神五行商品（一定是安全的，因為喜用神不會是忌神）
-  const elProducts = REAL_PRODUCTS[need] || [];
-  elProducts.forEach(p => add(p, 70));
-  if(need2 && REAL_PRODUCTS[need2]){
-    REAL_PRODUCTS[need2].slice(0,3).forEach(p => add(p, 50));
-  }
-
-  // 3) 五行設計款 / 超七（全方位，el='全' 永遠允許）
-  (REAL_PRODUCTS.special||[]).filter(p=>p.el==='全').forEach(p=>add(p,40));
-
-  // 4) 辟邪類（凶的時候優先，也要過濾忌神）
-  const prob = parseFloat((document.getElementById('r-vprob')||{}).textContent)||50;
-  if(prob < 40){
-    (REAL_PRODUCTS.protection||[]).forEach(p=>add(p,80));
-  }
-
-  // 5) 項鍊類補充（過濾忌神）
-  (REAL_PRODUCTS.necklace||[]).forEach(p=>add(p,20));
-
-  // Sort by priority desc, then pick top N
-  results.sort((a,b)=>b._priority-a._priority);
-
-  // Ensure price diversity: at least 1 under $500, 1 mid, 1 high
-  const final = [];
-  const low = results.filter(r=>{const p=parseFloat(r.price.replace(/[^0-9]/g,''));return p<=500});
-  const mid = results.filter(r=>{const p=parseFloat(r.price.replace(/[^0-9]/g,''));return p>500&&p<=3000});
-  const high = results.filter(r=>{const p=parseFloat(r.price.replace(/[^0-9]/g,''));return p>3000});
-
-  if(low[0]) final.push(low[0]);
-  if(mid[0]) final.push(mid[0]);
-  if(high[0]) final.push(high[0]);
-
-  // 確保第二用神至少1個產品（九階段指令·步驟二）
-  if(need2 && REAL_PRODUCTS[need2]){
-    const hasNeed2 = final.some(f => f.el === need2);
-    if(!hasNeed2){
-      const need2Product = results.find(r => r.el === need2 && !final.find(f=>f.n===r.n));
-      if(need2Product) final.push(need2Product);
-    }
-  }
-
-  // Fill remaining from sorted results
-  results.forEach(r=>{
-    if(final.length>=maxItems) return;
-    if(!final.find(f=>f.n===r.n)) final.push(r);
-  });
-
-  return final.slice(0, maxItems);
-}
-
-/* Override renderProductCrystal to use smart recommend */
-const _origRenderProductCrystal = typeof renderProductCrystal === 'function' ? renderProductCrystal : null;
-renderProductCrystal = function(bazi, type){
-  const need = bazi.fav[0];
-  const need2 = bazi.fav[1] || '';
-  const products = smartRecommend(bazi, type, 6);
-  const needLabel = need2 ? `${need}＋${need2}` : need;
-
-  var _rcEl=document.getElementById('r-crystal');if(_rcEl) _rcEl.innerHTML = `
-    <div class="crystal-rec-header">
-      <p>依你的八字體質（喜用 <span class="tag tag-gold">${needLabel}行</span>），針對你的<span class="tag tag-blue">${getTypeLabel(type)}</span>問題，從賣場精選：</p>
-    </div>
-    <div class="product-grid">${products.map(p=>{
-      // v68.21 Bug #66:p.shopee 加 https 驗證 + escape
-      var _ps = '';
-      try {
-        if (p.shopee && typeof p.shopee === 'string') {
-          var _pu = new URL(p.shopee);
-          if (_pu.protocol === 'https:' || _pu.protocol === 'http:') {
-            _ps = p.shopee.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-          }
-        }
-      } catch(_) {}
-      if (!_ps) _ps = 'https://shopee.tw/a50h95648d?tab=shop';
-      return `
-      <div class="product-card">
-        <div class="product-icon">${getProductSVG(p.cat,p.n)}</div>
-        <div class="product-body">
-          <div class="product-name">${p.n}</div>
-          <div class="product-meta">
-            <span class="tag tag-gold text-xs">${catIcon[p.cat]||'💍'} ${p.cat}</span>
-            ${p.el!=='全'?`<span class="el-tag el-${p.el} text-xs">${p.el}行</span>`:'<span class="tag text-xs" style="background:linear-gradient(90deg,#c00,#fc0,#0a0,#08f,#a78b5a);color:#fff;-webkit-background-clip:text;-webkit-text-fill-color:transparent;border:1px solid rgba(212,175,55,.4)">五行全</span>'}
-          </div>
-          <p class="product-desc">${p.d}</p>
-          <p class="product-price">${p.price}</p>
-          ${p.wear ? `<p class="product-wear"><i class="fas fa-hand-holding-heart"></i> ${p.wear}</p>` : ""}
-          <div class="product-actions">
-            <a href="${_ps}" target="_blank" rel="noopener" class="product-btn shopee"><i class="fas fa-shopping-cart"></i> 蝦皮</a>
-          </div>
-        </div>
-      </div>`;
-    }).join('')}
-    </div>
-    <div class="custom-cta mt-lg">
-      <button class="btn btn-gold btn-full" onclick="openCustomModal()">
-        <i class="fas fa-magic"></i> 依你五行專屬搭配 ─ 點我客製
-      </button>
-      <p class="text-xs text-muted mt-sm text-center">預算版 $1,000 起 ｜ 48hr 內回覆 ｜ 含占卜分析摘要</p>
-    </div>
-    <p class="text-xs text-muted mt-md text-center"><i class="fas fa-info-circle"></i> 以上商品皆為賣場現貨，水晶效果因人而異。</p>`;
 };
-/* =============================================================
-   4) 分享後顯示專屬折扣碼（真實蝦皮折扣碼）
-   ============================================================= */
-/* 折扣碼以混淆形式存放，防止直接從原始碼複製 */
-/* 折扣碼以數值混淆形式存放 */
-const _dc=[
-  [68,56,51,75,71,71,74,55,55],
-  [68,56,51,75,74,77,92,56,56],
-  [68,56,51,75,82,78,55,58,52],
-  [68,56,51,75,90,90,73,55,56],
-  [68,56,51,75,86,73,58,59,53],
-  [68,56,51,75,92,75,73,58,59],
-  [68,56,51,75,86,73,59,58,59],
-  [68,56,51,75,88,77,56,58,55],
-  [68,56,51,75,72,54,54,54],
-  [68,56,51,75,72,56,56,53]
-];
-function _dd(a){return a.map(c=>String.fromCharCode(c-3)).join('')}
 
-function generateDiscountCode(){
-  /* 每位用戶只能拿到一個碼，綁定瀏覽器指紋 */
-  const fp = navigator.userAgent.length + screen.width + screen.height;
-  const idx = fp % _dc.length;
-  return _dd(_dc[idx]);
+// 舊商品清單只是款式示例：早期手填的售價、療效文案、配戴法及庫存
+// 沒有即時驗證來源。先在所有 UI／分享圖／提示詞取用前清除舊聲明。
+;[PRODUCT_DB,TYPE_PRODUCTS,REAL_PRODUCTS].forEach(function(group){
+  Object.keys(group).forEach(function(key){
+    (group[key]||[]).forEach(function(item){
+      item.d=_jyShopStyle(item);
+      delete item.price;
+      delete item.wear;
+    });
+  });
+});
+
+/* 展示用款式選擇：只取幾種不同配色，不把八字、題型或舊價錢
+   當成特定商品的療效、價格帶或安全性證明。 */
+function smartRecommend(_bazi, _type, maxItems){
+  const limit=Number.isFinite(maxItems)?Math.max(0,Math.min(12,Math.trunc(maxItems))):6;
+  if(!limit)return [];
+  const categories=['金','木','水','火','土','special','necklace','love_special','protection'];
+  const chosen=[],seen=new Set();
+  // 展示不同色彩與形式。原表的五行欄位是象徵分類，不是物性或禁忌。
+  for(let pass=0;pass<4&&chosen.length<limit;pass++){
+    categories.forEach(function(category){
+      const list=REAL_PRODUCTS[category]||[];
+      if(!list.length||chosen.length>=limit)return;
+      const item=list[Math.min(list.length-1,Math.floor((pass+0.5)*list.length/4))];
+      if(item&&!seen.has(item.n)){
+        seen.add(item.n);
+        chosen.push(item);
+      }
+    });
+  }
+  return chosen;
 }
 
+// 舊結果區仍呼叫此名稱；現在只展示實際可在賣場查找的款式方向。
+function renderProductCrystal(_bazi,_type){
+  const host=document.getElementById('r-crystal');
+  if(!host)return;
+  host.textContent='';
+  const heading=document.createElement('div');heading.className='crystal-rec-header';
+  const lead=document.createElement('p');
+  lead.textContent='挑選你喜歡的配色與款式：以下是設計示例，並非個人療效或招財保證。';
+  heading.appendChild(lead);host.appendChild(heading);
+  const grid=document.createElement('div');grid.className='product-grid';
+  smartRecommend(null,null,6).forEach(function(p){
+    const card=document.createElement('div');card.className='product-card';
+    const icon=document.createElement('div');icon.className='product-icon';icon.innerHTML=getProductSVG(p.cat,p.n);
+    const body=document.createElement('div');body.className='product-body';
+    const name=document.createElement('div');name.className='product-name';name.textContent=p.n||'飾品款式';
+    const desc=document.createElement('p');desc.className='product-desc';desc.textContent=_jyShopStyle(p);
+    const verify=document.createElement('p');verify.className='product-price';
+    verify.textContent='價格、現貨及材質請以賣場頁為準';
+    const actions=document.createElement('div');actions.className='product-actions';
+    const link=document.createElement('a');link.href=_jyShopLink(p.shopee);
+    link.target='_blank';link.rel='noopener noreferrer';link.className='product-btn shopee';
+    link.textContent='到賣場核對款式';actions.appendChild(link);
+    body.appendChild(name);body.appendChild(desc);body.appendChild(verify);body.appendChild(actions);
+    card.appendChild(icon);card.appendChild(body);grid.appendChild(card);
+  });
+  host.appendChild(grid);
+  const foot=document.createElement('p');foot.className='text-xs text-muted mt-md text-center';
+  foot.textContent='示例名稱不代表仍在販售；請以賣場當頁所列規格、價格及庫存為準。';
+  host.appendChild(foot);
+  const custom=document.createElement('button');custom.type='button';custom.className='btn btn-gold btn-full';
+  custom.textContent='詢問客製配色與尺寸';
+  custom.addEventListener('click',function(){if(typeof openCustomModal==='function')openCustomModal();});
+  host.appendChild(custom);
+}
+
+// 未驗證的歷史折扣碼已停用；分享只解鎖站內互動。
 // ── 分享後解鎖趣味功能 ──
 function unlockExtraFeatures(){
   // 先讓 gate 本身可見（原本 display:none 從未被觸發）
@@ -13516,56 +12358,17 @@ try{
 }catch(e){}
 
 function showDiscountAfterShare(){
-  const el = document.getElementById('discount-reveal');
-  if(!el) return;
-  
-  /* 防護：同一裝置 24 小時內只能領一次 */
-  const lastClaim = localStorage.getItem('jy_last_claim');
-  const now = Date.now();
-  if(lastClaim && (now - parseInt(lastClaim)) < 86400000){
-    const hrs = Math.ceil((86400000 - (now - parseInt(lastClaim))) / 3600000);
-    alert('你已經領過折扣碼了！\n\n' + hrs + ' 小時後可再次領取。');
-    // 即使領過碼，也解鎖趣味功能
-    unlockExtraFeatures();
-    return;
-  }
-  
-  el.classList.remove('hidden');
-  
-  // 解鎖趣味功能
+  const oldCoupon=document.getElementById('discount-reveal');
+  if(oldCoupon){oldCoupon.classList.add('hidden');oldCoupon.hidden=true;}
   unlockExtraFeatures();
-  
-  /* 延遲顯示：先遮罩，倒數 5 秒後才揭示完整碼 */
-  const code = generateDiscountCode();
-  const codeEl = document.getElementById('discount-code');
-  const masked = code.slice(0,4) + '•••••';
-  codeEl.textContent = masked;
-  codeEl.style.opacity = '0.5';
-  
-  let countdown = 5;
-  const timer = document.getElementById('discount-timer');
-  if(timer) timer.textContent = countdown + ' 秒後顯示完整折扣碼';
-  
-  const iv = setInterval(()=>{
-    countdown--;
-    if(timer) timer.textContent = countdown + ' 秒後顯示完整折扣碼';
-    if(countdown <= 0){
-      clearInterval(iv);
-      codeEl.textContent = code;
-      codeEl.style.opacity = '1';
-      if(timer) timer.textContent = '折扣碼已解鎖！請在蝦皮結帳時輸入';
-      localStorage.setItem('jy_last_claim', String(Date.now()));
-    }
-  }, 1000);
 }
-
 
 // Patch shareToUnlock — 強化分享驗證
 const _origShareToUnlock = shareToUnlock;
 let _shareAttempts = 0;
 shareToUnlock = function(){
   const url = SITE_URL;
-  const text = '靜月之光幫我配了專屬能量水晶，分析超細 ✨ 免費測你的運勢 👉 ';
+  const text = '我用靜月之光整理了占卜問題和排盤資料，想看看你會怎麼讀 ✨ 👉 ';
   
   /* 防護：必須完成占卜才能分享（防機器人直接觸發） */
   if(!S.bazi){
@@ -13601,7 +12404,7 @@ shareToUnlock = function(){
       if(typeof incrementAchievement==='function') incrementAchievement('shares',1);
     }
     function _doShareConfirm(){
-      var ok=confirm('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n\n已經分享了嗎？按「確定」解鎖折扣碼＋趣味功能。');
+      var ok=confirm('分享連結已複製到剪貼簿！✨\n\n請貼到 LINE / IG / FB 分享給朋友。\n\n已經分享了嗎？按「確定」解鎖站內互動。');
       if(ok) _doShareOK();
     }
     function _copyFallback(){
@@ -13814,7 +12617,9 @@ function generateAIConclusion(type, prob, bazi, mh, tarot){
 // AI 多維命理深度解讀（按鈕觸發・終身免費 1 次・管理員無限）v68.21:總量制不再每日
 // ═══════════════════════════════════════════════════════════════════
 
-const AI_WORKER_URL = 'https://jy-ai-proxy.onerkk.workers.dev';
+// 舊版函式仍引用此名稱；純提示詞版的推論請求一律在本機拒絕。
+const AI_WORKER_URL = '';
+function _jyRejectRemoteAI(){ throw new Error('本版本只提供本機生成的解讀提示詞'); }
 
 // ★ v63.8:前端 payload 出送前的污染偵測
 // 觸發背景:2026-04-28 用戶實測 Opus 4.7 塔羅快讀 AI 回「[object Object]」,
@@ -13923,196 +12728,27 @@ function _aiMarkUsed() {
 }
 function _aiIsAdmin() { return !!(window._JY_ADMIN_TOKEN); }
 
-// ── 注入 AI 按鈕（位置：問題下方、離線回答上方）──
+// 本站此版本只產生可複製提示詞，不設 AI 配額、購買或背景 Worker 呼叫。
 function _injectAIButton() {
-  var wrap = document.getElementById('ai-deep-wrap');
-  if (!wrap) return;
-  
-  var admin = _aiIsAdmin();
-  var _subExp = parseInt(localStorage.getItem('_jy_sub_expires') || '0');
-  var _isSub = _subExp > Date.now();
-  var used = !admin && !_isSub && _aiUsedToday();
-  
-  // 已用完免費額度：顯示提示（但仍可付費使用 Opus）
-  if (used) {
-    wrap.innerHTML = 
-      '<div style="text-align:center;padding:1.5rem 1rem .5rem">' +
-      '<div style="font-size:1.2rem;margin-bottom:.5rem">🔒</div>' +
-      '<div style="font-size:.9rem;color:var(--c-gold);font-weight:600;margin-bottom:.3rem">免費額度已用盡</div>' +
-      '<div style="font-size:.72rem;color:var(--c-text-dim);opacity:.6;margin-bottom:1rem">塔羅 / 七維度 各享 1 次免費體驗</div>' +
-      '<button onclick="if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'full\',\'single\')" style="padding:.6rem 1.5rem;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.15),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.35);cursor:pointer;font-family:inherit">🌙 七維度單次 NT$' + window.JY_PRICES.SINGLE_7D + '</button>' +
-      '</div>' +
-      // ★ 即使免費用完，仍顯示 Opus 付費入口
-      _buildOpusUpsellHTML() +
-      '<div id="ai-deep-result"></div>';
-    return;
-  }
-  
-  // ★ 所有用戶都看到雙引擎選擇器
-  // v68.19 Bug #3 修:_jyForceOpusOnly=true 表示「七維度標準配額用完但 Opus 配額有」,
-  //   直接強制走 Opus 跳過選單,避免用戶誤點「標準」結果系統強送 Opus 仍扣 Opus 配額。
-  if (window._jyForceOpusOnly) {
-    window._jyOpusDepth = true;
-    // 直接觸發深度,不顯示選擇器
-    if (typeof _triggerAIDeep === 'function') {
-      setTimeout(_triggerAIDeep, 50);
-    }
-    return;
-  }
-  wrap.innerHTML =
-    '<div id="ai-depth-selector" style="text-align:center;padding:1.2rem .8rem .8rem">' +
-      // ── 差異說明 ──
-      '<div style="font-size:.72rem;color:var(--c-text-dim);margin-bottom:.6rem;letter-spacing:.05em">選擇解讀深度</div>' +
-      '<div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:.6rem">' +
-        // 標準 Sonnet
-        '<button id="btn-depth-standard" onclick="window._jyOpusDepth=false;_triggerAIDeep()" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:rgba(212,175,55,.06);border:1.5px solid rgba(212,175,55,.25);color:var(--c-gold);cursor:pointer;font-family:inherit;text-align:left">' +
-          '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">⚡ 標準解讀</div>' +
-          '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">免費 1 次<br>七系統交叉驗證<br>給答案給時間給方向</div>' +
-        '</button>' +
-        // Opus 深度
-        '<button id="btn-depth-opus" onclick="_handleOpusClick()" style="flex:1;max-width:175px;padding:.7rem .55rem;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.08),rgba(212,175,55,.04));border:1.5px solid rgba(147,51,234,.3);color:#c084fc;cursor:pointer;font-family:inherit;text-align:left;position:relative">' +
-          '<div style="font-size:.88rem;font-weight:700;margin-bottom:.25rem">🔮 深度解析</div>' +
-          '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.55">最強推理引擎<br>矛盾裁決・因果深挖<br>像真人算命師跟你對談</div>' +
-        '</button>' +
-      '</div>' +
-      // ── 差異對比（關鍵賣點）──
-      '<div style="max-width:360px;margin:0 auto;padding:.6rem .7rem;border-radius:10px;background:rgba(147,51,234,.04);border:1px solid rgba(147,51,234,.1)">' +
-        '<div style="font-size:.66rem;color:#a78bfa;font-weight:600;margin-bottom:.35rem">🔮 深度解析有什麼不同？</div>' +
-        '<div style="font-size:.62rem;color:var(--c-text-dim);line-height:1.7">' +
-          '• 不只告訴你結論，更會<strong style="color:#c084fc">解釋為什麼是這樣</strong>，追到根源<br>' +
-          '• 系統間打架時<strong style="color:#c084fc">正面裁決</strong>，不說模稜兩可的話<br>' +
-          '• 精確到月份的時間窗口，附<strong style="color:#c084fc">驗證信號</strong>讓你自己確認<br>' +
-          '• 語氣像坐在你對面的人跟你說話' +
-        '</div>' +
-        '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' +
-          // v68.20 Bug #31 修:會員制下架,只顯示單次價(後台會員仍可享優惠但前台不勸誘升級)
-          (admin ? '🔧 管理員・無限使用' : '單次 NT$' + window.JY_PRICES.OPUS_7D) +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div id="ai-deep-result"></div>';
+  var wrap=document.getElementById('ai-deep-wrap');
+  if(!wrap)return;
+  wrap.textContent='';
+  var btn=document.createElement('button');
+  btn.type='button';
+  btn.className='jy-ex-btn';
+  btn.textContent='產生本次命理解讀提示詞';
+  btn.addEventListener('click',function(){window.JY_renderFullExportPrompt();});
+  wrap.appendChild(btn);
+  var result=document.createElement('div');
+  result.id='ai-deep-result';
+  wrap.appendChild(result);
 }
-
-// ★ Opus 免費用完後的付費入口（價格依 tier 動態）
-function _buildOpusUpsellHTML() {
-  var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
-    ? window._jyOpusPriceFor('full')
-    : window.JY_PRICES.OPUS_7D; // fallback 非會員價
-  // v68.20 Bug #31 修:會員制下架,移除「會員加購優惠」差異化文案
-  var _subText = '最強推理引擎';
-  return '<div style="text-align:center;padding:.8rem 1rem 1rem;border-top:1px solid rgba(147,51,234,.1);margin-top:.5rem">' +
-    '<button onclick="_handleOpusClick()" style="padding:.55rem 1.3rem;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.12),rgba(147,51,234,.04));color:#c084fc;font-size:.82rem;font-weight:600;border:1px solid rgba(147,51,234,.3);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + _opusPrice + '</button>' +
-    '<div style="font-size:.58rem;color:var(--c-text-dim);opacity:.5;margin-top:.3rem">' + _subText + '</div>' +
-  '</div>';
-}
-
-// ★ Opus 點擊處理：預檢配額 → 觸發或付費
-async function _handleOpusClick() {
-  return _handleOpusClickForMode('full');
-}
-
-// ★ 通用 Opus 預檢（支援 full / tarot / ootk）
-async function _handleOpusClickForMode(mode) {
-  // ★ v70 複製模式：tarot/ootk 全免費，直接走複製模式，跳過所有付費/登入檢查
-  if (mode === 'tarot' && window._jyTarotCopyMode) { window._jyTarotCopyMode(); return; }
-  if (mode === 'ootk' && window._ootkTriggerAI) { window._ootkTriggerAI(window._ootkResults); return; }
-  var admin = _aiIsAdmin();
-  if (admin) {
-    window._jyOpusDepth = true;
-    if (mode === 'tarot') { _triggerTarotAI(); return; }
-    if (mode === 'ootk' && window._ootkTriggerAI && window._ootkResults) { window._ootkTriggerAI(window._ootkResults); return; }
-    _triggerAIDeep();
-    return;
-  }
-  try {
-    var checkBody = { action: 'check', payload: { depth: 'opus', mode: mode === 'tarot' ? 'tarot_only' : mode } };
-    if (window._JY_SESSION_TOKEN) checkBody.session_token = window._JY_SESSION_TOKEN;
-    var paidToken = localStorage.getItem('_jy_paid_token');
-    if (paidToken) checkBody.paid_token = paidToken;
-    var resp = await fetch(AI_WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checkBody)
-    });
-    // ★ v68.21.21 Bug #31 修:5xx 時 data.allowed 是 undefined → 誤入付費牆
-    //   修法:5xx throw 讓 catch 顯示「稍後再試」(對齊 Bug #18 修法)
-    if (!resp.ok && resp.status >= 500) {
-      throw new Error('worker 暫時故障 (' + resp.status + ')');
-    }
-    var data = await resp.json();
-    if (data.allowed) {
-      window._jyOpusDepth = true;
-      if (mode === 'tarot') { _triggerTarotAI(); return; }
-      if (mode === 'ootk' && window._ootkTriggerAI && window._ootkResults) { window._ootkTriggerAI(window._ootkResults); return; }
-      _triggerAIDeep();
-      return;
-    }
-    if (data.code === 'LOGIN_REQUIRED') {
-      // v68.20 Bug #37 修:取代 alert,顯示登入引導 modal(避免用戶看到「請先登入」但不知道怎麼登入)
-      var _loginModal = document.createElement('div');
-      _loginModal.id = 'jy-login-required-modal';
-      _loginModal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(4px)';
-      _loginModal.innerHTML =
-        '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a0a,#2a1515);border:1.5px solid rgba(212,175,55,.35);border-radius:18px;padding:2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
-          '<div style="font-size:2.5rem;margin-bottom:.6rem">🔐</div>' +
-          '<h3 style="color:var(--c-gold);font-size:1.05rem;margin-bottom:.4rem">需要登入</h3>' +
-          '<div style="font-size:.78rem;color:var(--c-text-dim);line-height:1.75;margin-bottom:1rem">深度解析需先登入 Google 帳號<br>登入後即可購買並查看歷史紀錄</div>' +
-          '<button onclick="document.getElementById(\'jy-login-required-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="padding:.6rem 1.3rem;border-radius:12px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));border:1.5px solid rgba(212,175,55,.4);color:var(--c-gold);font-size:.86rem;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:6px;margin-bottom:.4rem"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>Google 登入</button>' +
-          '<br><button onclick="document.getElementById(\'jy-login-required-modal\').remove()" style="padding:.5rem 1rem;border-radius:10px;background:transparent;border:1px solid rgba(255,255,255,.1);color:var(--c-text-dim);font-size:.78rem;cursor:pointer;font-family:inherit">取消</button>' +
-        '</div>';
-      document.body.appendChild(_loginModal);
-      return;
-    }
-    _showOpusPayModal(data.code, mode);
-  } catch(e) {
-    console.error('[Opus] check error:', e);
-    alert('檢查失敗，請稍後再試');
-  }
-}
-
-// ★ Opus 付費 modal
-function _showOpusPayModal(code, mode) {
-  mode = mode || 'full';
-  var existing = document.getElementById('jy-opus-pay-modal');
-  if (existing) existing.remove();
-  
-  var payMode = (mode === 'tarot') ? 'tarot_only' : mode;
-  // ★ v64.B:依用戶 tier 動態取價(v64.B 起會員加購無折扣統一新價)
-  //   會員/非會員都走單次價 (7D=140, 塔羅=60, 開鑰=120)
-  var _opusPrice = (typeof window._jyOpusPriceFor === 'function')
-    ? window._jyOpusPriceFor(mode)
-    : ((mode === 'full') ? window.JY_PRICES.OPUS_7D
-       : (mode === 'ootk') ? window.JY_PRICES.OPUS_OOTK : window.JY_PRICES.OPUS_TAROT);
-  var price = 'NT$' + _opusPrice;
-  // v68.21:_opusHintMsg dead code 移除(會員加購無折扣後此變數永遠空字串)
-  
-  var monthlyMsg = (code === 'OPUS_MONTHLY_USED')
-    ? '<div style="font-size:.72rem;color:#fbbf24;margin-bottom:.6rem">本月免費深度解析額度已用完</div>'
-    : '';
-  
-  var modal = document.createElement('div');
-  modal.id = 'jy-opus-pay-modal';
-  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);backdrop-filter:blur(4px)';
-  modal.innerHTML =
-    '<div style="max-width:340px;width:90%;background:linear-gradient(145deg,#1a0a1e,#2a1028);border:1.5px solid rgba(147,51,234,.35);border-radius:18px;padding:2rem 1.5rem;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.6)">' +
-      '<div style="font-size:2.5rem;margin-bottom:.6rem">🔮</div>' +
-      '<h3 style="color:#c084fc;font-size:1.1rem;margin-bottom:.2rem;font-family:var(--f-display,serif)">深度解析</h3>' +
-      monthlyMsg +
-      '<div style="text-align:left;padding:.6rem .7rem;border-radius:10px;background:rgba(147,51,234,.06);border:1px solid rgba(147,51,234,.12);margin-bottom:1rem">' +
-        '<div style="font-size:.64rem;color:var(--c-text-dim);line-height:1.7">' +
-          '✦ 最強推理引擎，因果鏈深挖到底<br>' +
-          '✦ 系統間矛盾正面裁決，不迴避<br>' +
-          '✦ 精確到月份的時間窗口，附驗證信號<br>' +
-          '✦ 像坐在你對面的人跟你說話' +
-        '</div>' +
-      '</div>' +
-      // v68.20 Bug #31 修:會員制下架(前台不再有購買會員入口),只保留單次深度解析按鈕
-      '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="_jyStartPayment(\'' + payMode + '\',\'opus_single\')" style="display:flex;align-items:center;justify-content:center;gap:6px;width:220px;padding:13px;border-radius:12px;background:linear-gradient(135deg,rgba(147,51,234,.18),rgba(147,51,234,.06));color:#c084fc;font-size:.9rem;font-weight:700;border:1.5px solid rgba(147,51,234,.45);cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(147,51,234,.12)">🔮 單次深度解析 ' + price + '</button>' +
-        '<button onclick="document.getElementById(\'jy-opus-pay-modal\').remove()" style="width:200px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text-dim);font-size:.78rem;border:1px solid rgba(255,255,255,.06);cursor:pointer;font-family:inherit;margin-top:.1rem">返回</button>' +
-      '</div>' +
-    '</div>';
-  document.body.appendChild(modal);
+async function _handleOpusClick(){ return window.JY_renderFullExportPrompt(); }
+async function _handleOpusClickForMode(mode){
+  if(mode==='tarot'&&typeof window._jyTarotCopyMode==='function')return window._jyTarotCopyMode();
+  if(mode==='ootk'&&typeof window.JY_renderExportPrompt==='function')
+    return window.JY_renderExportPrompt('ootk',document.getElementById('ootk-ai-wrap'));
+  return window.JY_renderFullExportPrompt();
 }
 
 // ── 水晶商品匹配：AI 回傳的 crystalRec → 找到商品資料 ──
@@ -14171,9 +12807,9 @@ function _findCrystalProduct(name) {
 
 // ── 角色徽章與標題對應 ──
 var _JY_ROLE_META = {
-  primary  : { label: '主石',  desc: '你最缺的那一塊', icon: '/img/fb-role-primary.png',   star: '★★★' },
-  amplifier: { label: '加強石', desc: '撐住主石的第二支點', icon: '/img/fb-role-amplifier.png', star: '★★'  },
-  guardian : { label: '護身石', desc: '擋掉忌神的後盾',   icon: '/img/fb-role-guardian.png',  star: '★'   }
+  primary  : { label: '款式一', desc: '設計示例', icon: '/img/fb-role-primary.png', star: '★★★' },
+  amplifier: { label: '款式二', desc: '設計示例', icon: '/img/fb-role-amplifier.png', star: '★★' },
+  guardian : { label: '款式三', desc: '設計示例', icon: '/img/fb-role-guardian.png', star: '★' }
 };
 
 // ── 五行 → 在乎議題的常見對應(用於補話術) ──
@@ -14201,68 +12837,7 @@ function _jyGetUserFocus() {
 // ── 拼出對應命盤的具體一句話(免費,純 JS 拼字串)──
 // 結構:[使用者在乎的議題開頭] + [當下盤面具體位置] + [這顆水晶為什麼補位]
 function _jyComposeReason(el, role, bazi, prod) {
-  var focus = _jyGetUserFocus();
-  var openings = [];
-
-  // ── 開頭:結合使用者過往最在乎的議題(優先) ──
-  if (focus) {
-    openings.push('你過去常問' + focus.topic + '(' + focus.count + ' 次),這次盤面');
-  }
-
-  // ── 當下盤面的具體點 ──
-  var bazi_phrase = '';
-  if (bazi) {
-    var elScores = bazi.elementScores || bazi.scores || null;
-    var thNeed = bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need;
-    var dayMaster = bazi.dayMaster || bazi.dm || '';
-    var strong = bazi.strong;
-
-    // 五行分數(若有)
-    if (elScores && typeof elScores[el] === 'number') {
-      bazi_phrase = el + '只 ' + elScores[el] + ' 分';
-    } else if (thNeed && thNeed.indexOf(el) >= 0) {
-      bazi_phrase = '盤面偏' + (el === '火' ? '冷' : el === '水' ? '燥' : '失衡') + ',需要' + el;
-    } else if (strong === false || strong === 'weak') {
-      bazi_phrase = '日主偏弱,需要' + el + '來扶持';
-    } else if (strong === true || strong === 'strong') {
-      bazi_phrase = '日主偏旺,需要' + el + '來疏導';
-    } else {
-      bazi_phrase = '需要' + el + '行的補位';
-    }
-
-    // 大運/流年加碼(若強訊號)
-    var dayun = bazi.dayun || bazi.dy || '';
-    var liunian = bazi.liunian || bazi.ly || '';
-    if (dayun && dayun.indexOf(el) >= 0) {
-      bazi_phrase += '、大運走' + el;
-    } else if (liunian && liunian.indexOf(el) >= 0) {
-      bazi_phrase += '、流年帶' + el;
-    }
-  }
-
-  // ── 這顆水晶為什麼補位 ──
-  var role_phrase = '';
-  if (role === 'primary') {
-    role_phrase = '這顆是' + el + '行核心,正好補在你最缺的位置';
-  } else if (role === 'amplifier') {
-    role_phrase = '這顆是' + el + '行延伸,撐住主石不空轉';
-  } else if (role === 'guardian') {
-    role_phrase = '這顆穩在' + el + '行外圍,擋掉忌神干擾';
-  } else {
-    role_phrase = '這顆對應你的' + el + '行能量需求';
-  }
-
-  // ── 組合 ──
-  var pieces = [];
-  if (openings.length) pieces.push(openings[0]);
-  if (bazi_phrase) pieces.push(bazi_phrase);
-  pieces.push(role_phrase);
-
-  // 如果沒有焦點開頭,改用「你的盤」起頭
-  if (!openings.length) {
-    return '你的盤' + bazi_phrase + ' — ' + role_phrase + '。';
-  }
-  return pieces[0] + bazi_phrase + ' — ' + role_phrase + '。';
+  return _jyShopStyle(prod);
 }
 
 // ── 為 picks 補上對應句(覆寫舊的 reason) ──
@@ -14376,457 +12951,35 @@ function _jyTarotPickElements(counts) {
 
 // 拼塔羅版的對應句(沒八字,改用元素訊號 + memoryNotes)
 function _jyComposeTarotReason(el, role, tarotElInfo, prod) {
-  var focus = _jyGetUserFocus();
-  var openings = [];
-  if (focus) {
-    openings.push('你過去常問' + focus.topic + '(' + focus.count + ' 次),這次牌面');
-  }
-
-  var tarot_phrase = '';
-  if (tarotElInfo && tarotElInfo.dominant) {
-    var d = tarotElInfo.dominant;
-    var w = tarotElInfo.weakest;
-    if (tarotElInfo.dominantRatio >= 0.4) {
-      tarot_phrase = d.el + '元素過旺(' + d.n + ' 張)、' + w.el + '只 ' + w.n + ' 張';
-    } else {
-      tarot_phrase = w.el + '行偏弱(只 ' + w.n + ' 張)';
-    }
-  }
-
-  var role_phrase = '';
-  if (role === 'primary') {
-    role_phrase = '這顆是' + el + '行核心,正好補在你最缺的位置';
-  } else if (role === 'amplifier') {
-    role_phrase = '這顆是' + el + '行延伸,撐住主石不空轉';
-  } else if (role === 'guardian') {
-    role_phrase = '這顆穩在' + el + '行外圍,擋掉牌面失衡的干擾';
-  }
-
-  if (openings.length) {
-    return openings[0] + tarot_phrase + ' — ' + role_phrase + '。';
-  }
-  return '這次牌面' + tarot_phrase + ' — ' + role_phrase + '。';
+  return _jyShopStyle(prod);
 }
 
 // ── 從塔羅資料反推三角色 + 挑石 ──
 function _jyPickStonesFromTarot() {
-  // 取得抽牌資料(塔羅快讀 / OOTK 都用 S.tarot.drawn)
-  var drawn = (typeof S !== 'undefined' && S.tarot && S.tarot.drawn) ? S.tarot.drawn : null;
-  if (!drawn || !drawn.length) return [];
-
-  var counts = _jyTarotElementCounts(drawn);
-  var info = _jyTarotPickElements(counts);
-  if (!info) return [];
-
-  var dynamicProds = window._jyCrystalProducts;
-  var useDynamic = !!(dynamicProds && dynamicProds.length);
-  if (!useDynamic && typeof REAL_PRODUCTS === 'undefined') return [];
-
-  function getByEl(el) {
-    if (useDynamic) {
-      return dynamicProds.filter(function(p) { return p.el === el || p.el === '全'; });
-    }
-    return REAL_PRODUCTS[el] || [];
-  }
-  function parsePrice(s) {
-    if (!s) return 0;
-    var m = String(s).replace(/[$,NT\s]/g, '').match(/\d+/);
-    return m ? parseInt(m[0]) : 0;
-  }
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-
-  var picks = [];
-  var seen = new Set();
-
-  // 主石
-  var pProds = getByEl(info.primary);
-  pProds.sort(function(a, b) { return parsePrice(a.price) - parsePrice(b.price); });
-  if (pProds.length) {
-    var aff = shuffle(pProds.slice(0, Math.max(1, Math.ceil(pProds.length * 0.5))));
-    if (aff.length) {
-      picks.push({
-        prod: aff[0],
-        role: 'primary',
-        el: info.primary,
-        reason: _jyComposeTarotReason(info.primary, 'primary', info, aff[0])
-      });
-      seen.add(aff[0].n);
-    }
-  }
-  // 加強石
-  if (info.amplifier && info.amplifier !== info.primary) {
-    var aProds = shuffle(getByEl(info.amplifier).filter(function(p) { return !seen.has(p.n); }));
-    if (aProds.length) {
-      picks.push({
-        prod: aProds[0],
-        role: 'amplifier',
-        el: info.amplifier,
-        reason: _jyComposeTarotReason(info.amplifier, 'amplifier', info, aProds[0])
-      });
-      seen.add(aProds[0].n);
-    }
-  }
-  // 護身石
-  if (info.guardian && info.guardian !== info.primary && info.guardian !== info.amplifier) {
-    var gProds = shuffle(getByEl(info.guardian).filter(function(p) { return !seen.has(p.n); }));
-    if (gProds.length) {
-      picks.push({
-        prod: gProds[0],
-        role: 'guardian',
-        el: info.guardian,
-        reason: _jyComposeTarotReason(info.guardian, 'guardian', info, gProds[0])
-      });
-    }
-  }
-
-  return picks.slice(0, 3);
+  return smartRecommend(null,null,3).map(function(prod){return {prod:prod,role:'style',reason:_jyShopStyle(prod)};});
 }
 
-// ── 從動態庫存或 REAL_PRODUCTS 按三角色挑石 ──
 function _jyPickStones(bazi) {
-  if (!bazi || !bazi.fav || !bazi.fav.length) return [];
-
-  var dynamicProds = window._jyCrystalProducts;
-  var useDynamic = !!(dynamicProds && dynamicProds.length);
-  if (!useDynamic && typeof REAL_PRODUCTS === 'undefined') return [];
-
-  var fav = bazi.fav;
-  var unfav = new Set(bazi.unfav || []);
-  var primaryEl = fav[0];
-  var secondaryEl = fav.length > 1 ? fav[1] : null;
-
-  // 調候優先覆寫主用神
-  if (bazi.tiaohou && bazi.tiaohou.integrationMode!=='SEPARATE_LENS' && bazi.tiaohou.need && bazi.tiaohou.need.length) {
-    var thNeed = bazi.tiaohou.need[0];
-    if (!unfav.has(thNeed)) primaryEl = thNeed;
-  }
-  // 安全閥
-  if (unfav.has(primaryEl)) {
-    primaryEl = fav[0];
-    for (var fi = 0; fi < fav.length; fi++) {
-      if (!unfav.has(fav[fi])) { primaryEl = fav[fi]; break; }
-    }
-  }
-
-  // ── 三角色用神決定邏輯 ──
-  // 主石 = primaryEl (最缺)
-  // 加強石 = secondaryEl 或 「主石所生子五行」(火生土...)
-  // 護身石 = 緩衝忌神的五行(若有忌神)or 主石所生
-  var SHENG = { 木:'火', 火:'土', 土:'金', 金:'水', 水:'木' };
-  var amplifierEl = secondaryEl;
-  if (!amplifierEl || amplifierEl === primaryEl || unfav.has(amplifierEl)) {
-    // fallback 用主石生的五行
-    amplifierEl = SHENG[primaryEl];
-    if (unfav.has(amplifierEl)) amplifierEl = primaryEl; // 還不行就同主石另選
-  }
-  var guardianEl = SHENG[primaryEl]; // 主石所生 = 第二層保護
-  if (unfav.has(guardianEl)) {
-    // 換主石所生的下一輪
-    guardianEl = SHENG[guardianEl];
-  }
-  if (unfav.has(guardianEl) || guardianEl === primaryEl || guardianEl === amplifierEl) {
-    // 還是不行,從 fav 找一個沒用過的
-    for (var gi = 0; gi < fav.length; gi++) {
-      if (fav[gi] !== primaryEl && fav[gi] !== amplifierEl && !unfav.has(fav[gi])) {
-        guardianEl = fav[gi];
-        break;
-      }
-    }
-  }
-
-  function getByEl(el) {
-    if (useDynamic) {
-      return dynamicProds.filter(function(p) {
-        return (p.el === el || p.el === '全') && !unfav.has(p.el);
-      });
-    }
-    return (REAL_PRODUCTS[el] || []).filter(function(p) { return !unfav.has(p.el); });
-  }
-  function parsePrice(s) {
-    if (!s) return 0;
-    var m = String(s).replace(/[$,NT\s]/g, '').match(/\d+/);
-    return m ? parseInt(m[0]) : 0;
-  }
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-
-  var picks = [];
-  var seen = new Set();
-
-  // 主石:選親民價 + 主用神
-  var pProds = getByEl(primaryEl);
-  pProds.sort(function(a, b) { return parsePrice(a.price) - parsePrice(b.price); });
-  if (pProds.length) {
-    var cutoff = Math.max(1, Math.ceil(pProds.length * 0.5));
-    var affordable = shuffle(pProds.slice(0, cutoff));
-    if (affordable.length) {
-      picks.push({ prod: affordable[0], role: 'primary', el: primaryEl });
-      seen.add(affordable[0].n);
-    }
-  }
-
-  // 加強石
-  if (amplifierEl && !unfav.has(amplifierEl)) {
-    var aProds = shuffle(getByEl(amplifierEl).filter(function(p) { return !seen.has(p.n); }));
-    if (aProds.length) {
-      picks.push({ prod: aProds[0], role: 'amplifier', el: amplifierEl });
-      seen.add(aProds[0].n);
-    }
-  }
-
-  // 護身石
-  if (guardianEl && !unfav.has(guardianEl)) {
-    var gProds = shuffle(getByEl(guardianEl).filter(function(p) { return !seen.has(p.n); }));
-    if (gProds.length) {
-      picks.push({ prod: gProds[0], role: 'guardian', el: guardianEl });
-    }
-  }
-
-  // 結合對應句
-  return _jyEnrichReasons(picks.slice(0, 3), bazi);
+  return smartRecommend(null,null,3).map(function(prod){return {prod:prod,role:'style',reason:_jyShopStyle(prod)};});
 }
 
-// ── 處方式水晶 CTA 渲染 v3(三角色 + 實品圖 + 三按鈕 + 印章 trust badge)──
 function _renderCrystalPrescriptionHTML(crystalName, crystalWhy, escapeFn) {
-  var esc = escapeFn || function(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
-  var picks = [];
-  var sourceMode = 'bazi'; // 'bazi' | 'tarot' | 'ai'
-
-  // ── 路線 A:有八字 → 自動挑三角色(七維度路徑)──
-  if (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length) {
-    picks = _jyPickStones(S.bazi);
-    sourceMode = 'bazi';
+  // 商店區只提供款式參考，不把盤面元素或舊售價包裝成購買理由。
+  var esc = escapeFn || _jyShopHtml;
+  var samples = smartRecommend(null, null, 3);
+  if (crystalName && !samples.some(function(x){return x.n === crystalName;})) {
+    var found = _findCrystalProduct(crystalName);
+    if (found) samples.unshift(found);
   }
-
-  // ── 路線 B(v63.9 新增):沒八字但有塔羅 → 從元素分布反推三角色(塔羅/開鑰路徑)──
-  if (picks.length === 0 && typeof S !== 'undefined' && S.tarot && S.tarot.drawn && S.tarot.drawn.length >= 3) {
-    picks = _jyPickStonesFromTarot();
-    if (picks.length) sourceMode = 'tarot';
-  }
-
-  // ── 路線 C:都沒有 → AI 推薦單顆當主石(極少數情境,例如連塔羅都沒有)──
-  if (picks.length === 0 && crystalName && crystalName.length >= 2) {
-    var aiProd = _findCrystalProduct(crystalName);
-    if (aiProd) {
-      picks.push({ prod: aiProd, role: 'primary', el: aiProd.el || '全', reason: crystalWhy || aiProd.d || '' });
-    } else {
-      picks.push({ prod: { n: crystalName, d: crystalWhy || '', price: '', shopee: 'https://shopee.tw/a50h95648d?tab=shop' }, role: 'primary', el: '全', reason: crystalWhy || '' });
-    }
-    sourceMode = 'ai';
-  }
-
-  if (picks.length === 0) return '';
-
-  var hasBazi = (typeof S !== 'undefined' && S.bazi && S.bazi.fav && S.bazi.fav.length);
-  var hasTarot = (sourceMode === 'tarot');
-  var favEl = hasBazi ? S.bazi.fav[0] : '';
-  var focus = _jyGetUserFocus();
-
-  // ── 開場(導讀) ──
-  var subtext = '';
-  if (focus && focus.topic && focus.count >= 2) {
-    if (hasBazi) {
-      subtext = '結合你過去常問的「' + focus.topic + '」,加上這次盤面結構,我幫你按角色排好順序——';
-    } else if (hasTarot) {
-      subtext = '結合你過去常問的「' + focus.topic + '」,加上這次牌面元素分布,我幫你按角色排好順序——';
-    } else {
-      subtext = '根據牌面的能量方向,這顆石頭適合你現在的狀況。';
-    }
-  } else if (hasBazi) {
-    subtext = '看完你的盤,這三顆按角色幫你排好順序——主石補最缺,加強石撐住,護身石擋忌神。';
-  } else if (hasTarot) {
-    subtext = '從這次牌面元素分布看出能量結構——下面三顆按角色排好,主石補最缺,加強石撐住,護身石擋失衡。';
-  } else {
-    subtext = '根據牌面的能量方向,這顆石頭適合你現在的狀況。';
-  }
-
-  var h = '';
-
-  // ── 容器(深空底 + 七芒星浮水印 + 金描邊)──
-  h += '<div class="jy-stone-rec">';
-
-  // 標題區
-  h += '<div class="jy-stone-header">';
-  h += '<div class="jy-stone-title-row">';
-  h += '<span class="jy-stone-title">☽ 靜月為你挑的石頭</span>';
-  if (hasBazi && favEl) {
-    h += '<span class="jy-stone-tag">補' + esc(favEl) + '行</span>';
-  } else if (hasTarot && picks[0] && picks[0].el) {
-    // ★ v63.9:塔羅/開鑰路徑也標示主石用神(從牌面元素反推)
-    h += '<span class="jy-stone-tag">補' + esc(picks[0].el) + '行</span>';
-  }
-  h += '</div>';
-  h += '<div class="jy-stone-sub">' + esc(subtext) + '</div>';
-  h += '</div>';
-
-  // ── 每顆石頭(三角色卡片)──
-  for (var pi = 0; pi < picks.length; pi++) {
-    var pick = picks[pi];
-    var p = pick.prod;
-    var role = pick.role || 'primary';
-    var meta = _JY_ROLE_META[role] || _JY_ROLE_META.primary;
-    // v68.21 Bug #65 修:URL 驗證 — 只允許 https,擋 javascript:/data:/CSS injection
-    //   imageUrl 來自 worker 的 _fetchCrystalImage,雖然 worker 已加 shopee.tw 白名單(Bug #61)
-    //   但 imageUrl 是從 og:image 抓的(任何網域),仍要驗證才能放心拼進 background-image:url()
-    function _safeHttpsUrl(u) {
-      if (!u || typeof u !== 'string') return '';
-      try {
-        var _pu = new URL(u);
-        if (_pu.protocol !== 'https:' && _pu.protocol !== 'http:') return '';
-        return u;
-      } catch(_) { return ''; }
-    }
-    var shopUrl = (p.shopee && p.shopee.length > 10) ? _safeHttpsUrl(p.shopee) : '';
-    if (!shopUrl) shopUrl = 'https://shopee.tw/a50h95648d?tab=shop';
-    var imageUrl = _safeHttpsUrl(p.imageUrl || '');
-
-    h += '<div class="jy-stone-card jy-role-' + role + '">';
-
-    // 卡片頂部:角色徽章 + 角色標籤
-    h += '<div class="jy-stone-card-top">';
-    h += '<img class="jy-role-icon" src="' + meta.icon + '" alt="' + meta.label + '">';
-    h += '<div class="jy-role-text">';
-    h += '<span class="jy-role-stars">' + meta.star + '</span>';
-    h += '<span class="jy-role-label">' + meta.label + '</span>';
-    h += '<span class="jy-role-desc">' + esc(meta.desc) + '</span>';
-    h += '</div>';
-    h += '</div>';
-
-    // 主體:左實品圖 + 右文字
-    h += '<div class="jy-stone-body">';
-    if (imageUrl) {
-      h += '<div class="jy-stone-photo" style="background-image:url(\'' + esc(imageUrl) + '\')"></div>';
-    } else {
-      // 沒抓到圖 fallback 用角色徽章半透明放大
-      h += '<div class="jy-stone-photo jy-stone-photo-fallback" style="background-image:url(\'' + meta.icon + '\')"></div>';
-    }
-    h += '<div class="jy-stone-info">';
-    h += '<div class="jy-stone-name-row">';
-    h += '<span class="jy-stone-name">' + esc(p.n) + '</span>';
-    if (p.el && p.el !== '全') {
-      h += '<span class="jy-stone-el">' + esc(p.el) + '行</span>';
-    }
-    h += '</div>';
-    if (pick.reason) {
-      h += '<div class="jy-stone-reason">' + esc(pick.reason) + '</div>';
-    }
-    h += '</div>';
-    h += '</div>';
-
-    // 三按鈕區
-    h += '<div class="jy-stone-actions">';
-    h += '<a class="jy-btn jy-btn-buy" href="' + esc(shopUrl) + '" target="_blank" rel="noopener">';
-    if (p.price) {
-      h += '<span class="jy-btn-price">NT$ ' + esc(p.price) + '</span>';
-    }
-    h += '<span class="jy-btn-label">蝦皮直接買</span>';
-    h += '</a>';
-    h += '<a class="jy-btn jy-btn-custom" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener">';
-    h += '<span class="jy-btn-label">✏️ 客製訂做</span>';
-    h += '</a>';
-    h += '<button class="jy-btn jy-btn-save" type="button" onclick="this.classList.toggle(\'saved\')">';
-    h += '<span class="jy-btn-label">☆ 收藏</span>';
-    h += '</button>';
-    h += '</div>';
-
-    h += '</div>'; // /jy-stone-card
-  }
-
-  // ── 結尾 trust badge:為什麼選靜月之光 ──
-  h += '<div class="jy-stone-trust">';
-  h += '<img class="jy-trust-seal" src="/img/fb-signature-seal.png" alt="">';
-  h += '<div class="jy-trust-content">';
-  h += '<div class="jy-trust-title">為什麼選靜月之光</div>';
-  h += '<ul class="jy-trust-list">';
-  h += '<li>每顆都靈擺實測,確認能量乾淨</li>';
-  h += '<li>命盤對應推薦,不是亂推</li>';
-  h += '<li>三百峰龍宮舍利、馬達加斯加摩根石等正貨產地直購</li>';
-  h += '</ul>';
-  h += '</div>';
-  h += '</div>';
-
-  // 結尾語
-  h += '<div class="jy-stone-disclaimer">水晶是輔助,不是解藥。你自己的選擇,永遠比石頭更重要。</div>';
-
-  h += '</div>'; // /jy-stone-rec
-
-  // ── 注入 CSS(只注入一次) ──
-  if (!window._jyStoneStyleInjected) {
-    window._jyStoneStyleInjected = true;
-    var style = document.createElement('style');
-    style.textContent = [
-      '.jy-stone-rec{margin-top:1.4rem;padding:1.4rem 1rem;border-radius:18px;border:1px solid rgba(212,175,55,.18);background:rgba(8,9,15,.85);position:relative;overflow:hidden}',
-      '.jy-stone-rec::before{content:"";position:absolute;top:50%;right:-100px;width:380px;height:380px;background-image:url(/img/fb-bg-heptagram.png);background-size:contain;background-repeat:no-repeat;background-position:center;opacity:.04;transform:translateY(-50%);pointer-events:none;z-index:0}',
-      '.jy-stone-rec > *{position:relative;z-index:1}',
-      // 標題區
-      '.jy-stone-header{margin-bottom:1.1rem;padding-bottom:.9rem;border-bottom:1px solid rgba(212,175,55,.1)}',
-      '.jy-stone-title-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap}',
-      '.jy-stone-title{font-size:1rem;font-weight:600;color:var(--c-gold,#c9a84c);letter-spacing:.06em}',
-      '.jy-stone-tag{font-size:.65rem;padding:2px 9px;border-radius:20px;border:1px solid rgba(212,175,55,.3);color:rgba(212,175,55,.85);letter-spacing:.05em}',
-      '.jy-stone-sub{font-size:.78rem;color:rgba(176,164,142,.85);line-height:1.75;letter-spacing:.02em}',
-      // 卡片
-      '.jy-stone-card{margin-bottom:1rem;padding:1rem;border-radius:14px;background:rgba(0,0,0,.25);border:1px solid rgba(212,175,55,.12);position:relative;overflow:hidden;transition:border-color .3s}',
-      '.jy-stone-card:hover{border-color:rgba(212,175,55,.28)}',
-      // 主石高亮
-      '.jy-stone-card.jy-role-primary{border-color:rgba(212,175,55,.28);background:rgba(212,175,55,.025)}',
-      '.jy-stone-card.jy-role-primary:hover{border-color:rgba(212,175,55,.42)}',
-      // 卡片頂部:徽章+角色
-      '.jy-stone-card-top{display:flex;align-items:center;gap:.7rem;margin-bottom:.85rem;padding-bottom:.75rem;border-bottom:1px solid rgba(212,175,55,.08)}',
-      '.jy-role-icon{width:42px;height:42px;opacity:.85;flex-shrink:0}',
-      '.jy-role-text{display:flex;flex-direction:column;gap:.18rem;flex:1;min-width:0}',
-      '.jy-role-stars{font-size:.7rem;color:rgba(212,175,55,.85);letter-spacing:.1em}',
-      '.jy-role-label{font-size:.92rem;font-weight:600;color:var(--c-gold,#c9a84c);letter-spacing:.08em}',
-      '.jy-role-desc{font-size:.7rem;color:rgba(160,152,128,.7);letter-spacing:.04em}',
-      // 主體:圖+文
-      '.jy-stone-body{display:flex;gap:.85rem;margin-bottom:.85rem}',
-      '.jy-stone-photo{width:90px;height:90px;border-radius:12px;background-size:cover;background-position:center;background-color:rgba(212,175,55,.04);flex-shrink:0;border:1px solid rgba(212,175,55,.15)}',
-      '.jy-stone-photo-fallback{background-size:60% 60%;background-repeat:no-repeat;opacity:.55}',
-      '.jy-stone-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}',
-      '.jy-stone-name-row{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.4rem;flex-wrap:wrap}',
-      '.jy-stone-name{font-size:1.02rem;font-weight:600;color:var(--c-text,#e8e0d0);letter-spacing:.04em}',
-      '.jy-stone-el{font-size:.65rem;padding:1px 7px;border-radius:14px;border:1px solid rgba(212,175,55,.22);color:rgba(212,175,55,.75)}',
-      '.jy-stone-reason{font-size:.78rem;color:rgba(176,164,142,.85);line-height:1.75;letter-spacing:.02em}',
-      // 三按鈕區
-      '.jy-stone-actions{display:grid;grid-template-columns:1fr auto auto;gap:.45rem}',
-      '.jy-btn{padding:.7rem .65rem;border-radius:10px;border:1px solid rgba(212,175,55,.22);background:rgba(0,0,0,.3);text-decoration:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;transition:all .25s;color:rgba(212,175,55,.85)}',
-      '.jy-btn:hover{border-color:rgba(212,175,55,.45);background:rgba(212,175,55,.06)}',
-      '.jy-btn-price{font-size:.7rem;color:rgba(160,152,128,.85);font-weight:400}',
-      '.jy-btn-label{font-size:.78rem;font-weight:500;letter-spacing:.06em;color:rgba(212,175,55,.95)}',
-      '.jy-btn-buy{background:rgba(212,175,55,.08);border-color:rgba(212,175,55,.35)}',
-      '.jy-btn-buy:hover{background:rgba(212,175,55,.16);border-color:rgba(212,175,55,.55)}',
-      '.jy-btn-save.saved{background:rgba(212,175,55,.12)}',
-      '.jy-btn-save.saved .jy-btn-label{color:#c9a84c}',
-      '.jy-btn-save.saved .jy-btn-label::before{content:"★ "}',
-      // Trust badge
-      '.jy-stone-trust{margin-top:1rem;padding:1rem;border-radius:14px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.15);display:flex;align-items:center;gap:.85rem}',
-      '.jy-trust-seal{width:62px;height:62px;opacity:.85;flex-shrink:0}',
-      '.jy-trust-content{flex:1;min-width:0}',
-      '.jy-trust-title{font-size:.85rem;font-weight:600;color:var(--c-gold,#c9a84c);margin-bottom:.4rem;letter-spacing:.08em}',
-      '.jy-trust-list{margin:0;padding:0 0 0 1rem;font-size:.72rem;color:rgba(176,164,142,.85);line-height:1.85;letter-spacing:.02em}',
-      '.jy-trust-list li{margin-bottom:.15rem}',
-      // 結尾
-      '.jy-stone-disclaimer{margin-top:.9rem;font-size:.66rem;color:rgba(160,152,128,.5);text-align:center;letter-spacing:.04em;line-height:1.6}'
-    ].join('\n');
-    document.head.appendChild(style);
-  }
-
-  return h;
+  samples = samples.slice(0, 3);
+  if (!samples.length) return '';
+  var h = '<section class="jy-stone-rec"><h3>飾品款式參考</h3><p>款式為文化與美感選擇，不代表療效、財運或占卜結果。價格、材質、尺寸及庫存請到賣場頁核對。</p><div class="jy-stone-list">';
+  samples.forEach(function(p){
+    h += '<div class="jy-stone-card"><strong>'+esc(p.n||'飾品')+'</strong><p>'+esc(_jyShopStyle(p))+'</p><a href="'+_jyShopLink(p.shopee)+'" target="_blank" rel="noopener noreferrer">查看賣場</a></div>';
+  });
+  return h+'</div></section>';
 }
 
-// ── 水晶清單生成器 — 按喜用神篩選 REAL_PRODUCTS，送進 AI payload ──
 function _buildCrystalCatalog() {
   try {
     var b = S.bazi;
@@ -15035,9 +13188,9 @@ function _buildPayload() {
 
     L.push('日主' + _s(b.dm) + '（' + _s(b.dmEl) + '行），旺衰模型：' + baziStrengthLabel(b));
     if (typeof b.selfRatio==='number') L.push('印比同黨相對權重' + b.selfRatio + '%（本站五行模型比例，非身強機率）');
-    if (b.structType) L.push('格局：' + b.structType);
+    if (b.structType) L.push('格局模型候選（須核對成格條件）：' + b.structType);
     // 不預寫格局的人生結論；交給 AI 依成立條件、破格與題目自行裁決。
-    if (b.specialStructure && b.specialStructure.desc) L.push('特殊格局：' + b.specialStructure.desc);
+    if (b.specialStructure && b.specialStructure.desc) L.push('特殊結構候選（須核對成立與破格）：' + b.specialStructure.desc);
     if (typeof baziHuaQiLines === 'function') L=L.concat(baziHuaQiLines(b));
     if (typeof baziCoreAnalysisLines === 'function') L=L.concat(baziCoreAnalysisLines(b));
     if (b.zhengGe && b.zhengGe.zh) L.push(b.zhengGe.zh);
@@ -15066,7 +13219,8 @@ function _buildPayload() {
     if (tgAll.length) L.push('五行相對權重：' + tgAll.map(function(e){return e[0]+':'+Math.round(e[1])+'%';}).join('、'));
 
     // 喜忌（保留原始五行名）
-    L.push('喜用神：' + (b.fav||[]).join('、') + '；忌神：' + (b.unfav||[]).join('、'));
+    if ((b.fav||[]).length || (b.unfav||[]).length)
+      L.push('扶抑模型候選喜行：' + (b.fav||[]).join('、') + '；候選忌行：' + (b.unfav||[]).join('、') + '；須與調候、格局和所問時段合看');
     if (b.tiaohou) L.push('調候入口：' + (typeof b.tiaohou==='object'?JSON.stringify(b.tiaohou):b.tiaohou));
 
     // 神煞（保留原始神煞名）
@@ -15095,7 +13249,7 @@ function _buildPayload() {
     }
 
     // 十神組合
-    if (b.tenGodCombos && b.tenGodCombos.length) L.push('十神格局：' + b.tenGodCombos.map(function(c){return c.zh||c.name;}).join('。'));
+    if (b.tenGodCombos && b.tenGodCombos.length) L.push('十神組合模型候選（結構須覆核，非已成格）：' + b.tenGodCombos.map(function(c){return c.name||c.zh;}).join('、'));
     if (b.hiddenInteractions && b.hiddenInteractions.length) L.push('暗合暗沖：' + b.hiddenInteractions.map(function(h){return h.zh||h.type+h.from+'→'+h.to;}).join('。'));
 
     // ★ 六親映射（告訴 AI 十神對應什麼類型的人）
@@ -16949,92 +15103,13 @@ function analyzeNameQuestion(nameResult, zodiacNameResult, context) {
     layerScores.ge = Math.max(-baseW, Math.min(baseW, geScore));
   }
 
-  // ═══ 層3: 生肖姓名學 ═══
-  var zodiacSupport = { level:'', dir:'neutral' };
-  if (zr) {
-    var baseW = 8;
-    layerMax.zodiac = baseW;
-    var zScore = 0;
-    var olLevel = zr.overallLevel || '平';
-    if (olLevel.includes('大吉') || olLevel === '旺') zScore += 6;
-    else if (olLevel === '吉' || olLevel === '小吉') zScore += 3;
-    else if (olLevel.includes('凶') || olLevel.includes('險')) zScore -= 5;
-    else if (olLevel.includes('犧牲')) zScore -= 7;
-
-    zodiacSupport = { level: olLevel, dir: zScore > 1 ? 'pos' : zScore < -1 ? 'neg' : 'neutral' };
-    layerScores.zodiac = Math.max(-baseW, Math.min(baseW, zScore));
-    evidence.push({ layer:'zodiac', text:zr.zodiac+'生肖姓名學：'+olLevel+'（吉字根'+( zr.totalLike||0)+'，凶字根'+(zr.totalDislike||0)+'）', dir: zodiacSupport.dir });
-  }
-
-  // ═══ 層4: 犧牲格 / 六衝 / 衝突字根 ═══
-  if (zr) {
-    var baseW = 8;
-    layerMax.conflict = baseW;
-    var cScore = 0;
-
-    if (zr.isSacrifice) {
-      cScore -= 6;
-      evidence.push({ layer:'conflict', text:'犧牲格：'+(zr.sacrificeNote||'外表風光內心承壓'), dir:'neg' });
-      tags.push({ sys:'name', tag:'sacrifice', direction:'neg', weight:4, label:'犧牲格' });
-    }
-    if (zr.isSnakePigClash) {
-      cScore -= 4;
-      evidence.push({ layer:'conflict', text:'巳亥六衝：'+(zr.clashNote||'注意小人與意外'), dir:'neg' });
-      tags.push({ sys:'name', tag:'snake_pig_clash', direction:'neg', weight:4, label:'巳亥六衝' });
-    }
-    var warns = zr.warnings || [];
-    if (warns.length > 0 && !zr.isSacrifice && !zr.isSnakePigClash) {
-      cScore -= Math.min(3, warns.length);
-    }
-
-    layerScores.conflict = Math.max(-baseW, Math.min(baseW, cScore));
-  }
-
-  // ═══ 層5: 吉凶字根 ═══
-  var rootSupport = { likeCount:0, dislikeCount:0, dir:'neutral' };
-  if (zr) {
-    var baseW = 6;
-    layerMax.root = baseW;
-    var rScore = 0;
-    var like = zr.totalLike || 0;
-    var dislike = zr.totalDislike || 0;
-    rScore = (like - dislike) * 1.2;
-    rootSupport = { likeCount:like, dislikeCount:dislike, dir: rScore>1?'pos':rScore<-1?'neg':'neutral' };
-    layerScores.root = Math.max(-baseW, Math.min(baseW, rScore));
-    if (like > 0 || dislike > 0) {
-      evidence.push({ layer:'root', text:'字根吉'+like+'個、凶'+dislike+'個', dir:rootSupport.dir });
-    }
-  }
-
-  // ═══ 層6: 八字喜忌交叉 ═══
-  var baziCrossSupport = { match:false, dir:'neutral' };
-  if (nr && nr.sanCai && ctx.bazi && ctx.bazi.fav) {
-    var baseW = 6;
-    layerMax.baziCross = baseW;
-    var bScore = 0;
-    var fav = ctx.bazi.fav || [];
-    var unfav = ctx.bazi.unfav || [];
-    var sc = nr.sanCai;
-    var hasFav = sc.some(function(e){return fav.indexOf(e)!==-1;});
-    var hasUnfav = sc.some(function(e){return unfav.indexOf(e)!==-1;});
-    var renGeEl = sc[1];
-
-    if (hasFav && !hasUnfav) { bScore += 4; baziCrossSupport.match = true; }
-    else if (hasUnfav && !hasFav) bScore -= 4;
-    else if (hasFav && hasUnfav) bScore += 0;
-
-    if (fav.indexOf(renGeEl) !== -1) bScore += 2;
-    else if (unfav.indexOf(renGeEl) !== -1) bScore -= 2;
-
-    // 生肖凶被八字化解
-    if (zr && zr.baziOverride) bScore += 2;
-
-    baziCrossSupport.dir = bScore > 1 ? 'pos' : bScore < -1 ? 'neg' : 'neutral';
-    layerScores.baziCross = Math.max(-baseW, Math.min(baseW, bScore));
-    if (bScore !== 0) {
-      evidence.push({ layer:'baziCross', text:'八字喜忌交叉：'+(baziCrossSupport.dir==='pos'?'三才含喜用神，助力':'三才含忌神，有拉扯'), dir:baziCrossSupport.dir });
-    }
-  }
+  // 生肖字形歸類沒有可驗證的個人吉凶因果；僅保留流派標記，
+  // 不把「犧牲格」、巳亥字形、吉凶字根或八字喜忌換算成命運分數。
+  var zodiacSupport={level:zr&&zr.overallLevel||'',dir:'neutral'};
+  var rootSupport={likeCount:zr&&zr.totalLike||0,dislikeCount:zr&&zr.totalDislike||0,dir:'neutral'};
+  var baziCrossSupport={match:false,dir:'neutral'};
+  ['zodiac','conflict','root','baziCross'].forEach(function(key){layerMax[key]=0;layerScores[key]=0;});
+  if(zr)evidence.push({layer:'zodiac',text:'生肖姓名形義派：字根與名稱只作傳統象徵參考，不能由此預言付出回報、小人、意外或健康',dir:'neutral'});
 
   // ═══ 總分計算 ═══
   function normL(key) {
@@ -17053,11 +15128,11 @@ function analyzeNameQuestion(nameResult, zodiacNameResult, context) {
   var score = Math.round(Math.max(10, Math.min(90, rawScore)));
 
   var direction, verdictShort;
-  if (score >= 65) { direction = 'positive'; verdictShort = '姓名能量偏吉'; }
-  else if (score >= 52) { direction = 'neutral'; verdictShort = '姓名能量中性偏好'; }
-  else if (score >= 42) { direction = 'neutral'; verdictShort = '姓名能量中性'; }
-  else if (score >= 30) { direction = 'negative'; verdictShort = '姓名有阻力訊號'; }
-  else { direction = 'negative'; verdictShort = '姓名能量偏凶'; }
+  if (score >= 65) { direction = 'positive'; verdictShort = '筆劃派分類偏吉'; }
+  else if (score >= 52) { direction = 'neutral'; verdictShort = '筆劃派分類中性偏吉'; }
+  else if (score >= 42) { direction = 'neutral'; verdictShort = '筆劃派分類中性'; }
+  else if (score >= 30) { direction = 'negative'; verdictShort = '筆劃派分類偏凶'; }
+  else { direction = 'negative'; verdictShort = '筆劃派分類偏凶'; }
 
   var activeLayers = 0;
   Object.keys(layerMax).forEach(function(k){ if(layerMax[k]>0) activeLayers++; });
@@ -17070,25 +15145,9 @@ function analyzeNameQuestion(nameResult, zodiacNameResult, context) {
   var blockers = evidence.filter(function(e){return e.dir==='neg';}).slice(0,3).map(function(e){return e.text;});
   var opportunities = evidence.filter(function(e){return e.dir==='pos';}).slice(0,3).map(function(e){return e.text;});
 
-  var strategies = [];
-  if (direction === 'positive') strategies.push('姓名能量對此議題偏正面，善加利用不用擔心');
-  else if (direction === 'negative') {
-    strategies.push('姓名能量有拉扯，可透過暱稱、署名、印章等方式補強');
-    if (zr && zr.isSacrifice) strategies.push('犧牲格需特別注意：學會設立邊界，不要過度付出');
-  } else {
-    strategies.push('姓名能量中性，不是主要影響因素，關鍵還是在個人行動');
-  }
-  strategies.push('姓名學不是命運的決定者，而是影響運勢的呈現方式。好名放大優勢，弱名增加阻力，但核心還是你自己的選擇。');
-
-  var timingText = '姓名影響屬長期基礎層，不隨時間劇烈變化';
-
-  var verdictFull = '姓名學評分：'+score+'/100（'+qr.yesNoAnswer+'）\n';
-  if (qr.why1) verdictFull += '► '+qr.why1+'\n';
-  if (qr.why2) verdictFull += '► '+qr.why2+'\n';
-  if (qr.why3) verdictFull += '► '+qr.why3+'\n';
-  if (qr.riskPoint) verdictFull += '⚠ '+qr.riskPoint+'\n';
-  if (qr.action1) verdictFull += '✦ '+qr.action1+'\n';
-  if (qr.action2) verdictFull += '✦ '+qr.action2;
+  var strategies = ['依實際互動和可核對資料判斷，不以名字推定結果'];
+  var timingText = '姓名字形與筆劃分類不提供可驗證的事件日期';
+  var verdictFull = qr.finalAnswer;
 
   return {
     score:score, direction:direction, confidence:confidence,
@@ -17117,129 +15176,19 @@ function _nameQFallback(msg) {
 }
 
 function _nameQBuildAnswer(type, score, dir, evidence, sancaiS, geS, zodiacS, rootS, baziS, nr, zr) {
-  var out = { yesNoAnswer:'', why1:'', why2:'', why3:'', riskPoint:'', action1:'', action2:'', finalAnswer:'' };
-  var posEv = evidence.filter(function(e){return e.dir==='pos';});
-  var negEv = evidence.filter(function(e){return e.dir==='neg';});
-
-  // 共用 pattern
-  var effectWord = score >= 65 ? '放大優勢' : score >= 52 ? '穩定助力' : score >= 42 ? '不明顯' : score >= 30 ? '增加阻力' : '放大內耗';
-
-  if (type === 'love') {
-    if (score >= 60) {
-      out.yesNoAnswer = '名字在感情上是加分的（' + effectWord + '）';
-      out.why1 = (geS[0]&&geS[0].dir==='pos') ? geS[0].label + '數理吉（' + geS[0].level + '），感情基底穩固' : (posEv[0]?posEv[0].text:'地格能量偏正面');
-      out.why2 = sancaiS.dir==='pos' ? '三才流通順暢，內在安定感好，有利經營關係' : (posEv[1]?posEv[1].text:'');
-      out.action1 = '名字氣場易親近，適合主動社交互動';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字在感情上影響中性（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'部分格數中性';
-      out.why2 = (posEv[0])?posEv[0].text:'';
-      out.action1 = '感情運不靠名字決定，個人魅力和溝通才是關鍵';
-    } else {
-      out.yesNoAnswer = '名字在感情上有阻力（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.why2 = (negEv[1])?negEv[1].text:'';
-      out.action1 = '可考慮用暱稱或署名補強柔和感';
-      out.action2 = '名字帶來的阻力可以靠自我提升克服';
-    }
-  } else if (type === 'career') {
-    if (score >= 60) {
-      out.yesNoAnswer = '名字對事業有支持力（' + effectWord + '）';
-      out.why1 = (geS[0]&&geS[0].dir==='pos') ? geS[0].label + '吉（' + geS[0].level + '），主運能量強' : (posEv[0]?posEv[0].text:'');
-      out.why2 = sancaiS.dir==='pos' ? '三才支撐穩固，執行力和決斷力有底氣' : (posEv[1]?posEv[1].text:'');
-      out.action1 = '名字能量支持事業衝刺，大膽行動';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字對事業影響不大（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.action1 = '事業靠能力和選擇，名字不是決定因素';
-    } else {
-      out.yesNoAnswer = '名字對事業有拖累（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.why2 = (negEv[1])?negEv[1].text:'';
-      out.action1 = '重要場合可考慮用筆名或英文名';
-    }
-  } else if (type === 'wealth') {
-    if (score >= 60) {
-      out.yesNoAnswer = '名字偏聚財（' + effectWord + '）';
-      out.why1 = (geS[0]&&geS[0].dir==='pos') ? geS[0].label + '數理吉，守財能力好' : (posEv[0]?posEv[0].text:'');
-      out.action1 = '名字能量利於穩健理財和長期累積';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字在財務上中性（' + effectWord + '）';
-      out.why1 = '財運格數中等，靠個人規劃為主';
-      out.action1 = '名字不影響大局，紀律理財更重要';
-    } else {
-      out.yesNoAnswer = '名字有漏財訊號（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.action1 = '財務上格外注意衝動消費和借貸風險';
-    }
-  } else if (type === 'health') {
-    if (score >= 60) {
-      out.yesNoAnswer = '名字屬平穩型，無壓力訊號';
-      out.why1 = sancaiS.dir==='pos' ? '三才流通好，身心基底穩定' : (posEv[0]?posEv[0].text:'');
-      out.action1 = '維持規律作息即可';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字有輕微壓力訊號（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'三才或人格有微衝';
-      out.action1 = '注意壓力管理，不要忽略小症狀';
-    } else {
-      out.yesNoAnswer = '名字屬壓力型（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.why2 = sancaiS.dir==='neg' ? '三才相剋，容易累積內在壓力' : (negEv[1]?negEv[1].text:'');
-      out.riskPoint = '三才衝剋長期下來可能影響免疫力和情緒';
-      out.action1 = '定期運動和充足睡眠是最有效的化解';
-    }
-  } else if (type === 'family' || type === 'relationship') {
-    var topicLabel = type === 'family' ? '家庭' : '人際';
-    if (score >= 60) {
-      out.yesNoAnswer = '名字在'+topicLabel+'上是助溝通型';
-      out.why1 = (posEv[0])?posEv[0].text:'';
-      out.action1 = '名字氣場利於和氣交流';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字在'+topicLabel+'上中性';
-      out.why1 = '不特別加分也不扣分';
-      out.action1 = topicLabel+'關係靠經營，名字影響不大';
-    } else {
-      out.yesNoAnswer = '名字在'+topicLabel+'上有衝突訊號';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.action1 = '溝通時多一份耐心，避免硬碰硬';
-    }
-  } else {
-    if (score >= 60) {
-      out.yesNoAnswer = '名字整體能量偏正面（' + effectWord + '）';
-      out.why1 = (posEv[0])?posEv[0].text:'';
-      out.why2 = (posEv[1])?posEv[1].text:'';
-      out.action1 = '名字是你的隱形助力，好好發揮';
-    } else if (score >= 42) {
-      out.yesNoAnswer = '名字整體能量中性（' + effectWord + '）';
-      out.why1 = '各項指標互有消長';
-      out.action1 = '名字不是限制，核心靠你自己';
-    } else {
-      out.yesNoAnswer = '名字整體能量有壓力（' + effectWord + '）';
-      out.why1 = (negEv[0])?negEv[0].text:'';
-      out.why2 = (negEv[1])?negEv[1].text:'';
-      out.action1 = '如感到長期不順，可考慮諮詢專業老師微調用名';
-    }
-  }
-
-  // 共用補充
-  if (!out.why3 && zodiacS.dir !== 'neutral') {
-    out.why3 = '生肖姓名學：' + (zodiacS.level || '') + '（' + (zodiacS.dir==='pos'?'字根環境對生肖友好':'字根環境有不利因素') + '）';
-  }
-  if (!out.riskPoint && negEv.length > 0) {
-    out.riskPoint = negEv[0].text;
-  }
-  if (!out.action2) {
-    out.action2 = '姓名影響的是運勢呈現方式，不是命運本身。好名放大優勢，弱名增加阻力，但最終結果由你的行動決定。';
-  }
-
-  out.finalAnswer = '【'+out.yesNoAnswer+'】\n';
-  if (out.why1) out.finalAnswer += '原因一：'+out.why1+'\n';
-  if (out.why2) out.finalAnswer += '原因二：'+out.why2+'\n';
-  if (out.why3) out.finalAnswer += '原因三：'+out.why3+'\n';
-  if (out.riskPoint) out.finalAnswer += '風險：'+out.riskPoint+'\n';
-  if (out.action1) out.finalAnswer += '建議一：'+out.action1+'\n';
-  if (out.action2) out.finalAnswer += '建議二：'+out.action2;
-
+  var topic = {love:'感情',career:'事業',wealth:'財務',health:'健康',family:'家庭',relationship:'人際'}[type] || '這件事';
+  var parts = [];
+  if (nr && Array.isArray(nr.sanCai)) parts.push('筆劃派三才：'+nr.sanCai.join('→'));
+  if (zr) parts.push('生肖形義派字形：'+(zr.zodiac||'生肖')+'象徵');
+  var out = {
+    yesNoAnswer:'單靠名字無法判定'+topic+'的現實結果',
+    why1:parts.join('；')+'。這些是流派內的分類，無法換算成事件機率。',
+    why2:'「犧牲格」與「巳亥六衝」等稱呼不能用來預測付出回報、他人行為或意外。',
+    why3:'', riskPoint:'',
+    action1:'依'+topic+'的實際資料和當事人行動判斷下一步。',
+    action2:'若想調整名字，可考慮字義、讀音及個人喜好。'
+  };
+  out.finalAnswer='【'+out.yesNoAnswer+'】\n'+out.why1+'\n'+out.why2+'\n'+out.action1;
   return out;
 }
 
@@ -17790,72 +15739,16 @@ function renderNameSocialCard() {
 // ═══ 3. 名字能量傾向卡 ═══
 var _nameEnergyRendered = false;
 function renderNameEnergyCard() {
-  var container = document.getElementById('name-energy-card-content');
+  var container=document.getElementById('name-energy-card-content');
   if (!container) return;
-  if (_nameEnergyRendered) return; // ★ v27：防重複渲染
-  if (!S || !S.form || !S.form.name || S.form.name.length < 2) {
-    container.innerHTML = '<p class="text-dim">需要先輸入姓名才能產生能量傾向卡。</p>';
-    return;
-  }
-  _nameEnergyRendered = true;
-
-  var nr = S.nameResult || null;
-  var zr = S.zodiacNameResult || null;
-
-  // 能量分類：衝刺/守成/內耗/穩定/親和
-  var energyType = '穩定型';
-  var energyDesc = '你的名字能量偏中性，不特別衝也不特別守。';
-  var energyAdvice = '跟著自己的節奏走就好。';
-
-  if (nr) {
-    var renLevel = (nr.renGe && nr.renGe.fortune) ? nr.renGe.fortune.level : '平';
-    var zongLevel = (nr.zongGe && nr.zongGe.fortune) ? nr.zongGe.fortune.level : '平';
-    var scLevel = nr.sanCaiLevel || '平';
-    var renEl = nr.renGe ? nr.renGe.el : '';
-
-    // 衝刺型：人格吉 + 火/木
-    if ((renLevel === '大吉' || renLevel === '吉') && (renEl === '火' || renEl === '木')) {
-      energyType = '衝刺型 🔥';
-      energyDesc = '你的名字能量帶有行動力和開創性，適合主動出擊、開拓新局面。';
-      energyAdvice = '善用衝勁，但記得煞車機制，衝太快容易翻車。';
-    }
-    // 守成型：總格吉 + 土/金
-    else if ((zongLevel === '大吉' || zongLevel === '吉') && (renEl === '土' || renEl === '金')) {
-      energyType = '守成型 🏔️';
-      energyDesc = '你的名字能量偏穩健紮實，適合長期累積和穩步前進。';
-      energyAdvice = '你的優勢在耐力和可靠度，不需要跟別人比速度。';
-    }
-    // 內耗型：三才凶 or 犧牲格
-    else if (scLevel === '凶' || (zr && zr.isSacrifice)) {
-      energyType = '內耗型 💔';
-      energyDesc = '你的名字能量容易讓壓力往內積累，外表看不出來但自己很累。';
-      energyAdvice = '學會適時釋放壓力，不要什麼都往自己身上扛。運動、寫日記、跟信任的人傾訴都有幫助。';
-    }
-    // 親和型：地格/外格吉 + 水
-    else if (nr.diGe && nr.diGe.fortune && (nr.diGe.fortune.level === '大吉' || nr.diGe.fortune.level === '吉') && renEl === '水') {
-      energyType = '親和型 💧';
-      energyDesc = '你的名字能量帶有柔和和包容性，天生容易讓人放鬆。';
-      energyAdvice = '你的武器是人緣和溝通力，好好發揮。';
-    }
-    // 穩定型
-    else if (scLevel.includes('吉')) {
-      energyType = '穩定型 ⚖️';
-      energyDesc = '你的名字能量平衡穩固，三才流通良好，基底紮實。';
-      energyAdvice = '穩定是你最大的本錢，在別人動盪的時候你反而最有優勢。';
-    }
-  }
-
-  var html = '';
-  html += '<div style="padding:.6rem;background:rgba(74,222,128,.04);border-radius:8px">';
-  html += '<p style="font-weight:600;color:var(--c-gold);margin-bottom:.4rem;font-size:.92rem">⚡ 名字能量傾向卡</p>';
-  html += '<p style="font-size:.92rem;margin:.3rem 0;font-weight:700;color:var(--c-gold)">' + energyType + '</p>';
-  html += '<p style="font-size:.85rem;margin:.3rem 0;line-height:1.6">' + energyDesc + '</p>';
-  html += '<p style="font-size:.85rem;margin:.4rem 0;color:var(--c-gold)">💡 ' + energyAdvice + '</p>';
-  html += '</div>';
-  container.innerHTML = html;
+  var nr=S && S.nameResult, zr=S && S.zodiacNameResult;
+  if (!nr && !zr) { container.textContent='需要先輸入姓名才能顯示流派分類。'; return; }
+  var parts=[];
+  if (nr && Array.isArray(nr.sanCai)) parts.push('筆劃派三才：'+nr.sanCai.join('→'));
+  if (zr) parts.push('生肖形義派：'+(zr.zodiac||'生肖')+'字形象徵');
+  container.textContent=parts.join('；')+'。此卡顯示傳統分類，不推定性格、健康或現實結果。';
 }
 
-// ═══ 統一觸發 ═══
 function renderNameFunZone() {
   try { renderNameAuraCard(); } catch(e) { console.warn('nameAura err:', e); }
   try { renderNameSocialCard(); } catch(e) { console.warn('nameSocial err:', e); }
@@ -20355,8 +18248,8 @@ renderTarot = function(){
       // Fix #5: p.verdict / p.topTags 已移除（Worker 不讀這些，浪費 payload tokens）
 
       // Needs-first guidance; no catalogue is attached to the analysis request.
-      if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"&&window.JY_READING_QUALITY.payloadGuide)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
-      p.shopRecommendation=(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
+      if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
+      p.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
 
       // ═══ v26：可變性標記（reversibility）═══
       // 每個系統的發現分三類：定（先天不可改）、時（時運會變，等窗口）、動（行為可改）
@@ -20903,6 +18796,8 @@ renderTarot = function(){
   }
 
   _triggerAIDeep = async function() {
+    // 保留舊按鈕的函式入口；本版本只在本機組裝提示詞。
+    return window.JY_renderFullExportPrompt();
     var resultDiv = document.getElementById('ai-deep-result');
     if (!resultDiv) return;
 
@@ -21026,31 +18921,10 @@ renderTarot = function(){
     try {
       var payload = _buildPayload();
 
-      // ★ v69.2.0：規則未命中時，await Haiku 智能分類
-      //   - 規則命中（regex）：直接走，零成本
-      //   - 規則未命中（unmatched）：呼叫 worker /classify，Haiku 4.5 智能分類
-      //   - Haiku 分類失敗：fallback 'general'
-      //   觸發率設計目標：< 20%（規則涵蓋 80%+ 主流問題）
+      // 未命中只保留本機分類資訊；不送遠端模型補判。
       if (payload.qTypeSource === 'unmatched') {
-        try {
-          if (typeof window !== 'undefined' && window.JyClassifier && typeof window.JyClassifier.classifyWithHaiku === 'function') {
-            var _haikuRes = await window.JyClassifier.classifyWithHaiku(payload.question, window._JY_SESSION_TOKEN);
-            if (_haikuRes && _haikuRes.qType) {
-              payload.qType = _haikuRes.qType;
-              payload.qTypeSource = _haikuRes.qTypeSource || 'haiku';
-              payload.qTypeModel = _haikuRes.model || null;
-              // v69.28.0:Haiku 分類也要把 qTypes 帶進 worker,否則 RAG 仍只看單一分類。
-              if (Array.isArray(_haikuRes.qTypes)) payload.qTypes = _haikuRes.qTypes;
-              else if (window.JyClassifier && typeof window.JyClassifier.detectSecondaryQTypes === 'function' && typeof window.JyClassifier.normalizeQTypes === 'function') {
-                payload.qTypes = window.JyClassifier.normalizeQTypes(payload.qType, window.JyClassifier.detectSecondaryQTypes(payload.question));
-              }
-            }
-          }
-        } catch(_haikuErr) {
-          console.warn('[v69.2] Haiku classify failed:', _haikuErr);
-          if (!payload.qType) payload.qType = 'general';
-          payload.qTypeSource = 'fallback';
-        }
+        if (!payload.qType) payload.qType = 'general';
+        payload.qTypeSource = 'local_fallback';
       }
       // 確保有 qType / qTypes（防呆）
       if (!payload.qType) { payload.qType = 'general'; payload.qTypeSource = 'fallback'; }
@@ -21087,7 +18961,7 @@ renderTarot = function(){
       var _abortTimer = setTimeout(function() { _abortCtrl.abort(); }, 1800000);
       // ★ v63.8 偵測:出送前掃 [object Object]
       _v638CheckPayloadAnomaly(body, 'main_fetch');
-      var resp = await fetch(AI_WORKER_URL, {
+      var resp = await _jyRejectRemoteAI( {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -22961,8 +20835,8 @@ function _buildTarotOnlyPayload() {
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
-    if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"&&window.JY_READING_QUALITY.payloadGuide)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
-    rws.shopRecommendation=(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
+    if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+    rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
   }
   gd.normalizeDraw(drawn);
@@ -23029,14 +20903,16 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
-    shopRecommendation:(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
+    shopRecommendation:(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
   };
-  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"&&window.JY_READING_QUALITY.payloadGuide)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
 }
 
 async function _triggerTarotAI() {
+  // 無論舊 UI 是否先載入，這裡都只使用實際抽牌資料產生本機提示詞。
+  return typeof window._jyTarotCopyMode === 'function' ? window._jyTarotCopyMode() : undefined;
   var resultDiv = document.getElementById('tarot-ai-wrap');
   if (!resultDiv) return;
 
@@ -23192,7 +21068,7 @@ async function _triggerTarotAI() {
     // ── SSE streaming(跟七維度一樣的 SSE 讀取)──
     // ★ v63.8 偵測:塔羅出送前掃 [object Object]
     _v638CheckPayloadAnomaly(body, 'tarot_fetch');
-    var resp = await fetch(AI_WORKER_URL, {
+    var resp = await _jyRejectRemoteAI( {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -24224,6 +22100,11 @@ function _decideSupplementCount(text) {
 }
 
 async function _triggerTarotFollowUp() {
+  // 舊追問會另抽牌後送付費 Worker；提示詞版不啟動該網路流程。
+  var base=document.getElementById('tarot-ai-wrap');
+  if (base && typeof window.JY_renderExportPrompt === 'function')
+    return window.JY_renderExportPrompt('tarot', base);
+  return;
   var qEl = document.getElementById('tarot-followup-q');
   var followQ = qEl ? qEl.value.trim() : '';
   if (!followQ) { alert('請輸入你的追問'); return; }
@@ -24288,14 +22169,14 @@ async function _triggerTarotFollowUp() {
   //   成功條件只有兩個：(1) fu token 有效 (2) fu_free:{resultId} 存在
   //   失敗會回 FOLLOWUP_NEED_PAYMENT（402）或 LOGIN_REQUIRED
   if (!isAdmin) {
-    var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+    var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : '';
     try {
       var _precheckMode = isFullFollowUp ? 'full_followup' : 'tarot_followup';
       var checkBody = { action: 'check', payload: { mode: _precheckMode, resultId: _resultId } };
       var paidToken = localStorage.getItem('_jy_paid_token');
       if (paidToken) checkBody.paid_token = paidToken;
       if (window._JY_SESSION_TOKEN) checkBody.session_token = window._JY_SESSION_TOKEN;
-      var checkResp = await fetch(AI_URL, {
+      var checkResp = await _jyRejectRemoteAI( {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(checkBody)
       });
@@ -24478,15 +22359,15 @@ async function _triggerTarotFollowUp() {
   }
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // Previous readings are context, not authority for product choices.
-  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"&&window.JY_READING_QUALITY.payloadGuide)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
-  payload.shopRecommendation=(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
   // ★ v46：追問強制主模型（不讓追問吃 Opus 深度配額；Worker 端也會強制清掉）
   if (payload.depth === 'opus') delete payload.depth;
 
   // ── 呼叫 Worker ──
-  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : 'https://jy-ai-proxy.onerkk.workers.dev';
+  var AI_URL = (typeof AI_WORKER_URL !== 'undefined') ? AI_WORKER_URL : '';
   // ★ v51:追問 fetch timeout + AbortController
   // v69.36.0:600s → 1800s(30 分鐘)— 追問也加 thinking,可能拉長
   //   為什麼：手機弱訊號下，若 Worker stream 中途出錯 / Opus 4.7 thinking 過長 / 網路 idle 斷流，
@@ -24506,7 +22387,7 @@ async function _triggerTarotFollowUp() {
 
     // ★ v63.8 偵測:追問出送前掃 [object Object]
     _v638CheckPayloadAnomaly(body, 'followup_fetch');
-    var resp = await fetch(AI_URL, {
+    var resp = await _jyRejectRemoteAI( {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
       signal: _fuAbortCtrl.signal
@@ -24978,8 +22859,8 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  if(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"&&window.JY_READING_QUALITY.payloadGuide)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
-  payload.shopRecommendation=(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;
 }
@@ -25796,121 +23677,121 @@ window._jyRenderAuditBadge = function(audit) {
   }
 };
 
-// ── OOTK 付費入口 ──
-// v69.9.3 修正:刪掉 v69.7 之前殘留的「需要生辰」攔截。
-//   原本 line 27351-27369 強制檢查 S.form.bdate,沒填就跳「請先填寫出生資料」攔截畫面,
-//   但 v69.7 已將 OOTK 改為 Mathers Manuscript Q + Crowley Book T 正統定位:
-//   「只看牌,不需任何用戶資料」(worker.js OOTK_PROMPT v69.7 條件式守門條款已對齊)。
-//   ui.js 跟 worker.js 都改了,但這段 _jyStartOOTK 內部的舊攔截被漏掉,造成入口矛盾。
-//   修法:整段刪除,讓 OOTK 跟塔羅一樣不需出生資料,worker 端會用 dims 判斷走哪個路徑。
-window._jyStartOOTK = function() {
-  // Admin 直接放行
-  if (window._JY_ADMIN_TOKEN) {
-    if (typeof startOOTK === 'function') startOOTK();
-    else if (typeof startOOTKFlow === 'function') startOOTKFlow();
-    return;
-  }
-
-  // ★ v70 全免費/無登入：開鑰直接開始抽牌，跳過 worker 配額檢查與付費牆（以下為死碼）
-  if (typeof startOOTK === 'function') { startOOTK(); return; }
-  if (typeof startOOTKFlow === 'function') { startOOTKFlow(); return; }
-
-  // ── 查 OOTK 配額(v68.21:總量制+配額制,不再每日) ──
-  // v68.21.1 Bug #89 修:precheck 帶上 depth 對應 Opus 用戶
-  //   原本 payload: { mode: 'ootk' } 沒帶 depth → worker 走標準分支查 ootk_std
-  //   買 Opus OOTK NT$120 用戶的 paid_quota 是 ootk_opus → 找不到被擋
-  //   修法:讀 window._jyOpusDepth 對齊主流程
-  var _ootkCheckPayload = { mode: 'ootk' };
-  if (window._jyOpusDepth || window._jyForceOpusOnly) _ootkCheckPayload.depth = 'opus';
-  var _ootkCheckBody = { action: 'check', payload: _ootkCheckPayload };
-  if (window._JY_SESSION_TOKEN) _ootkCheckBody.session_token = window._JY_SESSION_TOKEN;
-  // ★ Bug #12 fix: 開鑰 precheck 漏帶 paid_token，已付費用戶被誤擋跳付費牆
-  //   七維度/塔羅都帶了，只有這裡漏。下行補上。
-  var _ootkPt = '';
-  try { _ootkPt = localStorage.getItem('_jy_paid_token') || ''; } catch(_e){}
-  if (_ootkPt) _ootkCheckBody.paid_token = _ootkPt;
-  fetch(AI_WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(_ootkCheckBody)
-  })
-  .then(function(r) {
-    // ★ v68.21.21 Bug #33 修:5xx 時 data.allowed undefined → 誤入付費牆
-    //   修法:5xx throw 讓下方 .catch 接住放行(預設可用)
-    if (!r.ok && r.status >= 500) {
-      throw new Error('worker 5xx');
-    }
-    return r.json();
-  })
-  .then(function(data) {
-    if (data.allowed) {
-      // 配額充足(會員/單次/admin) → 直接開始
-      if (typeof startOOTK === 'function') startOOTK();
-      else if (typeof startOOTKFlow === 'function') startOOTKFlow();
-    } else if (data.code === 'LOGIN_REQUIRED') {
-      // 需要登入
-      var em = document.getElementById('ootk-login-modal');
-      if (em) em.remove();
-      var md = document.createElement('div');
-      md.id = 'ootk-login-modal';
-      md.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
-      md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
-        '<div style="font-size:1.8rem;margin-bottom:.6rem">🔐</div>' +
-        '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">請先登入</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">開鑰之法<br><span style="color:#c084fc">登入後可免費體驗 1 次</span></div>' +
-        '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="document.getElementById(\'ootk-login-modal\').remove();if(typeof _jyGoogleLogin===\'function\')_jyGoogleLogin();" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold);font-size:.88rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Google 登入</button>' +
-        '<button onclick="document.getElementById(\'ootk-login-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先看看塔羅</button>' +
-        '</div>' +
-      '</div>';
-      md.addEventListener('click', function(e) { if (e.target === md) md.remove(); });
-      document.body.appendChild(md);
-    } else {
-      // v60-hotfix11：FREE_IP_USED 當作 FREE_USED_UP 的變體處理（用「此網路已用過」文案）
-      // v68.20.9 Bug #131:加 FREE_USED_UP_RACE(worker race 拒絕的 code)
-      var _ootkFreeUp = (data.code === 'FREE_USED_UP' || data.code === 'FREE_IP_USED' || data.code === 'FREE_USED_UP_RACE');
-      var _ootkIpUsed = (data.code === 'FREE_IP_USED');
-      var em = document.getElementById('ootk-used-modal');
-      if (em) em.remove();
-      var md = document.createElement('div');
-      md.id = 'ootk-used-modal';
-      md.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
-      md.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
-        '<div style="font-size:1.8rem;margin-bottom:.6rem">' + (_ootkFreeUp ? '⏰' : '🔑') + '</div>' +
-        '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">' + (_ootkIpUsed ? '此網路已使用過' : '🔑 解鎖開鑰之法') + '</div>' +
-        '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">' +
-          '<span style="color:#c084fc;font-weight:600">⚡ 資料量最大・分析最深</span><br>' +
-          '7 套命盤資料 × 5 段獨立讀盤 × 跨系統交叉<br>' +
-          '<span style="font-size:.72rem;opacity:.85">標準 NT$' + window.JY_PRICES.SINGLE_OOTK + ' ・ 深度 NT$' + window.JY_PRICES.OPUS_OOTK + '</span>' +
-        '</div>' +
-        '<div style="display:flex;flex-direction:column;gap:.5rem;align-items:center">' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'opus_single\');" style="width:220px;padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(147,51,234,.15),rgba(147,51,234,.06));color:#c084fc;font-size:.88rem;font-weight:700;border:1.5px solid rgba(147,51,234,.4);cursor:pointer;font-family:inherit">🔮 深度解析 NT$' + window.JY_PRICES.OPUS_OOTK + '</button>' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartPayment===\'function\')_jyStartPayment(\'ootk\',\'single\');" style="width:220px;padding:10px;border-radius:10px;background:transparent;color:var(--c-text,#e8dcc8);font-size:.82rem;font-weight:600;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit">⚡ 開鑰單次 NT$' + window.JY_PRICES.SINGLE_OOTK + '</button>' +
-        '<button onclick="document.getElementById(\'ootk-used-modal\').remove()" style="width:200px;padding:8px;border-radius:10px;background:transparent;color:var(--c-text-muted,#6b6355);font-size:.75rem;border:none;cursor:pointer;font-family:inherit">先不用，謝謝</button>' +
-        '</div>' +
-      '</div>';
-      md.addEventListener('click', function(e) { if (e.target === md) md.remove(); });
-      document.body.appendChild(md);
-    }
-  })
-  .catch(function(_e) {
-    // v68.21 Bug #4 修:OOTK precheck fetch 失敗,不再寬容放行
-    //   原本失敗→ startOOTK(),用戶完成抽牌洗牌後才被 streaming 端擋下,體驗極差
-    //   v69.5 後 OOTK 雖開放免費 1 次,但 precheck 失敗仍要顯示「網路不順」讓用戶重試,
-    //   避免免費試用之後 streaming 拒絕,白浪費抽牌時間
-    //   修法:顯示「網路連線不順,請重試」提示
-    var em2 = document.getElementById('ootk-used-modal');
-    if (em2) em2.remove();
-    var md2 = document.createElement('div');
-    md2.id = 'ootk-used-modal';
-    md2.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);padding:1rem';
-    md2.innerHTML = '<div style="max-width:320px;width:85%;background:linear-gradient(145deg,#1a1208,#0d0906);border:1.5px solid rgba(212,175,55,.3);border-radius:18px;padding:2rem 1.5rem;text-align:center">' +
-      '<div style="font-size:1.8rem;margin-bottom:.6rem">⚠️</div>' +
-      '<div style="font-size:1rem;color:var(--c-gold);font-weight:700;margin-bottom:.5rem">網路連線不順</div>' +
-      '<div style="font-size:.82rem;color:var(--c-text-dim);line-height:1.7;margin-bottom:1.2rem">無法驗證配額狀態<br>請稍候片刻再試一次</div>' +
-      '<button onclick="document.getElementById(\'ootk-used-modal\').remove();if(typeof _jyStartOOTK===\'function\')_jyStartOOTK();" style="width:200px;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(212,175,55,.18),rgba(212,175,55,.06));color:var(--c-gold);font-size:.85rem;font-weight:700;border:1.5px solid rgba(212,175,55,.4);cursor:pointer;font-family:inherit">🔄 重試</button>' +
-      '</div>';
-    md2.addEventListener('click', function(e) { if (e.target === md2) md2.remove(); });
-    document.body.appendChild(md2);
-  });
+// 開鑰之法由實際五輪紀錄產生提示詞；舊 Worker 配額入口不再使用。
+window._jyStartOOTK=function(){
+  if(typeof startOOTK==='function')return startOOTK();
+  if(typeof startOOTKFlow==='function')return startOOTKFlow();
 };
+
+// 給舊七維入口及新結果頁共用的本機提示詞組裝器。
+// 所有資料來自已計算的 S 與 _buildPayload，不取模型返回的結論或帳號資料。
+(function(){
+  var METHOD=[
+    ['bazi','bazi','八字'],['ziwei','ziwei','紫微斗數'],
+    ['meihua','meihua','梅花易數'],['tarot','tarot','塔羅'],
+    ['ootk','ootk','開鑰之法'],['natal','astro','西洋占星'],
+    ['vedic','vedic','印度占星'],['name','name','姓名學']
+  ];
+  function hasValue(v){return typeof v==='string'?!!v.trim():!!v&&typeof v==='object'&&Object.keys(v).length>0;}
+  function isChartData(v,method){
+    if(!hasValue(v))return false;
+    if(typeof v==='string'){
+      // A native bridge records failed calculations as JSON strings. An error
+      // message is a useful warning, but it is not a completed horoscope.
+      if(/^\s*\{/.test(v)){try{v=JSON.parse(v);}catch(_){return true;}}
+      else if(method==='ziwei'&&/紫微未定盤/.test(v))return false;
+    }
+    if(v&&typeof v==='object'){
+      if(v.status==='CALCULATION_FAILED'||v.status==='STALE_INPUT'||v.status==='ERROR')return false;
+      if(method==='ziwei'&&v.status==='BIRTH_TIME_UNKNOWN')return false;
+    }
+    return true;
+  }
+  function stringify(v){return typeof v==='string'?v:JSON.stringify(v,null,2);}
+  function prepare(){
+    var state=typeof S!=='undefined'?S:{};
+    var f=state.form||{};
+    var question=String(f.question||'').trim();
+    if(!question)return {prompt:'',reason:'請先輸入本次問題，完成排盤或抽牌。'};
+    var p;
+    try {p=_buildPayload();}
+    catch(err){console.warn('[full prompt] 資料組裝失敗',err);return {prompt:'',reason:'本次排盤資料無法組裝；若出生資料剛更改，請重新排盤。'};}
+    if(!p)return {prompt:'',reason:'沒有本次排盤資料；請先完成排盤。'};
+    var raw=p.rawReadings||p.readings||{};
+    var dims=p.dims||{};
+    var available=METHOD.filter(function(row){
+      var key=row[0];
+      if(key==='ziwei'&&f.btimeUnknown)return false;
+      if((key==='natal'||key==='vedic')&&state.astroError&&!state.astroBundle)return false;
+      return isChartData(raw[key],key)||isChartData(dims[key],key)||
+        key==='tarot'&&isChartData(p.tarotData,key)||key==='ootk'&&isChartData(p.ootkData,key)||
+        key==='natal'&&isChartData(p.astroBundle&&p.astroBundle.western,key)||
+        key==='vedic'&&isChartData(p.astroBundle&&p.astroBundle.vedic,key);
+    });
+    if(!available.length)return {prompt:'',reason:'本次還沒有可核對的命理資料；請先完成至少一種排盤或抽牌。'};
+    var quality=window.JY_READING_QUALITY;
+    var kinds=available.map(function(row){return row[1];});
+    var sections=[
+      '你是一位使用繁體中文、以問題為中心的資深命理師。依下列本次已計算資料直接回答問題；先判主線，再以最關鍵的資料解釋。',
+      quality&&typeof quality.plainText==='function'?quality.plainText():'先回答問題，再解釋重要依據；分清象徵、條件與現實事實。',
+      '【原問句】\n'+question,
+      '【本次資料範圍】\n'+available.map(function(row){return row[2];}).join('、')+
+        '。只讀有提供資料的系統；同一資料的衍生標籤不重複算獨立證據。',
+      '【出生與曆法資料】\n'+stringify({
+        name:p.name||'',gender:p.gender||'',birth:p.birth||'',birthTime:p.btimeUnknown?'未知':p.birthTime||'',
+        timePrecision:p.timePrecision||'',birthLocation:p.birthLocation||null,
+        trueSolar:p.trueSolar||null,calendarBoundary:p.calendarBoundary||null
+      })
+    ];
+    available.forEach(function(row){
+      var method=quality&&typeof quality.methodLines==='function'?quality.methodLines(row[1]):[];
+      if(method.length)sections.push('【'+row[2]+'判讀要點】\n'+method.join('\n'));
+      var facts=raw[row[0]];
+      // 塔羅如有同一輪結構化牌位資料，只提供一次，避免文字與 JSON 重覆加權。
+      if(row[0]==='tarot'&&p.tarotData)facts=p.tarotData;
+      if(row[0]==='ootk'&&p.ootkData)facts=p.ootkData;
+      if(isChartData(facts,row[0]))sections.push('【'+row[2]+'本次資料】\n'+stringify(facts));
+      if(isChartData(dims[row[0]],row[0]))sections.push('【'+row[2]+'已算出的補充欄位（模型判讀須覆核）】\n'+stringify(dims[row[0]]));
+    });
+    if(p.astroBundle&&hasValue(p.astroBundle))
+      sections.push('【占星實算與精度資料】\n'+stringify(p.astroBundle));
+    if(p.photos&&hasValue(p.photos))
+      sections.push('【照片】本提示詞僅含文字，未附原始影像；需要分析照片時請自行於對話中另附，不可據檔名想像內容。');
+    sections.push('【整合要求】各法先按原問題成判；若盤面資料相衝，說明是不同層面還是同一命題的分歧。格局的結構命中、成立、受阻、待審分層，不能把候選等同成格；出生時辰未知時不引用依賴時辰的宮位與細運。正文先給方向，再給關鍵依據、阻力、成立條件及可以觀察的下一步。');
+    if(quality&&typeof quality.recommendationEnding==='function')
+      sections.push('【解讀完成後的選品】\n'+quality.recommendationEnding(kinds));
+    return {prompt:sections.join('\n\n'),reason:''};
+  }
+  window.JY_buildFullExportPrompt=function(){return prepare().prompt;};
+  window.JY_renderFullExportPrompt=function(mount){
+    var result=prepare();
+    var host=typeof mount==='string'?document.getElementById(mount):mount;
+    if(!host)host=document.getElementById('ai-deep-result')||document.getElementById('ai-deep-wrap');
+    if(!host)return result.prompt;
+    host.replaceChildren();
+    var card=document.createElement('section');card.className='jy-ex-card';
+    var title=document.createElement('h3');title.className='jy-ex-title';
+    title.textContent=result.prompt?'本次命理解讀提示詞':'資料尚未齊全';card.appendChild(title);
+    var note=document.createElement('p');note.className='jy-ex-sub';
+    note.textContent=result.prompt?'已依本次實際資料整理。複製後，請自行貼入選擇的 AI 對話。':result.reason;
+    card.appendChild(note);
+    if(result.prompt){
+      var button=document.createElement('button');button.type='button';button.className='jy-ex-btn';
+      button.textContent='複製完整提示詞';card.appendChild(button);
+      var details=document.createElement('details');details.className='jf-manual-copy';
+      var summary=document.createElement('summary');summary.textContent='檢視或手動複製完整文字';
+      var text=document.createElement('textarea');text.readOnly=true;text.value=result.prompt;
+      text.setAttribute('aria-label','本次完整解讀提示詞');
+      details.appendChild(summary);details.appendChild(text);card.appendChild(details);
+      button.addEventListener('click',function(){
+        function fail(){button.textContent='請展開下方文字，手動複製';details.open=true;}
+        if(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function'){fail();return;}
+        navigator.clipboard.writeText(result.prompt).then(function(){
+          button.textContent='✓ 已複製到剪貼簿';setTimeout(function(){button.textContent='複製完整提示詞';},2200);
+        },fail);
+      });
+    }
+    host.appendChild(card);
+    return result.prompt;
+  };
+})();

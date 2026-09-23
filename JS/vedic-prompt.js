@@ -37,11 +37,16 @@ var JY_REC_VEDIC = "【延伸選品】（規則版本 4.3.0）\n【從解讀到�
       specialRules:chart.specialRules,transits:chart.transits,transitSnapshots:chart.transitSnapshots||[],sensitivity:chart.sensitivity};
   }
   function build(question,chart,topic='general'){
-    const t=TOPICS[topic]||TOPICS.general,payload=data(chart,topic),n=chart.planets.Moon.nakshatra;
+    const t=TOPICS[topic]||TOPICS.general,full=data(chart,topic),n=chart.planets.Moon.nakshatra;
+    // The full data() export preserves exact native facts for downstream tools.
+    // Only the copied prompt removes duplicate matched details: they already
+    // occur in yogas; specialRules.checks still contains every decision.
+    const {matched,...specialChecks}=full.specialRules;
+    const payload={...full,specialRules:{...specialChecks,matchedIds:matched.map(r=>r.id)}};
     const q=String(question||'請分析我的命盤主軸、當前處境與可以採取的方向。').slice(0,6000);
     return `你是一位熟悉 Parashari Jyotisha（印度／吠陀占星）的資深解盤者。使用繁體中文，根據本次完整計算資料，給迷惘中的使用者明確、有取捨、可追溯的分析。
 
-${root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
 
 【本次問題與出生資料】
 問題以 JSON 字串保留原文：${JSON.stringify(q)}
@@ -54,7 +59,7 @@ ${root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root
 3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距與 solar 是已算的傳統角距判定；月 12°、火 17°、水順 14°／逆 12°、木 11°、金順 10°／逆 8°、土 15°。燃燒角距表示所採方法的近日狀態，不是精確偕日升落可見性。nearBoundary 或 motionSensitive 為真時，具體說明接近哪個分界。勿將未計算的完整 Shadbala 當現成分數。
 4. 同座先說共享哪個生活領域，再分析雙曜性質及各自掌宮如何協作或競爭；精確角距補充親近程度。同座和互容分開：互容是互入對方本垣，須追蹤交換的宮位與代價。沿 dispositors 找終點或循環，指出表面現象背後由哪顆星承接。
 5. graha drishti 為有方向的行星相位：七曜第七照，火星另第四／八，木星另第五／九，土星另第三／十。核對 A 照 B 和 B 照 A；未相互照見不寫互相。rasi drishti 為另一套星座關係，兩者獨立命名。交點在此不安特殊行星相位，羅睺計都以落宮、同座、星座相位、月宿主與定位星看放大或抽離的方向。
-6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，依成立條件從本盤原始座位重查，不能看到名稱就套結果。
+6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。Subha、Asubha 和十二宮 Kartari 共用相鄰座位，不當作兩份證據；水星為 mixed 時只按確定星曜判定，未定就不寫成已成立。Bhaaskara、Chapa 只按本次逐項實算結果使用。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，依成立條件從本盤原始座位重查，不能看到名稱就套結果。
 
 【九曜與宮位語彙：用於合成，不是單星斷語】
 ${Object.entries(PLANET_MEANINGS).map(([k,v])=>root.JYVedic.zh(k)+'：'+v).join('。\n')}。
@@ -88,7 +93,7 @@ Swiss Ephemeris 參照介面與恆星黃道政策：https://www.astro.com/swisse
 Drik Panchang 公開的 Surya Siddhanta 燃燒角距與順逆行差異：木星 https://www.drikpanchang.com/planet/asta/guru-asta-date-time.html 、水星 https://www.drikpanchang.com/planet/asta/budha-asta-date-time.html 、金星 https://www.drikpanchang.com/planet/asta/shukra-asta-date-time.html
 本站已按書目核查並作數值對照；這不是作者認證，也不表示本輪接收提示詞的 AI 已即時查網。資料 scope 明示未計算的流派模組，不得把它們冒充已經算好的結果。請開始解讀。
 
-${root.JY_READING_QUALITY&&root.JY_READING_QUALITY.version==="4.3.0"&&root.JY_READING_QUALITY.recommendationEnding?root.JY_READING_QUALITY.recommendationEnding('vedic'):JY_REC_VEDIC}`;
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('vedic'):JY_REC_VEDIC}`;
   }
   root.JYVedicPrompt=Object.freeze({build,data,topics:TOPICS,houseMeanings:HOUSE_MEANINGS});
 })(typeof globalThis!=='undefined'?globalThis:this);

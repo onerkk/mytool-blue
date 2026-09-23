@@ -14,7 +14,7 @@ export function create(host,kind){
  const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.42;room.dispose();pm.dispose();
  const body=new T.Group();scene.add(body);
  const mat=(color,metalness,roughness,extra={})=>keep(new T.MeshPhysicalMaterial({color,metalness,roughness,...extra}));
- const gold=mat('#ac7940',.88,.28),bright=mat('#ddba7e',.84,.23),copper=mat('#978364',.86,.33),dark=mat(kind==='yarrow'?'#0d161a':'#062722',.12,.48,{clearcoat:.35}),rim=mat('#382617',.75,.42),paper=mat('#e7d8b5',.03,.86),ivory=mat('#bd955f',.08,.7),ink=mat('#172528',.18,.5);
+ const gold=mat('#ac7940',.88,.28),bright=mat('#ddba7e',.84,.23),copper=mat('#876e54',.8,.38),dark=mat(kind==='yarrow'?'#0d161a':'#062722',.12,.48,{clearcoat:.35}),rim=mat('#382617',.75,.42),paper=mat('#e7d8b5',.03,.86),ivory=mat('#bd955f',.08,.7),ink=mat('#172528',.18,.5);
  const mesh=(g,m,p=body,x=0,y=0,z=0)=>{const a=new T.Mesh(keep(g),m);a.position.set(x,y,z);a.castShadow=true;a.receiveShadow=true;p.add(a);return a;};
  const ring=(r,t,y,m=bright,p=body)=>{const a=mesh(new T.TorusGeometry(r,t,10,96),m,p,0,y,0);a.rotation.x=Math.PI/2;return a;};
  const cyl=(r,h,y,m=gold,p=body)=>mesh(new T.CylinderGeometry(r,r,h,96),m,p,0,y,0);
@@ -26,7 +26,7 @@ export function create(host,kind){
  scene.add(new T.HemisphereLight('#eaf5ff','#1b1007',.7));
  const key=new T.DirectionalLight('#fff0d9',2.3);key.position.set(-4,8,5);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:.1,far:25});key.shadow.bias=-.0006;key.shadow.normalBias=.025;scene.add(key);
  const fill=new T.DirectionalLight('#bdd8e7',.85);fill.position.set(4,4,-2);scene.add(fill);
- const warm=new T.PointLight('#ffdc9c',16,16);warm.position.set(1,3,4);scene.add(warm);
+ const warm=new T.PointLight('#ffdc9c',12,16);warm.position.set(1,3,4);scene.add(warm);
  const floor=mesh(new T.PlaneGeometry(16,16),keep(new T.ShadowMaterial({opacity:.38})),scene,0,-.47,0);floor.rotation.x=-Math.PI/2;
  const coins=[],sticks=[],bases=[];
  if(kind==='coins'){

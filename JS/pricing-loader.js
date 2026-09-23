@@ -64,6 +64,14 @@
   if (!window._JY_PRICING)  window._JY_PRICING = window.JY_PRICES;
 
   // ─── Step 3: 嘗試讀快取補正（仍是同步）───
+  // 提示詞版不販售解讀，也不需要向付費 Worker 查詢價目。
+  // 保留本地欄位供舊版介面讀取，避免舊快取重新帶入過期付費價格。
+  if (window.JY_PROMPT_ONLY) {
+    window.JY_PRICES = Object.assign({}, HARDCODED_FALLBACK);
+    window._JY_PRICING = window.JY_PRICES;
+    window._jyReloadPricing = function(){ return window.JY_PRICES; };
+    return;
+  }
   _loadFromCache();
 
   // ─── Step 4: 非同步向 worker 抓最新價（背景更新）───

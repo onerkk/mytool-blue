@@ -188,6 +188,11 @@
         eventResolution: 'rows_pairs_claim_graph',
         entityResolution: 'court_or_query_binding_must_be_proved'
       },
+      mathers_66: {
+        eventResolution: 'three_period_arch_with_two_fresh_surprises',
+        entityResolution: 'significator_anchors_querent_not_unknown_actors',
+        temporalModel: 'original_past_present_future_without_calendar_anchor'
+      },
       mathers_horseshoe: {
         eventResolution: 'group_claim_graph',
         entityResolution: 'court_or_query_binding_must_be_proved'
@@ -353,6 +358,14 @@
       { state: 'qualitative_inference', cause: 'qualitative_inference', trajectory: 'qualitative_inference', outcome: 'qualitative_inference' },
       { kind: 'rows_and_pairs', independentComparableChannels: 0 },
       ['三排從右往左各自成句，再讀指定首尾配對與中心牌。']
+    ),
+    mathers_66: makeSpec(
+      'mathers_66', 'Mathers 1888 第三法・拱形66張與兩張意外牌', 'gd_book_t',
+      new Array(68).fill('structural'),
+      ['sequence_member_node','ordered_period_row','declared_temporal_pair','period_summary','declared_outer_pair','surprise_triad_context','arch_surprise_synthesis'],
+      {state:'qualitative_inference',trajectory:'qualitative_inference',outcome:'qualitative_inference',exact_date:'not_measured',cardinality:'not_measured'},
+      {kind:'historical_arch_three_periods_with_surprises',independentComparableChannels:0},
+      ['過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；代表牌另置中央。','兩張意外牌從最初未用的11張另抽，不能當66張主盤或兩個獨立結果。','原文後段66張重排大圓有歧義，本站沒有模擬，禁止聲稱完整復刻。']
     ),
     mathers_horseshoe: makeSpec(
       'mathers_horseshoe', 'Mathers 1888 第一法完整 Horseshoe', 'gd_book_t',
@@ -804,11 +817,12 @@
     nodes.forEach(function (node, index) {
       var isSequence=node.slotKind==='sequence_member';
       var isTriad=node.slotKind==='triad_member';
-      factory.add(isSequence?'sequence_member_node':(isTriad?'triad_member_node':'atomic_node'), node.position + '：' + node.cardName, [index], {
-        topology: isSequence?'ordered_context_member':(isTriad?'triad_context_member':'node'),
-        roleJoin: isSequence?'must_join_declared_sequence_or_pair':(isTriad?'must_join_declared_triad':'single_node_role_only'),
-        claimPolicy: isSequence||isTriad?'context_member_only':'direct_interpretation',
-        forbidden: isSequence?['sequence_index_is_not_semantic_position','sequence_member_cannot_establish_result_alone']:(isTriad?['triad_member_cannot_establish_result_alone']:[]),
+      var isSurprise=node.slotKind==='surprise_conclusion';
+      factory.add(isSequence?'sequence_member_node':(isTriad?'triad_member_node':(isSurprise?'surprise_conclusion_member_node':'atomic_node')), node.position + '：' + node.cardName, [index], {
+        topology: isSequence?'ordered_context_member':(isTriad?'triad_context_member':(isSurprise?'separate_unused_card_context':'node')),
+        roleJoin: isSequence?'must_join_declared_sequence_or_pair':(isTriad?'must_join_declared_triad':(isSurprise?'must_join_significator_and_other_surprise':'single_node_role_only')),
+        claimPolicy: isSequence||isTriad||isSurprise?'context_member_only':'direct_interpretation',
+        forbidden: isSequence?['sequence_index_is_not_semantic_position','sequence_member_cannot_establish_result_alone']:(isTriad?['triad_member_cannot_establish_result_alone']:(isSurprise?['surprise_member_cannot_establish_result_alone']:[])),
         metadata:{slotKind:node.slotKind,independentSemanticPosition:node.independentSemanticPosition}
       });
     });
@@ -953,6 +967,24 @@
       }
       var center21 = direct('unpaired_sequence_member', '未配對第11張（仍屬整體，不是結果位）', [10], { topology: 'unpaired_member', metadata:{independentResult:false} });
       synthesis('row_dependency_network', '三排連續答案、首尾配對與未配對成員綜合', rows.concat(pairs21, [center21]), {eventJoin:'row_summaries_and_declared_pairs_only'});
+    } else if (id === 'mathers_66') {
+      // Third Method: the indices below use the original numbered cards, zero-based.
+      // Surprise cards 67/68 were drawn from the original unused eleven; no circle is invented.
+      var timeGroups=[{name:'過去',outer:0,inner:33,event:'PAST_RELATIVE'},{name:'現在',outer:22,inner:55,event:'PRESENT_RELATIVE'},{name:'未來',outer:11,inner:44,event:'FUTURE_CONDITIONAL'}];
+      var periodSummaries=[];
+      timeGroups.forEach(function(group){
+        var rows66=[direct('ordered_period_row',group.name+'外弧11張',range(group.outer,group.outer+11),{topology:'ordered_row',eventBinding:group.event}),direct('ordered_period_row',group.name+'內弧11張',range(group.inner,group.inner+11),{topology:'ordered_row',eventBinding:group.event})];
+        var pairIds=[];
+        for(var n66=0;n66<11;n66++){
+          pairIds.push(direct('declared_temporal_pair',group.name+'同向對應 '+(group.outer+n66+1)+'↔'+(group.inner+n66+1),[group.outer+n66,group.inner+n66],{topology:'declared_pair',eventBinding:group.event,metadata:{relationKind:'semantic_pair',elementalDignity:false},forbidden:['declared_pair_is_not_elemental_adjacency']}));
+          pairIds.push(direct('declared_temporal_pair',group.name+'反向對應 '+(group.outer+n66+1)+'↔'+(group.inner+11-n66),[group.outer+n66,group.inner+10-n66],{topology:'declared_pair',eventBinding:group.event,metadata:{relationKind:'semantic_pair',elementalDignity:false},forbidden:['declared_pair_is_not_elemental_adjacency']}));
+        }
+        periodSummaries.push(synthesis('period_summary',group.name+'兩弧序列與原書對照整合',rows66.concat(pairIds),{eventBinding:group.event,eventJoin:'same_original_period_only'}));
+      });
+      var crossPairs=[];
+      for(var last=0;last<33;last++)crossPairs.push(direct('declared_outer_pair','66張末輪 '+(66-last)+'↔'+(1+last),[65-last,last],{topology:'declared_pair',metadata:{relationKind:'semantic_pair',elementalDignity:false},forbidden:['declared_pair_is_not_elemental_adjacency','large_circle_rearrangement_not_implemented']}));
+      var surpriseUnit=direct('surprise_triad_context','右意外牌→另置代表牌→左意外牌',[67,66],{topology:'original_unused_surprise_cards',claimPolicy:'context_member_only',metadata:{significator:'recorded_separately_in_drawProcedure',fromInitialUnusedEleven:true},forbidden:['surprise_cards_are_not_part_of_initial_66','unrecorded_significator_must_not_be_invented']});
+      synthesis('arch_surprise_synthesis','三個原書時區、末輪核對與兩張意外牌共同收束',periodSummaries.concat(crossPairs,[surpriseUnit]),{eventJoin:'period_summaries_not_cross_period_single_cards',metadata:{largeCircleImplemented:false,remainingUnusedCardsNotInterpreted:true}});
     } else if (id === 'mathers_horseshoe') {
       var groupA = direct('ordered_group', 'A 組 26 張由右往左', range(0, 26), { topology: 'ordered_group', eventBinding: 'GROUP_A_EVENT' });
       var groupC = direct('ordered_group', 'C 組 17 張由右往左', range(26, 43), { topology: 'ordered_group', eventBinding: 'GROUP_C_EVENT' });

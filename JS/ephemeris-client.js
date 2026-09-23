@@ -28,6 +28,7 @@
   };
 
   async function _fetchEphemeris(year, month, day, hour, minute, tz, mode) {
+    if (window.JY_PROMPT_ONLY) return null;
     try {
       var resp = await fetch(WORKER_URL + '/ephemeris', {
         method: 'POST',

@@ -95,9 +95,11 @@ function baziDetectZhengGe(bazi) {
   if (luMap[dm] === monthZhi) {
     return {
       geName: '建祿格',
-      geGod: '比肩/劫財',
-      geGan: dm,
-      zh: '建祿格：月令為日主之祿，根基穩固，自力更生型命格。不喜再見比劫，宜食傷生財或官殺顯貴。',
+      geGod: geGod,
+      geGan: geGan,
+      touChu: touChu,
+      benQiGod: benQiGod,
+      zh: '建祿格月令入口：日主祿位在月支。依透干、合支再尋財官殺食的可用通路；強弱、成敗與喜忌須看原局，不由祿位推斷性格或結果。',
       isSpecial: true
     };
   }
@@ -107,9 +109,11 @@ function baziDetectZhengGe(bazi) {
   if (renMap[dm] === monthZhi) {
     return {
       geName: '月刃格',
-      geGod: '劫財',
-      geGan: dm,
-      zh: '月刃格：月令為日主之刃，性格剛強果斷，必須見官殺制刃方能成格。無官殺則剛愎自用。',
+      geGod: geGod,
+      geGan: geGan,
+      touChu: touChu,
+      benQiGod: benQiGod,
+      zh: '月刃格月令入口：採五陽干祿前一位的分支；有官殺制刃為可審條件，財印配合、傷官介入、制合與成敗仍須依實際透藏覆核。',
       isSpecial: true
     };
   }
@@ -120,10 +124,8 @@ function baziDetectZhengGe(bazi) {
     '食神': '食神格', '傷官': '傷官格', '正財': '正財格', '偏財': '偏財格'
   };
 
-  var geName = geNames[geGod] || (geGod + '格');
-  if (!geGod || geGod === '比肩' || geGod === '劫財') {
-    geName = '建祿格（月令無用神透出）';
-  }
+  // 比劫月令不等於建祿。戊辰、己未等土日遇庫月的比肩本氣尤其容易誤報。
+  var geName = geGod === '劫財' ? '月劫格（候選）' : geGod === '比肩' ? '比肩月令（候選）' : geNames[geGod] || (geGod ? geGod+'格' : '月令格局待審');
 
   // Distinguish an exposed month stem from a fallback root candidate.
   // Descriptions must not assert an exposure the calculation did not find.
@@ -137,7 +139,7 @@ function baziDetectZhengGe(bazi) {
     '正財':'觀察財星根氣、食傷來源、比劫互動與日主承受，不直接等同收入。',
     '偏財':'觀察資源運用、財星根氣與承受條件，不直接推定投資能力。'
   };
-  var geDesc = geName+'候選：'+(touChu?'月令藏干 '+touChu+'（'+touChuGod+'）明透。':'月令藏干未透，本模型先以本氣 '+benQi+'（'+benQiGod+'）列為候選。')+
+  var geDesc = geName+(geName.includes('候選')?'：':'候選：')+(touChu?'月令藏干 '+touChu+'（'+touChuGod+'）明透。':'月令藏干未透，本模型先以本氣 '+benQi+'（'+benQiGod+'）列為候選。')+
     (geTopics[geGod]||'取格須再審月令、透藏、根氣與全局。')+'成格與取用仍待綜合覆核。';
 
   return {
@@ -352,98 +354,16 @@ function baziExtraShenSha(bazi) {
 // 食神制殺、傷官配印、財官雙美 等經典組合
 
 function baziTenGodCombinations(bazi) {
-  if (!bazi || !bazi.gods) return [];
-
-  var combos = [];
-  var gods = bazi.gods || {};
-  var dm = bazi.dm;
-  var allGan = [_pGan(bazi,0), _pGan(bazi,1), _pGan(bazi,2), _pGan(bazi,3)];
-
-  // 收集四柱出現的十神
-  var godList = [];
-  var _gk = ['year','month','day','hour'];  // v80.30 修死碼：bazi.gods 以柱名為鍵，原 gods[i] 數字索引永遠 undefined → 全部組合從未觸發
-  allGan.forEach(function(g, i) {
-    if (i === 2) return; // 日干不算
-    var god = gods[_gk[i]] || gods[i] || '';
-    if (god) godList.push(god);
+  if (!bazi || !bazi.specialRuleAssessment || !Array.isArray(bazi.specialRuleAssessment.rules)) return [];
+  var labels = {'food-kill':'食神制殺','hurt-seal':'傷官佩印','kill-seal':'殺印相生','officer-seal':'官印相生',
+    'food-wealth':'食神生財','hurt-wealth':'傷官生財','owl-food':'梟印奪食','hurt-officer':'傷官見官'};
+  return bazi.specialRuleAssessment.rules.filter(function(rule){
+    return Object.prototype.hasOwnProperty.call(labels,rule.id)&&rule.status==='structural';
+  }).map(function(rule){
+    return {name:labels[rule.id],status:'作用入口',source:rule.source,checks:rule.checks,
+      effect:'只確認透干近位且雙方有根；月令、全局制合與承受仍待審。',
+      zh:labels[rule.id]+'作用入口：已確認透干近位且雙方有根；月令、全局制合與承受仍待審，不能由組合名推定財富、職位或人際事件。'};
   });
-
-  var hasZhengGuan = godList.includes('正官');
-  var hasQiSha = godList.includes('七殺');
-  var hasShiShen = godList.includes('食神');
-  var hasShangGuan = godList.includes('傷官');
-  var hasZhengYin = godList.includes('正印');
-  var hasPianYin = godList.includes('偏印');
-  var hasZhengCai = godList.includes('正財');
-  var hasPianCai = godList.includes('偏財');
-
-  // 食神制殺
-  if (hasShiShen && hasQiSha) {
-    combos.push({
-      name: '食神制殺',
-      zh: '食神制殺：食神剛好制住七殺的凶性，化壓力為動力，是大富大貴的組合'
-    });
-  }
-
-  // 傷官配印
-  if (hasShangGuan && hasZhengYin) {
-    combos.push({
-      name: '傷官配印',
-      zh: '傷官配印：傷官的才華與反叛被正印的智慧約束，學識淵博、聲名遠播'
-    });
-  }
-
-  // 殺印相生
-  if (hasQiSha && hasZhengYin) {
-    combos.push({
-      name: '殺印相生',
-      zh: '殺印相生：七殺的壓力被正印化解為權力，掌權且有智慧，是高管命格'
-    });
-  }
-
-  // 財官雙美
-  if (hasZhengCai && hasZhengGuan) {
-    combos.push({
-      name: '財官雙美',
-      zh: '財官雙美：正財與正官同現，事業穩定且收入豐厚，社會地位高'
-    });
-  }
-
-  // 傷官見官
-  if (hasShangGuan && hasZhengGuan) {
-    combos.push({
-      name: '傷官見官',
-      zh: '⚠ 傷官見官：傷官與正官對沖，口舌是非多，與上司易衝突。需印來通關或化解。'
-    });
-  }
-
-  // 梟神奪食
-  if (hasPianYin && hasShiShen) {
-    combos.push({
-      name: '梟神奪食',
-      zh: '⚠ 梟神奪食：偏印剋制食神，才華被壓制、好事被攪局。需偏財來制梟。'
-    });
-  }
-
-  // 官殺混雜
-  if (hasZhengGuan && hasQiSha) {
-    combos.push({
-      name: '官殺混雜',
-      zh: '⚠ 官殺混雜：正官與七殺同現，事業方向不明確，壓力來源多頭。需去一留一方為清格。'
-    });
-  }
-
-  // 比劫奪財
-  var hasBiJian = godList.includes('比肩');
-  var hasJieCai = godList.includes('劫財');
-  if ((hasBiJian || hasJieCai) && (hasZhengCai || hasPianCai) && bazi.strong) {
-    combos.push({
-      name: '比劫奪財',
-      zh: '⚠ 比劫奪財：身強又見比劫與財星同現，財來財去留不住，合夥事業需注意利益分配。'
-    });
-  }
-
-  return combos;
 }
 
 

@@ -191,6 +191,26 @@
     }
     return targets.filter(function(x,i,a){return a.findIndex(function(y){return y.role===x.role&&y.relative===x.relative;})===i;});
   }
+  function hiddenCondition(hidden,flying,lines,date){
+    var s=hidden.states,f=flying.states,help=[],cautions=[];
+    if(s.monthSame||s.daySame)help.push('伏神值月日');
+    else if(s.monthRelation==='比和'||s.dayRelation==='比和')help.push('伏神得月日同氣');
+    if(s.monthRelation==='生'||s.dayRelation==='生')help.push('伏神得月日生');
+    if(relation(flying.element,hidden.element)==='生')help.push('飛神生伏神');
+    var movingHelp=lines.filter(function(l){return l.moving&&relation(l.element,hidden.element)==='生';}).map(function(l){return l.position;});
+    if(movingHelp.length)help.push('動爻生伏神：'+movingHelp.join('、')+'爻');
+    if(f.void||f.monthBroken)help.push('飛神空或月破，制伏力待辨');
+    if(['受生','受克','克'].includes(f.monthRelation))help.push('飛神月令休囚死候選，仍須核日助');
+    if(['墓','絕'].includes(lifeStage(flying.element,date.day[1]))||['墓','絕'].includes(lifeStage(flying.element,date.monthBranch)))help.push('飛神墓絕候選，仍須核生扶');
+    if(f.dayClash||f.monthRelation==='克'||f.dayRelation==='克'||lines.some(function(l){return l.position!==flying.position&&l.moving&&(branchLinks(l.branch,flying.branch).clash||relation(l.element,flying.element)==='克');}))help.push('日月動爻沖克飛神候選');
+    if(s.monthBroken||s.void)cautions.push(s.monthBroken?'伏神月破':'伏神旬空');
+    if(['受生','受克','克'].includes(s.monthRelation)&&(s.monthBroken||s.void))cautions.push('伏神月令休囚死又逢空破候選');
+    if(s.monthRelation==='克'||s.dayRelation==='克'||s.dayClash)cautions.push('伏神遇月日克沖候選');
+    if(relation(flying.element,hidden.element)==='克')cautions.push('飛神克伏神'+(f.monthSame||f.daySame||f.monthRelation==='生'||f.dayRelation==='生'?'，飛神得月日助':'，仍須衡量飛神旺衰'));
+    if(['墓','絕'].includes(lifeStage(hidden.element,date.day[1]))||['墓','絕'].includes(lifeStage(hidden.element,date.monthBranch))||['墓','絕'].includes(lifeStage(hidden.element,flying.branch)))cautions.push('伏神墓絕條件候選');
+    return {support:help,cautions:cautions,status:help.length&&cautions.length?'mixed':help.length?'supported-conditional':cautions.length?'restrained-conditional':'unresolved',
+      source:RULE_SOURCE,policy:'飛伏六條有用與五條難出須合參，命中只是候選；《增刪卜易》原文中野鶴另主張伏神不取、重卜求明現，不以此候選直接判吉凶。'};
+  }
   function parseWindow(question,date,explicit){
     if(!date.instant||!Number.isFinite(Date.parse(date.instant)))return {status:'missing-cast-instant',dates:[]};
     var wall=localTimeAt(Date.parse(date.instant),date.timezoneOffset==null?8:date.timezoneOffset),today=Date.UTC(wall.year,wall.month-1,wall.day),end=null,start=today,why='';
@@ -209,9 +229,12 @@
     var lines=result.lines,date=result.calendar,assessments=lines.map(function(l){return assessLine(l,date,lines);});
     var targets=questionTargets(result.question,result.focus).map(function(t){
       var found=lines.filter(function(l){return t.relative==='世應'?!!l.role:l.relative===t.relative;}).map(function(l){return {position:l.position,branch:l.branch,element:l.element,role:l.role,hidden:false,assessment:assessments[l.position-1]};});
-      if(!found.length)lines.forEach(function(l){if(l.hidden&&l.hidden.relative===t.relative)found.push({position:l.position,branch:l.hidden.branch,element:l.hidden.element,hidden:true,flightRelation:l.hidden.flightRelation,states:l.hidden.states});});
-      return {role:t.role,relative:t.relative,status:found.length===1?'unique':found.length?'multiple':'absent',candidates:found,
-        selection:found.length===1?found[0].position:null,policy:'唯一者定位；多現保留各爻、世應角色及旺衰，不以任意分數挑吉爻。'};
+      var hiddenOnly=!found.length;
+      if(hiddenOnly)lines.forEach(function(l){if(l.hidden&&l.hidden.relative===t.relative)found.push({position:l.position,branch:l.hidden.branch,element:l.hidden.element,hidden:true,flightRelation:l.hidden.flightRelation,states:l.hidden.states,flightAssessment:hiddenCondition(l.hidden,l,lines,date)});});
+      var calendarAlternatives=hiddenOnly&&t.relative!=='世應'?[{source:'月建',branch:date.monthBranch},{source:'日辰',branch:date.day[1]}].filter(function(x){return relative(result.original.palace.element,ELEMENT[ZHI.indexOf(x.branch)])===t.relative;}):[];
+      return {role:t.role,relative:t.relative,status:hiddenOnly?(found.length?'hidden-only':'absent'):found.length===1?'unique':'multiple',candidates:found,
+        calendarAlternatives:calendarAlternatives,selection:hiddenOnly?null:found.length===1?found[0].position:null,
+        policy:'明現與伏神分開，伏神即使只見一爻仍不冒充明現的唯一用神。月日同六親只列《增刪卜易》代取方向；同類多現須按人物與事件辨別。'};
     });
     var influences=targets.map(function(t){return {relative:t.relative,candidates:t.candidates.map(function(u){return {position:u.position,hidden:u.hidden,branch:u.branch,
       network:lines.map(function(l){var rel=relation(l.element,u.element),chou=CONTROLS[l.element]===Object.keys(GENERATES).find(function(e){return GENERATES[e]===u.element;});return {position:l.position,relative:l.relative,
@@ -241,20 +264,24 @@
     });
     var window=parseWindow(result.question,date,input.timeWindow),timing={window:window,status:window.status,candidates:[],policy:'條件觸發日，不是事件保證；多用神未定者不合併成唯一日期。日界沿用起卦設定，交節日须按瞬間核月。'};
     if(window.status==='bounded'){
-      var offset=date.timezoneOffset==null?8:date.timezoneOffset,previous=null;
+      var offset=date.timezoneOffset==null?8:date.timezoneOffset;
+      // 先讀窗外前一日的實際曆法，避免指定起始日已過交節／出旬，
+      // 卻因 previous 為 null 而誤把查詢視窗第一天叫作「首次進入」。
+      var prior=new Date(window.startMs-86400000);
+      var previous=calendar({year:prior.getUTCFullYear(),month:prior.getUTCMonth()+1,day:prior.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'});
       for(var ms=window.startMs;ms<=window.endMs;ms+=86400000){
         var d=new Date(ms),cal=calendar({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'}),triggers=[];
         targets.forEach(function(t){t.candidates.forEach(function(u){var l=u.hidden?lines[u.position-1].hidden:lines[u.position-1],links=branchLinks(u.branch,cal.day[1]),s=l.states,why=[];
           var leavesVoid=s.void&&!cal.voidBranches.includes(u.branch)&&(!previous||previous.voidBranches.includes(u.branch));
           var leavesMonth=s.monthBroken&&cal.monthBranch!==date.monthBranch&&(!previous||previous.monthBranch===date.monthBranch);
           if(leavesVoid)why.push('起卦旬空解除候選');
-          if(s.monthBroken&&(links.same||links.combine||cal.monthBranch!==date.monthBranch))why.push(links.same?'月破逢值':links.combine?'月破逢合':'已換節令月');
+          if(s.monthBroken){if(links.same)why.push('月破逢值');if(links.combine)why.push('月破逢合');if(leavesMonth)why.push('首次進入新節令月');}
           if(l.moving){if(links.same)why.push('動爻逢值');if(links.combine)why.push('動爻逢合');if(l.changed&&cal.day[1]===l.changed.branch)why.push('變支逢值');}
           else{if(links.same)why.push('靜爻逢值');if(links.clash)why.push('靜爻逢沖');}
           if(!u.hidden){var assessment=assessments[u.position-1];assessment.tombs.forEach(function(tomb){if(branchLinks(tomb.branch,cal.day[1]).clash)why.push('沖'+tomb.kind+'候選');});
             if(l.moving&&s.dayCombine&&branchLinks(date.day[1],cal.day[1]).clash)why.push('沖開起卦日合候選');
           }
-          if(why.length&&(leavesVoid||leavesMonth||links.same||links.clash||links.combine||why.some(function(w){return /^沖/.test(w);})||(l.changed&&l.moving&&cal.day[1]===l.changed.branch)))triggers.push({relative:t.relative,position:u.position,hidden:u.hidden,reasons:why,conditions:u.hidden?['伏神待出伏']:assessments[u.position-1].obstacles});
+          if(why.length&&(leavesVoid||leavesMonth||links.same||links.clash||links.combine||why.some(function(w){return /^沖/.test(w);})||(l.changed&&l.moving&&cal.day[1]===l.changed.branch)))triggers.push({relative:t.relative,position:u.position,hidden:u.hidden,reasons:why,conditions:u.hidden?['伏神待出伏'].concat(u.flightAssessment?u.flightAssessment.cautions:[]):assessments[u.position-1].obstacles});
         });});
         if(triggers.length)timing.candidates.push({date:d.toISOString().slice(0,10),day:cal.day,month:cal.month,triggers:triggers});
         previous=cal;

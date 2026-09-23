@@ -3287,339 +3287,73 @@ function jyChaturthamsa(sidLon) {
 // ══════════════════════════════════════════════════════════════════════
 function jyCrossValidation(jy, bazi, ziwei, type) {
   if (!jy) return null;
-  
-  var signals = [];
-  var agreements = 0, disagreements = 0;
-  
-  // ── 1. Timing Comparison: Jyotish Dasha vs Bazi Dayun ──
-  if (jy.currentMD && bazi && bazi.dayun) {
-    var curBaziDy = bazi.dayun.find(function(d) { return d.isCurrent; });
-    var jyDashaGood = false, baziDyGood = false;
-    
-    // Jyotish: Is current Dasha lord well-placed?
-    var mdLord = jy.currentMD.lord;
-    if (jy.planets[mdLord]) {
-      var mdDig = jy.planets[mdLord].dignity;
-      jyDashaGood = (mdDig === 'exalted' || mdDig === 'own' || mdDig === 'moola' || mdDig === 'friend');
-    }
-    
-    // Bazi: Is current Dayun positive?
-    if (curBaziDy) {
-      baziDyGood = (curBaziDy.level && (curBaziDy.level.includes('吉') || curBaziDy.level.includes('旺')));
-    }
-    
-    if (jyDashaGood && baziDyGood) {
-      agreements++;
-      signals.push({
-        type: 'timing_agree_pos',
-        zh: '✅ 時間軸一致看好：吠陀' + jy.currentMD.zh + '大運有利 + 八字大運' + (curBaziDy ? curBaziDy.level : '') + '，雙系統確認目前是好時機',
-        weight: 3
-      });
-    } else if (!jyDashaGood && !baziDyGood) {
-      agreements++;
-      signals.push({
-        type: 'timing_agree_neg',
-        zh: '⚠️ 時間軸一致偏弱：吠陀大運能量不足 + 八字大運也偏弱，目前宜穩健不宜冒進',
-        weight: -3
-      });
-    } else {
-      disagreements++;
-      if (jyDashaGood) {
-        signals.push({
-          type: 'timing_disagree',
-          zh: '🔄 時間軸分歧：吠陀大運看好但八字大運偏弱 → 有潛力但需要更多準備',
-          weight: 0
-        });
-      } else {
-        signals.push({
-          type: 'timing_disagree',
-          zh: '🔄 時間軸分歧：八字大運較好但吠陀大運偏弱 → 機會存在但執行力需加強',
-          weight: 0
-        });
-      }
-    }
+  var signals=[];
+  function note(source, text){signals.push({type:source,zh:source+'：'+text,weight:0});}
+  // Each tradition uses different definitions. Similar sounding elements, scores or
+  // auspicious labels are not independent votes or statistical corroboration.
+  if (jy.currentMD && jy.currentMD.zh)
+    note('吠陀主運', jy.currentMD.zh+'；需在該體系內核對宮主職責、落宮與分盤，不能只看主運星尊貴定時機。');
+  if (bazi && Array.isArray(bazi.dayun)) {
+    var current=bazi.dayun.find(function(d){return d && d.isCurrent;});
+    if(current) note('八字大運', String(current.gan||'')+String(current.zhi||'')+(current.level?'（原有標籤：'+current.level+'）':'')+'；應回到原局月令、扶抑與調候檢視。');
   }
-  
-  // ── 2. Personality Comparison: Lagna vs Bazi Ri-Yuan ──
-  if (jy.lagna && bazi) {
-    var lagnaEl = JY_RASHI[jy.lagna.idx].el;
-    var baziEl = bazi.dmEl;
-    var elMap = { 'Fire': '火', 'Earth': '土', 'Air': '金', 'Water': '水' };
-    // Simplified element mapping (Vedic → Chinese)
-    // Fire↔火, Earth↔土, Air≈金(metal/wind), Water↔水
-    var jyEl = elMap[lagnaEl] || '';
-    if (jyEl === baziEl) {
-      agreements++;
-      signals.push({
-        type: 'personality_agree',
-        zh: '✅ 性格特質一致：吠陀上升' + jy.lagnaSign + '(' + lagnaEl + ') 與八字日主' + bazi.dm + '(' + baziEl + ')同屬' + baziEl + '行，兩套系統看到的你一致',
-        weight: 2
-      });
-    } else {
-      // Not necessarily disagreement — different systems focus on different aspects
-      signals.push({
-        type: 'personality_complement',
-        zh: '🔗 性格互補面：吠陀看你' + lagnaEl + '屬性（' + (jy.lagnaSign || JY_RASHI[jy.lagna.idx].zh) + '座），八字看你' + baziEl + '行（' + bazi.dm + '），呈現你不同面向',
-        weight: 1
-      });
+  var lagnaIndex=jy.lagna && jy.lagna.idx;
+  if(Number.isInteger(lagnaIndex) && JY_RASHI[lagnaIndex])
+    note('吠陀上升', JY_RASHI[lagnaIndex].zh+'；本系統的星座元素不等於八字日主五行。');
+  if(bazi && bazi.dm)
+    note('八字日主', String(bazi.dm)+'；須與月令、藏干及全局作用合讀，不能和吠陀元素投票。');
+  if(type==='love') {
+    if(Number.isInteger(lagnaIndex) && jy.planets && JY_RASHI[(lagnaIndex+6)%12]) {
+      var lord7=JY_RASHI[(lagnaIndex+6)%12].lord;
+      if(jy.planets[lord7]) note('吠陀感情', '可查看第七宮主'+(JY_PLANETS[lord7]&&JY_PLANETS[lord7].zh||lord7)+'的職責與作用；單顆行星尊貴不能證明伴侶心意。');
     }
+    if(bazi && Array.isArray(bazi.shensha) && bazi.shensha.some(function(n){return n==='桃花'||n==='紅鸞';}))
+      note('八字感情', '原局含桃花／紅鸞標記；仍需比較整體關係作用，不能推出對方喜歡或關係成立。');
+    if(ziwei && Array.isArray(ziwei.palaces) && ziwei.palaces.some(function(p){return p && p.name==='夫妻';}))
+      note('紫微夫妻宮', '以本宮、三方四正、四化及當期作用合讀；單顆主星不能推定穩定關係。');
   }
-  
-  // ── 3. Strength Comparison: Shadbala vs Bazi Body Strength ──
-  if (jy.shadbala && bazi) {
-    var lagnaLord = JY_RASHI[jy.lagna.idx].lord;
-    var llShadbala = jy.shadbala[lagnaLord];
-    var jyStrong = llShadbala && llShadbala.ratio >= 1.0;
-    var baziStrong = bazi.strong;
-    
-    if (jyStrong && baziStrong) {
-      agreements++;
-      signals.push({
-        type: 'strength_agree_strong',
-        zh: '✅ 能量充足確認：吠陀命宮主力量足夠 + 八字身強，你的基礎能量穩定，適合積極行動',
-        weight: 2
-      });
-    } else if (!jyStrong && !baziStrong) {
-      agreements++;
-      signals.push({
-        type: 'strength_agree_weak',
-        zh: '⚠️ 能量偏弱確認：吠陀命宮主力量不足 + 八字身弱，需要借助外力（貴人、水晶、時機），不宜單打獨鬥',
-        weight: -2
-      });
-    } else {
-      disagreements++;
-      signals.push({
-        type: 'strength_disagree',
-        zh: '🔄 能量評估分歧：' + (jyStrong ? '吠陀看你偏強但八字偏弱' : '八字看你偏強但吠陀偏弱') + ' → 某些面向有力某些需要補強',
-        weight: 0
-      });
-    }
+  if(type==='career') {
+    if(Number.isInteger(lagnaIndex) && jy.planets)
+      note('吠陀職涯', '從第十宮主、落宮與有效分盤查核職涯條件，行星落尊貴不等於職位落實。');
+    if(bazi) note('八字職涯', '從格局、月令與用神作用分析，身強本身不等於事業有利。');
+    if(ziwei && Array.isArray(ziwei.palaces) && ziwei.palaces.some(function(p){return p && (p.name==='官祿'||p.name==='事業');}))
+      note('紫微官祿宮', '須兼看三方四正與四化，單顆吉星不等於升遷。');
   }
-  
-  // ── 4. Relationship/Marriage Comparison (if type = love) ──
-  if (type === 'love') {
-    // Jyotish: 7th lord + Venus + D9
-    var lord7 = JY_RASHI[(jy.lagna.idx + 6) % 12].lord;
-    var l7p = jy.planets[lord7];
-    var jyLoveGood = l7p && (l7p.dignity === 'exalted' || l7p.dignity === 'own' || l7p.dignity === 'friend') && ![6,8,12].includes(l7p.bhava);
-    
-    // Bazi: peach blossom stars
-    var baziLoveGood = bazi.shensha && (bazi.shensha.includes('桃花') || bazi.shensha.includes('紅鸞'));
-    
-    // Ziwei: 夫妻宮
-    var zwLoveGood = false;
-    if (ziwei && ziwei.palaces) {
-      var fqPalace = ziwei.palaces.find(function(p) { return p.name === '夫妻'; });
-      if (fqPalace) {
-        var majorStars = fqPalace.stars.filter(function(s) { return s.type === 'major'; });
-        zwLoveGood = majorStars.some(function(s) { return ['天府','太陰','天相','天梁','天同'].includes(s.name); });
-      }
-    }
-    
-    var lovePosCount = (jyLoveGood ? 1 : 0) + (baziLoveGood ? 1 : 0) + (zwLoveGood ? 1 : 0);
-    if (lovePosCount >= 2) {
-      signals.push({
-        type: 'love_multi_pos',
-        zh: '✅ 感情條件多系統認證：' + (jyLoveGood ? '吠陀配偶宮佳' : '') + (baziLoveGood ? ' 八字有桃花星' : '') + (zwLoveGood ? ' 紫微夫妻宮有利' : '') + '，感情基礎良好',
-        weight: 3
-      });
-    } else if (lovePosCount === 0) {
-      signals.push({
-        type: 'love_multi_neg',
-        zh: '⚠️ 感情需多用心：三套系統都提示感情面需要更多經營，不代表沒有緣分但要主動付出',
-        weight: -2
-      });
-    }
-  }
-  
-  // ── 5. Career Comparison (if type = career) ──
-  if (type === 'career') {
-    var lord10 = JY_RASHI[(jy.lagna.idx + 9) % 12].lord;
-    var l10p = jy.planets[lord10];
-    var jyCareerGood = l10p && (l10p.dignity === 'exalted' || l10p.dignity === 'own') && [1,4,7,10,5,9].includes(l10p.bhava);
-    
-    var baziCareerGood = bazi && bazi.strong && bazi.fav;
-    
-    var zwCareerGood = false;
-    if (ziwei && ziwei.palaces) {
-      var sgyPalace = ziwei.palaces.find(function(p) { return p.name === '事業' || p.name === '官祿'; });
-      if (sgyPalace) {
-        var sm = sgyPalace.stars.filter(function(s) { return s.type === 'major'; });
-        zwCareerGood = sm.some(function(s) { return ['紫微','天府','太陽','武曲','天相'].includes(s.name); });
-      }
-    }
-    
-    var careerPosCount = (jyCareerGood ? 1 : 0) + (baziCareerGood ? 1 : 0) + (zwCareerGood ? 1 : 0);
-    if (careerPosCount >= 2) {
-      signals.push({
-        type: 'career_multi_pos',
-        zh: '✅ 事業潛力多系統確認，職涯發展有底氣',
-        weight: 3
-      });
-    }
-  }
-  
-  // ── 6. Transit + Bazi Liuyear Agreement ──
-  // Compare Jyotish transit Saturn/Jupiter position with Bazi current year analysis
-  try {
-    var transits = jyCurrentTransits();
-    var jupTransitBhava = ((transits.Jupiter.rashiIdx - jy.lagna.idx + 12) % 12) + 1;
-    var satTransitBhava = ((transits.Saturn.rashiIdx - jy.lagna.idx + 12) % 12) + 1;
-    
-    var jupGoodTransit = [1,2,5,7,9,11].includes(jupTransitBhava);
-    var satGoodTransit = [3,6,11].includes(satTransitBhava);
-    
-    if (jupGoodTransit) {
-      signals.push({
-        type: 'transit_jup_good',
-        zh: '🪐 木星目前行運第' + jupTransitBhava + '宮（' + JY_BHAVA[jupTransitBhava-1].zh + '），帶來擴張與祝福',
-        weight: 2
-      });
-    }
-    if (!satGoodTransit && [1,4,7,8,10,12].includes(satTransitBhava)) {
-      signals.push({
-        type: 'transit_sat_challenge',
-        zh: '🪐 土星目前行運第' + satTransitBhava + '宮（' + JY_BHAVA[satTransitBhava-1].zh + '），帶來考驗但也帶來成長',
-        weight: -1
-      });
-    }
-  } catch(e) { /* transit calc failed, skip */ }
-  
-  // ── Summary ──
-  var totalWeight = signals.reduce(function(a, s) { return a + s.weight; }, 0);
-  var consensusLevel = agreements > disagreements ? '高度一致' : agreements === disagreements ? '部分一致' : '分歧較多';
-  
   return {
-    signals: signals,
-    agreements: agreements,
-    disagreements: disagreements,
-    totalWeight: totalWeight,
-    consensus: consensusLevel,
-    summary: signals.length > 0 ? signals.map(function(s) { return s.zh; }).join('\n') : '交叉驗證資料不足'
+    signals:signals,
+    agreements:null, disagreements:null, totalWeight:null,
+    consensus:'各體系分別解讀',
+    summary:signals.length?signals.map(function(s){return s.zh;}).join('\n'):'各體系有效資料不足，無法並列解讀'
   };
 }
 
 // ── Remedy Suggestions based on Jyotish ──
 function jyRemedySuggestions(jy, type) {
-  if (!jy) return [];
-  var remedies = [];
-  var fn = jy.functionalNature;
-  var es = jy.effectiveStrength;
-  var aff = jy.afflictions;
-  var dw = jy.dashaWeights;
-  
-  if(!fn || !es) return remedies; // engines not available
-  
-  var gemMap = {
-    Sun:     { gem:'紅寶石/太陽石', day:'週日', mantra:'Om Suryaya Namaha' },
-    Moon:    { gem:'珍珠/月光石', day:'週一', mantra:'Om Chandraya Namaha' },
-    Mars:    { gem:'紅珊瑚/紅碧璽', day:'週二', mantra:'Om Mangalaya Namaha' },
-    Mercury: { gem:'翡翠/綠碧璽', day:'週三', mantra:'Om Budhaya Namaha' },
-    Jupiter: { gem:'黃色藍寶石/黃水晶', day:'週四', mantra:'Om Gurave Namaha' },
-    Venus:   { gem:'鑽石/白水晶', day:'週五', mantra:'Om Shukraya Namaha' },
-    Saturn:  { gem:'藍寶石/黑碧璽', day:'週六', mantra:'Om Shanaye Namaha' }
-  };
-  
-  var candidates = [];
-  
-  ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'].forEach(function(p) {
-    var fnP = fn[p];
-    var esP = es[p];
-    if(!fnP || !esP) return;
-    
-    // === CORE RULE: Only recommend strengthening FUNCTIONAL BENEFICS ===
-    // Strengthening a functional malefic = DANGER
-    if(fnP.dangerToStrengthen){
-      // Do NOT recommend this planet's gemstone
-      return;
-    }
-    
-    // Priority scoring
-    var priority = 0;
-    
-    // 1. Functional nature weight
-    if(fnP.isYogaKaraka) priority += 30;
-    else if(fnP.type === 'benefic') priority += 20;
-    else if(fnP.type === 'mildBenefic') priority += 10;
-    else if(fnP.type === 'neutral') priority += 0;
-    // malefic/mildMalefic already filtered out
-    
-    // 2. Weakness weight (weaker = more priority to strengthen)
-    if(esP.effective < 0.7) priority += 25;
-    else if(esP.effective < 1.0) priority += 15;
-    else if(esP.effective < 1.2) priority += 5;
-    
-    // 3. Dasha weight (current running planet gets boost)
-    var dwP = dw[p] || 1.0;
-    if(dwP >= 1.5) priority += 20; // 主運星
-    else if(dwP >= 1.2) priority += 10; // 副運星
-    
-    // 4. Affliction penalty (highly afflicted benefic = urgent to help)
-    var affP = aff && aff[p] ? aff[p] : null;
-    if(affP && affP.score >= 15) priority += 10;
-    
-    // Only recommend if there's a real reason
-    if(priority <= 10 && esP.effective >= 1.2) return; // strong enough, no need
-    
-    var reason = '';
-    // Build reason string
-    if(fnP.isYogaKaraka) reason += '你命盤的最大吉星（瑜伽卡拉卡）';
-    else if(fnP.type === 'benefic') reason += '你命盤的功能吉星';
-    
-    if(dwP >= 1.5) reason += (reason?'，':'') + '目前正在主運期間';
-    else if(dwP >= 1.2) reason += (reason?'，':'') + '目前是副運星';
-    
-    if(esP.effective < 0.7) reason += (reason?'，':'') + '有效力量虛弱（'+esP.effective+'）需要補強';
-    else if(esP.effective < 1.0) reason += (reason?'，':'') + '有效力量偏弱（'+esP.effective+'）';
-    
-    if(affP && affP.score >= 15) reason += (reason?'，':'') + '受到較重的刑沖影響';
-    
-    if(!reason) reason = JY_PLANETS[p].zh + '是吉星但力量可以更強';
-    
+  // P.V.R. Narasimha Rao, Vedic Astrology: An Integrated Approach, §34.2,
+  // table 77: the correspondences are cultural and require planet function,
+  // relevant divisional chart, running period and even electional conditions.
+  // Ordinary questions do not provide consent to prescribe jewellery.
+  if(!jy || !['gemstone','crystal','material','選材','寶石'].includes(type)) return [];
+  if(!jy.functionalNature || !jy.effectiveStrength || !jy.lagna || !Number.isInteger(jy.lagna.idx)) return [];
+  var traditional={Sun:'紅寶石',Moon:'白珍珠',Mars:'紅珊瑚',Mercury:'祖母綠',
+    Jupiter:'黃剛玉',Venus:'鑽石',Saturn:'藍剛玉',Rahu:'桂榴石（Hessonite）',Ketu:'貓眼石'};
+  var candidates=[];
+  Object.keys(traditional).forEach(function(p){
+    var role=jy.functionalNature[p];
+    var strength=jy.effectiveStrength[p];
+    if(!role || !strength || role.dangerToStrengthen || !(role.isYogaKaraka || role.type==='benefic')) return;
     candidates.push({
-      planet: p,
-      zh: JY_PLANETS[p].zh,
-      priority: priority,
-      reason: reason,
-      gem: gemMap[p].gem,
-      mantra: gemMap[p].mantra,
-      day: gemMap[p].day,
-      fnLabel: fnP.label,
-      effective: esP.effective,
-      dangerIfStrengthened: false
+      planet:p,zh:JY_PLANETS[p] ? JY_PLANETS[p].zh : p,
+      priority:role.isYogaKaraka?2:1,
+      reason:(role.isYogaKaraka?'本流派瑜伽卡拉卡':'本流派功能吉星')+'候選；仍須核對相關分盤、具體用途及實物處理與配件。這不是療效或改運保證。',
+      gem:'傳統對應：'+traditional[p],mantra:'',day:'',
+      fnLabel:role.label || '功能角色候選',effective:strength.effective,
+      dangerIfStrengthened:false,policy:'CULTURAL_REFERENCE_ONLY'
     });
   });
-  
-  // Sort by priority descending
-  candidates.sort(function(a,b){ return b.priority - a.priority; });
-  
-  // Take top 3
-  remedies = candidates.slice(0, 3);
-  
-  // Add WARNING for functional malefics that user might mistakenly want to strengthen
-  ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'].forEach(function(p){
-    var fnP = fn[p];
-    var esP = es[p];
-    if(!fnP || !esP) return;
-    if(fnP.dangerToStrengthen && esP.shadbala < 0.8){
-      remedies.push({
-        planet: p,
-        zh: JY_PLANETS[p].zh,
-        priority: -1,
-        reason: '⚠ ' + JY_PLANETS[p].zh + '雖然偏弱，但它是你命盤的功能凶星（管' + fnP.houses.map(function(h){return '第'+h+'宮';}).join('、') + '），補強反而會放大負面影響',
-        gem: '❌ 不建議佩戴 ' + (gemMap[p]?gemMap[p].gem:''),
-        mantra: '',
-        day: '',
-        fnLabel: fnP.label,
-        effective: esP.effective,
-        dangerIfStrengthened: true
-      });
-    }
-  });
-  
-  return remedies;
+  // Structural ordering only; a weak planet or its dasa alone never determines a purchase.
+  return candidates.sort(function(a,b){return b.priority-a.priority;}).slice(0,3);
 }
-
 
 // ══════════════════════════════════════════════════════════════════════
 // 🕉️ JYOTISH QUESTION ENGINE — 吠陀占星正式問事核心

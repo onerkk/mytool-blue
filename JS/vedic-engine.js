@@ -217,10 +217,46 @@
     const kem=record('Kemadruma','Kemadruma',moonCompanions.length?false:angular===null?null:angular.length===0,['Moon',...moonCompanions,...angular||[]], '月亮一、二、十二座無日月以外五曜，且上升四角無月亮以外七曜；PVR 11.3.4', {checks:[{label:'月亮近域空缺',passed:moonCompanions.length===0},{label:'上升角宮無其他七曜',passed:angular===null?null:angular.length===0}],cancellations:angular||[]});
     if(!moonCompanions.length&&angular&&angular.length)kem.status='cancelled';
     record('ChandraMangala','Chandra Mangala（月火同座）',ps.Moon.sign===ps.Mars.sign,['Moon','Mars'],'月亮與火星同一星座；不把任意單向相位當作同座');
+    // PVR 11.6: Subha / Asubha explicitly permit a planet in the ascendant OR
+    // benefic / malefic occupants on both flanks.  Ambivalent Mercury cannot
+    // prove either branch.  Kartari for the other houses is the same geometry,
+    // exported separately so derived names are never counted as new evidence.
+    const occupants=sign=>KEYS.filter(k=>ps[k].sign===sign);
+    const scissors=sign=>{
+      const left=occupants(mod(sign-1,12)),right=occupants(mod(sign+1,12));
+      const state=type=>left.some(k=>nature[k]===type)&&right.some(k=>nature[k]===type)?'structural':
+        left.some(k=>nature[k]===type||nature[k]==='mixed')&&right.some(k=>nature[k]===type||nature[k]==='mixed')?'indeterminate':'not-established';
+      return {left,right,benefic:state('benefic'),malefic:state('malefic')};
+    };
+    const kartari=asc==null?[]:Array.from({length:12},(_,i)=>{
+      const sign=mod(asc+i,12),s=scissors(sign);
+      return {house:i+1,sign,left:s.left,right:s.right,benefic:s.benefic,malefic:s.malefic,
+        policy:'本命整宮兩側；自然吉凶依出生月相與水星同座判定；混合水星保留未定；與 Subha/Asubha 同源，不重複計票'};
+    });
+    for(const [type,id,name] of [['benefic','Subha','Subha（命宮吉曜或吉曜夾命）'],['malefic','Asubha','Asubha（命宮凶曜或凶曜夾命）']]){
+      if(asc==null){record(id,name,null,[],'缺出生時間，無法判命宮及左右兩座；PVR 11.6');continue;}
+      const direct=occupants(asc),s=kartari[0],present=direct.filter(k=>nature[k]===type),possible=direct.filter(k=>nature[k]==='mixed');
+      const status=present.length||s[type]==='structural'?true:possible.length||s[type]==='indeterminate'?null:false;
+      record(id,name,status,[...direct,...s.left,...s.right],
+        '命宮有自然'+(type==='benefic'?'吉':'凶')+'曜，或命宮前後兩座分別有該類曜；兩條路徑擇一即成立；PVR 11.6',
+        {direct:present,flanks:{left:s.left,right:s.right,status:s[type]},uncertain:possible});
+    }
+    const bhaaskara=relative('Moon','Sun')===12&&relative('Mercury','Sun')===2&&[5,9].includes(relative('Jupiter','Moon'));
+    record('Bhaaskara','Bhaaskara（日月水木結構）',bhaaskara,['Sun','Moon','Mercury','Jupiter'],
+      '月亮位於太陽第十二座、水星位於太陽第二座、木星位於月亮第五或第九座；三條均成立；PVR 11.6',
+      {checks:[{key:'moonFromSun',label:'月亮在太陽第十二座',house:relative('Moon','Sun'),requires:[12],passed:relative('Moon','Sun')===12},
+        {key:'mercuryFromSun',label:'水星在太陽第二座',house:relative('Mercury','Sun'),requires:[2],passed:relative('Mercury','Sun')===2},
+        {key:'jupiterFromMoon',label:'木星在月亮第五或第九座',house:relative('Jupiter','Moon'),requires:[5,9],passed:[5,9].includes(relative('Jupiter','Moon'))}]});
     const linked=(a,b)=>a!==b&&(ps[a].sign===ps[b].sign||(LORDS[ps[a].sign]===b&&LORDS[ps[b].sign]===a)||(asp.graha.some(x=>x.from===a&&x.toPlanets.includes(b))&&asp.graha.some(x=>x.from===b&&x.toPlanets.includes(a))));
     const raja=[],yogakaraka=[];
     if(asc!=null){
       const lord=h=>LORDS[mod(asc+h-1,12)];
+      const l4=lord(4),l10=lord(10),l1=lord(1);
+      record('Chapa','Chapa（四十宮互換及命主擢升）',ps[l4].house===10&&ps[l10].house===4&&ps[l1].dignity.exaltedSign,
+        [l4,l10,l1],'四宮主入十宮、十宮主入四宮，且命主在擢升星座；不由僅有互容或僅有擢升直接判成；PVR 11.6',
+        {checks:[{key:'fourthLordInTenth',label:'四宮主入十宮',passed:ps[l4].house===10},
+          {key:'tenthLordInFourth',label:'十宮主入四宮',passed:ps[l10].house===4},
+          {key:'lagnaLordExalted',label:'命主落擢升星座',passed:ps[l1].dignity.exaltedSign}]});
       for(const h of [1,4,7,10])for(const t of [1,5,9]){
         const a=lord(h),b=lord(t);if(h===t)continue;
         if(a===b){if(!yogakaraka.some(x=>x.planet===a))yogakaraka.push({planet:a,houses:[h,t]});}
@@ -229,7 +265,7 @@
       for(const [h,name] of [[6,'Harsha'],[8,'Sarala'],[12,'Vimala']])record(name,name,ps[lord(h)].house===h,[lord(h)],h+'宮主落回'+h+'宮；本版採 PVR 狹義，不混用三凶宮互落的廣義名稱');
       const dusthana=[6,8,12].map(h=>({owns:h,planet:lord(h),occupies:ps[lord(h)].house})).filter(x=>[6,8,12].includes(x.occupies));
       record('Vipareeta','Vipareeta（困難宮主互涉）',dusthana.length>0,dusthana.map(x=>x.planet),'六、八、十二宮主位於這三宮；僅記基本結構，仍查力量、其他宮主牽連及運期',{connections:dusthana});
-    }else for(const name of ['Harsha','Sarala','Vimala','Vipareeta'])record(name,name,null,[],'缺出生時間，無法確定宮主與宮位');
+    }else for(const name of ['Chapa','Harsha','Sarala','Vimala','Vipareeta'])record(name,name,null,[],'缺出生時間，無法確定宮主與宮位');
     record('Raaja','Raaja（角宮與三分宮主連結）',asc==null?null:raja.length>0,raja.flatMap(x=>x.planets),'兩個不同宮主同座、互容或相互行星照見；單向照見不成立',{connections:raja});
     record('Yogakaraka','Yogakaraka（兼掌角宮與三分宮）',asc==null?null:yogakaraka.length>0,yogakaraka.map(x=>x.planet),'同一星兼掌兩個不同的角宮／三分宮；與兩星互相照見分開',{connections:yogakaraka});
     // Naabhasa: all 32 named types, evaluated separately from event yogas.
@@ -253,7 +289,7 @@
       const r=record('N-'+name,name,nSigns===n+1&&other.length===0?(unknown?null:true):false,seven,'七曜分佔'+(n+1)+'座；只在其他 Naabhasa 不成立時採用',{family:'Sankhya',occupiedSignCount:nSigns,supersededBy:other.map(x=>x.id)});
       if(nSigns===n+1&&other.length)r.status='superseded';
     }
-    return {version:'1.0.0',source,profile:'PVR-CH11-EXPLICIT-20260922',checks,matched:checks.filter(x=>x.status==='structural'),
+    return {version:'1.1.0',source,profile:'PVR-CH11-EXPLICIT-20260923',checks,matched:checks.filter(x=>x.status==='structural'),kartari,
       limitation:'本命結構清單；不是全流派 Yoga 或完整強度分數。取消、異說與缺資料必須保留；不引用古籍的貧富、疾病或道德斷言為事實。',
       unavailable:['完整 Shadbala','全派落陷取消 Neechabhanga','Jaimini／其他大運','未實算的 Yoga 不作已驗證格局']};
   }

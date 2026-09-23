@@ -404,6 +404,15 @@ var SPREAD_DEFS = {
     })()
   },
 
+  // Mathers 1888 第三法：原文的拱形、內三角與中心代表牌；11張留牌中另取2張。
+  // 最後一輪「大圓」重排的牌序在原文有歧義，未假裝以普通序列取代該程序。
+  mathers_66: {
+    id: 'mathers_66', zh: 'Mathers 第三法・66 張拱形與兩張意外牌', count: 68,
+    en: 'Mathers Third Method (arch, 66 + two surprises)',
+    desc: 'Mathers 1888 第三法・抽出代表牌後發66張成拱形內三角，留下11張再隨機抽2張作結語；原典最後大圓重排語句不明確，本站不冒稱完整復刻',
+    positions: (function(){var out=[];for(var i=1;i<=66;i++)out.push({name:'第'+i+'張',zh:'拱形／三角形序列第'+i+'張'});out.push({name:'左側意外牌',zh:'從保留的11張另抽；右→代表牌→左收束'});out.push({name:'右側意外牌',zh:'從保留的11張另抽；右→代表牌→左收束'});return out;})()
+  },
+
   // ★ v80.0 修正:Mathers First Method (1888) 完整 horseshoe
   //   依據:Mathers《The Tarot》1888 Methods of Divination FIRST METHOD
   //   原文不是只讀 A=26；而是分出 A=26、C=17、E=11，F=24 棄用。
@@ -984,6 +993,34 @@ enhanceTarot = function(tarot) {
       return out;
     }
 
+    if(spreadId === 'mathers_66') {
+      if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第三法需要78張不重複的完整牌組');
+      var sigIndex66=deck.findIndex(function(c){return c.id===window._jyMathersSignificatorId&&/^(king|queen)$/.test(c.rank||'');});
+      var sigPolicy66=sigIndex66>=0?'使用者預選的國王／皇后':'本站自動取洗牌後首張國王／皇后；未作人物性格配牌';
+      if(sigIndex66<0)sigIndex66=deck.findIndex(function(c){return /^(king|queen)$/.test(c.rank||'');});
+      if(sigIndex66<0)throw new Error('Mathers 第三法需要包含國王／皇后的完整牌組');
+      var sig66=deck.splice(sigIndex66,1)[0];
+      window._jyLastMathersSignificator=Object.assign({},sig66,{isSignificator:true,isUp:true});
+      // 原書66張依洗牌順序逐一發放，不把代表牌或保留牌混入三時區。
+      for(var m66=0;m66<66;m66++){
+        var mCard=deck[m66],number=m66+1;
+        var period=number<=11||number>=34&&number<=44?'past':number>=23&&number<=33||number>=56&&number<=66?'present':'future';
+        out.push(_jyCloneCard(mCard,_jyOrient(mCard,seed,spreadId,m66,false),_jyPos(spreadDef,m66),number,{mathersMethod:'Third Method historical arch',mathersPeriod:period,mathersArch:number<=33?'outer':'inner',mathersOrdinal:number}));
+      }
+      var unused66=deck.slice(66);
+      if(unused66.length!==11)throw new Error('Mathers 第三法保留牌數應為11');
+      var surpriseRng=_jyRng(String(seed||'')+'|mathers-third-surprises');
+      var chooseSurprise=function(){var r=typeof surpriseRng==='function'?surpriseRng():Math.random();return unused66.splice(Math.min(unused66.length-1,Math.floor(r*unused66.length)),1)[0];};
+      // 陣列第67張在畫面左，第68張在右；最終讀序為「右→代表牌→左」。
+      var surpriseLeft=chooseSurprise(),surpriseRight=chooseSurprise();
+      out.push(_jyCloneCard(surpriseLeft,_jyOrient(surpriseLeft,seed,spreadId,66,false),_jyPos(spreadDef,66),67,{mathersMethod:'Third Method two fresh surprises',mathersPeriod:'conclusion',mathersSurprise:'left'}));
+      out.push(_jyCloneCard(surpriseRight,_jyOrient(surpriseRight,seed,spreadId,67,false),_jyPos(spreadDef,67),68,{mathersMethod:'Third Method two fresh surprises',mathersPeriod:'conclusion',mathersSurprise:'right'}));
+      out[0].drawProcedure={id:'mathers_66',description:'Mathers第三法：從78張中抽出國王／皇后代表牌，餘下77張依序發66張成外拱與內三角：過去1–11及34–44、現在23–33及56–66、未來12–22及45–55。從保留的11張另抽兩張意外牌，結語依右意外牌→代表牌→左意外牌讀。原書另有66張末輪配對及大圓重排；末段文字有歧義，本站沒有模擬該重排，不聲稱完整復刻。牌義採本次選用體系。',significator:{id:sig66.id,name:sig66.n,policy:sigPolicy66},initialDealtCount:66,initialUnusedCount:11,surprises:{left:{id:surpriseLeft.id,name:surpriseLeft.n},right:{id:surpriseRight.id,name:surpriseRight.n},fromUnused:true},remainingUnusedCount:unused66.length,largeCircleImplemented:false};
+      if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
+      if(window.JYGoldenDawn)window.JYGoldenDawn.normalizeDraw(out);
+      return out;
+    }
+
     // Mathers First Method：依序形成 A=26、C=17、E=11 三組；剩餘 F=24 不讀。
     if (spreadId === 'mathers_horseshoe') {
       if(deck.length!==78||new Set(deck.map(function(c){return c.id;})).size!==78)throw new Error('Mathers 第一法需要78張不重複的完整牌組');
@@ -1139,6 +1176,40 @@ enhanceTarot = function(tarot) {
         h += '</div>';
       }
       h += '</div><div class="jy-m21-sig">Significator<br>代表牌</div></div>';
+    }
+    else if (spreadId === 'mathers_66') {
+      // 1888 原圖：頂部雙排十一張、兩側內外弧及中央代表牌。
+      // 手機可左右捲動，同時保留牌號與時區；兩張留牌在拱形下方另展示。
+      function safe66(v){return String(v||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+      function cell66(n,col,row){var time=n<=11||n>=34&&n<=44?'past':n>=23&&n<=33||n>=56&&n<=66?'present':'future';return '<div class="m66-cell m66-'+time+'" style="grid-column:'+(col+1)+';grid-row:'+(row+1)+'" aria-label="'+safe66((time==='past'?'過去':time==='present'?'現在':'未來')+'第'+n+'張')+'">'+S(n-1,n,pn(n-1))+'</div>';}
+      var sig66=(typeof drawnCards!=='undefined'&&drawnCards&&drawnCards.length)?window._jyLastMathersSignificator:null,photo66=sig66&&typeof getTarotCardImage==='function'?getTarotCardImage(sig66):'';
+      var sigInner66=photo66?'<img src="'+safe66(photo66)+'" alt="'+safe66(sig66.n||'代表牌')+'"><span>'+safe66(sig66.n||'代表牌')+'</span>':'<span>代表牌'+(sig66?'・'+safe66(sig66.n):'')+'</span>';
+      h += '<style>#t-chosen .jy-m66-shell{width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;padding:8px 5px 16px;scrollbar-color:rgba(212,175,55,.55) transparent;overscroll-behavior-x:contain}';
+      h += '#t-chosen .jy-m66-stage{width:max-content;min-width:1000px;margin:auto;position:relative;padding:28px 22px 24px;border-radius:24px;border:1px solid rgba(218,182,119,.22);background:radial-gradient(ellipse at 50% 35%,rgba(194,152,85,.13),transparent 55%),linear-gradient(135deg,rgba(16,21,38,.95),rgba(15,19,32,.84));box-shadow:inset 0 1px 0 rgba(255,233,184,.15),0 25px 52px rgba(4,7,15,.3)}';
+      h += '#t-chosen .jy-m66-grid{display:grid;grid-template-columns:repeat(25,38px);grid-template-rows:repeat(13,59px);gap:2px;position:relative;isolation:isolate}';
+      h += '#t-chosen .jy-m66-grid:before{content:"";position:absolute;inset:5px 7%;border:1px solid rgba(230,193,127,.14);border-top:0;border-radius:0 0 45% 45%;pointer-events:none}';
+      h += '#t-chosen .jy-m66-grid:after{content:"✦ MATHERS · 1888 ✦";position:absolute;left:50%;top:24%;transform:translateX(-50%);width:288px;height:170px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(223,190,130,.27);background:radial-gradient(ellipse at 50% 38%,rgba(190,143,87,.14),rgba(129,114,161,.04) 52%,transparent 73%);box-shadow:inset 0 1px 0 rgba(255,221,156,.13),0 0 43px rgba(190,143,87,.08);color:rgba(238,206,155,.72);font-family:Georgia,serif;font-size:12px;letter-spacing:.23em;text-shadow:0 1px 12px rgba(233,190,117,.3);pointer-events:none;z-index:0}';
+      h += '#t-chosen .m66-cell{z-index:1}#t-chosen .m66-cell .tarot-chosen-slot{width:37px!important;height:53px!important;min-width:0!important;min-height:0!important;border-radius:5px!important;box-shadow:0 5px 12px rgba(0,0,0,.32)!important}';
+      h += '#t-chosen .m66-cell .slot-label,#t-chosen .m66-cell .tc-name,#t-chosen .m66-cell .tc-dir{display:none!important}';
+      h += '#t-chosen .m66-past .tarot-chosen-slot{outline:1px solid rgba(218,185,133,.42)}#t-chosen .m66-present .tarot-chosen-slot{outline:1px solid rgba(179,199,218,.52)}#t-chosen .m66-future .tarot-chosen-slot{outline:1px solid rgba(188,152,209,.48)}';
+      h += '#t-chosen .m66-sig{grid-column:12/15;grid-row:6/10;z-index:2;justify-self:center;align-self:center;max-width:103px;min-height:124px;padding:12px 9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,223,152,.65);border-radius:16px;background:radial-gradient(circle at 50% 20%,rgba(225,179,109,.27),rgba(22,24,39,.96) 65%);box-shadow:0 10px 28px rgba(0,0,0,.5),inset 0 1px 1px rgba(255,238,198,.37);text-align:center;color:#f7dbaf;font-size:.7rem;line-height:1.4}';
+      h += '#t-chosen .m66-sig img{height:77px;max-width:58px;object-fit:cover;border:1px solid rgba(255,224,167,.54);border-radius:5px;box-shadow:0 3px 12px rgba(0,0,0,.6)}';
+      h += '#t-chosen .m66-legend{font-size:.72rem;line-height:1.8;color:rgba(247,229,194,.78);text-align:center;margin:0 0 12px}';
+      h += '#t-chosen .m66-surprise{display:flex;align-items:center;justify-content:center;gap:18px;margin:21px auto 5px;padding:19px 10px;border-top:1px solid rgba(218,182,119,.26);max-width:480px}';
+      h += '#t-chosen .m66-surprise .tarot-chosen-slot{width:67px!important;height:99px!important}#t-chosen .m66-surprise .slot-label{font-size:.65rem!important;white-space:normal;bottom:-23px!important}';
+      h += '#t-chosen .m66-surprise-center{text-align:center;color:#f4d4a3;font-size:.75rem;max-width:124px;line-height:1.5}';
+      h += '#t-chosen .m66-hint{text-align:center;color:var(--c-text-dim);font-size:.7rem;line-height:1.6;padding:10px 6px}</style>';
+      h += '<div class="m66-legend">Mathers 第三法 · <span>琥珀＝過去</span>　<span>銀藍＝現在</span>　<span>淡紫＝未來</span><br>拱形66張包住中心代表牌；左右滑動查看整座牌陣</div>';
+      h += '<div class="jy-m66-shell" role="region" tabindex="0" aria-label="Mathers 第三法可左右捲動的66張拱形牌陣"><div class="jy-m66-stage"><div class="jy-m66-grid">';
+      for(var n66=23;n66<=33;n66++)h+=cell66(n66,40-n66,0);
+      for(var in66=56;in66<=66;in66++)h+=cell66(in66,73-in66,1);
+      for(var rr66=0;rr66<11;rr66++){
+        h+=cell66(22-rr66,0,rr66+2)+cell66(55-rr66,rr66+1,rr66+2);
+        h+=cell66(44-rr66,23-rr66,rr66+2)+cell66(11-rr66,24,rr66+2);
+      }
+      h += '<div class="m66-sig">'+sigInner66+'</div></div></div></div>';
+      h += '<div class="m66-surprise" aria-label="兩張意外牌與代表牌的結語"><div>'+S(66,67,pn(66))+'</div><div class="m66-surprise-center">意外結語<br>← '+(sig66?safe66(sig66.n):'代表牌')+' ←<br>從右往左讀</div><div>'+S(67,68,pn(67))+'</div></div>';
+      h += '<div class="m66-hint">兩張意外牌另從原本未用的11張抽出；原書最後重排大圓有文字歧義，本站未模擬該段。</div>';
     }
     else if (spreadId === 'mathers_horseshoe') {
       // ── Mathers 1888 第一法：A=26, C=17, E=11；F=24 棄用不讀 ──
@@ -1297,6 +1368,17 @@ enhanceTarot = function(tarot) {
   }
   window.buildSlotLayout = buildSlotLayout;
 
+  // Mathers 66 張拱形在手機上寬於螢幕；初次展開先呈現中心代表牌，
+  // 再由使用者自由左右瀏覽。重開時保留使用者自己捲到的位置。
+  document.addEventListener('toggle',function(event){
+    var details=event.target;
+    if(!details||details.id!=='tarot-layout-details'||!details.open)return;
+    var shell=details.querySelector('.jy-m66-shell');
+    if(!shell||shell.dataset.jyM66Centered==='1')return;
+    shell.scrollLeft=Math.max(0,(shell.scrollWidth-shell.clientWidth)/2);
+    shell.dataset.jyM66Centered='1';
+  },true);
+
   // ── 覆寫 initTarotDeck ──
   var _origInitTarotDeck = window.initTarotDeck;
   window.initTarotDeck = function() {
@@ -1396,6 +1478,10 @@ enhanceTarot = function(tarot) {
       if (countEl) countEl.innerHTML = '已選 <strong id="t-remain-picked" class="text-gold">0</strong> / ' + targetCount + ' 張';
       var pickHint = document.getElementById('pick-hint');
       if (pickHint) pickHint.textContent = '觸碰任一張你有感覺的牌，選出 ' + targetCount + ' 張';
+      if(spreadId==='mathers_66'){
+        if(descEl)descEl.textContent='先選擇國王／皇后代表牌；洗牌後觸碰牌堆一次，依洗好的順序發66張，再從保留的11張抽2張意外牌。';
+        if(pickHint)pickHint.textContent='洗牌後觸碰任意一張牌，啟動完整66＋2張原法發牌';
+      }
     } catch(e) {}
 
     // ★ v80.1：洗牌鈕原本被 tarot.js 放在牌堆「下方」，手機進入抽牌頁時在視窗外看不到，
@@ -1410,6 +1496,12 @@ enhanceTarot = function(tarot) {
     var def = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
     var targetCount = def ? def.count : 10;
     if (drawnCards.length >= targetCount) return;
+    // Mathers 方法由整副牌序、抽出代表牌、保留牌共同決定；逐張挑牌會破壞原書發牌規則。
+    // 使用者觸碰牌堆仍能開始儀式，但一次交給 canonical 程序完成發牌。
+    if(def&&/^(?:mathers_21|mathers_66|mathers_horseshoe)$/.test(def.id)){
+      if(window._deckIsShuffled&&typeof window.autoDraw==='function')window.autoDraw();
+      return;
+    }
 
     // ★ Bug1 根治 v2：temp-gate 模式已移除（原始 pickCard 若異步呼叫 showSpread，
     //   同步還原會導致 gate 失效）。改由 showSpread 自身永久守門（見下方覆寫）。
@@ -5267,6 +5359,15 @@ enhanceTarot = function(tarot) {
       window.JY_renderExportPrompt('ootk', _w70);
       var record=document.createElement('div');record.innerHTML=_ootkCompletionHTML(results);_w70.prepend(record);
       // goStep already positioned this explicit result transition at the top.
+      return;
+    }
+
+    // 提示詞版若提示詞元件載入失敗，保留原始五輪資料並清楚提示重試。
+    // 不可回退到舊版的付費解讀 Worker。
+    if (window.JY_PROMPT_ONLY) {
+      try { if (typeof goStep === 'function') goStep('step-tarot'); } catch (_) {}
+      var promptFallback = document.getElementById('tarot-ai-wrap');
+      if (promptFallback) promptFallback.textContent = '本次開鑰資料已保留，提示詞元件尚未載入，請重新整理後再試。';
       return;
     }
 

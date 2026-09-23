@@ -80,7 +80,7 @@ var MH_WANWU = {
 // 起卦時的環境線索影響卦象解讀
 
 function mhExternalSigns(mh, environmentClues) {
-  if (!mh || !environmentClues) return [];
+  if (!mh || !mh.tiG || !mh.tiG.el || !environmentClues) return [];
 
   var signs = [];
 
@@ -95,19 +95,21 @@ function mhExternalSigns(mh, environmentClues) {
     '天氣晴朗':'火(離)', '陰天':'水(坎)', '多雲':'土(坤)'
   };
 
-  // 簡易判斷：環境線索與卦象五行是否一致
-  var benEl = mh.ben ? mh.ben.el : '';
+  // 外應以本盤體卦為主、所遇之象為用；重卦並無單一「本卦五行」。
+  var bodyElement=mh.tiG.el;
   if (typeof environmentClues === 'string') {
     Object.keys(envToEl).forEach(function(key) {
       if (environmentClues.includes(key)) {
         if (envToEl[key].indexOf('(') === -1) return; // 無對應五行（如「依卦象」），跳過
         var envEl = envToEl[key].split('(')[0];
-        var matches = envEl === benEl;
+        var rel=mhRelation(bodyElement,envEl);
+        var relationText={'B生A':'外應生體','B剋A':'外應克體','A生B':'體生外應','A剋B':'體克外應','比和':'外應與體比和'}[rel]||'須合參';
         signs.push({
           clue: key,
           element: envEl,
-          matchesBenGua: matches,
-          zh: key + '→' + envToEl[key] + (matches ? '（與本卦五行一致，加強卦象力量）' : '（與本卦五行不同，需綜合考量）')
+          bodyElement:bodyElement,relation:rel,relationText:relationText,
+          matchesBenGua: null, // Legacy key: a hexagram has no single element.
+          zh: key + '→' + envToEl[key] + '（' + relationText + '；先核對線索是否確在起卦時出現）'
         });
       }
     });
@@ -209,7 +211,8 @@ var MH_JIE_DAY = {1:6, 2:4, 3:6, 4:5, 5:6, 6:6, 7:7, 8:8, 9:8, 10:8, 11:7, 12:7}
 var MH_GREG_MONTH_ZHI = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥']; // index = 過節後的國曆月 % 12
 
 function mhMonthContextFromDate(d) {
-  d = (d instanceof Date) ? d : new Date();
+  if(d===undefined||d===null)d=new Date();
+  if(!(d instanceof Date)||!Number.isFinite(d.getTime()))throw new Error('起卦時間無效，不能換算節氣月令。');
   // 優先以 lunar-javascript 的實際節氣時刻取月建，避免固定日期在交界附近判錯。
   try {
     if (typeof Solar !== 'undefined' && Solar && typeof Solar.fromYmdHms === 'function') {
@@ -224,7 +227,8 @@ function mhMonthContextFromDate(d) {
     }
   } catch (e) {}
   // 引擎缺席時才使用明示的近似備援；提示詞不得把此結果包裝成精確節氣時刻。
-  var m = d.getMonth() + 1, day = d.getDate();
+  var fallbackWall=new Date(d.getTime()+8*60*60*1000);
+  var m = fallbackWall.getUTCMonth() + 1, day = fallbackWall.getUTCDate();
   if (day < MH_JIE_DAY[m]) m = (m === 1) ? 12 : m - 1; // 未過節，仍屬上一個月支
   return {monthZhi:MH_GREG_MONTH_ZHI[m % 12],precision:'approximate-jie-day-fallback'};
 }
@@ -237,11 +241,13 @@ function mhPreciseWangShuai(el, monthOrZhi) {
     mZhi = monthOrZhi;
   } else if (monthOrZhi instanceof Date) {
     var context=mhMonthContextFromDate(monthOrZhi);mZhi=context.monthZhi;precision=context.precision;
-  } else if (typeof monthOrZhi === 'number') {
+  } else if (typeof monthOrZhi === 'number' && Number.isInteger(monthOrZhi) && monthOrZhi>=1 && monthOrZhi<=12) {
     // 農曆月：正月=寅 … 十一月=子、十二月=丑
     var lunarZhi = ['丑','寅','卯','辰','巳','午','未','申','酉','戌','亥','子'];
     mZhi = lunarZhi[monthOrZhi % 12];
     precision='lunar-month-number';
+  } else if(monthOrZhi !== undefined && monthOrZhi !== null) {
+    throw new Error('月建須為有效地支、日期或農曆一至十二月。');
   } else {
     var context=mhMonthContextFromDate(new Date());mZhi=context.monthZhi;precision=context.precision;
   }
@@ -274,10 +280,9 @@ function mhTiYongDeep(mh, dateOrZhi) {
   if (!tiEl || !yoEl) return null;
 
   // v2 根治：月支改由節氣推得（或直接傳地支）
-  var mZhi = (typeof dateOrZhi === 'string') ? dateOrZhi : mhMonthZhiFromDate(dateOrZhi);
-
-  var tiWS = mhPreciseWangShuai(tiEl, mZhi);
-  var yoWS = mhPreciseWangShuai(yoEl, mZhi);
+  var monthInput=dateOrZhi == null ? new Date() : dateOrZhi;
+  var tiWS = mhPreciseWangShuai(tiEl, monthInput);
+  var yoWS = mhPreciseWangShuai(yoEl, monthInput);
 
   // 體用力量比
   var tiPower = tiWS.multiplier;
@@ -367,7 +372,7 @@ function mhZongGua(mh) {
   var _origUp = GUA_NAMES[mh.up.li.join('')] || (mh.up.name || mh.up.n || '');
   var _origLo = GUA_NAMES[mh.lo.li.join('')] || (mh.lo.name || mh.lo.n || '');
   var isSame = (zongUpName === _origUp && zongLoName === _origLo);
-  return { up: zongUpName, lo: zongLoName, upEl: GUA_EL[zongUpName]||'', loEl: GUA_EL[zongLoName]||'', isSelf: isSame, meaning: isSame ? '綜卦與本卦相同——代表事情正反看都一樣，沒有迴旋餘地' : '綜卦代表換位思考——站在對方的角度會看到不同的局面' };
+  return { up: zongUpName, lo: zongLoName, upEl: GUA_EL[zongUpName]||'', loEl: GUA_EL[zongLoName]||'', isSelf: isSame, meaning: isSame ? '綜卦與本卦同形；這只代表倒置後的卦形相同，不表示局勢沒有迴旋餘地。' : '綜卦是將六爻次序倒置後的卦形，可供換位思考，不證明對方的實際想法。' };
 }
 
 function enhanceMeihua(mh) {

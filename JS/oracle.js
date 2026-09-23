@@ -857,21 +857,22 @@ var ORACLE_TYPES = {
   travel:  { label:'出行', fields:['出外','行舟','移居','遠信'] },
   general: { label:'一般', fields:['凡事','歲君','月令'] }
 };
-// v63: 24h 智慧鎖(不依賴文字輸入)——當日抽過任何籤就觸發溫和提示
+// 本地同日紀錄僅用於提醒；顯示的是已確認的籤，未確認的 pending 不算得籤。
 function _oracleHasDrawnToday(){
   try{
-    var keys=Object.keys(localStorage);
+    var keys=Object.keys(localStorage),today=_oracleTodayStr();
     for(var i=0;i<keys.length;i++){
-      if(keys[i].indexOf('oracle_lock:')===0||keys[i].indexOf('oracle_pending:')===0){
+      if(keys[i].indexOf('oracle_lock:')===0){
         var raw=localStorage.getItem(keys[i]);
         if(raw){
-          try{var v=JSON.parse(raw);if(v&&v.dateStr===_oracleTodayStr())return v;}catch(_){}
+          try{var v=JSON.parse(raw);if(v&&v.poemN&&(v.dateStr===today||(!v.dateStr&&v.savedAt&&_oracleDayOf(v.savedAt)===today)))return v;}catch(_){}
         }
       }
     }
   }catch(_){}
   return null;
 }
+function _oracleDayOf(timestamp){var d=new Date(timestamp);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 // v67:檢查 24h 內是否抽過同支籤(用於「何必問祂」警告)
 //   設計動機:七王爺爆紅的金句「何必問祂」就是同題重複問觸發
 //   實作:掃 localStorage 所有 oracle_lock,若有同 poemN 且 dateStr 是今天 → 觸發
@@ -913,7 +914,7 @@ function _oracleSaveLock(qType,qText,poemN,redrawCount,laughDarkCount){
     localStorage.setItem(k,JSON.stringify({
       poemN:poemN, qType:qType, qText:qText,
       redrawCount:redrawCount, laughDarkCount:laughDarkCount,
-      savedAt:Date.now()
+      dateStr:_oracleTodayStr(),savedAt:Date.now()
     }));
     // 正式 lock 完成 → 清掉 pending（避免殘留）
     var pk='oracle_pending:'+_oracleHash((qType||'')+'|'+(qText||'').trim().toLowerCase()+'|'+_oracleTodayStr());
@@ -975,7 +976,7 @@ function _oracleDetectMultiQuestion(qText){
   }
   return null;
 }
-// v65k: 儀式紀錄(B+C)— 根據實際過程寫文字註記,不再用高/中/低假評分
+// v65k: 儀式紀錄僅敘述數位擲筊過程，不把重抽數推斷為訊息可信度。
 // 因為連擲三聖筊才能看籤,_laughDarkCount 永遠 ≤ 2(超過 3 直接擋下),
 // 高/中/低 三檔幾乎永遠是「高」,沒判讀價值。改成中性過程敘述。
 function _oracleConfidence(){
@@ -983,16 +984,15 @@ function _oracleConfidence(){
   var rank=(_poem&&_poem.r)||'';
   var note='';
   if(rd===0 && lc===0){
-    note='神明一次允籤，三聖筊連擲順利，訊號清明。';
+    note='本站數位程序第一輪連得三聖筊。';
   } else if(rd===0 && lc<=2){
-    note='過程中神明稍有遲疑，仍允此籤，訊息可信。';
+    note='本站數位程序在第一輪完成三聖筊確認。';
   } else if(rd===0){
-    // 不該發生(lc>=3 會被擋下),保險寫法
-    note='求籤過程數度遲疑，籤象訊息請以核心為主。';
+    note='本站數位程序完成三聖筊確認。';
   } else if(rd===1){
-    note='重擲一輪方得三聖筊，神意可參，仍宜細細體會。';
+    note='重新搖籤一輪後完成三聖筊確認。';
   } else {
-    note='重擲 '+rd+' 輪方得三聖筊，籤象僅供參考，宜另尋深入命理諮詢。';
+    note='重新搖籤 '+rd+' 輪後完成三聖筊確認。';
   }
   // 籤等級附註
   if(rank.indexOf('下下')>=0){
@@ -1002,35 +1002,6 @@ function _oracleConfidence(){
   }
   return {note:note, redrawCount:rd, laughDarkCount:lc};
 }
-// Feedback 上報
-function _oracleSendFeedback(rating){
-  try{
-    var WORKER_URL=(typeof window!=='undefined'&&window._JY_WORKER_URL)||'https://jy-ai-proxy.onerkk.workers.dev';
-    var payload={
-      // ★ 配合 worker.js 的 oracle-feedback rate limit (Bug #56)：帶 session_token 讓登入用戶有獨立 quota
-      session_token: (typeof window!=='undefined' && window._JY_SESSION_TOKEN) || '',
-      tool:'oracle',
-      rating:rating,  // 'accurate' | 'partial' | 'inaccurate'
-      lotNo:_poem?_poem.n:0,
-      lotStem:_poem?_poem.g:'',
-      rank:_poem?_poem.r:'',
-      questionType:_qType||'general',
-      qTextLen:(_qText||'').length,
-      jiaoConfirm:'3_holy',
-      randomPolicy:ORACLE_RANDOM_POLICY.model,
-      redrawCount:_redrawCount,
-      laughDarkCount:_laughDarkCount,
-      ts:Date.now()
-    };
-    fetch(WORKER_URL+'/oracle-feedback',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload),
-      keepalive:true
-    }).catch(function(){});
-  }catch(e){}
-}
-
 // Cancel queued transitions as well as currently sounding recordings.
 var _oracleEpoch=0,_oracleTimers=new Set(),_oracleShakePending=false;
 function _oracleVisible(){return _wrap&&_wrap.style.display!=='none';}
@@ -1097,7 +1068,7 @@ if(_phase==='intro'){
 h+='<div class="orc-fade at-oracle-intro"><div class="orc-deity-wrap"><img src="'+IMG.deity+'" alt="靜月之神" class="orc-deity-img"></div><span class="at-eyebrow at-oracle-eyebrow">A QUIET MOMENT · 靜心問籤</span><h2 class="orc-title">靜月靈籤</h2><p class="orc-subtitle">六十甲子靈籤 ・ 神明指引</p><div class="orc-divider"><span>✦</span></div>';
 h+='<p class="orc-desc">靜心片刻，專注在一件想釐清的事。<br>姓名、住址與所求之事，在心中默念即可。</p>';
 h+='<div class="orc-q-input-wrap" style="max-width:380px;margin:1.2rem auto .6rem;padding:0 .8rem"><textarea id="orc-q-input" aria-label="所求之事（選填）" class="orc-q-textarea" placeholder="在此寫下您所求之事（選填）\n例：工作升遷是否順利？感情能否修復？" rows="3" oninput="_oracleSyncQText(this.value)"></textarea><div id="orc-q-hint" style="text-align:right;font-size:.65rem;color:rgba(228,210,170,.45);margin-top:.2rem">0 字</div><div id="orc-q-multi-warn" style="display:none;font-size:.72rem;color:#ff9866;margin-top:.3rem;line-height:1.5"></div></div>';
-h+='<p class="orc-note" style="margin-top:.6rem">求得籤詩後需連擲三聖筊方為確認</p>';
+h+='<p class="orc-note" style="margin-top:.6rem">本站數位儀式以隨機筊象呈現，並採連三聖筊確認；廟方也有一聖筊的流程。</p>';
 // v63: 24h 智慧鎖——僅當日已抽過任何題才提示,不阻擋
 var todayDrawn=_oracleHasDrawnToday();
 if(todayDrawn&&todayDrawn.poemN){
@@ -1273,55 +1244,11 @@ window._oracleViewLocked=function(){
   for(var pi=0;pi<P.length;pi++){if(P[pi].n===lock.poemN){_poem=P[pi];break;}}
   _redrawCount=lock.redrawCount||0;
   _laughDarkCount=lock.laughDarkCount||0;
+  _qText=lock.qText||'';
+  _holy=3;
   _phase='poem';
   _render();
 };
-// v65v: 強制更新機制 —— 第一次載入新版時,清掉所有舊 SW、舊 lock、舊快取
-//        用 localStorage flag 標記,確保只跑一次,不影響後續使用
-(function _v65vForceUpgrade(){
-  try{
-    var FLAG_KEY='jy_oracle_v65w_upgraded';
-    if(localStorage.getItem(FLAG_KEY)==='1')return;  // 已升級過,跳過
-    
-    // 1. 殺掉所有 Service Worker(舊版 oracle.js 可能被 SW 鎖住)
-    if('serviceWorker' in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        for(var i=0;i<regs.length;i++){
-          regs[i].unregister();
-        }
-      }).catch(function(){});
-    }
-    
-    // 2. 清掉所有 Cache Storage(SW 用的離線快取)
-    if('caches' in window){
-      caches.keys().then(function(names){
-        for(var i=0;i<names.length;i++){
-          caches.delete(names[i]);
-        }
-      }).catch(function(){});
-    }
-    
-    // 3. 清掉所有 oracle 相關的 localStorage(舊 lock + pending)
-    var keys=Object.keys(localStorage);
-    for(var i=0;i<keys.length;i++){
-      if(keys[i].indexOf('oracle_lock')===0||
-         keys[i].indexOf('oracle_pending')===0||
-         keys[i].indexOf('jy_oracle_pending')===0||  // 舊版錯誤前綴
-         keys[i].indexOf('jy_oracle_lock')===0){
-        localStorage.removeItem(keys[i]);
-      }
-    }
-    
-    // 4. 標記已升級
-    localStorage.setItem(FLAG_KEY,'1');
-    
-    // 5. 在 console 留紀錄(方便 debug)
-    if(window.console&&console.log)console.log('[靜月靈籤 v65v] 強制升級完成:已清舊 SW、舊快取、舊 lock');
-  }catch(e){
-    if(window.console&&console.warn)console.warn('[靜月靈籤 v65v] 升級時發生錯誤:',e);
-  }
-})();
-
 window._oracleOpen=function(){
   _oracleCancelPending();
   // v66:今日已鎖(連三無聖筊過)→ 直接進「今日靜心」畫面
@@ -1515,8 +1442,8 @@ else{
   // Keep ritual wording consistent with the actual cumulative retry counter.
   var msgMain=_throwResult==='laugh'?'笑筊':'陰筊';
   var msgSub=_throwResult==='laugh'
-    ? '所問之事訊號不明，或心中已有定見'
-    : '神明此刻不予允此籤';
+    ? '本次尚未確認；可整理原問題，再就這支籤擲筊'
+    : '本次尚未確認；可另抽一支籤';
   if(_laughDarkCount>=3){
     // Three cumulative non-holy results end this session; no invented quotation.
     ui.innerHTML=
@@ -1524,7 +1451,7 @@ else{
         '<div class="orc-jiao-msg-main">本輪尚未確認，先留一點時間</div>'+
         '<div class="orc-jiao-msg-sub">本輪累計三次笑筊或陰筊，依本站求籤流程暫停。<br>先記下仍不確定的事，待情況更清楚時，再整理問題。</div>'+
       '</div>'+
-      '<button class="orc-btn-outline orc-jiao-btn-end" onclick="_oracleReset()">改 日 再 來</button>';
+      '<button class="orc-btn-outline orc-jiao-btn-end" onclick="_oracleReset()">結 束 本 輪</button>';
   } else {
     ui.innerHTML=
       '<div class="orc-jiao-msg-block">'+
@@ -1532,7 +1459,9 @@ else{
         '<div class="orc-jiao-msg-sub">'+msgSub+'</div>'+
         '<div class="orc-jiao-msg-tally">本輪累計笑筊／陰筊 '+_laughDarkCount+' 次・三次則止</div>'+
       '</div>'+
-      '<button class="orc-btn-outline orc-jiao-btn-retry" onclick="_oracleRedraw()">重新搖籤</button>';
+      (_throwResult==='laugh'
+        ? '<button class="orc-btn-outline orc-jiao-btn-retry" onclick="_oracleContinue()">釐清後再擲筊</button>'
+        : '<button class="orc-btn-outline orc-jiao-btn-retry" onclick="_oracleRedraw()">重新搖籤</button>');
   }
 }
 ui.style.opacity='1';}
@@ -1540,8 +1469,8 @@ ui.style.opacity='1';}
 },1200);};
 window._oracleContinue=function(){_throwResult=null;_oracleThrow()};
 window._oracleViewPoem=function(){
-  // v62：存今日鎖籤紀錄（首次三聖筊確認時）
-  if(_poem&&_qType){
+  // 問題為選填，因此 _qType 可為 null；完成三聖筊仍須保存本地紀錄。
+  if(_poem&&_holy>=3){
     _oracleSaveLock(_qType,_qText,_poem.n,_redrawCount,_laughDarkCount);
   }
   // v65: 聖筊牌位過場 → 2 秒後進入解籤頁
@@ -1565,7 +1494,7 @@ window._oracleDownload=function(){
   JYShareCard.download('oracle',data).catch(function(){alert('圖片暫時未能完成，請再試一次');});
 };
 window._oracleRedraw=function(){
-  // v65s/t: 笑/陰筊出現 = 神明否決此籤,籤不放回籤桶 → 從剩餘籤桶抽新籤
+  // 陰筊後另抽；笑筊可用 _oracleContinue 對同一支籤再次確認。
   if(_poem){
     // 把當前籤加入「已否決」清單(用 P 陣列的 index,因為 _v63FairRandom 回 index)
     var curIdx=-1;
@@ -1590,29 +1519,13 @@ window._oracleRedraw=function(){
 };
 window._oracleReset=function(){
   _oracleCancelPending();
-  // v65t: 重新求籤 = 徹底重來,清掉所有 lock(pending + 正式)+ rejected + counts
+  // 清掉本次未確認的暫存；已確認的當日紀錄保留供同題核對。
   try{
-    var keys=Object.keys(localStorage);
-    for(var i=0;i<keys.length;i++){
-      // 清 pending lock + 正式 lock(兩種 key prefix 都清)
-      if(keys[i].indexOf('oracle_pending')===0 || keys[i].indexOf('oracle_lock')===0){
-        localStorage.removeItem(keys[i]);
-      }
-    }
+    localStorage.removeItem(_oraclePendingKey(_qType,_qText));
   }catch(_){}
   _rejectedLots=[];
   _phase='intro';_poem=null;_holy=0;_throwResult=null;_qType=null;_qText='';_redrawCount=0;_laughDarkCount=0;_render();
 };
-// v62：feedback 上報
-window._oracleFb=function(rating){
-  _oracleSendFeedback(rating);
-  var sec=document.getElementById('orc-fb-section');
-  if(sec){
-    var msg=rating==='accurate'?'感謝您的回饋 ✦':rating==='partial'?'感謝您的回饋，我們會持續調整 ✦':'感謝您的誠實回饋 ✦';
-    sec.innerHTML='<div class="orc-fb-thanks">'+msg+'</div>';
-  }
-};
-
 // ★ v75：AI 解籤提示詞生成
 var _lastOraclePrompt = '';
 function _buildOraclePrompt(poem, qText) {
@@ -1633,12 +1546,12 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('傳統附記：'+poem.t+'（只作該版本文化資料，不據此推造日期、投資方向或事件機率）');
   lines.push('原詩、廟方附記與補充典故分清來源。未提供的典故與分類條目不准自動補成已核對材料；若補充可靠典故，另註來源並標為參考。');
   lines.push('────────────────');
-  lines=lines.concat(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"?window.JY_READING_QUALITY.lines('oracle'):JY_READING_ORACLE);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('oracle'):JY_READING_ORACLE);
   lines.push('【本籤補充方法】時間題須辨季節詞是時令、典故或轉機象徵；沒有獨立時間依據不換算日曆日期。傳統治病與六甲條目不作診斷、療程或胎兒性別預測。');
   lines.push('依完整原詩定調，正文聚焦改變答案的關鍵句。等候須說清在等什麼條件；不好籤意仍保留可做的選擇，不把困境歸咎於不夠虔誠。');
   lines.push('');
   lines.push('【延伸選品】');
-  lines.push((window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationText('oracle'):JY_REC_ORACLE));
+  lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('oracle'):JY_REC_ORACLE));
   lines.push('最後保留以下兩行：');
   lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
   lines.push('願你諸事順遂。');

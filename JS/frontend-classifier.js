@@ -118,6 +118,8 @@
   //    - 失敗時 fallback 'general'
   // ─────────────────────────────────────────────────────────
   async function classifyWithHaiku(question, sessionToken) {
+    // 提示詞版只在本地分類；未命中規則時保留 general，不將原問題送出裝置。
+    if (global.JY_PROMPT_ONLY) return attachQTypes(classifyFocusType(question, 'general'), detectSecondaryQTypes(question));
     try {
       var resp = await fetch(WORKER_URL + '/classify', {
         method: 'POST',

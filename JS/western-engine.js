@@ -19,7 +19,10 @@
   const norm=x=>((x%360)+360)%360,diff=(a,b)=>norm(a-b+180)-180,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
   const zh=k=>NAMES[KEYS.indexOf(k)]||({NorthNode:'北交點',SouthNode:'南交點',ASC:'上升',MC:'天頂',DSC:'下降',IC:'天底'}[k])||k;
   const freeze=o=>{if(o&&typeof o==='object'&&!Object.isFrozen(o)){Object.values(o).forEach(freeze);Object.freeze(o);}return o;};
-  function instant(x){const d=new Date(x);if(!Number.isFinite(+d))throw Error('日期時間無效');return d;}
+  function instant(x){
+    if(x==null||typeof x==='string'&&!/(?:Z|[+-]\d{2}:\d{2})$/i.test(x))throw Error('日期時間須明示 UTC 或時差');
+    const d=new Date(x);if(!Number.isFinite(+d))throw Error('日期時間無效');return d;
+  }
   function checkDate(x){const d=instant(x);if(d.getUTCFullYear()<1900||d.getUTCFullYear()>2100)throw Error('目前已驗證的排盤範圍為 1900–2100 年');return d;}
   function setup(){
     const A=root.Astronomy;if(!A)throw Error('星曆尚未載入');
@@ -103,6 +106,19 @@
     }
     return out.map(p=>({...p,status:'structural',source:p.source||'https://www.skyscript.co.uk/aspects2.html',edges:list.filter(a=>p.planets.includes(a.a)&&p.planets.includes(a.b)),interpretation:'依參與行星、宮位及實際容許度合看；不是事件保證'}));
   }
+  function chartShapes(ps){
+    // The largest empty circular arc gives the smallest arc containing all ten
+    // planets; a naive max(longitude)-min(longitude) fails across Aries 0°.
+    const sorted=KEYS.map(k=>({planet:k,longitude:norm(ps[k].longitude)})).sort((a,b)=>a.longitude-b.longitude);
+    const gaps=sorted.map((p,i)=>({after:p.planet,before:sorted[(i+1)%sorted.length].planet,
+      degrees:sorted[(i+1)%sorted.length].longitude+(i===sorted.length-1?360:0)-p.longitude}));
+    const empty=gaps.reduce((best,x)=>x.degrees>best.degrees?x:best,gaps[0]),span=360-empty.degrees;
+    const matched=span<=120+1e-8?[{name:'集中形 Bundle',condition:'十顆本命行星落於任一 120° 弧內'}]:
+      span>180+1e-8&&span<=240+1e-8?[{name:'火車頭形 Locomotive',condition:'十顆本命行星落於 240° 弧內，其餘至少 120° 空白'}]:[];
+    return {spanDegrees:span,largestEmptyGap:empty,matched,
+      scope:'僅核定具明確角度界線的兩種 Jones 盤形；未涵蓋水桶、噴濺與散布等須另定群集判準的名稱。時間未知時月亮位置可能改變邊界。',
+      source:'https://www.skyscript.co.uk/aspects2.html'};
+  }
   function solarConditions(ps){
     return ['Mercury','Venus','Mars','Jupiter','Saturn'].map(key=>{
       const separation=Math.abs(diff(ps[key].longitude,ps.Sun.longitude));
@@ -128,7 +144,20 @@
     if(!Number.isFinite(latitude)||Math.abs(latitude)>=90||!Number.isFinite(longitude)||Math.abs(longitude)>180)throw Error('請核對出生座標');if(!Number.isFinite(uncertainty)||uncertainty<0||uncertainty>120)throw Error('時間誤差須為 0–120 分鐘');
     const hs=unknown?null:houses(birth,latitude,longitude,system),ps=planets(birth,hs?.cusps),asp=aspects(ps,hs,{minor:!!input.minorAspects}),sensitivity={unknownTime:unknown,minutes:unknown?null:uncertainty,planets:[],angles:[]};
     // Unknown clock: bound the actual local civil day, including 23/25-hour DST days.
-    let samples=[];if(unknown){const civil=input.civil;if(!civil?.date||!civil?.timezone)throw Error('時間不詳時仍須出生日期與 IANA 時區');const [start,end]=root.JYAstroTime.civilDayBounds(civil.date,civil.timezone);sensitivity.utcInterval=[start.toISOString(),end.toISOString()];for(let t=+start;t<+end;t+=3*3600000)samples.push(t);samples.push(+end-1);}
+    let samples=[];if(unknown){const civil=input.civil;if(!civil?.date||!civil?.timezone)throw Error('時間不詳時仍須出生日期與 IANA 時區');const [start,end]=root.JYAstroTime.civilDayBounds(civil.date,civil.timezone),noon=root.JYAstroTime.civilToUTC({date:civil.date,time:'12:00',timezone:civil.timezone}).date;
+      // The current UI always supplies local noon. Older callers may toggle the
+      // unknown-clock flag on a previously entered civil time. Retain that
+      // explicitly identified reference instant only when the clock, IANA zone,
+      // and UTC value agree; it must never be presented as a known birth time.
+      if(+noon!==+birth){
+        if(!civil.time||civil.time==='12:00')throw Error('時間不詳時請以出生地當地中午的 UTC 時刻作參考；沿用其他參考時刻須提供與 UTC 相符的當地日期、時間及 IANA 時區');
+        const supplied=root.JYAstroTime.civilToUTC({date:civil.date,time:civil.time,timezone:civil.timezone,disambiguation:civil.disambiguation}).date;
+        if(+supplied!==+birth)throw Error('時間不詳時，參考時刻的 UTC 與出生地當地日期、時間或時區不一致');
+      }else if(civil.time&&+root.JYAstroTime.civilToUTC({date:civil.date,time:civil.time,timezone:civil.timezone,disambiguation:civil.disambiguation}).date!==+birth){
+        throw Error('時間不詳時，參考時刻的 UTC 與出生地當地日期、時間或時區不一致');
+      }
+      sensitivity.referenceClock={kind:+noon===+birth?'local-noon':'provided-civil-reference',localTime:+noon===+birth?'12:00':civil.time,policy:'只供星位參考；不是已確認的出生時刻'};
+      sensitivity.utcInterval=[start.toISOString(),end.toISOString()];for(let t=+start;t<+end;t+=3*3600000)samples.push(t);samples.push(+end-1);}
     else if(uncertainty)samples=[+birth-uncertainty*60000,+birth+uncertainty*60000];
     if(samples.length){for(const key of KEYS){const values=samples.map(t=>position(key,t).longitude),offsets=values.map(x=>diff(x,ps[key].longitude));sensitivity.planets.push({key,minimum:norm(ps[key].longitude+Math.min(...offsets)),maximum:norm(ps[key].longitude+Math.max(...offsets)),signs:[...new Set(values.concat(ps[key].longitude).map(x=>Math.floor(x/30)))],spanDegrees:Math.max(...offsets)-Math.min(...offsets)});}if(!unknown){for(const key of ['ASC','MC'])sensitivity.angles.push({key,alternatives:samples.map(t=>angles(t,latitude,longitude)[key])});sensitivity.houseAlternatives=Object.fromEntries(KEYS.map(k=>[k,[...new Set(samples.map(t=>houseOf(position(k,t).longitude,houses(t,latitude,longitude,system).cusps)).concat(ps[k].house))]]));}}
     const natalTargets={...ps};if(hs)for(const key of ['ASC','MC'])natalTargets[key]={key,longitude:hs.angles[key],sign:Math.floor(hs.angles[key]/30),speed:0};
@@ -136,7 +165,7 @@
     const progressMs=+birth+(+reference-birth)/YEAR,progressed=unknown?null:planets(progressMs),progressions=progressed?{utc:new Date(progressMs).toISOString(),yearDays:YEAR,policy:'次限推運：出生後一日象徵一年，只推行星；未推進角點與宮位',planets:progressed,aspects:crossAspects(progressed,natalTargets,1).map(a=>({...a,kind:'次限對本命',phase:null}))}:null;
     const returns=unknown?null:solarReturn(birth,reference.getUTCFullYear(),latitude,longitude,system);
     const distribution={elements:{火:0,土:0,風:0,水:0},modalities:{基本:0,固定:0,變動:0},policy:'十顆行星各計一次，交點與角點不計入；是分布而非能力分數'};for(const k of KEYS){distribution.elements[ps[k].element]++;distribution.modalities[ps[k].modality]++;}
-    return freeze({version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,location:input.location||'自訂出生地',civil:input.civil||null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],patternAspects:'格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算',chartType:'本命盤；不是卜卦、合盤或印度分盤'},planets:ps,houses:hs,aspects:asp,patterns:patterns(aspects(ps,null,{minor:true})),specialConditions:aspectExceptions(ps,asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns});
+    return freeze({version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,location:input.location||'自訂出生地',civil:input.civil?{...input.civil}:null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],patternAspects:'格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算',chartType:'本命盤；不是卜卦、合盤或印度分盤'},planets:ps,houses:hs,aspects:asp,patterns:patterns(aspects(ps,null,{minor:true})),chartShapes:chartShapes(ps),specialConditions:aspectExceptions(ps,asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns});
   }
-  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,houses,houseOf,dignity,pairAspect,aspects,patterns,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
+  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,houses,houseOf,dignity,pairAspect,aspects,patterns,chartShapes,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
 })(globalThis);

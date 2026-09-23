@@ -1,0 +1,47 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:special-rules
+> node scripts/sync-recommendation-guides.cjs --check && node tests/special-rules-20260922.cjs && node tests/engine-output-consistency-20260913.cjs && node tests/gua-engine-20260922.cjs
+
+Reading v6.0.0 / recommendation v4.3.0: all generated copies match
+PASS Sixyao: role-aware focus does not turn office attraction into a job question
+PASS Sixyao: month-strength, static/moving, weak emptiness and tombs retain distinct effects
+PASS Sixyao: bounded dates follow actual calendar; next-month does not become this-month
+PASS Ziwei: rejects old wrong sun/pearl patterns and three-out-of-four shortcut
+PASS Ziwei: flanking means two neighboring palaces; light levels are actual table values
+PASS Ziwei: source-specific court, carriage, Sun–Liang–Chang–Lu and horse variants keep exclusions
+PASS Bazi: following-output permits rooted peers; the printed season does not create a special pattern
+PASS Bazi: real following-output chart does not restore ordinary support advice in its upgrade
+PASS Bazi: unknown-hour composite exports omit noon-derived structures, timing and cached consensus
+PASS Meihua: all 384 inputs use one nuclear rule and unchanged original body
+PASS Jyotisha: all 32 Naabhasa identities present, shapes and Sankhya priority stay distinct
+PASS Jyotisha: Kemadruma cancellation and unknown time do not report a confirmed bad yoga
+PASS Jyotisha: named dusthana yogas require their own house, export carries all exclusions
+PASS Western: Yod, boomerang, cradle, rectangle, kite and hexagon require all edges
+PASS Lenormand: both full tableaux preserve house cycles, swaps, fixed points and reject damaged decks
+PASS Nameology: real loaded upgrade preserves unknown strokes and compound surname calculation
+PASS Tarot: export blocks duplicate draws, missing positions and mixed traditions
+PASS Coverage register accounts for every active reading method and names its limits
+Special-rule regression groups: 18/18
+PASS 120 root combinations: day sitting root and four-branch root are independent facts
+PASS Actual Bazi standalone and six-lens exports distinguish sitting root from roots elsewhere
+PASS Complete composite payload preserves neutral strength, god identities, Shensha and exact luck dates
+PASS Actual composite Bazi result renderer displays neutral and distinguishes day/other roots
+PASS Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts
+PASS 384 Meihua cases: moving trigram is Yong; changed Yong and both mutual trigrams retain their actual relation to Ti
+PASS Meihua saved casting time reaches initial analysis, enriched season and complete composite output
+PASS 27 tarot mode/spread combinations remain identical through the full composite adapter, including RWS reversals
+PASS Invalid tarot draws and stopped Key cannot leave fabricated or stale composite cards
+Output consistency: 9/9 groups passed.
+✓ 八宮全圖：64 卦歸宮、世應、遊魂歸魂；八宮均不重複
+✓ 渾天甲子：八純卦納甲、陰陽順序及六神起例
+✓ 古例：需之訟、夬之姤的變爻六親均沿用坤宮土
+✓ 六沖十卦、六合八卦；日沖不直接定暗動或日破
+✓ 三錢八種結果為 1:3:3:1；缺少安全亂數直接停止
+✓ 4096 組：本變卦逐爻互換、所有動爻保留、擇辭與原文完全相符
+✓ 朱子考變占原例：一爻、五爻、三爻前後十及乾坤二用
+✓ 六十日旬空循環，午夜與子初換日，指定時區不隨電腦時區漂移
+✓ 香港天文台 2026 節令日期；同一瞬間跨時區與交節前後一秒
+✓ 無效日期、爻值、擲錢紀錄、時差不靜默補算
+✓ 解讀提示詞使用同一答案優先規則、精確事實與最後選品；獨立備援一致
+gua-engine: 11 groups passed, including all 4096 casts.

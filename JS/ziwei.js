@@ -182,18 +182,27 @@ function assessZiweiPatterns(palaces) {
   same('sun-noon','日麗中天',['太陽'],'太陽午宮；吉輔與煞忌另列',['午']);
   same('purple-noon','極向離明',['紫微'],'紫微在午坐命',['午']);
   same('hidden-jade','石中隱玉',['巨門'],'巨門在子午；科權祿另列支持',['子','午']);
-  same('horse-arrow','馬頭帶箭',['擎羊'],'擎羊午宮坐命；不推定職業或災害',['午']);
+  // 「午命擎羊」只是必要一環；天同太陰同度，或空命借對宮，須分辨。
+  var horseArrowCore=has(ming,'天同')&&has(ming,'太陰');
+  var horseArrowBorrowed=stars(ming).length===0&&has(travel,'天同')&&has(travel,'太陰');
+  add('horse-arrow','馬頭帶箭',[check('命宮在午且有擎羊',ming.branch==='午'&&has(ming,'擎羊')),check('天同太陰同宮或空命借對宮',horseArrowCore||horseArrowBorrowed)],horseArrowBorrowed?[ming,travel]:[ming],['擎羊','天同','太陰'],'採午宮擎羊與天同太陰同度（或命空借對宮）的嚴格支線；丙戊年配祿及煞忌另審');
+  add('horse-arrow-greedy','馬頭帶箭（貪狼化祿旁格）',[check('午命擎羊貪狼同宮',ming.branch==='午'&&has(ming,'擎羊')&&has(ming,'貪狼')),check('命宮貪狼生年化祿',ming.stars.some(function(s){return s.name==='貪狼'&&s.hua==='化祿';}))],[ming],['擎羊','貪狼'],'貪狼化祿與擎羊午宮同度只列旁格','不與天同太陰主格合併');
   same('minister','君臣慶會',['紫微','左輔','右弼'],'採紫微左右同守命的起例');
   add('empty','命無正曜',[check('命宮無十四主星',stars(ming).length===0)],[ming,travel],null,'參照對宮主星，保留本宮輔煞；不搬移原盤');
   add('jiyuetongliang','機月同梁格',[check('四曜齊全，不以三曜代替',all(['天機','太陰','天同','天梁']))],sf,['天機','太陰','天同','天梁'],'三方四正四曜俱備');
   add('kill-break-greedy','殺破狼星系',[check('三曜齊全',all(['七殺','破軍','貪狼']))],sf,['七殺','破軍','貪狼'],'變動型主星相互呼應');
   add('treasury-minister','府相朝垣',[check('天府在官祿',has(career,'天府')),check('天相在財帛',has(wealth,'天相'))],[ming,wealth,career],['天府','天相'],'採官祿天府、財帛天相拱命的起例');
   add('pearl','明珠出海',[check('未宮空命',ming.branch==='未'&&stars(ming).length===0),check('卯財帛太陽',wealth.branch==='卯'&&has(wealth,'太陽')),check('亥官祿太陰',career.branch==='亥'&&has(career,'太陰')),check('遷移同巨',has(travel,'天同')&&has(travel,'巨門'))],[ming,wealth,career,travel],['太陽','太陰','天同','巨門'],'日月照空命的指定結構');
+  var estate=at('田宅');
+  add('moon-sea-home','月生滄海（子田宅本）',[check('田宅居子且天同太陰同守',estate&&estate.branch==='子'&&has(estate,'天同')&&has(estate,'太陰'))],[estate],['天同','太陰'],'《紫微斗數全書》原文採子宮田宅同陰，不直接推定住宅或財產');
+  add('moon-sea-life','月生滄海（子命變體）',[check('命居子且天同太陰同守',ming.branch==='子'&&has(ming,'天同')&&has(ming,'太陰'))],[ming],['天同','太陰'],'作者擴充的子命版本','與原文子田宅版本分列');
+  add('hero-temple','英星入廟',[check('破軍在子或午宮坐命',['子','午'].includes(ming.branch)&&has(ming,'破軍'))],[ming],['破軍'],'採子午破軍命宮的固定結構；廟旺與煞忌須看實盤，不由名稱推論成就');
   var sides=[palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+11)%12;}),palaces.find(function(p){return DZ.indexOf(p.branch)===(DZ.indexOf(ming.branch)+1)%12;})];
   function flanks(a,b){return (has(sides[0],a)&&has(sides[1],b))||(has(sides[1],a)&&has(sides[0],b));}
   var clearCourt=!sf.some(function(p){return p.stars.some(function(s){return ['擎羊','陀羅','火星','鈴星','地空','地劫'].includes(s.name)||s.hua==='化忌';});});
   add('minister-flanked','君臣慶會（紫破輔弼夾命）',[check('紫微破軍守命',has(ming,'紫微')&&has(ming,'破軍')),check('左右分居兩側',flanks('左輔','右弼')),check('命宮三方四正無六煞及生年忌',clearCourt)],[ming].concat(sides),['紫微','破軍','左輔','右弼'],'採作者列出的紫破輔弼夾命支線','與紫微左右同守命的古籍起例分列');
   add('minister-literary','君臣慶會（紫相昌曲命遷）',[check('紫微天相守命',has(ming,'紫微')&&has(ming,'天相')),check('昌曲分居命遷',(has(ming,'文昌')&&has(travel,'文曲'))||(has(ming,'文曲')&&has(travel,'文昌'))),check('命宮三方四正無六煞及生年忌',clearCourt)],[ming,travel],['紫微','天相','文昌','文曲'],'採作者列出的紫相昌曲命遷支線','與紫微左右同守命的古籍起例分列');
+  add('assists-purple','輔弼拱主',[check('紫微坐命',has(ming,'紫微')),check('左輔右弼三方會照或分夾命宮',(all(['左輔','右弼'])||flanks('左輔','右弼')))],sf.concat(sides),['紫微','左輔','右弼'],'紫微坐命而左右在三方四正會照或分夾兩側；單見一曜不成完整結構');
   add('golden-carriage-fu','金輿扶駕（天府日月夾命）',[check('天府守命',has(ming,'天府')),check('日月分居兩側',flanks('太陽','太陰'))],[ming].concat(sides),['天府','太陽','太陰'],'依作者天府守命的修訂解釋，保留原典用字爭議','原文紫微守命被作者指出與安星位置不相容；此項只採天府修訂本');
   add('sun-beam-literary-lu','陽梁昌祿',[check('命宮三方四正同見四曜',all(['太陽','天梁','文昌','祿存']))],sf,['太陽','天梁','文昌','祿存'],'四曜必須齊備，化祿不能替代祿存；不據此推定學歷或考試結果');
   [['purple-flank','紫府夾命','紫微','天府'],['assist-flank','左右夾命','左輔','右弼'],['literary-flank','昌曲夾命','文昌','文曲'],['noble-flank','魁鉞夾命','天魁','天鉞'],['sunmoon-flank','日月夾命','太陽','太陰'],['firebell-flank','火鈴夾命','火星','鈴星'],['goat-drag-flank','羊陀夾命','擎羊','陀羅'],['empty-rob-flank','空劫夾命','地空','地劫']].forEach(function(g){
@@ -202,6 +211,22 @@ function assessZiweiPatterns(palaces) {
   var transformations=['化祿','化權','化科'];
   add('three-transformations','三奇加會',[check('生年祿權科齊會',transformations.every(function(h){return sf.some(function(p){return p.stars.some(function(s){return s.hua===h;});});}))],sf,null,'只合看同一生年層祿權科；不跨層湊格');
   add('double-fortune','雙祿交流',[check('祿存會命',all(['祿存'])),check('生年化祿會命',sf.some(function(p){return p.stars.some(function(s){return s.hua==='化祿';});}))],sf,null,'祿存與生年化祿並見，成色不相加成機率');
+  var hasHuaLu=function(p){return !!p&&p.stars.some(function(s){return s.hua==='化祿';});};
+  var luMaPlace=palaces.find(function(p){return has(p,'祿存')&&has(p,'天馬');});
+  add('luma-together','祿馬交馳（同宮）',[check('祿存、天馬落在同一宮',!!luMaPlace)],luMaPlace?[luMaPlace]:[ming],['祿存','天馬'],'採祿存天馬實際同宮的嚴格起例；落在非命宮時按該宮題意取象，不推定財運或遷動結果');
+  var lufortunePlace=palaces.find(function(p){return has(p,'祿存');});
+  var lufortuneOpposite=lufortunePlace&&palaces.find(function(p){return p.branch===DZ[(DZ.indexOf(lufortunePlace.branch)+6)%12];});
+  add('fortune-pair','祿合鴛鴦',[check('祿存與生年化祿同宮或對拱',!!lufortunePlace&&(hasHuaLu(lufortunePlace)||hasHuaLu(lufortuneOpposite)))],
+    lufortunePlace?[lufortunePlace,lufortuneOpposite]:[ming],['祿存'],'採本命祿存與生年化祿同宮或對宮；三方四正並見而不同宮、不對拱不能混稱');
+  var hiddenBranch={'子':'丑','丑':'子','寅':'亥','亥':'寅','卯':'戌','戌':'卯','辰':'酉','酉':'辰','巳':'申','申':'巳','午':'未','未':'午'};
+  var hiddenLuck=palaces.find(function(p){return p.branch===hiddenBranch[ming.branch];});
+  add('bright-hidden-fortune','明祿暗祿',[check('命宮與暗合宮分見祿存、化祿',(has(ming,'祿存')&&hasHuaLu(hiddenLuck))||(hasHuaLu(ming)&&has(hiddenLuck,'祿存')))],
+    [ming,hiddenLuck],['祿存'],'按命宮六合暗合宮，不將對宮或三方會祿誤認暗合');
+  add('two-hoods','兩重華蓋',[check('命宮祿存與生年化祿同宮',has(ming,'祿存')&&hasHuaLu(ming)),check('命宮同見地空或地劫',has(ming,'地空')||has(ming,'地劫'))],[ming],['祿存','地空','地劫'],'採祿存化祿坐命遇地空或地劫；不推定財務結果');
+  add('luma-seal','祿馬佩印',[check('命宮天相祿存天馬同宮',has(ming,'天相')&&has(ming,'祿存')&&has(ming,'天馬'))],[ming],['天相','祿存','天馬'],'天相祿存天馬在同一命宮的分支；空亡、生旺另列補證，不推定富貴');
+  var body=palaces.find(function(p){return p.isShen;});
+  var aidesAt=has(ming,'左輔')&&has(ming,'右弼')?ming:body&&has(body,'左輔')&&has(body,'右弼')?body:null;
+  add('aides-together','左右同宮',[check('左輔右弼同守命宮或身宮',!!aidesAt)],aidesAt?[aidesAt]:[ming],['左輔','右弼'],'按命／身實際同宮，不以三方會照代替；輔助條件與煞忌仍須合盤');
   var lightPalaces=['太陽','太陰'].map(function(n){return sf.find(function(p){return has(p,n);});});
   var lightLevels=lightPalaces.map(function(p,i){return p&&typeof getStarBright==='function'?getStarBright(['太陽','太陰'][i],DZ.indexOf(p.branch)).label:null;});
   var bothFallen=lightLevels.every(function(b){return b==='陷'||b==='落陷';});
@@ -2718,7 +2743,7 @@ const ZODIAC_NAME_DB = {
           "冫"
         ],
         "label": "得水",
-        "reason": "龍入大海如魚得水，大富大貴",
+        "reason": "辰龍見水字根的形義派象徵偏合；不由字根推論財富或地位",
         "score": 9
       },
       {
@@ -4929,7 +4954,7 @@ function analyzeZodiacName(fullName, birthYear, options){
   options=options||{};
   const nameFacts=analyzeName(fullName,options);if(!nameFacts)return null;
   var yearBasis='僅提供公曆年份，年界尚未核對';
-  if(options.date){var parts=String(options.date).split('-').map(Number);if(parts.length!==3||parts.some(x=>!Number.isInteger(x)))return null;birthYear=approxLunar(parts[0],parts[1],parts[2]).year;yearBasis='農曆正月初一換生肖年；與八字立春年界分開';}
+  if(options.date){var rawDate=String(options.date),parts=rawDate.split('-').map(Number);if(!/^\d{4}-\d{2}-\d{2}$/.test(rawDate)||parts.length!==3||parts.some(x=>!Number.isInteger(x)))return null;var civilDate=new Date(Date.UTC(parts[0],parts[1]-1,parts[2]));if(civilDate.getUTCFullYear()!==parts[0]||civilDate.getUTCMonth()+1!==parts[1]||civilDate.getUTCDate()!==parts[2])return null;birthYear=approxLunar(parts[0],parts[1],parts[2]).year;yearBasis='農曆正月初一換生肖年；與八字立春年界分開';}
   const zodiac = getChineseZodiac(birthYear),db=ZODIAC_NAME_DB[zodiac];
   if(!db)return null;
   fullName=nameFacts.name;
@@ -4955,7 +4980,7 @@ function analyzeZodiacName(fullName, birthYear, options){
       db.like.forEach(rule => {
         const matched = rule.roots.filter(r => roots.includes(r));
         if(matched.length > 0){
-          hits.push({type:'吉', label:rule.label, reason:rule.reason, score:rule.score, matchedRoots:matched});
+          hits.push({type:'吉', label:rule.label, reason:'字根'+matched.join('、')+'在生肖形義派列作「'+rule.label+'」的合拍取象；須合看名字字義，不能據此推斷現實結果。', score:rule.score, matchedRoots:matched});
           totalScore += rule.score;
           totalLike++;
         }
@@ -4965,7 +4990,7 @@ function analyzeZodiacName(fullName, birthYear, options){
       db.dislike.forEach(rule => {
         const matched = rule.roots.filter(r => roots.includes(r));
         if(matched.length > 0){
-          hits.push({type:'凶', label:rule.label, reason:rule.reason, score:rule.score, matchedRoots:matched});
+          hits.push({type:'凶', label:rule.label, reason:'字根'+matched.join('、')+'在生肖形義派列作「'+rule.label+'」的提醒取象；不能據此推斷事故、疾病或人際事件。', score:rule.score, matchedRoots:matched});
           totalScore += rule.score; // score 本身是負數
           totalDislike++;
         }
@@ -4982,10 +5007,11 @@ function analyzeZodiacName(fullName, birthYear, options){
   let sacrificeNote = '';
   if(['豬','牛','羊'].includes(zodiac)){
     const allHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits));
-    const hasSacrifice = allHits.some(h=>h.label==='犧牲格' || h.label==='彩衣格' || h.label==='彩衣犧牲');
+    // 資料表實際使用太大／稱王／披衣／祭祀；舊標籤「犧牲格」並不存在，故原分支永不命中。
+    const hasSacrifice = allHits.some(h=>h.type==='凶'&&['太大','稱王','披衣','祭祀'].includes(h.label));
     if(hasSacrifice){
       isSacrifice = true;
-      sacrificeNote = `${ZODIAC_EMOJI[zodiac]}${zodiac}為祭祀牲畜，名字帶有王/大/彩衣字根，形成「犧牲格」——外表風光，內心承受極大壓力，常為他人犧牲自己。`;
+      sacrificeNote = `${ZODIAC_EMOJI[zodiac]}${zodiac}在這套形義派有「犧牲格」字根的取象；這是民俗分類，不能從名字推定本人內心、處境或是否為他人犧牲。`;
     }
   }
 
@@ -4994,77 +5020,44 @@ function analyzeZodiacName(fullName, birthYear, options){
   let clashNote = '';
   if(zodiac==='豬'){
     const allHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits));
-    const hasClash = allHits.some(h=>h.label==='蛇豬衝');
+    const hasClash = allHits.some(h=>h.type==='凶'&&['蛇形','六衝'].includes(h.label));
     if(hasClash){
       isSnakePigClash = true;
-      const clashChars = results.flatMap(r=>r.charResults.filter(c=>c.hits.some(h=>h.label==='蛇豬衝'))).map(c=>c.char);
-      clashNote = `「${clashChars.join('、')}」含蛇形字根（辶/弓/几/廴），亥豬見巳蛇為六衝——易犯小人、血光意外、勞碌無功。`;
+      const clashChars = results.flatMap(r=>r.charResults.filter(c=>c.hits.some(h=>h.type==='凶'&&['蛇形','六衝'].includes(h.label)))).map(c=>c.char);
+      clashNote = `「${clashChars.join('、')}」在此派列為蛇形字根（辶/弓/几/廴），以亥巳相沖作象徵提醒；不能據此預測小人、受傷或財務損失。`;
     }
   }
 
   // 凶優先原則：有凶字根時壓過吉字根
   let overallLevel;
-  const absScore = totalScore;
   if(totalDislike > 0 && totalLike > 0){
-    overallLevel = absScore >= 5 ? '吉中帶險' : absScore >= 0 ? '表吉實凶' : absScore >= -10 ? '偏凶' : '大凶';
+    overallLevel = '形義派字根夾雜';
   } else if(totalDislike === 0 && totalLike > 0){
-    overallLevel = absScore >= 20 ? '大吉' : absScore >= 10 ? '吉' : '小吉';
+    overallLevel = '形義派字根偏合';
   } else if(totalDislike > 0 && totalLike === 0){
-    overallLevel = absScore <= -20 ? '大凶' : absScore <= -10 ? '凶' : '小凶';
+    overallLevel = '形義派字根有疑慮';
   } else {
-    overallLevel = '平';
+    overallLevel = '形義派未見明顯字根';
   }
 
   // 犧牲格強制判定
-  if(isSacrifice) overallLevel = '犧牲格（凶）';
+  if(isSacrifice) overallLevel = '形義派犧牲字根候選';
 
-  // ★ 八字喜忌覆寫規則：若「凶」的字根五行正好是八字調候/喜用神，強制提升評級
-  let baziOverride=false;
-  let baziOverrideNote='';
-  let baziScoreOverride=false;
-  if(typeof S!=='undefined' && S.bazi && S.bazi.fav && (overallLevel.includes('凶') || overallLevel.includes('險'))){
-    const baziF=S.bazi.fav||[];
-    const baziTiaohou=(S.bazi.tiaohou && S.bazi.tiaohou.need)?S.bazi.tiaohou.need:[];
-    // 檢查凶的字根是否含有八字喜用神/調候用神的五行
-    const allDislikeElems=results.flatMap(r=>r.charResults.flatMap(c=>c.hits.filter(h=>h.type==='凶').map(h=>{
-      // 推測字根對應五行
-      if(h.label.includes('火')||h.label.includes('蛇')||h.label.includes('日')) return '火';
-      if(h.label.includes('水')||h.label.includes('豬')||h.label.includes('雨')) return '水';
-      if(h.label.includes('金')||h.label.includes('刀')||h.label.includes('酉')) return '金';
-      if(h.label.includes('木')||h.label.includes('虎')||h.label.includes('卯')) return '木';
-      if(h.label.includes('土')||h.label.includes('牛')||h.label.includes('辰')) return '土';
-      return '';
-    }))).filter(Boolean);
-    
-    const overlapFav=allDislikeElems.filter(e=>baziF.includes(e)||baziTiaohou.includes(e));
-    if(overlapFav.length>0){
-      const uniqueEls=[...new Set(overlapFav)];
-      baziOverride=true;
-      // 覆寫等級：凶→平/小吉
-      if(overallLevel.includes('大凶')) overallLevel='偏凶（八字有緩解）';
-      else if(overallLevel.includes('凶') || overallLevel.includes('險')) overallLevel='平（八字互補）';
-      baziOverrideNote=`雖然生肖派判定字根${uniqueEls.join('、')}行有沖剋，但此五行正好是八字命盤極度需要的${baziTiaohou.length&&baziTiaohou.some(e=>uniqueEls.includes(e))?'調候用神':'喜用神'}。這種「以毒攻毒」的結構，反而精準補足了本命盤的盲區。`;
-      // 調整數值分（numericScore 已在下方計算）
-      baziScoreOverride = true; // 標記需要覆寫分數
-    }
-  }
+  // 字根形義與八字五行是兩套不同的分析資料；不可按標籤猜五行、覆寫喜忌。
+  const baziOverride=false;
+  const baziOverrideNote='生肖姓名字根不可覆寫八字取用或調候；兩者若衝突，須各自呈現其依據。';
   const warnings = [];
-  if(isSacrifice) warnings.push('此名為犧牲格：外人看你風光，你內心最知苦楚。注意不要過度付出、學會拒絕。');
-  if(isSnakePigClash) warnings.push('蛇豬衝：注意交通安全、不可輕信他人、合約務必仔細看清。');
+  if(isSacrifice) warnings.push('此名在形義派有犧牲字根：可作界線與互惠的自我提醒，不能證明本人處境。');
+  if(isSnakePigClash) warnings.push('蛇豬衝屬形義取象：一般生活安全仍依實際情況留意，不由字根推定事故。');
   const allDislikeHits = results.flatMap(r=>r.charResults.flatMap(c=>c.hits.filter(h=>h.type==='凶')));
-  if(allDislikeHits.some(h=>h.label==='遇刀')) warnings.push('名帶刀刃：注意手術、外傷、利器相關風險。');
-  if(allDislikeHits.some(h=>h.label==='遇人被宰'||h.label==='遇人')) warnings.push('名帶人形字根：此生肖見人不利，容易替人背鍋。');
-  if(allDislikeHits.some(h=>h.label.includes('六衝'))) warnings.push('名帶六衝字根：人際關係易起衝突，注意口舌是非。');
+  if(allDislikeHits.some(h=>h.label==='遇刀')) warnings.push('「遇刀」屬傳統字根象徵，不能用來推斷手術或外傷。');
+  if(allDislikeHits.some(h=>h.label==='遇人被宰'||h.label==='遇人')) warnings.push('「遇人」屬傳統字根象徵，不能用來推斷人際待遇。');
+  if(allDislikeHits.some(h=>h.label.includes('六衝'))) warnings.push('「六衝」屬生肖字根分類，不能用來預測衝突。');
 
   // 計算 0-100 分
   let numericScore = 50 + totalScore * 2;
   numericScore = Math.max(5, Math.min(95, numericScore));
   
-  // 八字覆寫時保底50分
-  if(baziScoreOverride){
-    numericScore = Math.max(numericScore, 50);
-  }
-
   return {
     name: fullName,
     zodiac,yearBasis,
@@ -5077,6 +5070,7 @@ function analyzeZodiacName(fullName, birthYear, options){
     totalDislike,
     overallLevel,
     numericScore,
+    scorePolicy:'生肖形義派自訂的字根權重，僅供辨識此派分類；不是事件機率、健康風險、財務評分或跨系統整合分。',
     isSacrifice,
     sacrificeNote,
     isSnakePigClash,
@@ -5089,219 +5083,101 @@ function analyzeZodiacName(fullName, birthYear, options){
 
 
 // ── Crystal WuXing + TianTie + crystal render (lines 26126-26342) ──
-/* =============================================================
-   水晶推薦系統 CRYSTAL — 命理交叉驗證版
-   基於八字用神×紫微斗數×五行精準歸屬
-   ============================================================= */
-
-// ═══ 五行精準歸屬資料庫 ═══
+/* 色彩／材質設計參考。五行在此只是傳統色彩取象，不是礦物成分、療效或命盤禁忌。
+   照護參考：GIA amethyst/tourmaline/moonstone care；隕鐵與鎳：NHM、AAD。 */
 const CRYSTAL_DB={
   金:[
-    {n:'天鐵（鎳鐵隕石）',icon:'☄️',el:'金',sub:'純金',d:'金氣最強最純，來自天外。適合金為第一用神且極缺金者。',wear:'左手佩戴，日主陽性或性格強悍者適用。',taboo:'金為忌神絕對不可碰。日主陰性身極弱者慎用。',tier:'special'},
-    {n:'白水晶',icon:'💍',el:'金',sub:'金',d:'淨化能量場，增強思維清晰度，萬能調和石。',wear:'左手佩戴，或放書桌/辦公桌。',taboo:'避免碰撞，定期淨化。'},
-    {n:'白幽靈',icon:'💠',el:'金',sub:'金',d:'溫和金氣，淨化磁場，提升靈性直覺。',wear:'冥想時手持或佩戴。',taboo:'避免陽光直射。'},
-    {n:'銀鈦晶',icon:'⚡',el:'金',sub:'金',d:'金氣強烈，增強決斷力與領導力。',wear:'左手佩戴。',taboo:'磁場強，睡眠時建議取下。'},
-    {n:'月光石',icon:'🌙',el:'金',sub:'金+水',d:'長石類帶金，月光效應帶水。金水雙補。',wear:'左手佩戴，增強直覺與柔性能量。',taboo:'質地較軟，避免碰撞。'},
-    {n:'純銀飾品',icon:'🔗',el:'金',sub:'金',d:'金屬材質，純正金氣。',wear:'作為配件搭配主石。',taboo:'定期擦拭防氧化。'}
+    {n:'天鐵（鎳鐵隕石）',icon:'☄️',el:'金',d:'若實物經確認是鐵隕石，主要由鐵鎳合金構成，銀灰色外觀可作金色系設計參考。',wear:'先核對來源、成分與金屬配件；鎳過敏者避免鎳直接接觸皮膚。',tier:'special'},
+    {n:'白水晶',icon:'💍',el:'金',d:'透明石英適合留白、俐落的飾品風格。',wear:'依喜歡的觸感與日常活動選尺寸。'},
+    {n:'白幽靈',icon:'💠',el:'金',d:'白色包裹物帶來層次感，適合偏好清淡配色的人。',wear:'購買時核對實物外觀與處理資訊。'},
+    {n:'銀鈦晶',icon:'⚡',el:'金',d:'金屬色絲狀內含物有鮮明的視覺效果。',wear:'核對商品標示與實物內含物。'},
+    {n:'月光石',icon:'🌙',el:'金',d:'長石類的光暈適合柔和的銀白設計。',wear:'避免碰撞，選擇能保護石面的鑲嵌。'},
+    {n:'純銀飾品',icon:'🔗',el:'金',d:'銀色金屬可和現有飾品搭配。',wear:'核對純度及接觸皮膚的所有配件材質。'}
   ],
   木:[
-    {n:'綠幽靈',icon:'💚',el:'木',sub:'木（帶石英土底）',d:'招正財，事業穩步上升。木氣來自綠色包裹物。',wear:'左手佩戴，放辦公桌增事業運。',taboo:'避免高溫與化學品。'},
-    {n:'翡翠',icon:'💎',el:'木',sub:'木',d:'正統木氣，護身辟邪，增強健康與人緣。',wear:'佩戴在靠近心臟處。',taboo:'避免碰撞與高溫。'},
-    {n:'綠碧璽',icon:'💚',el:'木',sub:'木',d:'強力木氣，心輪之石，療癒情緒。',wear:'左手佩戴。',taboo:'避免與硬物碰撞。'},
-    {n:'東菱玉',icon:'🌿',el:'木',sub:'木',d:'溫和木氣，舒緩壓力，帶來好運。',wear:'隨身佩戴或放枕頭下助眠。',taboo:'定期用月光淨化。'},
-    {n:'橄欖石',icon:'🌱',el:'木',sub:'木',d:'清新木氣，療癒心輪，帶來正能量。',wear:'左手佩戴。',taboo:'質地較軟，注意保護。'},
-    {n:'綠檀木',icon:'🌳',el:'木',sub:'純木',d:'木質材料比礦石更純正，安神定氣。',wear:'隨身佩戴。',taboo:'避免水泡。'},
-    {n:'沉香',icon:'🪵',el:'木',sub:'木+微火',d:'木質帶溫暖火氣，安神定氣，修行者首選。',wear:'隨身佩戴。',taboo:'避免化學品。'},
-    {n:'捷克隕石',icon:'☄️',el:'木',sub:'木+火',d:'綠色隕石玻璃，帶轉化火能量。',wear:'左手佩戴。',taboo:'能量強烈，初戴者漸進適應。'}
+    {n:'綠幽靈',icon:'💚',el:'木',d:'綠色包裹物讓透明石英呈現植物般的層次。',wear:'依自己的配色與佩戴情境選款。'},
+    {n:'翡翠',icon:'💎',el:'木',d:'綠色硬玉適合喜愛溫潤色澤的設計。',wear:'核對處理、鑲嵌與來源。'},
+    {n:'綠碧璽',icon:'💚',el:'木',d:'綠色電氣石可作清新色系的設計。',wear:'避免碰撞，留意鑲嵌是否保護石面。'},
+    {n:'東菱玉',icon:'🌿',el:'木',d:'帶微光的綠色石材適合自然風格。',wear:'按實物處理資訊選保養方式。'},
+    {n:'橄欖石',icon:'🌱',el:'木',d:'黃綠色光澤適合輕巧的日常飾品。',wear:'避免硬物碰撞。'},
+    {n:'綠檀木',icon:'🌳',el:'木',d:'木質紋理適合偏好輕量觸感的人。',wear:'先確認木材和塗層，避免長時間浸水。'},
+    {n:'沉香',icon:'🪵',el:'木',d:'木材紋理與氣味可作傳統文化興趣的選項。',wear:'核對來源與個人對氣味的接受度。'},
+    {n:'捷克隕石',icon:'☄️',el:'木',d:'綠色天然玻璃適合偏好特殊紋理的人。',wear:'核對實物來源與真偽，避免碰撞。'}
   ],
   水:[
-    {n:'黑曜石',icon:'🖤',el:'水',sub:'水',d:'辟邪首選，水氣重，化壓力為動力。',wear:'右手佩戴辟邪排濁。',taboo:'定期流水淨化。'},
-    {n:'拉長石',icon:'🔮',el:'水',sub:'水',d:'靈性水氣，增強直覺與洞察力。',wear:'左手佩戴。',taboo:'避免碰撞。'},
-    {n:'海藍寶',icon:'💙',el:'水',sub:'水+金',d:'綠柱石家族帶金氣。增強溝通力，平靜情緒。',wear:'佩戴在喉輪附近效果最佳。',taboo:'避免長時間日曬。'},
-    {n:'藍紋瑪瑙',icon:'🌊',el:'水',sub:'水',d:'溫和水氣，舒緩焦慮，增強表達力。',wear:'左手佩戴。',taboo:'定期淨化。'},
-    {n:'黑髮晶',icon:'🕸️',el:'水',sub:'水',d:'排除負能量，增強領袖魅力。',wear:'左手佩戴。',taboo:'磁場強，敏感體質注意。'}
+    {n:'黑曜石',icon:'🖤',el:'水',d:'深黑色天然玻璃適合簡潔配色。',wear:'避免撞擊及銳利邊緣。'},
+    {n:'拉長石',icon:'🔮',el:'水',d:'轉動時可見變彩，適合喜愛幽藍光澤的人。',wear:'避免碰撞。'},
+    {n:'海藍寶',icon:'💙',el:'水',d:'淺藍色綠柱石適合柔和的海洋色系。',wear:'核對顏色、處理與鑲嵌。'},
+    {n:'藍紋瑪瑙',icon:'🌊',el:'水',d:'藍色紋理適合偏好細節的設計。',wear:'留意實物是否染色或經處理。'},
+    {n:'黑髮晶',icon:'🕸️',el:'水',d:'黑色絲狀內含物可增加飾品層次。',wear:'依實際色澤與佩戴舒適度挑選。'}
   ],
   火:[
-    {n:'紅石榴石',icon:'🔴',el:'火',sub:'火',d:'純火氣，提升活力與意志力。',wear:'左手佩戴，貼身效果好。',taboo:'定期用水晶簇淨化。'},
-    {n:'紅紋石',icon:'💗',el:'火',sub:'火',d:'溫暖火氣，招桃花，增強人際魅力。',wear:'左手佩戴。',taboo:'硬度低，避免碰撞。'},
-    {n:'太陽石',icon:'☀️',el:'火',sub:'火',d:'陽性火能量，增強自信與領導力。',wear:'日間佩戴效果佳。',taboo:'避免長時間泡水。'},
-    {n:'草莓晶',icon:'🍓',el:'火',sub:'木+火',d:'針狀包裹物帶木氣，木火雙補，招正緣。',wear:'左手佩戴。',taboo:'避免碰撞。'},
-    {n:'粉晶',icon:'💕',el:'火',sub:'火',d:'招桃花首選，增強感情運與人際魅力。',wear:'左手佩戴。',taboo:'需定期淨化。'},
-    {n:'紅瑪瑙',icon:'❤️',el:'火',sub:'火',d:'激發熱情，增強行動力與勇氣。',wear:'左手佩戴。',taboo:'避免高溫。'}
+    {n:'紅石榴石',icon:'🔴',el:'火',d:'深紅色可作暖色系設計主石。',wear:'核對鑲嵌和日常活動所需的耐用性。'},
+    {n:'紅紋石',icon:'💗',el:'火',d:'粉紅色條紋適合細緻的設計。',wear:'避免碰撞與酸性清潔品。'},
+    {n:'太陽石',icon:'☀️',el:'火',d:'閃光內含物能形成暖色調效果。',wear:'觀察實物的光澤與鑲嵌。'},
+    {n:'草莓晶',icon:'🍓',el:'火',d:'粉紅色內含物讓透明石英更有層次。',wear:'挑選個人喜歡的色澤與尺寸。'},
+    {n:'粉晶',icon:'💕',el:'火',d:'柔和粉色常用於溫暖的人際主題設計。',wear:'可選用已有飾品，不需為占卜結果另購。'},
+    {n:'紅瑪瑙',icon:'❤️',el:'火',d:'均勻暖紅色適合簡單的點綴。',wear:'核對染色處理與保養方式。'},
+    {n:'紫水晶',icon:'💜',el:'火',d:'紫色石英可作沉靜色系的視覺提醒。',wear:'部分紫水晶長時間強光照射會褪色，避免高熱。'}
   ],
   土:[
-    {n:'黃水晶',icon:'💛',el:'土',sub:'土',d:'明確土氣，招偏財，提升自信。',wear:'左手佩戴，放錢包也可。',taboo:'避免陽光直射會褪色。'},
-    {n:'虎眼石',icon:'🐅',el:'土',sub:'土',d:'穩定心性，增強決斷力，招財辟邪。',wear:'右手佩戴增強氣場。',taboo:'定期短時間日光浴淨化。'},
-    {n:'茶晶',icon:'🍵',el:'土',sub:'土',d:'排除負能量，增強穩定感與接地力。',wear:'佩戴或放在家中客廳。',taboo:'避免化學品。'},
-    {n:'紫水晶',icon:'💜',el:'火',sub:'火',d:'紫色火行能量，安神助眠，穩定情緒，增強直覺力。',wear:'放枕頭下助眠，或佩戴。',taboo:'避免日曬會褪色。忌火者不宜。'},
-    {n:'鈦晶',icon:'⚡',el:'金',d:'招財增強氣魄，金行能量強勁。',wear:'左手佩戴，面試/簽約時有效。',taboo:'磁場強，睡眠時取下。'}
+    {n:'黃水晶',icon:'💛',el:'土',d:'黃金色石英適合暖色系穿搭。',wear:'依實物處理與配件材質選擇。'},
+    {n:'虎眼石',icon:'🐅',el:'土',d:'棕金色絲絹光澤適合偏好低調質感的人。',wear:'按自己方便的方式佩戴，沒有固定左右手。'},
+    {n:'茶晶',icon:'🍵',el:'土',d:'煙棕色石英適合大地色系。',wear:'可選配已有飾品。'},
+    {n:'鈦晶',icon:'⚡',el:'土',d:'金棕色絲狀內含物適合有質感的暖色設計。',wear:'核對實物、處理資訊與佩戴舒適度。'}
   ]
 };
 
-// ═══ 天鐵專項評估函數 ═══
+// 沒有實物檢驗與使用者佩戴資料時，命盤不能給鐵隕石適配分數或安全禁忌。
 function evaluateTianTie(bazi, ziwei){
-  // v3：先用 analyzeFullCrystal 取得金的實際角色
-  var goldRole='閒神', goldPct=0;
-  if(typeof analyzeFullCrystal==='function'){
-    try{
-      var r=analyzeFullCrystal(bazi, ziwei, (S.form||{}).type, '');
-      goldRole=r.roles['金']?r.roles['金'].role:'閒神';
-      goldPct=r.roles['金']?r.roles['金'].pct:0;
-      return r.tianTie; // v3引擎已包含完整天鐵評估
-    }catch(e){}
-  }
-  // fallback：舊邏輯
-  const fav=bazi.fav||[], unfav=bazi.unfav||[];
-  const ep=bazi.ep||{};
-  goldPct=ep['金']||0;
-  const dm=bazi.dm||'';
-  const isYang=['甲','丙','戊','庚','壬'].includes(dm);
-  let score=0, stars=0, reason='';
-  if(unfav.includes('金')){
-    if(goldPct>20){score=0;stars=0;reason='金為忌神且過旺('+goldPct+'%)，絕對禁止';}
-    else{score=20;stars=1;reason='金為忌神('+goldPct+'%)，避免';}
-  }else if(fav[0]==='金'){
-    if(goldPct<8){score=95;stars=5;reason='金第一用神＋極缺('+goldPct+'%)';}
-    else{score=80;stars=4;reason='金第一用神('+goldPct+'%)';}
-  }else if(fav[1]==='金'){
-    score=65;stars=3;reason='金第二用神('+goldPct+'%)';
-  }else{
-    score=40;stars=2;reason='金閒神('+goldPct+'%)';
-  }
-  if(!isYang&&score>0){score=Math.max(score-10,0);reason+='。'+dm+'陰性偏剛猛';}
-  return{score:score,stars:stars,reason:reason,suitable:score>=60};
+  return {
+    score:null, stars:null, suitable:null,
+    reason:'若想選鐵隕石飾品，先核對實物來源、材質與配件；已知對鎳過敏時避免含鎳部件直接接觸皮膚。五行色彩只能作設計象徵，不能判斷佩戴安全。'
+  };
 }
 
-// ═══ 問題類型 → 特殊推薦（已修正五行歸屬）═══
+// 主題只提供顏色設計入口；不能由感情／財務／健康問題指定商品或效果。
 const CRYSTAL_BY_TYPE={
-  love:[{n:'粉晶',icon:'💕',el:'火',d:'招桃花首選，增強感情運與人際魅力。',wear:'左手佩戴。',taboo:'需定期淨化。'},
-        {n:'草莓晶',icon:'🍓',el:'火',sub:'木+火',d:'木火雙屬性，增強異性緣。',wear:'左手佩戴。',taboo:'避免碰撞。'}],
-  career:[{n:'鈦晶',icon:'⚡',el:'金',d:'增強領導力與決斷力，招財首選。',wear:'面試/重要會議時佩戴。',taboo:'磁場強，睡眠時取下。'}],
-  wealth:[{n:'黃水晶',icon:'💛',el:'土',d:'偏財運首選，提升投資眼光。',wear:'左手佩戴。',taboo:'避免日曬。'},
-          {n:'綠幽靈',icon:'💚',el:'木',d:'正財運首選，適合穩健理財。',wear:'左手佩戴。',taboo:'避免高溫。'}],
-  health:[{n:'紫水晶',icon:'💜',el:'火',d:'安神助眠，穩定情緒，增強直覺力。',wear:'放枕頭下或佩戴。',taboo:'避免日曬會褪色。'}]
+  love:['粉晶','草莓晶'],
+  career:['白水晶','虎眼石'],
+  wealth:['黃水晶','綠幽靈'],
+  health:['紫水晶','月光石']
 };
 
-// ═══ 主渲染函數：八字×紫微交叉驗證推薦 ═══
+// 顯示可選風格；沒有把八字忌神、星曜五行或單一主題當作物性檢驗。
 function renderCrystalExpanded(bazi, type){
-  const fav=bazi.fav||[];
-  const unfav=bazi.unfav||[];
-  const th=bazi.tiaohou;
-  const need1=fav[0]||'土';
-  const need2=fav.length>1?fav[1]:null;
-  const unfavSet=new Set(unfav);
-  const ep=bazi.ep||{};
-
-  // ── 紫微交叉驗證 ──
-  let zwVerify='', zwMatch=true;
-  if(S.ziwei&&S.ziwei.palaces){
-    const zw=S.ziwei;
-    const mingStars=(zw.palaces[0]||{}).stars||[];
-    const majorNames=mingStars.filter(function(s){return s.type==='major';}).map(function(s){return s.name;});
-    // 星曜五行對應
-    const starEl={'天機':'木','貪狼':'木','廉貞':'火','武曲':'金','七殺':'金',
-      '破軍':'水','太陰':'水','天同':'土','天梁':'土','巨門':'土','太陽':'火',
-      '紫微':'土','天府':'土','天相':'水','左輔':'水','右弼':'金','文曲':'水','文昌':'金'};
-    const mingEls=majorNames.map(function(n){return starEl[n];}).filter(Boolean);
-    if(mingEls.includes(need1)){zwVerify='命宮主星五行含'+need1+'，與八字用神一致 ✓';zwMatch=true;}
-    else{zwVerify='命宮主星五行（'+mingEls.join('/')+')與八字第一用神('+need1+')不同，以八字為主軸';zwMatch=false;}
-  }
-
-  // ── 選石邏輯：用神 > 調候 > 類型，忌神排除 ──
-  function filterSafe(list){return list.filter(function(c){return !unfavSet.has(c.el);});}
-  const base1=filterSafe(CRYSTAL_DB[need1]||[]);
-  let base2=need2?filterSafe(CRYSTAL_DB[need2]||[]):[];
-  const typeCrystals=filterSafe(CRYSTAL_BY_TYPE[type]||[]);
-  let thCrystals=[];
-  if(th&&th.need){
-    th.need.forEach(function(e){
-      if(e!==need1&&CRYSTAL_DB[e]) thCrystals=thCrystals.concat(filterSafe(CRYSTAL_DB[e]));
-    });
-  }
-  // 合併去重：左手用神 > 類型推薦 > 調候 > 第二用神
-  const leftHand=[];
+  const fav=bazi && Array.isArray(bazi.fav) ? bazi.fav : [];
+  const color=fav.find(function(el){return Object.prototype.hasOwnProperty.call(CRYSTAL_DB,el);});
+  const candidates=[];
   const seen=new Set();
-  function addUniq(list){list.forEach(function(c){if(!seen.has(c.n)&&c.tier!=='special'){seen.add(c.n);leftHand.push(c);}});}
-  addUniq(base1);addUniq(typeCrystals);addUniq(thCrystals);addUniq(base2);
-  const leftDisplay=leftHand.slice(0,3);
-
-  // 右手：辟邪/排濁型
-  const rightCandidates=filterSafe([
-    {n:'黑曜石',icon:'🖤',el:'水',d:'右手辟邪排濁首選。',wear:'右手佩戴。'},
-    {n:'虎眼石',icon:'🐅',el:'土',d:'右手增強氣場與決斷力。',wear:'右手佩戴。'},
-    {n:'黑碧璽',icon:'⚫',el:'水',d:'排除負能量，淨化磁場。',wear:'右手佩戴。'}
-  ]);
-  const rightDisplay=rightCandidates.slice(0,1);
-
-  // ── 天鐵專項評估 ──
-  const ttEval=evaluateTianTie(bazi, S.ziwei);
-
-  // ── 忌神材質 ──
-  const avoidList=[];
-  unfav.forEach(function(e){
-    (CRYSTAL_DB[e]||[]).slice(0,2).forEach(function(c){
-      avoidList.push(c.n+'（'+e+'行）');
-    });
+  function add(c){if(c && c.tier!=='special' && !seen.has(c.n)){seen.add(c.n);candidates.push(c);}}
+  // 題型只改變可瀏覽的造型，不推論當事人必須買特定寶石。
+  const topicOptions=Object.prototype.hasOwnProperty.call(CRYSTAL_BY_TYPE,type) ? CRYSTAL_BY_TYPE[type] : [];
+  topicOptions.forEach(function(name){
+    Object.keys(CRYSTAL_DB).forEach(function(el){add((CRYSTAL_DB[el]||[]).find(function(c){return c.n===name;}));});
   });
-
-  // ── 渲染 ──
-  const thNote=th?` ＋調候 <span class="tag tag-blue">${th.reason}</span>（需${th.need.join('、')}行）`:'';
-  let html=`
-    <div style="margin-bottom:1rem">
-      <p class="mb-sm">八字用神：<span class="tag tag-gold">${need1}行</span>${need2?' → <span class="tag tag-blue">'+need2+'行</span>':''}${thNote}</p>
-      ${zwVerify?'<p class="text-sm text-dim mb-sm">紫微驗證：'+zwVerify+'</p>':''}
-      ${S.jyotish&&S.jyotish.shadbala?(function(){
-        var _llJy=JY_RASHI[S.jyotish.lagna.idx].lord;
-        var _llSb=S.jyotish.shadbala[_llJy];
-        var _jyVer='吠陀驗證：命宮主星'+JY_PLANETS[_llJy].zh;
-        if(_llSb) _jyVer+='力量比率'+(_llSb.ratio>=1?'充足':'偏弱');
-        if(S.jyotish.sadeSati&&S.jyotish.sadeSati.active) _jyVer+='，正值土星七年半，水晶需求提升';
-        if(S.jyotish.currentMD){
-          var _cmP=S.jyotish.planets[S.jyotish.currentMD.lord];
-          if(_cmP&&(_cmP.dignity==='debilitated'||_cmP.dignity==='enemy')) _jyVer+='，大運主星偏弱需額外能量支撐';
-        }
-        return '<p class="text-sm text-dim mb-sm">'+_jyVer+'</p>';
-      })():''}
-      <p class="text-sm text-dim">忌神：${unfav.join('、')||'無'}行 — 對應材質必須避免</p>
-    </div>
-
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
-      <span style="background:var(--c-gold);color:#1a0a00;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700">🤚 左手（補益吸收）</span>
-    </div>
-    <div class="crystal-grid">${leftDisplay.map(function(c){return `
+  if(color) (CRYSTAL_DB[color]||[]).forEach(add);
+  if(!candidates.length) [CRYSTAL_DB.金[1],CRYSTAL_DB.木[1],CRYSTAL_DB.水[0]].forEach(add);
+  const ttEval=evaluateTianTie(bazi,typeof S!=='undefined'?S.ziwei:null);
+  const cards=candidates.slice(0,3).map(function(c){return `
       <div class="crystal-card">
         <div class="crystal-icon">${c.icon}</div>
         <div class="crystal-name">${c.n}</div>
-        <div class="text-xs mb-sm"><span class="el-tag el-${c.el}">${c.sub||c.el+'行'}</span></div>
+        <div class="text-xs mb-sm"><span class="el-tag el-${c.el}">${c.el}色系取象</span></div>
         <p class="text-sm text-dim">${c.d}</p>
         <p class="text-xs text-muted mt-sm"><i class="fas fa-hand-holding-heart"></i> ${c.wear}</p>
-      </div>`;}).join('')}</div>
-
-    ${rightDisplay.length?`
-    <div style="display:flex;gap:.5rem;align-items:center;margin:.8rem 0 .5rem">
-      <span style="background:#555;color:#fff;padding:2px 10px;border-radius:20px;font-size:.75rem;font-weight:700">🫲 右手（排濁辟邪）</span>
+      </div>`;}).join('');
+  const html=`<div style="margin-bottom:1rem">
+      <p class="mb-sm">飾品設計參考${color?'：盤面取用可聯想'+color+'色系':''}</p>
+      <p class="text-sm text-dim">顏色只是傳統象徵，不代表礦物含有該五行，也不能用命盤判定是否安全或有效；依實物、喜好、預算與佩戴情境選擇。</p>
     </div>
-    <div class="crystal-grid">${rightDisplay.map(function(c){return `
-      <div class="crystal-card">
-        <div class="crystal-icon">${c.icon}</div>
-        <div class="crystal-name">${c.n}</div>
-        <div class="text-xs mb-sm"><span class="el-tag el-${c.el}">${c.el}行</span></div>
-        <p class="text-sm text-dim">${c.d}</p>
-      </div>`;}).join('')}</div>`:''}
-
+    <div class="crystal-grid">${cards}</div>
     <div style="margin-top:1rem;padding:.8rem;background:rgba(212,175,55,0.06);border-radius:8px;border:1px solid rgba(212,175,55,0.15)">
-      <p style="font-weight:700;margin-bottom:.4rem">☄️ 天鐵（鎳鐵隕石）專項評估</p>
-      <p class="text-sm">適配度：${'★'.repeat(ttEval.stars)+'☆'.repeat(5-ttEval.stars)} （${ttEval.score}分）</p>
+      <p style="font-weight:700;margin-bottom:.4rem">☄️ 鐵隕石飾品選擇提醒</p>
       <p class="text-sm text-dim">${ttEval.reason}</p>
     </div>
-
-    ${avoidList.length?`
-    <div style="margin-top:.8rem;padding:.6rem .8rem;background:rgba(248,113,113,0.06);border-radius:8px;border:1px solid rgba(248,113,113,0.15)">
-      <p style="font-weight:700;color:#f87171;font-size:.85rem">⛔ 應避免材質</p>
-      <p class="text-sm text-dim">${avoidList.join('、')}</p>
-    </div>`:''}
-
-    <p class="text-xs text-muted mt-md"><i class="fas fa-info-circle"></i> 左手進能量（補用神），右手排濁氣（制忌神）。雙屬性材質以 ⚠ 標記，主屬性為準。所有建議基於八字×紫微交叉驗證，僅供參考。</p>`;
-
-  document.getElementById('r-crystal').innerHTML=html;
+    <p class="text-xs text-muted mt-md"><i class="fas fa-info-circle"></i> 可先用已有飾品作提醒，購買前核對商品資訊；水晶和金屬均不能保證改善感情、財運或健康。</p>`;
+  const target=document.getElementById('r-crystal');
+  if(target) target.innerHTML=html;
+  return html;
 }

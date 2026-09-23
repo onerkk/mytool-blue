@@ -1,0 +1,28 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:astro-bridge
+> node tests/astro-bridge-20260922.cjs && node tests/api-failure-regression.mjs
+
+PASS Native snapshots equal standalone engines; original civil clock reaches both
+PASS Historical IANA offset overrides a stale fixed city offset; DST folds require a choice
+PASS All real composite payload wrappers and reading copy use the native facts without old scores
+PASS Actual renderers use native geometry, safe HTML, no legacy star scores
+PASS Unknown hour uses the whole 25-hour local day and omits noon-derived houses and exact dashas
+PASS Changed birth data is rejected at the API boundary, failed calculation clears the old chart
+PASS Concurrent submissions never commit a cancelled snapshot and recover after failure
+{
+  "passed": 7,
+  "total": 7
+}
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+✓ Native astrology reaches the model once, preserving every structured fact
+✓ Dedicated casts, geometry and stopped operations survive the real API adapter
+✓ API asks for a personal material choice before the shop invitation, independent of stock
+api-failure-regression: 11 groups passed (mocked upstream; no live mutations)

@@ -24,9 +24,13 @@ var JY_REC_WESTERN = "【延伸選品】（規則版本 4.3.0）\n【從解讀�
     const aspect=a=>`${E.zh(a.a)} ${a.name} ${E.zh(a.b)}：實際距離 ${deg(a.separation)}，容許誤差內偏離 ${deg(a.orb)}${a.phase?'，'+a.phase:''}${a.outOfSign?'，跨星座相位':''}`;
     const summary=(set)=>Object.values(set).map(line).join('\n');
     const hs=chart.houses,unknown=chart.sensitivity.unknownTime;
+    const clock=chart.sensitivity.referenceClock;
+    const unknownClockNote=clock?.kind==='provided-civil-reference'
+      ?`出生時間不詳：行星表沿用當地 ${clock.localTime} 的參考時刻，不是已確認的出生時刻；真正可用範圍見下方當日變動。沒有上升、宮位、日夜盤、次限或回歸盤。涉及月亮與變動星位的結論須比較區間，不把參考時刻當真實出生時刻。`
+      :'出生時間不詳：行星表為當地中午參考值，真正可用範圍見下方當日變動。沒有上升、宮位、日夜盤、次限或回歸盤。涉及月亮與變動星位的結論須比較區間，不把中午當真實出生時刻。';
     return `你是一位能把完整星盤轉為明確生活判斷的資深西洋占星師。以繁體中文回應，直接、溫和、深入。先在兩三句內回答使用者真正的問題，給出最有依據的方向與關鍵條件；接著解釋機制與取捨，最後安排一個具體可行的下一步。命理不是事件證明，但也不要以含糊警語取代解讀。
 
-${root.JY_READING_QUALITY&&root.JY_READING_QUALITY.readingVersion==="6.0.0"?root.JY_READING_QUALITY.lines('astro').join('\n'):JY_READING_WESTERN}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('astro').join('\n'):JY_READING_WESTERN}
 
 <問題資料>
 ${JSON.stringify({question:question.trim()||'請閱讀我的完整命盤，說明特質、生活方向與當下節奏。',topic,input:chart.input})}
@@ -42,7 +46,7 @@ ${TOPICS[topic]||TOPICS.general}
 2. 建立完整句子：行星代表需求／功能，星座表示表達方式，宮位是事情發生的領域，宮主星把此領域連到另一個領域，相位說明兩項功能如何協作、牽制、衝突或調整。例如某宮主落另宮不是兩次佐證，而是一條領域之間的作用路徑。回答「因為什麼、透過什麼、在哪裡表現、怎麼調整」。
 3. 本命主軸按上升→傳統命主星的落宮、尊貴與相位→日月需求→相關宮主鏈整合。定位星鏈若結束於自身守護是終端；兩星互容與多星循環要按資料區分。三王星可以補充世代與心理象徵，不能偷偷取代本次已計算的傳統宮主。尊貴不等於做人好壞，也不等於事件成功率；沒有廟旺弱陷只表示本次四項分類未命中，不能當成已查過三分性、界與十度主後的游走星。
 4. 合相看功能融合與掌控關係，對分看兩端需求與協商，四分看摩擦如何促使建立能力，三分看順手資源與慣性，六分看需要主動採取的合作。先用緊密、切題且涉及日月、命主星或題目宮主的相位；再讀較寬相位。入出相依相對速度；跨星座相位仍保留度數關係及表達差異。次要相位只作補充；相位容許度是本站明示設定，不宣稱各派一致。
-5. 格局以實際連線成立。T 三角先找頂點與兩端如何集中壓力，大三角看三個功能如何互相供給及如何轉為行動，大十字整合四向責任；其內部單相位不是額外獨立證據。未列出的格局若自行辨識，必須核对每條必要相位與容許度。空宮仍有宮頭與宮主，並非該領域不存在。
+5. 相位格局以實際連線成立。T 三角先找頂點與兩端如何集中壓力，大三角看三個功能如何互相供給及如何轉為行動，大十字整合四向責任；其內部單相位不是額外獨立證據。盤形是十顆行星的經度分布，不是相位組合；chartShapes 僅核定 120° 集中形或明確的 240° 火車頭形，未辨識其餘盤形時不能自行報成已驗證。未列出的格局若自行辨識，必須核對每條必要相位與容許度。空宮仍有宮頭與宮主，並非該領域不存在。
 6. 日夜盤與角宮可補充表達條件；盤中未提供完整偶然尊貴分數、行星時、界主、反映點、固定星、凱龍星或小行星時，不生成這些資料。切題的推論可自由深入，但必須接回已有幾何。十顆行星的元素／模式分布僅說明配置，不直接推薦「缺什麼補什麼」。
 7. 時間分析分本命、行運、次限、回歸。不同層次若同時觸及同一主題，可提高該主題值得關注的程度；不要將同一行星的幾種說法當三份證明。回歸盤有它自己的宮頭；本命落宮與回歸落宮要明確分開。區分現有壓力、推進條件、可以準備的事與尚未確認的外部結果。太陽回歸數學求根收斂不表示天文精度或人生事件準到秒。
 8. 以上方法用於判讀，正文依共用解讀規則；只有實質改變主判的分歧才補充。
@@ -50,7 +54,7 @@ ${TOPICS[topic]||TOPICS.general}
 
 <本次方法>
 ${JSON.stringify(chart.policy)}
-${unknown?'出生時間不詳：行星表為當地中午參考值，真正可用範圍見下方當日變動。沒有上升、宮位、日夜盤、次限或回歸盤。涉及月亮與變動星位的結論須比較區間，不把中午當真實出生時刻。':'以填寫的出生時間排盤，誤差敏感性見下方。'}
+${unknown?unknownClockNote:'以填寫的出生時間排盤，誤差敏感性見下方。'}
 參考文獻為本站實際核對書目，不代表正在回答的 AI 已上網，也不是作者對本站解讀的認證。
 ${SOURCES.map(([name,url])=>name+'：'+url).join('\n')}
 </本次方法>
@@ -68,6 +72,7 @@ ${chart.aspects.map(aspect).join('\n')}
 <定位星與格局>
 ${chart.dispositors.map(d=>E.zh(d.planet)+'：'+d.path.map(E.zh).join(' → ')+'；'+d.kind+' '+d.cycle.map(E.zh).join(' ↔ ')).join('\n')}
 ${JSON.stringify(chart.patterns)}
+十星盤形與最小涵蓋弧：${JSON.stringify(chart.chartShapes)}
 近日、無主要相位、出界相位與停滯條件：${JSON.stringify(chart.specialConditions||null)}
 分布：${JSON.stringify(chart.distribution)}
 </定位星與格局>
@@ -88,7 +93,7 @@ ${chart.solarReturn?chart.solarReturn.year+' 年；UTC '+chart.solarReturn.utc+'
 
 請開始：先直接回答，再用有取捨的深入分析與具體下一步，讓使用者知道可以怎麼做。
 
-${root.JY_READING_QUALITY&&root.JY_READING_QUALITY.version==="4.3.0"&&root.JY_READING_QUALITY.recommendationEnding?root.JY_READING_QUALITY.recommendationEnding('astro'):JY_REC_WESTERN}`;
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('astro'):JY_REC_WESTERN}`;
   }
   root.JYWesternPrompt=Object.freeze({build,TOPICS,SOURCES});
 })(globalThis);

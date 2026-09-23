@@ -24,7 +24,7 @@ var JY_REC_MEIHUA = "【延伸選品】（規則版本 4.3.0）\n【從解讀到
  *    ③動爻爻位參考行（《繫辭傳下》：初難知/二多譽/三多凶/四多懼/五多功/上易知）——實測輸出
  *      跳過動爻層位不讀，根因是資料區沒給；資料直給＋鐵律⑧納入主線。
  *  v80.37(2026/6/12 歐那)：應期正統化＋體用原文定性——
- *    ①應期改《占卦訣》原典斷法：「事應於生體卦氣之日、敗於剋體卦氣之日」，吉應（生體＋體旺之氣）／敗應（剋體之氣）
+ *    ①應期參考《占卦訣》：先核實本卦中是否實見生體或克體三爻，再列相應卦氣候選；不直接換算現實日期。
  *      分開給最近窗，另給「用近／互中／變遠」層次；廢除「用卦五行→季節」應期法（非原典，僅保留為事情節奏參考）。
  *    ②鐵律②吉凶定性對齊《體用總訣》原文：體剋用＝諸事吉（原「小吉」會系統性壓低吉度）、用剋體＝諸事凶、
  *      體生用＝耗失之患、用生體＝進益之喜、比和＝百事順遂；鐵律⑦改吃資料區吉應／敗應、禁自創應期算法。
@@ -195,7 +195,7 @@ var JY_REC_MEIHUA = "【延伸選品】（規則版本 4.3.0）\n【從解讀到
         h += '<div class="mhx-hint">心中默念所問，隨意各報一數（如 8、25），動爻以當下時辰定。</div>';
       } else if (_mhMethod === 'char') {
         h += '<div class="mhx-char-row"><input type="text" id="mhx-text" aria-label="起卦漢字" maxlength="20" placeholder="輸入中文字（如：問前途）" value="'+_mhEscape(_mhText)+'"></div>';
-        h += '<div class="mhx-hint">心中默念所問，輸入一句中文字，依先天卦數以筆畫起卦：一字以筆畫分上下、二字各為上下卦、多字前半為上後半為下，動爻加時辰定。</div>';
+        h += '<div class="mhx-hint">心中默念所問，輸入中文字，以本站繁體筆畫法起卦：一字以筆畫為上卦、筆畫加時辰為下卦；二字各為上下卦，多字前少後多分上下卦，動爻再加時辰定。本法是現代延伸，非原典一字拆字法。</div>';
       } else {
         h += '<div class="mhx-hint">以此刻年月日時自動起卦（先天卦數＋時辰定動爻）。</div>';
       }
@@ -591,7 +591,17 @@ var JY_REC_MEIHUA = "【延伸選品】（規則版本 4.3.0）\n【從解讀到
     L.push("天時、尋物、感情、求財等題有各自取象方式；先看原問題需要何種現象，再用本互變與旺衰交叉選象。無現場外應資料時明說未用外應，不編造聽到、看到或感應到的徵兆。");
     L.push("本吉變受制時說清有利條件為何可能耗損，本受制變得助時說清轉機依賴什麼；體用屬主從與作用比喻，不能用體克用鼓勵控制伴侶或他人。");
     L.push("同一動爻形成變卦，因此動爻與變卦不是兩份獨立佐證。卦數、動爻、月份符號可作傳統取象的候選，但未經日曆推導與現實資料支持時不能報確切日期。");
-    L=L.concat(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.readingVersion==="6.0.0"?window.JY_READING_QUALITY.lines('meihua'):JY_READING_MEIHUA);
+    var _readingQuality=window.JY_READING_QUALITY;
+    // 舊頁面可能快取到舊版共用規則：即使介面同名，也不可把舊寫作契約混回新提示詞。
+    // 按能力及最低相容版本挑選，不鎖死 6.0.0，以免往後相容版本退回備援。
+    var _qualityCurrent=false;
+    try {
+      var _v=String(_readingQuality&&_readingQuality.readingVersion||'').split('.').map(Number);
+      _qualityCurrent=!!(_readingQuality&&_v.length===3&&_v.every(Number.isInteger)&&
+        (_v[0]>6||_v[0]===6)&&typeof _readingQuality.lines==='function'&&
+        typeof _readingQuality.methodKinds==='function'&&_readingQuality.methodKinds().includes('meihua'));
+    } catch(e) { _qualityCurrent=false; }
+    L=L.concat(_qualityCurrent?_readingQuality.lines('meihua'):JY_READING_MEIHUA);
     L.push('【判讀方法】');
     L.push('判讀參考：體用與旺衰定主調，本互變、動爻核轉折；錯綜卦與類象只有改變答案時才補充。');
     L.push('2. 體用基本關係可依《梅花易數》傳統語義理解，再按雙方旺衰、動爻和變卦校準實際力度：');
@@ -602,8 +612,17 @@ var JY_REC_MEIHUA = "【延伸選品】（規則版本 4.3.0）\n【從解讀到
     L.push('　・用剋體＝外力制約、阻力較明顯；用衰時影響減輕，用旺體弱時較重。');
     L.push('3. 訊號衝突時給出主判與牽制，說明哪些現實條件會讓結果轉強、轉弱或改變；具象線索只採資料與情境支持的部分，不為生動而補造人物、場所或事件。');
     L.push('4. 題目問時間時，結合用近、互中、變遠、五行卦氣與盤內應期資料；時間精度請與資料相稱。');
-    L.push('取互版本：本站純乾／純坤仍依本卦2–4與3–5爻取互，部分古本另有乾坤改取變卦之互的例外；此次以已提供卦象為準，不暗中更換算法。');
-    L.push(window.JY_READING_QUALITY&&window.JY_READING_QUALITY.version==="4.3.0"&&window.JY_READING_QUALITY.recommendationEnding?window.JY_READING_QUALITY.recommendationText('meihua'):JY_REC_MEIHUA);
+    L.push('取互版本：本站純乾／純坤採《梅花易數・互卦起例》記載的「乾坤無互，互其變卦」支線，先翻本次動爻、再由變卦的2–4與3–5爻取互；其他卦直接由本卦取互。以實際排出的互卦判讀，不暗中更換算法。');
+    // 解讀規則 6.0.0 與選品規則 4.3.0 各自版本化；舊選品檔可能仍帶新版
+    // readingVersion，不能因此接受它的過時 recommendationText。
+    var _recommendationCurrent=false;
+    try {
+      var _rv=String(_readingQuality&&_readingQuality.version||'').split('.').map(Number);
+      _recommendationCurrent=!!(_qualityCurrent&&_rv.length===3&&_rv.every(Number.isInteger)&&
+        (_rv[0]>4||_rv[0]===4&&(_rv[1]>3||_rv[1]===3&&_rv[2]>=0))&&
+        typeof _readingQuality.recommendationText==='function');
+    } catch(e) { _recommendationCurrent=false; }
+    L.push(_recommendationCurrent?_readingQuality.recommendationText('meihua'):JY_REC_MEIHUA);
     L.push('最後保留以下兩行：');
     L.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
     L.push('願你諸事順遂。');

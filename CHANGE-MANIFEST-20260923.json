@@ -1,0 +1,430 @@
+{
+  "release": "20260923-live1",
+  "base_repository": "onerkk/mytool-blue",
+  "base_branch": "master",
+  "base_commit": "85bd5af6b4530d968c4023b1824c8bac705fa710",
+  "scope": "Only files that differ from observed GitHub master, plus the browser updater and test. Existing omitted files are preserved.",
+  "file_count": 84,
+  "files": [
+    {
+      "path": "CSS/gua-room.css",
+      "sha256": "5ebad92c9fe4b19b1b70253b7cfde39edd945e68f78bb306cfae5079693238d6",
+      "size_bytes": 42102
+    },
+    {
+      "path": "JS/ai-analysis.js",
+      "sha256": "2570f7f51eec3a015e06c1503ad264f5122a91cf6a6b3e340627530acd92081d",
+      "size_bytes": 1450448
+    },
+    {
+      "path": "JS/astro-bridge.js",
+      "sha256": "241bc66ca403fec9453a01f39189abf53b70ab38406ec1963b5754fc8bb59064",
+      "size_bytes": 15287
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "sha256": "b1b919db8c03f9b4d1143f1c765ded755bc159473c584edae7ed55727c1e4be6",
+      "size_bytes": 51402
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "sha256": "dec9ae647f3c5b4ca6152c1b50f351803ea2fd7c29b33c9d6b516ac320a87ca0",
+      "size_bytes": 82640
+    },
+    {
+      "path": "JS/bazi.js",
+      "sha256": "9bece5902d6a3a26b660de636e2961c89c5fee35038fea1ec808613a98458eed",
+      "size_bytes": 332762
+    },
+    {
+      "path": "JS/bazi_upgrade.js",
+      "sha256": "f19f0a07887b38f1a3d934d2f45aa56a622e8306c374a085d523fb66f88d185e",
+      "size_bytes": 45535
+    },
+    {
+      "path": "JS/ephemeris-client.js",
+      "sha256": "580a0a45f7f29ad2662d5c2aa7926c6425076d01eebec603528c8b1cc24f73b4",
+      "size_bytes": 3136
+    },
+    {
+      "path": "JS/frontend-classifier.js",
+      "sha256": "138089df951e4fdd34f238d26d541ae6886864ab28a144007023db1e912ed4cc",
+      "size_bytes": 11432
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "sha256": "426d082bd902d45439ec3dba0e7e6d53981b6470dcc332607ecc0d6d77d77e7c",
+      "size_bytes": 28664
+    },
+    {
+      "path": "JS/gua-room.js",
+      "sha256": "c6c9aa53784a8e55aa663ba7ef581ec4eb69606928a3fd6aeca058b78f212e5b",
+      "size_bytes": 37964
+    },
+    {
+      "path": "JS/gua-scene-src.mjs",
+      "sha256": "481c0719b50fbf62b04670723ebdd5b5c2aa996c14b35e75e23a24ac88ca9957",
+      "size_bytes": 14407
+    },
+    {
+      "path": "JS/gua-scene.js",
+      "sha256": "2aff0286286b5ffa236f4ecb637b07f14dadb7d649c94bb0ee5f15fc79388ab3",
+      "size_bytes": 597962
+    },
+    {
+      "path": "JS/lenormand.js",
+      "sha256": "58979fc1d45b1bb9d98c1ddd0178b0389d3bd35dc12c7795ffde79cbb994cb9e",
+      "size_bytes": 131303
+    },
+    {
+      "path": "JS/liuyao-core.js",
+      "sha256": "ff87118f23f28d7bd6c40d01f363a55155f15578db894999dd0e4fee99e045b7",
+      "size_bytes": 31517
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "sha256": "f6ff48ae79fa5a9d4816a62449a87a912708f1c2f69995101f352237aae2a0d6",
+      "size_bytes": 74207
+    },
+    {
+      "path": "JS/meihua_output_layer.js",
+      "sha256": "23f058e487d2acdd01b734914e253b10eafc31328c0bf23a6462e8656337af75",
+      "size_bytes": 30201
+    },
+    {
+      "path": "JS/meihua_upgrade.js",
+      "sha256": "65ab03bd03831e184237019be417fdfb8951d46d6fadbbf349f1c0d6fa8e7c9b",
+      "size_bytes": 35473
+    },
+    {
+      "path": "JS/meihua_upgrade2.js",
+      "sha256": "a125d235043c760457d251e07147bcb3f94b188fff841948e4feecd38b9b1e2d",
+      "size_bytes": 20522
+    },
+    {
+      "path": "JS/oracle.js",
+      "sha256": "36b14be3e14d13332cb09bf45ac902a3fc9b8f378e2673700c0fdad658295c30",
+      "size_bytes": 142197
+    },
+    {
+      "path": "JS/pricing-loader.js",
+      "sha256": "998fa122651a5fdeb905d1c1ef23d537df9ddb62682df5910e9558615e16dd66",
+      "size_bytes": 4891
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "sha256": "28a18e706224468a905f1c1959ab272b5de6a33e28ceb058931cb4ad87ab7e89",
+      "size_bytes": 120520
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "sha256": "b653f4c78d2d1f2e80ef840c64f844dbc393a987ea85c93f317702aa75e5b770",
+      "size_bytes": 28141
+    },
+    {
+      "path": "JS/share-card.js",
+      "sha256": "dd89c550c7b471c4b93e1e1686a23dd89ec33612e5943fcd2e2b69bf0c9487e0",
+      "size_bytes": 62786
+    },
+    {
+      "path": "JS/shared/decision-parser.js",
+      "sha256": "65c8c40f91aad93a0203eb192285d441ca10fc7a00f6f9154431b29b47c62e96",
+      "size_bytes": 6646
+    },
+    {
+      "path": "JS/shared/question-planner.js",
+      "sha256": "946c3b3be5350738858c7ae466756d3eb52bb2112359e358c02230eb44a3b14d",
+      "size_bytes": 11322
+    },
+    {
+      "path": "JS/sw.js",
+      "sha256": "8b29579bc37a1d79d5c6dd10174be759476577d8dc641d0f27de329a3b4bb146",
+      "size_bytes": 5649
+    },
+    {
+      "path": "JS/tarot-foundation.js",
+      "sha256": "60afb0da2f9a220d9bdafe23199d64bc1615777e5d5b0ab52dedb44a9fd403fa",
+      "size_bytes": 146220
+    },
+    {
+      "path": "JS/tarot-reading.js",
+      "sha256": "ccdf751f7203c55bb4f8eb8617e9460ef4e0e8815f0d9a0a6ed922145a48ae51",
+      "size_bytes": 15141
+    },
+    {
+      "path": "JS/tarot-semantic-engine.js",
+      "sha256": "9d56feefeef2db83759a600ce28e127642359e21334ce077c65795a09052e6dc",
+      "size_bytes": 103175
+    },
+    {
+      "path": "JS/tarot.js",
+      "sha256": "66b2cfc05524f225f07be5eff0177059ce328d3d82cf0b110ecbe3a21bd8f522",
+      "size_bytes": 391274
+    },
+    {
+      "path": "JS/tarot_upgrade.js",
+      "sha256": "bfbc1a6d0d2363968627d14421c835ecb3af12a62f6457212b3c82ac7e24c834",
+      "size_bytes": 423429
+    },
+    {
+      "path": "JS/tool-guide.js",
+      "sha256": "8c3dc2d7fa0c23369ab0a7c1f7cc28289423a86ca4f7671ac83c218a02e9775b",
+      "size_bytes": 32197
+    },
+    {
+      "path": "JS/ui.js",
+      "sha256": "816088b4a90c736cb54829ab28392e253520a24e926add626de2312d2df7efe5",
+      "size_bytes": 433274
+    },
+    {
+      "path": "JS/vedic-engine.js",
+      "sha256": "edd4cdf13755649095eb0a88a86249b3acde27aea415c01bd3a6ac34a1e4c054",
+      "size_bytes": 41374
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "sha256": "d965548379ff2aa2887220eee683ef9306e467f639b59888e70c0d9e310f68b6",
+      "size_bytes": 29512
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "sha256": "ce8a868ccc6ae90730505610df74883f1dfc77adf4aae36c65bf244dfffde972",
+      "size_bytes": 41140
+    },
+    {
+      "path": "JS/western-engine.js",
+      "sha256": "58ddd2806cc261e449e0c9824c079ad865e2f517c173359977b117fbcac162d8",
+      "size_bytes": 22763
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "sha256": "408c4c787f6a186ba8a063ef506162de7099dfac783ab4ec12afd7b08e9ddc7f",
+      "size_bytes": 22410
+    },
+    {
+      "path": "JS/western-standalone.js",
+      "sha256": "d9e1890279f3264be73f447ce36ba2162f50e54ea72bc876a6f9c7be071d5733",
+      "size_bytes": 30544
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "sha256": "9519c2df159f19f272f59da719e33173fd1c8fc46a0c11e6582b8f15611192d2",
+      "size_bytes": 21255
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "sha256": "0d67c082bb39f39c484c4390469bbdc42b94da28270dd5eab51cd8c72061366b",
+      "size_bytes": 86394
+    },
+    {
+      "path": "JS/ziwei.js",
+      "sha256": "8ad4defbb48949a904675cf8540eb4cf9439f105ce36772acf22f8b4199228cb",
+      "size_bytes": 241603
+    },
+    {
+      "path": "admin/update.html",
+      "sha256": "3c8b7d68bbb822c30a1d9ba9c8f3435c263b1fb9c2911d60f8ecc35dc22b5185",
+      "size_bytes": 47421
+    },
+    {
+      "path": "ai-analysis.js",
+      "sha256": "2570f7f51eec3a015e06c1503ad264f5122a91cf6a6b3e340627530acd92081d",
+      "size_bytes": 1450448
+    },
+    {
+      "path": "assets/share/share-cards-20260911.css",
+      "sha256": "be9206d4fb730136a4215aa730381dfc2f17f91ee8248615cf13efd4b39d2ca9",
+      "size_bytes": 5385
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "sha256": "b1b919db8c03f9b4d1143f1c765ded755bc159473c584edae7ed55727c1e4be6",
+      "size_bytes": 51402
+    },
+    {
+      "path": "data/engine-rule-coverage.json",
+      "sha256": "9a804a5c6881075f46da0bc0f1ae258950c9d6181aa102bd424cecd1d56c0994",
+      "size_bytes": 9209
+    },
+    {
+      "path": "docs/full-audit-20260923.md",
+      "sha256": "a0050fcd1f19b269076d104fac7404cf1473f55204edd927c2f38f674a713cb3",
+      "size_bytes": 7097
+    },
+    {
+      "path": "docs/liuyao-20260922.md",
+      "sha256": "54cf19a2fd7e3a0e88e7cfd406c5caa61f9cf315763890741949104c99b646a6",
+      "size_bytes": 11715
+    },
+    {
+      "path": "docs/qa/astro-bridge-20260923.log",
+      "sha256": "272a0316496c7dca0b83d47807f260a56ff3d4174208537e6b0435d83db76e31",
+      "size_bytes": 1783
+    },
+    {
+      "path": "docs/qa/browser-test-20260923.log",
+      "sha256": "01093dc5f8649ab97873c8ae85e1df0035556c41d524d5c18800159784e39df0",
+      "size_bytes": 5148
+    },
+    {
+      "path": "docs/qa/gua-20260923.log",
+      "sha256": "f19603f2faf52ccedd721fc84a8f3beb2d28bbc1c2ac31abb0743ff1eab397b1",
+      "size_bytes": 1182
+    },
+    {
+      "path": "docs/qa/latest-audit-20260923.log",
+      "sha256": "9d2d1bb81781f4c90d36c065c1df6d19407e24fb0d5c249be80e57070a6cd7cc",
+      "size_bytes": 2156
+    },
+    {
+      "path": "docs/qa/npm-test-20260923.log",
+      "sha256": "6fe229841ab40a39cbc3072f7ffe617165472c169f81feb0f2c56ed047f08a5c",
+      "size_bytes": 81421
+    },
+    {
+      "path": "docs/qa/questions-20260923.log",
+      "sha256": "b45e5e186e57cc4ddced3baf9701c4f7acf9478b0088d6529d9e3ac984b7e12c",
+      "size_bytes": 1406
+    },
+    {
+      "path": "docs/qa/special-rules-20260923.log",
+      "sha256": "0304b292fec91167f3e71767417d51d2b09bd27c9b177ea7791038e36d3e084f",
+      "size_bytes": 3892
+    },
+    {
+      "path": "docs/qa/yarrow-20260923.log",
+      "sha256": "dae048f656637e53ffe936e157181d0d5c8998aaf376e1b138527cb50d6d6051",
+      "size_bytes": 359
+    },
+    {
+      "path": "index.html",
+      "sha256": "555f03dda13ebafc03e4aa2b640569b2681a09c603679b225a4d90a457e16aeb",
+      "size_bytes": 148198
+    },
+    {
+      "path": "lenormand.js",
+      "sha256": "58979fc1d45b1bb9d98c1ddd0178b0389d3bd35dc12c7795ffde79cbb994cb9e",
+      "size_bytes": 131303
+    },
+    {
+      "path": "meihua-standalone.js",
+      "sha256": "f6ff48ae79fa5a9d4816a62449a87a912708f1c2f69995101f352237aae2a0d6",
+      "size_bytes": 74207
+    },
+    {
+      "path": "oracle.js",
+      "sha256": "36b14be3e14d13332cb09bf45ac902a3fc9b8f378e2673700c0fdad658295c30",
+      "size_bytes": 142197
+    },
+    {
+      "path": "package.json",
+      "sha256": "cad5e5ea5620d6066b0a8706073430b7b84d46a21cfbec8285b488e655092176",
+      "size_bytes": 6747
+    },
+    {
+      "path": "prompt-export.js",
+      "sha256": "28a18e706224468a905f1c1959ab272b5de6a33e28ceb058931cb4ad87ab7e89",
+      "size_bytes": 120520
+    },
+    {
+      "path": "scripts/sync-recommendation-guides.cjs",
+      "sha256": "3ded5fd2c6c308525fd33f191f7f68453d260a3196e2431c204ef4b2a9924c76",
+      "size_bytes": 5951
+    },
+    {
+      "path": "sw.js",
+      "sha256": "8b29579bc37a1d79d5c6dd10174be759476577d8dc641d0f27de329a3b4bb146",
+      "size_bytes": 5649
+    },
+    {
+      "path": "tarot-foundation.js",
+      "sha256": "60afb0da2f9a220d9bdafe23199d64bc1615777e5d5b0ab52dedb44a9fd403fa",
+      "size_bytes": 146220
+    },
+    {
+      "path": "tarot-semantic-engine.js",
+      "sha256": "9d56feefeef2db83759a600ce28e127642359e21334ce077c65795a09052e6dc",
+      "size_bytes": 103175
+    },
+    {
+      "path": "tarot_upgrade.js",
+      "sha256": "bfbc1a6d0d2363968627d14421c835ecb3af12a62f6457212b3c82ac7e24c834",
+      "size_bytes": 423429
+    },
+    {
+      "path": "tests/admin-updater-20260923.cjs",
+      "sha256": "0608eba2fc55a1295c6a04bff93efba7a2cfbc4826211aa7df006cff28a42fd4",
+      "size_bytes": 9414
+    },
+    {
+      "path": "tests/astro-rules-audit-20260923.cjs",
+      "sha256": "82b13f9c2afcaf8f8dbe25412c2ec3c22729426702c86e00c0d03e5ed968a4ac",
+      "size_bytes": 8201
+    },
+    {
+      "path": "tests/birth-audit-20260923.cjs",
+      "sha256": "5b72f50273a4bb71ca16712e3b0a90596fa6771f45c24e7fd698aaa4d6bdd8b3",
+      "size_bytes": 11462
+    },
+    {
+      "path": "tests/card-audit-20260923.cjs",
+      "sha256": "e637873871312b8d3d3016214aec612d4546e8d2685ca816a5bba34b559f0190",
+      "size_bytes": 4672
+    },
+    {
+      "path": "tests/card-audit-legacy-meanings-20260923.cjs",
+      "sha256": "41f219a8171cf1a67899424df375a8cd9b5f485c0433fa71bad12312e70037cc",
+      "size_bytes": 4474
+    },
+    {
+      "path": "tests/card-audit-mathers-browser-20260923.cjs",
+      "sha256": "262a9dc6a3b1db521a0344b9c1f5d6bd67934d16f31b60977c203b370d2578cd",
+      "size_bytes": 9168
+    },
+    {
+      "path": "tests/card-audit-mathers-third-20260923.cjs",
+      "sha256": "d75f994a81376722c2cd5e7e7e8e5dc71373cfda74bd40ad6be91911b62510fd",
+      "size_bytes": 8744
+    },
+    {
+      "path": "tests/chinese-engine-rules-20260923.cjs",
+      "sha256": "e1e165ea35bd27dfda1485e323f3eebe22c7edd78c8859d6580cd8bfe183cfc9",
+      "size_bytes": 8937
+    },
+    {
+      "path": "tests/gua-mobile-browser-20260923.cjs",
+      "sha256": "bd097cb6518b1ad4f59ec9970f066877ace80c94e7a6f3c44a83949afeb14eb6",
+      "size_bytes": 4568
+    },
+    {
+      "path": "tests/prompt-only-audit-20260923.cjs",
+      "sha256": "beb23289470d3acb078db10c4561ec249d14ca805c923111a37f1d2f1524f0cb",
+      "size_bytes": 6616
+    },
+    {
+      "path": "tests/prompt-only-network-20260923.cjs",
+      "sha256": "1aa55e6a015ef851cc26eb2cd4e148f2b5b3da7ed393d8f62bcd2d91814510f0",
+      "size_bytes": 4689
+    },
+    {
+      "path": "tests/prompt-only-shop-20260923.cjs",
+      "sha256": "e658802be6cad7cf7fcaa7d46be65cdc563ccac1fd298a59fd9ad55b9942d237",
+      "size_bytes": 4010
+    },
+    {
+      "path": "tests/share-mathers-browser-20260923.cjs",
+      "sha256": "cc3aab0e4ae625c94671ed2ab46bdacb94c2ce94e52000d9697467f4a47d6e18",
+      "size_bytes": 6446
+    },
+    {
+      "path": "ui.js",
+      "sha256": "816088b4a90c736cb54829ab28392e253520a24e926add626de2312d2df7efe5",
+      "size_bytes": 433274
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "sha256": "9519c2df159f19f272f59da719e33173fd1c8fc46a0c11e6582b8f15611192d2",
+      "size_bytes": 21255
+    }
+  ]
+}

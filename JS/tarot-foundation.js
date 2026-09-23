@@ -17,6 +17,7 @@
   function pad(n, w) { return String(n).padStart(w, '0'); }
   function range(a, b) { var out=[]; for(var i=a;i<b;i+=1) out.push(i); return out; }
   function mirrorPairs(start, count) { var out=[]; for(var i=0;i<Math.floor(count/2);i+=1) out.push([start+i,start+count-1-i]); return out; }
+  function parallelPairs(left,right,reverse){var out=[];for(var i=0;i<11;i+=1)out.push([left+i,right+(reverse?10-i:i)]);return out;}
   function uniq(arr, keyFn) {
     var seen=Object.create(null), out=[];
     (arr||[]).forEach(function(v){ var k=keyFn?keyFn(v):(typeof v==='string'?v:JSON.stringify(v)); if(!seen[k]){seen[k]=1;out.push(v);} });
@@ -94,6 +95,7 @@
       {authority:'development',role:'natural_path'},{authority:'development',role:'alternative_path'},{authority:'advice',role:'decision_basis'},{authority:'structural',role:'uncontrolled_condition'}
     ],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],[[1,0,2],[3,7,11],[12,8,4],[5,9,13],[6,10,14]],['state','cause','advice','trajectory','conditional_outcome','comparison_outcome','realization','domain_coverage','hidden','external','structural_depth'],['multi_domain','wide_overview'],'後世金色黎明衍生布局；牌義與尊貴仍鎖定 Book T'),
     mathers_21: methodDef('mathers_21','Mathers 二十一張',21,new Array(21).fill(null).map(function(){return {authority:'structural',role:'ordered_narrative'};}),[range(0,7),range(7,14),range(14,21)],[range(0,7),range(7,14),range(14,21)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','hidden','external'],['narrative'],'Mathers 1888 歷史程序；牌義依選定的 RWS 或 Golden Dawn，不等同1888原書牌義'),
+    mathers_66: methodDef('mathers_66','Mathers 第三法・66 張拱形與兩張意外牌',68,new Array(66).fill(null).map(function(){return {authority:'structural',role:'ordered_period_member'};}).concat([{authority:'structural',role:'surprise_left'},{authority:'structural',role:'surprise_right'}]),[range(0,11),range(11,22),range(22,33),range(33,44),range(44,55),range(55,66)],[[0,33],[22,55],[11,44],[66,67]],['state','antecedent','trajectory','conditional_outcome','realization','narrative','exhaustive','hidden','external'],['exhaustive','narrative'],'Mathers 1888 第三法：66 張三時區拱形、從原本保留的 11 張再抽兩張；牌義依本次 RWS 或 Golden Dawn，原書最後重排大圓有文本歧義，本站明示不冒充完整重現'),
     mathers_horseshoe: methodDef('mathers_horseshoe','Mathers 五十四張',54,new Array(54).fill(null).map(function(){return {authority:'structural',role:'ordered_group'};}),[range(0,26),range(26,43),range(43,54)],[range(0,26),range(26,43),range(43,54)],['state','antecedent','cause','trajectory','conditional_outcome','realization','narrative','exhaustive','domain_coverage','hidden','external'],['exhaustive'],'Mathers 1888 歷史程序；牌義依選定的 RWS 或 Golden Dawn，不等同1888原書牌義'),
     ootk: methodDef('ootk','Opening of the Key 五次操作',null,new Array(5).fill(null).map(function(){return {authority:'stage',role:'operation_stage'};}),[],[],['state','antecedent','cause','obstacle','enabler','advice','trajectory','temporal_sequence','conditional_outcome','bounded_outcome','threshold_outcome','realization','dyad','hidden','external','annual_overview','domain_coverage','structural_depth','narrative','exhaustive'],['ootk','exhaustive'],'Golden Dawn《Book T／Liber T》程序')
   };
@@ -212,6 +214,13 @@
       '本方法可由三排連續答案與配對整體作定性裁決，但沒有專屬結果位。',
       '連續答案是主線；配對用來補充、限定或在多組一致反證時修正主線，單一配對不得翻盤。',
       '三排不自動等於過去、現在、未來，也不提供日期。','S. L. MacGregor Mathers 1888 第二法；牌義依本次讀牌方式，代表牌自動選法另見抽牌紀錄'),
+    mathers_66: protocolDef('mathers_66','historical_arch_with_surprises','sequence_member',
+      '抽出一張國王／皇后代表牌，按原牌序發66張成拱形包住內三角。過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；每時區各有兩列十一張。結局另由保留的11張抽兩張夾代表牌，方向是右驚奇→代表牌→左驚奇。',
+      ['抽出代表牌，發牌序號1–66，另留11張','過去：1–11及34–44','現在：23–33及56–66','未來：12–22及45–55','三時區兩列各作順向及逆向對應；原文過去順向一個牌號疑似排印錯誤','以66↔1至34↔33作末輪核對；原書另述大圓重排，本站不模擬有歧義的排列','從11張未用牌另抽2張，與代表牌組成結論'],
+      [{type:'ordered_sequence',label:'過去外弧',indices:range(0,11),elementalDignity:true,instruction:'原書牌號1–11；僅稱過去作用，不自動換算年份。'},{type:'ordered_sequence',label:'過去內弧',indices:range(33,44),elementalDignity:true,instruction:'原書牌號34–44。'},{type:'semantic_pairing',label:'過去同向對應',pairs:parallelPairs(0,33,false),elementalDignity:false,instruction:'1↔34至11↔44，原文某一中間牌號疑似排印錯誤，採明示範圍的等長對應。'},{type:'semantic_pairing',label:'過去反向對應',pairs:parallelPairs(0,33,true),elementalDignity:false,instruction:'1↔44至11↔34。'},{type:'ordered_sequence',label:'現在外弧',indices:range(22,33),elementalDignity:true,instruction:'原書23–33。'},{type:'ordered_sequence',label:'現在內弧',indices:range(55,66),elementalDignity:true,instruction:'原書56–66。'},{type:'semantic_pairing',label:'現在同向對應',pairs:parallelPairs(22,55,false),elementalDignity:false,instruction:'23↔56至33↔66。'},{type:'semantic_pairing',label:'現在反向對應',pairs:parallelPairs(22,55,true),elementalDignity:false,instruction:'23↔66至33↔56。'},{type:'ordered_sequence',label:'未來外弧',indices:range(11,22),elementalDignity:true,instruction:'原書12–22。'},{type:'ordered_sequence',label:'未來內弧',indices:range(44,55),elementalDignity:true,instruction:'原書45–55。'},{type:'semantic_pairing',label:'未來同向對應',pairs:parallelPairs(11,44,false),elementalDignity:false,instruction:'12↔45至22↔55。'},{type:'semantic_pairing',label:'未來反向對應',pairs:parallelPairs(11,44,true),elementalDignity:false,instruction:'12↔55至22↔45。'},{type:'semantic_pairing',label:'66張末輪核對',pairs:mirrorPairs(0,66),elementalDignity:false,instruction:'原文66↔1至34↔33；未模擬後續大圓重排，避免假稱完整復刻。'},{type:'ordered_sequence',label:'意外結局',indices:[67,66],elementalDignity:false,instruction:'資料67是左驚奇，68是右驚奇；讀右驚奇→獨立代表牌→左驚奇，不把驚奇牌混入原66張。'}],
+      '僅兩張從保留牌另抽的意外牌與代表牌組成明示結語；未來弧是條件性發展，不是精確應期。',
+      '先讀各時區內連續兩弧，再以兩弧同向／反向對應調整；驚奇牌只做結局修正，不冒充過去或現在的獨立證據。',
+      '過去／現在／未來是原書的相對分類，不自行預言具體日期。','S. L. MacGregor Mathers 1888 第三法；原典末段重排大圓語句未完整實作，牌義採本次選定系統'),
     mathers_horseshoe: protocolDef('mathers_horseshoe','ordered_groups_with_mirror_pairs','sequence_member',
       '五十四張都只是A、C、E三組馬蹄序列成員，沒有五十四個獨立牌位。每組先由右至左形成connected answer，再由外向內配對；A、C、E依序讀，F組不讀。',
       ['A組26張由右至左形成第一個連續答案','A1↔A26至A13↔A14配對補充','C組17張同法，C9為未配對成員','E組11張同法，E6為未配對成員','比較C、E如何補充、修正或限定A，但不賦予時間／結果名稱'],
@@ -315,6 +324,13 @@
     "綜合三排與配對一致、矛盾的部分，以共同條件回答原問題。沒有抽前時間設定就不為各排指定年份。",
     "此為Mathers 1888第二法布局；本站牌義採本次選定RWS或Book T，屬明示混合用法，不能稱逐字復刻1888原書牌義。"
   ],
+  "mathers_66": [
+    "先回答原問句，再按過去、現在、未來三時區各22張讀主線；原書時區依序為過去1–11／34–44、現在23–33／56–66、未來12–22／45–55，不能把牌號1–44全部當成過去。",
+    "同一時區先串兩段十一張的具體脈絡，再用兩弧同向與反向對照辨認哪個因素延續、哪個被改寫；只展示實際影響主判的關鍵組合，不機械列66張牌義。",
+    "第三輪66↔1至34↔33僅作原66張的另一組核對；原書後續重排一圈的實物排列有文本歧義，本站未模擬，不能聲稱整套1888步驟都完成。",
+    "從保留11張抽出的兩張意外牌另置於代表牌左右，讀右驚奇→代表牌→左驚奇形成結語；兩張不是原66張的一部分，也不能充當已發生的現實事件證明。",
+    "代表牌若由本站自動選取，明示選法；牌義採本次RWS或Book T系統。過去、現在、未來是相對類別，不自行推算月份日期。"
+  ],
   "mathers_horseshoe": [
     "核對實際發牌紀錄為A26、C17、E11，共54張；F24不參與解讀。原文末輪張數存在算術歧義，本站採完整三張組取牌的11／24設定，按這份紀錄讀而不偷偷換牌。",
     "依A→C→E逐組讀由右至左的完整答案，每組用相鄰片段呈現起點、轉折與落點。所有54張納入所屬組，但可合併相同作用，避免54段字典。",
@@ -345,6 +361,7 @@
     minor_arcana:'把日常狀態、成因、阻礙、外在條件與資源串成可操作的情境，再看行動能否處理真正困難；用具體的溝通、時間、人手或資源安排解釋牌義，讓條件性結果可被理解。',
     fifteen_card:'每個三牌組先讀中心與兩側的共同作用，再比較核心局勢、兩條發展路徑、決策依據及不可控條件。替代路徑若較可行，要指出需要改變哪種做法，並檢查不可控條件是否仍會限制它。',
     mathers_21:'每排先由相鄰小段建立連貫句意，加入後牌時重讀前文，看哪裡改變了行動或條件；再用首尾配對檢查三排主線。配對支持與主線矛盾時，先分清說的是機會、代價還是內外不同層面，再形成主次清楚的總判。',
+    mathers_66:'過去、現在、未來各自沿外弧與內弧形成答案；每一弧的牌義互相作用，雙弧同向或反向對應會指出延續或轉向。最後用從未用牌另抽的兩張意外牌，結合代表牌收束，不用牌的數量宣稱精準率。',
     mathers_horseshoe:'A、C、E三堆各自形成完整答案，後堆可能補足先前未說清的條件，也可能要求修正起初判斷。說明每堆帶來的新增資訊與配對如何限定它，最後用整個過程回答原題。',
     ootk:'各輪先把計數落點讀成推進與轉折，再看配對補充的資源和代價；跨輪重點是結論如何被加深或修正。有效操作的數量與抽牌順序保持原樣，以實際完成狀態決定本次可交付的分析。'
   };
@@ -366,6 +383,9 @@
     "https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/the-celtic-cross-tarot-spread-exploring-the-classic-10-card-tarot-spread"
   ],
   "mathers_21": [
+    "https://sacred-texts.com/tarot/mathers/mtar04.htm"
+  ],
+  "mathers_66": [
     "https://sacred-texts.com/tarot/mathers/mtar04.htm"
   ],
   "mathers_horseshoe": [
@@ -605,7 +625,7 @@ function classifyDecisionQuestion(question) {
   }
   if (!raw) return result('none');
   // Labels and their time qualifiers are part of the user's options. Do not strip dates/durations.
-  if (/\bA(?:\s*[：:.、]|\s+)[\s\S]+\bB(?:\s*[：:.、]|\s+)[\s\S]+\bC(?:\s*[：:.、]|\s+)/i.test(raw) || /(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案)|三選一|三擇一|四選一/.test(raw)) return result('multiple', null, null, '超過兩個方案，不能套成只有 A、B 的牌位。');
+  if (/\bA(?:\s*[：:.、]|\s+)[\s\S]+\bB(?:\s*[：:.、]|\s+)[\s\S]+\bC(?:\s*[：:.、]|\s+)/i.test(raw) || /(?:^|[^A-Za-z])A\s*、\s*B\s*、\s*C(?:$|[^A-Za-z])/i.test(raw) || /(?:三|四|五|3|4|5)(?:個|家|種)?(?:選項|方案|選擇)|三選一|三擇一|四選一/.test(raw)) return result('multiple', null, null, '超過兩個方案，不能套成只有 A、B 的牌位。');
   if(/(?:^|[，,：:\s])A(?:\s*[：:.、]|\s+)[\s\S]*B\s*[：:.、]\s*[？?]?\s*$/i.test(raw))return result('incomplete');
   var labelled = raw.match(/(?:^|[，,：:\s])A(?:\s*[：:.、]\s*|\s+)([\s\S]+?)\s*(?:還是|或者|或是|或|與|和|跟|vs\.?|versus)?\s*B(?:\s*[：:.、]\s*|\s+)([\s\S]+?)(?:[。！？?]|$)/i);
   if (labelled && !/^(?:還是|或者|或是|或|or|vs\.?)\s*$/i.test(labelled[1].trim())) {
@@ -616,7 +636,7 @@ function classifyDecisionQuestion(question) {
   var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
   var matches = [], m;
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
-  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
@@ -662,11 +682,14 @@ function analyzeReadingQuestion(value) {
   function scope(s){return (s.match(/(?:20\d{2}年|今年|明年|未來一年|未來十二個月|未來12個月|本月|下個月|本週|下週|今天|明天|年底前|月底前|(?:未來|接下來)?[一二三四五六七八九十兩\d]+(?:個月|週|天|年)(?:內|後)?)/g)||[]).join('、');}
   var decision=classifyDecisionQuestion(q), options=[];
   // Named options retain the user's exact labels and do not swallow a trailing question.
-  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=(?:[\s，,；;、]+[A-F]\s*[:：])|$)/g));
+  // A/B/C 標籤可在末一項之後接「哪個較好？」；不要把問句當第 4 個方案。
+  var labels=Array.from(q.matchAll(/(?:^|[\s，,；;、])([A-F])\s*[:：]\s*([^\n，,；;]+?)(?=[\n，,；;]|(?:\s+[A-F]\s*[:：])|$)/g));
   if(labels.length>=2) options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
+  // Bare A、B、C are stable option IDs even when the question adds “三個方案”.
+  if(!options.length){var bare=q.match(/(?:^|[^A-Za-z])([A-F])\s*、\s*([A-F])\s*、\s*([A-F])(?:$|[^A-Za-z])/i);if(bare)options=bare.slice(1,4);}
   if(decision.kind==='binary')options=[decision.left,decision.right];
   if(decision.kind==='multiple'&&options.length<3){
-    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
+    var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/^(?:我)?(?:有|的)?(?:選項|方案)(?:是|有|為)?\s*/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
     options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);
     if(options.some(function(s){return s.length>60;})||options.length<3)options=[];
   }
@@ -940,6 +963,7 @@ function recommendReadingSystem(question) {
     var rules=[
       ['ootk',/開鑰之法|opening\s+of\s+the\s+key/i],
       ['mathers_horseshoe',/Mathers\s*(?:第一法|古法|horseshoe|馬蹄|五十四|54)|(?:五十四|54)\s*張牌陣/i],
+      ['mathers_66',/Mathers\s*(?:第三法|六十六|66)|(?:六十六|66)\s*張(?:拱形|牌陣)|(?:拱形|三角形).{0,8}(?:Mathers|塔羅)|Mathers.{0,8}66\s*\+\s*2/i],
       ['mathers_21',/Mathers\s*(?:第二法|二十一|21)|三排七|(?:二十一|21)\s*張牌陣/i],
       ['fifteen_card',/金色黎明.{0,8}(?:十五|15)|英式牌陣|fifteen.?card/i],
       ['minor_arcana',/小阿卡那|小牌牌陣|minor arcana/i],['celtic_cross',/凱爾特(?:十字)?|celtic(?: cross)?/i],
@@ -952,9 +976,9 @@ function recommendReadingSystem(question) {
     ];
     var selected='',excluded=[];
     text(q).split(/[，,。；;！？?]/).forEach(function(clause){
-      var numeric=clause.match(/(?:用|使用|採用|抽|選擇)\s*(五十四|54|二十一|21|十五|15)\s*張(?:牌)?/i);
+      var numeric=clause.match(/(?:用|使用|採用|抽|選擇)\s*(六十六|66|五十四|54|二十一|21|十五|15)\s*張(?:牌)?/i);
       var hits=rules.map(function(rule){var m=clause.match(rule[1]);return m?{id:rule[0],at:m.index}:null;}).filter(Boolean);
-      if(numeric)hits.unshift({id:/五十四|54/.test(numeric[1])?'mathers_horseshoe':/二十一|21/.test(numeric[1])?'mathers_21':'fifteen_card',at:numeric.index});
+      if(numeric)hits.unshift({id:/六十六|66/.test(numeric[1])?'mathers_66':/五十四|54/.test(numeric[1])?'mathers_horseshoe':/二十一|21/.test(numeric[1])?'mathers_21':'fifteen_card',at:numeric.index});
       // A specific Celtic name must not also match the generic cross alias.
       if(hits.some(function(h){return h.id==='celtic_cross';}))hits=hits.filter(function(h){return h.id!=='cross';});
       hits.forEach(function(hit){
@@ -1041,7 +1065,7 @@ function recommendReadingSystem(question) {
     }
     return base;
   }
-  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base=prepareQuestionMethod(base,compiled);base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);if((compiled.readingQuestion||{}).mode==='multi_question'&&id!=='multi_question')base.missingObservables.push('independent_subjects');if((compiled.readingQuestion||{}).mode==='multi_option'&&id!=='multi_option')base.missingObservables.push('independent_options');base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
+  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base=prepareQuestionMethod(base,compiled);base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_66'){var n=i+1,period=i>=66?'意外結語':((n<=11||n>=34&&n<=44)?'過去':(n>=23&&n<=33||n>=56&&n<=66)?'現在':'未來');copy.label=i>=66?(i===66?'左側意外牌（保留11張中另抽）':'右側意外牌（保留11張中另抽）'):'第'+n+'張・'+period+'（拱形序列成員）';if(i>=66)copy.slotKind='surprise_conclusion';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);if((compiled.readingQuestion||{}).mode==='multi_question'&&id!=='multi_question')base.missingObservables.push('independent_subjects');if((compiled.readingQuestion||{}).mode==='multi_option'&&id!=='multi_option')base.missingObservables.push('independent_options');base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
 
   function routeQuestion(input,options){
     options=options||{};
@@ -1076,7 +1100,7 @@ function recommendReadingSystem(question) {
     var candidates=Object.keys(METHODS).filter(function(id){return id!=='ootk'&&(directive.selected===id||(!/^fifteen_card$|^mathers_/.test(id)&&(id!=='multi_option'||qp.mode==='multi_option')&&(id!=='multi_question'||qp.mode==='multi_question')))&&directive.excluded.indexOf(id)<0;}).map(function(id){
       var m=instantiateMethod(id,compiled),missing=m.missingObservables;
       // Historical large procedures are opt-in, never triggered by ordinary numbers or adjectives such as "thorough".
-      var rank=missing.length*40+(m.count||80)+(id==='mathers_21'||id==='mathers_horseshoe'?300:0);
+      var rank=missing.length*40+(m.count||80)+(id==='mathers_21'||id==='mathers_66'||id==='mathers_horseshoe'?300:0);
       if(id===preferred)rank-=150;
       return {id:id,eligible:!missing.length,missing:missing,rank:rank,cards:m.count,provides:m.provides};
     }).sort(function(a,b){return a.rank-b.rank||a.cards-b.cards;});
@@ -1085,7 +1109,7 @@ function recommendReadingSystem(question) {
     var plan=instantiateMethod(selected,compiled),missing=plan.missingObservables||[];
     if(missing.length)notes.push('本陣未設獨立牌位的面向：'+missing.map(function(x){return OBSERVABLES[x]||x;}).join('、')+'。完整保留原問句；可由整體結構作條件性討論，無資料可判的部分明說，不新增牌位或假裝已量測。');
     if(f.knownDyad&&selected==='timeline')notes.push('本次優先讀相對階段與轉折，沒有獨立的雙方內心牌位；不以階段牌認定對方意願。');
-    var reasons={three_card:'單一焦點，先看既有基礎、現況與條件性走向',five_card:'需要分辨現況、形成因素、阻礙、可做的事與走向',cross:'重點是卡住的核心、拉扯力量與可介入方向',either_or:'兩個可辨識的選項，需要用相同標準比較兩條路',relationship:'問題聚焦已指明的雙方、互動原因、限制及下一步',timeline:'主要想了解階段順序與轉折條件',horseshoe:'需要同時查看盲點、外在影響、阻礙與可採取行動',celtic_cross:'需要整合根基、目標、近程、本人、環境及整體走向',tree_of_life:'問題聚焦反覆模式、內在需求或深層課題',zodiac:'需要分開檢視多個生活領域，再整合整體重點',minor_arcana:'具體日常事件，適合整理操作、資源與搜尋線索',fifteen_card:'依指定的五個三牌組比較核心、發展、決策與外在條件',mathers_21:'依指定的歷史三排七與首尾配對程序',mathers_horseshoe:'依指定的歷史三輪分堆與配對程序',ootk:'依指定的五次開鑰操作'};
+    var reasons={three_card:'單一焦點，先看既有基礎、現況與條件性走向',five_card:'需要分辨現況、形成因素、阻礙、可做的事與走向',cross:'重點是卡住的核心、拉扯力量與可介入方向',either_or:'兩個可辨識的選項，需要用相同標準比較兩條路',relationship:'問題聚焦已指明的雙方、互動原因、限制及下一步',timeline:'主要想了解階段順序與轉折條件',horseshoe:'需要同時查看盲點、外在影響、阻礙與可採取行動',celtic_cross:'需要整合根基、目標、近程、本人、環境及整體走向',tree_of_life:'問題聚焦反覆模式、內在需求或深層課題',zodiac:'需要分開檢視多個生活領域，再整合整體重點',minor_arcana:'具體日常事件，適合整理操作、資源與搜尋線索',fifteen_card:'依指定的五個三牌組比較核心、發展、決策與外在條件',mathers_21:'依指定的歷史三排七與首尾配對程序',mathers_66:'依指定的Mathers第三法：66張拱形與11張保留牌中另抽兩張',mathers_horseshoe:'依指定的歷史三輪分堆與配對程序',ootk:'依指定的五次開鑰操作'};
     if(selected==='multi_option')notes=notes.filter(function(n){return n.indexOf('問題含三個以上選項：')!==0;});
     plan.routingNotes=notes.concat(qp.notes);plan.systemRecommendation=recommendReadingSystem(compiled.originalQuestion);plan.selectionReason=(reasons[selected]||(METHODS[selected].picker||{}).suited||METHODS[selected].label).replace(/[。]+$/,'')+'。';
     if(!directive.selected&&kind==='multiple'&&selected!=='multi_option')plan.selectionReason='這題有三個以上選項，先整理共同局勢與取捨；沒有替每個選項抽獨立結果牌。需要逐路比較時，請先選定兩個方案。';
