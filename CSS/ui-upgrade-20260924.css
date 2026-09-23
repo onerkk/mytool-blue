@@ -1,0 +1,344 @@
+/* 靜月之光 UI 全面校準 · 2026-09-24
+   Shared visual pass: preserve each method's reading geometry and real artwork,
+   while tightening responsive rhythm, touch feedback, and result scrolling. */
+
+body.jy-atelier {
+  --jy-night: #080e19;
+  --jy-night-raised: #101c2a;
+  --jy-night-panel: #152337;
+  --jy-gold: #e6c98f;
+  --jy-gold-bright: #f6dfb1;
+  --jy-ice: #c8d5e2;
+  --jy-focus: #fff0c6;
+  background:
+    radial-gradient(ellipse at 50% -18%, #4c58772b, transparent 42%),
+    radial-gradient(ellipse at 100% 44%, #17434419, transparent 34%),
+    linear-gradient(180deg, #080d17 0%, #0a1220 48%, #080e19 100%);
+  color: #f2efe9;
+  color-scheme: dark;
+}
+
+body.jy-atelier :is(button, a, summary, input, textarea, select) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.jy-atelier :is(button, [role="button"], summary) {
+  touch-action: manipulation;
+}
+
+body.jy-atelier :is(button, a, summary):focus-visible {
+  outline: 2px solid var(--jy-focus) !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px #e6c98f24, 0 0 22px #f1dca32b !important;
+}
+
+/* The top bar stays calm and readable above long readings. */
+.jy-atelier .nav {
+  z-index: 1000;
+  padding-top: max(10px, env(safe-area-inset-top));
+  background: linear-gradient(180deg, #08111eF5, #0b1422ed) !important;
+  border-bottom: 1px solid #dcc28b38 !important;
+  box-shadow: 0 10px 28px #02071138, inset 0 1px #fff1;
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.jy-atelier .nav-inner { max-width: 1240px; }
+.jy-atelier .nav-brand { transition: color .2s ease, filter .2s ease; }
+.jy-atelier .nav-brand:hover { color: #fff0d1; filter: drop-shadow(0 0 12px #e5c58f35); }
+.jy-atelier .nav-brand i { filter: drop-shadow(0 0 10px #e5c58f50); }
+.jy-atelier .nav-shop a {
+  min-height: 46px;
+  border-color: #e3c58b70;
+  background: linear-gradient(145deg, #27364a, #111c2b 72%);
+  box-shadow: inset 0 1px #fff2, 0 3px 0 #060b13, 0 8px 20px #0005;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.jy-atelier .nav-shop a:active { transform: translateY(2px); box-shadow: inset 0 1px #fff2, 0 1px #060b13; }
+
+/* Home hero: keep the existing cinematic scene, with a shorter mobile path to the CTA. */
+.jy-atelier .jc-home-hero {
+  min-height: clamp(540px, 48vw, 620px) !important;
+  border-color: #ddc28b59 !important;
+  border-radius: 8px 8px 34px 8px !important;
+  background:
+    radial-gradient(ellipse at 72% 34%, #d1b77a1c, transparent 35%),
+    linear-gradient(90deg, #06101be8 0%, #07121ba6 44%, #06101b54 76%, #06101bc4 100%),
+    url('../assets/ui/ritual-moon-sanctum.webp') 58% 40% / cover !important;
+  box-shadow: 0 30px 80px #0007, inset 0 1px #f4debe24, inset 0 -1px #d8c08c22 !important;
+}
+.jy-atelier .jc-home-hero .at-hero-copy { max-width: 560px; }
+.jy-atelier .jc-home-hero .at-eyebrow { color: #ddcba8 !important; }
+.jy-atelier .jc-home-hero h1 { text-wrap: balance; text-shadow: 0 4px 30px #000b, 0 0 30px #c9a46724 !important; }
+.jy-atelier .jc-home-hero h1 em { color: #f0d49c !important; }
+.jy-atelier .jc-home-hero .at-hero-copy p { max-width: 34em; color: #d0d7df !important; }
+.jy-atelier .jc-home-hero .at-hero-art { min-height: 0 !important; }
+.jy-atelier .jc-home-stage { filter: drop-shadow(0 20px 32px #0008); }
+.jy-atelier .jc-home-caption { pointer-events: none; }
+.jy-atelier .jc-home-caption > span { text-shadow: 0 2px 15px #000, 0 0 24px #e7c78a30; }
+.jy-atelier .jc-home-caption p { color: #e0e4e8; }
+.jy-atelier .jc-home-hero .at-primary {
+  min-height: 62px;
+  border-radius: 13px;
+  border-color: #fff0c4;
+  background: linear-gradient(115deg, #fff0cc 0%, #e4c286 62%, #cda968 100%) !important;
+  box-shadow: inset 0 1px #fff, 0 4px 0 #715735, 0 16px 34px #0008 !important;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.jy-atelier .jc-home-hero .at-primary:hover { transform: translateY(-2px); filter: brightness(1.045); }
+.jy-atelier .jc-home-hero .at-primary:active { transform: translateY(2px); box-shadow: inset 0 1px #fff, 0 1px 0 #715735 !important; }
+.jy-atelier .jc-home-hero .at-text-link { text-decoration-color: #c7b58e88; }
+.jy-atelier .jc-home-hero .at-hero-meta { color: #c4cbd4 !important; }
+
+/* A little more breathing room and a clearer silhouette across the collection. */
+.jy-atelier .at-section-head { margin-top: 30px; }
+.jy-atelier .at-section-head .at-eyebrow { color: #b9c4d1 !important; }
+.jy-atelier .at-tools { gap: clamp(14px, 2vw, 24px); }
+.jy-atelier .at-tool {
+  min-height: 330px;
+  padding: 17px 18px 15px;
+  border-color: color-mix(in srgb, var(--at-accent) 40%, #d8c29f 60%) !important;
+  border-radius: 7px 7px 24px 7px !important;
+  background:
+    radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--at-accent) 12%, transparent), transparent 60%),
+    linear-gradient(150deg, #1d2b40 0%, #111d2c 62%, #0b1421 100%) !important;
+  box-shadow: 0 4px 0 #050a11, 0 7px 0 #88755133, 0 18px 30px #0006, inset 0 1px #fff2 !important;
+  transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease, filter .22s ease !important;
+}
+.jy-atelier .at-tool::before { inset: 6px !important; border-color: color-mix(in srgb, var(--at-accent) 19%, transparent) !important; }
+.jy-atelier .at-tool:after { transition: transform .75s cubic-bezier(.2,.65,.25,1) !important; }
+.jy-atelier .at-tool-top { min-height: 24px; }
+.jy-atelier .at-tool-kicker { font-size: .75rem; color: color-mix(in srgb, var(--at-accent) 88%, white 12%); }
+.jy-atelier .at-tool-number { font-variant-numeric: tabular-nums; }
+.jy-atelier .at-tool .at-art { filter: drop-shadow(0 16px 14px #0009) drop-shadow(0 0 18px color-mix(in srgb, var(--at-accent) 16%, transparent)); }
+.jy-atelier .at-tool strong { color: #f8ebd2 !important; text-wrap: balance; }
+.jy-atelier .at-tool-desc { color: #c7d1dc !important; }
+.jy-atelier .at-tool-foot { border-color: #d8c29f36 !important; color: color-mix(in srgb, var(--at-accent) 86%, white 14%) !important; }
+.jy-atelier .at-tool-arrow { border-color: color-mix(in srgb, var(--at-accent) 45%, #c3bcaa 55%) !important; background: #07111c55; transition: transform .18s ease, background .18s ease; }
+.jy-atelier .at-tool:active { transform: translateY(2px) scale(.995) !important; }
+.jy-atelier .at-tool:active .at-tool-arrow { transform: translate(1px, -1px); background: #cdb78122; }
+
+@keyframes jy-ui-enter-20260924 {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.jy-atelier .jc-home-hero { animation: jy-ui-enter-20260924 .55s cubic-bezier(.2,.7,.25,1) backwards; }
+.jy-atelier .at-tool { animation: jy-ui-enter-20260924 .42s cubic-bezier(.2,.7,.25,1) backwards; }
+.jy-atelier .at-tool:nth-child(2) { animation-delay: .035s; }
+.jy-atelier .at-tool:nth-child(3) { animation-delay: .07s; }
+.jy-atelier .at-tool:nth-child(4) { animation-delay: .105s; }
+.jy-atelier .at-tool:nth-child(5) { animation-delay: .14s; }
+.jy-atelier .at-tool:nth-child(6) { animation-delay: .175s; }
+.jy-atelier .at-tool:nth-child(7) { animation-delay: .21s; }
+.jy-atelier .at-tool:nth-child(8) { animation-delay: .245s; }
+.jy-atelier .at-tool:nth-child(n+9) { animation-delay: .28s; }
+
+/* Shared tactile response, without perpetual sheen or pulse on action controls. */
+.jy-atelier :is(.at-back, .at-home-link, .bzx-back, .ln-back, .mhx-back, .zw-in-back,
+  .bzx-gbtn, .bzx-dbtn, .zw-in-pill, .ln-spread-btn, .mhx-method-btn,
+  .bzs-chip, .bzs-lens, .bzs-choice-btn, .bzx-reset-btn, .ln-reset-btn,
+  .mhx-reset-btn, .bzs-action, .zw-btn, .btn-outline, .orc-btn-outline,
+  .at-share-button, .jy-spread-trigger, .jym-item) {
+  transition: transform .16s ease, border-color .18s ease, background-color .18s ease, box-shadow .18s ease, color .18s ease !important;
+}
+.jy-atelier :is(.bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .bzs-primary,
+  .btn-primary, .orc-btn-primary, .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn,
+  .zw-ai-copy, .orc-ai-copy-btn, .jy-ex-btn, .jr-next) {
+  min-height: 52px;
+  border-radius: 13px !important;
+  letter-spacing: .04em !important;
+  transition: transform .16s ease, filter .18s ease, box-shadow .18s ease !important;
+  animation: none !important;
+}
+.jy-atelier :is(.bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .bzs-primary,
+  .btn-primary, .orc-btn-primary, .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn,
+  .zw-ai-copy, .orc-ai-copy-btn, .jy-ex-btn, .jr-next):active:not(:disabled) {
+  transform: translateY(2px) !important;
+  filter: brightness(.98);
+}
+.jy-atelier :is(.bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .bzs-primary,
+  .btn-primary, .orc-btn-primary, .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn,
+  .zw-ai-copy, .orc-ai-copy-btn, .jy-ex-btn):disabled {
+  filter: saturate(.55);
+}
+.jy-atelier :is(input, textarea, select, .bzx-field, .zwx-field, .bzs-pick-field,
+  .jy-select, .bzs-input, .bzs-select, .bzs-text, .bzx-q-input, .ln-q-input,
+  .mhx-q-input, .zw-in-q, .orc-q-textarea):focus {
+  border-color: #e6ca91 !important;
+  box-shadow: 0 0 0 3px #d7b87924, inset 0 2px 7px #0003 !important;
+}
+.jy-atelier :is(.bzx-section, .ln-section, .mhx-section, .zw-in-sec, .bzs-card,
+  #input-screen > .card, #input-screen > div > .card, .step > .card) {
+  border-color: #b8c8d633 !important;
+  box-shadow: inset 0 1px #fff2, 0 14px 32px #0004 !important;
+}
+.jy-atelier :is(.bzx-ai-card, .ln-ai-card, .mhx-ai-card, .zw-ai,
+  .orc-ai-prompt-card, .jy-ex-card) {
+  box-shadow: inset 0 1px #fff2, 0 18px 42px #0006 !important;
+}
+
+/* Recorded foley is already wired to each real interaction; make state and touch targets clear. */
+.jy-foley-controls { gap: 8px; }
+.jy-foley-button, .jy-foley-settings summary {
+  min-width: 44px;
+  min-height: 44px;
+  border-color: #d9c28c70;
+  background: linear-gradient(145deg, #344052e8, #111a27f4);
+  color: #f1dcaf;
+  box-shadow: inset 0 1px #fff2, 0 3px 0 #070b12, 0 8px 18px #0004;
+  transition: transform .16s ease, background-color .18s ease, border-color .18s ease, color .18s ease !important;
+}
+.jy-foley-button[aria-pressed="false"] { color: #b7c1cd; border-color: #a9b4c044; }
+.jy-foley-button[data-sound-state="error"] { color: #ffd1c5; border-color: #d78b7b88; }
+.jy-foley-button[data-sound-state="loading"] { color: #d7e8ef; }
+.jy-foley-button:active, .jy-foley-settings summary:active { transform: translateY(2px); }
+.jy-foley-settings > div { z-index: 30; border-color: #d4be8a77; background: #111c2af7; }
+
+/* Lenormand is a fixed overlay: make its own scroll viewport reliable on mobile,
+   retain the defined 3+2 five-card reading shape, and enlarge desktop card faces. */
+.jy-atelier #ln-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: 100vh !important;
+  max-height: 100dvh !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  scrollbar-gutter: stable;
+}
+.jy-atelier #ln-screen .ln-container {
+  width: min(100%, 1040px) !important;
+  max-width: 1040px !important;
+  min-height: 100%;
+  padding: 16px 32px calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+}
+.jy-atelier #ln-screen .at-room-nav {
+  top: 0;
+  margin-inline: -32px;
+  padding: max(8px, env(safe-area-inset-top)) 32px 10px;
+  background: linear-gradient(180deg, #091421f5, #0b1422e8) !important;
+}
+.jy-atelier #ln-screen .ln-header { padding: 24px 0 18px; }
+.jy-atelier #ln-screen .ln-five-layout {
+  width: min(100%, 660px) !important;
+  max-width: 100% !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  column-gap: clamp(5px, 1.2vw, 12px) !important;
+  row-gap: 14px !important;
+  margin: 18px auto 24px !important;
+}
+.jy-atelier #ln-screen .ln-five-layout .ln-card { width: 100% !important; }
+.jy-atelier #ln-screen .ln-five-layout .ln-card-img { aspect-ratio: 2 / 3; object-fit: cover; }
+.jy-atelier #ln-screen .ln-ai-card { scroll-margin-bottom: 28px; }
+.jy-atelier #ln-screen .ln-ai-grid { gap: 10px !important; }
+.jy-atelier #ln-screen .ln-ai-sc { min-height: 78px !important; }
+.jy-atelier #ln-screen .ln-reset-btn { min-height: 48px; padding-inline: 22px !important; }
+.jy-atelier #ln-screen .ln-footer { padding-bottom: 12px; }
+.jy-atelier .at-chart-scroll { overscroll-behavior-x: contain; scroll-padding-inline: 16px; }
+
+/* Give long-form results consistent reading width and safe-area breathing room. */
+.jy-atelier :is(.bzx-container, .ln-container, .mhx-container, .zw-in-wrap, .zw-res-inner, .bzs-shell) {
+  scrollbar-color: #8d7957 #0e1928;
+}
+.jy-atelier :is(.bzx-footer, .ln-footer, .mhx-footer, .zw-in-foot) { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.jy-atelier .at-room-nav { scroll-margin-top: 12px; }
+.jy-atelier .at-result-heading { box-shadow: inset 0 1px #fff2, 0 20px 42px #0006 !important; }
+
+@media (min-width: 1200px) {
+  .jy-atelier .at-tools { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .jy-atelier .at-tool { min-height: 356px; }
+}
+
+@media (max-width: 1000px) {
+  .jy-atelier .jc-home-hero { min-height: 520px !important; }
+  .jy-atelier .at-tools { gap: 16px 14px; }
+  .jy-atelier .at-tool { min-height: 0; }
+  .jy-atelier #ln-screen .ln-container { max-width: 900px !important; padding-inline: 24px !important; }
+  .jy-atelier #ln-screen .at-room-nav { margin-inline: -24px; padding-inline: 24px; }
+}
+
+@media (max-width: 700px) {
+  .jy-atelier .nav { padding-inline: 16px; }
+  .jy-atelier .nav-inner { gap: 10px; }
+  .jy-atelier .nav-brand { letter-spacing: 1.5px; }
+  .jy-atelier .nav-shop a { min-height: 44px; padding-inline: 12px; }
+  .jy-atelier .app { padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+  .jy-atelier .jc-home-hero {
+    padding: 24px 16px 24px !important;
+    border-radius: 6px 6px 26px 6px !important;
+    background:
+      radial-gradient(ellipse at 50% 36%, #d1b77a1c, transparent 45%),
+      linear-gradient(180deg, #06101b86, #06101b2e 42%, #06101be8 100%),
+      url('../assets/ui/ritual-moon-sanctum.webp') center 38% / cover !important;
+  }
+  .jy-atelier .jc-home-hero .at-hero-copy p { max-width: 34em; margin-inline: auto; }
+  .jy-atelier .jc-home-hero .at-hero-art {
+    height: clamp(282px, 35svh, 342px) !important;
+    min-height: 0 !important;
+    max-height: 342px !important;
+    margin-top: -9px !important;
+  }
+  .jy-atelier .jc-home-stage { inset: -8px -14px 12px !important; width: calc(100% + 28px) !important; height: calc(100% - 4px) !important; }
+  .jy-atelier .jc-home-caption { bottom: 5px !important; }
+  .jy-atelier .jc-home-caption > span { font-size: 20px !important; }
+  .jy-atelier .jc-home-caption p { font-size: 12px !important; }
+  .jy-atelier .jc-home-hero .at-hero-actions { gap: 8px; }
+  .jy-atelier .jc-home-hero .at-primary { max-width: 440px; min-height: 54px; }
+  .jy-atelier .at-section-head { margin: 20px 0 17px; }
+  .jy-atelier .at-tool { padding: 13px 13px 12px; }
+  .jy-atelier .at-tool .at-art { width: clamp(90px, 28vw, 138px) !important; max-width: 138px !important; margin: 8px auto 9px !important; }
+  .jy-atelier .at-tool strong { font-size: clamp(17px, 4.7vw, 21px) !important; letter-spacing: .03em !important; }
+  .jy-atelier .at-tool-desc { font-size: 13px !important; line-height: 1.65 !important; margin-top: 5px !important; }
+  .jy-atelier .at-tool-foot { min-height: 35px; margin-top: 10px; padding-top: 8px; font-size: 12px !important; align-items: center !important; }
+  .jy-atelier .at-tool-arrow { width: 25px; height: 25px; }
+  .jy-atelier #ln-screen .ln-container { padding: 12px 16px calc(48px + env(safe-area-inset-bottom)) !important; }
+  .jy-atelier #ln-screen .at-room-nav { margin-inline: -16px; padding-inline: 16px; }
+  .jy-atelier #ln-screen .ln-five-layout { width: min(100%, 560px) !important; row-gap: 11px !important; }
+  .jy-atelier #ln-screen .ln-ai-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .jy-atelier #ln-screen .ln-ai-card { padding: 20px 16px !important; }
+}
+
+@media (max-width: 380px) {
+  .jy-atelier .nav { padding-inline: 12px; }
+  .jy-atelier .nav-brand { font-size: 1.05rem; letter-spacing: 1px; gap: 8px; }
+  .jy-atelier .nav-brand i { font-size: 22px; }
+  .jy-atelier .nav-shop a { gap: 6px; padding-inline: 9px; font-size: 12px; }
+  .jy-atelier .app { padding-inline: 14px; }
+  .jy-atelier .jc-home-hero { padding-inline: 13px !important; }
+  .jy-atelier .jc-home-hero h1 { font-size: 30px !important; line-height: 1.55 !important; }
+  .jy-atelier .jc-home-hero .at-hero-art { height: clamp(268px, 34svh, 310px) !important; }
+  .jy-atelier .at-tools { gap: 12px 9px; }
+  .jy-atelier .at-tool { padding: 11px 10px 10px; border-radius: 5px 5px 18px 5px !important; }
+  .jy-atelier .at-tool-kicker { font-size: 11px; }
+  .jy-atelier .at-tool-number { font-size: 11px; }
+  .jy-atelier .at-tool .at-art { width: clamp(78px, 26vw, 100px) !important; margin-block: 6px !important; }
+  .jy-atelier .at-tool strong { font-size: 16px !important; }
+  .jy-atelier .at-tool-desc { font-size: 12px !important; line-height: 1.55 !important; }
+  .jy-atelier .at-tool-foot { font-size: 11px !important; }
+  .jy-atelier .at-tool-arrow { width: 22px; height: 22px; }
+  .jy-atelier #ln-screen .ln-container { padding-inline: 12px !important; }
+  .jy-atelier #ln-screen .at-room-nav { margin-inline: -12px; padding-inline: 12px; }
+  .jy-atelier #ln-screen .ln-ai-grid { gap: 7px !important; }
+  .jy-atelier #ln-screen .ln-ai-sc { min-height: 68px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jy-atelier .jc-home-hero,
+  .jy-atelier .at-tool,
+  .jy-atelier :is(button, a, summary),
+  .jy-foley-button,
+  .jy-foley-settings summary {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+  .jy-atelier .at-tool:hover,
+  .jy-atelier .at-tool:active,
+  .jy-atelier .at-tool:hover .at-art,
+  .jy-atelier .at-primary:hover { transform: none !important; }
+}
