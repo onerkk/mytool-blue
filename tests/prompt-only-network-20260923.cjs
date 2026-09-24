@@ -17,13 +17,17 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       localStorage.setItem('_jy_pricing_cache', JSON.stringify({ _savedAt: Date.now(), data: { SINGLE_TAROT: 9999 } }));
     });
     const page = await context.newPage();
-    const outgoing = [], errors = [];
+    const outgoing = [], counters = [], errors = [];
     page.on('request', r => {
+      // The site's existing visit counter is free and intentionally active.
+      // Keep it distinct from paid AI, pricing and classifier endpoints.
+      if (new URL(r.url()).pathname === '/api/pulse') { counters.push(r.method()); return; }
       if (/jy-ai-proxy|mytool-blue\.pages\.dev|\/api\//.test(r.url())) outgoing.push(r.url());
     });
     page.on('pageerror', e => errors.push(e.message));
     await page.route('**/*', async route => {
       const url = new URL(route.request().url());
+      if (url.origin === 'https://jingyue.uk' && url.pathname === '/api/pulse') return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,total:124,today:8})});
       if (url.origin !== 'https://jingyue.uk') return route.abort();
       const file = path.resolve(root, '.' + decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname));
       if (!file.startsWith(root + path.sep) || !fs.existsSync(file)) return route.fulfill({ status: 404, body: '' });
@@ -57,9 +61,10 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
       return { before, after };
     });
     assert.deepEqual(nameBoundary.after, nameBoundary.before, 'symbolic name labels cannot change daily scores');
-    assert.deepEqual(outgoing, [], 'the prompt-only workflow must not contact the paid Worker or analytics API');
+    assert.deepEqual(outgoing, [], 'the prompt-only workflow must not contact paid AI, pricing or remote classification');
+    assert.deepEqual(counters, ['POST'], 'the existing visit counter is mocked once, never sent to a live service');
     assert.deepEqual(errors, [], 'the prompt-only page should run without uncaught errors');
     await context.close();
-    console.log('PASS prompt-only with stale session/pricing, tool selection and unmatched question: zero API requests');
+    console.log('PASS prompt-only with stale session/pricing, tool selection and unmatched question: zero paid-AI requests; one locally mocked visit counter');
   } finally { await browser.close(); }
 })().catch(e => { console.error(e.stack); process.exitCode = 1; });

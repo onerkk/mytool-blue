@@ -65,12 +65,18 @@ for(const [file,key,value] of readingTargets){
   persist(file,regex.test(old)?old.replace(regex,()=>block):block+old);
 }
 // A mixed cached release must not reintroduce the previous verbose reading style.
-for(const file of new Set(readingTargets.map(t=>t[0]).concat('JS/ai-analysis.js'))){
+for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]),'JS/ai-analysis.js'))){
   const old=fs.readFileSync(path.join(root,file),'utf8');
   const readingGuard=/((?:window|root)\.JY_READING_QUALITY)(?:&&\1\.readingVersion===["'][^"']+["'])?\?(?=\1\.(lines|methodLines|plainText))/g;
   let next=old.replace(readingGuard,(_,ref,method)=>ref+'&&typeof '+ref+'.'+method+'==="function"&&String('+ref+'.readingVersion||"0").localeCompare('+JSON.stringify(q.readingVersion)+',undefined,{numeric:true})>=0?');
   const payloadGuard=/((?:window|root)\.JY_READING_QUALITY)(?:&&\1\.readingVersion===["'][^"']+["'])?&&\1\.payloadGuide/g;
   next=next.replace(payloadGuard,(_,ref)=>ref+'&&typeof '+ref+'.payloadGuide==="function"&&String('+ref+'.readingVersion||"0").localeCompare('+JSON.stringify(q.readingVersion)+',undefined,{numeric:true})>=0');
+  // Upgrade guards that already use capability checks (the old expression only
+  // handled pre-v6 callers, so a cached v6 guide could override v7 fallbacks).
+  next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.readingVersion\|\|"0"\)\.localeCompare\("[^"]+",undefined,\{numeric:true\}\)>=0/g,
+    (_,ref)=>'String('+ref+'.readingVersion||"0").localeCompare('+JSON.stringify(q.readingVersion)+',undefined,{numeric:true})>=0');
+  next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.version\|\|"0"\)\.localeCompare\("[^"]+",undefined,\{numeric:true\}\)>=0/g,
+    (_,ref)=>'String('+ref+'.version||"0").localeCompare('+JSON.stringify(q.version)+',undefined,{numeric:true})>=0');
   persist(file,next);
 }
 for(const file of mirrors)persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));

@@ -1,5 +1,5 @@
 // BEGIN GENERATED READING JY_READING_ZIWEI_FALLBACK
-var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落：先給明確主判；接著挑2～4組最有解釋力的已提供盤面資料，逐組說清「具體符號／結構→傳統判讀→如何落到原問題」；不可只列星曜、干支、牌名或吉凶詞，也不可用性格套話代替推論。簡單題不硬湊篇幅，多子題則逐題回答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。命理象徵不是現實證明；重要判斷須說出依據及限制。健康、法律與財務問題須提醒核對現實資料，但仍要先就原問題給出有邊界的解讀。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【紫微：主宮星組與牽動】核命身、宮支、五行局、農曆與運限政策；按本題選主宮及實際三方四正。本命、大限、流年同名宮未必同一格。\n本宮主星組合連同廟旺、輔煞、三合資源及對宮牽制成判；空宮借對宮是參照，不改原盤。逐顆吉凶計票不能取代組合作用。\n四化保留星性與來源、落宮：生年、宮干、大限、流年各自定位，自化及來因宮依本次流派；祿忌或權忌同會不直接抵銷。\n疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。";
+var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落。開頭2～3句先說最有依據的答案、真正卡點與成立條件；正文挑2～4組最有解釋力的已提供盤面資料，每段先說這對提問者意味什麼，再以具體符號／結構及傳統判讀說明如何落到原問題，最後說明影響或取捨。證據是答案的理由，不另開術語課；簡單題不硬湊篇幅，多子題逐題先答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。用「我的判斷是…」「這裡較需要處理…」「若你們實際出現…」自然分清主判與假設，不逐段貼證據標籤。命理象徵不是現實證明；限制集中一句。只在原題涉及健康、法律、財務或安全時加入相應提醒，不替一般相處題虛構情緒失控、疾病或危險。\n【解答深度】關係挑戰題：指出最主要的1～3個卡點、雙方各自可能需要、兩種做法如何互相加劇，以及可打斷循環的一項協議；不可只寫「需要溝通／給空間／步調不同」。事業財務題：說清機會怎樣轉成成果、卡在哪個環節、代價與優先行動；比較題用相同標準分出取捨；時間題分有利條件與實際承諾。每項具體情境若未由使用者提供，只能作可核對的例子，不能寫成已發生。\n【成稿取捨】先完整判讀再寫答案；不輸出內部推理草稿。去掉一段術語後若答案毫無改變，那段應刪；去掉盤面後若仍可套給任何人，那段應補上決定性依據。不要用「有機會但也有挑戰」「能量不對頻」「給穩定而非熱度」作結論；具體說誰與誰、哪件事、什麼條件及下一步。資料確實不能判時，直接交代已能判的部分與關鍵缺口，不以肯定口吻填空。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【紫微：主宮星組與牽動】核命身、宮支、五行局、農曆與運限政策；按本題選主宮及實際三方四正。本命、大限、流年同名宮未必同一格。\n本宮主星組合連同廟旺、輔煞、三合資源及對宮牽制成判；空宮借對宮是參照，不改原盤。逐顆吉凶計票不能取代組合作用。\n四化保留星性與來源、落宮：生年、宮干、大限、流年各自定位，自化及來因宮依本次流派；祿忌或權忌同會不直接抵銷。\n疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。\n逐筆核四化引用的來源方、層級、宮干、星曜、化象、受方和落宮。相同天干在生年與宮干重現不是兩份獨立證據；不同來源的化祿、化忌必須同時保留。命宮格局不能替代關係題的夫妻、福德與運限結構；化祿不證明本人目前有錢或對特定人願意付出。\n【紫微判讀主線】主宮回答事情怎麼運作，三合宮查可調用的資源，對宮查角色與環境的牽動；先讀主星搭配的共同作用，再看輔煞與廟旺如何改變做法的成本。關係題把夫妻的互動方式、福德的內在滿足、田宅的生活安排與官祿的責任牽動串起來，選其中最卡住的一環回答。\n四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。";
 // END GENERATED READING JY_READING_ZIWEI_FALLBACK
 /*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v3.0.0]
  *  v3.0.0(2026/9/4)：提示詞改為知識開放核心；保留動態三方四正、四化、飛星欽天與運限資料，移除 ROOT-SPEC、帳本、稽核及大量限制式指令。
@@ -293,7 +293,9 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   // ════════════════════════════════════════════════════════
   //  命盤資料序列化（送進提示詞）
   // ════════════════════════════════════════════════════════
-  function serializeChart(zw, form) {
+  function serializeChart(zw, form, options) {
+    options=options||{};
+    var scope=options.compact&&window.JY_READING_QUALITY&&window.JY_READING_QUALITY.timeScope?window.JY_READING_QUALITY.timeScope(form&&form.question,zwReferenceYear(zw)):null;
     var L = [];
     var birth = (form && form.bdate) ? form.bdate : '';
     var btime = (form && form.btime) ? form.btime : (form && form.btimeUnknown ? '時辰未知(暫以午時)' : '');
@@ -467,6 +469,10 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       zw.daXian.forEach(function(dx){
         // 只標一個：優先信引擎 isCurrent；引擎全沒標時才用虛歲回推（同一基準，不混實歲、不 OR 兩套）
         var _isNow = _hasCur ? !!dx.isCurrent : (age != null && age >= dx.ageStart && age <= dx.ageEnd);
+        if(scope&&scope.mode!=='all'&&!_isNow){
+          var born=zw.lunar.year;
+          if(dx.ageEnd<scope.start-born+1||dx.ageStart>scope.end-born+1)return;
+        }
         var cur = _isNow ? ' ◀現在' : '';
         var huaTxt = (dx.hua && dx.hua.length) ? '　限內四化:' + dx.hua.map(function(h){var _hs=huaShort(h.hua);return h.star+'化'+_hs+'入本命'+h.palace+(h.periodPalace?'〔大限'+h.periodPalace+'〕':'')+(_hs==='忌'?_jiChong(h.palace):'');}).join('、') : '';
         L.push('・' + dx.ageStart + '–' + dx.ageEnd + '歲　走「' + (dx.palaceName||dx.palace||'') + '」宮(' + (dx.branch||'') + ')' +
@@ -481,8 +487,12 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       if (typeof zw.getLiuNianZw === 'function') {
         var ly0 = zwReferenceYear(zw);
         L.push('');
-        L.push('【流年走勢 ' + ly0 + '–' + (ly0+3) + '】(提供年度觸發：流年命宮落點與流年四化；時間精度為年度層級)');
-        for (var yy = ly0; yy <= ly0 + 3; yy++) {
+        var first=scope&&scope.mode!=='all'?scope.start:ly0;
+        var requestedLast=scope&&scope.mode!=='all'?scope.end:ly0+3;
+        var last=Math.min(requestedLast,first+30);
+        L.push('【流年走勢 ' + first + '–' + last + '】(提供年度觸發：流年命宮落點與流年四化；時間精度為年度層級)');
+        if(requestedLast>last)L.push('單次年度資料上限31年；'+(last+1)+'年以後未列出，不能補造該段結論，需縮小期間另查。');
+        for (var yy = first; yy <= last; yy++) {
           var lnf = zw.getLiuNianZw(yy);
           if (!lnf) continue;
           var tag = (yy === ly0) ? '（現行農曆年度）' : (yy === ly0 + 1) ? '（下一農曆年度）' : '';
@@ -522,7 +532,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
 
   function _zwHeadText() {
     var api = _zwPromptRootApi();
-    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
+    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("7.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
   }
 
   function _zwTailText() {
@@ -537,7 +547,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     parts.push('\n────────────────────────────');
     parts.push('提問者的問題：' + (q || '(未填寫，請以命盤為主，分析命格、事業、財運、感情婚姻、健康風險與近年大限流年走勢)'));
     parts.push('────────────────────────────\n');
-    parts.push(serializeChart(zw, form));
+    parts.push(serializeChart(zw, form,{compact:true}));
     parts.push('\n────────────────────────────\n');
     parts.push(_zwTailText());
     return parts.join('\n');
@@ -655,8 +665,8 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260923final1', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260923final1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260924reading1', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260924reading1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;

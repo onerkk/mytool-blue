@@ -1,0 +1,309 @@
+{
+  "patchVersion": "20260924-reading1",
+  "baseline": "mytool-blue-master.zip",
+  "baselineSha256": "4c61fcf5471a88d1f67c076d81546962723fe4a401ad1cc8845db14f4497aca2",
+  "apply": "Extract into the existing project root, preserving relative paths. This patch does not deploy the site.",
+  "scope": "Changed and new project files only. Existing methods retained where tests found no calculation error.",
+  "verification": "Configured regression work executed in sections; failed cases fixed and relevant suites rerun. Browser copy/download checked. No external AI reading or predictive-accuracy claim.",
+  "files": [
+    {
+      "path": "JS/ai-analysis.js",
+      "status": "modified",
+      "bytes": 1433150,
+      "sha256": "752da2616828521171cae0324af6eff174f50999bc038f4e22bb99c8ee7da966",
+      "baselineSha256": "7ce4dac28a2bff8e290570304ed7dac91c4abbe98a6268c14f544ee52de5a6ef"
+    },
+    {
+      "path": "JS/astro-bridge.js",
+      "status": "modified",
+      "bytes": 15289,
+      "sha256": "571fbfc238a13ae2b33d71494d673aa93eb2947f4019d3eca76a919a54c8efd3",
+      "baselineSha256": "241bc66ca403fec9453a01f39189abf53b70ab38406ec1963b5754fc8bb59064"
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "status": "modified",
+      "bytes": 35756,
+      "sha256": "8bb77c05b1c1b6184447b5e4f0c2d47e36e14550633c1905871a4274c53b9df2",
+      "baselineSha256": "9baa8f2c2761b9169228b7806755282de9774b30e3bbd0b5407d90a0c87a8f58"
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "status": "modified",
+      "bytes": 59720,
+      "sha256": "cb3d64cd8ef0cf6ee39099d686e5acaf11177150fb4f2b09e62834a0643f8169",
+      "baselineSha256": "30f889bb9d6bc7f9c3249c79ca8f1cccc0a82a03b473cec411c0cc46e0b45491"
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "status": "modified",
+      "bytes": 76865,
+      "sha256": "0537105f0f569f15c0d1f9dda64b135243e3daa178b4fd8ad15e86e9c893da37",
+      "baselineSha256": "9e639df471be5b6586cb0998ac5b75e05917c35eb454f8237f762966bcf1391f"
+    },
+    {
+      "path": "JS/bazi.js",
+      "status": "modified",
+      "bytes": 332840,
+      "sha256": "29dd6a2591e029bc4fcf2d455313eb93f017325c40d5903193f967121fcd3fb5",
+      "baselineSha256": "9bece5902d6a3a26b660de636e2961c89c5fee35038fea1ec808613a98458eed"
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "status": "modified",
+      "bytes": 24421,
+      "sha256": "2ae858732e4788a97cdb78f728bf6042515e9406d98beaca7d977a60a6117841",
+      "baselineSha256": "b7d98b131eccbcd0876b133ff5d599cb1584d6f50236d6679ac25c58094d033b"
+    },
+    {
+      "path": "JS/lenormand.js",
+      "status": "modified",
+      "bytes": 127594,
+      "sha256": "8eafa07a30a0ef2f046435b0e722133d71a9978b16cd52f2c1c4a2044bd2124c",
+      "baselineSha256": "5755d0594e7e83fe277a38066090421fac917f854f4797541bf2b610ad4e5bf1"
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "status": "modified",
+      "bytes": 70327,
+      "sha256": "8edebbb36b92cff4f7fadb16617c6217064206ffce4fddd7e4ffb985c8cd44bd",
+      "baselineSha256": "4b01172195debe387b235f27fa588a4e5fdd8b34a11c59f24d2826eff8f586f3"
+    },
+    {
+      "path": "JS/oracle.js",
+      "status": "modified",
+      "bytes": 138137,
+      "sha256": "e89f68909b89df346d0f684c1bc6b998425a22b780438d11f60906b77ba566f6",
+      "baselineSha256": "6c3f09d367063f730a6bdb14f0213c600456206b0c79dd64d084a74501e57a6a"
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "status": "modified",
+      "bytes": 110241,
+      "sha256": "d49532694656479544ff527f338b56a0933800c515fc7f9e47ec3c63f0afbc09",
+      "baselineSha256": "1d39b4db8403e8490c0d904e883d20bc73af9326cbeb12945fcc4e972b8e86db"
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "status": "modified",
+      "bytes": 35371,
+      "sha256": "96cde2d8dbfde0638af62a9ca2a5be210e5e69a18e0ea28ad32aeaf16b146af1",
+      "baselineSha256": "5d8088ef11f99edc9b3e2f8c2d0fe71ad6cbdff561a314b29eb9259eb03bbab9"
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "status": "modified",
+      "bytes": 36218,
+      "sha256": "48aad228f7b1d3e4ad3913999a773d928aa256952c35f3858c2234faadc17a5e",
+      "baselineSha256": "08985da08e0cb66583c408912b89a6cef700e3460fd418a9e723d05870894511"
+    },
+    {
+      "path": "JS/sw.js",
+      "status": "modified",
+      "bytes": 5735,
+      "sha256": "c5b75c99c0c95d488e258b3ad476d1a7612e2953a0430c6421ca8fdf5fe1e24a",
+      "baselineSha256": "8b29579bc37a1d79d5c6dd10174be759476577d8dc641d0f27de329a3b4bb146"
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "status": "modified",
+      "bytes": 25889,
+      "sha256": "bac7dc937500fc04b6c4cef8992f57e953485faf632c0d6379b5494f972457b4",
+      "baselineSha256": "2007d00edf2bebaf0577f2f902e667a42c12d5f4cfd1c7ae1705c0aa82c84028"
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "status": "modified",
+      "bytes": 41142,
+      "sha256": "cf7b17c9f1e7bf192c7d82fe299aedf1ef9147877d1a8bd7c2200316bc30b751",
+      "baselineSha256": "ce8a868ccc6ae90730505610df74883f1dfc77adf4aae36c65bf244dfffde972"
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "status": "modified",
+      "bytes": 18818,
+      "sha256": "5976a8e5bebf7d76a8c1fed8dadae9e54c23893a7cc180c9ab6330825cd0fdba",
+      "baselineSha256": "7ffa5ebf76cf902b692ef93df3a6bdb71701c131959c8867c8c6c82b3aac9658"
+    },
+    {
+      "path": "JS/western-standalone.js",
+      "status": "modified",
+      "bytes": 30546,
+      "sha256": "a63ef2f581c52f3e9da4d13170658a393362787010a7c77c0de1005eaf17cbc5",
+      "baselineSha256": "d9e1890279f3264be73f447ce36ba2162f50e54ea72bc876a6f9c7be071d5733"
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "status": "modified",
+      "bytes": 17668,
+      "sha256": "3677f833d9b2bd1e831ac1af4373052e729ada4bef175e0a32bc76fd30da7361",
+      "baselineSha256": "145867ca0ab6f3d5b7991161b8f53655989aa998d3b90841919ba716757c43ef"
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "status": "modified",
+      "bytes": 88542,
+      "sha256": "57dad1632d6f42a5c7882595b8e32f3c326d04838da11c6c77ca1c1e70c08bc9",
+      "baselineSha256": "db97fc16b56476d1b54afc526f86e6015b98884d132783e76930ac200602aab4"
+    },
+    {
+      "path": "ai-analysis.js",
+      "status": "modified",
+      "bytes": 1433150,
+      "sha256": "752da2616828521171cae0324af6eff174f50999bc038f4e22bb99c8ee7da966",
+      "baselineSha256": "7ce4dac28a2bff8e290570304ed7dac91c4abbe98a6268c14f544ee52de5a6ef"
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "status": "modified",
+      "bytes": 35756,
+      "sha256": "8bb77c05b1c1b6184447b5e4f0c2d47e36e14550633c1905871a4274c53b9df2",
+      "baselineSha256": "9baa8f2c2761b9169228b7806755282de9774b30e3bbd0b5407d90a0c87a8f58"
+    },
+    {
+      "path": "bazi-suite-core.js",
+      "status": "modified",
+      "bytes": 59720,
+      "sha256": "cb3d64cd8ef0cf6ee39099d686e5acaf11177150fb4f2b09e62834a0643f8169",
+      "baselineSha256": "30f889bb9d6bc7f9c3249c79ca8f1cccc0a82a03b473cec411c0cc46e0b45491"
+    },
+    {
+      "path": "docs/reading-example-20260924.md",
+      "status": "added",
+      "bytes": 4795,
+      "sha256": "2172a7eba460348db55474380ea305cf6bc56337702460f7eb3b5c540871c61d",
+      "baselineSha256": null
+    },
+    {
+      "path": "docs/reading-fix-20260924.md",
+      "status": "added",
+      "bytes": 10280,
+      "sha256": "1661ee5e3639ce951703f5aa3d94fb2f3a77bc8071de73c1d329591d4d7346d5",
+      "baselineSha256": null
+    },
+    {
+      "path": "functions/api/ai.js",
+      "status": "modified",
+      "bytes": 44000,
+      "sha256": "5cec06c8433c77b548aeb1d50026d81ca29abb6429151f20d9c0c642e643873c",
+      "baselineSha256": "3f1253b5e48336230e0cabd58a61c8b5a5eba08545ae78f0baab952d12657cb0"
+    },
+    {
+      "path": "index.html",
+      "status": "modified",
+      "bytes": 148323,
+      "sha256": "2b1d81153a5409ada1bfb301b78945904ea16edf11d6b4efeb5aaae37390742f",
+      "baselineSha256": "1ba76b6975b14894e41f870d360a70456eaf03e683d43a7a009deb565311959d"
+    },
+    {
+      "path": "lenormand.js",
+      "status": "modified",
+      "bytes": 127594,
+      "sha256": "8eafa07a30a0ef2f046435b0e722133d71a9978b16cd52f2c1c4a2044bd2124c",
+      "baselineSha256": "5755d0594e7e83fe277a38066090421fac917f854f4797541bf2b610ad4e5bf1"
+    },
+    {
+      "path": "meihua-standalone.js",
+      "status": "modified",
+      "bytes": 70327,
+      "sha256": "8edebbb36b92cff4f7fadb16617c6217064206ffce4fddd7e4ffb985c8cd44bd",
+      "baselineSha256": "4b01172195debe387b235f27fa588a4e5fdd8b34a11c59f24d2826eff8f586f3"
+    },
+    {
+      "path": "oracle.js",
+      "status": "modified",
+      "bytes": 138137,
+      "sha256": "e89f68909b89df346d0f684c1bc6b998425a22b780438d11f60906b77ba566f6",
+      "baselineSha256": "6c3f09d367063f730a6bdb14f0213c600456206b0c79dd64d084a74501e57a6a"
+    },
+    {
+      "path": "package.json",
+      "status": "modified",
+      "bytes": 7006,
+      "sha256": "404c5ba088b98fd1bb951a10f6fb988a80ac47f4edec4ccf9869459189a5c005",
+      "baselineSha256": "38f84037d081cedc0fe3a28ed53381b814e0e7c1f1a822a61691410fbdc4ba24"
+    },
+    {
+      "path": "prompt-export.js",
+      "status": "modified",
+      "bytes": 110241,
+      "sha256": "d49532694656479544ff527f338b56a0933800c515fc7f9e47ec3c63f0afbc09",
+      "baselineSha256": "1d39b4db8403e8490c0d904e883d20bc73af9326cbeb12945fcc4e972b8e86db"
+    },
+    {
+      "path": "scripts/sync-recommendation-guides.cjs",
+      "status": "modified",
+      "bytes": 6917,
+      "sha256": "d24ec86b61cf13f89901e3cf22d763b8bbbc6557e9e641619e39627473181091",
+      "baselineSha256": "7063ce59e280abd58e7de92d1c75ca6a07d88c940374259550ab9feee59afb0a"
+    },
+    {
+      "path": "sw.js",
+      "status": "modified",
+      "bytes": 5735,
+      "sha256": "c5b75c99c0c95d488e258b3ad476d1a7612e2953a0430c6421ca8fdf5fe1e24a",
+      "baselineSha256": "8b29579bc37a1d79d5c6dd10174be759476577d8dc641d0f27de329a3b4bb146"
+    },
+    {
+      "path": "tests/prompt-only-network-20260923.cjs",
+      "status": "modified",
+      "bytes": 5297,
+      "sha256": "60c99b2fdcb924f6b6984a15574df0e5ec62a2a78f2926b3e48392975cad0c84",
+      "baselineSha256": "1aa55e6a015ef851cc26eb2cd4e148f2b5b3da7ed393d8f62bcd2d91814510f0"
+    },
+    {
+      "path": "tests/reader-voice-20260923.cjs",
+      "status": "modified",
+      "bytes": 3084,
+      "sha256": "40005a9f8bb252be1ab67c3f38bd90f53615eeaa3333cd4491926929eab2dc8b",
+      "baselineSha256": "71b0d6cc278c1ff831e4d8f49605608a6e88316c2e902d2cf474c7f34f4a3237"
+    },
+    {
+      "path": "tests/reading-browser-20260924.cjs",
+      "status": "added",
+      "bytes": 4914,
+      "sha256": "3c5ccaf4a0a997034a97bd0667ad068b45669673dffa59c07eadad9588af342f",
+      "baselineSha256": null
+    },
+    {
+      "path": "tests/reading-grounding-20260924.cjs",
+      "status": "added",
+      "bytes": 11207,
+      "sha256": "573ebc67532dd5e2a6be6ee9582d4516957d27602a798c7a49dc7482e785ae9d",
+      "baselineSha256": null
+    },
+    {
+      "path": "tests/recommendation-browser-20260914.cjs",
+      "status": "modified",
+      "bytes": 5685,
+      "sha256": "cb01a37fa1d35d1e021c7485db123a0153252f394a34e5c1a54dada98e70cdc6",
+      "baselineSha256": "e1c362a9c9de5853575aea6c54c103895f95affbf457285d6c3e5da30f60318c"
+    },
+    {
+      "path": "tests/relationship-20260917.cjs",
+      "status": "modified",
+      "bytes": 11966,
+      "sha256": "0b40d1474c07de6989bec9126f60ec9b65a8699206efc50179c4ba7ca06e230a",
+      "baselineSha256": "007bc583b1b1e4d22c41c66af5736d0dab5dada4e7196536e62b6d4dd3922440"
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "status": "modified",
+      "bytes": 17668,
+      "sha256": "3677f833d9b2bd1e831ac1af4373052e729ada4bef175e0a32bc76fd30da7361",
+      "baselineSha256": "145867ca0ab6f3d5b7991161b8f53655989aa998d3b90841919ba716757c43ef"
+    }
+  ],
+  "manifestSelfHash": "Omitted to avoid recursion. Archive CRC is verified.",
+  "excludedGeneratedReviewFiles": [
+    "review/accuracy-prompts/01-tarot.txt",
+    "review/accuracy-prompts/02-ootk-five-operations.txt",
+    "review/accuracy-prompts/03-lenormand.txt",
+    "review/accuracy-prompts/04-bazi.txt",
+    "review/accuracy-prompts/05-bazi-compatibility.txt",
+    "review/accuracy-prompts/06-ziwei.txt",
+    "review/accuracy-prompts/07-meihua.txt",
+    "review/accuracy-prompts/08-oracle.txt",
+    "review/accuracy-prompts/INPUTS.json"
+  ]
+}

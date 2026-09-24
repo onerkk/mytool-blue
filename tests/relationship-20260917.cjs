@@ -106,11 +106,12 @@ test('All eight scenarios retain role focus, complete prompts and one material r
   for(const marker of ['A方八字','B方八字','A方紫微','B方紫微','雙向跨盤引動','紫微同期大限與流年','午夜','婚姻次數','不只一個'])assert(prompt.includes(marker),marker);
   assert.equal(prompt.split('[靜月之光蝦皮賣場]').length-1,1);
   assert(prompt.length<65000,'Avoid redundant period JSON overwhelming the combined prompt');
+  const complete=api.dataBlock(pair);
   for(const facts of [pair.personA,pair.personB]){
-   for(const rule of facts.patternAssessment.catalog){assert(prompt.includes(rule.id),rule.id);for(const check of rule.checks)assert(prompt.includes((check.passed?'✓':'×')+check.label),rule.id+' check');}
+   for(const rule of facts.patternAssessment.catalog){assert(complete.includes(rule.id),rule.id);for(const check of rule.checks)assert(complete.includes((check.passed?'✓':'×')+check.label),rule.id+' check');}
    for(const rule of facts.patternAssessment.patterns){assert(prompt.includes(rule.status));if(rule.variant)assert(prompt.includes(rule.variant));for(const list of [rule.evidence,rule.support,rule.modifiers])for(const w of list)assert(prompt.includes(w.palace+'('+w.branch+') '+w.star));}
   }
-  for(const chart of [ba,bb])for(const rule of chart.specialRuleAssessment.rules){assert(prompt.includes(rule.id));assert(prompt.includes(rule.status));for(const evidence of rule.evidence||[])assert(prompt.includes(typeof evidence==='string'?evidence:JSON.stringify(evidence)));}
+  for(const chart of [ba,bb])for(const rule of chart.specialRuleAssessment.rules){const exported=rule.status==='not-established'?c.BaziSuiteCore.buildChartDataBlock(chart,{}):prompt;assert(exported.includes(rule.id));assert(exported.includes(rule.status));for(const evidence of rule.evidence||[])assert(exported.includes(typeof evidence==='string'?evidence:JSON.stringify(evidence)));}
   for(const facts of [pair.personA,pair.personB])for(const flight of facts.palaceFlights)assert(prompt.includes(flight.star+flight.hua+'→'+flight.targetPalace+'('+flight.targetBranch+')'));
   assert(!/undefined|NaN|\[object Object\]/.test(prompt));
   if(scenario.id==='business')assert(!pair.focusPalaces.includes('夫妻'));

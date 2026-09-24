@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),runtime=process.env.JY_QA_RUNTIME,out=pr
 (async()=>{
  assert(out,'Set JY_RECOMMEND_REVIEW');fs.mkdirSync(out,{recursive:true});
  const pw=require(process.env.JY_PLAYWRIGHT_MODULE||process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
- let launch={headless:true};
+ let launch={headless:true,executablePath:process.env.JY_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage']};
  if(runtime){const {default:chrome}=await import(runtime+'/runtime-deps/node_modules/@sparticuz/chromium/build/index.js');launch={...launch,executablePath:runtime+'/browser-bin/chromium',args:chrome.args,env:{...process.env,LD_LIBRARY_PATH:runtime+'/browser-bin',FONTCONFIG_PATH:'/etc/fonts'}};}
  const browser=await pw.chromium.launch(launch);
  try{
@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'..'),runtime=process.env.JY_QA_RUNTIME,out=pr
   });
   await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copied.push(text);}}});});
   await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.4.0');
+  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.5.0');
   const question='我經營水晶、天鐵與龍宮舍利，應如何安排銷售方向？我偏好綠色、日常常碰撞手腕。';
   for(const type of ['vedic','western']){
    const prefix=type==='vedic'?'vd':'wx',api=type==='vedic'?'JYVedicUI':'JYWesternUI',container=type+'-page';

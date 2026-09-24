@@ -1,7 +1,7 @@
 /* Jyotisha palace v3: a native chart in a carved enamel workspace. */
 (function(root){
   'use strict';
-  const doc=root.document,VERSION='20260923final1';
+  const doc=root.document,VERSION='20260924reading1';
   const CITIES=[['台北',25.03,121.56,'Asia/Taipei'],['新北',25.01,121.47,'Asia/Taipei'],['桃園',24.99,121.30,'Asia/Taipei'],['台中',24.15,120.68,'Asia/Taipei'],['台南',22.99,120.23,'Asia/Taipei'],['高雄',22.63,120.31,'Asia/Taipei'],['花蓮',23.98,121.60,'Asia/Taipei'],['香港',22.32,114.17,'Asia/Hong_Kong'],['新加坡',1.35,103.82,'Asia/Singapore'],['吉隆坡',3.14,101.69,'Asia/Kuala_Lumpur'],['東京',35.68,139.69,'Asia/Tokyo'],['新德里',28.61,77.21,'Asia/Kolkata'],['紐約',40.71,-74.01,'America/New_York'],['洛杉磯',34.05,-118.24,'America/Los_Angeles'],['倫敦',51.51,-.13,'Europe/London'],['雪梨',-33.87,151.21,'Australia/Sydney']];
   const TOPICS={general:'完整命盤',career:'工作與方向',relationship:'感情與相處',wealth:'收入與資源',learning:'學習與長處',timing:'近三年節奏',wellbeing:'生活與內在',bracelet:'配戴與日常提醒'};
   const SHORT={Sun:'日',Moon:'月',Mars:'火',Mercury:'水',Jupiter:'木',Venus:'金',Saturn:'土',Rahu:'羅',Ketu:'計'},LATIN={Sun:'Surya',Moon:'Chandra',Mars:'Mangala',Mercury:'Budha',Jupiter:'Guru',Venus:'Shukra',Saturn:'Shani',Rahu:'Rahu',Ketu:'Ketu'};

@@ -21,7 +21,7 @@
   var SIX_COMBINE_EL = {'子丑':'土','寅亥':'木','卯戌':'火','辰酉':'金','巳申':'水','午未':'火'};
   var HARM = {子:'未',未:'子',丑:'午',午:'丑',寅:'巳',巳:'寅',卯:'辰',辰:'卯',申:'亥',亥:'申',酉:'戌',戌:'酉'};
   var DESTRUCTION = {子:'酉',酉:'子',丑:'辰',辰:'丑',寅:'亥',亥:'寅',卯:'午',午:'卯',巳:'申',申:'巳',未:'戌',戌:'未'};
-  var PUNISH_PAIRS = {'寅巳':'恃勢之刑','巳申':'恃勢之刑','申寅':'恃勢之刑','丑戌':'無恩之刑','戌未':'無恩之刑','未丑':'無恩之刑','子卯':'無禮之刑','卯子':'無禮之刑'};
+  var PUNISH_PAIRS = {'寅巳':'無恩之刑','巳申':'無恩之刑','申寅':'無恩之刑','丑戌':'恃勢之刑','戌未':'恃勢之刑','未丑':'恃勢之刑','子卯':'無禮之刑','卯子':'無禮之刑'};
   var SELF_PUNISH = {辰:true,午:true,酉:true,亥:true};
   var TRINES = [
     {branches:['申','子','辰'], element:'水', name:'申子辰三合水局'},
@@ -156,6 +156,7 @@
 
   function branchPairRelation(a, b) {
     var rels = [];
+    if (BRANCHES.indexOf(a)<0 || BRANCHES.indexOf(b)<0) return rels;
     if (a === b) {
       rels.push({type:'同支重疊', typeCode:'SAME_BRANCH', description:a+a+'同支重疊；表示相同主題容易被彼此放大，吉凶另審。'});
       if (SELF_PUNISH[a]) rels.push({type:'自刑候選', typeCode:'SELF_PUNISHMENT', description:a+a+'符合傳統自刑配對；不得直接推成心理或疾病結論。'});
@@ -168,8 +169,17 @@
     }
     if (HARM[a] === b) rels.push({type:'六害', typeCode:'HARM', description:a+b+'六害；先列為隱性牽制或期待落差的查表關係，強弱與吉凶另審。'});
     if (DESTRUCTION[a] === b) rels.push({type:'相破', typeCode:'DESTRUCTION', description:a+b+'相破；作為關係不穩或磨損的參考級訊號，不單獨定論。'});
-    var pn = PUNISH_PAIRS[a+b];
-    if (pn) rels.push({type:'相刑', typeCode:'PUNISHMENT', description:a+b+'相刑（'+pn+'）；先列互動張力，需看落柱與現實應驗。'});
+    // Detect the pair in either display order; retain the traditional directed
+    // edge separately. Swapping two people must not lose a relationship.
+    var directed=PUNISH_PAIRS[a+b]?a+b:PUNISH_PAIRS[b+a]?b+a:null;
+    if (directed) rels.push({type:'相刑', typeCode:'PUNISHMENT', traditionalDirection:directed, strengthClass:/子|卯/.test(directed)?'pair':'partial', description:a+b+'相刑（'+PUNISH_PAIRS[directed]+(/子|卯/.test(directed)?'':'，三刑未全')+'）；配對與傳統方向分列，不因A／B排序漏列，也不當成誰傷害誰。'});
+    if(a!==b)TRINES.forEach(function(g){
+      if(g.branches.indexOf(a)<0||g.branches.indexOf(b)<0)return;
+      var mid=g.branches[1],hasMid=a===mid||b===mid;
+      rels.push({type:hasMid?'半合':'拱合',typeCode:hasMid?'HALF_TRINE':'ARCH_TRINE',candidateElement:g.element,
+        missingBranches:g.branches.filter(function(z){return z!==a&&z!==b;}),transformationStatus:'待審',interpretationScope:'CROSS_CHART_DISTRIBUTION_ONLY',
+        description:a+b+(hasMid?'半合':'拱合')+g.element+'；'+(hasMid?'含中神的兩支配對，仍非完整三合局':'缺中神的虛拱參照')+'。跨盤不視為合化，也不能直接等同感情融洽。'});
+    });
     return rels;
   }
 
@@ -206,8 +216,8 @@
         typeCode:idx<TRINES.length?'CROSS_TRINE':'CROSS_DIRECTIONAL',
         branches:g.branches.slice(), element:g.element,
         participants:participants,
-        transformationStatus:'待審',
-        description:g.name+'由兩盤共同湊成；只表示成局條件出現，仍須審月令、透干、同黨、沖破與全局氣勢。'
+        transformationStatus:'待審',interpretationScope:'CROSS_CHART_DISTRIBUTION_ONLY',
+        description:g.name+'所需三支分布於兩盤；這是跨盤分布參照，不是任何一方原局成局，不合併月令或五行力量。各自原局的成化另審。'
       });
     });
     return out;
@@ -244,12 +254,13 @@
     };
   }
 
-  function currentAndAnnual(chart) {
+  function currentAndAnnual(chart,scope) {
     var dayun=safeArray(chart && chart.dayun),current = dayun.find(function(x){return x && x.isCurrent;}) || null;
     var ref=Number(chart&&chart._referenceTimestamp);
     var nowYear=referenceBaziYear(chart), byYear={};
     dayun.forEach(function(d){safeArray(d&&d.liuNian).forEach(function(y){
-      if(!y||y.year<nowYear-1||y.year>nowYear+4)return;
+      if(!y)return;
+      if(scope ? scope.mode!=='all'&&(y.year<scope.start||y.year>scope.end) : y.year<nowYear-1||y.year>nowYear+4)return;
       if(!byYear[y.year])byYear[y.year]=Object.assign({dayun:d.gz,segments:[]},y);
       var group=byYear[y.year],segment=Object.assign({dayun:d.gz},y);
       if(!group.segments.some(function(s){return s.dayun===segment.dayun&&s.periodStart===segment.periodStart;}))group.segments.push(segment);
@@ -259,8 +270,8 @@
     return {currentLuck:current, annual:annual};
   }
 
-  function luckSynchronization(chartA, chartB) {
-    var a = currentAndAnnual(chartA), b = currentAndAnnual(chartB), years = uniq(a.annual.map(function(x){return x.year;}).concat(b.annual.map(function(x){return x.year;}))).sort();
+  function luckSynchronization(chartA, chartB,scope) {
+    var a = currentAndAnnual(chartA,scope), b = currentAndAnnual(chartB,scope), years = uniq(a.annual.map(function(x){return x.year;}).concat(b.annual.map(function(x){return x.year;}))).sort();
     return {
       aCurrent:a.currentLuck, bCurrent:b.currentLuck,
       years:years.map(function(y){
@@ -301,7 +312,7 @@
     var support = stems.concat(branches).concat(groups).filter(function(x){return supportTypes[x.typeCode];});
     var signal = support.length && tension.length ? '支持與張力並存' : support.length ? '支持／牽連訊號較多' : tension.length ? '磨合與邊界議題較多' : '明顯配對訊號較少，需回到十神與現實互動';
     return {
-      version:'1.4.0', scenario:scenario,
+      version:'1.5.0', scenario:scenario,
       personA:chartSummary(chartA,options.metaA||{}),
       personB:chartSummary(chartB,options.metaB||{}),
       dayMasters:{aToB:elementRelation(chartA.dmEl||STEM_EL[chartA.dm],chartB.dmEl||STEM_EL[chartB.dm]), bToA:elementRelation(chartB.dmEl||STEM_EL[chartB.dm],chartA.dmEl||STEM_EL[chartA.dm])},
@@ -362,7 +373,7 @@
     return Object.keys(byYear).map(Number).sort().slice(0,count||5).map(function(year){return byYear[year].sort(function(a,b){return String(a.periodStart).localeCompare(String(b.periodStart));}).map(function(x){return '・'+year+' '+safeText(x.gz)+'（大運 '+safeText(x.dayun)+'；模型 '+safeText(x.level,'未標記')+'；區間 '+periodLabel(x)+'）';}).join('\n');});
   }
 
-  function modelLines(chart) {
+  function modelLines(chart, compact) {
     var ep=chart&&chart.ep||{}, stance=chart&&chart.wuxingStance||{}, th=chart&&chart.tiaohou||{};
     function modelText(value){return value&&typeof value==='object'?JSON.stringify(value):safeText(value,'未提供');}
     var ge=chart&&chart.zhengGe;
@@ -377,24 +388,38 @@
       '合化判別：'+(typeof root.baziHuaQiLines==='function'?root.baziHuaQiLines(chart).join('\n'):modelText(chart&&chart.huaQiAssessments))+'。',
       '病藥模型：'+modelText(chart&&chart.medicineGod)+'；通關模型：'+modelText(chart&&chart.relayGod)+'。未提供的模型不可補造。',
       '調候鏡頭：候選五行 '+safeArray(th.need).join('、')+'；'+safeText(th.detail)+(th.sourceUrl?'；校對來源 '+th.sourceUrl:'')+'。調候與扶抑分開，不自動互相覆蓋。',
-      '已計算特殊規則：'+specialRuleText(chart&&chart.specialRuleAssessment)+'。',
+      '已計算特殊規則：'+specialRuleText(chart&&chart.specialRuleAssessment,compact)+'。',
       '其他特殊格局待判資料：'+(safeArray(chart&&chart.specialStructureCandidates).length?safeArray(chart.specialStructureCandidates).map(function(x){return modelText(x);}).join('、'):'無；以月令一般格局為主')+'。'
     ];
   }
 
-  function specialRuleText(a){
+  function specialRuleText(a,compact){
     if(!a)return '未提供';
-    var sources=[],scopes=[],rows=(a.rules||[]).map(function(r){
+    var selected=(a.rules||[]).filter(function(r){return !compact||r.status!=='not-established';});
+    var sources=[],scopes=[],rows=selected.map(function(r){
       if(r.source&&sources.indexOf(r.source)<0)sources.push(r.source);if(r.scope&&scopes.indexOf(r.scope)<0)scopes.push(r.scope);
       return r.id+' '+r.name+'｜'+r.status+'｜'+(r.checks||[]).map(function(c){return (c.passed===true?'✓':c.passed===false?'×':'?')+c.condition+(c.evidence&&c.evidence.length?'（'+c.evidence.map(function(v){return v&&typeof v==='object'?JSON.stringify(v):String(v);}).join('、')+'）':'');}).join('；')+
         (r.scope?'；範圍'+(scopes.indexOf(r.scope)+1):'')+(r.variant?'；異說：'+r.variant:'');
     });
     // matched repeats whole rule objects; their IDs retain the relationship.
-    return [a.version+'；'+a.policy,'命中：'+(a.matched||[]).map(function(r){return r.id;}).join('、'),a.ordinaryUsePolicy,rows.join('\n'),scopes.map(function(v,i){return '範圍'+(i+1)+'：'+v;}).join('\n'),'合化完整核對見上方「合化判別」，不重複列出同一份資料。','來源：'+sources.join('；')].join('\n');
+    return [a.version+'；'+a.policy,'命中：'+(a.matched||[]).map(function(r){return r.id;}).join('、'),a.ordinaryUsePolicy,rows.join('\n'),scopes.map(function(v,i){return '範圍'+(i+1)+'：'+v;}).join('\n'),compact?'未成立格局 '+(a.rules.length-selected.length)+' 項不展開；完整檢核保留在原始資料，未列者不可當作成立。':'','合化完整核對見上方「合化判別」，不重複列出同一份資料。','來源：'+sources.join('；')].filter(Boolean).join('\n');
   }
 
-  function buildChartDataBlock(chart, meta) {
+  function promptScope(question,referenceYear){
+    var q=root.JY_READING_QUALITY;
+    return q&&q.timeScope?q.timeScope(question,referenceYear):{mode:'range',start:referenceYear,end:referenceYear+3};
+  }
+  function selectedAnnuals(chart,scope){
+    var out=[];
+    safeArray(chart&&chart.dayun).forEach(function(d){safeArray(d.liuNian).forEach(function(y){
+      if(scope.mode!=='all'&&(y.year<scope.start||y.year>scope.end))return;
+      if(!out.some(function(x){return x.year===y.year&&x.dayun===d.gz&&x.periodStart===y.periodStart;}))out.push(Object.assign({dayun:d.gz},y));
+    });});
+    return out.sort(function(a,b){return a.year-b.year||String(a.periodStart).localeCompare(String(b.periodStart));});
+  }
+  function buildChartDataBlock(chart, meta, options) {
     meta=meta||{};
+    options=options||{};
     var verified=birthFactLines(chart,meta);
     if (meta.unknown) return [
       '【A. 三柱資料：時辰未知】',
@@ -405,6 +430,9 @@
       '日期若接近節氣或換日邊界，年月日柱也可能需要出生時間才能確認。'
     ].join('\n');
     var current=safeArray(chart&&chart.dayun).find(function(x){return x&&x.isCurrent;});
+    var scope=options.scope||promptScope(options.question,referenceBaziYear(chart));
+    var chosen=options.compact?selectedAnnuals(chart,scope):[];
+    var decades=options.compact?safeArray(chart.dayun).filter(function(d){return d.isCurrent||chosen.some(function(y){return y.dayun===d.gz;});}):[];
     return [
       '【A. 排盤與曆法資料】',
       verified,
@@ -420,12 +448,12 @@
       interactionLines(chart).join('\n'),
       '判讀提示：配對存在後仍需審成化條件；沖刑害破的方向結合所動之柱、十神、喜忌與歲運。',
       '【B. 前端流派模型（供交叉核對）】',
-      modelLines(chart).join('\n'),
+      modelLines(chart,options.compact).join('\n'),
       '【大運資料】',
-      luckLines(chart,10).join('\n'),
+      options.compact?decades.map(function(d){return '・'+d.gz+'：'+periodLabel(d)+'；干十神 '+d.god+'；支本氣十神 '+d.zGod+(d.isCurrent?' ★現行':'');}).join('\n'):luckLines(chart,10).join('\n'),
       current?'現行大運：'+current.gz+'，'+periodLabel(current)+'。':'現行大運未能判定。',
-      '【近五個立春年度】',
-      annualLines(chart,5).join('\n')||'・近年流年資料未能取得。',
+      options.compact?'【本題立春年度】':'【近五個立春年度】',
+      options.compact?(chosen.map(function(x){return '・'+x.year+' '+x.gz+'（大運 '+x.dayun+'；區間 '+periodLabel(x)+'）';}).join('\n')||'所問年度超出本次已算資料，不能補造運限。'):annualLines(chart,5).join('\n')||'・近年流年資料未能取得。',
       '流年與大運等級只能當本模型內相對排序；刑沖合害只列觸發，不自動加減分。',
       '神煞只作末位輔助：'+safeArray(chart&&chart.shensha).join('、')+'。'
     ].filter(Boolean).join('\n');
@@ -455,7 +483,7 @@
       escapeLine(userQuestion||lens.question)
     ].concat(
       universalQuestionRootLines(),
-      [buildChartDataBlock(chart,meta),'【判讀規範】'],
+      [buildChartDataBlock(chart,meta,{compact:lensId!=='chart',question:userQuestion||lens.question}),'【判讀規範】'],
       universalJudgmentRuleLines(lensId==='chart'?'chart':'single'),
       promptSpec().lensGuideLines(lensId),
       promptSpec().answerContractLines(lensId==='chart'?'chart':'single'),
@@ -471,7 +499,7 @@
     var lines=[];
     lines.push('情境：'+s.name+'；角色A＝'+s.roleA+'；角色B＝'+s.roleB+'。');
     lines.push('情境焦點：'+s.focus+'。');
-    lines.push('日主五行互動：A→B '+comp.dayMasters.aToB.label+'；B→A '+comp.dayMasters.bToA.label+'。方向不同時須分開解讀。');
+    lines.push('日主五行互動：A→B '+comp.dayMasters.aToB.label+'；B→A '+comp.dayMasters.bToA.label+'。這是元素定義，不是誰付出、誰接受或誰更愛；方向不同時須分開解讀。');
     lines.push('日柱／夫妻宮：A '+comp.spousePalace.aDayPillar+'；B '+comp.spousePalace.bDayPillar+'；日干 '+comp.spousePalace.stemRelation.label+'。');
     safeArray(comp.spousePalace.branchRelations).forEach(function(x){lines.push('・日支作用：'+x.description);});
     safeArray(comp.stemRelations).filter(function(x){return x.typeCode==='STEM_COMBINATION'||(x.aPillar==='day'&&x.bPillar==='day');}).forEach(function(x){lines.push('・'+x.description);});
@@ -483,22 +511,26 @@
     lines.push('五行互補候選：B較強五行中落入A喜候選＝'+(c.partnerMaySupportA.join('、')||'無明顯項')+'；A較強五行中落入B喜候選＝'+(c.partnerMaySupportB.join('、')||'無明顯項')+'。');
     lines.push('五行負荷候選：B較強五行中落入A忌候選＝'+(c.partnerMayLoadA.join('、')||'無明顯項')+'；A較強五行中落入B忌候選＝'+(c.partnerMayLoadB.join('、')||'無明顯項')+'。');
     lines.push(c.caveat);
-    lines.push('整體證據整理：'+comp.evidenceSummary.signal+'；支持類訊號 '+comp.evidenceSummary.supportCount+' 項、張力類訊號 '+comp.evidenceSummary.tensionCount+' 項。'+comp.evidenceSummary.neutralRule);
+    lines.push('跨盤資料不按吉凶筆數成判：先看各自全局、日支及切題作用；同一柱位配對的沖刑合破是同組關係，不能各算一份獨立證據。');
     return lines;
   }
 
-  function buildCompatibilityDataBlock(comp) {
+  function buildCompatibilityDataBlock(comp,options) {
+    options=options||{};
+    var scope=promptScope(options.question,referenceBaziYear(comp._chartA));
+    // Select from actual calculated years, not the default six-year UI preview.
+    var sync=options.compact&&!comp.luckSynchronization.provisional?luckSynchronization(comp._chartA,comp._chartB,scope):comp.luckSynchronization;
     function window(w){if(!w)return null;return {start:w.startUtc8,endExclusive:w.endExclusiveUtc8,timeBasis:'UTC+08:00',interval:'[start,end)'};}
     function luck(d){if(!d)return null;return {gz:d.gz,ageStart:d.ageStart,ageEnd:d.ageEnd,window:window(d.window)};}
     function annual(d){if(!d)return null;return {gz:d.gz,
       segments:safeArray(d.segments).map(function(s){return {dayun:s.dayun,window:window(s.window)};})};}
-    return ['【A方八字】',buildChartDataBlock(comp._chartA||{},comp._metaA||{}),
-      '【B方八字】',buildChartDataBlock(comp._chartB||{},comp._metaB||{}),
+    return ['【A方八字】',buildChartDataBlock(comp._chartA||{},comp._metaA||{},options),
+      '【B方八字】',buildChartDataBlock(comp._chartB||{},comp._metaB||{},options),
       '【八字跨盤事實與候選模型】',relationFacts(comp).join('\n'),
-      '【雙向十神映射】',JSON.stringify(comp.directionalTenGods),
-      '【八字歲運同步】',JSON.stringify({aCurrent:luck(comp.luckSynchronization.aCurrent),bCurrent:luck(comp.luckSynchronization.bCurrent),
+      '【雙向十神映射】','aViewsB／bViewsA 是以該方日主計算的符號對照，並非任何人的主觀想法。七殺與正官皆須判實際制化，不能按名稱定壓力或信任。',JSON.stringify(comp.directionalTenGods),
+      '【八字歲運同步】',JSON.stringify({aCurrent:luck(sync.aCurrent),bCurrent:luck(sync.bCurrent),
         timeRule:'所有區間為共同 UTC+8 民用時間；各方 segments 為與大運相交後的區間，不是不同的立春。',
-        years:comp.luckSynchronization.years.map(function(x){return {year:x.year,annualWindow:window(x.window),a:annual(x.a),b:annual(x.b)};})}),
+        years:sync.years.map(function(x){return {year:x.year,annualWindow:window(x.window),a:annual(x.a),b:annual(x.b)};})}),
       '資料界線：'+comp.uncertainty.note].join('\n\n');
   }
 
@@ -728,7 +760,7 @@
   }
 
   root.BaziSuiteCore = {
-    version:'1.4.0',
+    version:'1.5.0',
     scenarios:SCENARIOS.slice(), lenses:Object.assign({},LENSES),
     constants:{stems:STEMS.slice(),branches:BRANCHES.slice(),stemElements:Object.assign({},STEM_EL),branchElements:Object.assign({},BRANCH_EL)},
     tenGod:tenGod, elementRelation:elementRelation, chartSummary:chartSummary,
@@ -736,7 +768,7 @@
     directionalTenGods:directionalTenGods, elementComplement:elementComplement, luckSynchronization:luckSynchronization,
     createCompatibility:createCompatibility, buildCompatibilityPrompt:buildCompatibilityPrompt,buildCompatibilityDataBlock:buildCompatibilityDataBlock,
     buildChartDataBlock:buildChartDataBlock, buildSinglePrompt:buildSinglePrompt,
-    verifiedBirthFacts:verifiedBirthFacts,birthFactLines:birthFactLines,periodLabel:periodLabel,referenceBaziYear:referenceBaziYear,
+    verifiedBirthFacts:verifiedBirthFacts,birthFactLines:birthFactLines,periodLabel:periodLabel,referenceBaziYear:referenceBaziYear,promptScope:promptScope,
     buildPersonality:buildPersonality, buildPersonalityPrompt:buildPersonalityPrompt,
     normalizeBaziString:normalizeBaziString, reverseBaziToSolarTimes:reverseBaziToSolarTimes, reverseBaziToSolarTimesAsync:reverseBaziToSolarTimesAsync,
     policy:{trueSolarTimePreferred:true,defaultDayBoundaryMode:'ZI_HOUR_23',annualBoundary:'LI_CHUN',luckInterval:'[start,end)',reverseLookupClockTimeOnly:true},

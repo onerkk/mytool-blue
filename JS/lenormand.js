@@ -1,15 +1,18 @@
 // BEGIN GENERATED READING JY_READING_LENORMAND
 var JY_READING_LENORMAND = [
-  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落：先給明確主判；接著挑2～4組最有解釋力的已提供盤面資料，逐組說清「具體符號／結構→傳統判讀→如何落到原問題」；不可只列星曜、干支、牌名或吉凶詞，也不可用性格套話代替推論。簡單題不硬湊篇幅，多子題則逐題回答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。命理象徵不是現實證明；重要判斷須說出依據及限制。健康、法律與財務問題須提醒核對現實資料，但仍要先就原問題給出有邊界的解讀。",
+  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落。開頭2～3句先說最有依據的答案、真正卡點與成立條件；正文挑2～4組最有解釋力的已提供盤面資料，每段先說這對提問者意味什麼，再以具體符號／結構及傳統判讀說明如何落到原問題，最後說明影響或取捨。證據是答案的理由，不另開術語課；簡單題不硬湊篇幅，多子題逐題先答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。用「我的判斷是…」「這裡較需要處理…」「若你們實際出現…」自然分清主判與假設，不逐段貼證據標籤。命理象徵不是現實證明；限制集中一句。只在原題涉及健康、法律、財務或安全時加入相應提醒，不替一般相處題虛構情緒失控、疾病或危險。\n【解答深度】關係挑戰題：指出最主要的1～3個卡點、雙方各自可能需要、兩種做法如何互相加劇，以及可打斷循環的一項協議；不可只寫「需要溝通／給空間／步調不同」。事業財務題：說清機會怎樣轉成成果、卡在哪個環節、代價與優先行動；比較題用相同標準分出取捨；時間題分有利條件與實際承諾。每項具體情境若未由使用者提供，只能作可核對的例子，不能寫成已發生。\n【成稿取捨】先完整判讀再寫答案；不輸出內部推理草稿。去掉一段術語後若答案毫無改變，那段應刪；去掉盤面後若仍可套給任何人，那段應補上決定性依據。不要用「有機會但也有挑戰」「能量不對頻」「給穩定而非熱度」作結論；具體說誰與誰、哪件事、什麼條件及下一步。資料確實不能判時，直接交代已能判的部分與關鍵缺口，不以肯定口吻填空。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
   "短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。",
   "大牌陣先讀人物／主題近域與落宮，再延伸實際長線、距離、方向、鏡像及騎士步。遠距技巧不憑數量壓過近域主線，重複節點只算同一訊號。",
-  "人物須有角色依據；月亮、蛇、狐狸等取義由組合限定，不由單牌認定第三者、職業、欺騙或私密事實。共同九宮格沒有獨立的人物支線時，只回答共同走向及個別未定部分。"
+  "人物須有角色依據；月亮、蛇、狐狸等取義由組合限定，不由單牌認定第三者、職業、欺騙或私密事實。共同九宮格沒有獨立的人物支線時，只回答共同走向及個別未定部分。",
+  "牌句最後要落到本題中的事、阻力與條件；同樣的魚、錨等符號在收入題與感情題不可照貼同一套文案。相鄰修飾是可採讀法，不把名詞加形容詞當唯一文法；先核全線語義是否連貫及是否遺漏轉折牌。",
+  "【雷諾曼判讀主線】先把主題牌與相鄰牌組成一個具體生活句，再讓後續牌修改事情的方式、阻力和落點。以「誰的什麼事、透過什麼途徑、遇到哪個轉折」完成整條牌句；例如同一阻礙牌在開端可能限制起步，在收尾則可能限制完成，須由實際次序決定。",
+  "九宮或大牌陣從本題人物／主題的核心線建立主判，再用落宮、近域與穿越線查原因及可用資源。兩方各有定位時分別說明靠近、投入與距離的條件；多條路線相反時，指出是各自立場不同、不同領域有代價，或主題仍被同一關鍵因素卡住。"
 ];
 // END GENERATED READING JY_READING_LENORMAND
 // BEGIN GENERATED RECOMMENDATION JY_REC_LENORMAND
-var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，作為日常提醒，不能代替原問題的判斷。若提問者提到預算吃緊或暫不想購買，提供可用現有物件承載同一提醒的零成本替代，賣場僅作自選參考。用一句與主選理由相連的邀請收尾，並保留指定賣場連結及祝福。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
+var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
 // END GENERATED RECOMMENDATION JY_REC_LENORMAND
 // ═══════════════════════════════════════
 // 靜月之光 — 雷諾曼牌 Lenormand v16.0（知識開放牌組引擎）
@@ -941,7 +944,7 @@ function _lnPushOutputContract(lines, legalNames) {
 }
 function _lnPushBrandModule(lines) {
   lines.push('<品牌附加層>');
-  lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('lenormand'):JY_REC_LENORMAND));
+  lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.5.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('lenormand'):JY_REC_LENORMAND));
   lines.push('</品牌附加層>','');
 }
 
@@ -977,7 +980,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("7.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);

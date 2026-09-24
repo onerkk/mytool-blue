@@ -1,8 +1,8 @@
 // BEGIN GENERATED READING JY_READING_VEDIC
-var JY_READING_VEDIC = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落：先給明確主判；接著挑2～4組最有解釋力的已提供盤面資料，逐組說清「具體符號／結構→傳統判讀→如何落到原問題」；不可只列星曜、干支、牌名或吉凶詞，也不可用性格套話代替推論。簡單題不硬湊篇幅，多子題則逐題回答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。命理象徵不是現實證明；重要判斷須說出依據及限制。健康、法律與財務問題須提醒核對現實資料，但仍要先就原問題給出有邊界的解讀。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【吠陀占星：D1與實算運期】核 ayanamsa、出生時間、上升、月亮星宿與分盤；本題宮主在D1的職責、落宮、尊貴與受照先成主線，自然吉凶不等於依上升定的功能吉凶。\n力量含擢升、本位、落陷、燃燒、逆行及關聯；Parashari 與 Rashi 相位各循明示體系。Yoga 核實際構成、力量和破壞條件，不能以名稱保證事件。\nMahadasha／Antardasha 採月亮實算起訖，運主職責與相互關係讀當期主題；D9、D10等在相應領域檢查D1承接且保留時間敏感性。正文只講切題結構和運期轉折，不另寫格局驗算報告。";
+var JY_READING_VEDIC = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。\n單一決策或複雜題通常用4～6段自然段落。開頭2～3句先說最有依據的答案、真正卡點與成立條件；正文挑2～4組最有解釋力的已提供盤面資料，每段先說這對提問者意味什麼，再以具體符號／結構及傳統判讀說明如何落到原問題，最後說明影響或取捨。證據是答案的理由，不另開術語課；簡單題不硬湊篇幅，多子題逐題先答。\n交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。\n【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。\n落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。用「我的判斷是…」「這裡較需要處理…」「若你們實際出現…」自然分清主判與假設，不逐段貼證據標籤。命理象徵不是現實證明；限制集中一句。只在原題涉及健康、法律、財務或安全時加入相應提醒，不替一般相處題虛構情緒失控、疾病或危險。\n【解答深度】關係挑戰題：指出最主要的1～3個卡點、雙方各自可能需要、兩種做法如何互相加劇，以及可打斷循環的一項協議；不可只寫「需要溝通／給空間／步調不同」。事業財務題：說清機會怎樣轉成成果、卡在哪個環節、代價與優先行動；比較題用相同標準分出取捨；時間題分有利條件與實際承諾。每項具體情境若未由使用者提供，只能作可核對的例子，不能寫成已發生。\n【成稿取捨】先完整判讀再寫答案；不輸出內部推理草稿。去掉一段術語後若答案毫無改變，那段應刪；去掉盤面後若仍可套給任何人，那段應補上決定性依據。不要用「有機會但也有挑戰」「能量不對頻」「給穩定而非熱度」作結論；具體說誰與誰、哪件事、什麼條件及下一步。資料確實不能判時，直接交代已能判的部分與關鍵缺口，不以肯定口吻填空。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【吠陀占星：D1與實算運期】核 ayanamsa、出生時間、上升、月亮星宿與分盤；本題宮主在D1的職責、落宮、尊貴與受照先成主線，自然吉凶不等於依上升定的功能吉凶。\n力量含擢升、本位、落陷、燃燒、逆行及關聯；Parashari 與 Rashi 相位各循明示體系。Yoga 核實際構成、力量和破壞條件，不能以名稱保證事件。\nMahadasha／Antardasha 採月亮實算起訖，運主職責與相互關係讀當期主題；D9、D10等在相應領域檢查D1承接且保留時間敏感性。正文只講切題結構和運期轉折，不另寫格局驗算報告。\n【印度占星判讀主線】由D1的主題宮、宮主及定位星建立可成事的通路，再以尊貴、受照、燃燒與關聯辨能力和代價。D9或D10等有效分盤檢查同一主題能否承接：本命有資源而專題條件弱時，重點在落實方式；兩層同向時，說明最適合把力量用在哪裡。\n當期大運主開啟它掌管與落入的領域，副運主決定這段事情透過什麼條件展開；兩主的相對位置、受照與定位關係解釋順阻。將本命可承擔的事、有效分盤及實算運期接成一條答案，指出此階段可推進的工作、關係或資源安排及相應成本。";
 // END GENERATED READING JY_READING_VEDIC
 // BEGIN GENERATED RECOMMENDATION JY_REC_VEDIC
-var JY_REC_VEDIC = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，作為日常提醒，不能代替原問題的判斷。若提問者提到預算吃緊或暫不想購買，提供可用現有物件承載同一提醒的零成本替代，賣場僅作自選參考。用一句與主選理由相連的邀請收尾，並保留指定賣場連結及祝福。\n【本法選材提醒】\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n請在完整分析及行動建議之後，自然承接一項有盤面依據的手鍊推薦與邀請；有效解讀最後兩行依序為：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。";
+var JY_REC_VEDIC = "【最後成稿提醒】讀者要先看到自己的答案：每段以本題判斷起句，用必要盤面解釋原因；再交代最重要的反證與一項可試行的做法。勿按資料章節逐項解說、抄寫規則或重複限制；不把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。\n【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n請在完整分析及行動建議之後，自然承接一項有盤面依據的手鍊推薦與邀請；有效解讀最後兩行依序為：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。";
 // END GENERATED RECOMMENDATION JY_REC_VEDIC
 /* A single prompt projection for the standalone page and exports. No re-charting. */
 (function(root){
@@ -15,7 +15,7 @@ var JY_REC_VEDIC = "【本題延伸手鍊建議】先完整回答問題，再用
     learning:{name:'學習與長處',houses:[1,3,4,5,9,10],vargas:[1,24,9,27],guide:'四宮看基礎學習與環境，五宮看理解整合，九宮看高等教育與師承，三宮看練習與輸出；水星、木星及相關宮主形成何種學習路徑？D24 的上升主與四／五／九宮再辨別學習方式，D27 看承受與強弱條件。給可以實驗的課程、練習形式和評估成果，不把學歷或能力判死。'},
     timing:{name:'近三年節奏',houses:[1,2,4,7,9,10,11,12],vargas:[1,9,10],guide:'以原問句的領域選宮與分盤。沿本命可支持的事 → 大運主掌管與落宮 → 副運主合作或衝突 → 次副運短期焦點 → 行運背景，逐層收窄。按已算的交運日期分段比較近三年；每段交代適合推進的事、主要成本、觸發條件。交運日期是依指定年長計算的分界，不是事件保證發生日；行運月度快照只能描述月度背景，不能冒充精確入宮時刻。'},
     wellbeing:{name:'生活與內在',houses:[1,4,6,8,12],vargas:[1,9,16,20,27],guide:'以月亮、上升主、四宮及六／十二宮看日常負荷、休息、界線與內在資源。D16 聚焦舒適感的建立，D20 聚焦自己選擇的精神實踐，D27 看應付壓力的條件。翻成工作安排、睡眠習慣、求助或支持網絡；症狀與醫療決策依實際醫療資料，不由星位診斷。'},
-    bracelet:{name:'配戴與日常提醒',houses:[1,4,5,9,10],vargas:[1,9],guide:'先完成命盤主判，區分自然吉星、實際掌宮、尊貴、定位星與當運主。弱星未必適合強化，當運主也不自動成為配戴對象。把最值得照顧的一件生活需求說清，再依使用者已知材質偏好、皮膚敏感、工作及預算選一種材料或手鍊風格，另給有不同理由的替代選擇。傳統九曜寶石對應是文化系統，不能將佩戴當成改寫星體、承諾改運的實際機制。沒有配戴偏好時，說明你採用的選擇依據；不替未知資料編造禁忌。'}
+    bracelet:{name:'配戴與日常提醒',houses:[1,4,5,9,10],vargas:[1,9],guide:'先完成命盤主判，區分自然吉星、實際掌宮、尊貴、定位星與當運主。弱星未必適合強化，當運主也不自動成為配戴對象。把最值得照顧的一件生活需求說清，再依使用者已知材質偏好、皮膚敏感、工作及預算選一種材料或手鍊風格，必要時才補一個有不同理由的替代選擇。傳統九曜寶石對應是文化系統，不能將佩戴當成改寫星體、承諾改運的實際機制。沒有配戴偏好時，說明你採用的選擇依據；不替未知資料編造禁忌。'}
   };
   const NAK_MEANINGS=[
     '起步、修復與反應速度；看衝動如何轉成可持續行動','承接責任、界線與孕育；看能承擔什麼以及何時需放手','辨別、切割與淬鍊；看標準如何兼顧關係','成長、滋養與吸引力；看舒適是否能支持長期累積','探索、搜尋與移動；看好奇如何形成專注','劇烈調整後的理解與重建；看情緒如何找到出口','回到核心、重新整理與再出發；看恢復力','照顧、培育與建立支持；看照顧與依賴的界線','敏銳、連結與複雜互動；看洞察如何保持坦誠','傳承、尊重與位置感；看自我價值是否依賴他人認可','享受、休息與創造；看愉悅如何與責任並存','合作、承諾與互惠；看約定是否公平且能持續','技巧、操作與掌握；看熟練能否轉成作品','設計、形式與精緻表達；看外在成就如何對齊內在','自主、彈性與協商；看自由如何維持連結','聚焦、分岔與達標；看競爭如何選定真正目標','友誼、合作與持續投入；看承諾如何經過磨合','責任、保護與影響力；看擔當是否過度集中','追根究底、拆解與重整；看追索如何轉向建設','信念、動員與表達；看堅持如何接受修正','長期責任、整合與可信度；看理想如何落實','聆聽、學習與傳遞；看接收資訊如何形成判斷','節奏、團隊與資源流動；看配合能否保留自己','獨立觀察、系統與修復；看距離感如何支持交流','強烈理想、轉折與投入；看熱度能否落地','深度、耐性與穩定承托；看包容如何守住界線','照料、引導與完成；看同理如何配合實際步驟'
@@ -39,14 +39,19 @@ var JY_REC_VEDIC = "【本題延伸手鍊建議】先完整回答問題，再用
   function build(question,chart,topic='general'){
     const t=TOPICS[topic]||TOPICS.general,full=data(chart,topic),n=chart.planets.Moon.nakshatra;
     // The full data() export preserves exact native facts for downstream tools.
-    // Only the copied prompt removes duplicate matched details: they already
-    // occur in yogas; specialRules.checks still contains every decision.
-    const {matched,...specialChecks}=full.specialRules;
-    const payload={...full,specialRules:{...specialChecks,matchedIds:matched.map(r=>r.id)}};
+    // Keep all natal positions, periods and counterconditions. Failed catalogue
+    // entries retain their status without repeating the full rulebook. The
+    // data() and chart JSON exports still contain every original check.
+    const {matched,checks,...specialChecks}=full.specialRules;
+    const payload={...full,specialRules:{...specialChecks,
+      checks:checks.filter(r=>r.status!=='not-established'),
+      notEstablished:checks.filter(r=>r.status==='not-established').map(r=>({id:r.id,name:r.name,status:r.status})),
+      matchedIds:matched.map(r=>r.id),
+      exportNote:'未成立規則只列名稱與狀態；成立、取消、被取代與資料不足的檢核保留原文。完整檢核見原始JSON；未列細節不代表成立。'}};
     const q=String(question||'請分析我的命盤主軸、當前處境與可以採取的方向。').slice(0,6000);
     return `你是一位熟悉 Parashari Jyotisha（印度／吠陀占星）的資深解盤者。使用繁體中文，根據本次完整計算資料，給迷惘中的使用者明確、有取捨、可追溯的分析。
 
-${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("6.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("7.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
 
 【本次問題與出生資料】
 問題以 JSON 字串保留原文：${JSON.stringify(q)}
@@ -84,7 +89,7 @@ ${t.guide}
 
 【可核對計算資料】
 以下是同一個出生時刻產生的原生資料，角度單位為度、sign 索引 0=牡羊，house 由 1 起算。每個分盤有自己的 lagna。
-${JSON.stringify(payload,null,1)}
+${JSON.stringify(payload)}
 
 【方法書目】
 P.V.R. Narasimha Rao, Vedic Astrology: An Integrated Approach（尊貴、分盤、宮主、相位、Ashtakavarga、Vimshottari）：https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf
@@ -93,7 +98,7 @@ Swiss Ephemeris 參照介面與恆星黃道政策：https://www.astro.com/swisse
 Drik Panchang 公開的 Surya Siddhanta 燃燒角距與順逆行差異：木星 https://www.drikpanchang.com/planet/asta/guru-asta-date-time.html 、水星 https://www.drikpanchang.com/planet/asta/budha-asta-date-time.html 、金星 https://www.drikpanchang.com/planet/asta/shukra-asta-date-time.html
 本站已按書目核查並作數值對照；這不是作者認證，也不表示本輪接收提示詞的 AI 已即時查網。資料 scope 明示未計算的流派模組，不得把它們冒充已經算好的結果。請開始解讀。
 
-${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('vedic'):JY_REC_VEDIC}`;
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.5.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('vedic'):JY_REC_VEDIC}`;
   }
   root.JYVedicPrompt=Object.freeze({build,data,topics:TOPICS,houseMeanings:HOUSE_MEANINGS});
 })(typeof globalThis!=='undefined'?globalThis:this);

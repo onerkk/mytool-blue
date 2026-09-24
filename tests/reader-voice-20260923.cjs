@@ -7,7 +7,7 @@ const expected = [
   'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '6.3.0');
+assert.equal(quality.readingVersion, '7.0.0');
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();
@@ -48,5 +48,5 @@ for (const phrase of [
   '變出的六親當成另一個已發生的人事或對方心念', '完整支組、動爻數及空破條件'
 ]) assert(liuyaoGuide.includes(phrase), `six-line reading safeguard: ${phrase}`);
 
-assert(answerStyle.length < 700, 'shared answer contract stays focused while asking for evidence-linked depth');
+assert(answerStyle.length < 1400, 'shared answer contract stays focused while covering answer-led reasoning and unsupported mind-reading');
 console.log('reader voice: all 14 methods keep native depth, evidence-linked answers and a grounded bracelet close');

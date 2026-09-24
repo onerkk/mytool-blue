@@ -290,7 +290,8 @@ function detectBaziBranchInteractions(pillars){
   out.forEach(function(o){if(o.type==='六合'){o.associatedElement=LH_RESULT[o.branches[0]]||null;o.transformationCandidate=o.associatedElement;}});
   pair(DZ_HAI,'六害','害','傳統六害配對；權重、表現與吉凶另審',{typeCode:'HARM'});
   pair(DZ_PO,'相破','破','古法參考級配對；不可單獨論凶',{typeCode:'DESTRUCTION',referenceLevel:'secondary'});
-  var punishGroups=[{g:['寅','巳','申'],name:'恃勢之刑'},{g:['丑','戌','未'],name:'無恩之刑'}];
+  // 三命通會卷二「論三刑」：寅巳申無恩，丑戌未恃勢。
+  var punishGroups=[{g:['寅','巳','申'],name:'無恩之刑'},{g:['丑','戌','未'],name:'恃勢之刑'}];
   punishGroups.forEach(function(pg){
     var f=matchGroup(pg.g);
     if(f){

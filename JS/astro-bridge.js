@@ -4,7 +4,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='20260923final1';
+  const VERSION='20260924reading1';
   const WEST_NAMES={Sun:'太陽',Moon:'月亮',Mercury:'水星',Venus:'金星',Mars:'火星',Jupiter:'木星',Saturn:'土星',Uranus:'天王',Neptune:'海王',Pluto:'冥王',NorthNode:'北交',SouthNode:'南交'};
   const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let pending=null;
