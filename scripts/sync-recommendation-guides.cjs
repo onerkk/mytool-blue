@@ -4,6 +4,7 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const q=require(path.join(root,'JS/reading-quality.js'));
+const workflowTargets=['JS/gua-prompt.js','JS/bazi-suite-core.js','JS/ziwei-standalone.js','JS/meihua-standalone.js','JS/lenormand.js','JS/oracle.js','JS/prompt-export.js','JS/vedic-prompt.js','JS/western-prompt.js','JS/relationship-core.js','JS/ai-analysis.js'];
 const textMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationText(k)]));
 const endingMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationEnding(k)]));
 const targets=[
@@ -78,6 +79,15 @@ for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]
   next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.version\|\|"0"\)\.localeCompare\("[^"]+",undefined,\{numeric:true\}\)>=0/g,
     (_,ref)=>'String('+ref+'.version||"0").localeCompare('+JSON.stringify(q.version)+',undefined,{numeric:true})>=0');
   persist(file,next);
+}
+// Keep the pure local planner available in standalone and mixed-cache entries.
+// Embed the exact same factory, with CommonJS export removed in these hosts.
+const workflowSource=fs.readFileSync(path.join(root,'JS/reading-workflow.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
+for(const file of workflowTargets){
+  const old=fs.readFileSync(path.join(root,file),'utf8');
+  const block='// BEGIN GENERATED WORKFLOW\n'+workflowSource.trimEnd()+'\n// END GENERATED WORKFLOW\n';
+  const re=/\/\/ BEGIN GENERATED WORKFLOW\n[\s\S]*?\/\/ END GENERATED WORKFLOW\n/;
+  persist(file,re.test(old)?old.replace(re,()=>block):block+old);
 }
 for(const file of mirrors)persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
 // This release only synchronizes local prompt builders. The legacy Worker is

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex"><title>解讀回看｜靜月之光</title>
+  <style>
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;background:#10131a;color:#e7e7e9}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#222c3c,transparent 65%);min-height:100vh}main{max-width:760px;margin:auto;padding:32px 20px 64px}
+    a{color:#ddc28a}header{margin-bottom:26px}h1{font-size:27px;margin:18px 0 10px}p{line-height:1.8;color:#b9c1cd}label{display:block;font-weight:600;margin:18px 0 8px}
+    textarea,select{width:100%;border:1px solid #475267;border-radius:12px;padding:13px;background:#131922;color:#f0f1f3;font:inherit;font-size:16px;line-height:1.6}textarea{resize:vertical;min-height:100px}textarea:focus,select:focus{outline:2px solid #d6b878;outline-offset:2px}
+    button{background:#d6b878;color:#191814;border:0;border-radius:12px;padding:13px 20px;font:inherit;font-weight:650;cursor:pointer;min-height:48px}button:disabled{opacity:.45;cursor:default}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.secondary{background:#2c3544;color:#e8e9ee}.card{border:1px solid #3d495d;border-radius:16px;background:#1a202b;padding:20px;margin-top:24px}h2{font-size:19px;margin:0 0 12px}li{line-height:1.7;margin:12px 0}small{display:block;line-height:1.7;color:#b9c1cd}.status{min-height:28px;color:#d6b878}.hidden{display:none}details summary{cursor:pointer;margin:20px 0;color:#d6b878}#repair{min-height:240px}footer{margin-top:32px;font-size:14px;text-align:center}
+  </style>
+  <script src="JS/reading-workflow.js?v=20260924root2" defer></script>
+  <script src="JS/reading-review-ui.js?v=20260924root2" defer></script>
+</head>
+<body><main>
+  <header><a href="index.html">← 回到靜月之光</a><h1>把解讀，拉回你的問題</h1><p>回答太含糊、一直講術語，或把沒有說過的事寫成事實？貼上內容，找出值得重問的地方。</p><small>內容只在這個頁面處理，不上傳、不儲存。這裡能找出部分明顯問題，無法自動證明命理解讀正確。</small></header>
+  <label for="method">使用的方法</label><select id="method"></select>
+  <label for="question">原本的問題</label><textarea id="question" placeholder="保留原本的對象、條件與時間"></textarea>
+  <label for="answer">AI 給你的完整答案</label><textarea id="answer" rows="10" placeholder="直接貼上原答案"></textarea>
+  <details><summary>準備重新解讀：加入原始提示詞</summary><label for="source">網站產生的提示詞與完整盤面</label><textarea id="source" rows="8" placeholder="重新解讀需要本次盤面，不能只靠上一份答案"></textarea></details>
+  <div class="actions"><button id="check" type="button">看看哪些地方要重問</button><button id="clear" class="secondary" type="button">清除本頁內容</button></div>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <section id="result" class="card hidden" aria-labelledby="result-title"><h2 id="result-title"></h2><ul id="issues"></ul><p id="scope"></p><button id="repair-button" class="secondary" type="button">產生重新解讀的提示詞</button></section>
+  <section id="repair-panel" class="card hidden"><h2>保留盤面，重新解讀</h2><textarea id="repair" readonly aria-label="重新解讀的完整提示詞"></textarea><div class="actions"><button id="copy" type="button">複製重新解讀提示詞</button></div><small>貼回你使用的 AI，依原盤重新回答。網站不會替你重新抽牌。</small></section>
+  <footer><a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener">靜月之光蝦皮賣場</a><p>願你諸事順遂。</p></footer>
+</main></body></html>

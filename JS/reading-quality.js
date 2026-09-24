@@ -1,4 +1,4 @@
-/* Reading contract v7.0: question-led answers, traceable evidence and a brief voluntary shop close. Never changes a cast. */
+/* Reading contract v8.0: question-led answers, traceable evidence and a brief voluntary shop close. Never changes a cast. */
 (function(root){
   'use strict';
   var RECOMMENDATION_TEXT=[
@@ -30,17 +30,15 @@
     var guides=selected.map(function(k){k=k==='western'?'astro':k;if(used[k]||!RECOMMENDATION_METHODS[k])return '';used[k]=true;return RECOMMENDATION_METHODS[k];}).filter(Boolean);
     return [RECOMMENDATION_TEXT,guides.length?'【本法選材提醒】\n'+guides.join('\n'):''].filter(Boolean).join('\n');
   }
-  var READING_VERSION='7.0.0';
+  var READING_VERSION='8.0.0';
   var PLAIN_TEXT=[
-  '【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題；正文只呈現結論及必要依據與下一步，不用系統介紹、術語解說或逐項報盤開場。讓每段都在處理提問者的事。',
-  '單一決策或複雜題通常用4～6段自然段落。開頭2～3句先說最有依據的答案、真正卡點與成立條件；正文挑2～4組最有解釋力的已提供盤面資料，每段先說這對提問者意味什麼，再以具體符號／結構及傳統判讀說明如何落到原問題，最後說明影響或取捨。證據是答案的理由，不另開術語課；簡單題不硬湊篇幅，多子題逐題先答。',
-  '交代最重要的牽制或相反訊號，說明它改變了哪些部分、為何主判仍較支持某方向；若資料無法分出高下，就明說未定。替代讀法只有會實質改變答案時才簡短提出。當有歲運、行運、動爻或階段資料時，分開本命／原局、當前觸發及條件性走向，不將同一訊號重複算成多份證據。',
-  '【主判前核對】先掃本法完整有效資料，找最強支持與牽制並接回原問題；同一訊號若對不同人物或方向作用相反，要分開說清。不可只挑順眼訊號、漏掉會改變結論的反證，或把同源重複訊號算成多份證據；證據相持就降低確定度。此核對供判讀，不要照抄成正文清單。',
-  '落到現實：結論後給1～3項可執行做法或觀察指標，指出什麼具體條件會支持、削弱或改變判斷。時間與確定度須符合方法及資料精度；不造機率、事件、人物想法、精確日期或未提供的經歷；涉及親密互動時，不推定未提供者的意願，提醒取得每位參與者明確、無壓力且可撤回的同意。',
-  '把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。用「我的判斷是…」「這裡較需要處理…」「若你們實際出現…」自然分清主判與假設，不逐段貼證據標籤。命理象徵不是現實證明；限制集中一句。只在原題涉及健康、法律、財務或安全時加入相應提醒，不替一般相處題虛構情緒失控、疾病或危險。',
-  '【解答深度】關係挑戰題：指出最主要的1～3個卡點、雙方各自可能需要、兩種做法如何互相加劇，以及可打斷循環的一項協議；不可只寫「需要溝通／給空間／步調不同」。事業財務題：說清機會怎樣轉成成果、卡在哪個環節、代價與優先行動；比較題用相同標準分出取捨；時間題分有利條件與實際承諾。每項具體情境若未由使用者提供，只能作可核對的例子，不能寫成已發生。',
-  '【成稿取捨】先完整判讀再寫答案；不輸出內部推理草稿。去掉一段術語後若答案毫無改變，那段應刪；去掉盤面後若仍可套給任何人，那段應補上決定性依據。不要用「有機會但也有挑戰」「能量不對頻」「給穩定而非熱度」作結論；具體說誰與誰、哪件事、什麼條件及下一步。資料確實不能判時，直接交代已能判的部分與關鍵缺口，不以肯定口吻填空。'
-  ].join('\n');
+  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題。開頭2～3句給有依據的方向、真正卡點或優先行動；正文只呈現結論及必要依據，讓理由服務解答。",
+  "單一複雜題通常用4～6段自然段落；簡單題簡答，多子題逐題先答。挑2～4組最有解釋力的已提供盤面資料，每段先說對提問者意味什麼，再以具體符號／結構說明如何落到原問題。段落按使用者要解決的事組織，方法資料留作判讀。",
+  "【主判前核對】讀完整有效資料後才成判。交代最重要的牽制或相反訊號，說清它改變哪部分；同一訊號若對不同人物或方向作用相反，要分開說清。本命、當期觸發與條件走向分層，同源訊號不重複加權。依據相持就保留未定部分，完成其餘可判內容。替代讀法只有會實質改變答案時才簡短提出。",
+  "把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。",
+  "答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。",
+  "成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。"
+].join('\n');
   var FINAL_VOICE='【最後成稿提醒】讀者要先看到自己的答案：每段以本題判斷起句，用必要盤面解釋原因；再交代最重要的反證與一項可試行的做法。勿按資料章節逐項解說、抄寫規則或重複限制；不把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。';
   // Native methods are analysis references, not a mandatory response outline.
   var METHODS={
@@ -217,9 +215,9 @@
     if(!q.trim()||/未來|何時|什麼時候|幾年|時機|長期走向|近年|全盤|整體运勢|整體運勢/.test(q))return {mode:'range',start:y,end:y+3};
     return {mode:'current',start:y,end:y};
   }
-  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.5.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n一般情況最後兩行：\n'+SHOP_FOOTER};}
+  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.6.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n一般情況最後兩行：\n'+SHOP_FOOTER};}
   function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n請在完整分析及行動建議之後，自然承接一項有盤面依據的手鍊推薦與邀請；有效解讀最後兩行依序為：\n'+SHOP_FOOTER;}
   function lines(kind){return [PLAIN_TEXT,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'4.5.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  root.JY_READING_QUALITY=Object.freeze({version:'4.6.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

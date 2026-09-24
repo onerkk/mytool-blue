@@ -1,0 +1,488 @@
+{
+  "date": "2026-09-24",
+  "scope": "package.json test 配置的全部實際命令；逐項執行，無外部 AI 生成",
+  "commands": [
+    {
+      "script": "test:prompts",
+      "command": "node tests/prompt-accuracy-20260811.test.cjs",
+      "exitCode": 0,
+      "seconds": 2.18
+    },
+    {
+      "script": "test:tarot",
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "exitCode": 0,
+      "seconds": 0.62
+    },
+    {
+      "script": "test:ziwei",
+      "command": "node tests/ziwei-root-spec-v1.test.js",
+      "exitCode": 0,
+      "seconds": 0.12
+    },
+    {
+      "script": "test:counter",
+      "command": "node tests/counter-proxy.test.mjs",
+      "exitCode": 0,
+      "seconds": 0.67
+    },
+    {
+      "script": "test:picker-data",
+      "command": "node tests/picker-and-data-regression.cjs",
+      "exitCode": 0,
+      "seconds": 1.73
+    },
+    {
+      "script": "test:api-failures",
+      "command": "node tests/api-failure-regression.mjs",
+      "exitCode": 0,
+      "seconds": 0.17
+    },
+    {
+      "script": "test:interactions",
+      "command": "node tests/interaction-hotfix-20260906.cjs",
+      "exitCode": 0,
+      "seconds": 1.64
+    },
+    {
+      "script": "test:display",
+      "command": "node tests/display-lifecycle-regression.cjs",
+      "exitCode": 0,
+      "seconds": 0.43
+    },
+    {
+      "script": "test:audit",
+      "command": "node tests/divination-audit-20260908.cjs",
+      "exitCode": 0,
+      "seconds": 10.11
+    },
+    {
+      "script": "test:professional",
+      "command": "node tests/divination-professional-20260910.cjs",
+      "exitCode": 0,
+      "seconds": 3.59
+    },
+    {
+      "script": "test:cards",
+      "command": "node tests/share-card-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.26
+    },
+    {
+      "script": "test:cards",
+      "command": "node tests/share-card-preview-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.27
+    },
+    {
+      "script": "test:cards",
+      "command": "node tests/astrology-share-20260914.cjs",
+      "exitCode": 0,
+      "seconds": 3.61
+    },
+    {
+      "script": "test:ui",
+      "command": "node tests/atelier-ui-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.42
+    },
+    {
+      "script": "test:ritual",
+      "command": "node tests/ritual-lifecycle-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 10.59
+    },
+    {
+      "script": "test:ritual",
+      "command": "node tests/ootk-scroll-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 0.27
+    },
+    {
+      "script": "test:cinematic",
+      "command": "node tests/cinematic-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.52
+    },
+    {
+      "script": "test:shuffle-recovery",
+      "command": "node tests/shuffle-recovery-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.46
+    },
+    {
+      "script": "test:flow",
+      "command": "node tests/flow-interaction-20260911.cjs",
+      "exitCode": 0,
+      "seconds": 0.92
+    },
+    {
+      "script": "test:depth",
+      "command": "node tests/reading-depth-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 2.55
+    },
+    {
+      "script": "test:flow-polish",
+      "command": "node tests/flow-polish-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 1.32
+    },
+    {
+      "script": "test:accuracy",
+      "command": "node tests/engine-fixes-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 5.84
+    },
+    {
+      "script": "test:accuracy",
+      "command": "node tests/accuracy-engine-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 3.79
+    },
+    {
+      "script": "test:accuracy",
+      "command": "node tests/bazi-regression.cjs",
+      "exitCode": 0,
+      "seconds": 28.62
+    },
+    {
+      "script": "test:accuracy",
+      "command": "node tests/bazi-suite-regression.cjs",
+      "exitCode": 0,
+      "seconds": 4.18
+    },
+    {
+      "script": "test:accuracy",
+      "command": "node tests/export-accuracy-prompts-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 9.77
+    },
+    {
+      "script": "test:immersive",
+      "command": "node tests/immersive-experience-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 0.77
+    },
+    {
+      "script": "test:plain",
+      "command": "node tests/plain-reading-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 7.5
+    },
+    {
+      "script": "test:story",
+      "command": "node tests/story-immersion-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 1.02
+    },
+    {
+      "script": "test:free",
+      "command": "node tests/realtime-free-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 0.26
+    },
+    {
+      "script": "test:oracle-result",
+      "command": "node tests/oracle-result-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 0.32
+    },
+    {
+      "script": "test:craft",
+      "command": "node tests/deck-routing-scenes-20260912.cjs",
+      "exitCode": 0,
+      "seconds": 2.49
+    },
+    {
+      "script": "test:methods",
+      "command": "node tests/method-engine-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 0.73
+    },
+    {
+      "script": "test:methods",
+      "command": "node tests/method-prompts-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 9.28
+    },
+    {
+      "script": "test:huaqi",
+      "command": "node tests/bazi-huaqi-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 2.07
+    },
+    {
+      "script": "test:core-engines",
+      "command": "node tests/core-engine-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 4.88
+    },
+    {
+      "script": "test:output-consistency",
+      "command": "node tests/engine-output-consistency-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 4.73
+    },
+    {
+      "script": "test:vedic",
+      "command": "node tests/vedic-engine-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 1.93
+    },
+    {
+      "script": "test:vedic-design",
+      "command": "node tests/vedic-design-20260914.cjs",
+      "exitCode": 0,
+      "seconds": 1.72
+    },
+    {
+      "script": "test:vedic-palace",
+      "command": "node tests/vedic-palace-20260914.cjs",
+      "exitCode": 0,
+      "seconds": 0.22
+    },
+    {
+      "script": "test:western",
+      "command": "node tests/western-engine-20260914.cjs",
+      "exitCode": 0,
+      "seconds": 4.03
+    },
+    {
+      "script": "test:recommendations",
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "exitCode": 0,
+      "seconds": 0.31
+    },
+    {
+      "script": "test:recommendations",
+      "command": "node tests/recommendation-20260914.cjs",
+      "exitCode": 0,
+      "seconds": 9.11
+    },
+    {
+      "script": "test:ootk",
+      "command": "node tests/ootk-flow-20260915.cjs",
+      "exitCode": 0,
+      "seconds": 3.75
+    },
+    {
+      "script": "test:relationship",
+      "command": "node tests/relationship-20260917.cjs",
+      "exitCode": 0,
+      "seconds": 6.64
+    },
+    {
+      "script": "test:time-ownership",
+      "command": "node tests/time-ownership-20260920.cjs",
+      "exitCode": 0,
+      "seconds": 22.34
+    },
+    {
+      "script": "test:question-routing",
+      "command": "node scripts/build-question-planner.cjs --check",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:question-routing",
+      "command": "node tests/question-routing-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 0.52
+    },
+    {
+      "script": "test:gua",
+      "command": "node scripts/build-yijing-data.cjs --check",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:gua",
+      "command": "node tests/gua-engine-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 1.07
+    },
+    {
+      "script": "test:yarrow",
+      "command": "node tests/yarrow-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:special-rules",
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "exitCode": 0,
+      "seconds": 0.42
+    },
+    {
+      "script": "test:special-rules",
+      "command": "node tests/special-rules-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 3.14
+    },
+    {
+      "script": "test:special-rules",
+      "command": "node tests/engine-output-consistency-20260913.cjs",
+      "exitCode": 0,
+      "seconds": 3.45
+    },
+    {
+      "script": "test:special-rules",
+      "command": "node tests/gua-engine-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 1.17
+    },
+    {
+      "script": "test:astro-bridge",
+      "command": "node tests/astro-bridge-20260922.cjs",
+      "exitCode": 0,
+      "seconds": 7.1
+    },
+    {
+      "script": "test:astro-bridge",
+      "command": "node tests/api-failure-regression.mjs",
+      "exitCode": 0,
+      "seconds": 0.17
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.77
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/birth-audit-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.16
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/astro-rules-audit-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 1.43
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/card-audit-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.57
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/card-audit-mathers-third-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.16
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/card-audit-legacy-meanings-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/prompt-only-audit-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 1.49
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/prompt-only-shop-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.21
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/reader-voice-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/traffic-tap-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.11
+    },
+    {
+      "script": "test:latest-audit",
+      "command": "node tests/admin-updater-20260923.cjs",
+      "exitCode": 0,
+      "seconds": 0.21
+    },
+    {
+      "script": "test:reading-grounding",
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "exitCode": 0,
+      "seconds": 3.73
+    },
+    {
+      "script": "test:reading-workflow",
+      "command": "node tests/reading-workflow-20260924.cjs",
+      "exitCode": 0,
+      "seconds": 0.17
+    },
+    {
+      "script": "test:reading-workflow",
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "exitCode": 0,
+      "seconds": 10.64
+    }
+  ],
+  "result": "passed",
+  "externalModelCalls": 0,
+  "semanticModelEvaluation": "not_performed",
+  "predictiveAccuracyValidation": "not_performed",
+  "browserChecks": [
+    {
+      "test": "reading-browser-20260924.cjs",
+      "viewport": "390x844",
+      "passed": true,
+      "checks": [
+        "actual form",
+        "clipboard matches",
+        "download matches",
+        "natal unchanged"
+      ],
+      "paidAIRequests": 0
+    },
+    {
+      "test": "reading-review-browser-20260924.cjs",
+      "viewport": "390x844",
+      "passed": true,
+      "checks": [
+        "14 methods",
+        "known failed answer",
+        "reference not certified",
+        "original source preserved",
+        "clipboard",
+        "no overflow",
+        "text-only rendering",
+        "clear inputs"
+      ],
+      "uploadedInputs": 0,
+      "persistedInputs": 0
+    },
+    {
+      "test": "recommendation-browser-20260914.cjs",
+      "viewport": "390x844",
+      "passed": true,
+      "methods": [
+        "vedic",
+        "western"
+      ],
+      "checks": [
+        "native chart unchanged",
+        "clipboard matches",
+        "JSON download matches"
+      ]
+    },
+    {
+      "test": "prompt-only-network-20260923.cjs",
+      "passed": true,
+      "paidAIRequests": 0,
+      "mockedVisitCounter": 1
+    }
+  ],
+  "visualLimit": "容器缺中文字型；不把截圖當成中文字型渲染驗收。"
+}

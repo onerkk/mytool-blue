@@ -22,7 +22,7 @@ const root=path.resolve(__dirname,'..');
   });
   await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>window.__copied.push(text)}});});
   await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-  await page.waitForFunction(()=>window.BaziSuiteUI&&window.JY_READING_QUALITY?.readingVersion==='7.0.0');
+  await page.waitForFunction(()=>window.BaziSuiteUI&&window.JY_READING_QUALITY?.readingVersion==='8.0.0');
   await page.evaluate(()=>BaziSuiteUI.open('compat'));
   await page.waitForFunction(()=>document.getElementById('a-city')?.options.length>2);
   await page.locator('#bzs-screen .jc-all').tap();

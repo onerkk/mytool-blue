@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'..'),runtime=process.env.JY_QA_RUNTIME,out=pr
   });
   await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copied.push(text);}}});});
   await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.5.0');
+  await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.6.0');
   const question='我經營水晶、天鐵與龍宮舍利，應如何安排銷售方向？我偏好綠色、日常常碰撞手腕。';
   for(const type of ['vedic','western']){
    const prefix=type==='vedic'?'vd':'wx',api=type==='vedic'?'JYVedicUI':'JYWesternUI',container=type+'-page';
