@@ -30,7 +30,7 @@ function classifyDecisionQuestion(question) {
   var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
   var matches = [], m;
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
-  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者|哪裡|哪邊|哪一邊)(?:比較|較|更)?(?:適合|好|有利|可行|值得)?|(?:該|應該)選|比較.{0,50}(?:適合|有利|好|值得)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
@@ -48,7 +48,13 @@ function classifyDecisionQuestion(question) {
     var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     var hypothesis = /^(?:只是|僅僅|單純)|禮貌|客氣|沒興趣|不喜歡|不愛|挑戰|變糟|失敗|生氣|隱瞞/.test(right) || /(?:會|能|是|喜歡|愛我|機會|變好|上漲|下跌)/.test(left);
-    if (!decisionCue && !labels && !(actionStart.test(left) && actionStart.test(right))) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
+    // 口語二選一常把第二個選項省略共同動詞，例如「買iPhone還是Samsung」「去台北還是高雄發展」。
+    // 只有第一側明確是可執行動作、第二側是短方案名時才繼承動詞；不套用到「會不會／喜不喜歡」等結果假設。
+    var sharedActionMatch = left.match(/^(買|賣|租|投資|去|到|留在|搬到|搬去|讀|念|用|選|加入|接受|拒絕|吃|換|改用)(.+)$/);
+    var inheritedAction = sharedActionMatch && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
+    if (inheritedAction) right = sharedActionMatch[1] + right;
+    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
+    if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
     return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
   }
   // 「跟」can be inside an action. Use it as a separator only for an explicit comparison.

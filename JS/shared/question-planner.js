@@ -28,7 +28,7 @@ function analyzeReadingQuestion(value) {
   var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
   var globalScope=scope(parts[0]||q), groups=[];
   function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
-  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
+  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|卡在哪|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
   if(!options.length&&parts.length){
     parts.forEach(function(part){
       if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
@@ -48,7 +48,10 @@ function analyzeReadingQuestion(value) {
   var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';
   var firstOptionAt=options.length?q.indexOf(options[0]):-1,choiceScope=firstOptionAt>=0?scope(q.slice(0,firstOptionAt)):'';
   var branches=options.length?options.map(function(s,i){return {id:'OPTION_'+(i+1),question:s,entity:s,scope:scope(s)||choiceScope,scopeInherited:!scope(s)&&!!choiceScope};}):groups;
-  return {version:'1.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:/今天|今日|每日|日常提醒/.test(q)&&!/嗎|會不會|是否|結果|何時/.test(q)};
+  // 「今天／今日」只是時間錨，不等於日常提醒。只有使用者真的在問每日／今日整體訊息、提醒或運勢時才標為 daily。
+  // 這可避免「今天統一發票會中多少」「今天會收到通知嗎」等具體事件被錯送到雙牌日常提醒。
+  var daily=/(?:今天|今日)(?:的)?(?:整體)?(?:運勢|提醒|指引|訊息|信息|主題|牌訊|牌卡|有什麼提醒|有何提醒|該注意什麼|要注意什麼|需要注意什麼)|(?:每日|日常)(?:提醒|指引|訊息|信息|主題|運勢)/.test(q);
+  return {version:'1.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
 }
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
@@ -74,7 +77,7 @@ function recommendReadingSystem(question) {
   else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
   else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
   else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
-  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
+  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失|中獎|開獎|發票|抽獎|獎金|付款|入帳|到貨|出貨|訂單|錄取|升遷/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
   else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
   if(exclusions[result.system]){
     var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];

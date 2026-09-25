@@ -654,7 +654,7 @@ function classifyDecisionQuestion(question) {
   var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
   var matches = [], m;
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
-  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者|哪裡|哪邊|哪一邊)(?:比較|較|更)?(?:適合|好|有利|可行|值得)?|(?:該|應該)選|比較.{0,50}(?:適合|有利|好|值得)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
@@ -672,7 +672,13 @@ function classifyDecisionQuestion(question) {
     var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     var hypothesis = /^(?:只是|僅僅|單純)|禮貌|客氣|沒興趣|不喜歡|不愛|挑戰|變糟|失敗|生氣|隱瞞/.test(right) || /(?:會|能|是|喜歡|愛我|機會|變好|上漲|下跌)/.test(left);
-    if (!decisionCue && !labels && !(actionStart.test(left) && actionStart.test(right))) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
+    // 口語二選一常把第二個選項省略共同動詞，例如「買iPhone還是Samsung」「去台北還是高雄發展」。
+    // 只有第一側明確是可執行動作、第二側是短方案名時才繼承動詞；不套用到「會不會／喜不喜歡」等結果假設。
+    var sharedActionMatch = left.match(/^(買|賣|租|投資|去|到|留在|搬到|搬去|讀|念|用|選|加入|接受|拒絕|吃|換|改用)(.+)$/);
+    var inheritedAction = sharedActionMatch && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
+    if (inheritedAction) right = sharedActionMatch[1] + right;
+    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
+    if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
     return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
   }
   // 「跟」can be inside an action. Use it as a separator only for an explicit comparison.
@@ -718,7 +724,7 @@ function analyzeReadingQuestion(value) {
   var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
   var globalScope=scope(parts[0]||q), groups=[];
   function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
-  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
+  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|卡在哪|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
   if(!options.length&&parts.length){
     parts.forEach(function(part){
       if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
@@ -738,7 +744,10 @@ function analyzeReadingQuestion(value) {
   var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';
   var firstOptionAt=options.length?q.indexOf(options[0]):-1,choiceScope=firstOptionAt>=0?scope(q.slice(0,firstOptionAt)):'';
   var branches=options.length?options.map(function(s,i){return {id:'OPTION_'+(i+1),question:s,entity:s,scope:scope(s)||choiceScope,scopeInherited:!scope(s)&&!!choiceScope};}):groups;
-  return {version:'1.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:/今天|今日|每日|日常提醒/.test(q)&&!/嗎|會不會|是否|結果|何時/.test(q)};
+  // 「今天／今日」只是時間錨，不等於日常提醒。只有使用者真的在問每日／今日整體訊息、提醒或運勢時才標為 daily。
+  // 這可避免「今天統一發票會中多少」「今天會收到通知嗎」等具體事件被錯送到雙牌日常提醒。
+  var daily=/(?:今天|今日)(?:的)?(?:整體)?(?:運勢|提醒|指引|訊息|信息|主題|牌訊|牌卡|有什麼提醒|有何提醒|該注意什麼|要注意什麼|需要注意什麼)|(?:每日|日常)(?:提醒|指引|訊息|信息|主題|運勢)/.test(q);
+  return {version:'1.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
 }
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
@@ -764,7 +773,7 @@ function recommendReadingSystem(question) {
   else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
   else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
   else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
-  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
+  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失|中獎|開獎|發票|抽獎|獎金|付款|入帳|到貨|出貨|訂單|錄取|升遷/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
   else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
   if(exclusions[result.system]){
     var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];

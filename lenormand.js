@@ -154,7 +154,7 @@ var JY_READING_LENORMAND = [
 var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
 // END GENERATED RECOMMENDATION JY_REC_LENORMAND
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v16.0（知識開放牌組引擎）
+// 靜月之光 — 雷諾曼牌 Lenormand v19.0（語義量測與路由完整引擎）
 // 2026/9/4：保留牌義、合法幾何與大牌陣位置資料，改由 AI 自身 Lenormand 知識整合牌組、長線、宮位、距離與方向。
 // 五種牌陣只提供可驗證幾何；內容量完全由合法牌句產生的獨立命題決定，不依牌數、固定章節或預設篇幅。
 // 每條合法路徑及全部連續片段先生成候選牌句，再以覆蓋帳本逐一確認新增、佐證、限定、反證、無關或不足；不採事件關鍵字表。
@@ -164,7 +164,7 @@ var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，�
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v18.0 loaded — knowledge-open combination engine');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v19.0 loaded — semantic measurement + routing engine');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -453,7 +453,7 @@ function _lnQuestionFocus(q) {
     .replace(/(?:請(?:幫我)?|麻煩(?:幫我)?)?(?:改用|使用|採用|選擇|用)\s*(?:大牌陣|Grand\s*Tableau|九宮格|雙路比較|七張比較|五張線|三張線|[三五九]\s*張牌陣|36\s*張(?:牌陣|牌)?)(?:來)?(?:分析|解讀|看)?/ig,'').trim();
 }
 function _lnDomainIds(q) {
-  return [['love',/感情|愛情|婚姻|桃花|戀愛|復合|伴侶|前任|男友|女友/],['work',/工作|事業|職場|轉職|離職|升遷|創業|生意/],['money',/財運|財務|投資|收入|負債|現金流/],['family',/家庭|家人|親子|父母|子女/],['study',/學業|考試|進修|證照/],['health',/健康|睡眠|身體/],['travel',/旅行|搬家|移居/]].filter(function(d){return d[1].test(q);}).map(function(d){return d[0];});
+  return [['love',/感情|愛情|婚姻|桃花|戀愛|復合|伴侶|前任|男友|女友/],['work',/工作|事業|職場|轉職|離職|升遷|創業|生意|錄取|主管|職位/],['money',/財運|財務|投資|收入|負債|現金流|營業額|營收|業績|獎金|中獎|開獎|統一發票|發票|抽獎|付款|入帳|薪資|薪水|賺錢/],['family',/家庭|家人|親子|父母|子女/],['study',/學業|考試|進修|證照/],['health',/健康|睡眠|身體/],['travel',/旅行|搬家|移居/]].filter(function(d){return d[1].test(q);}).map(function(d){return d[0];});
 }
 
 // BEGIN SHARED DECISION PARSER
@@ -489,7 +489,7 @@ function classifyDecisionQuestion(question) {
   var connector = /還是|或者|或是|或(?!許)|\bor\b|\bversus\b|\bvs\.?\b/ig;
   var matches = [], m;
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
-  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合|好|有利|可行)|(?:該|應該)選|比較.{1,50}(?:適合|有利)/.test(q);
+  var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者|哪裡|哪邊|哪一邊)(?:比較|較|更)?(?:適合|好|有利|可行|值得)?|(?:該|應該)選|比較.{0,50}(?:適合|有利|好|值得)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
@@ -507,7 +507,13 @@ function classifyDecisionQuestion(question) {
     var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     var hypothesis = /^(?:只是|僅僅|單純)|禮貌|客氣|沒興趣|不喜歡|不愛|挑戰|變糟|失敗|生氣|隱瞞/.test(right) || /(?:會|能|是|喜歡|愛我|機會|變好|上漲|下跌)/.test(left);
-    if (!decisionCue && !labels && !(actionStart.test(left) && actionStart.test(right))) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
+    // 口語二選一常把第二個選項省略共同動詞，例如「買iPhone還是Samsung」「去台北還是高雄發展」。
+    // 只有第一側明確是可執行動作、第二側是短方案名時才繼承動詞；不套用到「會不會／喜不喜歡」等結果假設。
+    var sharedActionMatch = left.match(/^(買|賣|租|投資|去|到|留在|搬到|搬去|讀|念|用|選|加入|接受|拒絕|吃|換|改用)(.+)$/);
+    var inheritedAction = sharedActionMatch && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
+    if (inheritedAction) right = sharedActionMatch[1] + right;
+    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
+    if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
     return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
   }
   // 「跟」can be inside an action. Use it as a separator only for an explicit comparison.
@@ -553,7 +559,7 @@ function analyzeReadingQuestion(value) {
   var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
   var globalScope=scope(parts[0]||q), groups=[];
   function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
-  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
+  var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|卡在哪|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
   if(!options.length&&parts.length){
     parts.forEach(function(part){
       if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
@@ -573,7 +579,10 @@ function analyzeReadingQuestion(value) {
   var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';
   var firstOptionAt=options.length?q.indexOf(options[0]):-1,choiceScope=firstOptionAt>=0?scope(q.slice(0,firstOptionAt)):'';
   var branches=options.length?options.map(function(s,i){return {id:'OPTION_'+(i+1),question:s,entity:s,scope:scope(s)||choiceScope,scopeInherited:!scope(s)&&!!choiceScope};}):groups;
-  return {version:'1.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:/今天|今日|每日|日常提醒/.test(q)&&!/嗎|會不會|是否|結果|何時/.test(q)};
+  // 「今天／今日」只是時間錨，不等於日常提醒。只有使用者真的在問每日／今日整體訊息、提醒或運勢時才標為 daily。
+  // 這可避免「今天統一發票會中多少」「今天會收到通知嗎」等具體事件被錯送到雙牌日常提醒。
+  var daily=/(?:今天|今日)(?:的)?(?:整體)?(?:運勢|提醒|指引|訊息|信息|主題|牌訊|牌卡|有什麼提醒|有何提醒|該注意什麼|要注意什麼|需要注意什麼)|(?:每日|日常)(?:提醒|指引|訊息|信息|主題|運勢)/.test(q);
+  return {version:'1.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
 }
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
@@ -599,7 +608,7 @@ function recommendReadingSystem(question) {
   else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
   else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
   else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
-  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
+  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失|中獎|開獎|發票|抽獎|獎金|付款|入帳|到貨|出貨|訂單|錄取|升遷/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
   else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
   if(exclusions[result.system]){
     var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];
@@ -618,6 +627,43 @@ function recommendReadingSystem(question) {
   return result;
 }
 // END SHARED QUESTION PLANNER
+function _lnCapabilityProfile(x) {
+  var dims=[];
+  function add(id,label,exact,supported){dims.push({id:id,label:label,exact:exact,supported:supported});}
+  if(x.asksExactAmount)add('exact_amount','精確金額',false,['是否有實際結果的傾向','相對幅度','牌面可支持的大小／級距']);
+  if(x.asksExactCount)add('exact_count','精確數量',false,['有無／多寡傾向','相對數量級','重複或集中程度']);
+  if(x.asksProbability)add('exact_probability','精確機率',false,['支持或不支持的程度','主要條件','反證']);
+  if(x.asksExactDate)add('exact_datetime','精確日期時間',false,['快慢節奏','先決條件','已有期限內的相對時段']);
+  if(x.asksExactAge)add('exact_age','精確歲數',false,['相對年齡感','成熟度／生命階段的象徵傾向']);
+  if(x.asksExactIdentity)add('exact_identity','精確身分／個資',false,['角色類型','可觀察特徵','互動位置']);
+  var occurrenceGate=!!(x.asksOccurrenceThenAmount||x.asksOccurrenceThenCount);
+  var intent='qualitative';
+  if(x.asksExactAmount)intent=occurrenceGate?'conditional_amount':'amount';
+  else if(x.asksExactCount)intent=occurrenceGate?'conditional_count':'count';
+  else if(x.asksProbability)intent='probability';
+  else if(x.asksExactDate||x.asksWhen)intent='timing';
+  else if(x.asksExactIdentity||x.asksPersonProfile)intent='profile';
+  else if(x.isChoice)intent='comparison';
+  else if(x.isYesNo)intent='outcome';
+  var resolution=dims.length?'symbolic_resolution':'direct_symbolic';
+  if(x.asksExactAmount)resolution='qualitative_band';
+  else if(x.asksExactCount)resolution='qualitative_count';
+  else if(x.asksProbability)resolution='qualitative_support';
+  else if(x.asksExactDate)resolution='relative_timing';
+  else if(x.asksExactAge)resolution='relative_profile';
+  else if(x.asksExactIdentity)resolution='role_profile';
+  var tasks=[];
+  if(occurrenceGate)tasks.push(x.asksExactAmount?'先判事件是否有成立／得財傾向':'先判事件是否有成立傾向');
+  if(x.asksExactAmount)tasks.push('再判相對幅度或級距');
+  if(x.asksExactCount)tasks.push(occurrenceGate?'再判相對數量級與分散／集中程度':'判相對數量級與分散／集中程度');
+  if(x.asksProbability)tasks.push('判支持程度與改變條件');
+  if(x.asksExactDate)tasks.push('判快慢與條件性時段');
+  if(x.asksExactAge)tasks.push('判相對年齡／成熟度範圍');
+  if(x.asksExactIdentity)tasks.push('判角色類型與可觀察特徵');
+  if(!tasks.length)tasks.push('依原問句直接判讀');
+  return {version:'1.1.0',intent:intent,resolution:resolution,occurrenceGate:occurrenceGate,exactNumericSupported:dims.length?false:null,dimensions:dims,tasks:tasks};
+}
+
 function _lnAnalyzeQuestion(q) {
   var originalQuestion = String(q || '').trim();
   q = _lnQuestionFocus(originalQuestion);
@@ -625,8 +671,8 @@ function _lnAnalyzeQuestion(q) {
   var parts = q.split(/[？?；;\n]+/).map(function(s){ return s.trim(); }).filter(Boolean);
 
   // 只辨識「問句幾何與安全邊界」。內容詞不直接決定牌義、答案或牌陣大小。
-  var asksWhen = /什麼時候|幾時|何時|多久|還要等|等多久|哪一週|幾週|哪個月|幾個月|幾年|應期|多快|多晚|何日/.test(q);
-  var asksExactDate = /哪一天|哪天發生|幾月幾日|確切日期|確切時間|幾號|幾點|幾分/.test(q);
+  var asksExactDate = /哪一天|哪天發生|幾月幾日|確切日期|確切時間|幾號|幾點|幾分|哪個日期|哪個時間點/.test(q);
+  var asksWhen = /什麼時候|幾時|何時|多久|還要等|等多久|哪一週|幾週|哪個月|幾個月|幾年|應期|多快|多晚|何日/.test(q) || asksExactDate;
   var hasFixedHorizon = /今天|明天|後天|本週|這週|下週|本月|這月|這個月|下個月|今年|明年|年底前|月底前|週內|月內|年內|近期|最近|\d+\s*(?:天|週|個月|月|年)內|\d{4}[\/-]\d{1,2}(?:[\/-]\d{1,2})?/.test(q);
   var asksWhy = /為什麼|為何|什麼原因|原因是|根源|問題出在|怎麼會|怎麼回事|卡在哪|阻礙在哪|障礙在哪/.test(q);
   var asksHow = /該先開口|該做什麼|該從哪|應該怎麼|該怎麼|怎麼辦|如何做|怎麼做|怎樣做|怎麼改善|如何改善|怎麼準備|如何準備|方法|策略|建議|下一步|該如何|如何處理|怎麼處理/.test(q);
@@ -636,8 +682,16 @@ function _lnAnalyzeQuestion(q) {
   var asksExactAge = /幾歲|歲數|年齡(?:是多少|多大|大約多少|約多少)?|幾年次|出生年|出生年月|生日|\d+\s*歲(?:以下|以上|以內|左右|內)?/.test(q);
   var asksWho = /是誰|有誰|誰在|哪一位|哪個人|哪個同事|哪名|具體是誰/.test(q);
   var asksExactIdentity = asksWho || /叫什麼名字|姓名是什麼|真實姓名|住哪裡|詳細地址|電話號碼|手機號碼|帳號是什麼|身分證|身份證/.test(q);
-  var asksExactAmount = /賺多少(?:錢)?|收入多少|營業額多少|營收多少|業績多少|金額多少|多少元|多少塊|確切金額|價格是多少/.test(q);
-  var asksProbability = /百分之幾|幾成機率|機率多少|概率多少|成功率多少/.test(q);
+  var moneyContext = /錢|金額|獎金|收入|營業額|營收|業績|價格|薪資|薪水|發票|統一發票|中獎|開獎|彩券|彩票|樂透|威力彩|大樂透|刮刮樂|付款|入帳/.test(q);
+  var explicitMoneyAmount = /(?:賺|賺到|拿到|拿|領到|領|獲得|得到|收到|入帳|回饋|退款|退回|賠|贏得|可得|能得|會得|可以得|可以拿|能拿|會拿|可以領|能領|會領)多少(?:錢|元|塊|獎金|金額)|中獎(?:金額|獎金)?(?:會|能|可以|可|是|有)?多少|獎金(?:會|能|可以|可|是|有)?多少|收入多少|營業額多少|營收多少|業績多少|金額多少|確切金額|價格是多少|多少(?:錢|元|塊)/.test(q);
+  var contextualMoneyAmount = moneyContext && /(?:會|能|可以|可|可能)?(?:中(?:獎)?|拿到|領到|獲得|得到|收到|入帳|賺到|贏得)?多少(?!\s*(?:張|個|次|件|份|人|筆|單|顆|條|位))/.test(q);
+  var asksExactAmount = explicitMoneyAmount || contextualMoneyAmount;
+  var asksExactCount = /(?:多少|幾)(?:張|次|件|份|人|筆|單|顆|條|位)|(?:多少|幾)個(?!月|年|週|天)/.test(q);
+  var asksProbability = /百分之幾|幾成機率|機率多少|概率多少|成功率多少|勝率多少/.test(q);
+  var confirmedOccurrence = /已經?(?:確定)?中獎|已中獎|我中了|顯示中獎|確定有獎/.test(q);
+  var asksOccurrenceThenAmount = asksExactAmount && !confirmedOccurrence && /中獎|開獎|發票|統一發票|抽獎|彩券|彩票|樂透|威力彩|大樂透|刮刮樂|(?:會|能|可以|可|可能)(?:拿到|領到|獲得|得到|收到|入帳|賺到|贏得)/.test(q);
+  var asksOccurrenceThenCount = asksExactCount && !confirmedOccurrence && /中獎|開獎|發票|統一發票|抽獎|彩券|彩票|樂透|威力彩|大樂透|刮刮樂|(?:會|能|可以|可|可能)(?:有|出現|收到|拿到|得到|中)/.test(q);
+  var concreteOutcomeEvent = /中獎|開獎|統一發票|發票|抽獎|錄取|升遷|付款|入帳|到貨|出貨|訂單|成交|簽約|聯絡|回覆|通知|會面|結果/.test(q);
 
   var asksPersonProfile = /外貌|長相|身高|體型|職業|做什麼工作|哪裡人|個性|性格|特徵|類型|年輕|同齡|成熟|年長|年紀|相處模式/.test(q);
   var profileTraitCount = [
@@ -714,11 +768,11 @@ function _lnAnalyzeQuestion(q) {
   else if(sharedQuestion.mode==='multi_option')questionShape='多選項獨立比較';
   else if (isChoice) questionShape = '雙路決策比較';
   else if (isGlobal) questionShape = '多領域／全景問題';
-  else if (explicitMultiAspect || facetCount >= 3) questionShape = '單一議題多面向全貌';
+  else if (explicitMultiAspect || isConditionalProfileBundle || profileTraitCount >= 2) questionShape = '單一議題多面向全貌';
   else if (asksWhy || asksHow || asksWhen || asksPersonProfile || facetCount >= 2) questionShape = '需要脈絡的單一議題';
   else if (isYesNo) questionShape = '單一可裁決命題';
 
-  return {
+  var result={
     questionPlan:sharedQuestion, q:originalQuestion, analysisQuestion:q, compact:compact, parts:parts, empty:!originalQuestion,
     domainIds:domainIds, hypothesisChoice:hypothesisChoice,
     isChoice:isChoice, choiceA:choiceA, choiceB:choiceB,
@@ -727,7 +781,8 @@ function _lnAnalyzeQuestion(q) {
     asksWhy:asksWhy, asksHow:asksHow, isYesNo:isYesNo, partYesNoCount:partYesNoCount,
     isInner:asksInner, isHiddenClaim:isHiddenClaim,
     asksExactAge:asksExactAge, asksExactIdentity:asksExactIdentity,
-    asksExactAmount:asksExactAmount, asksProbability:asksProbability,
+    asksExactAmount:asksExactAmount, asksExactCount:asksExactCount, asksProbability:asksProbability, asksOccurrenceThenAmount:asksOccurrenceThenAmount, asksOccurrenceThenCount:asksOccurrenceThenCount,
+    concreteOutcomeEvent:concreteOutcomeEvent,
     asksPersonProfile:asksPersonProfile, profileTraitCount:profileTraitCount,
     isConditionalProfileBundle:isConditionalProfileBundle,
     isOverview:explicitMultiAspect, isGlobal:isGlobal, multiPart:multiPart,
@@ -739,6 +794,8 @@ function _lnAnalyzeQuestion(q) {
     facetCount:facetCount, questionShape:questionShape,
     isSensitiveHidden:asksInner || isHiddenClaim
   };
+  result.capability=_lnCapabilityProfile(result);
+  return result;
 }
 function _lnPersonRepId(declaredGender) {
   if (declaredGender === 'male') return 28;
@@ -883,19 +940,25 @@ function _lnValidateQuestion(q) {
 function _lnRecommendSpread(x) {
   var plan=x.questionPlan;
   if(plan&&(plan.mode==='multi_question'||plan.mode==='multi_option')&&plan.ready)return {id:'branches',why:'每個人物、獨立子題或選項各有一條三張線，先固定問題再抽牌，避免混用同一組結論'};
-  if(plan&&plan.daily)return {id:'two',why:'單一日常提醒，以雙牌的主題與修飾形成一句話'};
+  // daily 只接受真正的每日／今日整體提醒，不再把「今天」這個時間錨誤當成日常提醒。
+  if(plan&&plan.daily&&!x.concreteOutcomeEvent&&!x.asksExactAmount&&!x.asksProbability&&!x.asksWhen)return {id:'two',why:'單一日常提醒，以雙牌的主題與修飾形成一句話'};
   if(plan&&plan.mode==='single'&&x.asksWhen&&(x.asksWhy||x.asksHow)&&!x.isGlobal)return {id:'seven',why:'同一事件同時需要階段、原因與行動脈絡，七張線保留較長的發展與轉折'};
 
   if (x.moreThanTwoOptions) return {id:'nine',why:'問題超過兩個方案，九宮格先釐清共同條件與阻力；本盤不為每個方案配置獨立支線，不合併選項或編造排名'};
   if (x.incompleteChoice) return {id:'five',why:'比較選項尚未完整，五張線先分析已說明的處境；不代你補出另一個方案'};
-  if (x.hypothesisChoice) return {id:'five',why:'先分析同一件事的不同可能解釋，沒有確認是兩個可選行動，因此不建立 A／B 支線'};
+  // 「會X還是不X」是同一命題的正反，不當成兩個可選行動；簡單正反命題交給三張線。
+  if (x.hypothesisChoice && !x.isYesNo) return {id:'five',why:'先分析同一件事的不同可能解釋，沒有確認是兩個可選行動，因此不建立 A／B 支線'};
   if (x.independentMulti) return { id:'grand', why:'問題包含多個可獨立回答的主題，大牌陣能保留各主題及其交互作用' };
   if (x.isChoice) return { id:'choice', why:'問題包含兩個可替代方案，需要分成A／B兩條獨立支線比較' };
   if (x.isGlobal) return { id:'grand', why:'問題同時涵蓋多個獨立生活領域或要求全景，需使用36張大牌陣' };
-  if (x.isOverview || x.isConditionalProfileBundle || x.profileTraitCount >= 2 || x.facetCount >= 3)
+  // 只有原問句真的要求多面向／多人特徵時才升級九宮格；why+how 本身仍是同一事件診斷。
+  if (x.isOverview || x.isConditionalProfileBundle || x.profileTraitCount >= 2)
     return { id:'nine', why:'同一議題明確要求三個以上面向，需要九宮格以多條合法交會線回答' };
-  if (x.asksWhy || x.asksHow || x.asksWhen || x.asksPersonProfile || x.facetCount >= 2)
-    return { id:'five', why:'同一事件需要原因、方法、時間、人物輪廓或階段脈絡，五張線較完整' };
+  if (x.asksWhy || x.asksHow || x.asksWhen || x.asksPersonProfile || x.asksExactAge || x.asksExactIdentity || x.isInner || x.isHiddenClaim || x.facetCount >= 2)
+    return { id:'five', why:'同一事件需要原因、方法、時間、人物輪廓、隱含狀態或階段脈絡，五張線較完整' };
+  // 精確數字型問句仍可占，但雷諾曼只提供象徵尺度；三張線足以先判結果是否成立，再判相對幅度。
+  if (x.asksExactAmount || x.asksExactCount || x.asksProbability)
+    return { id:'three', why:'這是單一事件的結果／幅度問題，三張線先判事件是否成立，再判相對強弱或級距；量測精度由引擎能力層另行標記' };
   if (x.isYesNo)
     return { id:'three', why:'這是聚焦單一狀態的問題，以三張線讀起始語境、關鍵修飾與整句傾向；答案深度取決於實際組合' };
   return { id:'five', why:'這是單一開放題，五張線能保留必要脈絡而不過度展開' };
@@ -1107,8 +1170,11 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   lines.push('占卜日期：' + _lnLocalISODate());
   lines.push('牌陣：' + sp.name + '（' + sp.count + '張）');
   var questionModel=_lnAnalyzeQuestion(question), selection=_lnDetectSpread(question);
+  var capability=questionModel.capability||_lnCapabilityProfile(questionModel);
   var actualAuto=_lnAutoPick&&_lnAutoPick.id===spreadId&&_lnQuestion===String(question||'').trim();
   lines.push('選陣說明：'+(actualAuto?_lnAutoPick.why:selection.id===spreadId?'本題與此牌陣相符：'+selection.why:'本次實際使用'+sp.name+'，按下方已定義的牌位與幾何解讀。自動選陣建議不是牌面證據。'));
+  // 這是引擎對問題量測層級的結構化結果，不是額外牌義或人工結論。
+  lines.push('引擎問題解析：'+JSON.stringify({intent:capability.intent,resolution:capability.resolution,occurrenceGate:capability.occurrenceGate,exactNumericSupported:capability.exactNumericSupported,tasks:capability.tasks}));
   if(questionModel.isChoice)lines.push('原問句方案綁定：A＝'+questionModel.choiceA+'；B＝'+questionModel.choiceB+'。非雙路牌陣時這僅是提問資料，不憑空新增兩路牌位。');
   if(questionModel.moreThanTwoOptions&&spreadId!=='branches')lines.push('問題有三個以上方案：逐一保留原方案，這個版式沒有每方案獨立的可比支線；先回答共同條件，若仍需逐路比較，可改用各題分線牌陣另起一次占卜。');
   if(questionModel.hypothesisChoice)lines.push('問題比較的是同一事件的不同解釋，並非使用者可各自採取的兩個方案；以牌句比較可能解釋與可觀察證據，不冒充已證實對方心意。');
@@ -1583,5 +1649,31 @@ window._lnReset = function() {
   _getWrap().scrollTop = 0;
 };
 
-window.JYLenormand={analyze:_lnAnalyzeQuestion,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
+function _lnReviewAnswerGranularity(question, answer) {
+  var x=_lnAnalyzeQuestion(question), text=String(answer||''), issues=[];
+  function add(code,message,match){issues.push({code:code,message:message,match:match||''});}
+  if(x.asksExactAmount){
+    var amount=text.match(/(?:中獎|獎金|會中|能中|可中|中到|拿到|領到|獲得|得到|收到|入帳|營業額|營收|收入|業績|金額|價格|約|大約|大概|落在|介於|範圍)[^。！？!?\n]{0,28}?(\d[\d,]*(?:\.\d+)?)(?:\s*)(元|塊|萬元|萬|千元|千)/);
+    if(amount)add('EXACT_AMOUNT_OVERREACH','雷諾曼引擎只支援相對幅度／級距，答案卻把牌面換算成具體金額。',amount[0]);
+  }
+  if(x.asksExactCount){
+    var count=text.match(/\d+\s*(?:張|個|次|件|份|人|筆|單|顆|條|位)/);
+    if(count && String(question||'').indexOf(count[0])<0)add('EXACT_COUNT_OVERREACH','雷諾曼引擎只支援相對數量級，不應把牌面換算成精確數量。',count[0]);
+  }
+  if(x.asksProbability){
+    var prob=text.match(/\d+(?:\.\d+)?\s*[%％]/);
+    if(prob)add('EXACT_PROBABILITY_OVERREACH','雷諾曼引擎不以牌面換算精確機率。',prob[0]);
+  }
+  if(x.asksExactDate){
+    var date=text.match(/(?:20\d{2}[年\/-]\d{1,2}(?:[月\/-]\d{1,2}日?)?|\d{1,2}月\d{1,2}日|\d{1,2}號|\d{1,2}點(?:\d{1,2}分)?)/);
+    if(date && String(question||'').indexOf(date[0])<0)add('EXACT_DATETIME_OVERREACH','雷諾曼引擎只支援相對時段與條件，不應由牌面新增精確日期時間。',date[0]);
+  }
+  if(x.asksExactAge){
+    var age=text.match(/\d{1,3}\s*歲/);
+    if(age && String(question||'').indexOf(age[0])<0)add('EXACT_AGE_OVERREACH','雷諾曼引擎只支援相對年齡／成熟度，不應由牌面新增精確歲數。',age[0]);
+  }
+  return {ok:issues.length===0,issues:issues,capability:x.capability};
+}
+
+window.JYLenormand={version:'19.0.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
 })();
