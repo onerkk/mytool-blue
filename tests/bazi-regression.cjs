@@ -91,6 +91,20 @@ function chartAt(ctx, referenceDate, extraOptions = {}) {
 
 const ctx = loadRuntime(true);
 
+function chart1994(ctx) {
+  const solar = ctx.calcTrueSolarTime(1994, 6, 20, 23, 26, 120.54, 8, 'Asia/Taipei');
+  const chart = ctx.computeBazi(
+    solar.year, solar.month, solar.day, solar.hour, solar.minute, 'female',
+    {
+      second: solar.second, birthInstant: solar.utcTimestamp, trueSolarTimeApplied: true,
+      timezoneId: 'Asia/Taipei', timezoneOffset: 8, longitude: 120.54,
+      dayBoundaryMode: 'ZI_HOUR_23', referenceDate: '2026-09-25T08:43:00Z'
+    }
+  );
+  ctx.enhanceBazi(chart);
+  return { solar, chart };
+}
+
 test('台南出生時間真太陽時精確到秒', () => {
   const { solar } = chartAt(ctx);
   assert.strictEqual(solar.trueSolarDateTime, '1983-08-25 14:53:39');
@@ -261,6 +275,53 @@ test('固定 UTC 偏移排盤在提示詞明示歷史時區限制', () => {
 });
 
 test('精確曆法庫缺席時停止，不輸出預設五歲起運', () => { const c=createContext(); vm.runInContext(fs.readFileSync(path.join(ROOT,'JS/bazi.js'),'utf8'),c); assert.throws(()=>c.computeBazi(1983,8,25,14,55,'male'),/停止/); });
+
+test('1994 戊寅案例：相月不可誤寫失令，根氣必須精確到3/4柱', () => {
+  const { chart } = chart1994(ctx);
+  assert.deepStrictEqual(['year','month','day','hour'].map(k=>chart.pillars[k].gan+chart.pillars[k].zhi), ['甲戌','庚午','戊寅','壬子']);
+  assert.strictEqual(chart.dmMonthState, '相');
+  assert.strictEqual(chart.deXiang, true);
+  assert.strictEqual(chart.monthSupportClass, '得相');
+  assert(!String(chart.strengthNote||'').includes('失令'));
+  assert.strictEqual(chart.strengthAssessment.components.root.rootedPillarCount, 3);
+  assert.deepStrictEqual(Array.from(chart.strengthAssessment.components.root.rootedPillars), ['year','month','day']);
+  assert.strictEqual(chart.strengthAssessment.components.root.hasRootInAllFourBranches, false);
+  assert.strictEqual(chart.strengthAssessment.components.root.allFourBranches, false);
+  const rf=ctx.baziRootFacts(chart);
+  assert.strictEqual(rf.rootedPillarCount,3);
+  assert.strictEqual(rf.hasRootInAllFourBranches,false);
+});
+
+test('1994 戊寅案例：寅午戌三合由引擎裁決為成勢受午子沖，不再只丟待審', () => {
+  const { chart } = chart1994(ctx);
+  const tri=chart.branchInteractions.find(x=>x.typeCode==='TRINE'&&x.branches.join('')==='寅午戌');
+  assert(tri&&tri.adjudication);
+  assert.strictEqual(tri.adjudication.formationStatus,'成勢受核心支沖');
+  assert.strictEqual(tri.adjudication.centerBranch,'午');
+  assert.strictEqual(tri.adjudication.centerClashed,true);
+  assert.strictEqual(tri.adjudication.targetElement,'火');
+  assert.strictEqual(tri.adjudication.dayMasterEffect.direction,'support');
+  assert.strictEqual(tri.transformationStatus,'未判完全化氣');
+  assert.strictEqual(chart.branchInteractionAssessment.netDirection,'support');
+  assert.strictEqual(chart.strengthAssessment.integratedDirection,'偏強向');
+  assert.strictEqual(chart.strengthAssessment.finalStatus,'USABLE_AS_ORDINARY_DIRECTION');
+});
+
+test('1994 戊寅案例：月刃格與午月本氣正印分欄，不再輸出月刃格格神正印', () => {
+  const { chart } = chart1994(ctx);
+  assert.strictEqual(chart.zhengGe.geName,'月刃格');
+  assert.strictEqual(chart.zhengGe.patternTenGod,'劫財');
+  assert.strictEqual(chart.zhengGe.patternStem,'己');
+  assert.strictEqual(chart.zhengGe.monthMainQiStem,'丁');
+  assert.strictEqual(chart.zhengGe.monthMainQiTenGod,'正印');
+  assert.strictEqual(chart.zhengGe.geGod,'正印');
+  assert.strictEqual(chart.zhengGe.legacyGeGodSemantic,'MONTH_QI_CANDIDATE_NOT_PATTERN_CORE');
+  const prompt=ctx.buildBaziPrompt('我真的有帶天命嗎？',chart,{birthLine:'國曆 1994/06/20 23:26・彰化',solarInfo:chart1994(ctx).solar,longitude:120.54});
+  assert(prompt.includes('月令取格：月刃格；格局核心 劫財（己）；月支本氣 丁（正印）'));
+  assert(!prompt.includes('月刃格（格神 正印）'));
+  assert(prompt.includes('四支查根：有根（3/4柱見根）'));
+  assert(prompt.includes('成勢裁決 成勢受核心支沖'));
+});
 
 test('首頁載入本地曆法引擎且版本路徑正確', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

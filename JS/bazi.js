@@ -310,8 +310,78 @@ function detectBaziBranchInteractions(pillars){
   return out;
 }
 
+// 地支三合／三會的結構裁決層。
+// 這一層不把查表關係直接改成吉凶分數，也不宣告「完全化氣」；
+// 它只回答三件可重算的事：結構是否完整、月令是否同向、核心支是否受沖，
+// 再把結果對日主的扶／洩／耗／制方向明示給旺衰層使用。
+function adjudicateBaziBranchInteractions(pillars, interactions, facts){
+  var out={policy:'BRANCH_FORMATION_ADJUDICATION_V1',groups:[],dayMasterEffects:[],unresolved:[],note:'完整三合／三會先審月令與沖破；成勢不等於完全化氣，且不直接換算吉凶分數。'};
+  if(!pillars||!facts||!Array.isArray(interactions))return out;
+  var monthBranch=pillars.month&&pillars.month.zhi, monthEl=WX_Z[monthBranch], dmEl=facts.dmEl;
+  var clashes=interactions.filter(function(x){return x&&x.typeCode==='CLASH';});
+  function effectToDm(el){
+    if(!el||!dmEl)return {direction:'unknown',label:'與日主作用待審'};
+    if(el===dmEl)return {direction:'support',label:'同氣扶身'};
+    if(SHENG[el]===dmEl)return {direction:'support',label:'印星生身'};
+    if(SHENG[dmEl]===el)return {direction:'drain',label:'食傷洩身'};
+    if(KE[dmEl]===el)return {direction:'drain',label:'財星耗身'};
+    if(KE[el]===dmEl)return {direction:'restrain',label:'官殺制身'};
+    return {direction:'unknown',label:'與日主作用待審'};
+  }
+  function clashInfo(x,centerBranch){
+    var participants=x.pillars||[], relevant=[], center=[];
+    clashes.forEach(function(c){
+      var ps=c.pillars||[], bs=c.branches||[];
+      if(ps.some(function(p){return participants.indexOf(p)>=0;}))relevant.push(c);
+      if(centerBranch&&bs.indexOf(centerBranch)>=0)center.push(c);
+    });
+    return {relevant:relevant,center:center};
+  }
+  interactions.forEach(function(x){
+    if(!x||(x.typeCode!=='TRINE'&&x.typeCode!=='DIRECTIONAL'))return;
+    var target=x.associatedElement||null, full=x.strengthClass==='full', members=(x.branches||[]).slice();
+    var table=x.typeCode==='TRINE'?SAN_HE:SAN_HUI;
+    var def=table.find(function(g){return g.el===target&&g.members.every(function(z){return members.indexOf(z)>=0;});});
+    var centerBranch=x.typeCode==='TRINE'&&def?def.members[1]:null;
+    var ci=clashInfo(x,centerBranch);
+    var monthInGroup=monthBranch&&members.indexOf(monthBranch)>=0;
+    var monthSameTarget=!!(monthEl&&target&&monthEl===target);
+    var monthGeneratesTarget=!!(monthEl&&target&&SHENG[monthEl]===target);
+    var targetExposed=(facts.elements[target]&&facts.elements[target].exposed||[]).filter(function(s){return s.pillar!=='day';}).map(function(s){return s.label;});
+    var targetRoots=(facts.elements[target]&&facts.elements[target].roots||[]).map(function(r){return r.label;});
+    var formation='僅列結構', code='STRUCTURE_ONLY', influence='reference';
+    if(full){
+      if(monthSameTarget||monthInGroup&&centerBranch===monthBranch){
+        if(ci.center.length){formation='成勢受核心支沖';code='FORMED_CENTER_CLASHED';influence='moderate';}
+        else if(ci.relevant.length){formation='成勢但有沖擾';code='FORMED_CLASHED';influence='moderate';}
+        else{formation='成勢';code='FORMED';influence='strong';}
+      }else if(monthGeneratesTarget){
+        if(ci.relevant.length){formation='有月令生扶但受沖';code='SUPPORTED_CLASHED';influence='moderate';}
+        else{formation='有月令生扶';code='SUPPORTED';influence='moderate';}
+      }else{
+        formation=ci.relevant.length?'三支齊全但受沖，成勢條件不足':'三支齊全，成勢條件普通';
+        code=ci.relevant.length?'COMPLETE_CLASHED':'COMPLETE_REVIEW';
+        influence='review';
+      }
+    }
+    var dmEffect=effectToDm(target);
+    var item={type:x.type,typeCode:x.typeCode,branches:members,pillars:(x.pillars||[]).slice(),targetElement:target,formationStatus:formation,statusCode:code,influenceStrength:influence,monthBranch:monthBranch,monthElement:monthEl,monthInGroup:monthInGroup,monthSupportsTarget:monthSameTarget||monthGeneratesTarget,centerBranch:centerBranch,centerClashed:ci.center.length>0,clashes:ci.relevant.map(function(c){return c.desc;}),targetExposed:targetExposed,targetRoots:targetRoots,transformationStatus:'未判完全化氣',dayMasterEffect:dmEffect,explanation:'先以三支完整性、月令同向與核心支沖破裁決成勢；透干與根氣列為補充，不把成勢直接等同完全化氣或吉凶。'};
+    out.groups.push(item);
+    if(influence==='strong'||influence==='moderate')out.dayMasterEffects.push({type:x.type,targetElement:target,direction:dmEffect.direction,label:dmEffect.label,statusCode:code});
+    if(influence==='review')out.unresolved.push(x.type+' '+members.join('')+'：'+formation);
+    x.resultElement=target;
+    x.transformationStatus=item.transformationStatus;
+    x.interpretationStatus=formation;
+    x.effect='三支齊全；'+formation+'；完全化氣與吉凶另審';
+    x.adjudication=item;
+  });
+  var dirs={};out.dayMasterEffects.forEach(function(e){if(e.direction!=='unknown')dirs[e.direction]=true;});
+  out.netDirection=dirs.support&&!dirs.drain&&!dirs.restrain?'support':!dirs.support&&(dirs.drain||dirs.restrain)?'drain_or_restrain':Object.keys(dirs).length?'mixed':'none';
+  return out;
+}
+
 window.BAZI_CORE=window.BAZI_CORE||{};
-Object.assign(window.BAZI_CORE,{hiddenStems:CG,clashes:LIU_CHONG,combinations:LIU_HE,harms:DZ_HAI,destructions:DZ_PO,trines:SAN_HE,directionals:SAN_HUI,defaultPolicy:BAZI_DEFAULT_POLICY,detectInteractions:detectBaziBranchInteractions,getYearGanZhiAt:getBaziYearGanZhiAt,getAnnualYearsOverlapping:getBaziAnnualYearsOverlapping,formatDateTime:_baziFormatDateTime,referenceToChartWall:_baziReferenceToChartWall,birthFacts:_baziBirthFacts,instantWindow:_baziInstantWindow,periodLabel:_baziPeriodLabel,timeDataVersion:'20260920time1'});
+Object.assign(window.BAZI_CORE,{hiddenStems:CG,clashes:LIU_CHONG,combinations:LIU_HE,harms:DZ_HAI,destructions:DZ_PO,trines:SAN_HE,directionals:SAN_HUI,defaultPolicy:BAZI_DEFAULT_POLICY,detectInteractions:detectBaziBranchInteractions,adjudicateInteractions:adjudicateBaziBranchInteractions,getYearGanZhiAt:getBaziYearGanZhiAt,getAnnualYearsOverlapping:getBaziAnnualYearsOverlapping,formatDateTime:_baziFormatDateTime,referenceToChartWall:_baziReferenceToChartWall,birthFacts:_baziBirthFacts,instantWindow:_baziInstantWindow,periodLabel:_baziPeriodLabel,timeDataVersion:'20260925bazi-root1'});
 
 /* 十神 */
 function tenGod(dm,tgt){
@@ -4608,16 +4678,22 @@ function baziRootFacts(chart, options) {
     CG[p[k].zhi].forEach(function(g,i){if(WX_G[g]===el)roots.push({pillar:k,branch:p[k].zhi,stem:g,qi:['本氣','中氣','餘氣'][i],label:names[k]+'支'+p[k].zhi+'藏'+g});});
   });
   var dayKnown=known.indexOf('day')>=0, complete=known.length===4;
+  var rootedPillars=Array.from(new Set(roots.map(function(r){return r.pillar;})));
   return {scope:complete?'FOUR_BRANCHES':keys.length===3&&known.length===3?'THREE_KNOWN_BRANCHES':'PARTIAL_BRANCHES',dm:dm,element:el,knownPillars:known,
     dayPillar:dayKnown?dm+p.day.zhi:null,dayHidden:dayKnown?CG[p.day.zhi].slice():[],
     sittingRoot:dayKnown?roots.some(function(r){return r.pillar==='day';}):null,
-    hasAnyRoot:roots.length?true:complete?false:null,hasRootInKnownPillars:known.length?roots.length>0:null,roots:roots};
+    hasAnyRoot:roots.length?true:complete?false:null,rootCount:roots.length,rootedPillars:rootedPillars,rootedPillarCount:rootedPillars.length,
+    hasRootInKnownPillars:known.length?roots.length>0:null,hasRootInAllKnownPillars:known.length?rootedPillars.length===known.length:null,
+    hasRootInAllFourBranches:complete?rootedPillars.length===4:null,roots:roots};
 }
 
 function baziRootLines(chart, options) {
   var f=baziRootFacts(chart,options), answer=function(v){return v===true?'是':v===false?'否':'未提供足夠資料';};
+  var scopeLabel=f.scope==='FOUR_BRANCHES'?'四支查根':'已知柱查根';
+  var rootState=f.hasAnyRoot===true?'有根':f.hasAnyRoot===false?'無根':'資料不足';
+  var countText=f.knownPillars&&f.knownPillars.length?'（'+f.rootedPillarCount+'/'+f.knownPillars.length+'柱見根）':'';
   return ['日支坐根：'+answer(f.sittingRoot)+(f.dayPillar?'（'+f.dayPillar+'；日支藏'+f.dayHidden.join('、')+'）':'')+'。',
-    (f.scope==='FOUR_BRANCHES'?'四支通根':'已知柱通根')+'：'+answer(f.hasRootInKnownPillars)+(f.roots.length?'（'+f.roots.map(function(r){return r.label+'／'+r.qi;}).join('、')+'）':'')+(f.scope!=='FOUR_BRANCHES'?'；未提供的柱不當作無根':'')+'。'];
+    scopeLabel+'：'+rootState+countText+(f.roots.length?'；'+f.roots.map(function(r){return r.label+'／'+r.qi;}).join('、'):'')+(f.scope!=='FOUR_BRANCHES'?'；未提供的柱不當作無根':'')+'。'];
 }
 
 function baziStrengthLabel(chart) {
@@ -4633,6 +4709,7 @@ function baziCoreAnalysisLines(chart) {
   if(chart.fuyiAssessment)lines.push('扶抑判別：'+JSON.stringify(chart.fuyiAssessment));
   if(chart.seasonalAssessment)lines.push('調候實盤條件：'+JSON.stringify(chart.seasonalAssessment));
   lines.push('明干位置與生剋：'+JSON.stringify({links:f.links,combinations:f.combinations,adjacentGenerationPaths:f.adjacentGenerationPaths}));
+  if(chart.branchInteractionAssessment&&chart.branchInteractionAssessment.groups&&chart.branchInteractionAssessment.groups.length)lines.push('完整三合／三會成勢裁決：'+JSON.stringify(chart.branchInteractionAssessment));
   if(chart.strengthAssessment)lines.push('旺衰模型依據：'+JSON.stringify(chart.strengthAssessment));
   return lines;
 }
@@ -4866,22 +4943,25 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   }
   const dmMonthState = getMonthState(dmEl);
 
-  // ═══ 地支刑沖合害（唯一事實資料層）═══
-  // 此處只偵測關係；吉凶、是否合化、能量增減另由解讀模型處理。
+  // ═══ 地支刑沖合害：事實層 + 結構裁決層 ═══
+  // 第一步只偵測配對；第二步只對完整三合／三會審「成勢程度」，仍不把結果灌入吉凶分數，
+  // 也不宣告完全化氣。這避免把重要結構全部丟給提示詞／AI 才判。
+  const structureFacts = getBaziStructureFacts(pillars);
   var branchInteractions = detectBaziBranchInteractions(pillars);
+  var branchInteractionAssessment = adjudicateBaziBranchInteractions(pillars, branchInteractions, structureFacts);
   var branchInteractionPolicy = {
     mode: BAZI_DEFAULT_POLICY.interactionPolicy,
-    note: '關係存在不等於必然吉凶；六合／三合是否化氣須另審月令、透干、根氣與沖破。'
+    adjudicationModel: branchInteractionAssessment.policy,
+    note: '配對事實與成勢裁決分層；完整三合／三會已審月令與核心沖破，但成勢仍不等於完全化氣或吉凶。'
   };
 
-  // 地支作用不直接改寫五行權重。
-  // 原版本以自訂係數把三合、三會、半合、拱合、六沖灌入 ec，會把「配對事實」誤當成
-  // 已成局／已化氣的客觀結果。現改為只保留關係資料，由解讀層逐項審月令、透干、根氣、
-  // 沖破與位置；未完成審查前不改變原始五行相對權重。
+  // 地支作用不直接改寫五行權重。旺衰層只讀成勢後對日主的作用方向，
+  // 不用自訂係數把三合、三會、半合、拱合、六沖換成分數。
   var branchInterpretationPolicy = {
     mutatesElementWeights: false,
     transformationRequiresReview: true,
-    note: '刑沖合害只列事實；任何成局、化氣、增減力均屬流派判斷，不自動灌分。'
+    formationAdjudicated: true,
+    note: '刑沖合害不灌吉凶分；完整三合／三會由 BRANCH_FORMATION_ADJUDICATION_V1 判成勢程度，完全化氣仍保留。'
   };
 
 
@@ -4893,10 +4973,13 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   
   const deLing = (dmMonthState === '旺');   // 得令：月支五行=日主五行
   const deXiang = (dmMonthState === '相');  // 得相：月令所生=日主
-  const structureFacts = getBaziStructureFacts(pillars);
+  const monthSupportClass = deLing ? '得令' : deXiang ? '得相' : '失令';
   // 得地核對四支根氣；日支另留 sittingRoot，避免年時有根仍被當作無根。
   const deDi = structureFacts.dayMasterRoots.length > 0;
   const sittingRoot = structureFacts.dayMasterRoots.some(r => r.pillar === "day");
+  const rootedPillars = Array.from(new Set(structureFacts.dayMasterRoots.map(r => r.pillar)));
+  const rootedPillarCount = rootedPillars.length;
+  const hasRootInAllFourBranches = rootedPillarCount === 4;
   // 得勢（天干有生我/同我）
   let helpCount = 0;
   [yG, mG, hG].forEach(g => {
@@ -4906,7 +4989,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   
   // Seven bands remain an application-relative display model, not a classical
   // equation. One classifier is used by the UI, ordinary support lens and exports.
-  // 旺 and 相 are distinct; root evidence is no longer restricted to the day seat.
+  // 旺、相、休囚死分開標示；有根也不再誤寫成「四支皆有根」。
   const monthAdjustment = deLing ? 10 : deXiang ? 5 : -10;
   const rootAdjustment = deDi ? 5 : -5;
   const stemAdjustment = deShi ? 3 : -3;
@@ -4914,19 +4997,40 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   let strongLevel = _adjPts>=42?'旺極':_adjPts>=36?'太旺':_adjPts>=30?'偏旺':_adjPts>=24?'中和':_adjPts>=18?'偏弱':_adjPts>=12?'太弱':'弱極';
   let isNeutral = strongLevel === '中和';
   let strong = ['偏旺','太旺','旺極'].includes(strongLevel);
-  let strengthConflict = false, strengthConflictReason = '';
   const rootLabels=structureFacts.dayMasterRoots.map(r=>r.label+'（'+r.qi+'）');
   const printedHelpers=structureFacts.stems.filter(s=>s.pillar!=='day'&&(s.element===dmEl||s.element===yinEl));
   const affectedRoots=structureFacts.dayMasterRoots.filter(r=>r.clashedBy.length);
-  if (affectedRoots.length) {strengthConflict=true;strengthConflictReason='根支有六沖配對，根氣不直接刪除；需比較所沖兩支的月令、透干與其他會合';}
+  const structuralTensions=[];
+  if(affectedRoots.length){
+    const pillarNames={year:'年',month:'月',day:'日',hour:'時'};
+    structuralTensions.push('根支有六沖配對：'+affectedRoots.map(r=>r.label+'受'+r.clashedBy.map(k=>(pillarNames[k]||k)+'柱').join('、')+'沖').join('；')+'；沖不直接刪根');
+  }
+
+  // 完整三合／三會經結構裁決後只判「對日主作用方向」，不灌入數值分數。
+  // 若方向與數值模型相反才標記真正的旺衰衝突；同向則作交叉確認。
+  const formationEffects=(branchInteractionAssessment&&branchInteractionAssessment.dayMasterEffects)||[];
+  const hasFormationSupport=formationEffects.some(e=>e.direction==='support');
+  const hasFormationDrain=formationEffects.some(e=>e.direction==='drain'||e.direction==='restrain');
+  let strengthConflict = false, strengthConflictReason = '';
+  if((strong&&hasFormationDrain&&!hasFormationSupport)||(!strong&&!isNeutral&&hasFormationSupport&&!hasFormationDrain)){
+    strengthConflict=true;
+    strengthConflictReason='完整三合／三會的成勢方向與相對權重模型相反，需以月令、根氣、透干與制化再決定扶抑方向';
+  }else if(hasFormationSupport&&hasFormationDrain){
+    strengthConflict=true;
+    strengthConflictReason='完整三合／三會同時出現扶身與洩耗／制身方向，不能用單一強弱標籤取代全局制化';
+  }
+  const integratedDirection = isNeutral?'中和附近':strong?'偏強向':'偏弱向';
+  const interactionSummary=formationEffects.length?formationEffects.map(e=>e.targetElement+e.label+'（'+e.statusCode+'）').join('、'):'無已成勢的完整三合／三會改變方向';
   const strengthAssessment = {
-    model:'JINGYUE_RELATIVE_STRENGTH_V3_FOUR_ROOTS', level:strongLevel,isStrong:strong,isNeutral:isNeutral,
+    model:'JINGYUE_RELATIVE_STRENGTH_V4_ADJUDICATED', level:strongLevel,quantitativeLevel:strongLevel,isStrong:strong,isNeutral:isNeutral,
+    integratedDirection:integratedDirection,finalStatus:strengthConflict?'REVIEW_REQUIRED':'USABLE_AS_ORDINARY_DIRECTION',monthSupportClass:monthSupportClass,
     selfSupportPoints:selfPts,adjustedPoints:_adjPts,
-    components:{month:{state:dmMonthState,points:monthAdjustment},root:{allFourBranches:deDi,sittingRoot:sittingRoot,points:rootAdjustment},exposedHelp:{count:helpCount,points:stemAdjustment}},
-    evidence:[dm+'生於'+mZ+'月，月支五行狀態為'+dmMonthState,rootLabels.length?'根氣：'+rootLabels.join('、'):'四支藏干無同五行根',printedHelpers.length?'透干助力：'+printedHelpers.map(s=>s.label+'（'+s.god+(s.constraints.length?'，'+s.constraints.join('、'):'')+'）').join('、'):'年、月、時干無印比透出'],
+    components:{month:{state:dmMonthState,supportClass:monthSupportClass,points:monthAdjustment},root:{hasAnyRoot:deDi,rootedPillarCount:rootedPillarCount,rootedPillars:rootedPillars,hasRootInAllFourBranches:hasRootInAllFourBranches,allFourBranches:hasRootInAllFourBranches,sittingRoot:sittingRoot,points:rootAdjustment},exposedHelp:{count:helpCount,points:stemAdjustment},formations:{summary:interactionSummary,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none'}},
+    evidence:[dm+'生於'+mZ+'月，月支五行狀態為'+dmMonthState+'（'+monthSupportClass+'）',rootLabels.length?'根氣：'+rootLabels.join('、')+'；有根柱 '+rootedPillarCount+'/4':'四支藏干無同五行根',printedHelpers.length?'透干助力：'+printedHelpers.map(s=>s.label+'（'+s.god+(s.constraints.length?'，'+s.constraints.join('、'):'')+'）').join('、'):'年、月、時干無印比透出',interactionSummary],
+    structuralTensions:structuralTensions,interactionAssessment:{policy:branchInteractionAssessment?branchInteractionAssessment.policy:null,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none',groups:(branchInteractionAssessment&&branchInteractionAssessment.groups||[]).map(function(g){return {type:g.type,branches:g.branches,targetElement:g.targetElement,formationStatus:g.formationStatus,influenceStrength:g.influenceStrength,dayMasterEffect:g.dayMasterEffect};})},
     conflict:strengthConflict,conflictReason:strengthConflictReason,
     sources:['https://www.donglishuzhai.net/chapter/3719.html'],
-    disclaimer:'四支通根、月令與透干分層有文獻依據；60分、加權與七級門檻是本站相對模型，未獲典籍或獨立資料證實為唯一旺衰算法。相鄰生剋、調候及特殊格局另列，不能把此分數當完整取用裁決。'
+    disclaimer:'月令、根氣、透干先由相對模型分類；完整三合／三會另經成勢裁決後只作方向性交叉核對，不使用自訂吉凶加分。七級名稱仍是本站相對模型，不等同古籍唯一旺衰定論；最終取用還須合看格局、調候、病藥與通關。'
   };
 
   // 結構類型（保留舊欄位相容性）
@@ -5263,7 +5367,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deDi,deShi,dmMonthState,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialRuleAssessment:specialRuleAssessment,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
+  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deXiang,deDi,deShi,dmMonthState,monthSupportClass,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialRuleAssessment:specialRuleAssessment,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionAssessment:branchInteractionAssessment,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
 }
 
 

@@ -805,7 +805,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
         var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260924root2', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260924root2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260925engine1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;

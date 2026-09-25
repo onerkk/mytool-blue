@@ -90,16 +90,18 @@ function baziDetectZhengGe(bazi) {
   var geGod = touChuGod || benQiGod;
   var geGan = touChu || benQi;
 
-  // 特殊：建祿格（月支為日干之祿）
+  // 特殊格局的「格名」與「月支本氣十神」分欄，避免把本氣十神誤稱為格神。
+  // geGod/geGan 保留相容欄位，但對建祿／月刃改指格局核心十神與核心干；
+  // monthMainQi* / monthExposed* 則保存月令藏透事實。
   var luMap = {甲:'寅',乙:'卯',丙:'巳',丁:'午',戊:'巳',己:'午',庚:'申',辛:'酉',壬:'亥',癸:'子'};
   if (luMap[dm] === monthZhi) {
     return {
-      geName: '建祿格',
-      geGod: geGod,
-      geGan: geGan,
-      touChu: touChu,
-      benQiGod: benQiGod,
-      zh: '建祿格月令入口：日主祿位在月支。依透干、合支再尋財官殺食的可用通路；強弱、成敗與喜忌須看原局，不由祿位推斷性格或結果。',
+      geName: '建祿格', patternType:'建祿格', patternBasis:'MONTH_BRANCH_LU',
+      patternStem: dm, patternTenGod:'比肩',
+      geGod: geGod, geGan: geGan, legacyGeGodSemantic:'MONTH_QI_CANDIDATE_NOT_PATTERN_CORE',
+      touChu: touChu, benQiGod: benQiGod,
+      monthMainQiStem:benQi, monthMainQiTenGod:benQiGod, monthExposedStem:touChu, monthExposedTenGod:touChuGod||null,
+      zh: '建祿格月令入口：日主祿位在月支。月支本氣十神與建祿格名分開記錄；依透干、根氣、財官食傷與制化再審成敗，不由祿位單獨推喜忌。',
       isSpecial: true
     };
   }
@@ -107,13 +109,14 @@ function baziDetectZhengGe(bazi) {
   // 特殊：月刃格（又稱陽刃格，月支為日干之刃）
   var renMap = {甲:'卯',丙:'午',戊:'午',庚:'酉',壬:'子'};
   if (renMap[dm] === monthZhi) {
+    var bladeStem = monthCangGan.find(function(g){return tenGod(dm,g)==='劫財';}) || '';
     return {
-      geName: '月刃格',
-      geGod: geGod,
-      geGan: geGan,
-      touChu: touChu,
-      benQiGod: benQiGod,
-      zh: '月刃格月令入口：採五陽干祿前一位的分支；有官殺制刃為可審條件，財印配合、傷官介入、制合與成敗仍須依實際透藏覆核。',
+      geName: '月刃格', patternType:'月刃格', patternBasis:'MONTH_BRANCH_YANG_BLADE',
+      patternStem:bladeStem||null, patternTenGod:'劫財', bladeBranch:monthZhi, bladeStem:bladeStem||null,
+      geGod: geGod, geGan: geGan, legacyGeGodSemantic:'MONTH_QI_CANDIDATE_NOT_PATTERN_CORE',
+      touChu: touChu, benQiGod: benQiGod,
+      monthMainQiStem:benQi, monthMainQiTenGod:benQiGod, monthExposedStem:touChu, monthExposedTenGod:touChuGod||null,
+      zh: '月刃格月令入口：月支為五陽日主之刃位。月刃本身與月支本氣十神分欄記錄；官殺制刃、食傷洩秀、財印配合及沖合成敗仍按原局實際透藏與力量審理。',
       isSpecial: true
     };
   }
@@ -617,7 +620,7 @@ function baziWuxingStance(bazi) {
 function baziStrengthNote(bazi) {
   if(bazi&&bazi.isNeutral)return {notes:['本模型位在中和附近；'+(bazi.strengthAssessment?bazi.strengthAssessment.evidence.join('；'):'' )],zh:'扶抑採中間帶，依根氣、原局通路及調候選作用，不由 strong=false 改稱身弱。'};
   if (!bazi || !bazi.dm || !bazi.pillars) return null;
-  var dm = bazi.dm, strong = !!bazi.strong, deLing = !!bazi.deLing;
+  var dm = bazi.dm, strong = !!bazi.strong, deLing = !!bazi.deLing, deXiang = !!bazi.deXiang || bazi.dmMonthState==='相';
   var mZhi = bazi.pillars.month ? bazi.pillars.month.zhi : '';
   var siling = (bazi.renyuan && bazi.renyuan.gan) ? bazi.renyuan.gan : '';
   var silingGod = siling ? _tenGodOf(dm, siling) : '';
@@ -636,13 +639,14 @@ function baziStrengthNote(bazi) {
     else if (!touBiJie) why.push('比劫未透天干');
     why.push('洩耗之氣（食傷／財／官殺）較重，壓過月令幫身之力');
     notes.push('得令卻偏弱：雖生於' + mZhi + '月看似當令，但' + why.join('、') + '，故日主實際轉弱——判吉凶仍以扶身（印、比劫）為先；惟因落在強弱界線，務必把這點不確定講出來。');
-  } else if (!deLing && strong) {
+  } else if (!deLing && !deXiang && strong) {
     var by = [];
     if (touBiJie) by.push('比劫透干');
     if (touYin) by.push('印星透干');
     by.push('地支多根、黨眾助身');
     notes.push('失令卻偏旺：雖不當月令，但' + by.join('、') + '，故仍作旺論——用神取剋洩耗（官殺、財、食傷）。此盤亦在界線，留意複核。');
   }
+  if(bazi.strengthConflict&&bazi.strengthConflictReason)notes.push('旺衰仍需複核：'+bazi.strengthConflictReason+'。');
   return notes.length ? notes.join(' ') : null;
 }
 

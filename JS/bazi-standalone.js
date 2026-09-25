@@ -362,7 +362,11 @@
     h += '<div class="sline">日主 <b>'+dm+'</b>（'+dmEl+'行）・ 旺衰參考 <span class="sgold">'+(b.strongLevel||(b.strong?'身強':'身弱'))+'</span>'+(b.structType?'（'+b.structType+'）':'')+'</div>';
     h += '<p class="jd-model-note">月令取格、扶抑與季節取用分開呈現。旺衰描述命局的承擔與生扶，喜忌要連同原局及歲運解讀。</p>';
     if (geTxt) h += '<div class="sline">'+(b.specialStructure?'採用格局':'月令取格')+'：<b>'+geTxt+'</b></div>';
-    if(b.zhengGe&&b.zhengGe.touChu)h += '<div class="sline">取格依據：月支'+b.pillars.month.zhi+'藏'+b.zhengGe.touChu+'透干，對日主為'+b.zhengGe.geGod+'。</div>';
+    if(b.zhengGe&&b.zhengGe.isSpecial){
+      h += '<div class="sline">格局核心：'+_fmt(b.zhengGe.patternTenGod||b.zhengGe.geGod||'—')+(b.zhengGe.patternStem?'（'+_fmt(b.zhengGe.patternStem)+'）':'')+'；月支本氣 '+_fmt(b.zhengGe.monthMainQiStem||'—')+'（'+_fmt(b.zhengGe.monthMainQiTenGod||b.zhengGe.benQiGod||'—')+'）。兩者分欄，不把月支本氣十神冒稱為格神。</div>';
+    }else if(b.zhengGe&&b.zhengGe.touChu){
+      h += '<div class="sline">取格依據：月支'+b.pillars.month.zhi+'藏'+b.zhengGe.touChu+'透干，對日主為'+b.zhengGe.geGod+'。</div>';
+    }
     (b.huaQiAssessments||[]).forEach(function(a){
       function esc(text){return String(text||'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});}
       h += '<div class="sline bzx-hua-verdict"><b>'+esc(a.status)+'</b><p>'+esc(a.conclusion)+'</p>';
@@ -494,7 +498,7 @@
     L.push('【原局干支作用——由核心唯一計算】');
     var interactions=[];
     (b.branchInteractions||[]).forEach(function(x){
-      if(!x)return; interactions.push('・'+(x.type||x.typeCode||'作用')+'：'+(x.desc||((x.branches||[]).join('')))+(x.effect?'；'+x.effect:'')+(x.typeCode==='COMBINATION_2'?'；僅代表六合配對，是否合化待審':''));
+      if(!x)return; interactions.push('・'+(x.type||x.typeCode||'作用')+'：'+(x.desc||((x.branches||[]).join('')))+(x.adjudication?'；成勢裁決 '+x.adjudication.formationStatus+'，化氣 '+x.adjudication.transformationStatus:(x.effect?'；'+x.effect:''))+(x.typeCode==='COMBINATION_2'?'；僅代表六合配對，是否合化待審':''));
     });
     (b.hiddenInteractions||[]).forEach(function(x){if(x&&x.zh)interactions.push('・暗合參考：'+x.zh+'（與明見刑沖合害共同衡量）。');});
     if(b.hiddenInteractionPolicy&&!b.hiddenInteractionPolicy.enabled)L.push('暗合政策：'+b.hiddenInteractionPolicy.reason);
@@ -505,7 +509,7 @@
     L.push('【B. 前端流派模型（供交叉核對）】');
     L.push('日主 '+(b.dm||'')+'（'+(b.dmEl||'')+'），生於'+((P.month&&P.month.zhi)||'')+'月；月令狀態 '+(b.dmMonthState||'未提供')+'；天干得勢門檻模型 '+(b.deShi?'達標':'未達標')+'（本模型須其他三干至少兩干為印比；未達標不代表沒有生扶，請以各柱明列十神核對）。');
     if(b.tongGen&&b.tongGen.zh)L.push('通根：'+b.tongGen.zh+'。');
-    L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；位於判法邊界，請同時比較替代判法':'')+'。');
+    L.push('本系統旺衰模型判為：'+(b.strongLevel||(b.strong?'身強':'身弱'))+(b.strengthAssessment&&b.strengthAssessment.integratedDirection?'；整合方向 '+b.strengthAssessment.integratedDirection:'')+(b.strengthAssessment&&b.strengthAssessment.monthSupportClass?'；月令 '+b.strengthAssessment.monthSupportClass:'')+(b.selfPts!=null?'；自黨相對分 '+Math.round(b.selfPts):'')+(b.strengthConflict?'；存在實質反向作用，需複核':'')+'。');
     if(b.strengthNote)L.push('旺衰複核提示：'+(typeof b.strengthNote==='string'?b.strengthNote:[b.strengthNote.zh].concat(b.strengthNote.notes||[]).filter(Boolean).join('；')));
     if(b.strengthAssessment&&b.strengthAssessment.disclaimer)L.push('旺衰模型說明：'+b.strengthAssessment.disclaimer);
     if(b.ep){L.push('五行相對權重（僅供本模型內比較，不是古籍固定比例）：'+['木','火','土','金','水'].map(function(e){return e+Math.round(b.ep[e]||0)+'%';}).join('、')+'。');}
@@ -515,7 +519,10 @@
     if(Array.isArray(b.specialStructureCandidates)&&b.specialStructureCandidates.length){
       L.push('特殊格局待審候選：'+b.specialStructureCandidates.map(function(c){return (c.type||'候選')+'；支持：'+((c.evidence||[]).join('、')||'—')+'；阻礙：'+((c.blockingEvidence||[]).join('、')||'未列')+'；尚須檢查：'+((c.requiredChecks||[]).join('、')||'—');}).join('｜')+'。這些候選不自動覆蓋扶抑喜忌。');
     }
-    if(!b.specialStructure&&b.zhengGe&&b.zhengGe.geName){L.push('月令取格：'+b.zhengGe.geName+(b.zhengGe.geGod?'（格神 '+b.zhengGe.geGod+'）':'')+'。取格是觀察框架，不可單獨代替旺衰、調候與全局生剋。');}
+    if(!b.specialStructure&&b.zhengGe&&b.zhengGe.geName){
+      if(b.zhengGe.isSpecial)L.push('月令取格：'+b.zhengGe.geName+'；格局核心 '+(b.zhengGe.patternTenGod||b.zhengGe.geGod||'—')+(b.zhengGe.patternStem?'（'+b.zhengGe.patternStem+'）':'')+'；月支本氣 '+(b.zhengGe.monthMainQiStem||'—')+'（'+(b.zhengGe.monthMainQiTenGod||b.zhengGe.benQiGod||'—')+'）。特殊格局名稱與月支本氣十神分欄，不把本氣十神稱為格神。');
+      else L.push('月令取格：'+b.zhengGe.geName+(b.zhengGe.geGod?'（格神 '+b.zhengGe.geGod+'）':'')+'。取格是觀察框架，不可單獨代替旺衰、調候與全局生剋。');
+    }
     if(b.guanShaMix&&b.guanShaMix.zh)L.push('官殺辨析：'+b.guanShaMix.zh);
     if(Array.isArray(b.strengthPattern)&&b.strengthPattern.length)L.push('旺衰結構候選標記：'+b.strengthPattern.map(function(x){return (x.type||'未命名')+(x.el?'（'+(Array.isArray(x.el)?x.el.join('、'):x.el)+'）':'');}).join('、')+'。請用月令、根氣、透干與制化覆核，再判斷它如何影響喜忌與本題。');
     L.push('扶抑喜用候選：'+(Array.isArray(b.fav)&&b.fav.length?b.fav.join('、'):'—')+'；忌神候選：'+(Array.isArray(b.unfav)&&b.unfav.length?b.unfav.join('、'):'—')+'。');
@@ -615,8 +622,8 @@
     if (typeof window.Solar === 'undefined') need.push('JS/vendor/lunar.js');
     if (typeof window.BaziCalendarCore === 'undefined') need.push('JS/bazi-calendar-core.js?v=20260912engine2');
     if (typeof calcTrueSolarTime !== 'function') need.push('JS/solar-location.js?v=20260923final1');
-    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260923final1');
-    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260923final1');
+    if (typeof computeBazi !== 'function') need.push('JS/bazi.js?v=20260925engine1');
+    if (typeof enhanceBazi !== 'function') need.push('JS/bazi_upgrade.js?v=20260925engine1');
     if (!need.length) { cb(true); return; }
     if (typeof window._jyLazyScript !== 'function') { cb(typeof computeBazi === 'function'); return; }
     var idx = 0;

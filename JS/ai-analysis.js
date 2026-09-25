@@ -17292,7 +17292,7 @@ renderTarot = function(){
         // 格局類型（正格）
         if (bz.zhengGe && bz.zhengGe.geName) {
           p.dims.bazi.geJu = bz.zhengGe.geName;
-          p.dims.bazi.monthStructure = {name:bz.zhengGe.geName,stem:bz.zhengGe.geGan,god:bz.zhengGe.geGod,exposedStem:bz.zhengGe.touChu||null};
+          p.dims.bazi.monthStructure = {name:bz.zhengGe.geName,isSpecial:!!bz.zhengGe.isSpecial,patternStem:bz.zhengGe.patternStem||bz.zhengGe.geGan||null,patternGod:bz.zhengGe.patternTenGod||bz.zhengGe.geGod||null,monthMainQiStem:bz.zhengGe.monthMainQiStem||null,monthMainQiGod:bz.zhengGe.monthMainQiTenGod||bz.zhengGe.benQiGod||null,exposedStem:bz.zhengGe.touChu||null};
         }
         // ★ v16.4：流月拐點（哪幾個月吉/凶——推月份的核心）
         if (bz.liuYue && bz.liuYue.length) {

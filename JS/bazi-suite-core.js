@@ -516,12 +516,12 @@
     var ep=chart&&chart.ep||{}, stance=chart&&chart.wuxingStance||{}, th=chart&&chart.tiaohou||{};
     function modelText(value){return value&&typeof value==='object'?JSON.stringify(value):safeText(value,'未提供');}
     var ge=chart&&chart.zhengGe;
-    if(ge){ge={geName:ge.geName,geGod:ge.geGod,geGan:ge.geGan,touChu:ge.touChu,benQiGod:ge.benQiGod};}
+    if(ge){ge={geName:ge.geName,isSpecial:!!ge.isSpecial,patternType:ge.patternType||null,patternTenGod:ge.patternTenGod||null,patternStem:ge.patternStem||null,geGod:ge.geGod,geGan:ge.geGan,touChu:ge.touChu,benQiGod:ge.benQiGod,monthMainQiStem:ge.monthMainQiStem||null,monthMainQiTenGod:ge.monthMainQiTenGod||null};}
     return [
       '日主 '+safeText(chart&&chart.dm)+'（'+safeText(chart&&chart.dmEl)+'），本系統旺衰候選：'+safeText(chart&&chart.strongLevel,'未判定')+'；自黨相對分 '+safeText(chart&&chart.selfPts,'—')+'。',
       '五行相對權重：'+ELEMENTS.map(function(e){return e+safeText(ep[e],0)+'%';}).join('、')+'。此為本模型內比較，不是古籍固定比例或科學測量。',
       '扶抑立場：'+safeText(stance.summary, '喜候選 '+safeArray(chart&&chart.fav).join('、')+'；忌候選 '+safeArray(chart&&chart.unfav).join('、'))+'。',
-      '月令格局候選：'+modelText(ge)+'。格神、相神與成敗救應須回到透藏根氣；touChu 為空時不能宣稱格神已透干。格局用神與扶抑用神分義。',
+      '月令格局候選：'+modelText(ge)+'。特殊格局的格局核心與月支本氣十神已分欄；一般格局的格神、相神與成敗救應仍須回到透藏根氣。touChu 為空時不能宣稱月令藏干已透。格局用神與扶抑用神分義。',
       '官殺辨析：'+modelText(chart&&chart.guanShaMix)+'。',
       '核心扶抑與調候：'+(typeof root.baziCoreAnalysisLines==='function'?root.baziCoreAnalysisLines(chart).join('\n'):modelText(chart&&chart.fuyiAssessment))+'。',
       '合化判別：'+(typeof root.baziHuaQiLines==='function'?root.baziHuaQiLines(chart).join('\n'):modelText(chart&&chart.huaQiAssessments))+'。',

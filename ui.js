@@ -888,8 +888,8 @@ async function _jyPrepareCompositeAstro(birth) {
       ['JS/vendor/lunar.js?v=1.7.7', function(){return typeof Solar !== 'undefined';}],
       ['JS/bazi-calendar-core.js?v=20260912engine2', function(){return !!window.BaziCalendarCore;}],
       ['JS/solar-location.js?v=20260923final1', function(){return typeof calcTrueSolarTime === 'function';}],
-      ['JS/bazi.js?v=20260923final1', function(){return typeof computeBazi === 'function';}],
-      ['JS/bazi_upgrade.js?v=20260923final1', function(){return typeof enhanceBazi === 'function';}],
+      ['JS/bazi.js?v=20260925engine1', function(){return typeof computeBazi === 'function';}],
+      ['JS/bazi_upgrade.js?v=20260925engine1', function(){return typeof enhanceBazi === 'function';}],
       ['JS/ziwei.js?v=20260923final1', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
