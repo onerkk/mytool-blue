@@ -363,23 +363,44 @@
     cards.forEach(function(c){
       if(c.suit==='major'){keys++;return;}
       if(suits[c.suit]!=null)suits[c.suit]++;
-      var r=String(c.rank||c.num||'');
+      var r=String(c.rank||c.num||'').toLowerCase();
       ranks[r]=(ranks[r]||0)+1;
       if(r==='king'||r==='queen'||r==='knight'||r==='page')courts++;
       if(r==='ace'||c.num===1)aces++;
     });
     var observations=[];
-    var maxSuit='',maxCount=0,ties=0;
-    Object.keys(suits).forEach(function(k){if(suits[k]>maxCount){maxSuit=k;maxCount=suits[k];ties=1;}else if(suits[k]===maxCount&&maxCount>0){ties++;}});
-    if(maxSuit&&ties===1&&maxCount>cards.length/2){
-      var sm={wand:'權杖多數：能量、對抗或爭論成為主要背景。',cup:'聖杯多數：愉悅、宴樂或情感交換成為主要背景。',sword:'寶劍多數：麻煩、悲傷或衝突成為主要背景。',pent:'金幣多數：商業、金錢與財產成為主要背景。'};
-      observations.push(sm[maxSuit]);
+
+    // Book T says to note the suit which "predominates" and likewise a
+    // preponderance of Keys.  This is a plurality test, not a >50% test:
+    // the manuscript's fourth-operation example calls 12 Keys out of 37 a
+    // preponderance because 12 exceeds every individual suit count.
+    var classCounts={wand:suits.wand,cup:suits.cup,sword:suits.sword,pent:suits.pent,keys:keys};
+    var dominantClass='',dominantClassCount=0,dominantClassTies=0;
+    Object.keys(classCounts).forEach(function(k){
+      var n=classCounts[k];
+      if(n>dominantClassCount){dominantClass=k;dominantClassCount=n;dominantClassTies=1;}
+      else if(n===dominantClassCount&&n>0){dominantClassTies++;}
+    });
+    if(dominantClass&&dominantClassTies===1&&dominantClassCount>0){
+      var sm={
+        wand:'權杖多數：能量、對抗或爭論成為主要背景。',
+        cup:'聖杯多數：愉悅、宴樂或情感交換成為主要背景。',
+        sword:'寶劍多數：麻煩、悲傷或衝突成為主要背景。',
+        pent:'金幣多數：商業、金錢與財產成為主要背景。',
+        keys:'大牌多數：有強於問卜者個人控制的力量。'
+      };
+      observations.push(sm[dominantClass]);
     }
-    if(keys>cards.length/2)observations.push('大牌多數：有強於問卜者個人控制的力量。');
-    if(courts>cards.length/2)observations.push('宮廷牌多數：社會互動或多人會面突出。');
-    if(aces>cards.length/2)observations.push('Ace 多數：整體力量集中。');
+
+    // Court-card / Ace majorities are overlapping classes rather than one of
+    // the five mutually exclusive suit/Key classes, so retain literal
+    // majority semantics here.  Exact sets of 3/4 are handled below.
+    if(cards.length&&courts>cards.length/2)observations.push('宮廷牌多數：社會互動或多人會面突出。');
+    if(cards.length&&aces>cards.length/2)observations.push('Ace 多數：整體力量集中。');
+
     var map={
       ace:{4:'四張 Ace：強大力量。',3:'三張 Ace：財富或成功。'},
+      // Website display King = Book T Knight/Lord; display Knight = Book T Prince.
       king:{4:'四張 Knights／Kings：迅速。',3:'三張 Knights／Kings：意外會面或消息。'},
       queen:{4:'四張 Queens：權威與影響。',3:'三張 Queens：有力朋友。'},
       knight:{4:'四張 Princes／Knights：與重要人物會面。',3:'三張 Princes／Knights：地位與榮譽。'},
@@ -395,17 +416,23 @@
       '2':{4:'四張二：會議與對話。',3:'三張二：重組或推薦。'}
     };
     Object.keys(ranks).forEach(function(r){var n=ranks[r],m=map[r]&&map[r][n];if(m)observations.push(m);});
-    return {suitCounts:suits,keyCount:keys,courtCount:courts,aceCount:aces,rankCounts:ranks,observations:observations};
+    return {
+      suitCounts:suits,keyCount:keys,courtCount:courts,aceCount:aces,rankCounts:ranks,
+      dominantClass:dominantClassTies===1?dominantClass:'',
+      dominantClassCount:dominantClassTies===1?dominantClassCount:0,
+      dominantClassTie:dominantClassTies>1,
+      observations:observations
+    };
   }
 
   function sourceContract(){return {
     id:SOURCE_ID,label:SOURCE_LABEL,version:VERSION,
     meaningOrder:['Book T 原典核心義','牌陣位置權限','實際有序相鄰線的元素尊貴','卡巴拉位階／世界','占星分度','牌陣依賴拓撲（不冒充 Book T 相鄰）'],
-    reversalPolicy:'不使用 Waite 固定正逆字典；一般牌陣牌面統一正向，強弱由元素尊貴、位置與方法結構裁決。',
+    reversalPolicy:'不使用 Waite 固定正逆字典；一般牌陣牌面統一正向。Opening of the Key 可保留實體倒置，但倒置只改變人物朝向／計數方向，不改變牌義與力量。',
     spreadPolicy:'牌陣是觀測布局；後世牌陣的因果／語義連線不自動等於 Book T 左右相鄰。只有明示有序連續線才套用完整元素尊貴；其他連線只讀互動相容性。',
     timingPolicy:'只有牌陣明示的相對時間位置或前端提供的外部日曆錨，才能回答時序；牌面占星對應與第四次操作三十六牌環都不是日期換算器。',
     courtMapping:'現有牌圖 King=Book T Knight/Lord（火/Yod）；Queen=Queen（水/Heh）；Knight=Prince（風/Vau）；Page=Princess（土/末Heh）。角色優先序依 Book T，具體人物身分另受應用程式證據綁定限制。',
-    openingOfKey:'第四次操作為代表牌後方三十六張牌環及1↔36配對，不作三十六旬、月份或日期推算。'
+    openingOfKey:'五次操作依原稿各自洗牌；馬蹄端牌以另一端作第二鄰牌；第四次操作為代表牌加後方三十六張的37張觀察、由第一張環牌依發牌方向計數並作1↔36配對；不作三十六旬、月份或日期推算。'
   };}
 
   var api={

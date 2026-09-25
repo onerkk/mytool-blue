@@ -1994,11 +1994,31 @@ enhanceTarot = function(tarot) {
     return COURT_FACING[s + '-' + r] || 'forward';
   }
   function getBookTCountDirection(card) {
-    if (_ootkSessionCountDirection === 'left') return -1;
-    if (_ootkSessionCountDirection === 'right') return 1;
-    // 非開鑰／舊資料相容時才讀網站牌圖表；正式開鑰流程必須在發牌前明示左右。
+    // The UI binding records the upright artwork facing of the chosen
+    // significator.  Book T preserves any physical inversion that occurs in
+    // the actual deal; an inverted court therefore faces the opposite way,
+    // while its meaning itself is unchanged.
+    var direction;
+    if (_ootkSessionCountDirection === 'left') direction = -1;
+    else if (_ootkSessionCountDirection === 'right') direction = 1;
+    else {
+      // Legacy/non-session compatibility: derive the upright facing from the
+      // website artwork table.
+      var facing = getCourtFacing(card);
+      direction = facing === 'left' ? -1 : 1;
+    }
+    if (card && card.ootkInverted === true) direction *= -1;
+    return direction;
+  }
+
+  function getBookTPhysicalFacing(card) {
     var facing = getCourtFacing(card);
-    return facing === 'left' ? -1 : 1;
+    if (!facing) return null;
+    if (card && card.ootkInverted === true) {
+      if (facing === 'left') return 'right';
+      if (facing === 'right') return 'left';
+    }
+    return facing;
   }
 
   // Directional Dignity 分析（v55）
@@ -2007,12 +2027,12 @@ enhanceTarot = function(tarot) {
   function computeDirectionalDignity(cards, idx) {
     if (!cards || !cards.length || idx < 0 || idx >= cards.length) return null;
     var self = cards[idx];
-    var selfFacing = getCourtFacing(self);
+    var selfFacing = getBookTPhysicalFacing(self);
     if (!selfFacing) return null; // 不是宮廷牌
     var leftN = (idx > 0) ? cards[idx - 1] : null;
     var rightN = (idx < cards.length - 1) ? cards[idx + 1] : null;
-    var leftFacing = leftN ? getCourtFacing(leftN) : null;
-    var rightFacing = rightN ? getCourtFacing(rightN) : null;
+    var leftFacing = leftN ? getBookTPhysicalFacing(leftN) : null;
+    var rightFacing = rightN ? getBookTPhysicalFacing(rightN) : null;
     var result = {
       card: self.n || self.name,
       facing: selfFacing,
@@ -2303,6 +2323,19 @@ enhanceTarot = function(tarot) {
     return ED_MAP[e1 + '+' + e2] || 'neutral';
   }
 
+  var OOTK_PILE_ELEMENT = {fire:'火',water:'水',air:'風',earth:'土'};
+  function ootkOpeningPileDignity(pileKey, card) {
+    var pileElement = OOTK_PILE_ELEMENT[pileKey] || '';
+    var cardElement = getCardElement(card);
+    var relation = cardElement && pileElement ? (ED_MAP[cardElement + '+' + pileElement] || 'neutral') : 'neutral';
+    var strengthLabel = relation === 'strengthen' ? 'strong' : (relation === 'weaken' ? 'weak' : (relation === 'friendly' ? 'moderately_strong' : 'neutral'));
+    return {
+      pile:pileKey, pileElement:pileElement, card:card ? (card.n||card.name||'') : '',
+      cardElement:cardElement, relation:relation, strengthLabel:strengthLabel,
+      dignityScope:'opening_pile_context', basis:'YHVH_pile_element'
+    };
+  }
+
   // ════════════════════════════════════════════════
   // Significator 自動選擇（GD 正統）
   // ════════════════════════════════════════════════
@@ -2412,13 +2445,19 @@ enhanceTarot = function(tarot) {
     var sigIdx = activeCards.findIndex(function(c) { return c.id === significatorId; });
     var counted = ootkCounting(activeCards, sigIdx, profile);
     var paired = profile === 'mathers_continuous' ? ootkPairingEnds(activeCards) : ootkPairing(activeCards, sigIdx);
-    var dignities = ootkDignities(counted.keyCards, activeCards);
+    var openingCards = profile === 'mathers_continuous' ? pileKeys.map(function(key) {
+      var card = piles[key][0];
+      return {pile:key, card:card, pileDignity:ootkOpeningPileDignity(key, card)};
+    }) : [];
+    var openingDignities = openingCards.map(function(x){return x.pileDignity;});
+    var dignities = openingDignities.concat(ootkDignities(counted.keyCards, activeCards, 'horseshoe'));
     var unaspected = []; // Book T 核心版不加入 PHB Source of the Nile 擴充
 
     return {
       dealOrder: deck.slice(),
       pileCards: piles,
-      openingCards: profile === 'mathers_continuous' ? pileKeys.map(function(key) { return {pile:key, card:piles[key][0]}; }) : [],
+      openingCards: openingCards,
+      openingDignities: openingDignities,
       pairingPolicy: profile === 'mathers_continuous' ? 'opposite_ends_including_significator' : 'outward_from_significator',
       piles: { fire: piles.fire.length, water: piles.water.length, air: piles.air.length, earth: piles.earth.length },
       cutPolicy: 'NEAR_CENTRE_TWO_LEVELS_V1',
@@ -2427,6 +2466,8 @@ enhanceTarot = function(tarot) {
       meaning: pileMeaning[activePile] || '',
       activeCards: activeCards,
       sigIndex: sigIdx,
+      countDirection: counted.startDirection || '',
+      significatorInverted: !!(activeCards[sigIdx] && activeCards[sigIdx].ootkInverted),
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
@@ -2511,10 +2552,12 @@ enhanceTarot = function(tarot) {
       activeHouse: activeHouse + 1,
       meaning: houseMeanings[activeHouse] || '',
       activeCards: activeCards,
+      countDirection: counted.startDirection || '',
+      significatorInverted: !!(activeCards[sigIdx >= 0 ? sigIdx : 0] && activeCards[sigIdx >= 0 ? sigIdx : 0].ootkInverted),
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards, activeCards),
+      dignities: ootkDignities(counted.keyCards, activeCards, 'horseshoe'),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2589,10 +2632,12 @@ enhanceTarot = function(tarot) {
       signTrump: trumpName,
       signTrumpId: st.trump,
       activeCards: activeCards,
+      countDirection: counted.startDirection || '',
+      significatorInverted: !!(activeCards[sigIdx >= 0 ? sigIdx : 0] && activeCards[sigIdx >= 0 ? sigIdx : 0].ootkInverted),
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards, activeCards),
+      dignities: ootkDignities(counted.keyCards, activeCards, 'horseshoe'),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2634,7 +2679,7 @@ enhanceTarot = function(tarot) {
         pairingPolicy:'ring_opposite_ends', activeCards:[sigCard].concat(ring), ringCards:ring,
         keyCards:countedRing.keyCards, countingPath:countedRing.path, ringCountingPath:countedRing.path,
         pairs:mathersPairs, ringPairs:mathersPairs, dignities:ootkDignities(countedRing.keyCards, ring, true),
-        bookTMajorities:window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(ring) : null
+        bookTMajorities:window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations([sigCard].concat(ring)) : null
       };
     }
     var direction = getBookTCountDirection(sigCard);
@@ -2646,7 +2691,7 @@ enhanceTarot = function(tarot) {
     var sigCount = getCountValue(sigCard);
     // 代表牌為第 1 步；最近的環牌為第 2 步，故只再移動 count − 2。
     for (var s = 2; s < sigCount; s++) idx = (idx + direction + ring.length) % ring.length;
-    path.push({cardId:sigCard.id,cardName:sigCard.n||sigCard.name,position:'center',countValue:sigCount,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
+    path.push({cardId:sigCard.id,cardName:sigCard.n||sigCard.name,position:'center',countValue:sigCount,isUp:!sigCard.ootkInverted,physicalOrientation:sigCard.ootkInverted?'inverted':'upright',direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
     keyCards.push({card:sigCard,position:'center'});
     for (var step = 0; step < ring.length + 1 && ring.length; step++) {
       if (visited[idx]) break;
@@ -2654,7 +2699,7 @@ enhanceTarot = function(tarot) {
       var card = ring[idx];
       keyCards.push({card:card,position:idx+1});
       var count = getCountValue(card);
-      path.push({cardId:card.id,cardName:card.n||card.name,position:idx+1,countValue:count,isUp:true,direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
+      path.push({cardId:card.id,cardName:card.n||card.name,position:idx+1,countValue:count,isUp:!card.ootkInverted,physicalOrientation:card.ootkInverted?'inverted':'upright',direction:direction>0?'right':'left',startDirection:direction>0?'right':'left'});
       for (var c = 1; c < count; c++) idx = (idx + direction + ring.length) % ring.length;
     }
 
@@ -2673,7 +2718,7 @@ enhanceTarot = function(tarot) {
       pairs:ringPairs,
       ringPairs:ringPairs,
       dignities:ootkDignities(keyCards, ring, true),
-      bookTMajorities:(window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(ring) : null)
+      bookTMajorities:(window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations([sigCard].concat(ring)) : null)
     };
   }
 
@@ -2739,10 +2784,12 @@ enhanceTarot = function(tarot) {
       sephirahZh: sp.zh || '',
       sephirahMeaning: sp.meaning || '',
       activeCards: activeCards,
+      countDirection: counted.startDirection || '',
+      significatorInverted: !!(activeCards[sigIdx >= 0 ? sigIdx : 0] && activeCards[sigIdx >= 0 ? sigIdx : 0].ootkInverted),
       keyCards: counted.keyCards,
       countingPath: counted.path,
       pairs: paired,
-      dignities: ootkDignities(counted.keyCards, activeCards),
+      dignities: ootkDignities(counted.keyCards, activeCards, 'horseshoe'),
       unaspected: unaspected,
       bookTMajorities: (window.JYGoldenDawn ? window.JYGoldenDawn.majorityObservations(activeCards) : null)
     };
@@ -2789,13 +2836,14 @@ enhanceTarot = function(tarot) {
       keyCards.push({ card: card, position: idx });
       visited[idx] = true;
       var count = getOotkCountValue(card, profile);
-      var cardIsUp = true;
+      var cardIsUp = !(card && card.ootkInverted === true);
       path.push({
         cardId: card.id,
         cardName: card.n || card.name,
         position: idx,
         countValue: count,
         isUp: cardIsUp,
+        physicalOrientation: cardIsUp ? 'upright' : 'inverted',
         // ★ v63:每張牌記錄它自己的 isUp 給 dignity 用,但 direction 整串都是起點方向
         direction: direction > 0 ? 'right' : 'left',
         startDirection: direction > 0 ? 'right' : 'left'
@@ -2870,22 +2918,31 @@ enhanceTarot = function(tarot) {
   // 元素尊嚴分析（Elemental Dignities）
   // ════════════════════════════════════════════════
 
-  function ootkDignities(keyCards, actualCards, circular) {
+  function ootkDignities(keyCards, actualCards, topology) {
     // Counting jumps are a reading route, not physical neighbours.
-    // The central significator in operation 4 has no two flanks in the ring.
+    // Book T horseshoes wrap their two end cards: an end card is modified by
+    // its immediate neighbour AND by the card at the opposite end.  The Op4
+    // 36-card circle is likewise circular.  The central significator in Op4
+    // is not physically part of the outer ring and therefore gets no invented
+    // flanks here.
     if (!Array.isArray(actualCards) || !actualCards.length) return [];
+    var mode = topology === true ? 'ring' : (topology || 'linear');
+    var wrap = mode === 'ring' || mode === 'horseshoe';
     return keyCards.map(function(entry) {
       var card=entry.card, i=actualCards.findIndex(function(c){return c.id===card.id;}), n=actualCards.length;
-      var leftN=i<0?null:(i>0?actualCards[i-1]:(circular&&n>2?actualCards[n-1]:null));
-      var rightN=i<0?null:(i<n-1?actualCards[i+1]:(circular&&n>2?actualCards[0]:null));
+      var leftN=null,rightN=null;
+      if(i>=0){
+        leftN=i>0?actualCards[i-1]:(wrap&&n>1?actualCards[n-1]:null);
+        rightN=i<n-1?actualCards[i+1]:(wrap&&n>1?actualCards[0]:null);
+      }
       var full=!!(leftN&&rightN), contrary=full&&elementalDignity(leftN,rightN)==='weaken';
       return {card:card.n||card.name,cardElement:getCardElement(card),
         leftCard:leftN?(leftN.n||leftN.name):null,rightCard:rightN?(rightN.n||rightN.name):null,
         leftDignity:leftN?elementalDignity(card,leftN):'none',rightDignity:rightN?elementalDignity(card,rightN):'none',
         fullDignity:full,neutralizedByContraryFlanks:!!contrary,
         dignityScope:i<0?'center_without_physical_flanks':(full?'full_flanked':'one_sided_local_context'),
-        basis:circular?'actual_ring_order':'actual_stack_order',
-        note:contrary?'兩側牌互相對立，按來源中央牌不受任一側明顯影響；不相加為吉凶。':(i<0?'中央代表牌不偽造外圈相鄰牌。':'尊貴取實際鄰牌；計數跳點與配對不是相鄰。')};
+        basis:mode==='ring'?'actual_ring_order':(mode==='horseshoe'?'actual_horseshoe_order':'actual_stack_order'),
+        note:contrary?'兩側牌互相對立，按來源中央牌不受任一側明顯影響；不相加為吉凶。':(i<0?'中央代表牌不偽造外圈相鄰牌。':(mode==='horseshoe'&&(i===0||i===n-1)?'馬蹄端牌依 Book T 同時取相鄰牌與另一端牌；計數跳點與配對不是相鄰。':'尊貴取實際鄰牌；計數跳點與配對不是相鄰。'))};
     });
   }
 
@@ -2907,18 +2964,39 @@ enhanceTarot = function(tarot) {
   // v63 helper：洗一副新牌（Book T：不使用固定正逆位）
   // 每階段都重新洗一副 78 張，符合 Book T「Shuffle, etc., as before」
   // ════════════════════════════════════════════════════════════
+  function _ootkRandomInverted() {
+    // Physical inversion must not consume the same RNG stream used to order
+    // cards: doing so makes a seeded/replayed shuffle change merely because
+    // orientation support was enabled.  Modern browsers expose a separate
+    // cryptographic source; if it is unavailable (notably deterministic test
+    // harnesses), keep the card upright rather than perturbing deck order.
+    try {
+      if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+        var a = new Uint32Array(1); window.crypto.getRandomValues(a); return (a[0] & 1) === 1;
+      }
+    } catch(_orientationErr) {}
+    return false;
+  }
+
   function shuffleNewDeck() {
     if (typeof TAROT === 'undefined') return [];
     var deck = TAROT.map(function(c) {
-      var copy = Object.assign({}, c, { isUp: true, directionPolicy: 'Book T elemental dignity / court facing' });
+      var copy = Object.assign({}, c, { isUp: true, ootkInverted:false, directionPolicy: 'Book T physical orientation / elemental dignity' });
       try { if (window.JYGoldenDawn) window.JYGoldenDawn.annotate(copy); } catch(_gd) {}
       return copy;
     });
-    // Fisher-Yates shuffle
+    // Fisher-Yates shuffle (card order).
     for (var i = deck.length - 1; i > 0; i--) {
       var j = typeof window._secInt==='function'?window._secInt(i+1):Math.floor(Math.random()*(i+1));
       var tmp = deck[i]; deck[i] = deck[j]; deck[j] = tmp;
     }
+    // Book T: an inverted card keeps the same meaning/force but its figure
+    // faces the opposite physical direction.  Preserve that as a separate
+    // orientation fact; do not feed it into Waite-style reversed meanings.
+    deck.forEach(function(card){
+      card.ootkInverted = _ootkRandomInverted();
+      card.isUp = !card.ootkInverted; // display fact only in OOTK; meanings stay Book T.
+    });
     return deck;
   }
 
@@ -3342,6 +3420,9 @@ enhanceTarot = function(tarot) {
   window.ootkDignities = ootkDignities;
   window.ootkGetCountValue = getCountValue;
   window.ootkGetCardGD = getCardGD;
+  window.ootkGetCountDirection = getBookTCountDirection;
+  window.ootkGetPhysicalFacing = getBookTPhysicalFacing;
+  window.ootkOpeningPileDignity = ootkOpeningPileDignity;
   window.ootkElementalDignity = elementalDignity;
   // GD-3,4 新增 export
   window.ootkAnalyzeCourtCard = analyzeCourtCard;

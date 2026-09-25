@@ -17292,7 +17292,7 @@ renderTarot = function(){
         // 格局類型（正格）
         if (bz.zhengGe && bz.zhengGe.geName) {
           p.dims.bazi.geJu = bz.zhengGe.geName;
-          p.dims.bazi.monthStructure = {name:bz.zhengGe.geName,stem:bz.zhengGe.geGan,god:bz.zhengGe.geGod,exposedStem:bz.zhengGe.touChu||null};
+          p.dims.bazi.monthStructure = {name:bz.zhengGe.geName,isSpecial:!!bz.zhengGe.isSpecial,patternStem:bz.zhengGe.patternStem||bz.zhengGe.geGan||null,patternGod:bz.zhengGe.patternTenGod||bz.zhengGe.geGod||null,monthMainQiStem:bz.zhengGe.monthMainQiStem||null,monthMainQiGod:bz.zhengGe.monthMainQiTenGod||bz.zhengGe.benQiGod||null,exposedStem:bz.zhengGe.touChu||null};
         }
         // ★ v16.4：流月拐點（哪幾個月吉/凶——推月份的核心）
         if (bz.liuYue && bz.liuYue.length) {
@@ -20985,6 +20985,25 @@ function _buildTarotOnlyPayload() {
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
+
+    // Engine-layer invariant: RWS readings must pass through the same semantic compiler
+    // as every other tarot path. This is payload integrity, not a prompt instruction.
+    if(semantic&&typeof semantic.compileReadingSpec==='function'){
+      var rwsContract=semantic.compileReadingSpec({
+        question:question,spreadId:spreadId,cards:rws.tarotData.cards,methodPlan:methodPlan,sourceProfile:'rws_reversals',
+        knownCounterpart:compiled.knownCounterpart,
+        referenceDate:compiled.features&&compiled.features.referenceDate||new Date().toISOString()
+      });
+      if(!rwsContract||!rwsContract.validation||!rwsContract.validation.ok){
+        throw new Error('RWS semantic contract invalid: '+((rwsContract&&rwsContract.validation&&rwsContract.validation.errors||[]).join(',')||'unknown_error'));
+      }
+      rws.semanticContract=rwsContract;
+      rws.semanticProgramVersion=rwsContract.engineVersion||'';
+      rws.tarotData.semanticContract=rwsContract;
+      rws.tarotData.semanticProgramVersion=rws.semanticProgramVersion;
+    }
+    rws.tarotData.foundationVersion=foundation.VERSION||'';
+
     if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
     rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
@@ -22843,7 +22862,10 @@ function _buildOOTKPayload() {
       world: profile ? (profile.world || '') : '',
       decan: profile ? (profile.decan || '') : '',
       correspondence: profile ? (profile.correspondence || '') : '',
-      countValue: mathers && c.suit !== 'major' && c.rank === 'ace' ? 5 : (gd ? gd.countValue(c) : null)
+      countValue: mathers && c.suit !== 'major' && c.rank === 'ace' ? 5 : (gd ? gd.countValue(c) : null),
+      physicalOrientation: c.ootkInverted === true ? 'inverted' : 'upright',
+      ootkInverted: c.ootkInverted === true,
+      physicalFacing: (typeof window.ootkGetPhysicalFacing === 'function') ? (window.ootkGetPhysicalFacing(c) || '') : ''
     };
   }
 
@@ -22868,6 +22890,7 @@ function _buildOOTKPayload() {
       countValue: step.countValue,
       position: step.position,
       direction: step.startDirection || step.direction || '',
+      physicalOrientation: step.physicalOrientation || (step.isUp === false ? 'inverted' : 'upright'),
       sourceRule: countRule
     };
   }
@@ -22902,11 +22925,14 @@ function _buildOOTKPayload() {
       keyCards: (op.keyCards || []).map(keyCardData).filter(Boolean),
       pairs: (op.pairs || []).map(pairData).filter(Boolean),
       dignities: op.dignities || [],
-      bookTMajorities: op.bookTMajorities || null
+      bookTMajorities: op.bookTMajorities || null,
+      countDirection: op.countDirection || '',
+      significatorInverted: !!op.significatorInverted
     };
     if (index === 0) {
       out.piles = op.piles || null;
-      out.openingCards = (op.openingCards || []).map(function(p){return {pile:p.pile,card:cardData(p.card)};});
+      out.openingCards = (op.openingCards || []).map(function(p){return {pile:p.pile,card:cardData(p.card),pileDignity:p.pileDignity||null};});
+      out.openingDignities = op.openingDignities || [];
       out.activePile = op.activePile || '';
       out.domainMeaning = op.meaning || '';
       out.expectedPiles = op.expectedPiles || [];

@@ -22862,7 +22862,10 @@ function _buildOOTKPayload() {
       world: profile ? (profile.world || '') : '',
       decan: profile ? (profile.decan || '') : '',
       correspondence: profile ? (profile.correspondence || '') : '',
-      countValue: mathers && c.suit !== 'major' && c.rank === 'ace' ? 5 : (gd ? gd.countValue(c) : null)
+      countValue: mathers && c.suit !== 'major' && c.rank === 'ace' ? 5 : (gd ? gd.countValue(c) : null),
+      physicalOrientation: c.ootkInverted === true ? 'inverted' : 'upright',
+      ootkInverted: c.ootkInverted === true,
+      physicalFacing: (typeof window.ootkGetPhysicalFacing === 'function') ? (window.ootkGetPhysicalFacing(c) || '') : ''
     };
   }
 
@@ -22887,6 +22890,7 @@ function _buildOOTKPayload() {
       countValue: step.countValue,
       position: step.position,
       direction: step.startDirection || step.direction || '',
+      physicalOrientation: step.physicalOrientation || (step.isUp === false ? 'inverted' : 'upright'),
       sourceRule: countRule
     };
   }
@@ -22921,11 +22925,14 @@ function _buildOOTKPayload() {
       keyCards: (op.keyCards || []).map(keyCardData).filter(Boolean),
       pairs: (op.pairs || []).map(pairData).filter(Boolean),
       dignities: op.dignities || [],
-      bookTMajorities: op.bookTMajorities || null
+      bookTMajorities: op.bookTMajorities || null,
+      countDirection: op.countDirection || '',
+      significatorInverted: !!op.significatorInverted
     };
     if (index === 0) {
       out.piles = op.piles || null;
-      out.openingCards = (op.openingCards || []).map(function(p){return {pile:p.pile,card:cardData(p.card)};});
+      out.openingCards = (op.openingCards || []).map(function(p){return {pile:p.pile,card:cardData(p.card),pileDignity:p.pileDignity||null};});
+      out.openingDignities = op.openingDignities || [];
       out.activePile = op.activePile || '';
       out.domainMeaning = op.meaning || '';
       out.expectedPiles = op.expectedPiles || [];

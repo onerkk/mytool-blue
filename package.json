@@ -47,7 +47,7 @@
     "build:western-scene": "node scripts/build-western-scene.mjs",
     "sync:recommendations": "node scripts/sync-recommendation-guides.cjs",
     "test:recommendations": "node scripts/sync-recommendation-guides.cjs --check && node tests/recommendation-20260914.cjs",
-    "test:ootk": "node tests/ootk-flow-20260915.cjs",
+    "test:ootk": "node tests/ootk-flow-20260915.cjs && node tests/ootk-source-fidelity-20260925.cjs",
     "test:relationship": "node tests/relationship-20260917.cjs",
     "test:time-ownership": "node tests/time-ownership-20260920.cjs",
     "build:questions": "node scripts/build-question-planner.cjs && node scripts/sync-recommendation-guides.cjs",
