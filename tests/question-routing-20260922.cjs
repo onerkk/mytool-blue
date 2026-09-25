@@ -27,13 +27,13 @@ test('Same topic different people, outcomes and newlines receive independent bra
  }
  for(const q of ['她喜歡我嗎？為什麼？我該怎麼做？','工作能順利嗎？何時？有什麼阻礙？'])assert.equal(F.analyzeReadingQuestion(q).mode,'single',q);
 });
-test('Three to six real options retain their labels and all card branches',()=>{
+test('Real options retain labels; missing options stay unresolved; independent branches have no arbitrary cap',()=>{
  for(const count of [3,4,6]){const opts=['留職','跳槽','創業','留學','兼職','退休'].slice(0,count);const q=opts.map((x,i)=>String.fromCharCode(65+i)+'：'+x).join('；')+'？';
   const qp=F.analyzeReadingQuestion(q);assert.deepEqual(qp.options,opts,q);const r=F.routeQuestion(q);assert.equal(r.spreadId,'multi_option');assert.equal(r.methodPlan.branches.length,count);assert.equal(LN.instantiate('branches',q).count,count*3);
  }
  const q='我該留職還是跳槽還是創業？';assert.deepEqual(F.analyzeReadingQuestion(q).options,['留職','跳槽','創業']);
  assert.equal(F.analyzeReadingQuestion('請幫我三選一').ready,false);
- const overflow='同事甲好嗎？同事乙好嗎？前任好嗎？女友好嗎？主管好嗎？客戶好嗎？朋友好嗎？';assert.equal(F.routeQuestion(overflow).ready,false);
+ const overflow='同事甲好嗎？同事乙好嗎？前任好嗎？女友好嗎？主管好嗎？客戶好嗎？朋友好嗎？';const over=F.analyzeReadingQuestion(overflow);assert.equal(over.ready,true);assert.equal(over.branches.length,7);assert.equal(LN.instantiate('branches',overflow).count,21);
 });
 test('No alternate-person inference from continuation or hypotheses',()=>{
  for(const q of ['她還是喜歡我嗎？','她是喜歡我還是只當朋友？','明年是機會還是挑戰？']){assert.equal(F.analyzeReadingQuestion(q).options.length,0);assert.notEqual(F.routeQuestion(q).spreadId,'multi_option');}
