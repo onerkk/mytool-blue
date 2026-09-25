@@ -124,4 +124,55 @@ test('實際六爻案例：生克方向、世應雙向作用、三合空爻條�
   const staticTriad=L.calculate({values:[7,7,7,7,7,7],calendar,question:'工作是否值得推進？'}).interpretation.combinations.find(x=>x.name==='申子辰三合水');
   assert.equal(staticTriad.status,'static-background');assert.deepEqual(Array.from(staticTriad.activePositions),[]);
 });
+
+test('用神語義引擎：先辨事件再取用，未知題不再默認世應',()=>{
+  const matrix=[
+    ['今天是9月25日統一發票開獎\n我可以中多少?','妻財'],
+    ['發票會中獎嗎？','妻財'],
+    ['威力彩能中多少？','妻財'],
+    ['蝦皮這個月營業額多少？','妻財'],
+    ['副業收入何時破十萬？','妻財'],
+    ['工作薪水多少？','妻財'],
+    ['工作是否值得推進？','官鬼'],
+    ['工作能升主管嗎？','官鬼'],
+    ['官司結果如何？','官鬼'],
+    ['合約會簽成嗎？','父母'],
+    ['她會跟我交往嗎？','世應'],
+    ['現任近期會願意跟我3p嗎？','世應'],
+    ['爸爸最近健康如何？','父母'],
+    ['我最近健康如何？','世']
+  ];
+  for(const [q,expected] of matrix){
+    const f=L.focusFor(q,'auto');
+    assert.equal(f.primary,expected,q);
+    assert.notEqual(f.mode,'unresolved',q);
+  }
+  const unknown=L.focusFor('明天會發生什麼？','auto');
+  assert.equal(unknown.mode,'unresolved');
+  assert.deepEqual(Array.from(unknown.candidates),[]);
+  assert(!unknown.note.includes('候選：世應'));
+  const manual=L.focusFor('統一發票會中多少？','官鬼');
+  assert.equal(manual.mode,'manual');assert.equal(manual.primary,'官鬼');
+});
+
+test('回歸案例：統一發票金額題以妻財為主、世只作承接，伏財飛克形成未解除門檻',()=>{
+  const r=L.calculate({values:[7,8,7,9,7,6],calendar:{day:'壬寅',monthBranch:'酉'},question:'今天是9月25日統一發票開獎\n我可以中多少?'});
+  assert.equal(r.original.name,'革');assert.equal(r.changed.name,'家人');
+  assert.equal(r.focus.primary,'妻財');assert.deepEqual(Array.from(r.focus.candidates),['妻財']);
+  assert.equal(r.focus.targets[0].relative,'妻財');assert.equal(r.focus.targets[0].priority,'primary');
+  assert.equal(r.focus.targets[1].relative,'世');assert.equal(r.focus.targets[1].role,'問卜者承接');
+  const wealth=r.interpretation.targets.find(t=>t.relative==='妻財'&&t.priority==='primary');
+  assert(wealth);assert.equal(wealth.status,'hidden-only');assert.equal(wealth.candidates.length,1);
+  const hidden=wealth.candidates[0];assert.equal(hidden.position,3);assert.equal(hidden.branch,'午');assert.equal(hidden.flightRelation,'克');
+  assert.equal(hidden.flightAssessment.status,'blocked-with-support');
+  assert(hidden.flightAssessment.gates.some(g=>g.type==='flying-controls-hidden'&&g.status==='blocking'));
+  assert(hidden.flightAssessment.support.includes('伏神得日辰生'));
+  const self=r.interpretation.targets.find(t=>t.relative==='世'&&t.role==='問卜者承接');assert(self);assert.equal(self.priority,'context');
+  const prompt=ctx.JYGuaPrompt.build(r);
+  assert(prompt.includes('取用候選：妻財'));
+  assert(!prompt.includes('取用候選：世應'));
+  assert(prompt.includes('blocked-with-support'));
+  assert(prompt.includes('flying-controls-hidden'));
+});
+
 console.log('gua-engine: '+passed+' groups passed, including all 4096 casts.');
