@@ -71,8 +71,16 @@
       label: 'Golden Dawn《Book T／Liber T》',
       reversalPolicy: '不套用 Waite 固定正逆位字典；一般牌陣由位置、有序連續線上的左右相鄰元素尊貴、卡巴拉位階與占星對應裁決；後世牌陣的因果連線只作互動，不自動視為 Book T 相鄰，Opening of the Key 依其程序裁決。',
       imagePolicy: '牌面圖像只作辨識與次級象徵；不得以 PCS 或 Thoth 圖像敘事覆寫 Book T 的結構與牌義。',
-      forbiddenMixes: ['modern_rws', 'waite_1910', 'thoth_crowley', 'etteilla'],
+      forbiddenMixes: ['rws_reversals', 'modern_rws', 'waite_1910', 'thoth_crowley', 'etteilla'],
       sourceContract: '所有牌陣與開鑰之法共用同一 Golden Dawn Book T 牌義核心；牌陣本身只是一種觀測拓撲，不冒充 Book T 原創。'
+    },
+    rws_reversals: {
+      id: 'rws_reversals',
+      label: 'Rider–Waite–Smith・正逆位',
+      reversalPolicy: '每張牌依本次實際正位／逆位紀錄，結合牌位與全盤關係判讀；逆位不機械等同正位反義。',
+      imagePolicy: '以實際牌名、方向與牌位為可核對資料；未提供原版牌圖細節時不得把特定圖像元素當作本次已觀察事實。',
+      forbiddenMixes: ['gd_book_t', 'thoth_crowley', 'etteilla'],
+      sourceContract: 'RWS 模式只使用本次正逆位、牌位與 RWS 讀法；不借用 Book T 元素尊貴作為牌力裁決。'
     }
   };
 
@@ -209,17 +217,20 @@
   }
 
   function makeSpec(id, label, sourceProfile, roles, operators, measurementOverrides, topology, notes) {
-    sourceProfile = 'gd_book_t';
+    sourceProfile = sourceProfile || 'gd_book_t';
+    var allowedSourceProfiles = (id === 'ootk' || id === 'fifteen_card')
+      ? ['gd_book_t']
+      : ['gd_book_t', 'rws_reversals'];
     return {
       id: id,
       label: label,
       sourceProfile: sourceProfile,
-      allowedSourceProfiles: ['gd_book_t'],
+      allowedSourceProfiles: allowedSourceProfiles,
       layoutSource: id === 'ootk'
         ? 'Golden Dawn《Book T／Liber T》程序'
         : (/^mathers_/.test(id)
-          ? 'Mathers 歷史布局；牌義與尊貴仍鎖定 Book T'
-          : '後世觀測布局；不得冒充 Book T 原創'),
+          ? 'Mathers 歷史布局；讀牌來源由本次 sourceProfile 決定'
+          : '後世觀測布局；不得冒充任何特定牌義來源的原創'),
       roles: roles.slice(),
       expectedCardCount: id === 'ootk' ? null : roles.length,
       expectedOperationCount: id === 'ootk' ? 5 : null,
@@ -602,6 +613,20 @@
     });
   }
 
+  function detectExactValueRequest(question) {
+    if (Foundation && typeof Foundation.detectExactValueRequest === 'function') {
+      return Foundation.detectExactValueRequest(question);
+    }
+    var q = text(question).replace(/\s/g, '');
+    if (!q) return false;
+    if (/(?:多少錢|多少金額|具體(?:金額|數字|數值)|確切(?:金額|數字|數值)|價位)/.test(q)) return true;
+    if (/(?:薪水|薪資|收入|營收|營業額|獲利|利潤|成本|價格|售價|金額|獎金|彩金|中獎金額)(?:是多少|有多少|能有多少|會有多少|多少)/.test(q)) return true;
+    if (/多少(?:薪水|薪資|收入|營收|營業額|獲利|利潤|成本|價格|售價|金額|獎金|彩金)/.test(q)) return true;
+    var prizeContext = /(?:統一發票|發票開獎|中獎|開獎|彩券|彩票|樂透|大樂透|威力彩|今彩|刮刮樂|獎金|彩金)/.test(q);
+    if (prizeContext && /(?:能|會|可以|可|可能)?(?:中|中到|拿到|得到|領到|獲得)多少(?!人|個|位|次|張|組|項|枚|份|件)/.test(q)) return true;
+    return /(?:賺|賺到|拿到|得到|收到|領到|獲得)多少(?:錢|元|塊|萬|億|獎金|彩金|收入|薪水|薪資|款項)/.test(q);
+  }
+
   function requestedDimensions(question, scopes, relations) {
     var q = text(question);
     var dimensions = [
@@ -631,7 +656,8 @@
       add('exact_age', '精確年齡');
       add('person_attribute', '人物屬性');
     }
-    if (/(?:多少錢|多少(?:薪水|收入|成本|獲利|營收)|(?:薪水|收入|成本|獲利|營收)(?:是多少|有多少|多少|金額)|具體(?:金額|數字|數值)|金額|價位|百分比|幾成|機率)/.test(q)) add('exact_value', '精確數值／金額');
+    if (detectExactValueRequest(q)) add('exact_value', '精確數值／金額');
+    if (/(?:百分比|幾成|機率|概率|%)/.test(q)) add('probability', '精確機率／比例');
     if (/(?:誰|哪位|哪一個人|姓名|名字|身分|是什麼人)/.test(q)) add('identity', '人物身分');
     if (/(?:為什麼|為何|原因|根源|怎麼會)/.test(q)) add('cause', '原因／機制');
     if (/(?:怎麼做|怎麼辦|如何改善|建議|策略|方法|該怎麼)/.test(q)) add('guidance', '方法／建議');
@@ -665,7 +691,10 @@
   }
 
   function resolveSemanticProfile(spreadId, options) {
-    return 'gd_book_t';
+    var requested = text(options && options.sourceProfile) || 'gd_book_t';
+    // Preserve the caller's actual reading system. Unsupported profiles remain explicit
+    // so validateContract can reject them instead of silently coercing to Book T.
+    return requested;
   }
 
   function positionLabel(card, index) {
@@ -1494,7 +1523,7 @@
     if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.evidenceUnits)) errors.push('evidence_graph_missing');
 
     if (method) {
-      if (method.requestedSourceProfile && method.requestedSourceProfile !== 'gd_book_t') errors.push('source_profile_not_allowed:' + method.requestedSourceProfile);
+      if (method.requestedSourceProfile && method.allowedSourceProfiles.indexOf(method.requestedSourceProfile) < 0) errors.push('source_profile_not_allowed:' + method.requestedSourceProfile);
       if (method.allowedSourceProfiles.indexOf(method.sourceProfile) < 0) errors.push('source_profile_not_allowed:' + method.sourceProfile);
       if (method.id !== 'ootk' && graph && graph.nodes.length !== method.expectedCardCount) {
         errors.push('card_count_mismatch:' + graph.nodes.length + '/' + method.expectedCardCount);

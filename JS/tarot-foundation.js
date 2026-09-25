@@ -579,11 +579,29 @@
     return null;
   }
 
+  function detectExactValueRequest(question){
+    var q=normalize(question).replace(/\s/g,'');
+    if(!q)return false;
+
+    // Explicit monetary / scalar wording. Keep count and probability as separate dimensions.
+    if(/(?:多少錢|多少金額|具體(?:金額|數字|數值)|確切(?:金額|數字|數值)|價位)/.test(q))return true;
+    if(/(?:薪水|薪資|收入|營收|營業額|獲利|利潤|成本|價格|售價|金額|獎金|彩金|中獎金額)(?:是多少|有多少|能有多少|會有多少|多少)/.test(q))return true;
+    if(/多少(?:薪水|薪資|收入|營收|營業額|獲利|利潤|成本|價格|售價|金額|獎金|彩金)/.test(q))return true;
+
+    // Prize / lottery questions often omit 「錢」: 「發票開獎我能中多少」 still asks for a monetary amount.
+    var prizeContext=/(?:統一發票|發票開獎|中獎|開獎|彩券|彩票|樂透|大樂透|威力彩|今彩|刮刮樂|獎金|彩金)/.test(q);
+    if(prizeContext&&/(?:能|會|可以|可|可能)?(?:中|中到|拿到|得到|領到|獲得)多少(?!人|個|位|次|張|組|項|枚|份|件)/.test(q))return true;
+
+    // Generic receipt / earning verbs only count as exact value when a monetary noun or unit is present.
+    if(/(?:賺|賺到|拿到|得到|收到|領到|獲得)多少(?:錢|元|塊|萬|億|獎金|彩金|收入|薪水|薪資|款項)/.test(q))return true;
+    return false;
+  }
+
   function unsupportedDimensionsFor(q){
     var out=[];
-    if(/多少錢|多少(?:收入|薪水|營收|營業額|獲利|成本)|具體(?:金額|數字|數值)|確切(?:金額|數字|數值)|價位/.test(q))out.push('exact_value');
+    if(detectExactValueRequest(q))out.push('exact_value');
     if(/百分比|幾成|機率|概率|%/.test(q))out.push('probability');
-    if(/幾個|幾位|多少人|人數|數量/.test(q))out.push('cardinality');
+    if(/幾個|幾位|多少人|多少(?:個|位|次|張|組|項|枚|份|件)|人數|數量/.test(q))out.push('cardinality');
     if(/幾歲|多大年紀|年齡|年齡區間/.test(q))out.push('exact_age');
     if(/姓名|名字|身分|是什麼人|是誰|什麼人/.test(q))out.push('identity');
     if(/職業|工作是什麼|做什麼工作|什麼職業|外貌|長相|長什麼樣|身高|體重|星座|生肖/.test(q))out.push('person_attribute');
@@ -1150,5 +1168,5 @@ function recommendReadingSystem(question) {
     return {ok:!errors.length,errors:errors};
   }
 
-  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,questionFocus:questionFocus,spreadDirectives:spreadDirectives,parseChineseNumber:parseChineseNumber,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,analyzeReadingQuestion:analyzeReadingQuestion,recommendSystem:recommendReadingSystem,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
+  return {VERSION:VERSION,SCHEMA:SCHEMA,OBSERVABLES:OBSERVABLES,METHODS:METHODS,METHOD_PROTOCOLS:METHOD_PROTOCOLS,normalizeQuestion:normalize,questionFocus:questionFocus,spreadDirectives:spreadDirectives,parseChineseNumber:parseChineseNumber,detectExactValueRequest:detectExactValueRequest,compileQuestion:compileQuestion,routeQuestion:routeQuestion,instantiateMethod:instantiateMethod,analyzeReadingQuestion:analyzeReadingQuestion,recommendSystem:recommendReadingSystem,getMethod:method,getMethodProtocol:function(id){return clone(METHOD_PROTOCOLS[id]||null);},getDignityLines:dignityLines,getDependencyGroups:dependencyGroups,getCompatibilityEdges:compatibilityEdges,validateMethodRegistry:validateMethodRegistry};
 });

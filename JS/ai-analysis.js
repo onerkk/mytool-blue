@@ -20985,6 +20985,25 @@ function _buildTarotOnlyPayload() {
   if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
+
+    // Engine-layer invariant: RWS readings must pass through the same semantic compiler
+    // as every other tarot path. This is payload integrity, not a prompt instruction.
+    if(semantic&&typeof semantic.compileReadingSpec==='function'){
+      var rwsContract=semantic.compileReadingSpec({
+        question:question,spreadId:spreadId,cards:rws.tarotData.cards,methodPlan:methodPlan,sourceProfile:'rws_reversals',
+        knownCounterpart:compiled.knownCounterpart,
+        referenceDate:compiled.features&&compiled.features.referenceDate||new Date().toISOString()
+      });
+      if(!rwsContract||!rwsContract.validation||!rwsContract.validation.ok){
+        throw new Error('RWS semantic contract invalid: '+((rwsContract&&rwsContract.validation&&rwsContract.validation.errors||[]).join(',')||'unknown_error'));
+      }
+      rws.semanticContract=rwsContract;
+      rws.semanticProgramVersion=rwsContract.engineVersion||'';
+      rws.tarotData.semanticContract=rwsContract;
+      rws.tarotData.semanticProgramVersion=rws.semanticProgramVersion;
+    }
+    rws.tarotData.foundationVersion=foundation.VERSION||'';
+
     if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
     rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
