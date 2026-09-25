@@ -165,7 +165,7 @@ check('review allows conditional symbolic relationship answer', r.ok===true, JSO
 // J. Generated/shared source integrity and cache/version wiring.
 check('root and JS lenormand identical', fs.readFileSync(path.join(root,'lenormand.js'),'utf8')===fs.readFileSync(sourcePath,'utf8'));
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
-check('index loads v20 cache token', index.includes('JS/lenormand.js?v=20260925ln20'));
-check('public API v20', sandbox.window.JYLenormand && sandbox.window.JYLenormand.version==='20.0.0', JSON.stringify(sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version));
+check('index loads v21 cache token', index.includes('JS/lenormand.js?v=20260925ln21'));
+check('public API v21', sandbox.window.JYLenormand && sandbox.window.JYLenormand.version==='21.0.0', JSON.stringify(sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version));
 
-console.log(`Lenormand v20 dependency rootfix: ${pass} checks PASS`);
+console.log(`Lenormand v21 dependency/rootfix compatibility: ${pass} checks PASS`);

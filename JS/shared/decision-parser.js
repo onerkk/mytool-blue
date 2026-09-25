@@ -47,6 +47,11 @@ function classifyDecisionQuestion(question) {
     if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
     var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
+    // Polarity alternatives are one outcome proposition, not two hypotheses or two user choices:
+    // 「會聯絡還是不聯絡」「喜歡還是不喜歡」「能成功還是不能成功」.
+    function polarityCore(v){return String(v||'').replace(/^(?:我|你|他|她|它|對方|我們|你們|他們|她們)/,'').replace(/^(?:到底|現在|最近|未來|之後)/,'').replace(/^(?:會不會|會|能不能|能|可不可以|可以|是否|是不是|有沒有|有|可能)/,'').replace(/^(?:不會|不能|不可以|不可|沒有|沒|未|不)/,'').replace(/[嗎呢\s]/g,'').trim();}
+    var lc=polarityCore(left), rc=polarityCore(right), rightNegative=/^(?:不會|不能|不可以|不可|沒有|沒|未|不)/.test(right), leftNegative=/^(?:不會|不能|不可以|不可|沒有|沒|未|不)/.test(left.replace(/^(?:我|你|他|她|它|對方|我們|你們|他們|她們)/,''));
+    if(lc&&rc&&(rightNegative!==leftNegative)&&(lc===rc||lc.endsWith(rc)||rc.endsWith(lc)))return result('outcome_polarity',null,null,'這是同一事件的正反結果，不是兩個可採取方案，也不是兩個獨立原因假設。');
     var hypothesis = /^(?:只是|僅僅|單純)|禮貌|客氣|沒興趣|不喜歡|不愛|挑戰|變糟|失敗|生氣|隱瞞/.test(right) || /(?:會|能|是|喜歡|愛我|機會|變好|上漲|下跌)/.test(left);
     // 口語二選一常把第二個選項省略共同動詞，例如「買iPhone還是Samsung」「去台北還是高雄發展」。
     // 只有第一側明確是可執行動作、第二側是短方案名時才繼承動詞；不套用到「會不會／喜不喜歡」等結果假設。

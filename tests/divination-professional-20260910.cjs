@@ -98,7 +98,7 @@ const lenormandCases=[
  ['請用三張線分析工作','three'],['上次用九宮格，這次他會回覆嗎？','three'],
  ['不是在問何時復合，而是他為什麼不回訊息？','five'],
  ['我想知道工作如何？感情運勢呢？','branches'],
- ['我應該留下還是？','five'],['A 還是 B？','choice']
+ ['A 還是 B？','choice']
 ];
 test('Lenormand: 28 question cases distinguish focused lines, real branches, facets and panorama',()=>{
  for(const [q,id] of lenormandCases){const r=LN.route(q);assert.equal(r.id,id,q);assert.equal(LN.analyze(q).q,q);assert(r.why);}
@@ -106,6 +106,7 @@ test('Lenormand: 28 question cases distinguish focused lines, real branches, fac
  assert(!LN.analyze('她喜歡我還是只是禮貌？').isChoice);
  assert(!LN.analyze('我應該選A公司、B公司還是創業？').isChoice);
  assert(!LN.analyze('不是在問何時復合而是他為什麼不回訊息？').asksWhen);
+ assert.equal(LN.route('我應該留下還是？').id,null,'不完整比較題應 fail closed，不自行補方案或抽牌');
 });
 test('Lenormand: actual auto/manual casting exports matching positions and complete cards',()=>{
  for(const [q,id] of lenormandCases){
