@@ -154,7 +154,7 @@ var JY_READING_LENORMAND = [
 var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
 // END GENERATED RECOMMENDATION JY_REC_LENORMAND
 // ═══════════════════════════════════════
-// 靜月之光 — 雷諾曼牌 Lenormand v19.0（語義量測與路由完整引擎）
+// 靜月之光 — 雷諾曼牌 Lenormand v20.0（條件依賴與指涉承接完整引擎）
 // 2026/9/4：保留牌義、合法幾何與大牌陣位置資料，改由 AI 自身 Lenormand 知識整合牌組、長線、宮位、距離與方向。
 // 五種牌陣只提供可驗證幾何；內容量完全由合法牌句產生的獨立命題決定，不依牌數、固定章節或預設篇幅。
 // 每條合法路徑及全部連續片段先生成候選牌句，再以覆蓋帳本逐一確認新增、佐證、限定、反證、無關或不足；不採事件關鍵字表。
@@ -164,7 +164,7 @@ var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，�
 // ═══════════════════════════════════════
 (function () {
 'use strict';
-console.log('[Lenormand] 靜月之光 雷諾曼牌 v19.0 loaded — semantic measurement + routing engine');
+console.log('[Lenormand] 靜月之光 雷諾曼牌 v20.0 loaded — dependency-aware semantic engine');
 
 // ════════════════════════════════════
 // 一、36 張牌完整數據
@@ -556,7 +556,34 @@ function analyzeReadingQuestion(value) {
   var parts=q.split(/[？?。；;\n]+|[，,](?=(?:另外|還有|以及|也想問|至於))/).map(clean).filter(Boolean);
   var peoplePattern=/(?:女友|男友|伴侶|朋友)的?(?:閨蜜|好友|朋友)|(?:[A-F甲乙丙丁]\s*)?(?:公司)?(?:異性|女性|男性|女|男)?同事(?:\s*[A-F甲乙丙丁])?|前任|前男友|前女友|女友|男友|伴侶|主管|客戶/g;
   function people(s){var matches=s.match(peoplePattern)||[];return unique(matches);}
+  function relationState(s){return /暗戀|秘密喜歡|喜歡我|喜歡你|對我有意思|對你有意思|有好感|愛我|愛你|在乎我|在乎你|真心/.test(s||'');}
+  function relationAction(s){return /告白|表白|追求|交往|約會|邀約|主動(?:聯絡|找|靠近|示好|追求|約)|說出口|坦白心意|確認關係/.test(s||'');}
+  function futureCue(s){return /^(?:未來|之後|後來|往後|接下來|再來|下一步|那|那麼)/.test(clean(s||''));}
+  function explicitDomainSubject(s){return /^(?:我(?:的)?(?:工作|事業|財運|健康|家庭|學業)|工作|事業|財運|健康|家庭|學業|收入|薪水|公司制度|主管|客戶)/.test(clean(s||''));}
+  function inheritedRelationshipFollow(prevText,part){
+    var cur=clean(part||''),prev=String(prevText||'');
+    if(!relationState(prev)||!relationAction(cur))return false;
+    if(explicitDomainSubject(cur))return false;
+    if(futureCue(cur))return true;
+    if(/^(?:他|她|對方|這個人|那個人|這位(?:女生|女性|男生|男性)|該(?:女生|女性|男生|男性))/.test(cur))return true;
+    return people(cur).length===0;
+  }
+  function clauseRole(s){
+    s=String(s||'');
+    if(relationState(s))return 'hidden_relationship_state';
+    if(relationAction(s))return 'relationship_action';
+    if(/什麼時候|何時|多久|哪一天|哪天|幾月幾日|幾號|幾點/.test(s))return 'timing';
+    if(/為什麼|為何|原因|卡在哪|阻礙|障礙/.test(s))return 'reason';
+    if(/怎麼|如何|方法|策略|建議|下一步/.test(s))return 'action_advice';
+    return 'outcome';
+  }
   var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
+  var dependencyEdges=[];
+  for(var di=1;di<parts.length;di++){
+    var prevPart=parts[di-1],curPart=parts[di];
+    if(inheritedRelationshipFollow(prevPart,curPart))dependencyEdges.push({from:di-1,to:di,type:'hidden_state_to_future_action_same_actor',fromRole:clauseRole(prevPart),toRole:clauseRole(curPart),actorBinding:'inherit_previous'});
+    else if(clauseRole(prevPart)==='relationship_action'&&clauseRole(curPart)==='timing'&&people(curPart).length===0)dependencyEdges.push({from:di-1,to:di,type:'action_to_timing_same_actor',fromRole:'relationship_action',toRole:'timing',actorBinding:'inherit_previous'});
+  }
   var globalScope=scope(parts[0]||q), groups=[];
   function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
   var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|卡在哪|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
@@ -565,7 +592,8 @@ function analyzeReadingQuestion(value) {
       if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
       var prev=groups[groups.length-1], ps=people(part), distinct=prev&&ps.length&&ps.some(function(p){return prev.entity.indexOf(p)<0;});
       var isQuestion=/嗎|是否|會不會|有沒有|能不能|可不可以|能否|會否|如何|怎樣|怎麼|運勢|走向|發展|何時|多久|哪|誰|請分析|幫我看|結婚|交往|同意/.test(part);
-      if(prev&&!distinct&&(follow.test(part)||!isQuestion))prev.question+='；'+part;
+      var inheritedFollow=prev&&!distinct&&inheritedRelationshipFollow(prev.question,part);
+      if(prev&&!distinct&&(follow.test(part)||inheritedFollow||!isQuestion))prev.question+='；'+part;
       else groups.push(group(part,ps.join('、')));
     });
     // Only explicit distributive language splits several named people in one sentence.
@@ -582,7 +610,7 @@ function analyzeReadingQuestion(value) {
   // 「今天／今日」只是時間錨，不等於日常提醒。只有使用者真的在問每日／今日整體訊息、提醒或運勢時才標為 daily。
   // 這可避免「今天統一發票會中多少」「今天會收到通知嗎」等具體事件被錯送到雙牌日常提醒。
   var daily=/(?:今天|今日)(?:的)?(?:整體)?(?:運勢|提醒|指引|訊息|信息|主題|牌訊|牌卡|有什麼提醒|有何提醒|該注意什麼|要注意什麼|需要注意什麼)|(?:每日|日常)(?:提醒|指引|訊息|信息|主題|運勢)/.test(q);
-  return {version:'1.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
+  return {version:'1.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,clauses:parts.map(function(text,i){return {index:i,text:text,role:clauseRole(text)};}),dependencies:dependencyEdges,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
 }
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
@@ -637,6 +665,7 @@ function _lnCapabilityProfile(x) {
   if(x.asksExactAge)add('exact_age','精確歲數',false,['相對年齡感','成熟度／生命階段的象徵傾向']);
   if(x.asksExactIdentity)add('exact_identity','精確身分／個資',false,['角色類型','可觀察特徵','互動位置']);
   var occurrenceGate=!!(x.asksOccurrenceThenAmount||x.asksOccurrenceThenCount);
+  var dependencyGate=!!x.dependencyGate;
   var intent='qualitative';
   if(x.asksExactAmount)intent=occurrenceGate?'conditional_amount':'amount';
   else if(x.asksExactCount)intent=occurrenceGate?'conditional_count':'count';
@@ -644,8 +673,9 @@ function _lnCapabilityProfile(x) {
   else if(x.asksExactDate||x.asksWhen)intent='timing';
   else if(x.asksExactIdentity||x.asksPersonProfile)intent='profile';
   else if(x.isChoice)intent='comparison';
+  else if(dependencyGate)intent='conditional_outcome_chain';
   else if(x.isYesNo)intent='outcome';
-  var resolution=dims.length?'symbolic_resolution':'direct_symbolic';
+  var resolution=dims.length?'symbolic_resolution':(dependencyGate?'conditional_symbolic':'direct_symbolic');
   if(x.asksExactAmount)resolution='qualitative_band';
   else if(x.asksExactCount)resolution='qualitative_count';
   else if(x.asksProbability)resolution='qualitative_support';
@@ -653,6 +683,10 @@ function _lnCapabilityProfile(x) {
   else if(x.asksExactAge)resolution='relative_profile';
   else if(x.asksExactIdentity)resolution='role_profile';
   var tasks=[];
+  if(dependencyGate&&x.hiddenStateClaim&&x.futureActionClaim){
+    tasks.push('先判前項隱性情感狀態是否獲牌面支持');
+    tasks.push('前項獲支持時，再判同一人物是否有把情感轉成明確表態／行動的傾向');
+  }
   if(occurrenceGate)tasks.push(x.asksExactAmount?'先判事件是否有成立／得財傾向':'先判事件是否有成立傾向');
   if(x.asksExactAmount)tasks.push('再判相對幅度或級距');
   if(x.asksExactCount)tasks.push(occurrenceGate?'再判相對數量級與分散／集中程度':'判相對數量級與分散／集中程度');
@@ -661,7 +695,7 @@ function _lnCapabilityProfile(x) {
   if(x.asksExactAge)tasks.push('判相對年齡／成熟度範圍');
   if(x.asksExactIdentity)tasks.push('判角色類型與可觀察特徵');
   if(!tasks.length)tasks.push('依原問句直接判讀');
-  return {version:'1.1.0',intent:intent,resolution:resolution,occurrenceGate:occurrenceGate,exactNumericSupported:dims.length?false:null,dimensions:dims,tasks:tasks};
+  return {version:'1.2.0',intent:intent,resolution:resolution,occurrenceGate:occurrenceGate,dependencyGate:dependencyGate,dependencies:x.dependencyEdges||[],claimPolicy:{hiddenState:x.hiddenStateClaim?'symbolic_tendency':null,futureAction:x.futureActionClaim?'conditional_tendency':null},exactNumericSupported:dims.length?false:null,dimensions:dims,tasks:tasks};
 }
 
 function _lnAnalyzeQuestion(q) {
@@ -762,9 +796,15 @@ function _lnAnalyzeQuestion(q) {
   if (isConditionalProfileBundle) facetCount = Math.max(facetCount, 3);
 
   var sharedQuestion=analyzeReadingQuestion(originalQuestion);
-  independentMulti=independentMulti||sharedQuestion.mode==='multi_question';
+  var dependencyEdges=Array.isArray(sharedQuestion.dependencies)?sharedQuestion.dependencies:[];
+  var dependencyGate=dependencyEdges.length>0;
+  var hiddenStateClaim=parts.some(function(part){return /暗戀|秘密喜歡|喜歡我|喜歡你|對我有意思|對你有意思|有好感|愛我|愛你|真心/.test(part);});
+  var futureActionClaim=parts.some(function(part){return /告白|表白|追求|交往|約會|邀約|主動(?:聯絡|找|靠近|示好|追求|約)|說出口|坦白心意|確認關係/.test(part);});
+  clausesLinked=clausesLinked||dependencyGate;
+  independentMulti=independentMulti||(sharedQuestion.mode==='multi_question'&&!dependencyGate);
   var questionShape = '一般單一議題';
-  if(sharedQuestion.mode==='multi_question')questionShape='多人物／多事件分題';
+  if(dependencyGate)questionShape='條件相依的單一事件鏈';
+  else if(sharedQuestion.mode==='multi_question')questionShape='多人物／多事件分題';
   else if(sharedQuestion.mode==='multi_option')questionShape='多選項獨立比較';
   else if (isChoice) questionShape = '雙路決策比較';
   else if (isGlobal) questionShape = '多領域／全景問題';
@@ -792,7 +832,9 @@ function _lnAnalyzeQuestion(q) {
     medicalDiagnosis:medicalDiagnosis, fatalityQuestion:fatalityQuestion,
     criminalFact:criminalFact, directLegalLiability:directLegalLiability,
     facetCount:facetCount, questionShape:questionShape,
-    isSensitiveHidden:asksInner || isHiddenClaim
+    isSensitiveHidden:asksInner || isHiddenClaim,
+    dependencyEdges:dependencyEdges, dependencyGate:dependencyGate,
+    hiddenStateClaim:hiddenStateClaim, futureActionClaim:futureActionClaim
   };
   result.capability=_lnCapabilityProfile(result);
   return result;
@@ -954,6 +996,8 @@ function _lnRecommendSpread(x) {
   // 只有原問句真的要求多面向／多人特徵時才升級九宮格；why+how 本身仍是同一事件診斷。
   if (x.isOverview || x.isConditionalProfileBundle || x.profileTraitCount >= 2)
     return { id:'nine', why:'同一議題明確要求三個以上面向，需要九宮格以多條合法交會線回答' };
+  if (x.dependencyGate && x.futureActionClaim)
+    return { id:'seven', why:'同一人物的隱性狀態與後續明確行動具有前後條件依賴，七張線保留狀態、轉折、阻力與是否落實行動的完整路徑' };
   if (x.asksWhy || x.asksHow || x.asksWhen || x.asksPersonProfile || x.asksExactAge || x.asksExactIdentity || x.isInner || x.isHiddenClaim || x.facetCount >= 2)
     return { id:'five', why:'同一事件需要原因、方法、時間、人物輪廓、隱含狀態或階段脈絡，五張線較完整' };
   // 精確數字型問句仍可占，但雷諾曼只提供象徵尺度；三張線足以先判結果是否成立，再判相對幅度。
@@ -1174,7 +1218,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   var actualAuto=_lnAutoPick&&_lnAutoPick.id===spreadId&&_lnQuestion===String(question||'').trim();
   lines.push('選陣說明：'+(actualAuto?_lnAutoPick.why:selection.id===spreadId?'本題與此牌陣相符：'+selection.why:'本次實際使用'+sp.name+'，按下方已定義的牌位與幾何解讀。自動選陣建議不是牌面證據。'));
   // 這是引擎對問題量測層級的結構化結果，不是額外牌義或人工結論。
-  lines.push('引擎問題解析：'+JSON.stringify({intent:capability.intent,resolution:capability.resolution,occurrenceGate:capability.occurrenceGate,exactNumericSupported:capability.exactNumericSupported,tasks:capability.tasks}));
+  lines.push('引擎問題解析：'+JSON.stringify({intent:capability.intent,resolution:capability.resolution,occurrenceGate:capability.occurrenceGate,dependencyGate:capability.dependencyGate,dependencies:capability.dependencies,claimPolicy:capability.claimPolicy,exactNumericSupported:capability.exactNumericSupported,tasks:capability.tasks}));
   if(questionModel.isChoice)lines.push('原問句方案綁定：A＝'+questionModel.choiceA+'；B＝'+questionModel.choiceB+'。非雙路牌陣時這僅是提問資料，不憑空新增兩路牌位。');
   if(questionModel.moreThanTwoOptions&&spreadId!=='branches')lines.push('問題有三個以上方案：逐一保留原方案，這個版式沒有每方案獨立的可比支線；先回答共同條件，若仍需逐路比較，可改用各題分線牌陣另起一次占卜。');
   if(questionModel.hypothesisChoice)lines.push('問題比較的是同一事件的不同解釋，並非使用者可各自採取的兩個方案；以牌句比較可能解釋與可觀察證據，不冒充已證實對方心意。');
@@ -1672,8 +1716,27 @@ function _lnReviewAnswerGranularity(question, answer) {
     var age=text.match(/\d{1,3}\s*歲/);
     if(age && String(question||'').indexOf(age[0])<0)add('EXACT_AGE_OVERREACH','雷諾曼引擎只支援相對年齡／成熟度，不應由牌面新增精確歲數。',age[0]);
   }
+  var sentences=text.match(/[^。！？!?\n]+[。！？!?]?/g)||[];
+  function hasQualifier(sentence){return /牌面(?:偏向|支持|較(?:像|支持|可能)|顯示.{0,8}(?:傾向|可能)|只能|僅能)|牌勢(?:偏向|支持|較(?:像|支持|可能))|組合(?:偏向|支持|較(?:像|支持|可能))|象徵(?:上)?(?:偏向|支持|較(?:像|支持|可能))|傾向|偏向|較(?:像|支持|可能)|可能|有機會|看起來|目前看|若|如果|假如|未必|不一定|不能證明|不代表|不等於|僅能|只能/.test(sentence);}
+  function negated(sentence){return /沒有證據|不能證明|不代表|不等於|未必|不一定|並非|不是/.test(sentence);}
+  if(x.isSensitiveHidden||x.hiddenStateClaim){
+    sentences.forEach(function(sentence){
+      var hidden=/(?:暗戀|秘密喜歡|真心喜歡|對(?:你|我)有意思|對(?:你|我)有好感|愛(?:你|我)|在乎(?:你|我))/.test(sentence);
+      if(hidden&&!negated(sentence)&&!hasQualifier(sentence))add('HIDDEN_STATE_AS_FACT','答案把未公開的他人內心狀態寫成已證實事實；引擎只支援由牌面形成的象徵傾向。',sentence.trim());
+      if(hidden&&/(?:百分之百|100%|一定|必然|肯定|確定|毫無疑問|就是事實|真的就是|(?:牌面|牌勢|組合|象徵).{0,8}(?:證明|確認))/.test(sentence)&&!negated(sentence))add('HIDDEN_STATE_CERTAINTY','答案對未公開內心使用了確定性斷言；牌面只能形成有條件的象徵判讀。',sentence.trim());
+    });
+  }
+  if(x.futureActionClaim){
+    sentences.forEach(function(sentence){
+      var action=/(?:告白|表白|追求|交往|約會|邀約|主動(?:聯絡|找|靠近|示好|追求|約)|說出口|坦白心意|確認關係)/.test(sentence);
+      if(!action||negated(sentence))return;
+      var hard=/(?:百分之百|100%|一定|必然|肯定|確定(?:會|不會)|注定|遲早(?:會|要))/.test(sentence);
+      var direct=/(?:她|他|對方|這位(?:女生|女性|男生|男性)|那位(?:女生|女性|男生|男性)).{0,18}(?:會|不會).{0,18}(?:告白|表白|追求|交往|約會|邀約|主動|說出口|坦白心意|確認關係)/.test(sentence);
+      if((hard||direct)&&!hasQualifier(sentence))add('FUTURE_ACTION_AS_CERTAINTY','答案把尚未發生的後續行動寫成確定事件；本題只能判條件性行動傾向。',sentence.trim());
+    });
+  }
   return {ok:issues.length===0,issues:issues,capability:x.capability};
 }
 
-window.JYLenormand={version:'19.0.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
+window.JYLenormand={version:'20.0.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
 })();

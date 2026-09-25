@@ -721,7 +721,34 @@ function analyzeReadingQuestion(value) {
   var parts=q.split(/[？?。；;\n]+|[，,](?=(?:另外|還有|以及|也想問|至於))/).map(clean).filter(Boolean);
   var peoplePattern=/(?:女友|男友|伴侶|朋友)的?(?:閨蜜|好友|朋友)|(?:[A-F甲乙丙丁]\s*)?(?:公司)?(?:異性|女性|男性|女|男)?同事(?:\s*[A-F甲乙丙丁])?|前任|前男友|前女友|女友|男友|伴侶|主管|客戶/g;
   function people(s){var matches=s.match(peoplePattern)||[];return unique(matches);}
+  function relationState(s){return /暗戀|秘密喜歡|喜歡我|喜歡你|對我有意思|對你有意思|有好感|愛我|愛你|在乎我|在乎你|真心/.test(s||'');}
+  function relationAction(s){return /告白|表白|追求|交往|約會|邀約|主動(?:聯絡|找|靠近|示好|追求|約)|說出口|坦白心意|確認關係/.test(s||'');}
+  function futureCue(s){return /^(?:未來|之後|後來|往後|接下來|再來|下一步|那|那麼)/.test(clean(s||''));}
+  function explicitDomainSubject(s){return /^(?:我(?:的)?(?:工作|事業|財運|健康|家庭|學業)|工作|事業|財運|健康|家庭|學業|收入|薪水|公司制度|主管|客戶)/.test(clean(s||''));}
+  function inheritedRelationshipFollow(prevText,part){
+    var cur=clean(part||''),prev=String(prevText||'');
+    if(!relationState(prev)||!relationAction(cur))return false;
+    if(explicitDomainSubject(cur))return false;
+    if(futureCue(cur))return true;
+    if(/^(?:他|她|對方|這個人|那個人|這位(?:女生|女性|男生|男性)|該(?:女生|女性|男生|男性))/.test(cur))return true;
+    return people(cur).length===0;
+  }
+  function clauseRole(s){
+    s=String(s||'');
+    if(relationState(s))return 'hidden_relationship_state';
+    if(relationAction(s))return 'relationship_action';
+    if(/什麼時候|何時|多久|哪一天|哪天|幾月幾日|幾號|幾點/.test(s))return 'timing';
+    if(/為什麼|為何|原因|卡在哪|阻礙|障礙/.test(s))return 'reason';
+    if(/怎麼|如何|方法|策略|建議|下一步/.test(s))return 'action_advice';
+    return 'outcome';
+  }
   var actors=people(q),namedPair=q.match(/([^，,。？?；;\n]{1,18}?)(?:與|和|跟|、)([^，,。？?；;\n]{1,18}?)[，,]?(?:各自|分別)/);if(actors.length<2&&namedPair)actors=unique([clean(namedPair[1].replace(/^(?:請問|我想問|幫我看)/,'')),clean(namedPair[2])]);
+  var dependencyEdges=[];
+  for(var di=1;di<parts.length;di++){
+    var prevPart=parts[di-1],curPart=parts[di];
+    if(inheritedRelationshipFollow(prevPart,curPart))dependencyEdges.push({from:di-1,to:di,type:'hidden_state_to_future_action_same_actor',fromRole:clauseRole(prevPart),toRole:clauseRole(curPart),actorBinding:'inherit_previous'});
+    else if(clauseRole(prevPart)==='relationship_action'&&clauseRole(curPart)==='timing'&&people(curPart).length===0)dependencyEdges.push({from:di-1,to:di,type:'action_to_timing_same_actor',fromRole:'relationship_action',toRole:'timing',actorBinding:'inherit_previous'});
+  }
   var globalScope=scope(parts[0]||q), groups=[];
   function group(s,entity){return {id:'SUBJECT_'+(groups.length+1),question:s,entity:entity||'',scope:scope(s)||globalScope,scopeInherited:!!(!scope(s)&&globalScope)};}
   var follow=/^(?:那|又|並且|以及|另外)?(?:我|我們)?(?:應該|該)?(?:有什麼(?:阻礙|方法)|為什麼|為何|原因|阻礙|障礙|卡在哪|怎麼|如何|何時|什麼時候|多久|結果|走向|後續|若有|如果有|他的?幾歲|她的?幾歲|他幾歲|她幾歲|對方幾歲|長相|年齡|該怎麼)/;
@@ -730,7 +757,8 @@ function analyzeReadingQuestion(value) {
       if(/^(?:請)?(?:用|使用|採用|不要用|不用).{0,15}(?:牌陣|張線|九宮格)$/.test(part))return;
       var prev=groups[groups.length-1], ps=people(part), distinct=prev&&ps.length&&ps.some(function(p){return prev.entity.indexOf(p)<0;});
       var isQuestion=/嗎|是否|會不會|有沒有|能不能|可不可以|能否|會否|如何|怎樣|怎麼|運勢|走向|發展|何時|多久|哪|誰|請分析|幫我看|結婚|交往|同意/.test(part);
-      if(prev&&!distinct&&(follow.test(part)||!isQuestion))prev.question+='；'+part;
+      var inheritedFollow=prev&&!distinct&&inheritedRelationshipFollow(prev.question,part);
+      if(prev&&!distinct&&(follow.test(part)||inheritedFollow||!isQuestion))prev.question+='；'+part;
       else groups.push(group(part,ps.join('、')));
     });
     // Only explicit distributive language splits several named people in one sentence.
@@ -747,7 +775,7 @@ function analyzeReadingQuestion(value) {
   // 「今天／今日」只是時間錨，不等於日常提醒。只有使用者真的在問每日／今日整體訊息、提醒或運勢時才標為 daily。
   // 這可避免「今天統一發票會中多少」「今天會收到通知嗎」等具體事件被錯送到雙牌日常提醒。
   var daily=/(?:今天|今日)(?:的)?(?:整體)?(?:運勢|提醒|指引|訊息|信息|主題|牌訊|牌卡|有什麼提醒|有何提醒|該注意什麼|要注意什麼|需要注意什麼)|(?:每日|日常)(?:提醒|指引|訊息|信息|主題|運勢)/.test(q);
-  return {version:'1.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
+  return {version:'1.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,actors:actors,branches:branches,clauses:parts.map(function(text,i){return {index:i,text:text,role:clauseRole(text)};}),dependencies:dependencyEdges,ready:branches.length<=6&&!(decision.kind==='multiple'&&!options.length),notes:notes,scope:globalScope,monthly:/(?:每個月|每月|各月份)(?:的)?(?:運勢|趨勢|走向|主題|提醒|工作|感情|財運|牌|$)|逐月|(?:十二|12)個月(?:的)?(?:運勢|趨勢|主題)|月份牌陣/.test(q),daily:daily};
 }
 function recommendReadingSystem(question) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
