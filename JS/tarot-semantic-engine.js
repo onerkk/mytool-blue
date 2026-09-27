@@ -18,7 +18,7 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '101.0.0';
+  var VERSION = '101.1.0';
   var SCHEMA = 'jy.tarot.semantic-contract/8';
 
   function clone(value) {
@@ -406,10 +406,21 @@
 
   function applyFoundationMethods() {
     if (!Foundation || !Foundation.METHODS) return;
-    Object.keys(METHOD_SPECS).forEach(function (id) {
+    Object.keys(Foundation.METHODS).forEach(function (id) {
       var source = Foundation.METHODS[id];
       var target = METHOD_SPECS[id];
-      if (!source || !target) return;
+      if (!source) return;
+      if (!target) {
+        var structures = source.protocol && source.protocol.structures || [];
+        target = METHOD_SPECS[id] = makeSpec(
+          id, source.label || id, source.sourceProfile || 'gd_book_t',
+          (source.slots || []).map(function (slot) { return slot.authority || 'structural'; }),
+          uniq(['atomic_node'].concat(structures.map(function (structure) { return structure.type || 'native_structure'; }))),
+          {},
+          { kind: source.protocol && (source.protocol.topology || source.protocol.id || source.protocol.kind || source.protocol.slotMode) || 'declared_method_geometry', independentComparableChannels: (source.provides || []).indexOf('comparison_outcome') >= 0 ? 2 : 0 },
+          ['此方法依 Foundation 登錄的原生位置及關係編譯；不以其他牌陣替代。']
+        );
+      }
       target.label = source.label || target.label;
       target.layoutSource = source.layoutSource || target.layoutSource;
       target.expectedCardCount = source.count == null ? target.expectedCardCount : source.count;
@@ -864,7 +875,8 @@
   }
 
   function compileEvidenceGraph(spreadId, cards, options) {
-    var id = METHOD_SPECS[spreadId] ? spreadId : 'three_card';
+    var id = text(spreadId);
+    if (!id || !METHOD_SPECS[id]) throw new Error('unregistered_tarot_method:' + (id || ''));
     if (id === 'ootk') return compileOOTKEvidence((options || {}).ootkData || options || {});
     var opts = options || {};
     var spec = clone(METHOD_SPECS[id]);
@@ -1046,6 +1058,77 @@
       synthesis('horseshoe_dependency_network', '馬蹄形完整網絡', [h1, h2, h3]);
     }
 
+    if (methodPlan && ['single_card','action_three','mind_body_spirit','daily_action','year_review','monthly','multi_option','multi_question'].indexOf(id) >= 0 && methodPlan.protocol && Array.isArray(methodPlan.protocol.structures)) {
+      var nativeUnits = Object.create(null);
+      methodPlan.protocol.structures.forEach(function (st, structureIndex) {
+        var structureId = st.id || ('NATIVE_' + (structureIndex + 1));
+        var declaredIndices = st.indices || [];
+        var indices = declaredIndices.filter(function (i) { return Number.isInteger(i) && i >= 0 && i < nodes.length; });
+        var missingIndices = declaredIndices.filter(function (i) { return !Number.isInteger(i) || i < 0 || i >= nodes.length; });
+        if (missingIndices.length) throw new Error('invalid_method_structure_index:' + id + ':' + structureId + ':' + missingIndices.join(','));
+        var depends = (st.dependsOnStructures || []).map(function (dependency) {
+          if (!nativeUnits[dependency]) throw new Error('unresolved_method_structure_dependency:' + id + ':' + structureId + ':' + dependency);
+          return nativeUnits[dependency];
+        });
+        var slot = indices.length ? (methodPlan.slots || [])[indices[0]] || {} : {};
+        var binding = slot.binding || {};
+        var metadata = Object.assign({}, st.metadata || {}, {
+          nativeStructureId: structureId,
+          nativeStructureType: st.type || 'native_structure',
+          instruction: st.instruction || '',
+          sourceIndices: indices.slice(),
+          contextNodeIds: (st.claimPolicy === 'synthesis_only' ? indices : []).map(function (i) { return nodes[i] && nodes[i].id; }).filter(Boolean),
+          branchEntity: binding.entity || '',
+          branchQuestion: binding.question || ''
+        });
+        var unitEvent = st.eventBinding || binding.eventId || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE';
+        var isSynthesis = st.claimPolicy === 'synthesis_only' || depends.length > 0 || /(?:_synthesis|_summary)$/.test(st.type || '');
+        var unitId;
+        if (isSynthesis) {
+          if (!depends.length) throw new Error('method_synthesis_without_dependencies:' + id + ':' + structureId);
+          unitId = synthesis(st.type || 'native_synthesis', st.label || structureId, depends, {
+            eventBinding: unitEvent,
+            eventJoin: st.eventJoin || 'claims_only_from_declared_native_dependencies',
+            entityJoin: st.entityJoin || 'native_structure_entity_policy',
+            roleJoin: st.roleJoin || 'native_structure_role_policy',
+            metadata: metadata
+          });
+        } else {
+          if (!indices.length) throw new Error('method_structure_has_no_evidence:' + id + ':' + structureId);
+          unitId = direct(st.type || 'native_structure', st.label || structureId, indices, {
+            topology: st.topology || st.type || 'native_structure',
+            eventBinding: unitEvent,
+            entityJoin: st.entityJoin || 'same_entity_only_with_explicit_binding',
+            roleJoin: st.roleJoin || 'native_structure_role_policy',
+            metadata: metadata,
+            forbidden: st.forbidden || []
+          });
+        }
+        nativeUnits[structureId] = unitId;
+      });
+    }
+
+    if (methodPlan && id === 'either_or' && methodPlan.protocol && Array.isArray(methodPlan.protocol.structures)) {
+      methodPlan.protocol.structures.forEach(function (st, structureIndex) {
+        if (!(st.metadata && st.metadata.supplemental)) return;
+        var structureId = st.id || ('SUPPLEMENTAL_' + (structureIndex + 1));
+        var declaredIndices = st.indices || [];
+        var indices = declaredIndices.filter(function (i) { return Number.isInteger(i) && i >= 0 && i < nodes.length; });
+        var missingIndices = declaredIndices.filter(function (i) { return !Number.isInteger(i) || i < 0 || i >= nodes.length; });
+        if (missingIndices.length) throw new Error('invalid_method_structure_index:' + id + ':' + structureId + ':' + missingIndices.join(','));
+        if (!indices.length) throw new Error('method_structure_has_no_evidence:' + id + ':' + structureId);
+        var slot = (methodPlan.slots || [])[indices[0]] || {};
+        var binding = slot.binding || {};
+        direct(st.type || 'native_structure', st.label || structureId, indices, {
+          topology: st.topology || st.type || 'native_structure',
+          eventBinding: st.eventBinding || binding.eventId || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE',
+          entityJoin: st.entityJoin || 'same_entity_only_with_explicit_binding',
+          roleJoin: st.roleJoin || 'native_structure_role_policy',
+          metadata: Object.assign({}, st.metadata || {}, {nativeStructureId:structureId,instruction:st.instruction || '',branchEntity:binding.entity || '',branchQuestion:binding.question || ''}),
+          forbidden: st.forbidden || []
+        });
+      });
+    }
     return {
       methodId: id,
       topology: clone(spec.topology),
@@ -1397,7 +1480,11 @@
     var route = Foundation && typeof Foundation.routeQuestion === 'function'
       ? Foundation.routeQuestion(questionSpec, { referenceDate: data.referenceDate || data.readingDate || null })
       : null;
-    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : (route && route.spreadId) || 'three_card';
+    var requestedSpreadId = text(data.spreadId || (data.methodPlan && data.methodPlan.id));
+    if (requestedSpreadId && !METHOD_SPECS[requestedSpreadId]) throw new Error('unregistered_tarot_method:' + requestedSpreadId);
+    if (data.methodPlan && requestedSpreadId && data.methodPlan.id && data.methodPlan.id !== requestedSpreadId) throw new Error('spread_method_plan_mismatch:' + requestedSpreadId + ':' + data.methodPlan.id);
+    var spreadId = requestedSpreadId || (route && route.spreadId) || 'three_card';
+    if (!METHOD_SPECS[spreadId]) throw new Error('unregistered_tarot_method:' + spreadId);
     var methodPlan = data.methodPlan || (Foundation && typeof Foundation.instantiateMethod === 'function' ? Foundation.instantiateMethod(spreadId, questionSpec) : null);
     var method = clone(METHOD_SPECS[spreadId]);
     if (methodPlan) {

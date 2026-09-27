@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
 import vm from 'node:vm';
 const read=f=>readFileSync(new URL('../'+f,import.meta.url),'utf8');
+const require=createRequire(import.meta.url);
 const load=async f=>(await import('data:text/javascript;base64,'+Buffer.from(read(f)).toString('base64'))).onRequest;
 const counter=await load('functions/api/pulse.js'),ai=await load('functions/api/ai.js');
+const TarotFoundation=require('../JS/tarot-foundation.js'),TarotSemantic=require('../JS/tarot-semantic-engine.js');
 const originalFetch=globalThis.fetch,originalError=console.error;
 let n=0;async function test(name,fn){await fn();n++;console.log('✓ '+name);}
 function req(action,method='GET',headers={}){return new Request('https://jingyue.uk/api/pulse'+(method==='GET'?'?action='+action:''),{method,headers:{Origin:'https://jingyue.uk',...headers},...(method==='POST'?{body:JSON.stringify({action})}:{})});}
@@ -73,6 +76,45 @@ try{
       if(cast.readingGuide)assert(!message.includes(JSON.stringify(cast.readingGuide)),'client style must not duplicate the server contract');
       assert.equal(sent.max_tokens,8192);assert(sent.system.includes('先回答，再解釋'));assert(sent.system.includes('計數跳轉不當成元素相鄰'));
     }
+  });
+  await test('All dedicated divination engines arrive once while unique supplementary facts survive',async()=>{
+    const aliases={tarot:'tarotData',ootk:'ootkData',meihua:'meihuaData',lenormand:'lenormandData',bazi:'baziData',ziwei:'ziweiData',oracle:'oracleData',liuyao:'liuyaoData',yijing:'yijingData'};
+    const dedicated={};const dims={};const rawReadings={};
+    for(const [alias,key] of Object.entries(aliases)){
+      const marker='ENGINE_ONCE_'+alias.toUpperCase();
+      const chart={engineMarker:marker,uniqueNativeFacts:[alias+' facts']};
+      dedicated[key]=chart;dims[alias]=JSON.parse(JSON.stringify(chart));rawReadings[alias]=JSON.stringify(chart);
+    }
+    const natal={engineMarker:'NATAL_ONCE',birth:{utc:'1983-08-25T06:55:00Z'}};
+    const vedic={engineMarker:'VEDIC_ONCE',lagna:'native'};
+    dims.natal=natal;dims.vedic=vedic;rawReadings.natal=JSON.stringify(natal);rawReadings.vedic=JSON.stringify(vedic);
+    rawReadings.additional='RAW_UNIQUE_FACT_FOR_BAZI';
+    let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"轉送資料回歸測試"}'}]});};
+    assert.equal((await ai({request:air({payload:{question:'請依完整盤面分析',...dedicated,dims,rawReadings}}),env})).status,200);
+    const content=sent.messages[0].content;
+    for(const alias of Object.keys(aliases))assert.equal(content.split('ENGINE_ONCE_'+alias.toUpperCase()).length-1,1,alias+' duplicate snapshot count');
+    for(const marker of ['NATAL_ONCE','VEDIC_ONCE'])assert.equal(content.split(marker).length-1,1,marker+' duplicate snapshot count');
+    assert(content.includes('RAW_UNIQUE_FACT_FOR_BAZI'),'unique legacy notes must not be dropped by snapshot cleanup');
+  });
+  await test('Monthly tarot contract exposes its actual path and all eleven transitions once',async()=>{
+    const question='我副業賣場目前走向如何？';
+    const methodPlan=TarotFoundation.instantiateMethod('monthly',TarotFoundation.compileQuestion(question,{referenceDate:'2026-09-27'}));
+    const cards=methodPlan.slots.map((slot,i)=>({name:'月牌'+(i+1),positionMeaning:slot.label,direction:i%2?'逆位':'正位'}));
+    const contract=TarotSemantic.compileReadingSpec({question,spreadId:'monthly',methodPlan,cards,referenceDate:'2026-09-27'});
+    const tarotData={spreadType:'monthly',cards,methodPlan,semanticContract:contract};
+    let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"結構索引回歸測試"}'}]});};
+    assert.equal((await ai({request:air({payload:{question,semanticContract:contract,tarotData,dims:{tarot:tarotData},rawReadings:{tarot:JSON.stringify(tarotData)}}}),env})).status,200);
+    const content=sent.messages[0].content;
+    assert.equal(content.split('本牌陣已編譯的原生關係與承接：').length-1,1,'contract index rendered once');
+    assert(content.includes('依實際標示月份閱讀十二個月的主線'));
+    for(let i=1;i<=11;i++)assert(content.includes('第'+i+'個月→第'+(i+1)+'個月的變化'),'missing month transition '+i);
+    assert(content.includes('第十三張年度主題：統整已成立的月序訊號'));
+    assert(!content.includes('第十三張年度主題：統整已成立的月序訊號｜節點=N13↔'),'summary must not enter the twelve-month path');
+    const indexLines=content.split('\n').filter(line=>line.includes('節點='));
+    const monthPathLine=indexLines.find(line=>line.includes('依實際標示月份閱讀十二個月的主線'));
+    const annualLine=indexLines.find(line=>line.includes('第十三張年度主題：統整已成立的月序訊號'));
+    assert(monthPathLine&&!monthPathLine.includes('N13'),'the annual summary card must stay outside the twelve-month path');
+    assert(annualLine&&annualLine.includes('摘要牌=N13'),'the annual synthesis must explicitly use card 13 as summary context');
   });
   await test('API asks for a personal material choice before the shop invitation, independent of stock',async()=>{
     let sent;globalThis.fetch=async(url,init)=>{sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:'{"answer":"接口測試用回覆，不代表實際解讀"}'}]});};

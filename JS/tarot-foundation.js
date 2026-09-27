@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '104.0.0';
+  var VERSION = '104.1.0';
   var SCHEMA = 'jy.tarot.foundation/6';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
@@ -427,6 +427,39 @@
     "https://www.learntarot.com/less18.htm"
   ]
 };
+  function modernAnalysisStructures(id,labelCount){
+    var all=range(0,labelCount),out=[];
+    function add(key,type,label,indices,extra){out.push(Object.assign({id:key,type:type,label:label,indices:indices,elementalDignity:false},extra||{}));}
+    if(id==='single_card')add('single_focus','single_position','單一提醒牌',all);
+    else if(id==='action_three'){
+      add('state_to_action','directed_transition','目前處境如何改變可採取的行動',[0,1]);
+      add('action_to_outcome','conditional_transition','採取第二位行動後的條件性走向',[1,2]);
+      add('action_path','path_synthesis','現況→行動→條件性走向',[],{claimPolicy:'synthesis_only',dependsOnStructures:['state_to_action','action_to_outcome']});
+    }else if(id==='mind_body_spirit'){
+      ['思考與信念','身體照顧與日常感受','價值與內在需求'].forEach(function(label,i){add('dimension_'+(i+1),'parallel_dimension',label,[i]);});
+      add('whole_self','parallel_synthesis','三個平行自我整理面向',[],{claimPolicy:'synthesis_only',dependsOnStructures:['dimension_1','dimension_2','dimension_3']});
+    }else if(id==='daily_action'){
+      ['今天可以做的事','今天適合避免的做法','今天滋養自己的方式'].forEach(function(label,i){add('advice_'+(i+1),'parallel_advice',label,[i]);});
+      add('daily_advice_set','advice_synthesis','三項今日提醒的互補與取捨',[],{claimPolicy:'synthesis_only',dependsOnStructures:['advice_1','advice_2','advice_3']});
+    }else if(id==='year_review'){
+      add('past_year','past_period_group','過去一年：課題、收穫與待放下慣性',[0,1,2]);
+      add('new_year','future_period_group','新一年：準備、挑戰、主題、行動與過渡調整',[3,4,5,6,7]);
+      add('year_bridge','period_transition','放下的慣性如何影響新年準備',[2,3]);
+      add('year_review_synthesis','period_synthesis','回顧與新年規劃的承接',[],{claimPolicy:'synthesis_only',dependsOnStructures:['past_year','new_year','year_bridge']});
+    }else if(id==='monthly'){
+      var months=range(0,Math.min(12,labelCount));
+      add('year_month_path','ordered_monthly_sequence','依實際標示月份閱讀十二個月的主線',months,{eventBinding:'QUERY_MONTHLY_SERIES'});
+      var transitions=[];
+      for(var m=0;m<months.length-1;m++){var key='month_transition_'+(m+1);transitions.push(key);add(key,'month_transition','第'+(m+1)+'個月→第'+(m+2)+'個月的變化',[m,m+1],{eventBinding:'MONTH_TRANSITION_'+(m+1)+'_'+(m+2)});}
+      if(labelCount>12)add('annual_synthesis','annual_synthesis','第十三張年度主題：統整已成立的月序訊號',[12],{eventBinding:'QUERY_EVENT_SYNTHESIS_ONLY',claimPolicy:'synthesis_only',dependsOnStructures:['year_month_path'].concat(transitions),metadata:{contextOnly:true,summaryCardIndex:12}});
+    }else if(id==='multi_option'||id==='multi_question'){
+      var size=id==='multi_option'?3:5,branches=[];
+      for(var b=0;b<labelCount;b+=size){var branch='branch_'+(Math.floor(b/size)+1);branches.push(branch);add(branch,'dependency_network',id==='multi_option'?'方案'+(Math.floor(b/size)+1)+'完整路徑':'子題'+(Math.floor(b/size)+1)+'獨立路徑',range(b,Math.min(labelCount,b+size)));}
+      if(branches.length>1)add('branch_comparison','branch_synthesis',id==='multi_option'?'同一尺度比較各完整方案':'分題各自回答後的共同脈絡',[],{claimPolicy:'synthesis_only',dependsOnStructures:branches,metadata:{keepBranchesDistinct:true}});
+    }else add('declared_positions','semantic_group','依本站明示牌位組合閱讀',all);
+    return out;
+  }
+
   // Explicitly registered modern layouts. Metadata feeds the picker and actual slots.
   function addModernMethod(id,label,labels,authorities,provides,overview,source){
     var slots=labels.map(function(label,i){return {label:label,authority:authorities[i],role:id+'_'+(i+1)};});
@@ -434,7 +467,7 @@
     METHODS[id].picker={cn:label,suited:overview,accent:'187,166,223',icon:'fa-layer-group'};
     METHOD_PROTOCOLS[id]=protocolDef(id,'named_positions','semantic_position',overview,
       ['先按抽牌前明示的牌位回答問題，再以主要支持和阻力形成主判'],
-      [{type:'semantic_group',label:label,indices:range(0,labels.length),elementalDignity:false,instruction:overview}],
+      modernAnalysisStructures(id,labels.length),
       '只按實際牌位權限收束，不把提醒、身心狀態或月份傾向冒充確定結果。',
       '衝突時指出關鍵條件，不以吉凶張數投票。',
       '依抽牌前綁定的範圍；未明示日期時不補出日曆。',source);
@@ -1790,10 +1823,10 @@ function recommendReadingSystem(question) {
   }
   function prepareQuestionMethod(base,compiled){
     var qp=compiled.readingQuestion||analyzeReadingQuestion(compiled.originalQuestion);
-    if(base.id==='either_or'&&compiled.requiredObservables.indexOf('advice')>=0){
+    if(base.id==='either_or'&&compiled.requiredObservables.indexOf('advice')>=0&&qp.branches.length>=2){
       qp.branches.slice(0,2).forEach(function(b,i){base.slots.push({authority:'advice',role:'branch_'+(i?'B':'A')+'_advice',label:b.question+'・下一步',binding:{eventId:i?'BRANCH_B_EVENT':'BRANCH_A_EVENT',entity:b.question}});});
       base.count=base.slots.length;base.provides=uniq(base.provides.concat(['advice']));
-      base.protocol.structures.push({type:'semantic_group',label:'各方案的行動建議',indices:[5,6],elementalDignity:false,instruction:'兩個新增位置各自回應已綁定的方案，不串成時間線。'});
+      base.protocol.structures.push({id:'branch_A_advice',type:'branch_advice',label:'A 方案的行動建議',indices:[5],eventBinding:'BRANCH_A_EVENT',elementalDignity:false,instruction:'只回應 A 方案，不與另一方案混讀。',metadata:{supplemental:true,keepBranchesDistinct:true,branchIndex:0}},{id:'branch_B_advice',type:'branch_advice',label:'B 方案的行動建議',indices:[6],eventBinding:'BRANCH_B_EVENT',elementalDignity:false,instruction:'只回應 B 方案，不與另一方案混讀。',metadata:{supplemental:true,keepBranchesDistinct:true,branchIndex:1}});
     }
     if(base.id==='multi_option'||base.id==='multi_question'){
       var size=base.id==='multi_option'?3:5, branches=qp.branches;
@@ -1812,8 +1845,9 @@ function recommendReadingSystem(question) {
       branches.forEach(function(branch,b){
         var indices=[];
         labels.forEach(function(label,i){indices.push(base.slots.length);base.slots.push({authority:authorities[i],role:'branch_'+(b+1)+'_'+authorities[i],label:(branch.entity||branch.question)+'・'+label,binding:{eventId:branch.id,entity:branch.entity,question:branch.question,scope:branch.scope}});});
-        base.protocol.structures.push({type:'dependency_network',label:branch.question,indices:indices,elementalDignity:false,instruction:'此組只回答綁定的子題；不得跨組把人物或結果互換。'});
+        base.protocol.structures.push({id:'branch_'+(b+1),type:'dependency_network',label:branch.question,indices:indices,eventBinding:branch.id,elementalDignity:false,instruction:'此組只回答綁定的子題；不得跨組把人物或結果互換。',metadata:{branchIndex:b,keepDistinct:true}});
       });
+      if(base.protocol.structures.length>1)base.protocol.structures.push({id:'branch_comparison',type:'branch_synthesis',label:base.id==='multi_option'?'各完整方案依相同標準比較':'分題各自回答後的共同脈絡',indices:[],elementalDignity:false,claimPolicy:'synthesis_only',dependsOnStructures:base.protocol.structures.map(function(st){return st.id;}),eventBinding:'QUERY_BRANCH_SYNTHESIS',instruction:'先各自完成每條分支，再依問句要求比較；不可把一題的證據移給另一題，也不可將分題的共同主題寫成新事件。',metadata:{keepBranchesDistinct:true}});
       base.count=base.slots.length;base.branches=clone(branches);base.label+=(branches.length+'路・'+base.count+'張');
       base.protocol.summary+=' 本次子題：'+branches.map(function(b){return b.question;}).join('；');
     }

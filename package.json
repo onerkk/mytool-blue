@@ -8,7 +8,7 @@
     "test:reading:browser": "node tests/reading-browser-20260924.cjs && node tests/reading-review-browser-20260924.cjs",
     "test:reading-grounding": "node tests/reading-grounding-20260924.cjs",
     "test:prompts": "node tests/prompt-accuracy-20260811.test.cjs",
-    "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js",
+    "test:tarot": "node tests/tarot-v102-method-data-prompt.test.js && node tests/tarot-native-structure-20260927.cjs",
     "test:lenormand": "node tests/lenormand-v19-engine-rootfix-20260925.cjs && node tests/lenormand-semantic-v23-discourse-20260926.cjs",
     "test:ziwei": "node tests/ziwei-root-spec-v1.test.js",
     "test:counter": "node tests/counter-proxy.test.mjs",

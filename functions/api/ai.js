@@ -46,6 +46,102 @@ async function sha256(str) {
     .map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function stableSnapshot(value) {
+  if (Array.isArray(value)) return '[' + value.map(stableSnapshot).join(',') + ']';
+  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stableSnapshot(value[k])).join(',') + '}';
+  return JSON.stringify(value);
+}
+
+function decodeSnapshot(value) {
+  if (typeof value !== 'string') return value;
+  try { return JSON.parse(value); } catch (_) { return value; }
+}
+
+function sameSnapshot(left, right) {
+  return stableSnapshot(decodeSnapshot(left)) === stableSnapshot(decodeSnapshot(right));
+}
+
+const READING_ALIASES = {
+  tarot: 'tarotData', ootk: 'ootkData', meihua: 'meihuaData',
+  lenormand: 'lenormandData', bazi: 'baziData', ziwei: 'ziweiData',
+  oracle: 'oracleData', liuyao: 'liuyaoData', yijing: 'yijingData'
+};
+
+function removeDuplicateSnapshots(data, primaryData, otherData) {
+  const output = { ...(data || {}) };
+  for (const [alias, primaryKey] of Object.entries(READING_ALIASES)) {
+    if (output[alias] == null) continue;
+    const primary = primaryData && primaryData[primaryKey];
+    const secondary = otherData && otherData[alias];
+    if ((primary != null && sameSnapshot(output[alias], primary)) ||
+        (secondary != null && sameSnapshot(output[alias], secondary))) delete output[alias];
+  }
+  for (const alias of ['natal', 'vedic']) {
+    if (output[alias] == null) continue;
+    const primary = primaryData && primaryData[alias];
+    const secondary = otherData && otherData[alias];
+    if ((primary != null && sameSnapshot(output[alias], primary)) ||
+        (secondary != null && sameSnapshot(output[alias], secondary))) delete output[alias];
+  }
+  return output;
+}
+
+function renderNativeContract(contract) {
+  if (!contract || !contract.evidenceGraph || !contract.method) return '';
+  const graph = contract.evidenceGraph;
+  const query = (contract.question || {}).queryGraph || {};
+  const nodes = graph.nodes || [];
+  const units = graph.evidenceUnits || [];
+  if (!nodes.length && !units.length) return '';
+  const lines = [
+    `【${contract.method.label || contract.method.id}｜本次盤面結構索引】`,
+    `方法=${contract.method.id}；牌義來源=${(contract.sourceProfile || {}).label || (contract.sourceProfile || {}).id || '依本次紀錄'}；結構=${(graph.topology || {}).kind || '依本次牌位'}`
+  ];
+  (query.events || []).forEach(event => {
+    lines.push(`題目事件 ${event.id}｜${event.surface || event.predicate || ''}｜角色=${JSON.stringify(event.roles || {})}｜範圍=${(event.timeScope || []).join('、')}`);
+  });
+  if ((query.requiredAtoms || []).length) lines.push('題意錨點：' + query.requiredAtoms.map(atom => `${atom.id}=${atom.text}`).join('；'));
+  if (nodes.length) {
+    lines.push('實際牌位／節點：');
+    nodes.forEach(node => lines.push(`${node.id}｜${node.position}｜${node.cardName}${node.direction ? '｜' + node.direction : ''}｜權限=${node.authority || ''}`));
+  }
+  const structuralUnits = units.filter(unit => !['atomic_node', 'sequence_member_node', 'triad_member_node', 'surprise_conclusion_member_node'].includes(unit.type));
+  if (structuralUnits.length) {
+    lines.push('本牌陣已編譯的原生關係與承接：');
+    structuralUnits.forEach(unit => {
+      const refs = (unit.nodes || []).join('↔') || '無直接牌位';
+      const deps = (unit.dependsOn || []).length ? `；承接=${unit.dependsOn.join('→')}` : '';
+      const context = (unit.metadata && unit.metadata.contextNodeIds || []).length ? `；摘要牌=${unit.metadata.contextNodeIds.join('、')}` : '';
+      const event = unit.eventBinding ? `；事件=${unit.eventBinding}` : '';
+      const scope = unit.metadata && unit.metadata.branchQuestion ? `；分支題=${unit.metadata.branchQuestion}` : '';
+      const entity = unit.metadata && unit.metadata.branchEntity ? `；分支對象=${unit.metadata.branchEntity}` : '';
+      const instruction = unit.metadata && unit.metadata.instruction ? `；方法註記=${unit.metadata.instruction}` : '';
+      lines.push(`${unit.id}｜${unit.type}｜${unit.label}｜節點=${refs}${deps}${context}${event}${scope}${entity}${instruction}`);
+    });
+  }
+  if (contract.validation && contract.validation.ok === false) lines.push('索引驗證提示：' + (contract.validation.errors || []).join('、'));
+  return lines.join('\n');
+}
+
+function renderNativeIndexes(payload) {
+  const candidates = [payload.semanticContract, payload.tarotData && payload.tarotData.semanticContract, payload.ootkData && payload.ootkData.semanticContract].filter(Boolean);
+  const seen = new Set();
+  return candidates.map(contract => {
+    const signature = stableSnapshot({ method: contract.method && contract.method.id, graph: contract.evidenceGraph });
+    if (seen.has(signature)) return '';
+    seen.add(signature);
+    return renderNativeContract(contract);
+  }).filter(Boolean).join('\n\n');
+}
+
+function withoutCompilerSnapshot(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
+  const copy = { ...value };
+  delete copy.semanticContract;
+  delete copy.semanticProgramVersion;
+  return copy;
+}
+
 // ═══ System Prompt v8：知識開放、盤面優先 ═══
 
 const SYSTEM_PROMPT = `你是一位資深的多系統命理與占卜分析師，熟悉八字、紫微斗數、合盤、梅花易數、塔羅、開鑰之法、雷諾曼、靈籤、西洋占星、吠陀占星與姓名學。
@@ -156,6 +252,7 @@ export async function onRequest(context) {
     // ═══ 組裝 User Message ═══
     let userParts = [];
     userParts.push(`他的問題：「${question}」`);
+    const nativeIndexes = renderNativeIndexes(payload);
 
     // Standalone requests do not put their cards in dims/rawReadings.
     // Forward exact card order, directions, method geometry and procedure state.
@@ -163,18 +260,19 @@ export async function onRequest(context) {
     // The server owns the reading contract. Old client style snapshots would
     // duplicate or contradict it; native geometry stays in each system's data.
     for (const key of ['mode','readingDate','referenceDate','tarotData','ootkData','meihuaData','lenormandData','baziData','ziweiData','oracleData','liuyaoData','yijingData']) {
-      if (payload[key] != null) directData[key] = payload[key];
+      if (payload[key] != null) directData[key] = (key === 'tarotData' || key === 'ootkData') ? withoutCompilerSnapshot(payload[key]) : payload[key];
     }
+    const directDataForDedup = { ...directData };
+    for (const key of ['tarotData','ootkData']) if (payload[key] != null) directDataForDedup[key] = payload[key];
     if (Object.keys(directData).length) {
       userParts.push(`本次專用盤面、方法與程序紀錄（個案資料）：\n${JSON.stringify(directData)}`);
     }
+    if (nativeIndexes) userParts.push(`引擎整理的本次原生牌位與關係索引（只展開本次實際幾何，不是預先判決）：\n${nativeIndexes}`);
     // The composite native bridge also keeps the exact JSON for reading/copy.
     // Send that chart once, under dims, when both representations are identical.
-    const uniqueReadings = { ...rawReadings };
-    for (const key of ['natal', 'vedic']) {
-      if (dims[key]?.engine && /^jy-(western|vedic)-/.test(dims[key].engine)
-          && uniqueReadings[key] === JSON.stringify(dims[key])) delete uniqueReadings[key];
-    }
+    // Precedence is direct reading > structured dimensions > raw text mirror.
+    const uniqueDims = removeDuplicateSnapshots(dims, directDataForDedup, {});
+    const uniqueReadings = removeDuplicateSnapshots(rawReadings, directDataForDedup, uniqueDims);
     if (Object.keys(uniqueReadings).length > 0) {
       userParts.push(`各系統完整資料包（原始盤面優先）：\n${JSON.stringify(uniqueReadings)}`);
     }
@@ -190,8 +288,8 @@ export async function onRequest(context) {
       userParts.push(`前端七維摘要（供交叉參考）：\n${readingLines}`);
     }
 
-    if (dims && Object.keys(dims).length > 0) {
-      userParts.push(`結構化盤面與衍生資料：\n${JSON.stringify(dims)}`);
+    if (uniqueDims && Object.keys(uniqueDims).length > 0) {
+      userParts.push(`結構化盤面與衍生資料（去除與專用盤面相同的副本）：\n${JSON.stringify(uniqueDims)}`);
     }
 
     if (verdict) {
