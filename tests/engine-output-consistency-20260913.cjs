@@ -34,11 +34,11 @@ test('120 root combinations: day sitting root and four-branch root are independe
 });
 test('Actual Bazi standalone and six-lens exports distinguish sitting root from roots elsewhere',()=>{
  const before=JSON.stringify(b),prompt=c.buildBaziPrompt(c.S.form.question,b,{bdate:'1983-08-25',btime:'14:55',gender:'male'});
- assert(prompt.includes('日支坐根：否（乙酉；日支藏辛）'));assert(prompt.includes('四支通根：是'));assert(!prompt.includes('日支坐根：是'));clean(prompt);
+ assert(prompt.includes('日支坐根：否（乙酉；日支藏辛）'));assert(prompt.includes('四支查根：有根'));assert(!prompt.includes('日支坐根：是'));clean(prompt);
  for(const lens of Object.keys(c.BaziSuiteCore.lenses)){
   const text=c.BaziSuiteCore.buildSinglePrompt(lens,b,{},'我適合配戴什麼手鍊？');assert(text.includes('日支坐根：否'));assert(text.includes('年支亥藏甲'));assert(text.includes('時支未藏乙'));clean(text);
  }
- const partial=c.buildBaziPrompt('根氣？',b,{unknown:true});assert(partial.includes('已知柱通根'));assert(!partial.includes('時支未藏乙'));
+ const partial=c.buildBaziPrompt('根氣？',b,{unknown:true});assert(partial.includes('已知柱查根：有根'));assert(!partial.includes('時支未藏乙'));
  assert.equal(JSON.stringify(b),before,'Export must not alter the strength model');save('bazi-standalone-prompt.txt',prompt);
 });
 test('Complete composite payload preserves neutral strength, god identities, Shensha and exact luck dates',()=>{
@@ -58,7 +58,7 @@ test('Actual composite Bazi result renderer displays neutral and distinguishes d
  for(const id of ids)if(!env.doc.getElementById(id)){const el=env.doc.body.appendChild(new env.Element('div'));el.id=id;}
  c.renderBazi();
  const output=ids.map(id=>env.doc.getElementById(id).innerHTML).join('\n');
- assert(output.includes('日支坐根：否'));assert(output.includes('四支通根：是'));assert(output.includes('中和'));assert(!output.includes('天生自帶能量'));assert(!/undefined|NaN/.test(output),(output.match(/.{0,65}(?:undefined|NaN).{0,65}/g)||[]).slice(0,8).join('\n'));
+ assert(output.includes('日支坐根：否'));assert(output.includes('四支查根：有根'));assert(output.includes('中和'));assert(!output.includes('天生自帶能量'));assert(!/undefined|NaN/.test(output),(output.match(/.{0,65}(?:undefined|NaN).{0,65}/g)||[]).slice(0,8).join('\n'));
 });
 test('Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts',()=>{
  reset();const p=c._buildPayload(),text=p.rawReadings.ziwei,dx=z.daXian.find(d=>d.isCurrent),year=z.getLiuNianZw(2026);

@@ -7,15 +7,20 @@ const expected = [
   'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '8.0.0');
+assert.equal(quality.readingVersion, '8.1.0');
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();
 for (const phrase of [
   '像命理師當面解惑',
-  '先答原問題',
-  '4～6段自然段落',
-  '2～4組最有解釋力',
+  '先回答，再解釋',
+  '正文只呈現結論及必要依據',
+  '第一句就回答原問題',
+  '簡單單題以2～4句回答',
+  '複雜單題用3～5段',
+  '只呈現最能解釋答案的2～4組盤面依據',
+  '完整讀取本法本次有效盤面、原生方法規則',
+  '分清好感／情緒、意願、實際行動、事件是否發生、承諾與持續',
   '如何落到原問題',
   '交代最重要的牽制或相反訊號',
   '同一訊號若對不同人物或方向作用相反，要分開說清',

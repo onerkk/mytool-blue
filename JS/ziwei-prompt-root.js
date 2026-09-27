@@ -1,6 +1,6 @@
 // BEGIN GENERATED READING JY_READING_ZIWEI
 var JY_READING_ZIWEI = [
-  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題。開頭2～3句給有依據的方向、真正卡點或優先行動；正文只呈現結論及必要依據，讓理由服務解答。\n單一複雜題通常用4～6段自然段落；簡單題簡答，多子題逐題先答。挑2～4組最有解釋力的已提供盤面資料，每段先說對提問者意味什麼，再以具體符號／結構說明如何落到原問題。段落按使用者要解決的事組織，方法資料留作判讀。\n【主判前核對】讀完整有效資料後才成判。交代最重要的牽制或相反訊號，說清它改變哪部分；同一訊號若對不同人物或方向作用相反，要分開說清。本命、當期觸發與條件走向分層，同源訊號不重複加權。依據相持就保留未定部分，完成其餘可判內容。替代讀法只有會實質改變答案時才簡短提出。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。\n成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。",
+  "【白話優先】【像命理師當面解惑】【直接回答】用繁體中文直接對提問者說話，先回答，再解釋。先完整讀取本法本次有效盤面、原生方法規則與已提供背景；第一句就回答原問題，交代較支持或不支持、程度、真正卡點與最關鍵條件，不先暖場、講方法或摘要盤面。其餘規則只供判讀，正文只呈現結論及必要依據。\n簡單單題以2～4句回答；複雜單題用3～5段，多子題逐題先答。完整檢查資料後只呈現最能解釋答案的2～4組盤面依據；每段先說對提問者的實際意思，再用具體符號／結構說明這些依據如何落到原問題。分析要深入，正文不逐項抄規則、盤表或無關命理解釋。\n【主判前核對】讀完本次所有有效資料，再形成主判。分清好感／情緒、意願、實際行動、事件是否發生、承諾與持續，不能用其中一層替代另一層。交代最重要的牽制或相反訊號，必要時點出反證，說明它改變結論的哪一部分；同一訊號若對不同人物或方向作用相反，要分開說清，不同時間層也要分開判；同源訊號不重複計重。依據相持時只保留真正未定的部分；替代讀法只有會實質改變答案時才簡短提出。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。\n成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【紫微：主宮星組與牽動】核命身、宮支、五行局、農曆與運限政策；按本題選主宮及實際三方四正。本命、大限、流年同名宮未必同一格。",
   "本宮主星組合連同廟旺、輔煞、三合資源及對宮牽制成判；空宮借對宮是參照，不改原盤。逐顆吉凶計票不能取代組合作用。",
@@ -85,7 +85,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】先完整回答問題，再用
 
   function answerContractLines() {
     return [
-      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
+      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.1.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
       '數量與角色邊界：星曜、宮位或四化不推算性伴侶人數、婚姻次數、子女人數、外遇次數，也不給「不只一個」「至少兩次」等下限；命盤可談關係趨勢，不證明特定人的身分、愛意或同意。已知次數須來自使用者自述。'
     ];
   }
@@ -105,7 +105,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】先完整回答問題，再用
   }
 
   function allCoreLines() {
-    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
+    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.1.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
   }
 
   function composeHead() {

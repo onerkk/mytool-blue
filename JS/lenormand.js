@@ -139,7 +139,7 @@
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_LENORMAND
 var JY_READING_LENORMAND = [
-  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋：先答原問題。開頭2～3句給有依據的方向、真正卡點或優先行動；正文只呈現結論及必要依據，讓理由服務解答。\n單一複雜題通常用4～6段自然段落；簡單題簡答，多子題逐題先答。挑2～4組最有解釋力的已提供盤面資料，每段先說對提問者意味什麼，再以具體符號／結構說明如何落到原問題。段落按使用者要解決的事組織，方法資料留作判讀。\n【主判前核對】讀完整有效資料後才成判。交代最重要的牽制或相反訊號，說清它改變哪部分；同一訊號若對不同人物或方向作用相反，要分開說清。本命、當期觸發與條件走向分層，同源訊號不重複加權。依據相持就保留未定部分，完成其餘可判內容。替代讀法只有會實質改變答案時才簡短提出。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。\n成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。",
+  "【白話優先】【像命理師當面解惑】【直接回答】用繁體中文直接對提問者說話，先回答，再解釋。先完整讀取本法本次有效盤面、原生方法規則與已提供背景；第一句就回答原問題，交代較支持或不支持、程度、真正卡點與最關鍵條件，不先暖場、講方法或摘要盤面。其餘規則只供判讀，正文只呈現結論及必要依據。\n簡單單題以2～4句回答；複雜單題用3～5段，多子題逐題先答。完整檢查資料後只呈現最能解釋答案的2～4組盤面依據；每段先說對提問者的實際意思，再用具體符號／結構說明這些依據如何落到原問題。分析要深入，正文不逐項抄規則、盤表或無關命理解釋。\n【主判前核對】讀完本次所有有效資料，再形成主判。分清好感／情緒、意願、實際行動、事件是否發生、承諾與持續，不能用其中一層替代另一層。交代最重要的牽制或相反訊號，必要時點出反證，說明它改變結論的哪一部分；同一訊號若對不同人物或方向作用相反，要分開說清，不同時間層也要分開判；同源訊號不重複計重。依據相持時只保留真正未定的部分；替代讀法只有會實質改變答案時才簡短提出。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。\n成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
   "短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。",
@@ -1777,6 +1777,33 @@ function _lnHouseRelations(drawn){
 }
 function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId, def) {
   lines.push('<合法幾何>');
+  if(spreadId==='grand'||spreadId==='grand_nines'){
+    var focusGeometry=spreadId==='grand_nines'?_lnGrandNineGeometry(drawn):null;
+    var pushGrandFocus=function(label,cardId){
+      var fi=_lnFindCardIndex(drawn,cardId);
+      if(fi<0)return;
+      var coordinate,neighbors,crossings,secondary;
+      if(focusGeometry){
+        var cell=focusGeometry.cells[fi];
+        coordinate='格'+(fi+1)+' R'+(cell.row+1)+'C'+(cell.col+1);
+        neighbors=cell.neighbors.length?cell.neighbors.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無';
+        crossings=focusGeometry.lines.filter(function(line){return line.indexOf(fi)>=0;}).map(function(line){return line.map(function(n){return (n+1)+'.'+drawn[n].name;}).join('→');}).join('；')||'無';
+        secondary='水平鏡像'+(cell.horizontal===fi?'位於中軸':('格'+(cell.horizontal+1)+' '+drawn[cell.horizontal].name))+'；垂直鏡像格'+(cell.vertical+1)+' '+drawn[cell.vertical].name+'；騎士步'+(cell.knights.length?cell.knights.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無');
+      }else{
+        var coord=_lnGrandCoord(fi),ns=_lnGrandImmediateNeighbors(drawn,fi),extra=_lnGrandExtraLinks(fi);
+        coordinate='格'+(fi+1)+' '+coord.label;
+        neighbors=ns.length?ns.map(function(n){return n.dir+'＝格'+(n.index+1)+' '+n.card.name;}).join('、'):'無';
+        crossings=fi<32?_lnGrandLinesThroughText(drawn,fi):('末排獨立線＝'+drawn.slice(32,36).map(function(card,n){return (n+33)+'.'+card.name;}).join('→'));
+        secondary=fi<32?'水平鏡像格'+(extra.horizontal+1)+' '+drawn[extra.horizontal].name+'；垂直鏡像格'+(extra.vertical+1)+' '+drawn[extra.vertical].name+'；騎士步'+(extra.knights.length?extra.knights.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無'):'末排不使用主盤鏡像或騎士步';
+      }
+      lines.push('焦點近域先讀（遠距補充不得取代）：'+label+' '+cardId+'.'+drawn[fi].name+'位於'+coordinate+'；固定背景宮為'+CARDS[fi].name+'宮，實際落入牌為'+drawn[fi].id+'.'+drawn[fi].name+'。');
+      lines.push(label+'立即鄰域：'+neighbors+'。');
+      lines.push(label+'穿越最大合法線：'+crossings+'。');
+      lines.push(label+'次要鏡像／騎士步（不是相鄰線）：'+secondary+'。');
+    };
+    if(personRepId)pushGrandFocus('本人牌',personRepId);
+    if(customFocusId)pushGrandFocus('額外焦點牌',customFocusId);
+  }
   if(spreadId==='two'||spreadId==='seven'){
     lines.push('唯一完整主線：'+drawn.map(function(c,i){return (i+1)+'.'+c.name;}).join('→'));
     if(spreadId==='seven')lines.push('中心：4；鏡像：1↔7、2↔6、3↔5。鏡像不是相鄰。');
@@ -1828,22 +1855,6 @@ function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId,
     lines.push('主盤30條合法最大路徑（共含' + _lnGrandMainSegmentCount() + '個兩張以上連續片段）：');
     _lnGrandStraightLines().forEach(function(line){ lines.push(line.label + '：' + _lnGrandLineText(drawn, line)); });
     lines.push('末排最大路徑：33.' + drawn[32].name + '→34.' + drawn[33].name + '→35.' + drawn[34].name + '→36.' + drawn[35].name + '；全部連續片段＝33-34、34-35、35-36、33-34-35、34-35-36、33-34-35-36。');
-    if (personRepId) {
-      var si = _lnFindCardIndex(drawn, personRepId);
-      if (si >= 0) {
-        lines.push('本人牌入口：' + drawn[si].name + '在' + _lnGrandCoord(si).label + '（全盤第' + (si + 1) + '格）。');
-        lines.push('本人牌立即鄰域：' + _lnGrandNeighborText(drawn, si) + '。');
-        lines.push('本人牌穿越路徑：' + _lnGrandLinesThroughText(drawn, si) + '。');
-      }
-    }
-    if (customFocusId) {
-      var fi = _lnFindCardIndex(drawn, customFocusId);
-      if (fi >= 0) {
-        lines.push('額外焦點入口：' + drawn[fi].name + '在' + _lnGrandCoord(fi).label + '（全盤第' + (fi + 1) + '格）。');
-        lines.push('焦點牌立即鄰域：' + _lnGrandNeighborText(drawn, fi) + '。');
-        lines.push('焦點牌穿越路徑：' + _lnGrandLinesThroughText(drawn, fi) + '。');
-      }
-    }
   }
   lines.push('</合法幾何>');
   if(spreadId==='grand'||spreadId==='grand_nines')lines.push('固定宮位關係資料：'+JSON.stringify(_lnHouseRelations(drawn))+'。僅在會改變本題主判時採用，不逐鏈朗讀。');
@@ -1898,7 +1909,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.1.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);
