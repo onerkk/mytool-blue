@@ -14,9 +14,10 @@
   var SIGNATURES = {
     'tarot-semantic-engine.js': {
       must: [
-        'ROOT-SPEC v95 Golden Dawn compiler','var SOURCE_PROFILES','gd_book_t',
+        'ROOT-SPEC v102 native-method compiler','var SOURCE_PROFILES','gd_book_t',
         'function compileQuestion','function compileEvidenceGraph','function compileOOTKEvidence',
-        'function compileReadingSpec','function renderPromptContract','ROOT-SPEC v95',
+        'function compileReadingSpec','function renderPromptContract','var VERSION = \'102.0.0\'',
+        'action_three_path','parallel_reflection_channels','declared_month_sequence','multi_question_synthesis',
         '不能直接把不同操作中的牌拼成新牌句','typed_query_graph/1','entityBindings','joinTrace'
       ],
       mustNot: ['waite_1910（本次只准','op4_time_anchor','缺聖杯＝','牌張數換算現實人數']

@@ -105,7 +105,7 @@ test('八字提示詞根在真實執行路徑可用，並開放 AI 自身命理�
   assert(prompt.includes('格局、扶抑、調候、病藥、通關'));
   assert(!prompt.includes('ROOT-SPEC'));
   assert(!prompt.includes('答案反向稽核'));
-  assert.equal(prompt.split('【白話優先】').length-1,1);assert(prompt.includes('正文只呈現結論及必要依據'));
+  assert.equal(prompt.split('【白話優先】').length-1,1);assert(prompt.includes('第一句就回答原問題'));assert(prompt.includes('深度判讀流程'));
   assert(prompt.includes('工作與現金流兩個問題都請完整判斷'));
 });
 
@@ -158,7 +158,7 @@ test('七維 API 以盤面為主並允許模型使用自身跨系統知識', () 
   assert(api.includes('多系統先各自成判'));
   assert(!api.includes('不能違反的證據邊界'));
   assert(!api.includes('你怎麼說話'));
-  assert(api.includes('正文只呈現結論及必要依據'));assert(api.includes('選品規則不得影響前面的占卜判斷'));
+  assert(api.includes('第一句就回答原問題'));assert(api.includes('深度判讀流程'));assert(api.includes('選品規則不得影響前面的占卜判斷'));
   assert(!read('JS/ai-analysis.js').includes('function capLen('));
 });
 

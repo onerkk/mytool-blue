@@ -56,7 +56,11 @@ function classifyDecisionQuestion(question) {
     // 口語二選一常把第二個選項省略共同動詞，例如「買iPhone還是Samsung」「去台北還是高雄發展」。
     // 只有第一側明確是可執行動作、第二側是短方案名時才繼承動詞；不套用到「會不會／喜不喜歡」等結果假設。
     var sharedActionMatch = left.match(/^(買|賣|租|投資|去|到|留在|搬到|搬去|讀|念|用|選|加入|接受|拒絕|吃|換|改用)(.+)$/);
-    var inheritedAction = sharedActionMatch && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
+    // A bare place after 搬到/搬去 is the alternative destination, not an
+    // incomplete action label. Keep the action in the original question's
+    // shared context instead of duplicating it into the branch identity.
+    var sharedMoveDestination = sharedActionMatch && /^(?:搬到|搬去)$/.test(sharedActionMatch[1]) && /^[^，,。！？?；;\s]{1,8}$/.test(right);
+    var inheritedAction = sharedActionMatch && !sharedMoveDestination && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
     if (inheritedAction) right = sharedActionMatch[1] + right;
     var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
     if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');

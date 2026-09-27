@@ -17,7 +17,7 @@ const b=c.enhanceBazi(c.computeBazi(1983,8,25,14,55,'male',{referenceDate:'2026-
 test('Reported chart: year/hour roots reach the classifier; neutral is not silently weak',()=>{
   assert.equal(b.deDi,true);assert.equal(b.sittingRoot,false);
   assert.deepEqual(Array.from(b.structureFacts.dayMasterRoots,r=>[r.pillar,r.branch,r.stem]),[['year','亥','甲'],['hour','未','乙']]);
-  assert.equal(b.strengthAssessment.components.root.allFourBranches,true);
+  assert.equal(b.strengthAssessment.components.root.allFourBranches,false);assert.equal(b.strengthAssessment.components.root.rootedPillarCount,2);
   assert.equal(b.strengthAssessment.components.root.sittingRoot,false);
   assert.equal(b.isNeutral,true);assert.equal(b.fuyiAssessment.strengthInput,'中和附近');
   assert.deepEqual(plain(b.wuxingStance.map),{木:'平',火:'平',土:'平',金:'平',水:'平'});

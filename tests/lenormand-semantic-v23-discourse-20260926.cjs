@@ -14,7 +14,7 @@ function sig(q){const p=plan(q),s=p.semantic;return JSON.stringify({mode:p.mode,
 {
  const q='女友跟我愛愛時，問我可以叫我其他稱號嗎？例如大哥 大叔。這是因為她需要性幻想嗎？那未來是否會同意一起3p，兩女一男。';
  const p=plan(q),a=api.analyze(q),f=p.clauses;
- ok('root-v4',p.version==='4.0.0'&&p.semantic.version==='4.0.0',JSON.stringify(p));
+ ok('root-v4',p.version==='4.1.0'&&p.semantic.version==='4.1.0',JSON.stringify(p));
  ok('root-two-real-questions',p.semantic.topology.questionCount===2,JSON.stringify(p.semantic.topology));
  ok('root-context-count',p.semantic.topology.contextCount===1,JSON.stringify(p.semantic.topology));
  ok('root-example-count',p.semantic.topology.exampleCount===1,JSON.stringify(p.semantic.topology));
@@ -196,6 +196,6 @@ for(const q of ['他會回覆嗎？','她會回答嗎？','對方會說嗎？'])
 ok('planner-sync-lenormand',fs.readFileSync(path.join(root,'JS','lenormand.js'),'utf8').includes(fs.readFileSync(path.join(root,'JS','shared','question-planner.js'),'utf8').trim()));
 ok('planner-sync-tarot',fs.readFileSync(path.join(root,'JS','tarot-foundation.js'),'utf8').includes(fs.readFileSync(path.join(root,'JS','shared','question-planner.js'),'utf8').trim()));
 ok('root-copy-sync',fs.readFileSync(path.join(root,'lenormand.js'),'utf8')===fs.readFileSync(sourcePath,'utf8'));
-const index=fs.readFileSync(path.join(root,'index.html'),'utf8');ok('cache-current',index.includes('JS/lenormand.js?v=20260927depth1'));ok('api-v23',sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version==='23.0.0');
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');ok('cache-current',index.includes('JS/lenormand.js?v=20260927causal2'));ok('api-v23',sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version==='23.0.0');
 
 console.log(`Lenormand v23 discourse-semantic suite: ${checks} checks PASS`);

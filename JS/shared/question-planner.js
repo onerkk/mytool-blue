@@ -43,12 +43,12 @@ function analyzeReadingQuestion(value) {
     domains:{
       relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','表白','坦白心意','暗戀','喜歡','好感','欣賞','心動','有意思','愛','交往','約會','約我','追求','示好','伴侶','女友','男友','老婆','老公','現任','正緣','對象','配偶','性伴侶','肉體桃花'],
       work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯','正職','本業','副業'],
-      finance:['財運','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
+      finance:['財運','求財','破財','損失','賠錢','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
       health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院'],
       family:['家庭','家人','父母','爸爸','媽媽','孩子','子女'],
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
-      commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','成本','報價','售後','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'],
+      commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','報價','售後','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'],
       intimacy:['性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
     },
     continuity:['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年','一直維持'],
@@ -149,7 +149,11 @@ function analyzeReadingQuestion(value) {
     var t=String(v||'').trim();if(!t)return false;
     return PERSONISH.test(t)||/^(?:這|那|該|此|另一|某|本|目前|現在)/.test(t)||/[A-Za-z0-9甲乙丙丁一二三四五六七八九十]$/.test(t)||/(?:公司|廠商|供應商|客戶|主管|同事|朋友|方案|選項|工作|職位|房子|房屋|店家|平台|產品|服務|合約|計畫|計畫案|專案)$/.test(t);
   }
-  function domainIds(s){var ids=[];Object.keys(ONTOLOGY.domains).forEach(function(id){if(hasAny(s,ONTOLOGY.domains[id]))ids.push(id);});return ids;}
+  function domainIds(s){var ids=[];Object.keys(ONTOLOGY.domains).forEach(function(id){if(hasAny(s,ONTOLOGY.domains[id]))ids.push(id);});
+    // 「成本／品質／平台」單獨出現不等於在問店務；commerce 需有明確交易、商品或店鋪錨點。
+    var anchors=['廠商','供應商','供貨','進貨','採購','批發','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'];
+    if(ids.indexOf('commerce')>=0&&!hasAny(s,anchors))ids=ids.filter(function(id){return id!=='commerce';});
+    return ids;}
   function extractEntities(s){
     var found=[];
     SUBJECT_WORDS.slice().sort(function(a,b){return b.length-a.length;}).forEach(function(w){if(s.indexOf(w)>=0)found.push(w);});
@@ -405,20 +409,47 @@ function analyzeReadingQuestion(value) {
     var qmark=!!(unit&&unit.isQuestionPunct), interrogative=qmark||detectYesNo((unit&&unit.raw)||s)||dims.some(function(d){return ['reason','advice','timing','identity','amount','count','quantity','probability','age','profile','evaluation'].indexOf(d)>=0;})||causalHypothesis;
     return {type:interrogative?'question':'context',propositionPronoun:prop,causalHypothesis:causalHypothesis,observed:!interrogative};
   }
+  function extractCausalSituation(input){
+    var s=String(input||'').trim();
+    if(!/(?:為什麼|為何|什麼原因|原因|怎麼會)/.test(s))return null;
+    if(!/(?:斷裂|斷掉|斷開|破裂|破掉|碎裂|摔破|弄壞|故障|失靈|損失|遺失|弄丟|賠錢|破財|受傷|取消|延誤|失敗)/.test(s))return null;
+    var contextMarker=s.search(/(?:結果|後來|之後|因此|所以)/),contextSurface=contextMarker>0?s.slice(0,contextMarker).trim():'';
+    var because=s.match(/(?:因為|由於)\s*(.+)$/),causeTail=because?because[1]:'';
+    var outcomeRe=/(?:損失|遺失|弄丟|賠錢|破財|受傷|取消|延誤|失敗)/,outcomeMatch=outcomeRe.exec(s);
+    var amountRe=/(?:成本|至少|最少|賠|損失金額|損失約)[^0-9零〇一二三四五六七八九十百千萬億]{0,12}(?:[0-9](?:[0-9,，]*[0-9])?(?:\.[0-9]+)?(?:元|塊|萬|千)?|[零〇一二三四五六七八九十百千萬億]+(?:元|塊|萬|千)?)/;
+    var amountMatch=amountRe.exec(s),outcomeStart=outcomeMatch?outcomeMatch.index:-1,amountStart=amountMatch?amountMatch.index:s.length;
+    var mechanismSurface='';
+    if(causeTail){var tailOutcome=outcomeRe.exec(causeTail);mechanismSurface=(tailOutcome?causeTail.slice(0,tailOutcome.index):causeTail).replace(/[，,。；;.!！?？\s]+$/g,'').trim();}
+    var outcomeSurface=outcomeStart>=0?s.slice(outcomeStart,amountStart).replace(/[，,。；;.!！?？\s]+$/g,'').trim():'';
+    var amountSurface=amountMatch?amountMatch[0].trim():'',amountValue='';
+    if(amountMatch){var numberMatch=amountMatch[0].match(/[0-9](?:[0-9,，]*[0-9])?(?:\.[0-9]+)?(?:元|塊|萬|千)?|[零〇一二三四五六七八九十百千萬億]+(?:元|塊|萬|千)?/);amountValue=numberMatch?numberMatch[0]:'';}
+    var framingMatch=s.match(/(?:拜完|拜拜後|祈福後|求財後).{0,16}(?:破財|損失|倒楣|出事)/);
+    var itemMatch=outcomeSurface.match(/(?:一顆|一個|一件|一條|一筆|一份|一組|一位|一張|一台)[^，,。；;.!！?？\s]{1,18}/);
+    var relations=[];
+    if(mechanismSurface&&outcomeSurface)relations.push({type:'explicit_user_attributed_cause',cause:mechanismSurface,effect:outcomeSurface,source:'user_reported_because_clause'});
+    if(contextSurface&&outcomeSurface)relations.push({type:'temporal_sequence_only',context:contextSurface,event:outcomeSurface,status:'sequence_does_not_establish_cause'});
+    return {kind:'reported_incident_cause_query',contextSurface:contextSurface,mechanismSurface:mechanismSurface,outcomeSurface:outcomeSurface,itemSurface:itemMatch?itemMatch[0]:'',amountSurface:amountSurface,amountValue:amountValue,timeScope:scope(s),userFramingSurface:framingMatch?framingMatch[0]:'',questionTarget:(mechanismSurface&&outcomeSurface)?mechanismSurface+'造成'+outcomeSurface:(outcomeSurface||mechanismSurface||''),reportedFacts:[
+      contextSurface?{role:'reported_context',surface:contextSurface,source:'user_reported',status:'reported_not_independently_verified'}:null,
+      mechanismSurface?{role:'reported_physical_mechanism',surface:mechanismSurface,source:'user_reported',status:'reported_not_independently_verified'}:null,
+      outcomeSurface?{role:'reported_outcome',surface:outcomeSurface,source:'user_reported',status:'reported_not_independently_verified'}:null,
+      amountSurface?{role:'reported_amount',surface:amountSurface,value:amountValue,source:'user_reported',status:'reported_not_independently_verified'}:null,
+      framingMatch?{role:'user_interpretive_framing',surface:framingMatch[0],source:'user_reported',status:'interpretation_to_examine'}:null
+    ].filter(Boolean),relations:relations};
+  }
   function parseClause(input,index){
     var unit=(input&&typeof input==='object')?input:{text:String(input||''),raw:String(input||''),punctuation:'',isQuestionPunct:/[？?]/.test(String(input||''))};
     var s=clean(unit.text), dims=inferQuestionDimensions(s), entities=extractEntities(s), ill=classifyIllocution(unit,s,dims), propPron=ill.propositionPronoun||null;
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s);
+    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s);
     if(ill.reportedSpeech&&ill.reportedSpeech.speakerRef)subject=ill.reportedSpeech.speakerRef;
     if(evalFrame&&subject&&!PERSONISH.test(subject)&&!/^(?:unknown_person)$/.test(subject))subject=null;
     if(subject&&/^(?:每|每月|每週|每周|每天|每日|月均|週均|周均)/.test(subject))subject=null;
     var frame={
       id:'C'+(index+1),unitId:unit.id||('U'+(index+1)),index:index,text:s,raw:unit.raw||s,punctuation:unit.punctuation||'',
       illocution:ill.type,observed:!!ill.observed,isQuestion:ill.type==='question',isExample:ill.type==='example',exampleRef:null,exampleText:ill.example||null,
-      reportedSpeech:ill.reportedSpeech||null,propositionPronoun:propPron,propositionRef:null,causalHypothesis:!!ill.causalHypothesis,
+      reportedSpeech:ill.reportedSpeech||null,propositionPronoun:propPron,propositionRef:null,causalHypothesis:!!ill.causalHypothesis,causalSituation:causalSituation,
       scope:scope(s),domains:domains,dimensions:unique(dims),
       yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),
       temporal:temporal,
@@ -722,7 +753,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.0.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.1.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -734,7 +765,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.0.0',status:coverageStatus,
+    version:'4.1.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -743,7 +774,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.0.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };

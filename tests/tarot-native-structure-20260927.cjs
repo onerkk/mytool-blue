@@ -31,7 +31,8 @@ for (const id of Object.keys(F.METHODS)) {
   const graph = graphFor(id, plan);
   assert.equal(graph.methodId, id, id + ' must retain its selected method');
   assert.equal(graph.nodes.length, plan.count, id + ' must retain every drawn card');
-  assert(graph.evidenceUnits.length > graph.nodes.length, id + ' must compile its native structure, not only atomic card descriptions');
+  if (id === 'single_card') assert.equal(graph.evidenceUnits.length, graph.nodes.length, 'a true single-card spread has one direct observation and no invented relation');
+  else assert(graph.evidenceUnits.length > graph.nodes.length, id + ' must compile its native structure, not only atomic card descriptions');
 }
 
 {
@@ -66,8 +67,9 @@ for (const id of Object.keys(F.METHODS)) {
   assert.equal(route.spreadId, 'multi_question');
   const graph = graphFor(route.spreadId, route.methodPlan, route.compiledQuestion);
   const branches = graph.evidenceUnits.filter(unit => unit.metadata && /^branch_[12]$/.test(unit.metadata.nativeStructureId || ''));
-  const synthesis = graph.evidenceUnits.find(unit => unit.metadata && unit.metadata.nativeStructureId === 'branch_comparison');
+  const synthesis = graph.evidenceUnits.find(unit => unit.metadata && unit.metadata.nativeStructureId === 'multi_question_synthesis');
   assert.equal(branches.length, 2, 'each question keeps its own five-card evidence path');
+  assert(synthesis, 'the question summaries are combined only after each independent path is complete');
   assert.deepEqual(synthesis.dependsOn, branches.map(unit => unit.id));
 }
 

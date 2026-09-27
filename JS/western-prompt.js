@@ -2,7 +2,7 @@
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='1.0.0';
+  var VERSION='1.1.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -53,7 +53,7 @@
     var entities=Object.create(null);(graph.entities||[]).forEach(function(e){entities[e.id]=e.surface||e.source||e.id;});
     return {
       schema:'jy.question_model/1',status:graph.compilerStatus||'partial',sourceQuestion:String(question||''),
-      queryIntent:{shape:compiled.features&&compiled.features.shape||null,dimensions:(compiled.requestedDimensions||[]).map(function(x){return {id:x.id,label:x.label,source:x.source};}),domains:(compiled.features&&compiled.features.domains||[]).slice(),explicitTime:(compiled.explicitScopes||[]).map(function(x){return {surface:x.surface,kind:x.kind,bounded:x.bounded,resolved:x.resolved&&x.resolved.label||null};}),operatorFocus:compiled.features&&compiled.features.timing?'relative_timing':compiled.features&&compiled.features.choice?'choice':compiled.features&&compiled.features.advice?'action_guidance':'',
+      queryIntent:{shape:compiled.features&&compiled.features.shape||null,dimensions:(compiled.requestedDimensions||[]).map(function(x){return {id:x.id,label:x.label,source:x.source};}),domains:(compiled.features&&compiled.features.domains||[]).slice(),explicitTime:(compiled.explicitScopes||[]).map(function(x){return {surface:x.surface,kind:x.kind,bounded:x.bounded,resolved:x.resolved&&x.resolved.label||null};}),operatorFocus:compiled.features&&compiled.features.causal?'cause_explanation':compiled.features&&compiled.features.timing?'relative_timing':compiled.features&&compiled.features.choice?'choice':compiled.features&&compiled.features.advice?'action_guidance':'',
       },
       events:events.map(function(e,i){
         var r=e.roles||{},f=e.languageFrame||language[i]||{},metricEntity=(graph.entities||[]).find(function(x){return x.id===r.subject;}),relation=(compiled.relations||[]).find(function(x){return (e.relationIds||[]).indexOf(x.id)>=0;})||null;
@@ -65,7 +65,7 @@
           evaluation:r.evaluatedTarget?{evaluator:r.evaluator,target:r.evaluatedTarget,criterion:r.criterion}:f.evaluation?{evaluator:f.evaluation.evaluatorRef,target:f.evaluation.targetRef,criterion:f.evaluation.criterion}:null,
           modality:e.modality||'open',queryOperator:r.queryOperator||'',timeScope:(e.timeScope||[]).slice(),requiredObservables:(e.requiredObservables||[]).slice(),optionSet:{status:r.optionSetState||f.openChoiceSet&&f.openChoiceSet.status||'',object:r.recommendationTarget||f.openChoiceSet&&f.openChoiceSet.object||''},
           conditions:(f.conditions||[]).slice(),negations:(f.negations||[]).slice(),comparisonFrame:!!f.comparisonFrame,semanticDimensions:(f.dimensions||[]).slice(),semanticDomains:(f.domains||[]).slice(),temporal:{future:!!(f.temporal&&f.temporal.future),continuity:!!(f.temporal&&f.temporal.continuity),horizon:f.temporal&&f.temporal.horizon||null,actorBoundFutureEvent:!!f.actorBoundFutureEvent},
-          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),requiredDistinctions:(r.requiredDistinctions||[]).slice()}};
+          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),requiredDistinctions:(r.requiredDistinctions||[]).slice()},causalSituation:e.causalSituation||f.causalSituation||null};
       }),
       unresolved:{language:(rq.semantic&&rq.semantic.unresolved||[]).slice(),ambiguities:(rq.semantic&&rq.semantic.ambiguities||[]).slice(),assumptions:(graph.assumptions||[]).slice(),unsupportedDimensions:(graph.unsupportedDimensions||[]).slice(),decisionKind:rq.decisionKind||'none',notes:(rq.notes||[]).slice()},
       validation:graph.validation||null
@@ -88,7 +88,7 @@
     var sentences=q.split(/[？?；;\n]+/).map(function(x){return x.trim();}).filter(Boolean);
     var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){return {id:i+1,question:text,goal:goal(text)};});
     var broad=/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
-      complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options';});
+      complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||!!e.causalSituation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options';});
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
       depth:broad?'comprehensive':complex?'deep':'focused',
       questionModel:model,
@@ -102,13 +102,23 @@
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
     lines.push('【語義模型｜由原問句解析，供核對而非取代原句】');
     lines.push(JSON.stringify(p.questionModel));
+    var causalEvent=(p.questionModel.events||[]).find(function(e){return !!e.causalSituation;}),incident=causalEvent&&causalEvent.causalSituation;
+    if(incident){
+      lines.push('【本題已報告的具體事故與因果層次】');
+      if(incident.contextSurface)lines.push('使用者報告的情境：'+incident.contextSurface);
+      if(incident.mechanismSurface)lines.push('使用者報告的直接機制：'+incident.mechanismSurface);
+      if(incident.outcomeSurface)lines.push('使用者報告的實際損失／結果：'+incident.outcomeSurface);
+      if(incident.amountSurface)lines.push('使用者報告的金額：'+incident.amountSurface);
+      if(incident.userFramingSurface)lines.push('使用者提出的事件解讀：'+incident.userFramingSurface);
+      lines.push('請先直接回答已知事件的直接原因，再用本法實際盤面分析使用者追問的象徵意義、助力或可採取行動。區分已陳述的物理機制、牌／卦的傳統象徵解釋與尚未證實的超自然因果；前後發生不自動等於前者造成後者。不得把原題改寫成泛泛的運勢問題。');
+    }
     lines.push('以本題語義模型逐一對應原問句的人物、事件、行動順序、意願／結果區分、數值門檻、比較標準、時間範圍、條件與否定；確認每項都保留原意，再把實際盤面證據連到相應欄位。由本方法本次有效結構檢查支持路徑、主要牽制、反證改變哪一層、何種條件會改判，最後給出與主阻點直接相關且可觀察的做法。模型解析不完整或和原句不一致時，回看原句並把解析缺口說清，不把缺口當成事件已發生。');
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
     if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
       if(p.bipolarMention)lines.push('就使用者提到的躁鬱症提供照顧方向：若近期狀況改變，及早聯絡原精神科團隊；可詢問是否願意一起整理睡眠、服藥與行為變化。陪同回診、傾聽及照顧者休息是可做的事，藥物調整交由醫師。若疑似躁期、嚴重憂鬱或有即時傷害危險，需緊急專業評估，不能等固定聊天時段。這些是醫療指引的實務建議，不是從牌抽出的治療；急促消息或象徵速度不等於臨床快速循環。參考：NIMH https://www.nimh.nih.gov/health/publications/bipolar-disorder 及 NICE CG185 https://www.nice.org.uk/guidance/cg185/ （本地參考於2026-09-24核對；不宣稱接收提示詞的AI本輪已查網）。');
     }
-    if(p.domains.includes('finance'))lines.push('財務部分先給本題經營／取捨方向，現實成敗再核對收入、成本、現金流和風險；沒有資料的數字不由象徵換算。');
+    if(p.domains.includes('finance'))lines.push(incident?'本題提到財物損失，但語境不是賣場經營數據；按已報告的事故作答，不自行轉成收入、營業額或投資判斷。金額是使用者報告值，不是命理推算。':'財務部分先給本題經營／取捨方向，現實成敗再核對收入、成本、現金流和風險；沒有資料的數字不由象徵換算。');
     if(p.domains.includes('legal'))lines.push('法律部分分開盤面象義與實際程序；處理方式須核對文件、所在地規則及專業意見，不能由命理保證裁判結果。');
     lines.push('成稿順序：先給能用的答案；再用必要依據說清為什麼、最大的牽制會改變哪部分；最後交代一個具體做法及檢查點。以「你可以先…，因為本盤…」承接，避免把中心、鏡像、格局或飛化逐項講成教學。具體互動未提供時，以「若實際出現…」作核對，不能寫成已發生。');
     lines.push('交稿前實際重讀成稿：首段是否已回答原題？每個主要結論是否有本次有效依據？反向訊號是否改變了判斷？同一依據是否反覆重講？行動能否執行且沒有承擔他人病情或意願？若不符，直接改寫正文後再交稿，不另輸出自評或檢核表。');
@@ -173,11 +183,10 @@
   }
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,plan:plan,render:render,finish:finish,review:review,repairPrompt:repairPrompt,footer:FOOTER};
   root.JYReadingWorkflow=Object.freeze(api);
-  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_WESTERN
-var JY_READING_WESTERN = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以可執行做法或觀察指標收束，數量依本題需要，具體指出什麼行為／條件會支持、削弱或改變判斷。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【西洋占星：相關宮主與相位】核黃道、宮制、時區、度數及容許度；本題宮位與宮主落座落宮、實際相位成主線。日月、上升與命主提供背景，不逐星背性格。\n相位看參與星、掌宮與環境；尊貴及角宮性是資源條件，順相位不等於已落實。未知時辰不定宮位、軸線與敏感時間點。\n本命、實際行運、次限、返照分層；時間窗口對應度數與有效資料。正文說清本題的需求、衝突及階段變化，只引用必要星盤結構。\n【西洋占星判讀主線】先由本題宮位、宮主及其落宮建立事件路徑：事情從哪個領域發生，需依靠哪種資源或角色完成。再用宮主與日月、相關星體的相位辨認需求如何協調、在哪裡拉扯；定位星與接納關係說明可否取得支持。把相位的兩端都譯成可觀察的做法與代價。\n判機會時同看承接條件，判困難時同找可調用的資源。已算行運觸及哪顆本命星及其掌宮，便說明當期哪個生活議題被放大；有次限或返照時分清內在階段與年度情境。最後回答現在適合改變哪件事，以及何種現實進展才表示機會開始落實。";
+var JY_READING_WESTERN = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，正文只呈現結論及必要依據，不先暖場、講方法或重述盤面；替代讀法只有會實質改變答案時才簡短提出。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束；複雜題或多子題依需要增補，不因固定項數漏掉必要判斷，具體指出什麼行為／條件會支持、削弱或改變判斷。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【西洋占星：相關宮主與相位】核黃道、宮制、時區、度數及容許度；本題宮位與宮主落座落宮、實際相位成主線。日月、上升與命主提供背景，不逐星背性格。\n相位看參與星、掌宮與環境；尊貴及角宮性是資源條件，順相位不等於已落實。未知時辰不定宮位、軸線與敏感時間點。\n本命、實際行運、次限、返照分層；時間窗口對應度數與有效資料。正文說清本題的需求、衝突及階段變化，只引用必要星盤結構。\n【西洋占星判讀主線】先由本題宮位、宮主及其落宮建立事件路徑：事情從哪個領域發生，需依靠哪種資源或角色完成。再用宮主與日月、相關星體的相位辨認需求如何協調、在哪裡拉扯；定位星與接納關係說明可否取得支持。把相位的兩端都譯成可觀察的做法與代價。\n判機會時同看承接條件，判困難時同找可調用的資源。已算行運觸及哪顆本命星及其掌宮，便說明當期哪個生活議題被放大；有次限或返照時分清內在階段與年度情境。最後回答現在適合改變哪件事，以及何種現實進展才表示機會開始落實。";
 // END GENERATED READING JY_READING_WESTERN
 // BEGIN GENERATED RECOMMENDATION JY_REC_WESTERN
 var JY_REC_WESTERN = "【最後成稿提醒】第一句直接回答問題；後續段落各增加一個新的判斷、證據關係或現實做法，避免反覆重講結論。交代最重要的反證與它限制哪一層；勿按資料章節逐項解說、抄寫規則或把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。\n【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n西洋占星：依本題宮主、相位或已算行運取材；不按太陽星座或生日月份直接套寶石。\n請在完整分析及行動建議之後，自然承接一項有盤面依據的手鍊推薦與邀請；有效解讀最後兩行依序為：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。";
@@ -208,7 +217,7 @@ var JY_REC_WESTERN = "【最後成稿提醒】第一句直接回答問題；後�
       :'出生時間不詳：行星表為當地中午參考值，真正可用範圍見下方當日變動。沒有上升、宮位、日夜盤、次限或回歸盤。涉及月亮與變動星位的結論須比較區間，不把中午當真實出生時刻。';
     return globalThis.JYReadingWorkflow.finish(`你是一位能把完整星盤轉為明確生活判斷的資深西洋占星師。以繁體中文回應，直接、溫和、深入。先在兩三句內回答使用者真正的問題，給出最有依據的方向與關鍵條件；接著解釋機制與取捨，最後安排一個具體可行的下一步。命理不是事件證明，但也不要以含糊警語取代解讀。
 
-${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('astro').join('\n'):JY_READING_WESTERN}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('astro').join('\n'):JY_READING_WESTERN}
 
 <問題資料>
 ${JSON.stringify({question:question.trim()||'請閱讀我的完整命盤，說明特質、生活方向與當下節奏。',topic,input:chart.input})}

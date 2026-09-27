@@ -1,4 +1,4 @@
-/*! tarot-semantic-engine.js — ROOT-SPEC v101 native-method compiler
+/*! tarot-semantic-engine.js — ROOT-SPEC v102 native-method compiler
  * 單一乾淨架構：原句型別化 → 方法觀測模型 → 合法證據圖 →
  * 實體／事件共指 → 原子覆蓋裁決 → 語義飽和 → 反向稽核。
  *
@@ -18,7 +18,7 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '101.1.0';
+  var VERSION = '102.0.0';
   var SCHEMA = 'jy.tarot.semantic-contract/8';
 
   function clone(value) {
@@ -166,6 +166,14 @@
     };
     var variants = {
       three_card: { temporalModel: 'ordered_or_structural_path' },
+      single_card: { eventResolution: 'single_guidance_channel', temporalModel: 'no_timeline' },
+      action_three: { eventResolution: 'state_action_conditional_result', temporalModel: 'intervention_then_condition' },
+      mind_body_spirit: { eventResolution: 'parallel_self_reflection_channels', temporalModel: 'no_timeline' },
+      daily_action: { eventResolution: 'parallel_action_guidance', temporalModel: 'same_day_nonsequential' },
+      year_review: { eventResolution: 'past_summary_to_next_year_preparation', temporalModel: 'year_boundary_stages_not_months' },
+      monthly: { eventResolution: 'declared_month_sequence_with_annual_synthesis', temporalModel: 'prebound_calendar_months' },
+      multi_option: { eventResolution: 'independent_option_claim_graphs', comparisonChannels: 3 },
+      multi_question: { eventResolution: 'independent_question_claim_graphs', temporalModel: 'separate_question_chains' },
       five_card: { temporalModel: 'mechanism_to_outcome' },
       cross: { temporalModel: 'structural_axis' },
       either_or: {
@@ -394,6 +402,66 @@
       { kind: 'ordered_arc_with_links', independentComparableChannels: 0 },
       ['他人／環境通道未綁定時不得反向創造人物。']
     ),
+    single_card: makeSpec(
+      'single_card', '單牌提醒', 'gd_book_t',
+      ['advice'], ['atomic_node', 'single_guidance'],
+      { guidance: 'direct_channel', cause: 'not_measured', outcome: 'not_measured', trajectory: 'not_measured' },
+      { kind: 'single_guidance', independentComparableChannels: 0 },
+      ['單張只提供提醒與注意方向，不單獨宣告原因、人物行為或結果。']
+    ),
+    action_three: makeSpec(
+      'action_three', '現況・行動・結果', 'gd_book_t',
+      ['state', 'advice', 'outcome'], ['atomic_node', 'state_to_intervention', 'conditional_result'],
+      { guidance: 'direct_channel', trajectory: 'direct_channel', outcome: 'direct_channel' },
+      { kind: 'intervention_conditional_path', independentComparableChannels: 0 },
+      ['第三張是採取第二張行動後的條件性走向，不是已發生結果。']
+    ),
+    mind_body_spirit: makeSpec(
+      'mind_body_spirit', '身心靈三牌', 'gd_book_t',
+      ['state', 'state', 'state'], ['atomic_node', 'parallel_reflection_channels'],
+      { cause: 'not_measured', trajectory: 'not_measured', outcome: 'not_measured', guidance: 'qualitative_inference' },
+      { kind: 'parallel_reflection', independentComparableChannels: 0, channelLabels: ['mind', 'body', 'spirit'] },
+      ['三張是平行的自我整理面向，不是時間線；身體象徵不作疾病診斷。']
+    ),
+    daily_action: makeSpec(
+      'daily_action', '每日行動三牌', 'gd_book_t',
+      ['advice', 'advice', 'advice'], ['atomic_node', 'parallel_daily_guidance'],
+      { guidance: 'direct_channel', cause: 'not_measured', outcome: 'not_measured', trajectory: 'not_measured' },
+      { kind: 'parallel_guidance', independentComparableChannels: 0, channelLabels: ['do', 'avoid', 'nourish'] },
+      ['三張各自提供今日行動、避開方式與照顧方向；不按過去現在未來串讀。']
+    ),
+    year_review: makeSpec(
+      'year_review', '年度回顧與展望', 'gd_book_t',
+      ['antecedent', 'antecedent', 'advice', 'development', 'obstacle', 'state', 'advice', 'development'],
+      ['atomic_node', 'past_lesson_and_gain', 'release_habit', 'next_year_preparation', 'challenge_and_theme', 'transition_adjustment'],
+      { cause: 'qualitative_inference', guidance: 'direct_channel', trajectory: 'direct_channel', outcome: 'qualitative_inference', exact_date: 'not_measured' },
+      { kind: 'year_boundary_stages', independentComparableChannels: 0 },
+      ['回顧位、準備位、挑戰位與行動位各依原牌位成義；八張不是八個月份。']
+    ),
+    monthly: makeSpec(
+      'monthly', '十二月趨勢與年度主題', 'gd_book_t',
+      new Array(12).fill('timeline').concat(['synthesis']),
+      ['atomic_node', 'declared_month_sequence', 'month_to_month_transition', 'annual_synthesis'],
+      { trajectory: 'direct_channel', annual_overview: 'direct_channel', outcome: 'qualitative_inference', exact_date: 'not_measured' },
+      { kind: 'declared_month_sequence', independentComparableChannels: 0, monthCount: 12, synthesisIndex: 12 },
+      ['抽牌前明示的起始月份決定十二張月位；第十三張只作年度統整，不是第十三個月或結果保證。']
+    ),
+    multi_option: makeSpec(
+      'multi_option', '多選項比較', 'gd_book_t',
+      ['state', 'obstacle', 'outcome', 'state', 'obstacle', 'outcome', 'state', 'obstacle', 'outcome'],
+      ['atomic_node', 'independent_option_A', 'independent_option_B', 'independent_option_C', 'same_scale_comparison'],
+      { comparison: 'direct_comparison_channel', trajectory: 'direct_channel', outcome: 'direct_channel', threshold_crossing: 'qualitative_comparison_if_bound' },
+      { kind: 'independent_option_paths', independentComparableChannels: 3, channelLabels: ['A', 'B', 'C'] },
+      ['每三張先成一條方案路徑，再依同一標準比較；不能跨方案借牌。']
+    ),
+    multi_question: makeSpec(
+      'multi_question', '多子題分開解讀', 'gd_book_t',
+      ['state', 'cause', 'obstacle', 'advice', 'outcome', 'state', 'cause', 'obstacle', 'advice', 'outcome'],
+      ['atomic_node', 'independent_question_A', 'independent_question_B', 'within_question_event_chain'],
+      { cause: 'direct_channel', guidance: 'direct_channel', trajectory: 'direct_channel', outcome: 'direct_channel', comparison: 'not_measured' },
+      { kind: 'independent_question_chains', independentComparableChannels: 0, channelLabels: ['A', 'B'] },
+      ['每五張只回答各自已綁定的子題；人物、背景與結論不跨題合併。']
+    ),
     ootk: makeSpec(
       'ootk', 'Opening of the Key 五次操作', 'gd_book_t',
       ['stage', 'stage', 'stage', 'stage', 'stage'],
@@ -406,21 +474,10 @@
 
   function applyFoundationMethods() {
     if (!Foundation || !Foundation.METHODS) return;
-    Object.keys(Foundation.METHODS).forEach(function (id) {
+    Object.keys(METHOD_SPECS).forEach(function (id) {
       var source = Foundation.METHODS[id];
       var target = METHOD_SPECS[id];
-      if (!source) return;
-      if (!target) {
-        var structures = source.protocol && source.protocol.structures || [];
-        target = METHOD_SPECS[id] = makeSpec(
-          id, source.label || id, source.sourceProfile || 'gd_book_t',
-          (source.slots || []).map(function (slot) { return slot.authority || 'structural'; }),
-          uniq(['atomic_node'].concat(structures.map(function (structure) { return structure.type || 'native_structure'; }))),
-          {},
-          { kind: source.protocol && (source.protocol.topology || source.protocol.id || source.protocol.kind || source.protocol.slotMode) || 'declared_method_geometry', independentComparableChannels: (source.provides || []).indexOf('comparison_outcome') >= 0 ? 2 : 0 },
-          ['此方法依 Foundation 登錄的原生位置及關係編譯；不以其他牌陣替代。']
-        );
-      }
+      if (!source || !target) return;
       target.label = source.label || target.label;
       target.layoutSource = source.layoutSource || target.layoutSource;
       target.expectedCardCount = source.count == null ? target.expectedCardCount : source.count;
@@ -875,8 +932,8 @@
   }
 
   function compileEvidenceGraph(spreadId, cards, options) {
-    var id = text(spreadId);
-    if (!id || !METHOD_SPECS[id]) throw new Error('unregistered_tarot_method:' + (id || ''));
+    if (!METHOD_SPECS[spreadId]) throw new Error('unregistered_tarot_method:' + text(spreadId));
+    var id = spreadId;
     if (id === 'ootk') return compileOOTKEvidence((options || {}).ootkData || options || {});
     var opts = options || {};
     var spec = clone(METHOD_SPECS[id]);
@@ -913,6 +970,20 @@
       compositeIds.push(result);
       return result;
     }
+    function boundSlotGroups() {
+      var source = methodPlan && Array.isArray(methodPlan.slotBindings) && methodPlan.slotBindings.length
+        ? methodPlan.slotBindings
+        : (methodPlan && Array.isArray(methodPlan.slots) ? methodPlan.slots : []);
+      var groups = Object.create(null);
+      source.forEach(function (slot, index) {
+        var binding = slot && (slot.binding || slot);
+        var eventId = text(binding && binding.eventId);
+        if (!eventId || eventId === 'QUERY_EVENT') return;
+        if (!groups[eventId]) groups[eventId] = [];
+        groups[eventId].push(index);
+      });
+      return groups;
+    }
 
     if (id === 'three_card') {
       var t1 = direct('adjacent_segment', '相鄰段 1→2', [0, 1], { topology: 'ordered_edge' });
@@ -933,14 +1004,30 @@
       var a = direct('branch_A', 'A 路徑', [0, 1, 3], {
         topology: 'independent_branch',
         eventBinding: 'BRANCH_A_EVENT',
-        entityJoin: 'branch_A_entities_only'
+        entityJoin: 'branch_A_entities_only',
+        metadata: { nativeStructureId: 'branch_A' }
       });
       var b = direct('branch_B', 'B 路徑', [0, 2, 4], {
         topology: 'independent_branch',
         eventBinding: 'BRANCH_B_EVENT',
-        entityJoin: 'branch_B_entities_only'
+        entityJoin: 'branch_B_entities_only',
+        metadata: { nativeStructureId: 'branch_B' }
       });
-      synthesis('branch_comparison', '兩路同尺度比較', [a, b], {
+      var comparisonBranches = [a, b];
+      if (methodPlan && Array.isArray(methodPlan.slotBindings)) {
+        methodPlan.slotBindings.forEach(function (slot, slotIndex) {
+          var binding = slot && slot.binding || {};
+          if (!slot || slot.authority !== 'advice' || slotIndex < 5 || !nodes[slotIndex]) return;
+          var eventId = text(binding.eventId);
+          var supplemental = direct('supplemental_advice', slot.label || '方案專屬行動建議', [slotIndex], {
+            topology: 'branch_specific_intervention',
+            eventBinding: eventId || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE',
+            metadata: { supplemental: true, branchEventId: eventId, nativeStructureId: 'branch_' + (eventId === 'BRANCH_B_EVENT' ? 'B' : 'A') + '_advice' }
+          });
+          comparisonBranches.push(supplemental);
+        });
+      }
+      synthesis('branch_comparison', '兩路同尺度比較', comparisonBranches, {
         eventBinding: 'QUERY_COMPARISON_EVENT',
         roleJoin: 'same_comparison_scale_required',
         entityJoin: 'branches_remain_distinct'
@@ -1056,79 +1143,98 @@
       var h2 = direct('environment_obstacle_link', '環境↔阻礙', [4, 5], { topology: 'interaction_edge' });
       var h3 = direct('intervention_outcome_chain', '建議→環境／阻礙→結果', [3, 4, 5, 6], { topology: 'intervention_chain' });
       synthesis('horseshoe_dependency_network', '馬蹄形完整網絡', [h1, h2, h3]);
-    }
-
-    if (methodPlan && ['single_card','action_three','mind_body_spirit','daily_action','year_review','monthly','multi_option','multi_question'].indexOf(id) >= 0 && methodPlan.protocol && Array.isArray(methodPlan.protocol.structures)) {
-      var nativeUnits = Object.create(null);
-      methodPlan.protocol.structures.forEach(function (st, structureIndex) {
-        var structureId = st.id || ('NATIVE_' + (structureIndex + 1));
-        var declaredIndices = st.indices || [];
-        var indices = declaredIndices.filter(function (i) { return Number.isInteger(i) && i >= 0 && i < nodes.length; });
-        var missingIndices = declaredIndices.filter(function (i) { return !Number.isInteger(i) || i < 0 || i >= nodes.length; });
-        if (missingIndices.length) throw new Error('invalid_method_structure_index:' + id + ':' + structureId + ':' + missingIndices.join(','));
-        var depends = (st.dependsOnStructures || []).map(function (dependency) {
-          if (!nativeUnits[dependency]) throw new Error('unresolved_method_structure_dependency:' + id + ':' + structureId + ':' + dependency);
-          return nativeUnits[dependency];
-        });
-        var slot = indices.length ? (methodPlan.slots || [])[indices[0]] || {} : {};
-        var binding = slot.binding || {};
-        var metadata = Object.assign({}, st.metadata || {}, {
-          nativeStructureId: structureId,
-          nativeStructureType: st.type || 'native_structure',
-          instruction: st.instruction || '',
-          sourceIndices: indices.slice(),
-          contextNodeIds: (st.claimPolicy === 'synthesis_only' ? indices : []).map(function (i) { return nodes[i] && nodes[i].id; }).filter(Boolean),
-          branchEntity: binding.entity || '',
-          branchQuestion: binding.question || ''
-        });
-        var unitEvent = st.eventBinding || binding.eventId || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE';
-        var isSynthesis = st.claimPolicy === 'synthesis_only' || depends.length > 0 || /(?:_synthesis|_summary)$/.test(st.type || '');
-        var unitId;
-        if (isSynthesis) {
-          if (!depends.length) throw new Error('method_synthesis_without_dependencies:' + id + ':' + structureId);
-          unitId = synthesis(st.type || 'native_synthesis', st.label || structureId, depends, {
-            eventBinding: unitEvent,
-            eventJoin: st.eventJoin || 'claims_only_from_declared_native_dependencies',
-            entityJoin: st.entityJoin || 'native_structure_entity_policy',
-            roleJoin: st.roleJoin || 'native_structure_role_policy',
-            metadata: metadata
-          });
-        } else {
-          if (!indices.length) throw new Error('method_structure_has_no_evidence:' + id + ':' + structureId);
-          unitId = direct(st.type || 'native_structure', st.label || structureId, indices, {
-            topology: st.topology || st.type || 'native_structure',
-            eventBinding: unitEvent,
-            entityJoin: st.entityJoin || 'same_entity_only_with_explicit_binding',
-            roleJoin: st.roleJoin || 'native_structure_role_policy',
-            metadata: metadata,
-            forbidden: st.forbidden || []
-          });
-        }
-        nativeUnits[structureId] = unitId;
+    } else if (id === 'action_three') {
+      var actionState = direct('state_to_intervention', '目前處境→可採取行動', [0, 1], { topology: 'intervention_edge' });
+      var actionResult = direct('conditional_result', '行動→條件性走向', [1, 2], {
+        topology: 'conditional_intervention_edge',
+        roleJoin: 'outcome_is_conditional_on_advice_position'
+      });
+      synthesis('action_three_path', '現況、介入與條件性結果', [actionState, actionResult], {
+        eventJoin: 'same_query_event_with_intervention_condition',
+        metadata: { resultRequiresAdvicePosition: true }
+      });
+    } else if (id === 'mind_body_spirit') {
+      synthesis('parallel_reflection_channels', '思考、身體照顧與內在需求的平行檢視', atomicIds, {
+        eventJoin: 'parallel_self_reflection_not_causal_or_temporal',
+        metadata: { channelLabels: ['mind', 'body', 'spirit'], temporalOrder: false, diagnosis: false }
+      });
+    } else if (id === 'daily_action') {
+      synthesis('parallel_daily_guidance', '今日行動、避免事項與滋養方向', atomicIds, {
+        eventJoin: 'parallel_daily_guidance_not_causal_or_temporal',
+        metadata: { channelLabels: ['do', 'avoid', 'nourish'], temporalOrder: false }
+      });
+    } else if (id === 'year_review') {
+      var pastReview = direct('past_lesson_and_gain', '過去一年的課題與收穫', [0, 1], { topology: 'parallel_past_review' });
+      var preparation = direct('next_year_preparation', '放下慣性與新一年準備', [2, 3], { topology: 'preparation_transition' });
+      var challengeTheme = direct('challenge_and_theme', '新一年挑戰與主題', [4, 5], { topology: 'challenge_theme_pair' });
+      var transitionAction = direct('transition_adjustment', '新一年行動與過渡調整', [6, 7], { topology: 'intervention_transition' });
+      synthesis('year_review_network', '過去經驗如何影響新一年準備、挑戰與行動', [pastReview, preparation, challengeTheme, transitionAction], {
+        eventJoin: 'year_boundary_stages_not_eight_months'
+      });
+    } else if (id === 'monthly') {
+      var monthPath = direct('declared_month_sequence', '十二個已綁定月份的順序主線', range(0, 12), {
+        topology: 'year_month_path',
+        metadata: { nativeStructureId: 'year_month_path', monthCount: 12, synthesisNodeExcluded: true }
+      });
+      var monthTransitions = [];
+      for (var monthIndex = 0; monthIndex < 11; monthIndex += 1) {
+        monthTransitions.push(direct('month_to_month_transition', '月份轉折 ' + (monthIndex + 1) + '→' + (monthIndex + 2), [monthIndex, monthIndex + 1], {
+          topology: 'month_transition',
+          metadata: { nativeStructureId: 'month_transition_' + (monthIndex + 1) + '_' + (monthIndex + 2), fromMonthIndex: monthIndex, toMonthIndex: monthIndex + 1 }
+        }));
+      }
+      synthesis('annual_synthesis', '十二個月主線的年度統整', [monthPath].concat(monthTransitions), {
+        eventJoin: 'synthesis_depends_on_full_declared_month_path',
+        metadata: { nativeStructureId: 'annual_synthesis', contextNodeIds: [nodes[12] && nodes[12].id].filter(Boolean), monthCount: 12 }
+      });
+    } else if (id === 'multi_option') {
+      var optionBranches = [];
+      var optionGroups = boundSlotGroups();
+      var optionEventIds = Object.keys(optionGroups).sort();
+      if (!optionEventIds.length) {
+        for (var fallbackOption = 0; fallbackOption < Math.floor(nodes.length / 3); fallbackOption += 1) optionGroups['OPTION_' + (fallbackOption + 1) + '_EVENT'] = range(fallbackOption * 3, fallbackOption * 3 + 3);
+        optionEventIds = Object.keys(optionGroups).sort();
+      }
+      optionEventIds.forEach(function (optionEventId, optionIndex) {
+        var optionNodes = optionGroups[optionEventId].filter(function (nodeIndex) { return !!nodes[nodeIndex]; });
+        optionBranches.push(direct('independent_option_path', '方案 ' + (optionIndex + 1) + '：依各自牌位形成完整條件路徑', optionNodes, {
+          topology: 'independent_option_branch',
+          eventBinding: optionEventId,
+          metadata: { nativeStructureId: 'branch_' + (optionIndex + 1), branchIndex: optionIndex + 1, slotCount: optionNodes.length }
+        }));
+      });
+      synthesis('branch_comparison', '各方案依同一尺度比較', optionBranches, {
+        eventBinding: 'QUERY_COMPARISON_EVENT',
+        eventJoin: 'independent_option_claims_only_same_scale_comparison',
+        roleJoin: 'same_comparison_scale_required',
+        entityJoin: 'options_remain_distinct',
+        metadata: { nativeStructureId: 'branch_comparison', branchCount: optionBranches.length }
+      });
+    } else if (id === 'multi_question') {
+      var questionBranches = [];
+      var questionGroups = boundSlotGroups();
+      var questionEventIds = Object.keys(questionGroups).sort();
+      if (!questionEventIds.length) {
+        for (var fallbackQuestion = 0; fallbackQuestion < Math.floor(nodes.length / 5); fallbackQuestion += 1) questionGroups['QUESTION_' + (fallbackQuestion + 1) + '_EVENT'] = range(fallbackQuestion * 5, fallbackQuestion * 5 + 5);
+        questionEventIds = Object.keys(questionGroups).sort();
+      }
+      questionEventIds.forEach(function (questionEventId, questionIndex) {
+        var questionNodes = questionGroups[questionEventId].filter(function (nodeIndex) { return !!nodes[nodeIndex]; });
+        questionBranches.push(direct('independent_question_path', '子題 ' + (questionIndex + 1) + '：由本題實際牌位形成獨立因果與行動鏈', questionNodes, {
+          topology: 'independent_question_chain',
+          eventBinding: questionEventId,
+          metadata: { nativeStructureId: 'branch_' + (questionIndex + 1), branchIndex: questionIndex + 1, slotCount: questionNodes.length }
+        }));
+      });
+      synthesis('multi_question_synthesis', '各子題分別成判後並列整理', questionBranches, {
+        eventBinding: 'QUERY_MULTI_QUESTION_SYNTHESIS',
+        eventJoin: 'question_summaries_only_no_cross_question_card_sentence',
+        entityJoin: 'questions_remain_distinct',
+        roleJoin: 'same_question_only_within_each_branch',
+        metadata: { nativeStructureId: 'multi_question_synthesis', questionCount: questionBranches.length }
       });
     }
 
-    if (methodPlan && id === 'either_or' && methodPlan.protocol && Array.isArray(methodPlan.protocol.structures)) {
-      methodPlan.protocol.structures.forEach(function (st, structureIndex) {
-        if (!(st.metadata && st.metadata.supplemental)) return;
-        var structureId = st.id || ('SUPPLEMENTAL_' + (structureIndex + 1));
-        var declaredIndices = st.indices || [];
-        var indices = declaredIndices.filter(function (i) { return Number.isInteger(i) && i >= 0 && i < nodes.length; });
-        var missingIndices = declaredIndices.filter(function (i) { return !Number.isInteger(i) || i < 0 || i >= nodes.length; });
-        if (missingIndices.length) throw new Error('invalid_method_structure_index:' + id + ':' + structureId + ':' + missingIndices.join(','));
-        if (!indices.length) throw new Error('method_structure_has_no_evidence:' + id + ':' + structureId);
-        var slot = (methodPlan.slots || [])[indices[0]] || {};
-        var binding = slot.binding || {};
-        direct(st.type || 'native_structure', st.label || structureId, indices, {
-          topology: st.topology || st.type || 'native_structure',
-          eventBinding: st.eventBinding || binding.eventId || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE',
-          entityJoin: st.entityJoin || 'same_entity_only_with_explicit_binding',
-          roleJoin: st.roleJoin || 'native_structure_role_policy',
-          metadata: Object.assign({}, st.metadata || {}, {nativeStructureId:structureId,instruction:st.instruction || '',branchEntity:binding.entity || '',branchQuestion:binding.question || ''}),
-          forbidden: st.forbidden || []
-        });
-      });
-    }
     return {
       methodId: id,
       topology: clone(spec.topology),
@@ -1476,16 +1582,14 @@
 
   function compileReadingSpec(input) {
     var data = input || {};
+    if (text(data.spreadId) && !METHOD_SPECS[text(data.spreadId)]) throw new Error('unregistered_tarot_method:' + text(data.spreadId));
     var questionSpec = compileQuestion(data.question, { referenceDate: data.referenceDate || data.readingDate || null });
     var route = Foundation && typeof Foundation.routeQuestion === 'function'
       ? Foundation.routeQuestion(questionSpec, { referenceDate: data.referenceDate || data.readingDate || null })
       : null;
-    var requestedSpreadId = text(data.spreadId || (data.methodPlan && data.methodPlan.id));
-    if (requestedSpreadId && !METHOD_SPECS[requestedSpreadId]) throw new Error('unregistered_tarot_method:' + requestedSpreadId);
-    if (data.methodPlan && requestedSpreadId && data.methodPlan.id && data.methodPlan.id !== requestedSpreadId) throw new Error('spread_method_plan_mismatch:' + requestedSpreadId + ':' + data.methodPlan.id);
-    var spreadId = requestedSpreadId || (route && route.spreadId) || 'three_card';
-    if (!METHOD_SPECS[spreadId]) throw new Error('unregistered_tarot_method:' + spreadId);
+    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : (route && route.spreadId) || 'three_card';
     var methodPlan = data.methodPlan || (Foundation && typeof Foundation.instantiateMethod === 'function' ? Foundation.instantiateMethod(spreadId, questionSpec) : null);
+    if (methodPlan && text(methodPlan.id) && methodPlan.id !== spreadId) throw new Error('spread_method_plan_mismatch:' + spreadId + '!=' + text(methodPlan.id));
     var method = clone(METHOD_SPECS[spreadId]);
     if (methodPlan) {
       method.label = methodPlan.label || method.label;
@@ -1700,7 +1804,7 @@
     var source = contract.sourceProfile;
     var lines = [];
     lines.push('────────────────────────────');
-    lines.push('◆ ROOT-SPEC v101｜原生方法優先—查詢核對—合法證據／共指契約');
+    lines.push('◆ ROOT-SPEC v102｜原生方法優先—查詢核對—合法證據／共指契約');
     lines.push('────────────────────────────');
     lines.push('原問句：' + question.originalQuestion);
     if (question.queryGraph.subquestions && question.queryGraph.subquestions.length > 1) {
