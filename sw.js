@@ -32,7 +32,8 @@
 // v97: 20260922audit2 選陣、分線與合盤提示詞、蓍草聲畫分離及手機視窗。
 // v98: 20260923final1 純提示詞輸出、實際特殊格局、經典牌陣與手機操作。
 // v99: 20260924reading1 合盤事實與四化來源、問答導向及分題運限。
-const CACHE_NAME = 'jy-main-v100';
+// v100: 20260927depth1 共用深度判讀契約、複雜度篇幅與六爻多人親密題角色覆蓋資訊。
+const CACHE_NAME = 'jy-main-v101';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

@@ -59,13 +59,14 @@
         var r=e.roles||{},f=e.languageFrame||language[i]||{},metricEntity=(graph.entities||[]).find(function(x){return x.id===r.subject;}),relation=(compiled.relations||[]).find(function(x){return (e.relationIds||[]).indexOf(x.id)>=0;})||null;
         return {id:e.id,source:e.surface,type:e.type,predicate:e.predicate,clauseRole:f.role||'',requester:entities[r.actor]||r.actor||'問卜者本人',eventActor:r.eventActor||null,grammaticalSubject:f.subjectRef||null,target:entities[r.target]||entities[r.subject]||f.targetRef||null,
           actionSequence:(r.actionSequence||f.actionSequence||[]).slice(),willingness:r.willingness===true||f.willingness===true,explicitSexualAct:r.explicitSexualAct===true||f.explicitSexualAct===true,
+          timingTarget:r.timingTarget||null,recurrenceCue:r.recurrenceCue||f.recurrenceCue||null,priorOccurrenceVerified:r.priorOccurrenceVerified===true,
           participants:(r.participants||f.participants||[]).map(function(p){return {surface:p.surface,role:p.role,source:p.source};}),
           metric:r.metric||relation&&relation.metric||'',metricKind:relation&&relation.metricKind||f.measurementGoal&&f.measurementGoal.metricKind||'',metricCadence:r.metricCadence||relation&&relation.metricPeriod||'',threshold:r.threshold?{surface:relation&&relation.thresholdSurface||'',value:relation&&relation.thresholdValue,operator:r.comparator||''}:null,
           comparison:r.leftOperand||r.rightOperand?{left:entities[r.leftOperand]||r.leftOperand,right:entities[r.rightOperand]||r.rightOperand,operator:r.comparator||'',criterion:r.attribute||''}:null,
           evaluation:r.evaluatedTarget?{evaluator:r.evaluator,target:r.evaluatedTarget,criterion:r.criterion}:f.evaluation?{evaluator:f.evaluation.evaluatorRef,target:f.evaluation.targetRef,criterion:f.evaluation.criterion}:null,
           modality:e.modality||'open',queryOperator:r.queryOperator||'',timeScope:(e.timeScope||[]).slice(),requiredObservables:(e.requiredObservables||[]).slice(),optionSet:{status:r.optionSetState||f.openChoiceSet&&f.openChoiceSet.status||'',object:r.recommendationTarget||f.openChoiceSet&&f.openChoiceSet.object||''},
           conditions:(f.conditions||[]).slice(),negations:(f.negations||[]).slice(),comparisonFrame:!!f.comparisonFrame,semanticDimensions:(f.dimensions||[]).slice(),semanticDomains:(f.domains||[]).slice(),temporal:{future:!!(f.temporal&&f.temporal.future),continuity:!!(f.temporal&&f.temporal.continuity),horizon:f.temporal&&f.temporal.horizon||null,actorBoundFutureEvent:!!f.actorBoundFutureEvent},
-          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),requiredDistinctions:(r.requiredDistinctions||[]).slice()},causalSituation:e.causalSituation||f.causalSituation||null};
+          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||r.eventActor||f.subjectRef||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),timingTarget:r.timingTarget||'',recurrenceCue:r.recurrenceCue||f.recurrenceCue||'',requiredDistinctions:(r.requiredDistinctions||[]).slice()},causalSituation:e.causalSituation||f.causalSituation||null};
       }),
       unresolved:{language:(rq.semantic&&rq.semantic.unresolved||[]).slice(),ambiguities:(rq.semantic&&rq.semantic.ambiguities||[]).slice(),assumptions:(graph.assumptions||[]).slice(),unsupportedDimensions:(graph.unsupportedDimensions||[]).slice(),decisionKind:rq.decisionKind||'none',notes:(rq.notes||[]).slice()},
       validation:graph.validation||null
@@ -99,6 +100,8 @@
   function render(options){
     var p=plan(options),lines=['【本題作答任務｜資料讀完後依此成稿】','原問句（原文資料）：'+JSON.stringify(p.question)];
     p.tasks.forEach(function(t){var g=GOALS[t.goal];lines.push((p.tasks.length>1?'子題'+t.id+' '+JSON.stringify(t.question)+'：':'')+g.opening+' '+g.body);});
+    if(p.depth==='deep')lines.push('【分析深度：深入】本題有多個必須區分的事件層次或條件。先把原問句完整落到本方法的有效證據上，再說清主判如何成立、正向力量怎麼傳到結果、最強牽制卡在哪一層、什麼可核條件會改變答案；不要以泛泛結論代替因果分析，也不要把同源證據重複計重。');
+    else if(p.depth==='comprehensive')lines.push('【分析深度：全盤整合】先回答原問句，再完整整合本方法中與題目相關的領域和結構；分清主線、交互牽動與反證，交代條件如何傳到結果及現實可觀察的檢查點。');
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
     lines.push('【語義模型｜由原問句解析，供核對而非取代原句】');
     lines.push(JSON.stringify(p.questionModel));
@@ -113,6 +116,12 @@
       lines.push('請先直接回答已知事件的直接原因，再用本法實際盤面分析使用者追問的象徵意義、助力或可採取行動。區分已陳述的物理機制、牌／卦的傳統象徵解釋與尚未證實的超自然因果；前後發生不自動等於前者造成後者。不得把原題改寫成泛泛的運勢問題。');
     }
     lines.push('以本題語義模型逐一對應原問句的人物、事件、行動順序、意願／結果區分、數值門檻、比較標準、時間範圍、條件與否定；確認每項都保留原意，再把實際盤面證據連到相應欄位。由本方法本次有效結構檢查支持路徑、主要牽制、反證改變哪一層、何種條件會改判，最後給出與主阻點直接相關且可觀察的做法。模型解析不完整或和原句不一致時，回看原句並把解析缺口說清，不把缺口當成事件已發生。');
+    var timedAction=(p.questionModel.events||[]).find(function(e){return e.queryOperator==='relative_timing'&&(e.actionSequence||[]).length>0;});
+    if(timedAction){
+      var timingFocusLabel={willingness_onset:'意願何時形成',action_onset:'指定行動何時開始',invitation_onset:'邀約何時發出',event_occurrence:'明示事件何時發生'}[timedAction.timingTarget]||'明示行動的時間';
+      lines.push('【明確行動的時間題】這題問的是「'+timingFocusLabel+'」：先直接給本方法實際支持的相對階段或時間範圍，再沿盤面說明從準備／意願到邀約安排、實際行動的承接與卡點。只在盤面提供日曆依據時才給日期；否則清楚說可判到哪個階段。'+(timedAction.recurrenceCue?'原句含「'+timedAction.recurrenceCue+'」，只保留為提問者用語，不當成前次事件已核實發生。':''));
+      if(timedAction.explicitSexualAct)lines.push('【親密行動層次】分開對方意願、邀約／安排與實際性行為發生時間；對方位象徵不能替代當事人的明確、無壓力且可撤回的同意。依本次盤面回答已能支持的層次，沒有證據的層次直接指出缺口。');
+    }
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
     if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
@@ -187,7 +196,7 @@
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_LENORMAND
 var JY_READING_LENORMAND = [
-  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，正文只呈現結論及必要依據，不先暖場、講方法或重述盤面；替代讀法只有會實質改變答案時才簡短提出。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束；複雜題或多子題依需要增補，不因固定項數漏掉必要判斷，具體指出什麼行為／條件會支持、削弱或改變判斷。",
+  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以可執行做法或觀察指標收束，數量依本題需要，具體指出什麼行為／條件會支持、削弱或改變判斷。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
   "短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。",
@@ -706,7 +715,7 @@ function analyzeReadingQuestion(value) {
     return best;
   }
   function horizonProfile(s){
-    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s)||(/(?:什麼時候|甚麼時候|何時|多久)/.test(s)&&/(?:能|會|可以|達到|存到|升遷|完成|實現)/.test(s));
+    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s)||(/(?:什麼時候|甚麼時候|何時|多久)/.test(s)&&/(?:能|會|可以|達到|存到|升遷|完成|實現|願意|開始|再|再次|又|重新)/.test(s));
     var horizon=null;
     if(/長期|長久|長遠|長時間|長年/.test(s))horizon='long_term';
     else if(/持續|繼續|往後|後續/.test(s))horizon='continuing';
@@ -805,10 +814,10 @@ function analyzeReadingQuestion(value) {
         if(atomicPronouns.indexOf(w)>=0)return w;
         // A discourse/time marker after a nominal subject is not part of the actor name.
         var tail=t.slice(w.length);
-        if([].concat(CONTINUATION,FUTURE,['今天','今日','明天','後天','最近','目前','現在','這次','本次']).some(function(a){return tail.indexOf(a)===0;}))return w;
+        if([].concat(CONTINUATION,FUTURE,TIME_WH,['今天','今日','明天','後天','最近','目前','現在','這次','本次']).some(function(a){return tail.indexOf(a)===0;}))return w;
         // Preserve labels/compound relations before the predicate: 同事甲、同事小美、女友閨蜜.
         // Modal/operators are explicit cut points so grammatical material cannot leak into an entity label.
-        var anchors=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,['應該','應不應該','該不該','該','要不要','是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有','對','還是','或者','或是']);
+        var anchors=[].concat(TIME_WH,ONTOLOGY.privateState,ONTOLOGY.overtAction,['應該','應不應該','該不該','該','要不要','是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有','對','還是','或者','或是']);
         var cut=-1;
         anchors.forEach(function(a){var k=tail.indexOf(a);if(k>=0&&(cut<0||k<cut))cut=k;});
         if(cut>0&&cut<=6){var compound=(w+tail.slice(0,cut)).replace(/[的之]$/,'').trim();if(compound.length>w.length)return compound;}
@@ -817,7 +826,7 @@ function analyzeReadingQuestion(value) {
     }
     // Open-class nominal subject/topic: capture the compact prefix before the first predicate/modal.
     // This lets names and unseen entity labels compose without enumerating every possible person/topic.
-    var anchors=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,['是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有']);
+    var anchors=[].concat(TIME_WH,ONTOLOGY.privateState,ONTOLOGY.overtAction,['是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有']);
     var cut=-1;
     anchors.forEach(function(a){var k=t.indexOf(a);if(k>0&&(cut<0||k<cut))cut=k;});
     if(cut>0&&cut<=12){var nominal=t.slice(0,cut).replace(/^(?:在|關於)/,'').replace(/[的之]$/,'').trim();if(nominal&&!/^(?:會|能|可以|可能|想|要|有機會|有)$/.test(nominal)&&!/(?:為什麼|怎麼|如何|多少|幾|誰|哪個)/.test(nominal))return nominal;}
@@ -901,7 +910,7 @@ function analyzeReadingQuestion(value) {
     terms.forEach(function(term){var at=String(s||'').indexOf(term);if(at<0)return;if(hits.some(function(h){return h.start<=at&&h.end>=at+term.length;}))return;hits.push({verb:term,start:at,end:at+term.length});});
     var explicitSelection=String(s||'').match(/(?:選|挑)(?=哪(?:一個|個|種)|擇哪(?:一個|個|種))/);
     if(explicitSelection){var selectionAt=explicitSelection.index;hits.push({verb:explicitSelection[0].indexOf('挑')===0?'挑選':'選擇',start:selectionAt,end:selectionAt+explicitSelection[0].length});}
-    var appointment=/(?:再|會|想|願意|可以|要)?約(?=.{0,12}(?:我|我們|你|你們|他|她|他們|她們|對方|某人|人|女生|女性|男生|男性|朋友|同事|對象|見面|吃飯|出去|看電影))/g,am;
+    var appointment=/(?:再|會|想|願意|可以|要)?約(?=.{0,16}(?:我|我們|你|你們|他|她|他們|她們|對方|某人|人|女生|女性|女的|女人|男生|男性|男的|男人|朋友|同事|對象|見面|吃飯|出去|看電影))/g,am;
     while((am=appointment.exec(String(s||'')))){var at=am.index+am[0].length-1;if(!hits.some(function(h){return h.verb==='約'&&h.start===at;}))hits.push({verb:'約',start:at,end:at+1});}
     return hits.sort(function(a,b){return a.start-b.start;});
   }
@@ -909,7 +918,9 @@ function analyzeReadingQuestion(value) {
     var people=[];
     if(subject)people.push({surface:subject,role:'grammatical_subject',source:'subject'});
     if(/(?:跟|和|與)我(?:一起|共同|合|做愛|性交|性行為)/.test(s))people.push({surface:'我',role:'co_participant',source:'explicit_first_person'});
-    var additional=String(s||'').match(/(?:一個|一位|一名|另一個|另一位|另一名)([^，,。；;！？?]{1,18}?(?:女性|女生|男性|男生|朋友|同事|對象))/);
+    var invited=String(s||'').match(/約(?:了|過)?(我|我們|你|你們|他|她|他們|她們|對方)(?=一起|共同|做愛|愛愛|性交|性行為|上床)/);
+    if(invited&&!people.some(function(p){return p.surface===invited[1];}))people.push({surface:invited[1],role:'invited_participant',source:'explicit_invitation_target'});
+    var additional=String(s||'').match(/(?:一個|一位|一名|另一個|另一位|另一名)([^，,。；;！？?]{0,18}?(?:女性|女生|女的|女人|男性|男生|男的|男人|朋友|同事|對象))/);
     if(additional)people.push({surface:additional[1],role:'additional_participant',source:'quantified_nominal'});
     var seen=Object.create(null);return people.filter(function(p){var k=p.surface+'|'+p.role;if(seen[k])return false;seen[k]=1;return true;});
   }
@@ -1051,7 +1062,7 @@ function analyzeReadingQuestion(value) {
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
       privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
-      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),
+      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|再|又/)||[])[0]||null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
       actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
@@ -1204,7 +1215,8 @@ function analyzeReadingQuestion(value) {
     if(!cur.targetRef&&prev&&prev.targetRef&&(cur.discourse.continuation||cur.discourse.conditional||cur.role==='reason'||cur.role==='action_advice'||cur.role==='timing'||cur.role==='evaluation')){
       cur.targetRef=prev.targetRef;cur.targetSource='inherited_target';
     }
-    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&(!cur.privateState||cur.willingness)&&!cur.measurement&&!cur.comparisonFrame&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0&&['reason','action_advice','timing','profile','causal_hypothesis'].indexOf(cur.role)<0);
+    var timingOfExplicitAction=cur.role==='timing'&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0;
+    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&(!cur.privateState||cur.willingness)&&(!cur.measurement||(timingOfExplicitAction&&cur.measurement==='timing'))&&!cur.comparisonFrame&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0&&(['reason','action_advice','profile','causal_hypothesis'].indexOf(cur.role)<0)&&(cur.role!=='timing'||timingOfExplicitAction));
     if(cur.actorBoundFutureEvent&&cur.role==='outcome')cur.role='future_or_event_action';
     if(!prev)continue;
     var sameActor=!!cur.subjectRef&&!!prev.subjectRef&&cur.subjectRef===prev.subjectRef;

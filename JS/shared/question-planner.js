@@ -115,7 +115,7 @@ function analyzeReadingQuestion(value) {
     return best;
   }
   function horizonProfile(s){
-    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s)||(/(?:什麼時候|甚麼時候|何時|多久)/.test(s)&&/(?:能|會|可以|達到|存到|升遷|完成|實現)/.test(s));
+    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s)||(/(?:什麼時候|甚麼時候|何時|多久)/.test(s)&&/(?:能|會|可以|達到|存到|升遷|完成|實現|願意|開始|再|再次|又|重新)/.test(s));
     var horizon=null;
     if(/長期|長久|長遠|長時間|長年/.test(s))horizon='long_term';
     else if(/持續|繼續|往後|後續/.test(s))horizon='continuing';
@@ -214,10 +214,10 @@ function analyzeReadingQuestion(value) {
         if(atomicPronouns.indexOf(w)>=0)return w;
         // A discourse/time marker after a nominal subject is not part of the actor name.
         var tail=t.slice(w.length);
-        if([].concat(CONTINUATION,FUTURE,['今天','今日','明天','後天','最近','目前','現在','這次','本次']).some(function(a){return tail.indexOf(a)===0;}))return w;
+        if([].concat(CONTINUATION,FUTURE,TIME_WH,['今天','今日','明天','後天','最近','目前','現在','這次','本次']).some(function(a){return tail.indexOf(a)===0;}))return w;
         // Preserve labels/compound relations before the predicate: 同事甲、同事小美、女友閨蜜.
         // Modal/operators are explicit cut points so grammatical material cannot leak into an entity label.
-        var anchors=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,['應該','應不應該','該不該','該','要不要','是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有','對','還是','或者','或是']);
+        var anchors=[].concat(TIME_WH,ONTOLOGY.privateState,ONTOLOGY.overtAction,['應該','應不應該','該不該','該','要不要','是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有','對','還是','或者','或是']);
         var cut=-1;
         anchors.forEach(function(a){var k=tail.indexOf(a);if(k>=0&&(cut<0||k<cut))cut=k;});
         if(cut>0&&cut<=6){var compound=(w+tail.slice(0,cut)).replace(/[的之]$/,'').trim();if(compound.length>w.length)return compound;}
@@ -226,7 +226,7 @@ function analyzeReadingQuestion(value) {
     }
     // Open-class nominal subject/topic: capture the compact prefix before the first predicate/modal.
     // This lets names and unseen entity labels compose without enumerating every possible person/topic.
-    var anchors=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,['是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有']);
+    var anchors=[].concat(TIME_WH,ONTOLOGY.privateState,ONTOLOGY.overtAction,['是否','會不會','有沒有','能不能','可不可以','會','能','可以','可能','有機會','想','要','是','有']);
     var cut=-1;
     anchors.forEach(function(a){var k=t.indexOf(a);if(k>0&&(cut<0||k<cut))cut=k;});
     if(cut>0&&cut<=12){var nominal=t.slice(0,cut).replace(/^(?:在|關於)/,'').replace(/[的之]$/,'').trim();if(nominal&&!/^(?:會|能|可以|可能|想|要|有機會|有)$/.test(nominal)&&!/(?:為什麼|怎麼|如何|多少|幾|誰|哪個)/.test(nominal))return nominal;}
@@ -310,7 +310,7 @@ function analyzeReadingQuestion(value) {
     terms.forEach(function(term){var at=String(s||'').indexOf(term);if(at<0)return;if(hits.some(function(h){return h.start<=at&&h.end>=at+term.length;}))return;hits.push({verb:term,start:at,end:at+term.length});});
     var explicitSelection=String(s||'').match(/(?:選|挑)(?=哪(?:一個|個|種)|擇哪(?:一個|個|種))/);
     if(explicitSelection){var selectionAt=explicitSelection.index;hits.push({verb:explicitSelection[0].indexOf('挑')===0?'挑選':'選擇',start:selectionAt,end:selectionAt+explicitSelection[0].length});}
-    var appointment=/(?:再|會|想|願意|可以|要)?約(?=.{0,12}(?:我|我們|你|你們|他|她|他們|她們|對方|某人|人|女生|女性|男生|男性|朋友|同事|對象|見面|吃飯|出去|看電影))/g,am;
+    var appointment=/(?:再|會|想|願意|可以|要)?約(?=.{0,16}(?:我|我們|你|你們|他|她|他們|她們|對方|某人|人|女生|女性|女的|女人|男生|男性|男的|男人|朋友|同事|對象|見面|吃飯|出去|看電影))/g,am;
     while((am=appointment.exec(String(s||'')))){var at=am.index+am[0].length-1;if(!hits.some(function(h){return h.verb==='約'&&h.start===at;}))hits.push({verb:'約',start:at,end:at+1});}
     return hits.sort(function(a,b){return a.start-b.start;});
   }
@@ -318,7 +318,9 @@ function analyzeReadingQuestion(value) {
     var people=[];
     if(subject)people.push({surface:subject,role:'grammatical_subject',source:'subject'});
     if(/(?:跟|和|與)我(?:一起|共同|合|做愛|性交|性行為)/.test(s))people.push({surface:'我',role:'co_participant',source:'explicit_first_person'});
-    var additional=String(s||'').match(/(?:一個|一位|一名|另一個|另一位|另一名)([^，,。；;！？?]{1,18}?(?:女性|女生|男性|男生|朋友|同事|對象))/);
+    var invited=String(s||'').match(/約(?:了|過)?(我|我們|你|你們|他|她|他們|她們|對方)(?=一起|共同|做愛|愛愛|性交|性行為|上床)/);
+    if(invited&&!people.some(function(p){return p.surface===invited[1];}))people.push({surface:invited[1],role:'invited_participant',source:'explicit_invitation_target'});
+    var additional=String(s||'').match(/(?:一個|一位|一名|另一個|另一位|另一名)([^，,。；;！？?]{0,18}?(?:女性|女生|女的|女人|男性|男生|男的|男人|朋友|同事|對象))/);
     if(additional)people.push({surface:additional[1],role:'additional_participant',source:'quantified_nominal'});
     var seen=Object.create(null);return people.filter(function(p){var k=p.surface+'|'+p.role;if(seen[k])return false;seen[k]=1;return true;});
   }
@@ -460,7 +462,7 @@ function analyzeReadingQuestion(value) {
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
       privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
-      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),
+      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|再|又/)||[])[0]||null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
       actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
@@ -613,7 +615,8 @@ function analyzeReadingQuestion(value) {
     if(!cur.targetRef&&prev&&prev.targetRef&&(cur.discourse.continuation||cur.discourse.conditional||cur.role==='reason'||cur.role==='action_advice'||cur.role==='timing'||cur.role==='evaluation')){
       cur.targetRef=prev.targetRef;cur.targetSource='inherited_target';
     }
-    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&(!cur.privateState||cur.willingness)&&!cur.measurement&&!cur.comparisonFrame&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0&&['reason','action_advice','timing','profile','causal_hypothesis'].indexOf(cur.role)<0);
+    var timingOfExplicitAction=cur.role==='timing'&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0;
+    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&(!cur.privateState||cur.willingness)&&(!cur.measurement||(timingOfExplicitAction&&cur.measurement==='timing'))&&!cur.comparisonFrame&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0&&(['reason','action_advice','profile','causal_hypothesis'].indexOf(cur.role)<0)&&(cur.role!=='timing'||timingOfExplicitAction));
     if(cur.actorBoundFutureEvent&&cur.role==='outcome')cur.role='future_or_event_action';
     if(!prev)continue;
     var sameActor=!!cur.subjectRef&&!!prev.subjectRef&&cur.subjectRef===prev.subjectRef;
