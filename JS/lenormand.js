@@ -26,7 +26,7 @@
     help:{name:'做法／幫助',opening:'第一段直接給最值得先做的1～2件事，以及為什麼先做；把具體開口方式或第一步說出來。',body:'後續各段說明：你可調整哪一環、對方或環境需配合什麼、什麼反應表示有效。'},
     compare:{name:'比較／決策',opening:'第一段依本題重點選出較支持的方案及代價；證據不能分高下時，明說決勝條件。',body:'用同一標準比較各方案，區分短期收益、持續成本與成立條件；保留原選項。'},
     timing:{name:'時機／發展',opening:'第一段先說可判的時間範圍與發展方向，或目前欠缺的必要條件。',body:'分開原局條件、當前觸發和可觀察進展；盤上時間分界與現實事件日期分開。'},
-    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'用2～4組依據解釋支持、牽制和調節通道，最後給一個可打斷循環的做法。'},
+    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'用3～6組真正獨立的依據，追出支持路徑、主要牽制、是否有調節通道及能打斷循環的做法；少於或多於此數時依有效資料取捨，不湊數也不漏掉會改判的反證。'},
     direction:{name:'傾向／是否',opening:'第一段回答較支持的方向、程度及主要條件；能判傾向就不平均羅列所有可能。',body:'區分注意、意願、行動、承諾和持續的證據；不同層面不能互相代答。'},
     general:{name:'整體／開放題',opening:'第一段先整理本題最有影響的主軸與優先順序，讓使用者知道現在重點在哪。',body:'圍繞原問句展開，各子題先回答；全盤供判斷，只引用改變答案的關係。'}
   };
@@ -56,7 +56,10 @@
     if(/法律|官司|訴訟|離婚協議|提告|判刑|合約糾紛/.test(q))domains.push('legal');
     var sentences=q.split(/[？?；;\n]+/).map(function(x){return x.trim();}).filter(Boolean);
     var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){return {id:i+1,question:text,goal:goal(text)};});
+    var broad=/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
+      complex=broad||tasks.length>1||ids.length>1||tasks.some(function(t){return t.goal==='explain'||t.question.length>=24||/條件|但是|不過|同時|兩人|雙方|是否真的|願意|同意|邀請|第三者|多人|3[pP]|性行為|做愛|性愛|一起/.test(t.question);});
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
+      depth:broad?'comprehensive':complex?'deep':'focused',
       healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),
       bipolarMention:disease&&/躁鬱|双相|雙相|bipolar/i.test(q),
       source:'原問句明示詞彙；只用來安排回答任務，不是排盤證據、診斷或對事件的判斷。'};
@@ -65,6 +68,7 @@
     var p=plan(options),lines=['【本題作答任務｜資料讀完後依此成稿】','原問句（原文資料）：'+JSON.stringify(p.question)];
     p.tasks.forEach(function(t){var g=GOALS[t.goal];lines.push((p.tasks.length>1?'子題'+t.id+' '+JSON.stringify(t.question)+'：':'')+g.opening+' '+g.body);});
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
+    lines.push(p.depth==='comprehensive'?'本題要求全盤／多面向分析：第一句仍須直接回答；正文依原問句展開約6～10段，涵蓋所有會改變主判的相關領域、正反證與互相牽動，略過無關宮位、牌位或術語。':p.depth==='deep'?'本題含多層條件或因果：第一句仍須直接回答；正文以約5～8段完成主線、支持、最強反證、成立條件及行動，不能把深度壓成一句結論加少量牌名。':'本題可短答：先用1～2句直接回答，再用必要依據及一個現實檢查點說清理由，不為了篇幅補空話。');
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
     if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
@@ -135,20 +139,11 @@
   }
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,plan:plan,render:render,finish:finish,review:review,repairPrompt:repairPrompt,footer:FOOTER};
   root.JYReadingWorkflow=Object.freeze(api);
+  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_LENORMAND
-var JY_READING_LENORMAND = [
-  "【白話優先】【像命理師當面解惑】【直接回答】用繁體中文直接對提問者說話，先回答，再解釋。先完整讀取本法本次有效盤面、原生方法規則與已提供背景；第一句就回答原問題，交代較支持或不支持、程度、真正卡點與最關鍵條件，不先暖場、講方法或摘要盤面。其餘規則只供判讀，正文只呈現結論及必要依據。\n簡單單題以2～4句回答；複雜單題用3～5段，多子題逐題先答。完整檢查資料後只呈現最能解釋答案的2～4組盤面依據；每段先說對提問者的實際意思，再用具體符號／結構說明這些依據如何落到原問題。分析要深入，正文不逐項抄規則、盤表或無關命理解釋。\n【主判前核對】讀完本次所有有效資料，再形成主判。分清好感／情緒、意願、實際行動、事件是否發生、承諾與持續，不能用其中一層替代另一層。交代最重要的牽制或相反訊號，必要時點出反證，說明它改變結論的哪一部分；同一訊號若對不同人物或方向作用相反，要分開說清，不同時間層也要分開判；同源訊號不重複計重。依據相持時只保留真正未定的部分；替代讀法只有會實質改變答案時才簡短提出。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。具體情境未由使用者提供時，以「若實際出現…」提出核對，不能寫成已發生。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題比較相同標準，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，指出什麼具體條件會支持、削弱或改變判斷。親密互動取得每位參與者明確、無壓力且可撤回的同意。\n成稿再讀一次：第一段是否已解答？主要結論是否有本次依據與反證？每段是否增加新答案？刪去重複講同一組訊號的段落；把「多溝通、給空間、步調不同」落實成誰、何事、如何做。先完成解答，最後才用短段落承接單一選品。",
-  "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
-  "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
-  "短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。",
-  "大牌陣先讀人物／主題近域與落宮，再延伸實際長線、距離、方向、鏡像及騎士步。遠距技巧不憑數量壓過近域主線，重複節點只算同一訊號。",
-  "人物須有角色依據；月亮、蛇、狐狸等取義由組合限定，不由單牌認定第三者、職業、欺騙或私密事實。共同九宮格沒有獨立的人物支線時，只回答共同走向及個別未定部分。",
-  "牌句最後要落到本題中的事、阻力與條件；同樣的魚、錨等符號在收入題與感情題不可照貼同一套文案。相鄰修飾是可採讀法，不把名詞加形容詞當唯一文法；先核全線語義是否連貫及是否遺漏轉折牌。",
-  "【雷諾曼判讀主線】先把主題牌與相鄰牌組成一個具體生活句，再讓後續牌修改事情的方式、阻力和落點。以「誰的什麼事、透過什麼途徑、遇到哪個轉折」完成整條牌句；例如同一阻礙牌在開端可能限制起步，在收尾則可能限制完成，須由實際次序決定。",
-  "九宮或大牌陣從本題人物／主題的核心線建立主判，再用落宮、近域與穿越線查原因及可用資源。兩方各有定位時分別說明靠近、投入與距離的條件；多條路線相反時，指出是各自立場不同、不同領域有代價，或主題仍被同一關鍵因素卡住。"
-];
+var JY_READING_LENORMAND = ["【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【分析要深、正文要有取捨】深入不等於逐張逐爻抄寫或堆術語。用約3～6組真正獨立、能改變答案的證據關係，說清符號／結構在本題代表什麼、彼此如何作用、哪一項反證限制主判；若有效證據更少就如實使用，不湊數。每段先交代對提問者的實際意思，再接具體盤面依據和推論，讓讀者看得出結論如何成立。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【依題目調整篇幅】簡單單題可用2～4句；有條件、矛盾訊號或多層結果的複雜單題用5～8段；全盤、長期結構或多子題分析按實際範圍展開，通常6～10段。這些是深度下限的參考，不得為了短而漏掉主判路徑、最強反證或必要條件；也不要用空泛重述拉長篇幅。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，具體指出什麼行為／條件會支持、削弱或改變判斷。","【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。","【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。","短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。","大牌陣先讀人物／主題近域與落宮，再延伸實際長線、距離、方向、鏡像及騎士步。遠距技巧不憑數量壓過近域主線，重複節點只算同一訊號。","人物須有角色依據；月亮、蛇、狐狸等取義由組合限定，不由單牌認定第三者、職業、欺騙或私密事實。共同九宮格沒有獨立的人物支線時，只回答共同走向及個別未定部分。","牌句最後要落到本題中的事、阻力與條件；同樣的魚、錨等符號在收入題與感情題不可照貼同一套文案。相鄰修飾是可採讀法，不把名詞加形容詞當唯一文法；先核全線語義是否連貫及是否遺漏轉折牌。","【雷諾曼判讀主線】先把主題牌與相鄰牌組成一個具體生活句，再讓後續牌修改事情的方式、阻力和落點。以「誰的什麼事、透過什麼途徑、遇到哪個轉折」完成整條牌句；例如同一阻礙牌在開端可能限制起步，在收尾則可能限制完成，須由實際次序決定。","九宮或大牌陣從本題人物／主題的核心線建立主判，再用落宮、近域與穿越線查原因及可用資源。兩方各有定位時分別說明靠近、投入與距離的條件；多條路線相反時，指出是各自立場不同、不同領域有代價，或主題仍被同一關鍵因素卡住。"];
 // END GENERATED READING JY_READING_LENORMAND
 // BEGIN GENERATED RECOMMENDATION JY_REC_LENORMAND
 var JY_REC_LENORMAND = "【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
@@ -1777,33 +1772,6 @@ function _lnHouseRelations(drawn){
 }
 function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId, def) {
   lines.push('<合法幾何>');
-  if(spreadId==='grand'||spreadId==='grand_nines'){
-    var focusGeometry=spreadId==='grand_nines'?_lnGrandNineGeometry(drawn):null;
-    var pushGrandFocus=function(label,cardId){
-      var fi=_lnFindCardIndex(drawn,cardId);
-      if(fi<0)return;
-      var coordinate,neighbors,crossings,secondary;
-      if(focusGeometry){
-        var cell=focusGeometry.cells[fi];
-        coordinate='格'+(fi+1)+' R'+(cell.row+1)+'C'+(cell.col+1);
-        neighbors=cell.neighbors.length?cell.neighbors.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無';
-        crossings=focusGeometry.lines.filter(function(line){return line.indexOf(fi)>=0;}).map(function(line){return line.map(function(n){return (n+1)+'.'+drawn[n].name;}).join('→');}).join('；')||'無';
-        secondary='水平鏡像'+(cell.horizontal===fi?'位於中軸':('格'+(cell.horizontal+1)+' '+drawn[cell.horizontal].name))+'；垂直鏡像格'+(cell.vertical+1)+' '+drawn[cell.vertical].name+'；騎士步'+(cell.knights.length?cell.knights.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無');
-      }else{
-        var coord=_lnGrandCoord(fi),ns=_lnGrandImmediateNeighbors(drawn,fi),extra=_lnGrandExtraLinks(fi);
-        coordinate='格'+(fi+1)+' '+coord.label;
-        neighbors=ns.length?ns.map(function(n){return n.dir+'＝格'+(n.index+1)+' '+n.card.name;}).join('、'):'無';
-        crossings=fi<32?_lnGrandLinesThroughText(drawn,fi):('末排獨立線＝'+drawn.slice(32,36).map(function(card,n){return (n+33)+'.'+card.name;}).join('→'));
-        secondary=fi<32?'水平鏡像格'+(extra.horizontal+1)+' '+drawn[extra.horizontal].name+'；垂直鏡像格'+(extra.vertical+1)+' '+drawn[extra.vertical].name+'；騎士步'+(extra.knights.length?extra.knights.map(function(n){return '格'+(n+1)+' '+drawn[n].name;}).join('、'):'無'):'末排不使用主盤鏡像或騎士步';
-      }
-      lines.push('焦點近域先讀（遠距補充不得取代）：'+label+' '+cardId+'.'+drawn[fi].name+'位於'+coordinate+'；固定背景宮為'+CARDS[fi].name+'宮，實際落入牌為'+drawn[fi].id+'.'+drawn[fi].name+'。');
-      lines.push(label+'立即鄰域：'+neighbors+'。');
-      lines.push(label+'穿越最大合法線：'+crossings+'。');
-      lines.push(label+'次要鏡像／騎士步（不是相鄰線）：'+secondary+'。');
-    };
-    if(personRepId)pushGrandFocus('本人牌',personRepId);
-    if(customFocusId)pushGrandFocus('額外焦點牌',customFocusId);
-  }
   if(spreadId==='two'||spreadId==='seven'){
     lines.push('唯一完整主線：'+drawn.map(function(c,i){return (i+1)+'.'+c.name;}).join('→'));
     if(spreadId==='seven')lines.push('中心：4；鏡像：1↔7、2↔6、3↔5。鏡像不是相鄰。');
@@ -1855,6 +1823,22 @@ function _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId,
     lines.push('主盤30條合法最大路徑（共含' + _lnGrandMainSegmentCount() + '個兩張以上連續片段）：');
     _lnGrandStraightLines().forEach(function(line){ lines.push(line.label + '：' + _lnGrandLineText(drawn, line)); });
     lines.push('末排最大路徑：33.' + drawn[32].name + '→34.' + drawn[33].name + '→35.' + drawn[34].name + '→36.' + drawn[35].name + '；全部連續片段＝33-34、34-35、35-36、33-34-35、34-35-36、33-34-35-36。');
+    if (personRepId) {
+      var si = _lnFindCardIndex(drawn, personRepId);
+      if (si >= 0) {
+        lines.push('本人牌入口：' + drawn[si].name + '在' + _lnGrandCoord(si).label + '（全盤第' + (si + 1) + '格）。');
+        lines.push('本人牌立即鄰域：' + _lnGrandNeighborText(drawn, si) + '。');
+        lines.push('本人牌穿越路徑：' + _lnGrandLinesThroughText(drawn, si) + '。');
+      }
+    }
+    if (customFocusId) {
+      var fi = _lnFindCardIndex(drawn, customFocusId);
+      if (fi >= 0) {
+        lines.push('額外焦點入口：' + drawn[fi].name + '在' + _lnGrandCoord(fi).label + '（全盤第' + (fi + 1) + '格）。');
+        lines.push('焦點牌立即鄰域：' + _lnGrandNeighborText(drawn, fi) + '。');
+        lines.push('焦點牌穿越路徑：' + _lnGrandLinesThroughText(drawn, fi) + '。');
+      }
+    }
   }
   lines.push('</合法幾何>');
   if(spreadId==='grand'||spreadId==='grand_nines')lines.push('固定宮位關係資料：'+JSON.stringify(_lnHouseRelations(drawn))+'。僅在會改變本題主判時採用，不逐鏈朗讀。');
@@ -1909,7 +1893,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.1.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);

@@ -147,6 +147,20 @@ test('用神語義引擎：先辨事件再取用，未知題不再默認世應',
     assert.equal(f.primary,expected,q);
     assert.notEqual(f.mode,'unresolved',q);
   }
+  const intimacy=L.focusFor('現任會願意再約一個她認識的女性跟我一起做愛嗎？','auto');
+  assert.equal(intimacy.primary,'世應');
+  assert.equal(intimacy.intent.facets.intimacy.kind,'multi-participant-sexual-activity');
+  assert.equal(intimacy.intent.facets.intimacy.askedWillingness,true);
+  assert.equal(intimacy.intent.facets.intimacy.additionalParticipantRole,'unassigned');
+  assert(intimacy.note.includes('額外參與者尚未有角色對應'));
+  const simplifiedIntimacy=L.focusFor('现任会愿意再约一个她认识的女性跟我一起做爱吗？','auto');
+  assert.equal(simplifiedIntimacy.intent.facets.intimacy.kind,'multi-participant-sexual-activity');
+  assert.equal(simplifiedIntimacy.intent.facets.intimacy.askedWillingness,true);
+  const intimacyCast=L.calculate({values:[7,7,7,7,9,8],calendar:L.calendar({year:2026,month:9,day:27,hour:12,minute:10,second:16,timezoneOffset:8}),question:'現任會願意再約一個她認識的女性跟我一起做愛嗎？'});
+  const intimacyPrompt=ctx.JYGuaPrompt.build(intimacyCast);
+  assert(intimacyPrompt.includes('【引擎問題解析】'));
+  assert(intimacyPrompt.includes('multi-participant-sexual-activity'));
+  assert(intimacyPrompt.includes('額外參與者尚未有角色對應'));
   const unknown=L.focusFor('明天會發生什麼？','auto');
   assert.equal(unknown.mode,'unresolved');
   assert.deepEqual(Array.from(unknown.candidates),[]);

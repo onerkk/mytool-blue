@@ -147,7 +147,10 @@
       .replace(/中奖/g,'中獎').replace(/发票/g,'發票').replace(/奖金/g,'獎金')
       .replace(/营收/g,'營收').replace(/营业额/g,'營業額').replace(/获利/g,'獲利')
       .replace(/签约/g,'簽約').replace(/合同/g,'合約').replace(/证照/g,'證照').replace(/录取/g,'錄取')
-      .replace(/升迁/g,'升遷').replace(/怀孕/g,'懷孕').replace(/对象/g,'對象').replace(/对方/g,'對方');
+      .replace(/升迁/g,'升遷').replace(/怀孕/g,'懷孕').replace(/对象/g,'對象').replace(/对方/g,'對方')
+      .replace(/现任/g,'現任').replace(/愿意/g,'願意').replace(/会/g,'會').replace(/约/g,'約')
+      .replace(/做爱/g,'做愛').replace(/性爱/g,'性愛').replace(/性行为/g,'性行為')
+      .replace(/肉体/g,'肉體').replace(/一个/g,'一個');
   }
   function evidenceHit(list,q,weight,label,out){
     list.forEach(function(re){if(re.test(q))out.push({label:label,weight:weight,match:(q.match(re)||[''])[0]});});
@@ -183,7 +186,15 @@
     var parent=[],parentOutcome=/(?:父母|爸爸|媽媽|父親|母親|爸媽|長輩)/;
     evidenceHit([parentOutcome],q,125,'父母／長輩人物',parent);add('parents','kin','父母','明示親屬',parent);
 
-    var health=[],healthOutcome=/(?:健康|身體|病情|生病|疾病|症狀|手術|治療|康復|痊癒|住院|疼痛|不舒服)/;
+    var intimacy=/3\s*p|做愛|性愛|性行為|性交|性關係|肉體(?:關係|桃花)|約炮|群交/i.test(q),
+      additionalParticipant=intimacy&&(/(?:再|另|另外|多)?(?:約|找|邀請|邀).{0,25}(?:一個|一位|一名|女性|女生|朋友|第三)|(?:另一個|另一位|第三人|第三者|多一人|多人|三人)|(?:一起|共同).{0,10}(?:做愛|性愛|性行為|性交)/i.test(q)),
+      intimacyFacet={present:intimacy,kind:intimacy?(additionalParticipant?'multi-participant-sexual-activity':'sexual-activity'):null,
+        askedWillingness:intimacy&&/(?:願意|同意|肯不肯|要不要|可不可以|會不會)/.test(q),
+        additionalParticipantMentioned:!!additionalParticipant,
+        additionalParticipantRole:additionalParticipant?'unassigned':'not-mentioned',
+        additionalParticipantDescription:additionalParticipant&&/(?:女性|女生|女人)/.test(q)?'question-describes-female':'unspecified',
+        policy:'辨識問句事件類型不等於辨識人物或事件用神；僅有世應時，只映射雙方對接，不推定額外參與者、同意或事件發生。'},
+      health=[],healthOutcome=/(?:健康|身體|病情|生病|疾病|症狀|手術|治療|康復|痊癒|住院|疼痛|不舒服)/;
     evidenceHit([healthOutcome],q,115,'健康／疾病事項',health);if(health.length)add('self-health','health','世','本人狀態',health);
 
     var high=frames.filter(function(f){return f.score>=90;});
@@ -194,7 +205,7 @@
     }else frames=[];
     if(health.length){var kin=frames.filter(function(f){return f.domain==='kin';});if(kin.length)frames=frames.filter(function(f){return f.id!=='self-health';});}
     var seen={},resolved=[];frames.sort(function(a,b){return b.score-a.score;}).forEach(function(f){var key=f.relative+'|'+f.role;if(!seen[key]){seen[key]=1;resolved.push(f);}});
-    return {question:q,status:resolved.length?'resolved':'unresolved',frames:resolved,facets:{amount:amount.test(q),timing:/何時|什麼時候|多久|哪天|哪月|哪年|期限|月底|本月|今天|明天|今年|明年/.test(q)}};
+    return {question:q,status:resolved.length?'resolved':'unresolved',frames:resolved,facets:{amount:amount.test(q),timing:/何時|什麼時候|多久|哪天|哪月|哪年|期限|月底|本月|今天|明天|今年|明年/.test(q),intimacy:intimacyFacet}};
   }
   function structuredTarget(relative,role,priority,intent){
     return {selector:relative==='世'||relative==='應'?'role':relative==='世應'?'roles':'relative',value:relative,relative:relative,role:role,priority:priority||'primary',intent:intent||null};
@@ -209,8 +220,10 @@
     frames.forEach(function(f){if(candidates.indexOf(f.relative)<0)candidates.push(f.relative);});
     if(frames.some(function(f){return f.domain==='wealth';}))targets.push(structuredTarget('世','問卜者承接','context','self-receipt'));
     if(frames.some(function(f){return f.domain==='health'&&f.relative==='世';}))targets.push(structuredTarget('官鬼','病勢參照','context','illness-factor'));
+    var intimate=parsed.facets&&parsed.facets.intimacy,coverageNote=intimate&&intimate.present?
+      (intimate.additionalParticipantMentioned?'本題含明示性行為及額外參與者；一般雙方互動已映射為世應，但額外參與者尚未有角色對應，不能據此視為其同意或事件已完整解析。':'本題含明示性情境；一般雙方互動已映射為世應，但這不等同性意願、同意或事件發生已完整解析。'):null;
     return {mode:'resolved',status:frames.length>1?'multiple':'resolved',primary:frames[0].relative,candidates:candidates,targets:targets,intent:parsed,
-      note:'引擎先解析事件，再依事件映射用神；'+(frames.length>1?'本題含多個可分辨事項，分列處理。':'主事情用神已解析。')};
+      note:coverageNote||('引擎先解析事件，再依事件映射用神；'+(frames.length>1?'本題含多個可分辨事項，分列處理。':'雙方互動已解析；其他未映射的結果層仍須按原問句核對。'))};
   }
   // Zeng Shan Bu Yi rule profile. Conditions are retained; no additive fortune score.
   var RULE_SOURCE='https://zh.wikisource.org/zh-hant/增刪卜易';

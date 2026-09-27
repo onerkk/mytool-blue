@@ -25,7 +25,7 @@
     help:{name:'做法／幫助',opening:'第一段直接給最值得先做的1～2件事，以及為什麼先做；把具體開口方式或第一步說出來。',body:'後續各段說明：你可調整哪一環、對方或環境需配合什麼、什麼反應表示有效。'},
     compare:{name:'比較／決策',opening:'第一段依本題重點選出較支持的方案及代價；證據不能分高下時，明說決勝條件。',body:'用同一標準比較各方案，區分短期收益、持續成本與成立條件；保留原選項。'},
     timing:{name:'時機／發展',opening:'第一段先說可判的時間範圍與發展方向，或目前欠缺的必要條件。',body:'分開原局條件、當前觸發和可觀察進展；盤上時間分界與現實事件日期分開。'},
-    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'用2～4組依據解釋支持、牽制和調節通道，最後給一個可打斷循環的做法。'},
+    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'用3～6組真正獨立的依據，追出支持路徑、主要牽制、是否有調節通道及能打斷循環的做法；少於或多於此數時依有效資料取捨，不湊數也不漏掉會改判的反證。'},
     direction:{name:'傾向／是否',opening:'第一段回答較支持的方向、程度及主要條件；能判傾向就不平均羅列所有可能。',body:'區分注意、意願、行動、承諾和持續的證據；不同層面不能互相代答。'},
     general:{name:'整體／開放題',opening:'第一段先整理本題最有影響的主軸與優先順序，讓使用者知道現在重點在哪。',body:'圍繞原問句展開，各子題先回答；全盤供判斷，只引用改變答案的關係。'}
   };
@@ -55,7 +55,10 @@
     if(/法律|官司|訴訟|離婚協議|提告|判刑|合約糾紛/.test(q))domains.push('legal');
     var sentences=q.split(/[？?；;\n]+/).map(function(x){return x.trim();}).filter(Boolean);
     var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){return {id:i+1,question:text,goal:goal(text)};});
+    var broad=/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
+      complex=broad||tasks.length>1||ids.length>1||tasks.some(function(t){return t.goal==='explain'||t.question.length>=24||/條件|但是|不過|同時|兩人|雙方|是否真的|願意|同意|邀請|第三者|多人|3[pP]|性行為|做愛|性愛|一起/.test(t.question);});
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
+      depth:broad?'comprehensive':complex?'deep':'focused',
       healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),
       bipolarMention:disease&&/躁鬱|双相|雙相|bipolar/i.test(q),
       source:'原問句明示詞彙；只用來安排回答任務，不是排盤證據、診斷或對事件的判斷。'};
@@ -64,6 +67,7 @@
     var p=plan(options),lines=['【本題作答任務｜資料讀完後依此成稿】','原問句（原文資料）：'+JSON.stringify(p.question)];
     p.tasks.forEach(function(t){var g=GOALS[t.goal];lines.push((p.tasks.length>1?'子題'+t.id+' '+JSON.stringify(t.question)+'：':'')+g.opening+' '+g.body);});
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
+    lines.push(p.depth==='comprehensive'?'本題要求全盤／多面向分析：第一句仍須直接回答；正文依原問句展開約6～10段，涵蓋所有會改變主判的相關領域、正反證與互相牽動，略過無關宮位、牌位或術語。':p.depth==='deep'?'本題含多層條件或因果：第一句仍須直接回答；正文以約5～8段完成主線、支持、最強反證、成立條件及行動，不能把深度壓成一句結論加少量牌名。':'本題可短答：先用1～2句直接回答，再用必要依據及一個現實檢查點說清理由，不為了篇幅補空話。');
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
     if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
