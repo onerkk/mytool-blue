@@ -14,15 +14,24 @@ function analyzeReadingQuestion(value) {
   // Restrict this transform to explicit ask-verbs so ordinary semantic contrasts（不是X而是Y）remain intact.
   q=q.replace(/^(?:不是|並非|不)(?:在)?(?:問|想問|要問|想知道)[^，,。；;！？?\n]*?(?:[，,]\s*)?(?:而是|是想問|我要問|我想問|真正想問的是)\s*/,'').trim();
   function unique(xs){var out=[]; (xs||[]).forEach(function(x){if(x!==undefined&&x!==null&&x!==''&&out.indexOf(x)<0)out.push(x);}); return out;}
-  function clean(s){return String(s||'').replace(/^\s*(?:[①②③④⑤⑥⑦⑧⑨⑩]|\d+[.、)）]|(?:另外|還有|以及|也想問|至於|請問))\s*/,'').replace(/[？?。；;]+$/,'').trim();}
+  function clean(s){
+    var t=String(s||'').trim();
+    // Polite ask-prefaces are discourse framing, not the proposition being asked.
+    // Strip them after clause splitting as well as at whole-question normalization:
+    // otherwise「我想問，X？Y？」turns X into a context clause and breaks X→Y links.
+    t=t.replace(/^\s*(?:[①②③④⑤⑥⑦⑧⑨⑩]|\d+[.、)）])\s*/,'');
+    t=t.replace(/^\s*(?:我想請問|想請問|我想問|想問|我想知道|想知道|我想了解|想了解|請問|麻煩請問|麻煩問一下|請幫我看|幫我看|可以幫我看|麻煩看一下|看看)\s*[，,：:、]?\s*/,'');
+    t=t.replace(/^\s*(?:另外|還有|以及|也想問|至於)\s*/,'');
+    return t.replace(/^[，,：:、\s]+/,'').replace(/[？?。；;]+$/,'').trim();
+  }
   function matchAllWords(s, words){return words.filter(function(w){return s.indexOf(w)>=0;});}
   function hasAny(s, words){return words.some(function(w){return s.indexOf(w)>=0;});}
   function scope(s){return unique((String(s||'').match(/(?:20\d{2}年(?:\d{1,2}月(?:\d{1,2}日)?)?|今年|明年|後年|未來一年|未來十二個月|未來12個月|本月|這個月|下個月|本週|這週|下週|今天|今日|明天|後天|年底前|月底前|週內|月內|年內|近期|最近|(?:未來|接下來)?[一二三四五六七八九十兩\d]+(?:個月|週|天|年)(?:內|後)?)/g)||[])).join('、');}
 
   // A small ontology is deliberately lexical only at the atomic level. Whole user sentences are never hard-coded.
   var ONTOLOGY={
-    privateState:['暗戀','喜歡','愛','在乎','欣賞','心動','好感','討厭','害怕','擔心','懷疑','信任','想法','心裡','內心','真心','感受','態度','意圖','打算','有意思','需要','偏好','渴望','想要'],
-    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','出貨','成交','簽約','離職','轉職','搬家','出發','回來'],
+    privateState:['暗戀','喜歡','愛','在乎','欣賞','心動','好感','討厭','害怕','擔心','懷疑','信任','想法','心裡','內心','真心','感受','態度','意圖','打算','願意','不願意','同意','不同意','有意思','需要','偏好','渴望','想要'],
+    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','做愛','愛愛','性交','性行為','上床','發生關係','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','選品','挑選','上架','刊登','試賣','定價','推廣','曝光','出貨','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','成交','簽約','離職','轉職','搬家','出發','回來'],
     money:['錢','金額','獎金','收入','營業額','營收','業績','價格','薪資','薪水','款項','現金','中獎','抽獎','發票','彩券','樂透','威力彩','大樂透','刮刮樂','退款','回饋'],
     countUnits:['張','次','件','份','人','筆','單','顆','條','位','個','組','家','間','封','通','則'],
     timeUnits:['秒','分鐘','分','小時','時','天','日','週','星期','月','個月','年'],
@@ -32,15 +41,15 @@ function analyzeReadingQuestion(value) {
     probabilityUnits:['%','％','成'],
     profile:['外貌','長相','身高','體型','職業','哪裡人','個性','性格','特徵','類型','年輕','同齡','成熟','年長','年紀','年齡','相處模式'],
     domains:{
-      relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','暗戀','喜歡','愛','交往','約會','伴侶','女友','男友','老婆','老公'],
-      work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯'],
+      relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','表白','坦白心意','暗戀','喜歡','好感','欣賞','心動','有意思','愛','交往','約會','約我','追求','示好','伴侶','女友','男友','老婆','老公','現任','正緣','對象','配偶','性伴侶','肉體桃花'],
+      work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯','正職','本業','副業'],
       finance:['財運','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
       health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院'],
       family:['家庭','家人','父母','爸爸','媽媽','孩子','子女'],
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
-      commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','成本','報價','售後','貨源','庫存','出貨','訂單','客戶','交易'],
-      intimacy:['性愛','愛愛','性行為','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
+      commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','成本','報價','售後','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'],
+      intimacy:['性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
     },
     continuity:['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年','一直維持'],
     evaluation:[
@@ -53,10 +62,11 @@ function analyzeReadingQuestion(value) {
       {id:'value',terms:['划不划算','划算']},
       {id:'safety',terms:['安不安全','安全']},
       {id:'effectiveness',terms:['有沒有效','有效']},
-      {id:'quality',terms:['好不好','好','差不差','差']}
+      {id:'quality',terms:['好不好','好','差不差','差']},
+      {id:'partner_fit',terms:['是不是正緣','是否正緣','正緣','合不合適','適不適合交往','適不適合結婚']}
     ]
   };
-  var SUBJECT_WORDS=['我','我們','你','你們','他','她','他們','她們','對方','這個人','那個人','有人','某人','女生','女性','男生','男性','異性','同事','女同事','男同事','異性同事','女性同事','男性同事','主管','客戶','朋友','好友','閨蜜','女友','男友','伴侶','前任','前男友','前女友','老婆','老公','妻子','丈夫','家人','媽媽','爸爸','父母','孩子'];
+  var SUBJECT_WORDS=['我','我們','你','你們','他','她','他們','她們','對方','這個人','那個人','有人','某人','女生','女性','男生','男性','異性','同事','女同事','男同事','異性同事','女性同事','男性同事','主管','客戶','朋友','好友','閨蜜','女友','男友','伴侶','現任','前任','前男友','前女友','老婆','老公','妻子','丈夫','家人','媽媽','爸爸','父母','孩子'];
   var CONTINUATION=['未來','之後','後來','往後','接下來','再來','下一步','那','那麼','然後','後續','到時','如果','若','假如','所以','並且','以及','還有'];
   var EXAMPLE_CUES=['例如','比如','譬如','舉例','像是','比方說','例如說'];
   var SPEECH_VERBS=['問','詢問','說','表示','提到','告訴','回答','回覆','承認','要求','建議','提議','跟我說','跟你說','跟他說','跟她說'];
@@ -76,8 +86,8 @@ function analyzeReadingQuestion(value) {
   var YESNO_PREFIX=['是否','會不會','有沒有','能不能','可不可以','能否','會否','是不是','要不要','該不該','應不應該','適不適合','值不值得','行不行','成不成','愛不愛','喜不喜歡'];
   var FUTURE=['未來','之後','往後','接下來','將來','稍後','待會','明天','後天','下週','下個月','明年','年底前','月底前'];
   var LONG_HORIZON=['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年'];
-  var PERSONISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
-  var FACET_STOP=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|事情|這件事|結果|未來|現在|目前)$/;
+  var PERSONISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|現任|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
+  var FACET_STOP=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|現任|前任|事情|這件事|結果|未來|現在|目前)$/;
 
   function stripQuestionLead(text){
     var t=String(text||'').trim();
@@ -105,7 +115,7 @@ function analyzeReadingQuestion(value) {
     return best;
   }
   function horizonProfile(s){
-    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s);
+    var scopeText=scope(s), continuity=hasAny(s,LONG_HORIZON), future=hasAny(s,FUTURE)||/(?:會|將|可能|有機會)/.test(s)||/(?:長期|長久|長遠|往後|後續|持續|繼續)/.test(s)||(/(?:什麼時候|甚麼時候|何時|多久)/.test(s)&&/(?:能|會|可以|達到|存到|升遷|完成|實現)/.test(s));
     var horizon=null;
     if(/長期|長久|長遠|長時間|長年/.test(s))horizon='long_term';
     else if(/持續|繼續|往後|後續/.test(s))horizon='continuing';
@@ -115,6 +125,7 @@ function analyzeReadingQuestion(value) {
   function evaluationFrame(s, subject){
     var evalText=stripQuestionLead(s), cue=findEvaluationCue(evalText);if(!cue)return null;
     var prefix=evalText.slice(0,cue.index).trim(), suffix=evalText.slice(cue.index+cue.term.length).replace(/[嗎呢啊呀吧？?。；;！!]+$/g,'').trim();
+    prefix=prefix.replace(/(?:是不是|是否|適不適合|合不合適|會不會|能不能|可不可以)\s*$/,'').replace(/的\s*$/,'').trim();
     var evaluator=null,target=null,criterion=suffix||cue.term,relation=null,targetFromSuffix=false;
     var relPair=prefix.match(/^(?:我|我們)(?:跟|和|與)(.+)$/);
     if(relPair){evaluator=/^我們/.test(prefix)?'我們':'我';target=normalizeNominalCandidate(relPair[1]);}
@@ -131,6 +142,7 @@ function analyzeReadingQuestion(value) {
     if(cue.id==='suitability' && /^(?:我|我們)(?:嗎|呢)?$/.test(suffix)){evaluator=suffix.replace(/[嗎呢]/g,'');criterion=cue.term;}
     var rel=suffix.replace(new RegExp('^(?:'+LONG_HORIZON.join('|')+')'),'').trim();
     if(!targetFromSuffix&&rel&&!/^(?:我|我們)$/.test(rel))relation=rel;
+    if(cue.id==='partner_fit'&&target){if(!evaluator)evaluator='我';criterion='伴侶適配／關係定位';relation=relation||'與問卜者的伴侶適配';}
     return {kind:cue.id,cue:cue.term,targetRef:target||null,evaluatorRef:evaluator||null,criterion:criterion||cue.term,relation:relation,continuity:hasAny(s,LONG_HORIZON)};
   }
   function isExplicitEntitySurface(v){
@@ -241,7 +253,33 @@ function analyzeReadingQuestion(value) {
     }
     if(/確切金額|金額多少|多少錢|多少元|多少塊|獎金多少|收入多少|營業額多少|營收多少|薪水多少|薪資多少/.test(s))dims.push('amount');
     if(hasAny(s,ONTOLOGY.profile))dims.push('profile');
+    var goal=parseMeasurementGoal(s);
+    if(goal){dims.push(goal.metricKind==='amount'?'amount':goal.metricKind==='rate'?'rate':'count');if(goal.cadence)dims.push('continuity');}
     return unique(dims);
+  }
+  // Parse a measurable target independently of its divination method.
+  // Keep the number and cadence as source text so the chart reader never
+  // mistakes the requested target for a value predicted by the spread.
+  function parseMeasurementGoal(input){
+    var s=String(input||'').replace(/[？?。；;！!]/g,' ').replace(/\s+/g,' ').trim();
+    var number='(?:[0-9][0-9,]*(?:\\.[0-9]+)?(?:萬|億)?|[零〇一二兩三四五六七八九十百千萬億]+)';
+    var metrics=['每月訂單量','月訂單量','訂單數','訂單量','訂單','單數','單量','單','件數','筆數','銷售量','銷量','營業額','營收','收入','薪水','薪資','成本','獲利','利潤','客戶數','人數','轉換率','客單價'];
+    var metric=metrics.sort(function(a,b){return b.length-a.length;}).map(function(x){return x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|');
+    var boundary='(以上|以下|至少|至多|超過|多於|高於|大於|不到|低於|小於|不超過|不低於|達到|破)';
+    var unit='(?:張|件|筆|個|位|名)?';
+    var m=s.match(new RegExp('('+number+')\\s*'+unit+'\\s*('+metric+')\\s*'+boundary)),order='number_first',leadingOperator='';
+    if(!m){
+      var lead=/達到|至少|不低於|超過|多於|高於|大於|至多|不超過|不到|低於|小於|破/;
+      m=s.match(new RegExp('('+metric+')\\s*('+lead.source+')?\\s*('+number+')\\s*'+unit+'\\s*'+boundary+'?'));
+      if(m&&(m[2]||m[m.length-1])){order='metric_first';leadingOperator=m[2]||'';}else m=null;
+    }
+    if(!m)return null;
+    var metricName=m[order==='number_first'?2:1],numberSurface=m[order==='number_first'?1:3],operatorText=order==='number_first'?m[m.length-1]:(m[m.length-1]||leadingOperator);
+    var metricKind=/訂單|單數|件數|筆數|銷量|銷售量|客戶數|人數/.test(metricName)?'count':/營業額|營收|收入|薪水|薪資|成本|獲利|利潤|客單價/.test(metricName)?'amount':'rate';
+    var prefix=s.slice(0,m.index),clause=s.slice(m.index,m.index+m[0].length),cadence=/每個月|每月|月均|月訂單|月營收|月收入/.test(prefix+clause)?'monthly':/每週|每周|週均|周均/.test(prefix+clause)?'weekly':/每日|每天|日均/.test(prefix+clause)?'daily':null;
+    prefix=prefix.replace(/(?:請問|想問|我想問|幫我看|我想知道|想知道|什麼時候|甚麼時候|何時|多久|哪一天|哪天|幾月|哪個月|會不會|能不能|可不可以|能否|是否|可以|能夠|可能|會|能|要|應該|每個月|每月|月均|每週|每周|週均|周均|每日|每天|日均|達到|達成|做到|存到|增加到|提升到|提升至|突破)+/g,' ').replace(/(?:我|本人)\s*/g,' ').replace(/\s+/g,' ').trim();
+    var operators={以上:'gte',至少:'gte',不低於:'gte',達到:'gte',以下:'lte',至多:'lte',不超過:'lte',超過:'gt',多於:'gt',高於:'gt',大於:'gt',破:'gt',不到:'lt',低於:'lt',小於:'lt'};
+    return {metric:metricName,metricKind:metricKind,thresholdSurface:numberSurface,operator:operators[operatorText]||'gte',operatorText:operatorText,cadence:cadence,subject:prefix||null,source:m[0]};
   }
   function detectYesNo(s){
     var t=s.replace(/\s+/g,'').replace(/[？?。！!]+$/,'');
@@ -262,6 +300,23 @@ function analyzeReadingQuestion(value) {
     if(dims.indexOf('timing')>=0)return 'timing_query';
     if(dims.indexOf('profile')>=0||dims.indexOf('identity')>=0||dims.indexOf('age')>=0)return 'profile_query';
     return 'event_or_state';
+  }
+  function actionMentions(s){
+    var terms=[].concat(ONTOLOGY.overtAction).sort(function(a,b){return b.length-a.length;}),hits=[];
+    terms.forEach(function(term){var at=String(s||'').indexOf(term);if(at<0)return;if(hits.some(function(h){return h.start<=at&&h.end>=at+term.length;}))return;hits.push({verb:term,start:at,end:at+term.length});});
+    var explicitSelection=String(s||'').match(/(?:選|挑)(?=哪(?:一個|個|種)|擇哪(?:一個|個|種))/);
+    if(explicitSelection){var selectionAt=explicitSelection.index;hits.push({verb:explicitSelection[0].indexOf('挑')===0?'挑選':'選擇',start:selectionAt,end:selectionAt+explicitSelection[0].length});}
+    var appointment=/(?:再|會|想|願意|可以|要)?約(?=.{0,12}(?:我|我們|你|你們|他|她|他們|她們|對方|某人|人|女生|女性|男生|男性|朋友|同事|對象|見面|吃飯|出去|看電影))/g,am;
+    while((am=appointment.exec(String(s||'')))){var at=am.index+am[0].length-1;if(!hits.some(function(h){return h.verb==='約'&&h.start===at;}))hits.push({verb:'約',start:at,end:at+1});}
+    return hits.sort(function(a,b){return a.start-b.start;});
+  }
+  function participantRoles(s,subject){
+    var people=[];
+    if(subject)people.push({surface:subject,role:'grammatical_subject',source:'subject'});
+    if(/(?:跟|和|與)我(?:一起|共同|合|做愛|性交|性行為)/.test(s))people.push({surface:'我',role:'co_participant',source:'explicit_first_person'});
+    var additional=String(s||'').match(/(?:一個|一位|一名|另一個|另一位|另一名)([^，,。；;！？?]{1,18}?(?:女性|女生|男性|男生|朋友|同事|對象))/);
+    if(additional)people.push({surface:additional[1],role:'additional_participant',source:'quantified_nominal'});
+    var seen=Object.create(null);return people.filter(function(p){var k=p.surface+'|'+p.role;if(seen[k])return false;seen[k]=1;return true;});
   }
   function stripSurfaceOperators(s){
     var t=String(s||'');
@@ -315,6 +370,9 @@ function analyzeReadingQuestion(value) {
       var from=0,k;
       while((k=t.indexOf(term,from))>=0){candidates.push({term:term,at:k});from=k+Math.max(1,term.length);}
     });
+    //「約我／約朋友」is an overt social action even though the bare one-character
+    // verb is too ambiguous to add to the general action vocabulary.
+    actionMentions(t).forEach(function(action){if(action.verb==='約')candidates.push({term:'約',at:action.start});});
     candidates.sort(function(a,b){return a.at-b.at||b.term.length-a.term.length;});
     return candidates.length?candidates[0]:null;
   }
@@ -336,7 +394,7 @@ function analyzeReadingQuestion(value) {
     return tail;
   }
   function hasPrivateState(s){
-    var t=String(s||'').replace(/愛愛/g,'').replace(/做愛/g,'');
+    var t=String(s||'').replace(/愛愛|做愛|性愛|性交|性行為|上床/g,'');
     return hasAny(t,ONTOLOGY.privateState);
   }
   function classifyIllocution(unit,s,dims){
@@ -356,6 +414,7 @@ function analyzeReadingQuestion(value) {
     var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s);
     if(ill.reportedSpeech&&ill.reportedSpeech.speakerRef)subject=ill.reportedSpeech.speakerRef;
     if(evalFrame&&subject&&!PERSONISH.test(subject)&&!/^(?:unknown_person)$/.test(subject))subject=null;
+    if(subject&&/^(?:每|每月|每週|每周|每天|每日|月均|週均|周均)/.test(subject))subject=null;
     var frame={
       id:'C'+(index+1),unitId:unit.id||('U'+(index+1)),index:index,text:s,raw:unit.raw||s,punctuation:unit.punctuation||'',
       illocution:ill.type,observed:!!ill.observed,isQuestion:ill.type==='question',isExample:ill.type==='example',exampleRef:null,exampleText:ill.example||null,
@@ -368,12 +427,19 @@ function analyzeReadingQuestion(value) {
       evaluatorRef:evalFrame&&evalFrame.evaluatorRef||null,targetRef:evalFrame&&evalFrame.targetRef||null,targetSource:evalFrame&&evalFrame.targetRef?'surface':'none',facetRef:null,relationRef:evalFrame&&evalFrame.relation||null,evaluation:evalFrame,
       semanticFrame:evalFrame?'evaluation':null,
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
-      privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction),actorBoundFutureEvent:false,
+      privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
+      willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
+      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),
+      comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
+      actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
+      openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
       hidden:/暗|秘密|隱|沒說|未公開|真心|內心|心裡/.test(s)||(!evalFrame&&hasPrivateState(s)),
       confirmedOccurrence:ill.type!=='question'||/(?:已經|已|確定|顯示|確認)(?:[^，,。？?；;]{0,10})(?:中獎|錄取|成交|付款|入帳|到貨|出貨|簽約|發生|成立)|(?:我|他|她|對方)?(?:中了|錄取了|成交了|付款了|入帳了|到了|出貨了|簽約了)/.test(s),
       futureAction:false,
       occurrenceQuery:false,measurement:null,role:ill.type==='question'?'outcome':'context'
     };
+    frame.conditions=(s.match(/(?:如果|若|假如|只要|除非|直到|必須|一旦)[^，,。？?；;！!]+/g)||[]).map(function(x){return x.trim();});
+    frame.negations=(s.replace(/會不會|有沒有|能不能|可不可以|是不是|要不要/g,'').match(/不會|不能|沒有|未曾|尚未|不要|不再|不是|不成立|拒絕/g)||[]);
     frame.objectRef=extractObjectRef(s,subject);
     if(frame.reportedSpeech){
       frame.predicateClass='reported_speech';frame.predicateHead=frame.reportedSpeech.verb;frame.objectRef=frame.reportedSpeech.content||null;
@@ -385,9 +451,10 @@ function analyzeReadingQuestion(value) {
       else if(dims.indexOf('advice')>=0)frame.role='action_advice';
       else if(dims.indexOf('timing')>=0)frame.role='timing';
       else if(dims.indexOf('identity')>=0||dims.indexOf('profile')>=0||dims.indexOf('age')>=0)frame.role='profile';
+      else if(frame.willingness&&frame.overtAction)frame.role='willingness_for_event';
       else if(evalFrame)frame.role='evaluation';
       else if(frame.privateState)frame.role='hidden_state';
-      else if(frame.overtAction||frame.temporal.future)frame.role='future_or_event_action';
+      else if(frame.overtAction)frame.role='future_or_event_action';
     }
     if(dims.indexOf('amount')>=0)frame.measurement='amount';
     else if(dims.indexOf('count')>=0)frame.measurement='count';
@@ -401,6 +468,7 @@ function analyzeReadingQuestion(value) {
     frame.occurrenceQuery=frame.isQuestion&&(frame.yesNo||(eventModal && frame.predicateClass!=='private_state'));
     // futureAction is actor-bound behaviour, not every future event/measurement.
     frame.futureAction=frame.isQuestion&&frame.temporal.future && (frame.overtAction||frame.predicateClass==='event_action');
+    frame.actorBoundFutureEvent=frame.futureAction&&!!frame.subjectRef&&frame.actionSequence.length>0;
     return frame;
   }
 
@@ -514,12 +582,18 @@ function analyzeReadingQuestion(value) {
     if(!cur.targetRef&&prev&&prev.targetRef&&(cur.discourse.continuation||cur.discourse.conditional||cur.role==='reason'||cur.role==='action_advice'||cur.role==='timing'||cur.role==='evaluation')){
       cur.targetRef=prev.targetRef;cur.targetSource='inherited_target';
     }
-    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&!cur.privateState&&!cur.measurement&&['reason','action_advice','timing','profile','causal_hypothesis'].indexOf(cur.role)<0);
+    cur.actorBoundFutureEvent=!!(cur.isQuestion&&cur.temporal&&cur.temporal.future&&cur.subjectRef&&(!cur.privateState||cur.willingness)&&!cur.measurement&&!cur.comparisonFrame&&cur.futureAction&&cur.actionSequence&&cur.actionSequence.length>0&&['reason','action_advice','timing','profile','causal_hypothesis'].indexOf(cur.role)<0);
     if(cur.actorBoundFutureEvent&&cur.role==='outcome')cur.role='future_or_event_action';
     if(!prev)continue;
-    var disjointDomains=cur.domains.length&&prev.domains.length&&cur.domains.every(function(d){return prev.domains.indexOf(d)<0;});
     var sameActor=!!cur.subjectRef&&!!prev.subjectRef&&cur.subjectRef===prev.subjectRef;
     var sameTarget=!!cur.targetRef&&!!prev.targetRef&&cur.targetRef===prev.targetRef;
+    var inheritedActorForRelation=cur.subjectSource==='inherited_discourse_actor'||cur.subjectSource==='coreference';
+    // A person's attitude toward the asker followed by that same person's stated
+    // relational action is one cross-domain path (e.g. coworker → likes me → confess).
+    // Domain tags are coarse; do not let「work」versus「relationship」erase this bridge.
+    var relationalStateBridge=prev.privateState&&cur.futureAction&&inheritedActorForRelation&&
+      cur.domains.indexOf('relationship')>=0&&/^(?:我|我們|你|你們)$/.test(String(prev.objectRef||''));
+    var disjointDomains=cur.domains.length&&prev.domains.length&&cur.domains.every(function(d){return prev.domains.indexOf(d)<0;})&&!relationalStateBridge;
 
     // Same-target facet/evaluation bundles are one evaluative question, not a conditional dependency.
     if(cur.isQuestion&&prev.isQuestion&&cur.semanticFrame==='evaluation'&&prev.semanticFrame==='evaluation'&&sameTarget){
@@ -538,11 +612,14 @@ function analyzeReadingQuestion(value) {
     }
     // Hidden-state -> later action is a dependency only when the later clause inherits a missing participant/object
     // from the first proposition. If the later action supplies its own explicit object (e.g. fantasy -> agree to 3P), they are separate questions.
-    if(cur.isQuestion&&prev.isQuestion&&prev.privateState&&(cur.futureAction||cur.actorBoundFutureEvent)&&sameActor&&!disjointDomains){
+    if(cur.isQuestion&&prev.isQuestion&&prev.privateState&&prev.role==='hidden_state'&&(cur.futureAction||cur.actorBoundFutureEvent)&&sameActor&&!disjointDomains){
       if(!cur.objectRef&&prev.objectRef){cur.objectRef=prev.objectRef;cur.objectSource='inherited_discourse_object';}
       var sameObject=!!cur.objectRef&&!!prev.objectRef&&cur.objectRef===prev.objectRef;
       var existentialActor=/^(?:unknown_person|女生|女性|男生|男性|異性|女同事|男同事|女性同事|男性同事|異性同事)$/.test(String(prev.subjectRef||''));
-      if((sameObject||existentialActor)&&!cur.causalHypothesis){
+      // A genuinely inherited/coreferential actor is itself a semantic bridge:
+      //「她喜歡我嗎？之後會坦白心意嗎？」still concerns the same person's
+      // state-to-action path even though the later verb has a different object.
+      if((sameObject||existentialActor||relationalStateBridge)&&!cur.causalHypothesis){
         dependencies.push({from:prev.index,to:i,type:'hidden_state_to_future_action_same_actor',dependency:true,actorBinding:'same_actor',objectRef:cur.objectRef||prev.objectRef||null,fromRole:prev.role,toRole:cur.role});
       } else {
         links.push({from:prev.index,to:i,type:'same_actor_followup',dependency:false,actorBinding:'same_actor',fromRole:prev.role,toRole:cur.role});
@@ -640,9 +717,11 @@ function analyzeReadingQuestion(value) {
   // Keep the parsed graph, but do not claim an executable multi-option plan when no options were supplied.
   var missingDecisionOptions=decision.kind==='multiple'&&!options.length;
   if(missingDecisionOptions)criticalIssues.push({reason:'decision_options_missing',required:'three_or_more_explicit_options'});
+  var incompleteDecision=decision.kind==='incomplete';
+  if(incompleteDecision)criticalIssues.push({code:'INCOMPLETE_DECISION_OPTIONS',reason:'decision_option_missing',required:'complete_comparison_options'});
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
-  var ready=parseReady&&!missingDecisionOptions;
-  var coverageStatus=missingDecisionOptions?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
+  var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
+  var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
   var contract={version:'4.0.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}

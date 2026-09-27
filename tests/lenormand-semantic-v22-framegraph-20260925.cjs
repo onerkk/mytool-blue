@@ -31,7 +31,7 @@ function first(q){return sem(q).clauses[0];}
   ok('facet-targets',JSON.stringify(t.targets)==='["廠商"]',JSON.stringify(t));
   ok('facet-list',JSON.stringify(t.facets)==='["交期","品質","價格"]',JSON.stringify(t));
   ok('facet-component',t.componentCount===1,JSON.stringify(t));
-  ok('facet-edges',p.dependencies.filter(e=>e.type==='same_target_facet_bundle').length===3,JSON.stringify(p.dependencies));
+  ok('facet-edges',p.discourseLinks.filter(e=>e.type==='same_target_facet_bundle').length===3,JSON.stringify(p.discourseLinks));
   ok('facet-roles',s.clauses.every(f=>f.role==='evaluation'&&f.privateState===false),JSON.stringify(s.clauses));
   ok('facet-nine',api.detect(q).id==='nine',JSON.stringify(api.detect(q)));
 }
@@ -83,9 +83,9 @@ for(const q of ['這家公司會加薪嗎？這家公司會搬家嗎？','她會
   const p=api.shared(q);ok('independent-same-entity:'+q,p.mode==='multi_question',JSON.stringify(p));
 }
 
-// 9) Materially underspecified evaluation fails closed instead of inventing an object.
+// 9) Materially underspecified evaluation stays available for best-effort reading while preserving the missing-target warning.
 for(const q of ['值得嗎？','可靠嗎？','適合長期嗎？']){
-  const p=api.shared(q);ok('underspecified-not-ready:'+q,p.ready===false,JSON.stringify(p));ok('underspecified-code:'+q,p.contract.criticalIssues.some(x=>x.code==='UNRESOLVED_EVALUATION_TARGET'),JSON.stringify(p.contract));ok('underspecified-no-spread:'+q,api.detect(q).id===null,JSON.stringify(api.detect(q)));
+  const p=api.shared(q);ok('underspecified-best-effort:'+q,p.ready===true&&p.semantic.status==='partial',JSON.stringify(p));ok('underspecified-warning:'+q,p.semantic.unresolved.some(x=>x.reason==='evaluation_target_unresolved'),JSON.stringify(p.semantic.unresolved));ok('underspecified-route:'+q,!!api.detect(q).id,JSON.stringify(api.detect(q)));
 }
 
 // 10) Entity graph has typed edges and is not just a bag of labels.

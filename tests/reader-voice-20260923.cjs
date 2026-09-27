@@ -7,7 +7,7 @@ const expected = [
   'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '8.1.0');
+assert.equal(quality.readingVersion, '8.2.0');
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();
@@ -16,13 +16,16 @@ for (const phrase of [
   '第一句就回答原問題',
   '深度判讀流程',
   '最有力的正向依據',
-  '約3～6組真正獨立',
-  '5～8段',
-  '說清符號／結構在本題代表什麼、彼此如何作用',
+  '【深度來自完整推理，不靠字數】',
+  '【篇幅由問題決定】',
+  '力量如何傳到結果',
+  '最強反證限制的是哪一層',
   '可執行做法或觀察指標',
   '明確、無壓力且可撤回的同意',
   '把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚'
 ]) assert(answerStyle.includes(phrase), `shared answer style: ${phrase}`);
+assert(!answerStyle.includes('約3～6組真正獨立'), 'analysis depth is based on relevant evidence, not a fixed evidence count');
+assert(!answerStyle.includes('5～8段'), 'response length follows the question instead of a fixed paragraph count');
 
 for (const kind of expected) {
   const lines = quality.lines(kind);

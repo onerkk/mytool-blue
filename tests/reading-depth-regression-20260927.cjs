@@ -14,10 +14,11 @@ function same(actual,expected,label){assert.equal(JSON.stringify(actual),JSON.st
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name);}
 
 test('All active methods receive the full answer-first depth contract and native synthesis path',()=>{
-  assert.equal(quality.readingVersion,'8.1.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
+  assert.equal(quality.readingVersion,'8.2.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
   for(const method of methods){
     const lines=quality.lines(method).join('\n'),payload=quality.payloadGuide([method]);
-    for(const phrase of ['第一句就回答原問題','深度判讀流程','證據完整度','最有力的反向依據','約3～6組真正獨立'])assert(lines.includes(phrase),method+' '+phrase);
+    for(const phrase of ['第一句就回答原問題','深度判讀流程','證據完整度','最有力的反向依據','深度來自完整推理'])assert(lines.includes(phrase),method+' '+phrase);
+    assert(!/(?:約|用)[0-9一二三四五六七八九十～至-]+(?:組|段|句)/.test(lines),method+' no fixed evidence or paragraph count');
     assert(lines.includes('【'+({tarot:'塔羅',ootk:'開鑰之法',lenormand:'雷諾曼',bazi:'八字',compat:'合盤',ziwei:'紫微',meihua:'梅花',liuyao:'六爻',yijing:'易經',oracle:'靈籤',astro:'西洋占星',vedic:'印度占星',name:'姓名',personality:'人格'}[method])+'判讀主線】')||method==='ootk',method+' native synthesis');
     assert(payload.methods[method].length>=4,method+' payload depth');
   }
@@ -48,8 +49,9 @@ test('Embedded workflow copies stay synchronized and adapt output depth to quest
     const source=read(file),a='// BEGIN GENERATED WORKFLOW\n',b='\n// END GENERATED WORKFLOW',start=source.indexOf(a);assert(start>=0,file+' workflow start');const body=start+a.length,end=source.indexOf(b,body);assert(end>=0,file+' workflow end');assert.equal(source.slice(body,end),canonical,file+' workflow copy');
   }
   const sexual='現任會願意再約一個她認識的女性跟我一起做愛嗎？';
-  const scoped=flow.render({method:'liuyao',question:sexual});assert(flow.plan({method:'liuyao',question:sexual}).depth==='deep');assert(scoped.includes('約5～8段'));
-  const broad=flow.render({methods:['bazi','ziwei'],question:'完整分析命盤今年所有面向'});assert(broad.includes('約6～10段'));
+  const scoped=flow.render({method:'liuyao',question:sexual});assert(flow.plan({method:'liuyao',question:sexual}).depth==='deep');assert(scoped.includes('willingness_for_intimate_action'));assert(scoped.includes('participant_structure'));
+  const broad=flow.render({methods:['bazi','ziwei'],question:'完整分析命盤今年所有面向'});assert(broad.includes('本題語義模型'));
+  assert(!/(?:約|用)[0-9一二三四五六七八九十～至-]+(?:組|段|句)/.test(scoped+broad));
 });
 
 console.log('reading depth regression: '+passed+' groups passed across '+methods.length+' methods and all prompt fallbacks.');

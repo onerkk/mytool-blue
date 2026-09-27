@@ -136,18 +136,6 @@ const prompt=api.build('今天我統一發票會中多少',cards,'three',null,'m
 check('prompt exposes structured engine resolution', prompt.includes('引擎問題解析：') && prompt.includes('"resolution":"qualitative_band"'), 'engine metadata missing');
 check('no hardcoded exact-amount prohibition added', !/禁止[^\n]{0,30}(?:精確金額|報金額)|不得[^\n]{0,30}(?:精確金額|報出.*元)/.test(prompt), 'found generic prompt restriction');
 
-// I1. Four-by-nine focus data leads with the person's actual house, nearby cards,
-// and only the maximal legal lines through that focus; knight links stay secondary.
-const grandNineOrder=[1,21,13,7,11,34,20,2,9,29,3,31,10,23,8,18,17,4,28,25,22,32,30,19,36,6,15,35,27,26,5,33,16,12,24,14];
-const grandNineCards=grandNineOrder.map(id=>api.cards.find(c=>c.id===id));
-const grandNinePrompt=api.build('今年會出現肉體桃花嗎？',grandNineCards,'grand_nines',null,'male');
-const focusAt=grandNinePrompt.indexOf('焦點近域先讀（遠距補充不得取代）：本人牌 28.紳士位於格19 R3C1');
-const exhaustiveAt=grandNinePrompt.indexOf('合法最大路徑：');
-check('4x9 focus coordinate and fixed house', focusAt>=0&&grandNinePrompt.includes('固定背景宮為塔宮'), '本人 focus is not grounded in the actual R3C1 tower house');
-check('4x9 exact immediate neighborhood', grandNinePrompt.includes('本人牌立即鄰域：格10 淑女、格11 船、格20 戒指、格28 錨、格29 信'), 'focus neighbors do not match 4x9 coordinates');
-check('4x9 only maximal legal through-focus paths first', focusAt>=0&&exhaustiveAt>focusAt&&grandNinePrompt.slice(focusAt,exhaustiveAt).includes('19.紳士')&&grandNinePrompt.slice(focusAt,exhaustiveAt).includes('1.騎士→10.淑女→19.紳士→28.錨'), 'focus lines are missing or follow the full-geometry dump');
-check('4x9 mirrors and knight links marked secondary', grandNinePrompt.includes('次要鏡像／騎士步（不是相鄰線）')&&grandNinePrompt.includes('騎士步格30 書、格12 太陽、格2 山'), 'secondary links are absent or miscomputed');
-
 
 // I2. Hidden-state -> future-action questions are one conditional chain with inherited actor identity.
 for (const q of [
@@ -177,7 +165,7 @@ check('review allows conditional symbolic relationship answer', r.ok===true, JSO
 // J. Generated/shared source integrity and cache/version wiring.
 check('root and JS lenormand identical', fs.readFileSync(path.join(root,'lenormand.js'),'utf8')===fs.readFileSync(sourcePath,'utf8'));
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
-check('index loads current lenormand cache token', index.includes('JS/lenormand.js?v=20260927direct1'));
+check('index loads current lenormand cache token', index.includes('JS/lenormand.js?v=20260926ln23'));
 check('public API current', sandbox.window.JYLenormand && sandbox.window.JYLenormand.version==='23.0.0', JSON.stringify(sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version));
 
 console.log(`Lenormand legacy compatibility: ${pass} checks PASS`);

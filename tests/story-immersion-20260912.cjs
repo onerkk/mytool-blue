@@ -15,7 +15,7 @@ function extract(file,name){const src=read(file);let found;function walk(n){if(!
   const mobile=css.nodes.find(node=>node.type==='atrule'&&node.name==='media'&&node.params.includes('max-width:849px'));assert(mobile);
   const declarations=selector=>{const rule=mobile.nodes.find(node=>node.type==='rule'&&node.selector===selector);assert(rule,selector);return Object.fromEntries(rule.nodes.filter(node=>node.type==='decl').map(node=>[node.prop,node.value+(node.important?'!important':'')]));};
   const dialog=declarations('.jy-atelier .jr-dialog[data-story]');assert.equal(dialog['overflow-y'],'auto!important');assert.equal(dialog['touch-action'],'pan-y pinch-zoom');
-  const action=declarations('.jy-atelier .jr-dialog[data-story][data-phase="3"] .jr-next');assert.equal(action.position,'sticky!important');assert.match(action.bottom,/safe-area-inset-bottom/);assert.equal(action['z-index'],'20!important');assert.equal(action.width,'100%!important');assert.equal(action['box-sizing'],'border-box!important');assert.match(action['margin'],'8px 0 0!important');
+  const action=declarations('.jy-atelier .jr-dialog[data-story][data-phase="3"] .jr-next');assert.equal(action.position,'fixed!important');assert.match(action.bottom,/safe-area-inset-bottom/);assert.equal(action['z-index'],'20!important');
  });
  for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle','ootk'])await test(kind+': director keeps the scene user-led and settles once after visible shots',async()=>{
   const e=dom(),shots=[];let done=0,disposals=0;

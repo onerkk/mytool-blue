@@ -114,7 +114,7 @@ test('All fourteen methods use answer-led paragraphs, limits only when relevant 
  const quality=c.JY_READING_QUALITY;
  for(const kind of quality.methodKinds()){
   const p=quality.lines(kind).join('\n')+'\n'+quality.recommendationEnding(kind);
-  for(const rule of ['每段先交代','真正卡點','反證','可執行做法','不能寫成已發生','不為導購']){
+  for(const rule of ['第一句就回答原問題','真正卡點','反證','可執行做法','不能寫成已發生','不為導購']){
    if(rule==='不為導購')assert(p.includes('不可為導購'));else assert(p.includes(rule),kind+' '+rule);
   }
   assert.equal((p.match(/https:\/\/shopee.tw/g)||[]).length,1);
@@ -130,7 +130,7 @@ test('A stale shared guide cannot override the new embedded evidence and voice s
  try{
   const fallback=c.JYRelationshipCore.buildPrompt(comp,pair,q);
   assert(!fallback.includes('STALE_SENTINEL'));assert(!fallback.includes('STALE_SHOP'));
-  assert(fallback.includes('十神映射不是對方的心理報告'));assert(fallback.includes('每段先交代'));
+  assert(fallback.includes('十神映射不是對方的心理報告'));assert(fallback.includes('最強反證限制的是哪一層'));
  }finally{c.JY_READING_QUALITY=saved;}
 });
 if(process.env.JY_OUTPUT_REVIEW){fs.mkdirSync(process.env.JY_OUTPUT_REVIEW,{recursive:true});fs.writeFileSync(path.join(process.env.JY_OUTPUT_REVIEW,'relationship-current-prompt.txt'),prompt);}

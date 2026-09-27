@@ -23,10 +23,10 @@
     personality:{name:'人格',basis:'原始四柱與十神通路、模型摘要和本人經驗',path:'由有力結構提出行為假設，分長處與負荷代價，給可用實際經驗驗證的小練習。'}
   };
   var GOALS={
-    help:{name:'做法／幫助',opening:'第一段直接給最值得先做的1～2件事，以及為什麼先做；把具體開口方式或第一步說出來。',body:'後續各段說明：你可調整哪一環、對方或環境需配合什麼、什麼反應表示有效。'},
+    help:{name:'做法／幫助',opening:'第一段直接給最值得先做的具體行動，以及為什麼先做；把開口方式或第一步說出來。',body:'後續各段說明：你可調整哪一環、對方或環境需配合什麼、什麼反應表示有效。'},
     compare:{name:'比較／決策',opening:'第一段依本題重點選出較支持的方案及代價；證據不能分高下時，明說決勝條件。',body:'用同一標準比較各方案，區分短期收益、持續成本與成立條件；保留原選項。'},
     timing:{name:'時機／發展',opening:'第一段先說可判的時間範圍與發展方向，或目前欠缺的必要條件。',body:'分開原局條件、當前觸發和可觀察進展；盤上時間分界與現實事件日期分開。'},
-    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'用3～6組真正獨立的依據，追出支持路徑、主要牽制、是否有調節通道及能打斷循環的做法；少於或多於此數時依有效資料取捨，不湊數也不漏掉會改判的反證。'},
+    explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'追出支持如何傳到結果、哪一環被牽制、牽制如何形成或解除；把最強反證放回它實際限制的層次，並指出會改判的條件。'},
     direction:{name:'傾向／是否',opening:'第一段回答較支持的方向、程度及主要條件；能判傾向就不平均羅列所有可能。',body:'區分注意、意願、行動、承諾和持續的證據；不同層面不能互相代答。'},
     general:{name:'整體／開放題',opening:'第一段先整理本題最有影響的主軸與優先順序，讓使用者知道現在重點在哪。',body:'圍繞原問句展開，各子題先回答；全盤供判斷，只引用改變答案的關係。'}
   };
@@ -42,24 +42,56 @@
     if(/會不會|能不能|可不可以|是否|有沒有|能否|嗎|會否/.test(q))return 'direction';
     return 'general';
   }
+  function compiler(){
+    if(root.JYTarotFoundation&&typeof root.JYTarotFoundation.compileQuestion==='function')return root.JYTarotFoundation;
+    if(typeof module==='object'&&module.exports){try{return require('./tarot-foundation.js');}catch(_e){}}
+    return null;
+  }
+  function semanticModel(question,options){
+    var F=compiler();if(!F)return {schema:'jy.question_model/1',status:'unavailable',sourceQuestion:question,events:[]};
+    var compiled=F.compileQuestion(question,{referenceDate:options&&options.referenceDate,timezone:options&&options.timezone}),graph=compiled.queryGraph||{},rq=compiled.readingQuestion||{},language=rq.clauses||[],events=graph.events||[];
+    var entities=Object.create(null);(graph.entities||[]).forEach(function(e){entities[e.id]=e.surface||e.source||e.id;});
+    return {
+      schema:'jy.question_model/1',status:graph.compilerStatus||'partial',sourceQuestion:String(question||''),
+      queryIntent:{shape:compiled.features&&compiled.features.shape||null,dimensions:(compiled.requestedDimensions||[]).map(function(x){return {id:x.id,label:x.label,source:x.source};}),domains:(compiled.features&&compiled.features.domains||[]).slice(),explicitTime:(compiled.explicitScopes||[]).map(function(x){return {surface:x.surface,kind:x.kind,bounded:x.bounded,resolved:x.resolved&&x.resolved.label||null};}),operatorFocus:compiled.features&&compiled.features.timing?'relative_timing':compiled.features&&compiled.features.choice?'choice':compiled.features&&compiled.features.advice?'action_guidance':'',
+      },
+      events:events.map(function(e,i){
+        var r=e.roles||{},f=e.languageFrame||language[i]||{},metricEntity=(graph.entities||[]).find(function(x){return x.id===r.subject;}),relation=(compiled.relations||[]).find(function(x){return (e.relationIds||[]).indexOf(x.id)>=0;})||null;
+        return {id:e.id,source:e.surface,type:e.type,predicate:e.predicate,clauseRole:f.role||'',requester:entities[r.actor]||r.actor||'問卜者本人',eventActor:r.eventActor||null,grammaticalSubject:f.subjectRef||null,target:entities[r.target]||entities[r.subject]||f.targetRef||null,
+          actionSequence:(r.actionSequence||f.actionSequence||[]).slice(),willingness:r.willingness===true||f.willingness===true,explicitSexualAct:r.explicitSexualAct===true||f.explicitSexualAct===true,
+          participants:(r.participants||f.participants||[]).map(function(p){return {surface:p.surface,role:p.role,source:p.source};}),
+          metric:r.metric||relation&&relation.metric||'',metricKind:relation&&relation.metricKind||f.measurementGoal&&f.measurementGoal.metricKind||'',metricCadence:r.metricCadence||relation&&relation.metricPeriod||'',threshold:r.threshold?{surface:relation&&relation.thresholdSurface||'',value:relation&&relation.thresholdValue,operator:r.comparator||''}:null,
+          comparison:r.leftOperand||r.rightOperand?{left:entities[r.leftOperand]||r.leftOperand,right:entities[r.rightOperand]||r.rightOperand,operator:r.comparator||'',criterion:r.attribute||''}:null,
+          evaluation:r.evaluatedTarget?{evaluator:r.evaluator,target:r.evaluatedTarget,criterion:r.criterion}:f.evaluation?{evaluator:f.evaluation.evaluatorRef,target:f.evaluation.targetRef,criterion:f.evaluation.criterion}:null,
+          modality:e.modality||'open',queryOperator:r.queryOperator||'',timeScope:(e.timeScope||[]).slice(),requiredObservables:(e.requiredObservables||[]).slice(),optionSet:{status:r.optionSetState||f.openChoiceSet&&f.openChoiceSet.status||'',object:r.recommendationTarget||f.openChoiceSet&&f.openChoiceSet.object||''},
+          conditions:(f.conditions||[]).slice(),negations:(f.negations||[]).slice(),comparisonFrame:!!f.comparisonFrame,semanticDimensions:(f.dimensions||[]).slice(),semanticDomains:(f.domains||[]).slice(),temporal:{future:!!(f.temporal&&f.temporal.future),continuity:!!(f.temporal&&f.temporal.continuity),horizon:f.temporal&&f.temporal.horizon||null,actorBoundFutureEvent:!!f.actorBoundFutureEvent},
+          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),requiredDistinctions:(r.requiredDistinctions||[]).slice()}};
+      }),
+      unresolved:{language:(rq.semantic&&rq.semantic.unresolved||[]).slice(),ambiguities:(rq.semantic&&rq.semantic.ambiguities||[]).slice(),assumptions:(graph.assumptions||[]).slice(),unsupportedDimensions:(graph.unsupportedDimensions||[]).slice(),decisionKind:rq.decisionKind||'none',notes:(rq.notes||[]).slice()},
+      validation:graph.validation||null
+    };
+  }
   function plan(options){
     options=options||{};
     var q=String(options.question||'').trim(),ids=kinds(options.methods||options.method);
     if(!ids.length)throw new Error('沒有有效的命理方法，無法整理本題');
+    var model=semanticModel(q,options);
     var disease=/躁鬱|双相|雙相|bipolar|憂鬱症|抑鬱症|精神疾病|思覺失調|糖尿病|癌症|癲癇|失智/i.test(q);
     var care=/幫助|幫忙|照顧|陪伴|怎麼辦|該如何|不穩定|發作|病情|治療|康復|症狀|停藥|減藥|換藥|就醫|生病|失眠|自傷|自殺/.test(q);
     var clinical=/(?:我|她|他|現任|伴侶|女友|男友|父|母|家人|朋友).{0,30}(?:停藥|減藥|換藥|就醫|病情|症狀|手術|治療)/.test(q);
     var health=(disease&&care)||clinical||/自傷|自殺/.test(q);
-    var domains=[];
+    var domains=(model.queryIntent&&model.queryIntent.domains||[]).slice();
     if(health)domains.push('health');
-    if(/投資|借貸|負債|股票|基金|財務|營業額|收入|財運|賺錢|副業/.test(q))domains.push('finance');
+    if(/投資|借貸|負債|股票|基金|財務|營業額|收入|財運|賺錢|副業|正職|本業/.test(q))domains.push('finance');
     if(/法律|官司|訴訟|離婚協議|提告|判刑|合約糾紛/.test(q))domains.push('legal');
+    domains=Array.from(new Set(domains));
     var sentences=q.split(/[？?；;\n]+/).map(function(x){return x.trim();}).filter(Boolean);
     var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){return {id:i+1,question:text,goal:goal(text)};});
     var broad=/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
-      complex=broad||tasks.length>1||ids.length>1||tasks.some(function(t){return t.goal==='explain'||t.question.length>=24||/條件|但是|不過|同時|兩人|雙方|是否真的|願意|同意|邀請|第三者|多人|3[pP]|性行為|做愛|性愛|一起/.test(t.question);});
+      complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options';});
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
       depth:broad?'comprehensive':complex?'deep':'focused',
+      questionModel:model,
       healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),
       bipolarMention:disease&&/躁鬱|双相|雙相|bipolar/i.test(q),
       source:'原問句明示詞彙；只用來安排回答任務，不是排盤證據、診斷或對事件的判斷。'};
@@ -68,7 +100,9 @@
     var p=plan(options),lines=['【本題作答任務｜資料讀完後依此成稿】','原問句（原文資料）：'+JSON.stringify(p.question)];
     p.tasks.forEach(function(t){var g=GOALS[t.goal];lines.push((p.tasks.length>1?'子題'+t.id+' '+JSON.stringify(t.question)+'：':'')+g.opening+' '+g.body);});
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
-    lines.push(p.depth==='comprehensive'?'本題要求全盤／多面向分析：第一句仍須直接回答；正文依原問句展開約6～10段，涵蓋所有會改變主判的相關領域、正反證與互相牽動，略過無關宮位、牌位或術語。':p.depth==='deep'?'本題含多層條件或因果：第一句仍須直接回答；正文以約5～8段完成主線、支持、最強反證、成立條件及行動，不能把深度壓成一句結論加少量牌名。':'本題可短答：先用1～2句直接回答，再用必要依據及一個現實檢查點說清理由，不為了篇幅補空話。');
+    lines.push('【語義模型｜由原問句解析，供核對而非取代原句】');
+    lines.push(JSON.stringify(p.questionModel));
+    lines.push('以本題語義模型逐一對應原問句的人物、事件、行動順序、意願／結果區分、數值門檻、比較標準、時間範圍、條件與否定；確認每項都保留原意，再把實際盤面證據連到相應欄位。由本方法本次有效結構檢查支持路徑、主要牽制、反證改變哪一層、何種條件會改判，最後給出與主阻點直接相關且可觀察的做法。模型解析不完整或和原句不一致時，回看原句並把解析缺口說清，不把缺口當成事件已發生。');
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
     if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
@@ -143,7 +177,7 @@
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_GUA
-var JY_READING_GUA = {"liuyao":["【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【分析要深、正文要有取捨】深入不等於逐張逐爻抄寫或堆術語。用約3～6組真正獨立、能改變答案的證據關係，說清符號／結構在本題代表什麼、彼此如何作用、哪一項反證限制主判；若有效證據更少就如實使用，不湊數。每段先交代對提問者的實際意思，再接具體盤面依據和推論，讓讀者看得出結論如何成立。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【依題目調整篇幅】簡單單題可用2～4句；有條件、矛盾訊號或多層結果的複雜單題用5～8段；全盤、長期結構或多子題分析按實際範圍展開，通常6～10段。這些是深度下限的參考，不得為了短而漏掉主判路徑、最強反證或必要條件；也不要用空泛重述拉長篇幅。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，具體指出什麼行為／條件會支持、削弱或改變判斷。","【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。","【六爻：納甲與用神】只依本次已保存的六次爻值、月建、日辰及換日政策判讀。初爻在下、上爻在上，可有零至六個動爻。核本卦八宮、世應、六親、六神、伏神；變爻六親仍以本卦卦宮五行為基準，不重新換宮取六親。","先按原問題確定用神與角色；自動候選只是取用方向，不是已確認的人物。一卦中的世、應不憑空分配多位對象，也不把本卦和變卦當成兩個方案各自起卦。感情須依已知關係，不只按性別決定妻財或官鬼。","明示性行為或多人親密情境時，分開判伴侶的意向、問卜者承擔、額外參與者、安排／行動與事件是否發生。僅有世應只能說已映射的雙方對接；不能自動擴成第三人支線，也不能由單一六親推定任何人的性意願或同意。未提供第三人的角色對應或本法有據的事件用神時，清楚標出尚未解析的那一層，不拿未定義的象徵補洞；現實中須逐人確認明確且可撤回的同意。","月日生扶克洩、旬空、月破與動爻作用合看；月令／日辰關係須按來源方向解讀，『受生／受克』描述的是月日元素，不可倒讀成爻受生／受克。日沖只是一個客觀標記，須辨旺衰才判暗動或日破。六沖、六合、遊魂、歸魂、六神與某一六親不單獨決定成敗，不用吉凶分數冒充機率。","先讀所選事情用神及其 influences.network：逐候選找出最有力的生扶與克制，再核月日、旬空、月破、旺衰和動靜。世應都相關時，說明同一爻如何分別作用於世與應；不可只報『元神／忌神』名目，也不可漏掉會改變主判的反向作用。靜爻仍按月日強弱與角色納入，不因靜止就略過。","動爻才有直接動化作用；變爻只回作用於本位動爻，不能把變出的六親當成另一個已發生的人事或對方心念。之卦靜爻的納甲是背景，不是新增動爻。回頭生克、進退神與飛伏條件需落回用神的實際作用。三合須列出完整支組、動爻數及空破條件，依本法明示規則判為動局、靜背景或待條件，不把『三合』兩字直接當吉象。先說事情目前可不可行、卡在哪裡，再用最有影響的爻組說明，不逐列朗讀排盤表。","應期須有用神、動靜、沖合與時間尺度的明確依據，保留條件；不由空亡或一個支位自造精確日期。六爻不套梅花體用，也不套周易按動爻數擇辭的方法。","【六爻判讀主線】先問用神能否得力：月日給它多少支持、元神的生扶能否送達、忌神有無有效克制，動變又把力量帶向哪裡。元神雖動而空破或化受制，援助可能難落實；忌神受制時，原本的阻力也可能鬆動。把這些實際作用連成成事路徑，指出最關鍵的一道門檻。","世爻看自己在事件中的承擔與狀態，應爻按已知角色看對接條件；用神可成而世難承擔、世有力而用神受阻，是不同答案。若問題問時機，沿已算空破、動變、沖合的解決條件縮小時間；若問做法，優先提出能改善主阻點的安排，並列可觀察到的進展。"],"yijing":["【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【分析要深、正文要有取捨】深入不等於逐張逐爻抄寫或堆術語。用約3～6組真正獨立、能改變答案的證據關係，說清符號／結構在本題代表什麼、彼此如何作用、哪一項反證限制主判；若有效證據更少就如實使用，不湊數。每段先交代對提問者的實際意思，再接具體盤面依據和推論，讓讀者看得出結論如何成立。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【依題目調整篇幅】簡單單題可用2～4句；有條件、矛盾訊號或多層結果的複雜單題用5～8段；全盤、長期結構或多子題分析按實際範圍展開，通常6～10段。這些是深度下限的參考，不得為了短而漏掉主判路徑、最強反證或必要條件；也不要用空泛重述拉長篇幅。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以1～3項可執行做法或觀察指標收束，具體指出什麼行為／條件會支持、削弱或改變判斷。","【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。","【易經：卦辭與爻辭】以已提供的本卦、之卦、動爻及本次擇辭政策為準；正文先用白話回答問題，再引用影響答案的一兩處原文，連成處境、轉折與下一步。原文照提供版本，不用記憶補寫或把白話改寫標成古文。","本次採朱子《易學啟蒙・考變占》，三爻變並讀本、之卦卦辭，依已給定的前十主貞、後十主悔決定主次。四、五爻變所取的是之卦不變爻，不能誤讀成本卦該爻；乾坤六爻皆動用用九／用六，不能當成第七爻。遵守資料中已列明的主讀與參讀。","本卦讀當下處境，動變與所選原文讀需調整的條件；之卦是變化後的參照，不直接保證未來發生。互、錯、綜卦若未提供，不自行補造為已起得的卦；不混入六爻納甲、世應或梅花體用規則。","吉、凶、悔、吝、無咎、利貞要連同原文的前提與行為讀，不能只抽好聽字眼。三年、七日等經文數字先辨古義與象徵，不能直接成為現實日曆日期；疾病、婚姻、征伐等古語不作醫療指示或替他人表達同意。","【易經判讀主線】先將主讀卦爻的處境、所處階段與勸告連成一個決策：現在應進、應守、應改方法，或先完成哪個條件。再看原文的因果次序，分清什麼做法導向吉、悔、吝或無咎，讓結論回答使用者真正要選的行動。","本卦與之卦或主讀、參讀相反時，追問前提是否改變：現在合適的做法，到了另一階段可能需要收斂。把爻位的進程及經文中的人物職責翻成當事人在原題中的位置，說清何時堅持、何時轉向；以一項看得見的條件作為決策檢查點。"]};
+var JY_READING_GUA = {"liuyao":["【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以可執行做法或觀察指標收束，數量依本題需要，具體指出什麼行為／條件會支持、削弱或改變判斷。","【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。","【六爻：納甲與用神】只依本次已保存的六次爻值、月建、日辰及換日政策判讀。初爻在下、上爻在上，可有零至六個動爻。核本卦八宮、世應、六親、六神、伏神；變爻六親仍以本卦卦宮五行為基準，不重新換宮取六親。","先按原問題確定用神與角色；自動候選只是取用方向，不是已確認的人物。一卦中的世、應不憑空分配多位對象，也不把本卦和變卦當成兩個方案各自起卦。感情須依已知關係，不只按性別決定妻財或官鬼。","明示性行為或多人親密情境時，分開判伴侶的意向、問卜者承擔、額外參與者、安排／行動與事件是否發生。僅有世應只能說已映射的雙方對接；不能自動擴成第三人支線，也不能由單一六親推定任何人的性意願或同意。未提供第三人的角色對應或本法有據的事件用神時，清楚標出尚未解析的那一層，不拿未定義的象徵補洞；現實中須逐人確認明確且可撤回的同意。","月日生扶克洩、旬空、月破與動爻作用合看；月令／日辰關係須按來源方向解讀，『受生／受克』描述的是月日元素，不可倒讀成爻受生／受克。日沖只是一個客觀標記，須辨旺衰才判暗動或日破。六沖、六合、遊魂、歸魂、六神與某一六親不單獨決定成敗，不用吉凶分數冒充機率。","先讀所選事情用神及其 influences.network：逐候選找出最有力的生扶與克制，再核月日、旬空、月破、旺衰和動靜。世應都相關時，說明同一爻如何分別作用於世與應；不可只報『元神／忌神』名目，也不可漏掉會改變主判的反向作用。靜爻仍按月日強弱與角色納入，不因靜止就略過。","動爻才有直接動化作用；變爻只回作用於本位動爻，不能把變出的六親當成另一個已發生的人事或對方心念。之卦靜爻的納甲是背景，不是新增動爻。回頭生克、進退神與飛伏條件需落回用神的實際作用。三合須列出完整支組、動爻數及空破條件，依本法明示規則判為動局、靜背景或待條件，不把『三合』兩字直接當吉象。先說事情目前可不可行、卡在哪裡，再用最有影響的爻組說明，不逐列朗讀排盤表。","應期須有用神、動靜、沖合與時間尺度的明確依據，保留條件；不由空亡或一個支位自造精確日期。六爻不套梅花體用，也不套周易按動爻數擇辭的方法。","【六爻判讀主線】先問用神能否得力：月日給它多少支持、元神的生扶能否送達、忌神有無有效克制，動變又把力量帶向哪裡。元神雖動而空破或化受制，援助可能難落實；忌神受制時，原本的阻力也可能鬆動。把這些實際作用連成成事路徑，指出最關鍵的一道門檻。","世爻看自己在事件中的承擔與狀態，應爻按已知角色看對接條件；用神可成而世難承擔、世有力而用神受阻，是不同答案。若問題問時機，沿已算空破、動變、沖合的解決條件縮小時間；若問做法，優先提出能改善主阻點的安排，並列可觀察到的進展。"],"yijing":["【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。\n答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以可執行做法或觀察指標收束，數量依本題需要，具體指出什麼行為／條件會支持、削弱或改變判斷。","【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。","【易經：卦辭與爻辭】以已提供的本卦、之卦、動爻及本次擇辭政策為準；正文先用白話回答問題，再引用最能解釋處境、轉折與下一步的原文。原文照提供版本，不用記憶補寫或把白話改寫標成古文。","本次採朱子《易學啟蒙・考變占》，三爻變並讀本、之卦卦辭，依已給定的前十主貞、後十主悔決定主次。四、五爻變所取的是之卦不變爻，不能誤讀成本卦該爻；乾坤六爻皆動用用九／用六，不能當成第七爻。遵守資料中已列明的主讀與參讀。","本卦讀當下處境，動變與所選原文讀需調整的條件；之卦是變化後的參照，不直接保證未來發生。互、錯、綜卦若未提供，不自行補造為已起得的卦；不混入六爻納甲、世應或梅花體用規則。","吉、凶、悔、吝、無咎、利貞要連同原文的前提與行為讀，不能只抽好聽字眼。三年、七日等經文數字先辨古義與象徵，不能直接成為現實日曆日期；疾病、婚姻、征伐等古語不作醫療指示或替他人表達同意。","【易經判讀主線】先將主讀卦爻的處境、所處階段與勸告連成一個決策：現在應進、應守、應改方法，或先完成哪個條件。再看原文的因果次序，分清什麼做法導向吉、悔、吝或無咎，讓結論回答使用者真正要選的行動。","本卦與之卦或主讀、參讀相反時，追問前提是否改變：現在合適的做法，到了另一階段可能需要收斂。把爻位的進程及經文中的人物職責翻成當事人在原題中的位置，說清何時堅持、何時轉向；以一項看得見的條件作為決策檢查點。"]};
 // END GENERATED READING JY_READING_GUA
 // BEGIN GENERATED RECOMMENDATION JY_REC_GUA
 var JY_REC_GUA = {

@@ -100,14 +100,14 @@ for(const [a,b] of [['同事甲','同事乙'],['客戶A','客戶B'],['主管一'
 
 // 14) Shared actor/domain is not enough to merge independent propositions; only a semantic dependency may join them.
 for(const q of ['她會結婚嗎？她會搬家嗎？','工作會升遷嗎？工作會調職嗎？','女友願意結婚嗎？女友願意搬家嗎？']){const x=api.shared(q);ok('independent-propositions:'+q,x.mode==='multi_question',JSON.stringify(x));}
-for(const q of ['她喜歡我嗎？之後會告白嗎？','工作能順利嗎？何時？有什麼阻礙？','她喜歡我嗎？為什麼？我該怎麼做？']){const x=api.shared(q);ok('dependent-chain:'+q,x.mode==='single',JSON.stringify(x));ok('dependent-edge:'+q,x.dependencies.length>=1,JSON.stringify(x.dependencies));}
+for(const q of ['她喜歡我嗎？之後會告白嗎？','工作能順利嗎？何時？有什麼阻礙？','她喜歡我嗎？為什麼？我該怎麼做？']){const x=api.shared(q);ok('dependent-chain:'+q,x.mode==='single',JSON.stringify(x));ok('dependent-edge:'+q,x.dependencies.length+x.discourseLinks.length>=1,JSON.stringify({dependencies:x.dependencies,discourseLinks:x.discourseLinks}));}
 
 // 15)「如何」is disambiguated: descriptive state questions are outcomes; procedural constructions are advice.
 for(const q of ['財運如何？','考試結果如何？','工作狀況如何？','感情發展如何？']){const x=api.shared(q);ok('how-state-no-advice:'+q,!x.semantic.topology.dimensions.includes('advice'),JSON.stringify(x.semantic));}
 for(const q of ['我該如何改善工作？','如何升遷？','要怎麼處理合作問題？','可以如何推進計畫？']){const x=api.shared(q);ok('how-procedure-advice:'+q,x.semantic.topology.dimensions.includes('advice'),JSON.stringify(x.semantic));}
 
-// 16) More than six independent branches fail closed rather than silently merging or truncating.
-for(const q of ['同事甲好嗎？同事乙好嗎？前任好嗎？女友好嗎？主管好嗎？客戶好嗎？朋友好嗎？','A：一；B：二；C：三；D：四；E：五；F：六；G：七？']){const x=api.shared(q);ok('overflow-not-ready:'+q,x.ready===false,JSON.stringify(x));}
+// 16) Long multi-question inputs retain every explicit branch; there is no arbitrary six-item cap.
+for(const q of ['同事甲好嗎？同事乙好嗎？前任好嗎？女友好嗎？主管好嗎？客戶好嗎？朋友好嗎？','A：一；B：二；C：三；D：四；E：五；F：六；G：七？']){const x=api.shared(q);ok('all-branches-preserved:'+q,x.ready===true&&x.branches.length===7,JSON.stringify(x.branches));}
 
 // 17) Ambiguous pronoun coreference fails closed; uniquely resolvable pronouns remain usable.
 for(const q of ['小美和小雅會參加嗎？她之後會聯絡我嗎？','兩位同事會來嗎？她之後會告白嗎？']){const x=api.shared(q);ok('ambiguous-coref-status:'+q,x.semantic.status==='ambiguous'||x.ready===false,JSON.stringify(x));}
