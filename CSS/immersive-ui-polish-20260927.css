@@ -1,0 +1,290 @@
+/* 靜月之光 · 全站介面細修
+   Midnight enamel, warm brass edges, readable surfaces, and tactile controls.
+   Presentation only: keeps existing page flow, content, artwork, and data intact. */
+
+body.jy-atelier {
+  --jy-ui-night: #091321;
+  --jy-ui-panel: #142238;
+  --jy-ui-panel-hi: #203149;
+  --jy-ui-brass: #d9bd83;
+  --jy-ui-brass-hi: #f3dfb2;
+  --jy-ui-ink: #f3ecdc;
+  --jy-ui-muted: #b8c4d2;
+  --jy-ui-rim: rgba(222, 196, 145, .38);
+  --jy-ui-shadow: 0 3px 0 #050a12, 0 14px 28px rgba(0, 0, 0, .42);
+  --jy-ui-inset: inset 0 1px rgba(255, 255, 255, .17), inset 0 -1px rgba(0, 0, 0, .34);
+}
+
+/* Shared touch response for ordinary controls. Card faces and stage controls
+   retain their own interaction geometry. */
+body.jy-atelier :where(button:not(:disabled):not(.jr-touch):not(.jr-card):not(.jr-pair-seal):not(.at-tool):not(.jy-tool-card):not(.jy-card-face):not(.ln-card):not(.tarot-card-draw):not(.tarot-deck-card):not(.ootk-pile-deck-card):not(.ootk-fly-card):not(.hook-card):not(.hook-card-v2):not(.hook-card-mini):not(.wx-planet-tile)) {
+  min-height: 44px;
+  border-color: var(--jy-ui-rim);
+  box-shadow: var(--jy-ui-inset), 0 2px 0 #050a12, 0 8px 17px rgba(0, 0, 0, .28);
+  transition: transform .18s ease, border-color .2s ease, box-shadow .2s ease, filter .2s ease;
+  transform-style: preserve-3d;
+}
+
+body.jy-atelier :where(button:not(:disabled):not(.jr-touch):not(.jr-card):not(.jr-pair-seal):not(.at-tool):not(.jy-tool-card):not(.jy-card-face):not(.ln-card):not(.tarot-card-draw):not(.tarot-deck-card):not(.ootk-pile-deck-card):not(.ootk-fly-card):not(.hook-card):not(.hook-card-v2):not(.hook-card-mini):not(.wx-planet-tile)):hover {
+  border-color: rgba(244, 220, 169, .72);
+  filter: brightness(1.055);
+}
+
+body.jy-atelier :where(button:not(:disabled):not(.jr-touch):not(.jr-card):not(.jr-pair-seal):not(.at-tool):not(.jy-tool-card):not(.jy-card-face):not(.ln-card):not(.tarot-card-draw):not(.tarot-deck-card):not(.ootk-pile-deck-card):not(.ootk-fly-card):not(.hook-card):not(.hook-card-v2):not(.hook-card-mini):not(.wx-planet-tile)):active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, .38), 0 1px 0 #050a12 !important;
+  filter: brightness(.99);
+}
+
+/* Main actions read as a solid, warm metal plate with a visible lower bevel. */
+body.jy-atelier :is(.btn-primary, .btn-gold, .at-primary, .bzs-primary,
+  .bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .orc-btn-primary,
+  .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn, .zw-ai-copy,
+  .orc-ai-copy-btn, .jy-ex-btn, .jc-continue, .jr-next, .wx-primary,
+  .vd-primary, .jy-result-primary, .btn-share-big, .sticky-cta-btn,
+  #tarot-dock-action, #ootk-next) {
+  min-height: 50px;
+  border: 1px solid #f5dfb0 !important;
+  border-radius: 13px !important;
+  background: linear-gradient(118deg, #fff0ce 0%, #e4c78f 48%, #c29a61 100%) !important;
+  color: #1b2028 !important;
+  text-shadow: 0 1px rgba(255, 255, 255, .48);
+  box-shadow: inset 0 1px #fff, inset 0 -2px rgba(104, 74, 37, .26),
+    0 4px 0 #705433, 0 12px 26px rgba(0, 0, 0, .43) !important;
+  letter-spacing: .035em;
+  transition: transform .18s ease, filter .2s ease, box-shadow .2s ease !important;
+}
+
+body.jy-atelier :is(.btn-primary, .btn-gold, .at-primary, .bzs-primary,
+  .bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .orc-btn-primary,
+  .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn, .zw-ai-copy,
+  .orc-ai-copy-btn, .jy-ex-btn, .jc-continue, .jr-next, .wx-primary,
+  .vd-primary, .jy-result-primary, .btn-share-big, .sticky-cta-btn,
+  #tarot-dock-action, #ootk-next):hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.045);
+  box-shadow: inset 0 1px #fff, inset 0 -2px rgba(104, 74, 37, .22),
+    0 6px 0 #705433, 0 17px 31px rgba(0, 0, 0, .48) !important;
+}
+
+body.jy-atelier :is(.btn-primary, .btn-gold, .at-primary, .bzs-primary,
+  .bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .orc-btn-primary,
+  .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn, .zw-ai-copy,
+  .orc-ai-copy-btn, .jy-ex-btn, .jc-continue, .jr-next, .wx-primary,
+  .vd-primary, .jy-result-primary, .btn-share-big, .sticky-cta-btn,
+  #tarot-dock-action, #ootk-next):active:not(:disabled) {
+  transform: translateY(2px) !important;
+  box-shadow: inset 0 2px 5px rgba(104, 74, 37, .28), 0 1px 0 #705433 !important;
+}
+
+body.jy-atelier :is(.btn-primary, .btn-gold, .at-primary, .bzs-primary,
+  .bzx-cast-btn, .ln-draw-btn, .mhx-cast-btn, .zw-in-go, .orc-btn-primary,
+  .bzx-ai-copy-btn, .ln-ai-copy-btn, .mhx-ai-copy-btn, .zw-ai-copy,
+  .orc-ai-copy-btn, .jy-ex-btn, .jc-continue, .jr-next, .wx-primary,
+  .vd-primary, .jy-result-primary, .btn-share-big, .sticky-cta-btn,
+  #tarot-dock-action, #ootk-next):disabled {
+  border-color: #8290a066 !important;
+  background: linear-gradient(145deg, #263346, #101927) !important;
+  color: #aeb9c7 !important;
+  box-shadow: inset 0 1px #ffffff12, 0 2px 0 #050a12 !important;
+  text-shadow: none;
+  filter: saturate(.55);
+}
+
+/* Secondary controls use dark enamel and a fine brass rim. */
+body.jy-atelier :is(.btn-outline, .at-back, .at-home-link, .wx-back,
+  .wx-motion, .wx-quiet, .vd-back, .zw-in-back, .bzx-back, .ln-back,
+  .mhx-back, .jy-foley-button, .bzs-action, .bzs-chip, .bzs-lens,
+  .bzs-choice-btn, .bzs-loc-chip, .bzx-gbtn, .bzx-dbtn, .ln-spread-btn,
+  .mhx-method-btn, .zw-in-pill, .zw-btn, .orc-btn-outline, .at-share-button,
+  .jy-spread-trigger, .jym-item, .jy-picker-title-button, .jy-src-btn,
+  .jy-result-nav-btn, .bzs-reset-btn, .ln-reset-btn, .mhx-reset-btn,
+  .bzx-reset-btn, .btn-save-card, .shop-btn-card, .product-btn,
+  .pwa-install-btn, .btn-remind, .jr-skip, .wx-city-dialog header button,
+  #wx-city-options button) {
+  border-color: rgba(218, 192, 139, .48);
+  background: linear-gradient(148deg, #29394e 0%, #182638 58%, #101b29 100%);
+  color: #eee2c9;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .17), inset 0 -1px rgba(0, 0, 0, .48),
+    0 3px 0 #050a12, 0 9px 20px rgba(0, 0, 0, .34);
+}
+
+body.jy-atelier :is(.btn-outline, .at-back, .at-home-link, .wx-back,
+  .wx-motion, .wx-quiet, .vd-back, .zw-in-back, .bzx-back, .ln-back,
+  .mhx-back, .jy-foley-button, .bzs-action, .bzs-chip, .bzs-lens,
+  .bzs-choice-btn, .bzs-loc-chip, .bzx-gbtn, .bzx-dbtn, .ln-spread-btn,
+  .mhx-method-btn, .zw-in-pill, .zw-btn, .orc-btn-outline, .at-share-button,
+  .jy-spread-trigger, .jym-item, .jy-picker-title-button, .jy-src-btn,
+  .jy-result-nav-btn, .bzs-reset-btn, .ln-reset-btn, .mhx-reset-btn,
+  .bzx-reset-btn, .btn-save-card, .shop-btn-card, .product-btn,
+  .pwa-install-btn, .btn-remind, .jr-skip, .wx-city-dialog header button,
+  #wx-city-options button):hover:not(:disabled) {
+  border-color: #f0d7a3;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .23), inset 0 -1px rgba(0, 0, 0, .42),
+    0 4px 0 #050a12, 0 13px 25px rgba(0, 0, 0, .42), 0 0 18px rgba(218, 192, 139, .1);
+}
+
+/* Tabs and selectable chips have a distinct selected state, not a flat color swap. */
+body.jy-atelier :is(.nav-link, .result-tab, .dim-tab, .nav-extra-tab,
+  .bzs-tab, .jx-atlas-tabs button, .jx-hex-tabs button, .vd-tabs button) {
+  min-height: 44px;
+  border: 1px solid rgba(199, 185, 156, .25);
+  border-radius: 12px;
+  background: linear-gradient(155deg, #1e2d41, #101b2a 78%);
+  color: #bec8d4;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .12), 0 2px 0 #050a12, 0 7px 15px #0004;
+  transition: transform .18s ease, color .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+body.jy-atelier :is(.nav-link, .result-tab, .dim-tab, .nav-extra-tab,
+  .bzs-tab, .jx-atlas-tabs button, .jx-hex-tabs button, .vd-tabs button):is(.active, [aria-selected="true"], [aria-pressed="true"], .btn-tab-active) {
+  border-color: rgba(241, 214, 161, .78);
+  background: linear-gradient(145deg, #685437 0%, #3a3040 46%, #1a2636 100%);
+  color: #ffe9bd;
+  box-shadow: inset 0 1px #fff5d840, inset 0 -1px #0006, 0 3px 0 #080e18,
+    0 10px 20px #0005, 0 0 16px #e0bf7830;
+}
+
+body.jy-atelier :is(.radio-pill input:checked + span, .bzs-choice-btn.active,
+  .bzs-loc-chip.active, .zw-chip.active, .jy-foley-button[aria-pressed="true"],
+  .jr-intent button[aria-pressed="true"]) {
+  border-color: rgba(244, 220, 169, .8) !important;
+  background: linear-gradient(145deg, #564735, #263247 74%) !important;
+  color: #ffedc7 !important;
+  box-shadow: inset 0 1px #fff4, inset 0 -1px #0005, 0 3px 0 #070d16,
+    0 0 18px rgba(217, 189, 131, .18) !important;
+}
+
+/* Primary form cards and result panels get a glass-and-metal edge with a real
+   lower bevel. Background art and each method's accent colors remain intact. */
+body.jy-atelier :is(.app .card, .action-card, .hook-card, .hook-card-v2,
+  .hook-card-mini, .bzs-card, .bzs-section, .bzs-ai-card, .bzx-section,
+  .bzx-ai-card, .ln-section, .ln-ai-card, .mhx-section, .mhx-ai-card,
+  .zw-in-sec, .zw-ai, .jy-ex-card, .orc-ai-prompt-card, .or-reading-panel,
+  .ootk-result-card, .ootk-setup-panel, .pair-chart, .pair-directions article,
+  .pair-timeline article, .wx-paper, .wx-reading-card, .wx-inspect-card,
+  .wx-time-card, .wx-house-card, .wx-summary-card, .wx-chart-frame,
+  .gw-panel, .gw-reading-card, .review-card, .share-gate-card, .quick-shop-card,
+  .product-card, .shop-card, .fortune-crystal-card, .crystal-card,
+  .insight-card, .collapsible-card, .jy-footer-card, .jy-footer-panel) {
+  border-color: rgba(220, 194, 145, .36);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .15), inset 0 -1px rgba(0, 0, 0, .3),
+    0 3px 0 #050a12, 0 15px 32px rgba(0, 0, 0, .38);
+}
+
+body.jy-atelier .app .card {
+  border-color: rgba(220, 194, 145, .34);
+  background: radial-gradient(ellipse at 0 0, rgba(80, 101, 131, .18), transparent 48%),
+    linear-gradient(145deg, #18263a 0%, #111c2b 63%, #0d1725 100%);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .14), inset 0 -1px rgba(0, 0, 0, .36),
+    0 4px 0 #050a12, 0 16px 34px rgba(0, 0, 0, .42);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.jy-atelier :is(.app .card, .bzs-card, .pair-chart, .pair-directions article,
+    .pair-timeline article, .wx-paper, .wx-reading-card, .wx-inspect-card,
+    .wx-time-card, .or-reading-panel, .jy-ex-card, .ln-ai-card, .mhx-ai-card,
+    .bzx-ai-card, .ootk-result-card):hover {
+    border-color: rgba(240, 214, 164, .58);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .2), inset 0 -1px rgba(0, 0, 0, .28),
+      0 4px 0 #050a12, 0 20px 38px rgba(0, 0, 0, .46), 0 0 22px rgba(217, 189, 131, .08);
+  }
+}
+
+body.jy-atelier .app .card-title {
+  color: #f0d49d;
+  border-bottom-color: rgba(218, 192, 139, .24);
+  text-shadow: 0 1px 12px rgba(228, 195, 132, .15);
+}
+
+/* Form controls feel recessed into the instrument panel and keep a clear focus ring. */
+body.jy-atelier :is(.form-input, .form-select, .form-textarea, .bzs-input,
+  .bzs-select, .bzs-text, .bzx-field, .zwx-field, .bzs-pick-field,
+  .bzx-q-input, .ln-q-input, .mhx-q-input, .zw-in-q, .orc-q-textarea,
+  .wx-page input:not([type="checkbox"]):not([type="hidden"]), .wx-page select,
+  .wx-page textarea, #vedic-page input:not([type="checkbox"]):not([type="hidden"]),
+  #vedic-page select, #vedic-page textarea) {
+  border-color: rgba(207, 188, 146, .34);
+  border-radius: 11px;
+  background-color: #0b1625;
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, .42), inset 0 1px rgba(255, 255, 255, .045);
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+body.jy-atelier :is(.form-input, .form-select, .form-textarea, .bzs-input,
+  .bzs-select, .bzs-text, .bzx-field, .zwx-field, .bzs-pick-field,
+  .bzx-q-input, .ln-q-input, .mhx-q-input, .zw-in-q, .orc-q-textarea,
+  .wx-page input:not([type="checkbox"]):not([type="hidden"]), .wx-page select,
+  .wx-page textarea, #vedic-page input:not([type="checkbox"]):not([type="hidden"]),
+  #vedic-page select, #vedic-page textarea):focus {
+  border-color: #edd39e;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(222, 194, 138, .16), inset 0 2px 7px rgba(0, 0, 0, .44),
+    0 0 20px rgba(222, 194, 138, .09);
+}
+
+body.jy-atelier :is(.form-label, .bzs-field label, .wx-field > label,
+  .wx-reading-card > label) { color: #e7d9bd; }
+body.jy-atelier :is(.form-hint, .bzs-note, .wx-helper) { color: #b2bfce; }
+body.jy-atelier input[type="checkbox"],
+body.jy-atelier input[type="radio"] { accent-color: #dfc18a; }
+
+/* The compatibility ceremony's existing twin astrolabes keep their geometry;
+   a clearer rim and floating brass nameplates carry the screenshot's finish. */
+body.jy-atelier .jr-dialog[data-story] {
+  background: radial-gradient(ellipse at 50% 27%, rgba(45, 58, 83, .3), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(149, 112, 65, .1), transparent 49%),
+    linear-gradient(180deg, #070d18 0%, #040811 76%, #060d18 100%);
+}
+
+body.jy-atelier .jr-dialog[data-story] .jr-header button,
+body.jy-atelier .jr-dialog[data-story] .jr-skip,
+body.jy-atelier .jr-dialog[data-story] .jr-intent button {
+  border: 1px solid rgba(224, 199, 147, .56) !important;
+  background: linear-gradient(145deg, rgba(42, 54, 72, .96), rgba(13, 23, 37, .97)) !important;
+  color: #f0dfbf !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .2), inset 0 -1px rgba(0, 0, 0, .5),
+    0 3px 0 #050a12, 0 9px 20px rgba(0, 0, 0, .44) !important;
+}
+
+body.jy-atelier .jr-dialog[data-story] .jr-dialogue {
+  border-color: rgba(230, 205, 158, .42) !important;
+  background: radial-gradient(ellipse at 0 0, rgba(114, 97, 78, .15), transparent 52%),
+    linear-gradient(145deg, rgba(22, 35, 48, .97), rgba(7, 14, 26, .98)) !important;
+  box-shadow: inset 0 1px rgba(255, 255, 255, .16), 0 -12px 42px rgba(0, 0, 0, .42),
+    0 4px 0 #050a12 !important;
+}
+
+body.jy-atelier .jr-dialog[data-ritual="compat"] .jr-pair-seal .pair-nameplate {
+  border-color: rgba(238, 211, 157, .82);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .38), inset 0 -3px rgba(0, 0, 0, .54),
+    0 3px 0 #80603a, 0 10px 20px rgba(0, 0, 0, .62), 0 0 20px rgba(219, 190, 130, .12);
+}
+
+/* Consistent elevated sheets and dialogs. */
+body.jy-atelier :is(.jym-sheet, .jy-picker-sheet, .bzs-picker-sheet,
+  .bzx-picker-sheet, .zw-picker-sheet, .zwx-sheet, .bzx-sheet,
+  .modal-box, .modal__panel, .wx-city-dialog, .vd-modal, .jym-overlay > div) {
+  border-color: rgba(224, 198, 148, .56);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .16), 0 18px 50px rgba(0, 0, 0, .62),
+    0 4px 0 #050a12;
+}
+
+body.jy-atelier ::placeholder { color: #9dabbc; opacity: 1; }
+body.jy-atelier :is(button, a, summary):focus-visible {
+  outline: 2px solid #ffebbf !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 0 5px rgba(231, 202, 146, .2), 0 0 22px rgba(243, 221, 176, .24) !important;
+}
+
+@media (max-width: 680px) {
+  body.jy-atelier .app .card { border-radius: 16px; }
+  body.jy-atelier :is(.btn, .btn-primary, .btn-gold, .at-primary, .bzs-primary,
+    .jr-next, .wx-primary, .vd-primary, .jy-ex-btn, .jc-continue) { min-height: 48px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.jy-atelier :where(button, .app .card, .bzs-card, .pair-chart,
+    .pair-directions article, .pair-timeline article, .wx-paper, .wx-reading-card,
+    .wx-inspect-card, .wx-time-card) { transition: none !important; }
+}
