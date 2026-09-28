@@ -1,0 +1,8 @@
+CSS/mobile-ritual-actions-20260928.css
+JS/ritual-ateliers.js
+index.html
+sw.js
+JS/sw.js
+package.json
+tests/mobile-ritual-actions-20260928.cjs
+README-mobile-ritual-actions-20260928.txt
