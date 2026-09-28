@@ -440,7 +440,7 @@
   //  buildBaziPrompt — 把排盤事實與流派模型分層組成完整提示詞
   // ════════════════════════════════════════════════════════
   function buildBaziPrompt(question, b, meta) {
-    var L=[], P=b.pillars||{}, G=b.gods||{}, CG=b.cangGan||{}, CS=b.cs||{}, NY=b.nayinAll||{};
+    var L=['【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。'], P=b.pillars||{}, G=b.gods||{}, CG=b.cangGan||{}, CS=b.cs||{}, NY=b.nayinAll||{};
     var keys=meta&&meta.unknown?['year','month','day']:['year','month','day','hour'];
     if(!window.BAZI_CORE||!window.BAZI_CORE.birthFacts)throw new Error('時間核對元件版本不足，請重新整理後排盤。');
     var birthFacts=window.BAZI_CORE.birthFacts(b,meta);
