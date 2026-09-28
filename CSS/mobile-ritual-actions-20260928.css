@@ -1,51 +1,80 @@
-/* One shared mobile-safe shell for every divination ceremony.
-   The scene may scroll, but the real controls live in a viewport-level dock. */
-body.jy-atelier dialog.jr-dialog {
+/* Shared ritual viewport: independent scroll viewport + real, persistent action row.
+   Keeping controls in a grid row avoids fixed-position containing-block and scene clipping bugs. */
+body.jy-atelier dialog.jr-dialog[open] {
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
   height: 100vh !important;
   height: 100svh !important;
   height: 100dvh !important;
-  max-height: none !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  box-sizing: border-box;
+}
+
+body.jy-atelier dialog.jr-dialog > .jr-scroll {
+  grid-row: 1;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  scroll-padding-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
+  scrollbar-width: none;
+}
+
+body.jy-atelier dialog.jr-dialog > .jr-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+body.jy-atelier dialog.jr-dialog .jr-shell {
+  height: auto !important;
+  min-height: calc(100dvh - 132px - env(safe-area-inset-bottom, 0px)) !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 20px !important;
 }
 
 body.jy-atelier dialog.jr-dialog > .jr-action-dock {
-  position: fixed !important;
+  position: relative !important;
   z-index: 2147482001 !important;
-  left: max(12px, env(safe-area-inset-left, 0px)) !important;
-  right: max(12px, env(safe-area-inset-right, 0px)) !important;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
-  width: auto !important;
+  grid-row: 2;
+  inset: auto !important;
+  width: 100% !important;
   max-width: 620px !important;
-  margin-inline: auto !important;
+  min-width: 0;
+  margin: 0 auto !important;
+  padding: 8px max(12px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important;
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) !important;
-  gap: 7px !important;
-  pointer-events: none;
-}
-
-body.jy-atelier dialog.jr-dialog > .jr-action-dock > * {
-  pointer-events: auto;
+  gap: 8px !important;
+  pointer-events: auto !important;
+  background: linear-gradient(180deg, rgba(5, 11, 19, .94), rgba(5, 11, 19, .99));
+  border-top: 1px solid rgba(222, 200, 158, .24);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, .42);
 }
 
 body.jy-atelier dialog.jr-dialog > .jr-action-dock > .jr-footer {
   grid-row: 1;
   min-width: 0;
   margin: 0 !important;
-  padding: 5px 10px !important;
+  padding: 4px 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   border: 1px solid rgba(222, 200, 158, .32);
   border-radius: 12px;
-  background: linear-gradient(140deg, rgba(17, 29, 41, .96), rgba(7, 14, 25, .97));
-  box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 7px 24px rgba(0, 0, 0, .38);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  background: linear-gradient(140deg, rgba(17, 29, 41, .98), rgba(7, 14, 25, .99));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 4px 14px rgba(0, 0, 0, .34);
 }
 
 body.jy-atelier dialog.jr-dialog > .jr-action-dock > .jr-footer ol {
   min-width: 0;
+  margin: 0;
   gap: clamp(5px, 2vw, 10px) !important;
   flex-wrap: wrap;
 }
@@ -56,53 +85,43 @@ body.jy-atelier dialog.jr-dialog > .jr-action-dock > .jr-footer .jr-skip {
   white-space: nowrap;
 }
 
-body.jy-atelier dialog.jr-dialog > .jr-action-dock > .jr-next,
-body.jy-atelier dialog.jr-dialog[data-story][data-phase="3"] > .jr-action-dock > .jr-next {
+body.jy-atelier dialog.jr-dialog > .jr-action-dock > .jr-next {
   grid-row: 2;
   position: static !important;
   inset: auto !important;
   width: 100% !important;
   max-width: none !important;
-  min-height: 52px !important;
+  min-height: 54px !important;
   margin: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
   border-radius: 12px !important;
   box-shadow: inset 0 1px rgba(255, 255, 255, .7), 0 3px #79603b, 0 9px 24px rgba(0, 0, 0, .48) !important;
 }
 
 @media (max-width: 849px) {
   body.jy-atelier dialog.jr-dialog .jr-shell {
-    height: auto !important;
-    min-height: 100vh !important;
-    min-height: 100svh !important;
-    min-height: 100dvh !important;
-    overflow: visible !important;
+    min-height: calc(100dvh - 132px - env(safe-area-inset-bottom, 0px)) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
   body.jy-atelier dialog.jr-dialog[data-story] .jr-shell {
-    grid-template-rows: auto minmax(190px, auto) auto !important;
-    grid-template-rows: auto minmax(clamp(190px, 28vh, 250px), auto) auto !important;
-    grid-template-rows: auto minmax(clamp(190px, 28svh, 250px), auto) auto !important;
+    grid-template-rows: auto minmax(clamp(190px, 28dvh, 250px), auto) auto !important;
   }
 
   body.jy-atelier dialog.jr-dialog:not([data-story]) .jr-shell {
-    grid-template-rows: auto auto minmax(190px, auto) auto !important;
-    grid-template-rows: auto auto minmax(clamp(190px, 25vh, 240px), auto) auto !important;
-    grid-template-rows: auto auto minmax(clamp(190px, 25svh, 240px), auto) auto !important;
+    grid-template-rows: auto auto minmax(clamp(190px, 25dvh, 240px), auto) auto !important;
   }
 
-  body.jy-atelier dialog.jr-dialog[data-story] .jr-stage {
+  body.jy-atelier dialog.jr-dialog .jr-stage {
     height: auto !important;
-    min-height: 190px !important;
-    min-height: clamp(190px, 28vh, 250px) !important;
-    min-height: clamp(190px, 28svh, 250px) !important;
+    min-height: clamp(190px, 28dvh, 250px) !important;
   }
 
   body.jy-atelier dialog.jr-dialog:not([data-story]) .jr-stage {
-    height: clamp(190px, 25vh, 240px) !important;
-    height: clamp(190px, 25svh, 240px) !important;
-    min-height: 190px !important;
-    min-height: clamp(190px, 25vh, 240px) !important;
-    min-height: clamp(190px, 25svh, 240px) !important;
+    height: clamp(190px, 25dvh, 240px) !important;
+    min-height: clamp(190px, 25dvh, 240px) !important;
   }
 
   body.jy-atelier dialog.jr-dialog .jr-dialogue {
@@ -112,21 +131,12 @@ body.jy-atelier dialog.jr-dialog[data-story][data-phase="3"] > .jr-action-dock >
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     padding-bottom: 16px !important;
-    scroll-margin-bottom: calc(132px + env(safe-area-inset-bottom, 0px));
-  }
-
-  body.jy-atelier dialog.jr-dialog[data-story][data-phase="3"] .jr-dialogue {
-    padding-bottom: 16px !important;
+    scroll-margin-bottom: 16px;
   }
 }
 
 @media (max-height: 620px) and (max-width: 849px) {
-  body.jy-atelier dialog.jr-dialog[data-story] .jr-shell {
-    grid-template-rows: auto minmax(175px, auto) auto !important;
-  }
-
-  body.jy-atelier dialog.jr-dialog[data-story] .jr-stage,
-  body.jy-atelier dialog.jr-dialog:not([data-story]) .jr-stage {
+  body.jy-atelier dialog.jr-dialog .jr-stage {
     min-height: 175px !important;
     height: 175px !important;
   }
@@ -134,8 +144,8 @@ body.jy-atelier dialog.jr-dialog[data-story][data-phase="3"] > .jr-action-dock >
 
 @media (min-width: 850px) {
   body.jy-atelier dialog.jr-dialog > .jr-action-dock {
-    right: max(28px, env(safe-area-inset-right, 0px)) !important;
-    left: auto !important;
+    justify-self: end;
+    margin-right: max(28px, env(safe-area-inset-right, 0px)) !important;
     width: min(620px, calc(100vw - 56px)) !important;
   }
 }

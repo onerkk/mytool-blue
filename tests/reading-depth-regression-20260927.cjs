@@ -14,7 +14,7 @@ function same(actual,expected,label){assert.equal(JSON.stringify(actual),JSON.st
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name);}
 
 test('All active methods receive the full answer-first depth contract and native synthesis path',()=>{
-  assert.equal(quality.readingVersion,'8.2.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
+  assert.equal(quality.readingVersion,'8.3.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
   for(const method of methods){
     const lines=quality.lines(method).join('\n'),payload=quality.payloadGuide([method]);
     for(const phrase of ['第一句就回答原問題','深度判讀流程','證據完整度','最有力的反向依據','深度來自完整推理'])assert(lines.includes(phrase),method+' '+phrase);
@@ -44,13 +44,13 @@ test('Every generated prompt fallback matches the current shared contract',()=>{
 });
 
 test('Embedded workflow copies stay synchronized and adapt output depth to question scope',()=>{
-  const canonical=read('JS/reading-workflow.js').trimEnd();
+  const canonical=read('JS/reading-workflow.js').replace(/^  if\(typeof module[^\n]+\n/m,'').trimEnd();
   for(const file of ['JS/ai-analysis.js','JS/bazi-suite-core.js','JS/gua-prompt.js','JS/lenormand.js','JS/meihua-standalone.js','JS/oracle.js','JS/prompt-export.js','JS/relationship-core.js','JS/vedic-prompt.js','JS/western-prompt.js','JS/ziwei-standalone.js']){
     const source=read(file),a='// BEGIN GENERATED WORKFLOW\n',b='\n// END GENERATED WORKFLOW',start=source.indexOf(a);assert(start>=0,file+' workflow start');const body=start+a.length,end=source.indexOf(b,body);assert(end>=0,file+' workflow end');assert.equal(source.slice(body,end),canonical,file+' workflow copy');
   }
   const sexual='現任會願意再約一個她認識的女性跟我一起做愛嗎？';
   const scoped=flow.render({method:'liuyao',question:sexual});assert(flow.plan({method:'liuyao',question:sexual}).depth==='deep');assert(scoped.includes('willingness_for_intimate_action'));assert(scoped.includes('participant_structure'));
-  const broad=flow.render({methods:['bazi','ziwei'],question:'完整分析命盤今年所有面向'});assert(broad.includes('本題語義模型'));
+  const broad=flow.render({methods:['bazi','ziwei'],question:'完整分析命盤今年所有面向'});assert(broad.includes('【語義模型｜由原問句解析'));
   assert(!/(?:約|用)[0-9一二三四五六七八九十～至-]+(?:組|段|句)/.test(scoped+broad));
 });
 

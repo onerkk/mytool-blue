@@ -21,7 +21,8 @@ assert.equal(event.lexicalInterpretation.selectedInterpretation,'physical_attrac
 assert.equal(event.lexicalInterpretation.userConfirmed,false);
 assert.ok(plan.questionModel.unresolved.ambiguities.some(x=>x.type==='lexical_polysemy'));
 const prompt=workflow.render({question,method:'tarot',referenceDate:'2026-09-28'});
-assert.match(prompt,/本次先採較少延伸原意/);
+assert.match(prompt,/本次暫採「帶有身體吸引／性張力的相遇或機會」/);
+assert.match(prompt,/使用者尚未確認/);
 assert.match(prompt,/priorOccurrenceVerified=false/);
 assert.match(prompt,/不等於實際發生性行為/);
 

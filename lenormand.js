@@ -26,6 +26,7 @@
     help:{name:'做法／幫助',opening:'第一段直接給最值得先做的具體行動，以及為什麼先做；把開口方式或第一步說出來。',body:'後續各段說明：你可調整哪一環、對方或環境需配合什麼、什麼反應表示有效。'},
     compare:{name:'比較／決策',opening:'第一段依本題重點選出較支持的方案及代價；證據不能分高下時，明說決勝條件。',body:'用同一標準比較各方案，區分短期收益、持續成本與成立條件；保留原選項。'},
     timing:{name:'時機／發展',opening:'第一段先說可判的時間範圍與發展方向，或目前欠缺的必要條件。',body:'分開原局條件、當前觸發和可觀察進展；盤上時間分界與現實事件日期分開。'},
+    enumeration:{name:'開放列舉／注意事項',opening:'第一段先回答原句要你列出的類別或注意事項，指出本方法能支持到哪一層。',body:'按盤面整理少數有依據的項目與它們的先後／作用；逐項說明實際含義、最大的限制和核實方式。只有原句另有明確的是非門檻時才附上是非判斷；資料不支持的精確項目直說缺口並給可行的查核步驟。'},
     explain:{name:'原因／結構',opening:'第一段直接點出最有依據的核心卡點及它如何影響原問題。',body:'追出支持如何傳到結果、哪一環被牽制、牽制如何形成或解除；把最強反證放回它實際限制的層次，並指出會改判的條件。'},
     direction:{name:'傾向／是否',opening:'第一段回答較支持的方向、程度及主要條件；能判傾向就不平均羅列所有可能。',body:'區分注意、意願、行動、承諾和持續的證據；不同層面不能互相代答。'},
     general:{name:'整體／開放題',opening:'第一段先整理本題最有影響的主軸與優先順序，讓使用者知道現在重點在哪。',body:'圍繞原問句展開，各子題先回答；全盤供判斷，只引用改變答案的關係。'}
@@ -34,7 +35,8 @@
     var a=Array.isArray(input)?input:[input||'tarot'];
     return Array.from(new Set(a.map(function(k){return k==='western'?'astro':k==='chart'?'bazi':k;}))).filter(function(k){return !!METHODS[k];});
   }
-  function goal(q){
+  function goal(q,event){
+    if((event&&event.queryOperator==='enumeration_guidance')||/(?:有哪些|哪幾(?:項|個|點|種)|哪些(?:項目|地方|方面|問題|原因|事項)|有什麼(?:問題|項目|地方|方面|事項).{0,12}(?:注意|留意|關注)?|有何(?:問題|項目|事項))/.test(q))return 'enumeration';
     if(/比較|哪個|哪一|何者|還是|二選|三選|選擇|該不該|要不要/.test(q))return 'compare';
     if(/如何|怎麼|怎樣|該怎|幫助|幫忙|做什麼|做甚麼|改善|修復|處理|應對/.test(q))return 'help';
     if(/何時|什麼時候|甚麼時候|多久|哪年|哪月|時機/.test(q))return 'timing';
@@ -53,21 +55,21 @@
     var entities=Object.create(null);(graph.entities||[]).forEach(function(e){entities[e.id]=e.surface||e.source||e.id;});
     return {
       schema:'jy.question_model/1',status:graph.compilerStatus||'partial',sourceQuestion:String(question||''),
-      queryIntent:{shape:compiled.features&&compiled.features.shape||null,dimensions:(compiled.requestedDimensions||[]).map(function(x){return {id:x.id,label:x.label,source:x.source};}),domains:(compiled.features&&compiled.features.domains||[]).slice(),explicitTime:(compiled.explicitScopes||[]).map(function(x){return {surface:x.surface,kind:x.kind,bounded:x.bounded,resolved:x.resolved&&x.resolved.label||null};}),operatorFocus:compiled.features&&compiled.features.causal?'cause_explanation':compiled.features&&compiled.features.timing?'relative_timing':compiled.features&&compiled.features.choice?'choice':compiled.features&&compiled.features.advice?'action_guidance':'',
+      queryIntent:{shape:compiled.features&&compiled.features.shape||null,dimensions:(compiled.requestedDimensions||[]).map(function(x){return {id:x.id,label:x.label,source:x.source};}),domains:(compiled.features&&compiled.features.domains||[]).slice(),explicitTime:(compiled.explicitScopes||[]).map(function(x){return {surface:x.surface,kind:x.kind,bounded:x.bounded,resolved:x.resolved&&x.resolved.label||null};}),operatorFocus:compiled.features&&compiled.features.enumeration?'enumeration_guidance':compiled.features&&compiled.features.causal?'cause_explanation':compiled.features&&compiled.features.timing?'relative_timing':compiled.features&&compiled.features.choice?'choice':compiled.features&&compiled.features.advice?'action_guidance':'',
       },
       events:events.map(function(e,i){
         var r=e.roles||{},f=e.languageFrame||language[i]||{},metricEntity=(graph.entities||[]).find(function(x){return x.id===r.subject;}),relation=(compiled.relations||[]).find(function(x){return (e.relationIds||[]).indexOf(x.id)>=0;})||null;
         return {id:e.id,source:e.surface,type:e.type,predicate:e.predicate,clauseRole:f.role||'',requester:entities[r.actor]||r.actor||'問卜者本人',eventActor:r.eventActor||null,grammaticalSubject:f.subjectRef||null,target:entities[r.target]||entities[r.subject]||f.targetRef||null,actionObject:r.actionObject||null,conditionalEntity:r.conditionalEntity||null,
           actionSequence:(r.actionSequence||f.actionSequence||[]).slice(),willingness:r.willingness===true||f.willingness===true,explicitSexualAct:r.explicitSexualAct===true||f.explicitSexualAct===true,
           timingTarget:r.timingTarget||null,recurrenceCue:r.recurrenceCue||f.recurrenceCue||null,priorOccurrenceVerified:r.priorOccurrenceVerified===true,
-          recurrenceContext:f.recurrenceContext||null,lexicalInterpretation:f.lexicalInterpretation||null,
+          recurrenceContext:f.recurrenceContext||null,lexicalInterpretation:f.lexicalInterpretation||null,enumerationRequest:f.enumerationRequest||null,truthGate:r.truthGate===true||f.truthGate===true,requestedItems:r.requestedItems||f.enumerationRequest&&f.enumerationRequest.requestedItems||'',attentionFocus:r.attentionFocus||f.enumerationRequest&&f.enumerationRequest.attentionFocus||'',
           participants:(r.participants||f.participants||[]).map(function(p){return {surface:p.surface,role:p.role,source:p.source};}),
           metric:r.metric||relation&&relation.metric||'',metricKind:relation&&relation.metricKind||f.measurementGoal&&f.measurementGoal.metricKind||'',metricCadence:r.metricCadence||relation&&relation.metricPeriod||'',threshold:r.threshold?{surface:relation&&relation.thresholdSurface||'',value:relation&&relation.thresholdValue,operator:r.comparator||''}:null,
           comparison:r.leftOperand||r.rightOperand?{left:entities[r.leftOperand]||r.leftOperand,right:entities[r.rightOperand]||r.rightOperand,operator:r.comparator||'',criterion:r.attribute||''}:null,
           evaluation:r.evaluatedTarget?{evaluator:r.evaluator,target:r.evaluatedTarget,criterion:r.criterion}:f.evaluation?{evaluator:f.evaluation.evaluatorRef,target:f.evaluation.targetRef,criterion:f.evaluation.criterion}:null,
           modality:e.modality||'open',queryOperator:r.queryOperator||'',timeScope:(e.timeScope||[]).slice(),requiredObservables:(e.requiredObservables||[]).slice(),optionSet:{status:r.optionSetState||f.openChoiceSet&&f.openChoiceSet.status||'',object:r.recommendationTarget||f.openChoiceSet&&f.openChoiceSet.object||''},
           conditions:(f.conditions||[]).slice(),negations:(f.negations||[]).slice(),comparisonFrame:!!f.comparisonFrame,semanticDimensions:(f.dimensions||[]).slice(),semanticDomains:(f.domains||[]).slice(),temporal:{future:!!(f.temporal&&f.temporal.future),continuity:!!(f.temporal&&f.temporal.continuity),horizon:f.temporal&&f.temporal.horizon||null,actorBoundFutureEvent:!!f.actorBoundFutureEvent},
-          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||r.eventActor||f.subjectRef||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),timingTarget:r.timingTarget||'',recurrenceCue:r.recurrenceCue||f.recurrenceCue||'',requiredDistinctions:(r.requiredDistinctions||[]).slice()},causalSituation:e.causalSituation||f.causalSituation||null};
+          sourceRoles:{grammaticalSubject:f.subjectRef||'',subject:metricEntity&&metricEntity.surface||r.eventActor||f.subjectRef||'',targetSurface:r.target?entities[r.target]||'':'',metric:r.metric||relation&&relation.metric||'',threshold:r.threshold||'',comparator:r.comparator||'',requestedAction:(r.requestedAction||[]).slice(),requestedItems:r.requestedItems||'',attentionFocus:r.attentionFocus||'',truthGate:r.truthGate===true,timingTarget:r.timingTarget||'',recurrenceCue:r.recurrenceCue||f.recurrenceCue||'',requiredDistinctions:(r.requiredDistinctions||[]).slice()},causalSituation:e.causalSituation||f.causalSituation||null};
       }),
       unresolved:{language:(rq.semantic&&rq.semantic.unresolved||[]).slice(),ambiguities:(rq.semantic&&rq.semantic.ambiguities||[]).slice(),assumptions:(graph.assumptions||[]).slice(),unsupportedDimensions:(graph.unsupportedDimensions||[]).slice(),decisionKind:rq.decisionKind||'none',notes:(rq.notes||[]).slice()},
       validation:graph.validation||null
@@ -81,20 +83,21 @@
     var disease=/躁鬱|双相|雙相|bipolar|憂鬱症|抑鬱症|精神疾病|思覺失調|糖尿病|癌症|癲癇|失智/i.test(q);
     var care=/幫助|幫忙|照顧|陪伴|怎麼辦|該如何|不穩定|發作|病情|治療|康復|症狀|停藥|減藥|換藥|就醫|生病|失眠|自傷|自殺/.test(q);
     var clinical=/(?:我|她|他|現任|伴侶|女友|男友|父|母|家人|朋友).{0,30}(?:停藥|減藥|換藥|就醫|病情|症狀|手術|治療)/.test(q);
-    var health=(disease&&care)||clinical||/自傷|自殺/.test(q);
+    var health=(model.queryIntent&&model.queryIntent.domains||[]).indexOf('health')>=0||(disease&&care)||clinical||/自傷|自殺/.test(q);
     var domains=(model.queryIntent&&model.queryIntent.domains||[]).slice();
     if(health)domains.push('health');
     if(/投資|借貸|負債|股票|基金|財務|營業額|收入|財運|賺錢|副業|正職|本業/.test(q))domains.push('finance');
     if(/法律|官司|訴訟|離婚協議|提告|判刑|合約糾紛/.test(q))domains.push('legal');
     domains=Array.from(new Set(domains));
     var sentences=q.split(/[？?；;\n]+/).map(function(x){return x.trim();}).filter(Boolean);
-    var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){return {id:i+1,question:text,goal:goal(text)};});
+    var tasks=(sentences.length?sentences:[q||'依本次有效資料分析主軸與可行方向']).map(function(text,i){var event=(model.events||[]).find(function(e){return String(e.source||'').replace(/[？?。；;]+$/,'').trim()===text;})||(model.events||[])[i];return {id:i+1,question:text,goal:goal(text,event)};});
     var broad=/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
-      complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||!!e.causalSituation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options';});
+      complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||!!e.causalSituation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options'||e.queryOperator==='enumeration_guidance';});
+    var healthExam=domains.indexOf('health')>=0&&/(?:體檢|健檢|健康檢查|檢查報告|篩檢)/.test(q);
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
       depth:broad?'comprehensive':complex?'deep':'focused',
       questionModel:model,
-      healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),
+      healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),healthExam:healthExam,
       bipolarMention:disease&&/躁鬱|双相|雙相|bipolar/i.test(q),
       source:'原問句明示詞彙；只用來安排回答任務，不是排盤證據、診斷或對事件的判斷。'};
   }
@@ -118,8 +121,8 @@
     }
     lines.push('語義模型是原句的核對輔助，不取代原句或盤面；若模型列出未核實預設或詞義候選，保留其狀態並按下方說明處理。');
     (p.questionModel.events||[]).filter(function(e){return !!e.lexicalInterpretation;}).forEach(function(e){
-      var meaning=e.lexicalInterpretation;
-      lines.push('【原句多義詞】「'+meaning.surface+'」有多種候選：'+meaning.candidates.map(function(c){return c.label+'（'+c.scope+'）';}).join('；')+'。本次先採較少延伸原意的「'+meaning.selectedLabel+'」：正文要明說此處採用的意思，且不得把它延伸成更強的事件；若改採其他意思，請指出答案會改變哪一層。');
+      var meaning=e.lexicalInterpretation,selected=meaning.selectedInterpretation&&meaning.selectedLabel;
+      lines.push('【原句多義詞】「'+meaning.surface+'」有多種候選：'+meaning.candidates.map(function(c){return c.label+'（'+c.scope+'）';}).join('；')+'。'+(selected?'本次暫採「'+meaning.selectedLabel+'」（'+(meaning.selectionBasis||'上下文線索')+'；使用者尚未確認），正文需標示這是暫定讀法，並說明改採其他候選會改變答案的哪一層。':'上下文未能選定，本次須保留會實質改變答案的候選，逐一指出各自能判到哪裡；不可暗中選義。'));
     });
     (p.questionModel.events||[]).filter(function(e){return !!e.recurrenceContext;}).forEach(function(e){lines.push('【重現／延續措辭】原句「'+(e.recurrenceCue||e.recurrenceContext.surfaceCue)+'」可暗示同類經驗或機會曾存在，但目前未核實（priorOccurrenceVerified=false）。不可稱為已發生；若會改變答案，只能寫成提問者用語或明確標示的待確認前提。');});
     var timedAction=(p.questionModel.events||[]).find(function(e){return e.queryOperator==='relative_timing'&&(e.actionSequence||[]).length>0;});
@@ -128,8 +131,14 @@
       lines.push('【明確行動的時間題】這題問的是「'+timingFocusLabel+'」：先直接給本方法實際支持的相對階段或時間範圍，再沿盤面說明從準備／意願到邀約安排、實際行動的承接與卡點。只在盤面提供日曆依據時才給日期；否則清楚說可判到哪個階段。');
       if(timedAction.explicitSexualAct)lines.push('【親密行動層次】分開對方意願、邀約／安排與實際性行為發生時間；對方位象徵不能替代當事人的明確、無壓力且可撤回的同意。依本次盤面回答已能支持的層次，沒有證據的層次直接指出缺口。');
     }
+    var listed=(p.questionModel.events||[]).filter(function(e){return e.queryOperator==='enumeration_guidance';});
+    listed.forEach(function(e){
+      lines.push('【開放列舉題】原句要求列出「'+(e.requestedItems||'相關事項')+'」'+(e.attentionFocus?'，重點是「'+e.attentionFocus+'」':'')+'；這是待回答的項目清單，不可因句尾「嗎」改成只答是／否。'+(e.truthGate?'原句另有明示的成立與否門檻，需先逐項回應後再回答該門檻。':'本題沒有額外的是非門檻。')+'只列本次方法與實際資料能支撐的內容；若所問是方法無法識別的具體現實項目，明說界線，再給可直接查核的下一步。');
+    });
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
-    if(p.domains.includes('health')){
+    if(p.healthExam){
+      lines.push('【健康檢查能力邊界】本題按原句暫解為「公司安排的員工健康檢查」；語義模型仍保留「公司經營／營運檢視」候選，正文須說明這是依「體檢／要我注意」的暫定判讀，不能把它寫成已確認事實。命理不能推斷會查出什麼病、哪個器官有問題、實際檢查項目、數值或報告結果；不得把牌／卦轉寫成健康警訊清單。直接回答能判到的態度或準備方向；實務上先看公司或診所的正式檢查通知與禁食／用藥說明，拿到報告後向醫療人員核對異常項目。若使用者其實問公司營運，請回到原句候選改按工作／商業方法解讀。');
+    }else if(p.domains.includes('health')){
       lines.push('本題有明示健康情境：先回答可以採取的照顧或求助行動，再以盤面反思溝通、負荷或選擇；醫療行動來自現實狀況與醫療資料，盤面不能確定病程、藥物或照顧者造成病情。');
       if(p.bipolarMention)lines.push('就使用者提到的躁鬱症提供照顧方向：若近期狀況改變，及早聯絡原精神科團隊；可詢問是否願意一起整理睡眠、服藥與行為變化。陪同回診、傾聽及照顧者休息是可做的事，藥物調整交由醫師。若疑似躁期、嚴重憂鬱或有即時傷害危險，需緊急專業評估，不能等固定聊天時段。這些是醫療指引的實務建議，不是從牌抽出的治療；急促消息或象徵速度不等於臨床快速循環。參考：NIMH https://www.nimh.nih.gov/health/publications/bipolar-disorder 及 NICE CG185 https://www.nice.org.uk/guidance/cg185/ （本地參考於2026-09-24核對；不宣稱接收提示詞的AI本輪已查網）。');
     }
@@ -199,7 +208,7 @@
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_LENORMAND
 var JY_READING_LENORMAND = [
-  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
+  "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n【列舉題與詞義分流】『有哪些／哪幾項／有什麼問題要注意』是開放列舉，即使句尾有『嗎』也先回答使用者要知道的類別；只有原句明確提出會不會、有沒有、是否等門檻時，才另加是非判斷。若詞義候選會改變答案，查看語義模型的候選、選取依據與未確認狀態：可按清楚的上下文作暫定解讀，但必須標出仍待確認之處；上下文不足時保留兩種實質不同的答案，不可暗中選一種或停在抽象的不確定。\n【題目能力邊界】先辨認使用者真正要的事實層與方法能支持的層次。若方法不能回答精確的現實項目，就明說缺少哪種資料，再回答最近的可用問題與下一個核實步驟；不得以更多術語或牌數填補缺口。健康檢查題尤其不能由命理推斷疾病、器官、實際檢查項目、異常數值或報告結果；可給檢查前核對官方指示、取得並詢問正式報告等具體步驟。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
   "短線先讀相鄰組合再讀完整牌句。九宮格以中心及最切題的穿越線形成主判，外框、外圍線及鏡像只有提供新資訊時才補充。",
@@ -647,7 +656,7 @@ function analyzeReadingQuestion(value) {
       relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','表白','坦白心意','暗戀','喜歡','好感','欣賞','心動','有意思','愛','交往','約會','約我','追求','示好','伴侶','女友','男友','老婆','老公','現任','正緣','對象','配偶','性伴侶','肉體桃花'],
       work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯','正職','本業','副業'],
       finance:['財運','求財','破財','損失','賠錢','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
-      health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院'],
+      health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院','體檢','健檢','健康檢查','員工健康檢查','員工健檢'],
       family:['家庭','家人','父母','爸爸','媽媽','孩子','子女'],
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
@@ -686,14 +695,36 @@ function analyzeReadingQuestion(value) {
   ];
   function lexicalInterpretation(s){
     var text=String(s||''),matches=LEXICAL_SENSES.filter(function(x){return text.indexOf(x.term)>=0;}).sort(function(a,b){return b.term.length-a.term.length;});
+    var companyCheck=/公司.{0,10}?(?:體檢|健檢|健康檢查)|(?:體檢|健檢|健康檢查).{0,10}公司/.test(text);
+    if(companyCheck){
+      var businessCue=/(?:經營|營運|管理|財務|組織|流程|業績|營業額|成本|獲利|企業體質|公司運作|團隊效能)/.test(text);
+      var healthCue=/(?:員工|勞工|健康|身體|抽血|血壓|血糖|體重|健檢報告|檢查報告|醫師|醫生|醫院|看診)/.test(text);
+      var personalAttention=/(?:要我注意|我需要注意|我該注意|我應注意|我該留意|要我留意)/.test(text);
+      var selected=businessCue&&!healthCue?'corporate_operations_review':healthCue&&!businessCue?'employee_health_screening':(!businessCue&&personalAttention?'employee_health_screening':null);
+      var candidates=[
+        {id:'employee_health_screening',label:'公司安排的員工健康檢查',scope:'問的是個人健康篩檢與報告；命理不能辨認實際疾病、器官、檢查項目或異常值。'},
+        {id:'corporate_operations_review',label:'公司經營／營運體檢',scope:'問的是企業流程、財務、組織或經營狀況，不是個人健康檢查。'}
+      ];
+      var chosen=candidates.find(function(x){return x.id===selected;}),status=selected?(businessCue||healthCue?'context_resolved_unconfirmed':'provisional_context_unconfirmed'):'ambiguous_unresolved';
+      return {surface:'公司體檢',candidates:candidates,selectedInterpretation:selected,selectionBasis:businessCue&&!healthCue?'explicit_business_operations_cue':healthCue&&!businessCue?'explicit_health_screening_cue':personalAttention?'personal_attention_cue_only':'insufficient_context',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',ambiguityStatus:status,userConfirmed:false,domains:selected==='corporate_operations_review'?['work','commerce']:selected==='employee_health_screening'?['work','health']:['work','health','commerce']};
+    }
     if(!matches.length)return null;
     var entry=matches[0],chosen=entry.candidates.find(function(x){return x.id===entry.defaultCandidate;});
-    return {surface:entry.term,candidates:entry.candidates.map(function(x){return {id:x.id,label:x.label,scope:x.scope};}),selectedInterpretation:entry.defaultCandidate,selectionBasis:'least_committing_default',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',userConfirmed:false};
+    return {surface:entry.term,candidates:entry.candidates.map(function(x){return {id:x.id,label:x.label,scope:x.scope};}),selectedInterpretation:entry.defaultCandidate,selectionBasis:'least_committing_default',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',ambiguityStatus:'provisional_context_unconfirmed',userConfirmed:false};
   }
   var SUBJECT_WORDS=['我','我們','你','你們','他','她','他們','她們','對方','這個人','那個人','有人','某人','女生','女性','男生','男性','異性','同事','女同事','男同事','異性同事','女性同事','男性同事','主管','客戶','朋友','好友','閨蜜','女友','男友','伴侶','現任','前任','前男友','前女友','老婆','老公','妻子','丈夫','家人','媽媽','爸爸','父母','孩子'];
   var CONTINUATION=['未來','之後','後來','往後','接下來','再來','下一步','那','那麼','然後','後續','到時','如果','若','假如','所以','並且','以及','還有'];
   var EXAMPLE_CUES=['例如','比如','譬如','舉例','像是','比方說','例如說'];
   var SPEECH_VERBS=['問','詢問','說','表示','提到','告訴','回答','回覆','承認','要求','建議','提議','跟我說','跟你說','跟他說','跟她說'];
+  // Speech verbs must match as verbs, never as a substring inside nouns such as「問題」or「說明」.
+  function isSpeechVerbAt(text,at,verb){
+    var t=String(text||''),next=t.slice(at+verb.length,at+verb.length+1),prev=t.slice(Math.max(0,at-1),at);
+    if(verb==='問'&&next==='題')return false;
+    if(verb==='說'&&next==='明')return false;
+    //「詢問」contains the short「問」; keep the longer lexical verb as the match.
+    if(verb==='問'&&prev==='詢')return false;
+    return true;
+  }
   var PROPOSITION_PRONOUN_RE=/^(?:這|那|此)(?:件事|件事情|個情況|個狀況|個行為|個做法|個要求|個想法|樣|件|個)?(?=是|代表|表示|意味|因為|由於|為何|為什麼|會|是否|是不是)/;
   var ADVICE=['怎麼辦','做什麼','方法','策略','建議','下一步','怎麼做','如何做','怎麼改善','如何改善','怎麼處理','如何處理','該怎麼','應該怎麼','該如何','應該如何','要怎麼','要如何','可以怎麼','可以如何'];
   var ACTION_MODIFIERS=['主動','直接','再次','再','先','一起','共同','親自','持續','繼續'];
@@ -711,6 +742,7 @@ function analyzeReadingQuestion(value) {
   var FUTURE=['未來','之後','往後','接下來','將來','稍後','待會','明天','後天','下週','下個月','明年','年底前','月底前'];
   var LONG_HORIZON=['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年'];
   var PERSONISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|現任|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
+  var HUMANISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|現任|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
   var FACET_STOP=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|現任|前任|事情|這件事|結果|未來|現在|目前)$/;
 
   function stripQuestionLead(text){
@@ -774,8 +806,13 @@ function analyzeReadingQuestion(value) {
     return PERSONISH.test(t)||/^(?:這|那|該|此|另一|某|本|目前|現在)/.test(t)||/[A-Za-z0-9甲乙丙丁一二三四五六七八九十]$/.test(t)||/(?:公司|廠商|供應商|客戶|主管|同事|朋友|方案|選項|工作|職位|房子|房屋|店家|平台|產品|服務|合約|計畫|計畫案|專案)$/.test(t);
   }
   function domainIds(s){var ids=[];Object.keys(ONTOLOGY.domains).forEach(function(id){if(hasAny(s,ONTOLOGY.domains[id]))ids.push(id);});
+    var lexical=lexicalInterpretation(s);
+    if(lexical&&lexical.surface==='公司體檢'){
+      ids=ids.filter(function(id){return id!=='health'&&id!=='commerce';});
+      (lexical.domains||[]).forEach(function(id){if(ids.indexOf(id)<0)ids.push(id);});
+    }
     // 「成本／品質／平台」單獨出現不等於在問店務；commerce 需有明確交易、商品或店鋪錨點。
-    var anchors=['廠商','供應商','供貨','進貨','採購','批發','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'];
+    var anchors=['廠商','供應商','供貨','進貨','採購','批發','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價','公司營運','公司經營','營運體檢','經營體檢'];
     if(ids.indexOf('commerce')>=0&&!hasAny(s,anchors))ids=ids.filter(function(id){return id!=='commerce';});
     return ids;}
   function extractEntities(s){
@@ -861,6 +898,7 @@ function analyzeReadingQuestion(value) {
   }
   function inferQuestionDimensions(s){
     var dims=[];
+    if(openEnumeration(s)){dims.push('enumeration');if(/注意|留意|關注|檢查/.test(s))dims.push('attention_focus');}
     if(findEvaluationCue(s))dims.push('evaluation');
     if(hasAny(s,LONG_HORIZON))dims.push('continuity');
     if(hasAny(s,REASON))dims.push('reason');
@@ -914,6 +952,8 @@ function analyzeReadingQuestion(value) {
   }
   function detectYesNo(s){
     var t=s.replace(/\s+/g,'').replace(/[？?。！!]+$/,'');
+    var enumeration=openEnumeration(s);
+    if(enumeration)return /(?:是否|會不會|有沒有|能不能|可不可以|能否|會否|是不是|有無)/.test(t);
     if(/[嗎么]$/.test(t))return true;
     if(YESNO_PREFIX.some(function(w){return t.indexOf(w)===0||t.indexOf(w)>0;}))return true;
     if(/還是(?:不|沒有|不能|不會|不可|不要)/.test(t))return true;
@@ -921,8 +961,17 @@ function analyzeReadingQuestion(value) {
     if(/[？?]$/.test(String(s||'')) && /(?:會|能|可以|可能|可望|有機會)/.test(t) && !/(?:多少|幾|何時|什麼時候|為什麼|如何|怎麼|誰|哪個)/.test(t))return true;
     return false;
   }
+  function openEnumeration(s){
+    var t=String(s||'');
+    var cue=t.match(/(?:有哪些|哪幾(?:項|個|點|種|處|方面)?|哪些(?:健康)?(?:項目|地方|方面|原因|問題|因素|重點|狀況|事項)|有什麼(?:健康)?(?:問題|項目|地方|方面|事項|要點|需要注意|要注意|要留意)|有何(?:問題|項目|地方|方面|事項|要點)|什麼(?:問題|項目|地方|方面).{0,10}(?:注意|留意|關注)|(?:要|需|應該|需要)注意(?:哪些|什麼|哪幾)(?:項目|地方|方面|問題|事項)?|(?:要|需|應該|需要)留意(?:哪些|什麼|哪幾)(?:項目|地方|方面|問題|事項)?)/);
+    if(!cue)return null;
+    var m=cue[0],attention=/注意|留意|關注|檢查/.test(m+' '+t);
+    var requested=/問題/.test(m+' '+t)?'問題':/(?:檢查|項目)/.test(m+' '+t)?'檢查項目':/(?:地方|方面)/.test(m)?'地方／方面':'原句所問事項';
+    return {kind:'open_enumeration',surface:m,requestedItems:requested,attentionFocus:attention?'原句明示需要注意或留意的事項':'原句要求列出的項目',truthGate:/(?:是否|會不會|有沒有|能不能|可不可以|能否|會否|是不是|有無)/.test(t),status:'open'};
+  }
   function inferPredicateClass(s,dims){
     var stateHits=matchAllWords(s,ONTOLOGY.privateState), actionHits=matchAllWords(s,ONTOLOGY.overtAction);
+    if(dims.indexOf('enumeration')>=0)return 'enumeration_query';
     if(dims.indexOf('evaluation')>=0 && !stateHits.length)return 'evaluation';
     if(stateHits.length && !actionHits.length)return 'private_state';
     if(actionHits.length)return 'event_action';
@@ -977,7 +1026,7 @@ function analyzeReadingQuestion(value) {
   }
   function reportedSpeechInfo(s){
     var t=String(s||'').trim(), best=null;
-    SPEECH_VERBS.forEach(function(v){var k=t.indexOf(v);if(k>0&&(!best||k<best.at))best={verb:v,at:k};});
+    SPEECH_VERBS.forEach(function(v){var from=0,k;while((k=t.indexOf(v,from))>=0){if(k>0&&isSpeechVerbAt(t,k,v)&&(!best||k<best.at||k===best.at&&v.length>best.verb.length))best={verb:v,at:k};from=k+Math.max(1,v.length);}});
     if(!best)return null;
     var before=t.slice(0,best.at).trim(),after=t.slice(best.at+best.verb.length).trim(),addressee=null,content=after;
     var addr=after.match(/^(我|我們|你|你們|他|她|他們|她們|對方)/);
@@ -1001,7 +1050,7 @@ function analyzeReadingQuestion(value) {
     var t=String(s||''), terms=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,SPEECH_VERBS),candidates=[];
     terms.sort(function(a,b){return b.length-a.length;}).forEach(function(term){
       var from=0,k;
-      while((k=t.indexOf(term,from))>=0){candidates.push({term:term,at:k});from=k+Math.max(1,term.length);}
+      while((k=t.indexOf(term,from))>=0){if(SPEECH_VERBS.indexOf(term)<0||isSpeechVerbAt(t,k,term))candidates.push({term:term,at:k});from=k+Math.max(1,term.length);}
     });
     //「約我／約朋友」is an overt social action even though the bare one-character
     // verb is too ambiguous to add to the general action vocabulary.
@@ -1035,7 +1084,7 @@ function analyzeReadingQuestion(value) {
     var rep=reportedSpeechInfo(s);if(rep)return {type:'context',reportedSpeech:rep,observed:true};
     var prop=propositionPronoun(s);
     var causalHypothesis=!!(prop&&/(?:是)?因為|由於/.test(s)&&detectYesNo((unit&&unit.raw)||s));
-    var qmark=!!(unit&&unit.isQuestionPunct), interrogative=qmark||detectYesNo((unit&&unit.raw)||s)||dims.some(function(d){return ['reason','advice','timing','identity','amount','count','quantity','probability','age','profile','evaluation'].indexOf(d)>=0;})||causalHypothesis;
+    var qmark=!!(unit&&unit.isQuestionPunct), interrogative=qmark||detectYesNo((unit&&unit.raw)||s)||dims.some(function(d){return ['reason','advice','timing','identity','amount','count','quantity','probability','age','profile','evaluation','enumeration'].indexOf(d)>=0;})||causalHypothesis;
     return {type:interrogative?'question':'context',propositionPronoun:prop,causalHypothesis:causalHypothesis,observed:!interrogative};
   }
   function extractCausalSituation(input){
@@ -1071,7 +1120,11 @@ function analyzeReadingQuestion(value) {
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    // A topic noun such as「公司體檢」is not automatically the grammatical actor of an item-list question.
+    // An item-list question is asked by the querent; a topic noun like「公司體檢」
+    // is the subject matter, not an actor. Retain an explicit person as subject.
+    if(enumeration&&subject&&!HUMANISH.test(subject))subject=null;
     if(ill.reportedSpeech&&ill.reportedSpeech.speakerRef)subject=ill.reportedSpeech.speakerRef;
     if(evalFrame&&subject&&!PERSONISH.test(subject)&&!/^(?:unknown_person)$/.test(subject))subject=null;
     if(subject&&/^(?:每|每月|每週|每周|每天|每日|月均|週均|周均)/.test(subject))subject=null;
@@ -1080,7 +1133,7 @@ function analyzeReadingQuestion(value) {
       illocution:ill.type,observed:!!ill.observed,isQuestion:ill.type==='question',isExample:ill.type==='example',exampleRef:null,exampleText:ill.example||null,
       reportedSpeech:ill.reportedSpeech||null,propositionPronoun:propPron,propositionRef:null,causalHypothesis:!!ill.causalHypothesis,causalSituation:causalSituation,
       scope:scope(s),domains:domains,dimensions:unique(dims),
-      yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),
+      yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),truthGate:!!(enumeration&&enumeration.truthGate),enumerationRequest:enumeration,
       temporal:temporal,
       discourse:{continuation:CONTINUATION.some(function(w){return s.indexOf(w)===0;}),conditional:/^(?:如果|若|假如)|(?:如果|若|假如).*(?:就|才|再)/.test(s)},
       entities:entities,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],
@@ -1109,6 +1162,7 @@ function analyzeReadingQuestion(value) {
     }
     if(frame.isQuestion){
       if(frame.causalHypothesis)frame.role='causal_hypothesis';
+      else if(frame.enumerationRequest)frame.role='enumeration';
       else if(dims.indexOf('reason')>=0)frame.role='reason';
       else if(dims.indexOf('advice')>=0)frame.role='action_advice';
       else if(dims.indexOf('timing')>=0)frame.role='timing';
@@ -1352,7 +1406,7 @@ function analyzeReadingQuestion(value) {
 
   var ambiguities=[];
   frames.forEach(function(f){if(f.subjectSource==='surface_pronoun_ambiguous_context')ambiguities.push({clause:f.index,type:f.subjectSource,candidates:(f.coreferenceCandidates||[]).slice(),text:f.text});});
-  frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:'lexical_polysemy',surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,userConfirmed:false,text:f.text});});
+  frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:f.lexicalInterpretation.ambiguityStatus==='ambiguous_unresolved'?'contextual_lexical_ambiguity':(f.lexicalInterpretation.surface==='公司體檢'?'contextual_lexical_interpretation':'lexical_polysemy'),surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,ambiguityStatus:f.lexicalInterpretation.ambiguityStatus,userConfirmed:false,text:f.text});});
   var notes=[],criticalIssues=[];
   if(ambiguities.some(function(a){return a&&a.type==='entity_coreference';}))notes.push('有代名詞尚未唯一對應；語義圖保留候選，不把它硬綁成某個人物。');
   if(decision.kind==='multiple'&&!options.length)notes.push('比較題已辨識為多方案決策，但原文沒有提供可綁定的完整方案；保留缺失槽位，不自行造出選項。');
@@ -1386,7 +1440,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.1.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.2.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -1398,7 +1452,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.1.0',status:coverageStatus,
+    version:'4.2.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -1407,7 +1461,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };
@@ -2102,7 +2156,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);

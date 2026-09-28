@@ -65,6 +65,44 @@ assert.equal(numericYear.events[0].actionObject,'肉體桃花');
 const actualIntimacy=workflow.plan({method:'tarot',question:'今年我還會做愛嗎？',referenceDate:'2026-09-28'}).questionModel.events[0];
 assert.equal(actualIntimacy.type,'intimate_event_occurrence_query');
 assert.equal(actualIntimacy.explicitSexualAct,true,'an explicitly named act stays distinct from an opportunity to meet someone');
+
+// Open-ended item requests stay item requests even when the sentence ends in「嗎」.
+// Company screening is context-sensitive: keep employee-health and operations readings available.
+const checkupQuestion='今年公司體檢會有什麼問題要我注意的嗎？';
+const checkupPlan=workflow.plan({method:'yijing',question:checkupQuestion,referenceDate:'2026-09-28'});
+const checkup=checkupPlan.questionModel.events[0];
+assert.equal(checkupPlan.questionModel.status,'validated_atomized');
+assert.equal(checkupPlan.questionModel.queryIntent.shape,'bounded_enumeration');
+assert.deepEqual(checkupPlan.questionModel.queryIntent.domains,['work','health']);
+assert.equal(checkup.clauseRole,'enumeration','the question parser must retain the open-list speech act');
+assert.equal(checkup.grammaticalSubject,null,'a topic noun such as company screening must not become the actor');
+assert.deepEqual(checkup.participants,[],'the questioner is not replaced by a nonhuman topic noun');
+assert.equal(checkup.type,'bounded_enumeration_query');
+assert.equal(checkup.queryOperator,'enumeration_guidance');
+assert.equal(checkup.truthGate,false,'a soft final 嗎 is not an additional yes/no gate');
+assert.equal(checkup.requestedItems,'問題');
+assert.equal(checkup.timeScope[0],'今年');
+assert.deepEqual(checkup.lexicalInterpretation.candidates.map(x=>x.id),['employee_health_screening','corporate_operations_review']);
+assert.equal(checkup.lexicalInterpretation.selectedInterpretation,'employee_health_screening');
+assert.equal(checkup.lexicalInterpretation.ambiguityStatus,'provisional_context_unconfirmed');
+assert.equal(checkup.lexicalInterpretation.userConfirmed,false);
+assert.deepEqual(checkup.semanticDomains,['work','health']);
+assert(checkupPlan.healthExam);
+const checkupPrompt=workflow.render({method:'yijing',question:checkupQuestion,referenceDate:'2026-09-28'});
+assert(checkupPrompt.includes('【開放列舉題】'));
+assert(checkupPrompt.includes('【健康檢查能力邊界】'));
+assert(checkupPrompt.includes('公司經營／營運檢視'));
+assert(checkupPrompt.includes('不得把牌／卦轉寫成健康警訊清單'));
+assert(checkupPrompt.includes('拿到報告後向醫療人員核對異常項目'));
+assert(checkupPrompt.includes('本次暫採「公司安排的員工健康檢查」'));
+assert(!checkupPrompt.includes('本題沒有額外的是非門檻。原句另有明示'));
+
+const operationsQuestion='公司營運體檢有哪些問題要先調整？';
+const operationsPlan=workflow.plan({method:'tarot',question:operationsQuestion});
+assert.deepEqual(operationsPlan.questionModel.queryIntent.domains,['work','commerce']);
+assert.equal(operationsPlan.questionModel.events[0].lexicalInterpretation.selectedInterpretation,'corporate_operations_review');
+assert.deepEqual(operationsPlan.questionModel.events[0].semanticDomains,['work','commerce']);
+assert.equal(operationsPlan.healthExam,false,'a clear operations context must not trigger medical output rules');
 assert.equal(workflow.plan({method:'tarot',question:'我該不該離職？'}).questionModel.events[0].type,'alternative_comparison','a decision question must not be routed as a future occurrence');
 assert.equal(workflow.plan({method:'tarot',question:'她有沒有同意？'}).questionModel.events[0].type,'qualitative_state_query','a consent-state question must stay distinct from a future physical action');
 
@@ -76,8 +114,8 @@ for(const method of methods){
   assert(prompt.includes('"actionObject":"肉體桃花"'),`${method} receives the object of encounter`);
 }
 const indexHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
-for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20260928semantic1`),`${asset} cache token is updated`);
-assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v102"),'service worker cache version is refreshed');
+for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20260928rootfix2`),`${asset} cache token is updated`);
+assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v104"),'service worker cache version is refreshed');
 
 const choice=workflow.plan({method:'bazi',question:'我該選哪個商品上架？'}).questionModel.events[0];
 assert.equal(choice.type,'recommendation_with_unprovided_options');
@@ -99,6 +137,13 @@ for(const output of allMethodOutputs){
   assert(output.includes('jy.question_model/1'));
   assert(output.includes('"metricCadence":"monthly"'));
   assert(output.includes('"value":30'));
+}
+for(const method of methods){
+  const output=workflow.render({method,question:checkupQuestion,referenceDate:'2026-09-28'});
+  assert(output.includes('"queryOperator":"enumeration_guidance"'),`${method} keeps the list request`);
+  assert(output.includes('"semanticDomains":["work","health"]'),`${method} keeps health and work context`);
+  assert(output.includes('【健康檢查能力邊界】'),`${method} receives the shared checkup boundary`);
+  assert(output.includes('公司經營／營運檢視'),`${method} receives lexical alternatives`);
 }
 
 console.log('question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 14 methods passed.');

@@ -34,8 +34,9 @@
 // v99: 20260924reading1 合盤事實與四化來源、問答導向及分題運限。
 // v100: 20260927depth1 共用深度判讀契約、複雜度篇幅與六爻多人親密題角色覆蓋資訊。
 // v102: 20260928semantic1 修正年度期限、第一人稱、遇到事件與肉體桃花領域的共用語義圖。
-// v103: 20260928actiondock1 統一修復所有術數儀式的手機視窗、舞台溢位與底部操作列。
-const CACHE_NAME = 'jy-main-v103';
+// v103: 20260928actiondock1 固定式操作列初版。
+// v104: 20260928rootfix2 問句開放列舉、健檢詞義消歧、所有引擎醫療能力邊界、儀式內容獨立捲動與固定操作列改為視窗格線列。
+const CACHE_NAME = 'jy-main-v104';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

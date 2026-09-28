@@ -44,7 +44,7 @@ function analyzeReadingQuestion(value) {
       relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','表白','坦白心意','暗戀','喜歡','好感','欣賞','心動','有意思','愛','交往','約會','約我','追求','示好','伴侶','女友','男友','老婆','老公','現任','正緣','對象','配偶','性伴侶','肉體桃花'],
       work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯','正職','本業','副業'],
       finance:['財運','求財','破財','損失','賠錢','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
-      health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院'],
+      health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院','體檢','健檢','健康檢查','員工健康檢查','員工健檢'],
       family:['家庭','家人','父母','爸爸','媽媽','孩子','子女'],
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
@@ -83,14 +83,36 @@ function analyzeReadingQuestion(value) {
   ];
   function lexicalInterpretation(s){
     var text=String(s||''),matches=LEXICAL_SENSES.filter(function(x){return text.indexOf(x.term)>=0;}).sort(function(a,b){return b.term.length-a.term.length;});
+    var companyCheck=/公司.{0,10}?(?:體檢|健檢|健康檢查)|(?:體檢|健檢|健康檢查).{0,10}公司/.test(text);
+    if(companyCheck){
+      var businessCue=/(?:經營|營運|管理|財務|組織|流程|業績|營業額|成本|獲利|企業體質|公司運作|團隊效能)/.test(text);
+      var healthCue=/(?:員工|勞工|健康|身體|抽血|血壓|血糖|體重|健檢報告|檢查報告|醫師|醫生|醫院|看診)/.test(text);
+      var personalAttention=/(?:要我注意|我需要注意|我該注意|我應注意|我該留意|要我留意)/.test(text);
+      var selected=businessCue&&!healthCue?'corporate_operations_review':healthCue&&!businessCue?'employee_health_screening':(!businessCue&&personalAttention?'employee_health_screening':null);
+      var candidates=[
+        {id:'employee_health_screening',label:'公司安排的員工健康檢查',scope:'問的是個人健康篩檢與報告；命理不能辨認實際疾病、器官、檢查項目或異常值。'},
+        {id:'corporate_operations_review',label:'公司經營／營運體檢',scope:'問的是企業流程、財務、組織或經營狀況，不是個人健康檢查。'}
+      ];
+      var chosen=candidates.find(function(x){return x.id===selected;}),status=selected?(businessCue||healthCue?'context_resolved_unconfirmed':'provisional_context_unconfirmed'):'ambiguous_unresolved';
+      return {surface:'公司體檢',candidates:candidates,selectedInterpretation:selected,selectionBasis:businessCue&&!healthCue?'explicit_business_operations_cue':healthCue&&!businessCue?'explicit_health_screening_cue':personalAttention?'personal_attention_cue_only':'insufficient_context',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',ambiguityStatus:status,userConfirmed:false,domains:selected==='corporate_operations_review'?['work','commerce']:selected==='employee_health_screening'?['work','health']:['work','health','commerce']};
+    }
     if(!matches.length)return null;
     var entry=matches[0],chosen=entry.candidates.find(function(x){return x.id===entry.defaultCandidate;});
-    return {surface:entry.term,candidates:entry.candidates.map(function(x){return {id:x.id,label:x.label,scope:x.scope};}),selectedInterpretation:entry.defaultCandidate,selectionBasis:'least_committing_default',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',userConfirmed:false};
+    return {surface:entry.term,candidates:entry.candidates.map(function(x){return {id:x.id,label:x.label,scope:x.scope};}),selectedInterpretation:entry.defaultCandidate,selectionBasis:'least_committing_default',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',ambiguityStatus:'provisional_context_unconfirmed',userConfirmed:false};
   }
   var SUBJECT_WORDS=['我','我們','你','你們','他','她','他們','她們','對方','這個人','那個人','有人','某人','女生','女性','男生','男性','異性','同事','女同事','男同事','異性同事','女性同事','男性同事','主管','客戶','朋友','好友','閨蜜','女友','男友','伴侶','現任','前任','前男友','前女友','老婆','老公','妻子','丈夫','家人','媽媽','爸爸','父母','孩子'];
   var CONTINUATION=['未來','之後','後來','往後','接下來','再來','下一步','那','那麼','然後','後續','到時','如果','若','假如','所以','並且','以及','還有'];
   var EXAMPLE_CUES=['例如','比如','譬如','舉例','像是','比方說','例如說'];
   var SPEECH_VERBS=['問','詢問','說','表示','提到','告訴','回答','回覆','承認','要求','建議','提議','跟我說','跟你說','跟他說','跟她說'];
+  // Speech verbs must match as verbs, never as a substring inside nouns such as「問題」or「說明」.
+  function isSpeechVerbAt(text,at,verb){
+    var t=String(text||''),next=t.slice(at+verb.length,at+verb.length+1),prev=t.slice(Math.max(0,at-1),at);
+    if(verb==='問'&&next==='題')return false;
+    if(verb==='說'&&next==='明')return false;
+    //「詢問」contains the short「問」; keep the longer lexical verb as the match.
+    if(verb==='問'&&prev==='詢')return false;
+    return true;
+  }
   var PROPOSITION_PRONOUN_RE=/^(?:這|那|此)(?:件事|件事情|個情況|個狀況|個行為|個做法|個要求|個想法|樣|件|個)?(?=是|代表|表示|意味|因為|由於|為何|為什麼|會|是否|是不是)/;
   var ADVICE=['怎麼辦','做什麼','方法','策略','建議','下一步','怎麼做','如何做','怎麼改善','如何改善','怎麼處理','如何處理','該怎麼','應該怎麼','該如何','應該如何','要怎麼','要如何','可以怎麼','可以如何'];
   var ACTION_MODIFIERS=['主動','直接','再次','再','先','一起','共同','親自','持續','繼續'];
@@ -108,6 +130,7 @@ function analyzeReadingQuestion(value) {
   var FUTURE=['未來','之後','往後','接下來','將來','稍後','待會','明天','後天','下週','下個月','明年','年底前','月底前'];
   var LONG_HORIZON=['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年'];
   var PERSONISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|現任|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
+  var HUMANISH=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|女生|女性|男生|男性|異性|同事|女同事|男同事|主管|客戶|朋友|好友|閨蜜|女友|男友|伴侶|現任|前任|老婆|老公|妻子|丈夫|家人|媽媽|爸爸|父母|孩子)(?:[甲乙丙丁A-Za-z0-9一二三四五六七八九十]*)$/;
   var FACET_STOP=/^(?:我|我們|你|你們|他|她|他們|她們|對方|這個人|那個人|有人|某人|現任|前任|事情|這件事|結果|未來|現在|目前)$/;
 
   function stripQuestionLead(text){
@@ -171,8 +194,13 @@ function analyzeReadingQuestion(value) {
     return PERSONISH.test(t)||/^(?:這|那|該|此|另一|某|本|目前|現在)/.test(t)||/[A-Za-z0-9甲乙丙丁一二三四五六七八九十]$/.test(t)||/(?:公司|廠商|供應商|客戶|主管|同事|朋友|方案|選項|工作|職位|房子|房屋|店家|平台|產品|服務|合約|計畫|計畫案|專案)$/.test(t);
   }
   function domainIds(s){var ids=[];Object.keys(ONTOLOGY.domains).forEach(function(id){if(hasAny(s,ONTOLOGY.domains[id]))ids.push(id);});
+    var lexical=lexicalInterpretation(s);
+    if(lexical&&lexical.surface==='公司體檢'){
+      ids=ids.filter(function(id){return id!=='health'&&id!=='commerce';});
+      (lexical.domains||[]).forEach(function(id){if(ids.indexOf(id)<0)ids.push(id);});
+    }
     // 「成本／品質／平台」單獨出現不等於在問店務；commerce 需有明確交易、商品或店鋪錨點。
-    var anchors=['廠商','供應商','供貨','進貨','採購','批發','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'];
+    var anchors=['廠商','供應商','供貨','進貨','採購','批發','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價','公司營運','公司經營','營運體檢','經營體檢'];
     if(ids.indexOf('commerce')>=0&&!hasAny(s,anchors))ids=ids.filter(function(id){return id!=='commerce';});
     return ids;}
   function extractEntities(s){
@@ -258,6 +286,7 @@ function analyzeReadingQuestion(value) {
   }
   function inferQuestionDimensions(s){
     var dims=[];
+    if(openEnumeration(s)){dims.push('enumeration');if(/注意|留意|關注|檢查/.test(s))dims.push('attention_focus');}
     if(findEvaluationCue(s))dims.push('evaluation');
     if(hasAny(s,LONG_HORIZON))dims.push('continuity');
     if(hasAny(s,REASON))dims.push('reason');
@@ -311,6 +340,8 @@ function analyzeReadingQuestion(value) {
   }
   function detectYesNo(s){
     var t=s.replace(/\s+/g,'').replace(/[？?。！!]+$/,'');
+    var enumeration=openEnumeration(s);
+    if(enumeration)return /(?:是否|會不會|有沒有|能不能|可不可以|能否|會否|是不是|有無)/.test(t);
     if(/[嗎么]$/.test(t))return true;
     if(YESNO_PREFIX.some(function(w){return t.indexOf(w)===0||t.indexOf(w)>0;}))return true;
     if(/還是(?:不|沒有|不能|不會|不可|不要)/.test(t))return true;
@@ -318,8 +349,17 @@ function analyzeReadingQuestion(value) {
     if(/[？?]$/.test(String(s||'')) && /(?:會|能|可以|可能|可望|有機會)/.test(t) && !/(?:多少|幾|何時|什麼時候|為什麼|如何|怎麼|誰|哪個)/.test(t))return true;
     return false;
   }
+  function openEnumeration(s){
+    var t=String(s||'');
+    var cue=t.match(/(?:有哪些|哪幾(?:項|個|點|種|處|方面)?|哪些(?:健康)?(?:項目|地方|方面|原因|問題|因素|重點|狀況|事項)|有什麼(?:健康)?(?:問題|項目|地方|方面|事項|要點|需要注意|要注意|要留意)|有何(?:問題|項目|地方|方面|事項|要點)|什麼(?:問題|項目|地方|方面).{0,10}(?:注意|留意|關注)|(?:要|需|應該|需要)注意(?:哪些|什麼|哪幾)(?:項目|地方|方面|問題|事項)?|(?:要|需|應該|需要)留意(?:哪些|什麼|哪幾)(?:項目|地方|方面|問題|事項)?)/);
+    if(!cue)return null;
+    var m=cue[0],attention=/注意|留意|關注|檢查/.test(m+' '+t);
+    var requested=/問題/.test(m+' '+t)?'問題':/(?:檢查|項目)/.test(m+' '+t)?'檢查項目':/(?:地方|方面)/.test(m)?'地方／方面':'原句所問事項';
+    return {kind:'open_enumeration',surface:m,requestedItems:requested,attentionFocus:attention?'原句明示需要注意或留意的事項':'原句要求列出的項目',truthGate:/(?:是否|會不會|有沒有|能不能|可不可以|能否|會否|是不是|有無)/.test(t),status:'open'};
+  }
   function inferPredicateClass(s,dims){
     var stateHits=matchAllWords(s,ONTOLOGY.privateState), actionHits=matchAllWords(s,ONTOLOGY.overtAction);
+    if(dims.indexOf('enumeration')>=0)return 'enumeration_query';
     if(dims.indexOf('evaluation')>=0 && !stateHits.length)return 'evaluation';
     if(stateHits.length && !actionHits.length)return 'private_state';
     if(actionHits.length)return 'event_action';
@@ -374,7 +414,7 @@ function analyzeReadingQuestion(value) {
   }
   function reportedSpeechInfo(s){
     var t=String(s||'').trim(), best=null;
-    SPEECH_VERBS.forEach(function(v){var k=t.indexOf(v);if(k>0&&(!best||k<best.at))best={verb:v,at:k};});
+    SPEECH_VERBS.forEach(function(v){var from=0,k;while((k=t.indexOf(v,from))>=0){if(k>0&&isSpeechVerbAt(t,k,v)&&(!best||k<best.at||k===best.at&&v.length>best.verb.length))best={verb:v,at:k};from=k+Math.max(1,v.length);}});
     if(!best)return null;
     var before=t.slice(0,best.at).trim(),after=t.slice(best.at+best.verb.length).trim(),addressee=null,content=after;
     var addr=after.match(/^(我|我們|你|你們|他|她|他們|她們|對方)/);
@@ -398,7 +438,7 @@ function analyzeReadingQuestion(value) {
     var t=String(s||''), terms=[].concat(ONTOLOGY.privateState,ONTOLOGY.overtAction,SPEECH_VERBS),candidates=[];
     terms.sort(function(a,b){return b.length-a.length;}).forEach(function(term){
       var from=0,k;
-      while((k=t.indexOf(term,from))>=0){candidates.push({term:term,at:k});from=k+Math.max(1,term.length);}
+      while((k=t.indexOf(term,from))>=0){if(SPEECH_VERBS.indexOf(term)<0||isSpeechVerbAt(t,k,term))candidates.push({term:term,at:k});from=k+Math.max(1,term.length);}
     });
     //「約我／約朋友」is an overt social action even though the bare one-character
     // verb is too ambiguous to add to the general action vocabulary.
@@ -432,7 +472,7 @@ function analyzeReadingQuestion(value) {
     var rep=reportedSpeechInfo(s);if(rep)return {type:'context',reportedSpeech:rep,observed:true};
     var prop=propositionPronoun(s);
     var causalHypothesis=!!(prop&&/(?:是)?因為|由於/.test(s)&&detectYesNo((unit&&unit.raw)||s));
-    var qmark=!!(unit&&unit.isQuestionPunct), interrogative=qmark||detectYesNo((unit&&unit.raw)||s)||dims.some(function(d){return ['reason','advice','timing','identity','amount','count','quantity','probability','age','profile','evaluation'].indexOf(d)>=0;})||causalHypothesis;
+    var qmark=!!(unit&&unit.isQuestionPunct), interrogative=qmark||detectYesNo((unit&&unit.raw)||s)||dims.some(function(d){return ['reason','advice','timing','identity','amount','count','quantity','probability','age','profile','evaluation','enumeration'].indexOf(d)>=0;})||causalHypothesis;
     return {type:interrogative?'question':'context',propositionPronoun:prop,causalHypothesis:causalHypothesis,observed:!interrogative};
   }
   function extractCausalSituation(input){
@@ -468,7 +508,11 @@ function analyzeReadingQuestion(value) {
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    // A topic noun such as「公司體檢」is not automatically the grammatical actor of an item-list question.
+    // An item-list question is asked by the querent; a topic noun like「公司體檢」
+    // is the subject matter, not an actor. Retain an explicit person as subject.
+    if(enumeration&&subject&&!HUMANISH.test(subject))subject=null;
     if(ill.reportedSpeech&&ill.reportedSpeech.speakerRef)subject=ill.reportedSpeech.speakerRef;
     if(evalFrame&&subject&&!PERSONISH.test(subject)&&!/^(?:unknown_person)$/.test(subject))subject=null;
     if(subject&&/^(?:每|每月|每週|每周|每天|每日|月均|週均|周均)/.test(subject))subject=null;
@@ -477,7 +521,7 @@ function analyzeReadingQuestion(value) {
       illocution:ill.type,observed:!!ill.observed,isQuestion:ill.type==='question',isExample:ill.type==='example',exampleRef:null,exampleText:ill.example||null,
       reportedSpeech:ill.reportedSpeech||null,propositionPronoun:propPron,propositionRef:null,causalHypothesis:!!ill.causalHypothesis,causalSituation:causalSituation,
       scope:scope(s),domains:domains,dimensions:unique(dims),
-      yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),
+      yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),truthGate:!!(enumeration&&enumeration.truthGate),enumerationRequest:enumeration,
       temporal:temporal,
       discourse:{continuation:CONTINUATION.some(function(w){return s.indexOf(w)===0;}),conditional:/^(?:如果|若|假如)|(?:如果|若|假如).*(?:就|才|再)/.test(s)},
       entities:entities,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],
@@ -506,6 +550,7 @@ function analyzeReadingQuestion(value) {
     }
     if(frame.isQuestion){
       if(frame.causalHypothesis)frame.role='causal_hypothesis';
+      else if(frame.enumerationRequest)frame.role='enumeration';
       else if(dims.indexOf('reason')>=0)frame.role='reason';
       else if(dims.indexOf('advice')>=0)frame.role='action_advice';
       else if(dims.indexOf('timing')>=0)frame.role='timing';
@@ -749,7 +794,7 @@ function analyzeReadingQuestion(value) {
 
   var ambiguities=[];
   frames.forEach(function(f){if(f.subjectSource==='surface_pronoun_ambiguous_context')ambiguities.push({clause:f.index,type:f.subjectSource,candidates:(f.coreferenceCandidates||[]).slice(),text:f.text});});
-  frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:'lexical_polysemy',surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,userConfirmed:false,text:f.text});});
+  frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:f.lexicalInterpretation.ambiguityStatus==='ambiguous_unresolved'?'contextual_lexical_ambiguity':(f.lexicalInterpretation.surface==='公司體檢'?'contextual_lexical_interpretation':'lexical_polysemy'),surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,ambiguityStatus:f.lexicalInterpretation.ambiguityStatus,userConfirmed:false,text:f.text});});
   var notes=[],criticalIssues=[];
   if(ambiguities.some(function(a){return a&&a.type==='entity_coreference';}))notes.push('有代名詞尚未唯一對應；語義圖保留候選，不把它硬綁成某個人物。');
   if(decision.kind==='multiple'&&!options.length)notes.push('比較題已辨識為多方案決策，但原文沒有提供可綁定的完整方案；保留缺失槽位，不自行造出選項。');
@@ -783,7 +828,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.1.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.2.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -795,7 +840,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.1.0',status:coverageStatus,
+    version:'4.2.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -804,7 +849,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.1.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };
