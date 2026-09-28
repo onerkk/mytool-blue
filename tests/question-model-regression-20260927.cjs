@@ -33,6 +33,52 @@ assert(intimateModel.requiredObservables.includes('invitation_or_arrangement'));
 assert(intimateModel.requiredObservables.includes('participant_structure'));
 assert(intimateModel.sourceRoles.requiredDistinctions.includes('event_occurrence'));
 
+// Leading calendar scopes, first-person subjects, recurrence wording and "encounter" verbs
+// must survive together. "肉體桃花" is an intimacy domain, but is not itself an explicit sex act.
+const physicalRomanceQuestion='今年我還會遇到肉體桃花嗎？';
+const physicalRomancePlan=workflow.plan({method:'tarot',question:physicalRomanceQuestion,referenceDate:'2026-09-28'});
+const physicalRomance=physicalRomancePlan.questionModel.events[0];
+assert.equal(physicalRomancePlan.questionModel.status,'validated_atomized');
+assert.equal(physicalRomancePlan.depth,'deep');
+assert.equal(physicalRomancePlan.questionModel.queryIntent.shape,'bounded_yes_no');
+assert.deepEqual(physicalRomancePlan.questionModel.queryIntent.domains,['relationship','intimacy']);
+assert.equal(physicalRomance.eventActor,'我');
+assert.equal(physicalRomance.grammaticalSubject,'我');
+assert.equal(physicalRomance.type,'intimate_opportunity_query');
+assert.deepEqual(physicalRomance.actionSequence,['遇到']);
+assert.equal(physicalRomance.actionObject,'肉體桃花');
+assert.match(physicalRomance.target,/遇到.*肉體桃花/);
+assert.equal(physicalRomance.recurrenceCue,'還');
+assert.equal(physicalRomance.priorOccurrenceVerified,false,'「還會」 must not be treated as proof of an earlier encounter');
+assert.equal(physicalRomance.explicitSexualAct,false,'meeting a physical-romance opportunity is not the same proposition as sex occurring');
+assert(physicalRomance.semanticDomains.includes('intimacy'));
+assert(physicalRomance.requiredObservables.includes('bounded_outcome'));
+assert(physicalRomance.requiredObservables.includes('event_action'));
+assert(physicalRomance.requiredObservables.includes('recurrence_context'));
+assert(physicalRomance.temporal.actorBoundFutureEvent);
+assert.equal(physicalRomancePlan.questionModel.queryIntent.explicitTime[0].resolved,'2026年');
+
+const numericYear=workflow.plan({method:'tarot',question:'2026年我還會遇到肉體桃花嗎？',referenceDate:'2026-09-28'}).questionModel;
+assert.equal(numericYear.status,'validated_atomized');
+assert.deepEqual(numericYear.events[0].timeScope,['2026年'],'explicit calendar year is a single bounded scope');
+assert.equal(numericYear.events[0].actionObject,'肉體桃花');
+const actualIntimacy=workflow.plan({method:'tarot',question:'今年我還會做愛嗎？',referenceDate:'2026-09-28'}).questionModel.events[0];
+assert.equal(actualIntimacy.type,'intimate_event_occurrence_query');
+assert.equal(actualIntimacy.explicitSexualAct,true,'an explicitly named act stays distinct from an opportunity to meet someone');
+assert.equal(workflow.plan({method:'tarot',question:'我該不該離職？'}).questionModel.events[0].type,'alternative_comparison','a decision question must not be routed as a future occurrence');
+assert.equal(workflow.plan({method:'tarot',question:'她有沒有同意？'}).questionModel.events[0].type,'qualitative_state_query','a consent-state question must stay distinct from a future physical action');
+
+for(const method of methods){
+  const prompt=workflow.render({method,question:physicalRomanceQuestion,referenceDate:'2026-09-28'});
+  assert(prompt.includes('"type":"intimate_opportunity_query"'),`${method} receives the typed event`);
+  assert(prompt.includes('"eventActor":"我"'),`${method} receives the correct actor`);
+  assert(prompt.includes('"semanticDomains":["relationship","intimacy"]'),`${method} receives both domains`);
+  assert(prompt.includes('"actionObject":"肉體桃花"'),`${method} receives the object of encounter`);
+}
+const indexHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
+for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20260928semantic1`),`${asset} cache token is updated`);
+assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v102"),'service worker cache version is refreshed');
+
 const choice=workflow.plan({method:'bazi',question:'我該選哪個商品上架？'}).questionModel.events[0];
 assert.equal(choice.type,'recommendation_with_unprovided_options');
 assert.deepEqual(choice.actionSequence,['選擇','上架']);
@@ -55,4 +101,4 @@ for(const output of allMethodOutputs){
   assert(output.includes('"value":30'));
 }
 
-console.log('question model regression: semantic roles, measurements, comparisons, intimate-action layers and all 14 methods passed.');
+console.log('question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 14 methods passed.');

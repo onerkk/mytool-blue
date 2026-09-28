@@ -33,7 +33,8 @@
 // v98: 20260923final1 純提示詞輸出、實際特殊格局、經典牌陣與手機操作。
 // v99: 20260924reading1 合盤事實與四化來源、問答導向及分題運限。
 // v100: 20260927depth1 共用深度判讀契約、複雜度篇幅與六爻多人親密題角色覆蓋資訊。
-const CACHE_NAME = 'jy-main-v101';
+// v102: 20260928semantic1 修正年度期限、第一人稱、遇到事件與肉體桃花領域的共用語義圖。
+const CACHE_NAME = 'jy-main-v102';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

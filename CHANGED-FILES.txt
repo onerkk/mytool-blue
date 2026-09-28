@@ -12,6 +12,7 @@ JS/relationship-core.js
 JS/selftest-core.js
 JS/shared/decision-parser.js
 JS/shared/question-planner.js
+JS/sw.js
 JS/tarot-foundation.js
 JS/tarot-semantic-engine.js
 JS/vedic-prompt.js
@@ -43,6 +44,9 @@ tests/causal-question-regression-20260927.cjs
 tests/core-engine-20260913.cjs
 tests/engine-output-consistency-20260913.cjs
 tests/lenormand-semantic-v23-discourse-20260926.cjs
+tests/lenormand-v19-engine-rootfix-20260925.cjs
 tests/prompt-accuracy-20260811.test.cjs
+tests/question-model-regression-20260927.cjs
+tests/reading-depth-20260912.cjs
 tests/tarot-native-structure-20260927.cjs
 tests/ziwei-root-spec-v1.test.js

@@ -31,7 +31,7 @@ function analyzeReadingQuestion(value) {
   // A small ontology is deliberately lexical only at the atomic level. Whole user sentences are never hard-coded.
   var ONTOLOGY={
     privateState:['暗戀','喜歡','愛','在乎','欣賞','心動','好感','討厭','害怕','擔心','懷疑','信任','想法','心裡','內心','真心','感受','態度','意圖','打算','願意','不願意','同意','不同意','有意思','需要','偏好','渴望','想要'],
-    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','做愛','愛愛','性交','性行為','上床','發生關係','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','選品','挑選','上架','刊登','試賣','定價','推廣','曝光','出貨','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','成交','簽約','離職','轉職','搬家','出發','回來'],
+    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','遇到','遇見','碰到','碰上','遇上','做愛','愛愛','性交','性行為','上床','發生關係','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','選品','挑選','上架','刊登','試賣','定價','推廣','曝光','出貨','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','成交','簽約','離職','轉職','搬家','出發','回來'],
     money:['錢','金額','獎金','收入','營業額','營收','業績','價格','薪資','薪水','款項','現金','中獎','抽獎','發票','彩券','樂透','威力彩','大樂透','刮刮樂','退款','回饋'],
     countUnits:['張','次','件','份','人','筆','單','顆','條','位','個','組','家','間','封','通','則'],
     timeUnits:['秒','分鐘','分','小時','時','天','日','週','星期','月','個月','年'],
@@ -49,7 +49,7 @@ function analyzeReadingQuestion(value) {
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
       commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','報價','售後','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'],
-      intimacy:['性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
+      intimacy:['肉體桃花','性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
     },
     continuity:['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年','一直維持'],
     evaluation:[
@@ -172,14 +172,17 @@ function analyzeReadingQuestion(value) {
   function extractSubject(s){
     var t=String(s||'').replace(/^\s+/,'');
     // Remove discourse/time anchors that can precede the grammatical subject.
-    var lead=[].concat(CONTINUATION,FUTURE,['今天','今日','明天','後天','最近','目前','現在','這次','本次','在公司','公司裡','公司內']);
+    var lead=[].concat(CONTINUATION,FUTURE,['今年','明年','後年','今天','今日','明天','後天','最近','目前','現在','這次','本次','在公司','公司裡','公司內']);
     lead.sort(function(a,b){return b.length-a.length;});
     var changed=true;
     while(changed){changed=false;for(var i=0;i<lead.length;i++){if(t.indexOf(lead[i])===0){t=t.slice(lead[i].length).replace(/^\s+/,'');changed=true;break;}}}
+    // A numeric calendar year can occupy the same initial scope position as「今年」.
+    // Remove it only at the beginning; years inside names and nominal phrases remain untouched.
+    t=t.replace(/^(?:20\d{2}年(?:\d{1,2}月(?:\d{1,2}日)?)?)\s*/,'');
     t=t.replace(/^(?:請問|想問|我想問|幫我看|看看)/,'').replace(/^(?:是否|會不會|有沒有|能不能|可不可以|是不是)/,'');
     // Sentence-initial modal/aspect material is not an actor.  Strip it only when what follows
     // is recognisably predicate/modifier material, so lexical nouns such as「會計」stay intact.
-    var subjectOps=['會','能','可以','可能','想','想要','要','願意','打算'];
+    var subjectOps=['還有機會','還可以','還會','還能','會','能','可以','可能','想','想要','要','願意','打算'];
     var predicateStarts=[].concat(ACTION_MODIFIERS,ONTOLOGY.privateState,ONTOLOGY.overtAction);
     var opChanged=true;
     while(opChanged){
@@ -462,7 +465,7 @@ function analyzeReadingQuestion(value) {
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
       privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
-      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|再|又/)||[])[0]||null,
+      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
       actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,

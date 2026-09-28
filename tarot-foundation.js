@@ -470,6 +470,9 @@
     var rel=q.match(/(?:(?:未來|接下來)\s*[0-9零〇一二兩三四五六七八九十百]+\s*(?:天|週|個月|月|年)(?:內|後|前)?|本週|這週|下週|今天|明天|後天|近期|短期|長期|未來|過去|目前|現在|年底前|年內|月底前|[0-9零〇一二兩三四五六七八九十百]+\s*(?:天|週|個月|月|年)(?:內|後|前)?)/g)||[];
     rel.forEach(function(surface){
       var compact=text(surface).replace(/\s/g,'');
+      // A written calendar year was already bound above as calendar_year.
+      // Do not also add the same surface as an unbounded relative duration.
+      if(/^20\d{2}年$/.test(compact))return;
       var bounded=/(?:前|內|月底|年底|年內)/.test(compact)||/^(?:未來|接下來)[0-9零〇一二兩三四五六七八九十百]+(?:天|週|個月|月|年)$/.test(compact);
       add(surface,'relative_scope',{label:surface,anchor:d.iso},bounded);
     });
@@ -752,7 +755,7 @@ function analyzeReadingQuestion(value) {
   // A small ontology is deliberately lexical only at the atomic level. Whole user sentences are never hard-coded.
   var ONTOLOGY={
     privateState:['暗戀','喜歡','愛','在乎','欣賞','心動','好感','討厭','害怕','擔心','懷疑','信任','想法','心裡','內心','真心','感受','態度','意圖','打算','願意','不願意','同意','不同意','有意思','需要','偏好','渴望','想要'],
-    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','做愛','愛愛','性交','性行為','上床','發生關係','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','選品','挑選','上架','刊登','試賣','定價','推廣','曝光','出貨','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','成交','簽約','離職','轉職','搬家','出發','回來'],
+    overtAction:['告白','表白','追求','聯絡','回覆','邀約','邀請','約會','遇到','遇見','碰到','碰上','遇上','做愛','愛愛','性交','性行為','上床','發生關係','交往','分手','復合','結婚','承諾','同意','接受','拒絕','嘗試','參與','參加','取消','調整','改變','開始','繼續','買','賣','租','換','使用','採用','選擇','選品','挑選','上架','刊登','試賣','定價','推廣','曝光','出貨','靠近','示好','說出口','坦白','確認關係','錄取','升遷','付款','入帳','到貨','成交','簽約','離職','轉職','搬家','出發','回來'],
     money:['錢','金額','獎金','收入','營業額','營收','業績','價格','薪資','薪水','款項','現金','中獎','抽獎','發票','彩券','樂透','威力彩','大樂透','刮刮樂','退款','回饋'],
     countUnits:['張','次','件','份','人','筆','單','顆','條','位','個','組','家','間','封','通','則'],
     timeUnits:['秒','分鐘','分','小時','時','天','日','週','星期','月','個月','年'],
@@ -770,7 +773,7 @@ function analyzeReadingQuestion(value) {
       study:['學業','考試','學習','學校','成績','升學'],
       travel:['旅行','旅遊','出國','搬家','移居','出發','行程'],
       commerce:['廠商','供應商','供貨','進貨','採購','批發','合作','配合','交期','品質','品管','報價','售後','貨源','庫存','出貨','訂單','客戶','交易','蝦皮','賣場','商品','產品','上架','電商','購物','銷量','轉換率','曝光','流量','客單價'],
-      intimacy:['性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
+      intimacy:['肉體桃花','性愛','愛愛','做愛','性交','性行為','上床','親密','性幻想','角色扮演','3p','3P','三人行','兩女一男','兩男一女']
     },
     continuity:['長期','長久','長遠','持續','繼續','往後','後續','長時間','長年','一直維持'],
     evaluation:[
@@ -893,14 +896,17 @@ function analyzeReadingQuestion(value) {
   function extractSubject(s){
     var t=String(s||'').replace(/^\s+/,'');
     // Remove discourse/time anchors that can precede the grammatical subject.
-    var lead=[].concat(CONTINUATION,FUTURE,['今天','今日','明天','後天','最近','目前','現在','這次','本次','在公司','公司裡','公司內']);
+    var lead=[].concat(CONTINUATION,FUTURE,['今年','明年','後年','今天','今日','明天','後天','最近','目前','現在','這次','本次','在公司','公司裡','公司內']);
     lead.sort(function(a,b){return b.length-a.length;});
     var changed=true;
     while(changed){changed=false;for(var i=0;i<lead.length;i++){if(t.indexOf(lead[i])===0){t=t.slice(lead[i].length).replace(/^\s+/,'');changed=true;break;}}}
+    // A numeric calendar year can occupy the same initial scope position as「今年」.
+    // Remove it only at the beginning; years inside names and nominal phrases remain untouched.
+    t=t.replace(/^(?:20\d{2}年(?:\d{1,2}月(?:\d{1,2}日)?)?)\s*/,'');
     t=t.replace(/^(?:請問|想問|我想問|幫我看|看看)/,'').replace(/^(?:是否|會不會|有沒有|能不能|可不可以|是不是)/,'');
     // Sentence-initial modal/aspect material is not an actor.  Strip it only when what follows
     // is recognisably predicate/modifier material, so lexical nouns such as「會計」stay intact.
-    var subjectOps=['會','能','可以','可能','想','想要','要','願意','打算'];
+    var subjectOps=['還有機會','還可以','還會','還能','會','能','可以','可能','想','想要','要','願意','打算'];
     var predicateStarts=[].concat(ACTION_MODIFIERS,ONTOLOGY.privateState,ONTOLOGY.overtAction);
     var opChanged=true;
     while(opChanged){
@@ -1183,7 +1189,7 @@ function analyzeReadingQuestion(value) {
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
       privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
-      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|再|又/)||[])[0]||null,
+      explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
       actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
@@ -1716,6 +1722,23 @@ function recommendReadingSystem(question) {
       }else if(lang.willingness&&lang.overtAction){
         var actSurface=(lang.actionSequence||[]).join(' → ')||'原句明示的行動',actId='REQUESTED_ACTION_'+pad(index+1,2);entities.push({id:actId,type:'query_explicit_action',surface:actSurface,source:clause});eventType=lang.explicitSexualAct?'willingness_for_intimate_action':'willingness_for_action';predicate='assess_willingness_and_event_path';roles.target=actId;roles.eventActor=lang.subjectRef||'未明示行動者';roles.willingness=true;roles.explicitSexualAct=!!lang.explicitSexualAct;roles.requestedAction=(lang.actionSequence||[]).slice();roles.requiredDistinctions=['willingness','invitation_or_arrangement','event_occurrence'];roles.queryOperator='willingness_and_event';
         atom('event_actor',roles.eventActor,'eventActor',lang.subjectRef||clause,eventId);atom('willingness_question','是否願意','willingness','願意',eventId);atom('requested_action',actSurface,'target',clause,eventId);(lang.participants||[]).forEach(function(p){atom('participant',p.surface,p.role,p.source,eventId);});atom('query_operator',queryOperatorLabel('willingness_and_event'),'queryOperator',clause,eventId);
+      }else if(lang.overtAction&&lang.isQuestion&&lang.yesNo&&!lang.evaluation&&!lang.openChoiceSet&&!lang.privateState&&!meta.intent.choice&&!meta.intent.advice&&!meta.intent.causal&&!meta.intent.timing){
+        // A bounded yes/no question about an explicit verb is an event question, not a vague state.
+        // Keep the verb and its object separately so「遇到肉體桃花」isn't flattened into an untyped phrase.
+        var eventVerb=(lang.actionSequence||[]).join(' → ')||'原句明示的行動';
+        var eventSurface=eventVerb+(lang.objectRef?'「'+lang.objectRef+'」':'');
+        var occurrenceId='REQUESTED_EVENT_'+pad(index+1,2);
+        entities.push({id:occurrenceId,type:'query_explicit_event',surface:eventSurface,source:clause,actionSequence:(lang.actionSequence||[]).slice(),objectSurface:lang.objectRef||''});
+        eventType=lang.domains&&lang.domains.indexOf('intimacy')>=0&&!lang.explicitSexualAct?'intimate_opportunity_query':(lang.explicitSexualAct?'intimate_event_occurrence_query':'event_occurrence_query');
+        predicate='assess_explicit_event_occurrence';
+        roles.target=occurrenceId;roles.eventActor=lang.subjectRef||'問卜者本人';roles.requestedAction=(lang.actionSequence||[]).slice();roles.actionObject=lang.objectRef||'';roles.explicitSexualAct=!!lang.explicitSexualAct;roles.recurrenceCue=lang.recurrenceCue||null;roles.priorOccurrenceVerified=!!(lang.recurrenceCue&&lang.confirmedOccurrence&&!lang.isQuestion);roles.queryOperator='truth_or_realization';
+        roles.requiredDistinctions=['event_action','event_occurrence'].concat(lang.actionSequence&&lang.actionSequence.indexOf('約')>=0?['invitation_or_arrangement']:[]).concat(lang.recurrenceCue?['recurrence_context']:[]);roles.conditionalEntity=rootEntityId||'';
+        atom('event_actor',roles.eventActor,'eventActor',lang.subjectRef||clause,eventId);
+        atom('requested_action',eventVerb,'requestedAction',clause,eventId);
+        if(lang.objectRef)atom('action_object',lang.objectRef,'actionObject',lang.objectRef,eventId);
+        if(roles.recurrenceCue)atom('recurrence_cue',roles.recurrenceCue,'recurrenceCue',roles.recurrenceCue,eventId);
+        (lang.participants||[]).forEach(function(p){atom('participant',p.surface,p.role,p.source,eventId);});
+        atom('query_operator',queryOperatorLabel('truth_or_realization'),'queryOperator',clause,eventId);
       }else if(lang.causalSituation&&meta.intent.causal){
         var incident=lang.causalSituation,incidentTarget=incident.questionTarget||incident.outcomeSurface||incident.mechanismSurface||'原句已報告的事件',incidentId='REPORTED_INCIDENT_'+pad(index+1,2);
         entities.push({id:incidentId,type:'query_reported_incident',surface:incidentTarget,source:clause,sourceStatus:'user_reported'});
@@ -1746,7 +1769,11 @@ function recommendReadingSystem(question) {
         predicate=lang.willingness?'identify_action_willingness_onset_timing':'identify_explicit_action_timing';
         roles.eventActor=lang.subjectRef||'未明示行動者';roles.willingness=!!lang.willingness;roles.requestedAction=(lang.actionSequence||[]).slice();roles.explicitSexualAct=!!lang.explicitSexualAct;roles.timingTarget=timedFocus;roles.recurrenceCue=lang.recurrenceCue||null;roles.priorOccurrenceVerified=!!(lang.recurrenceCue&&lang.confirmedOccurrence&&!lang.isQuestion);roles.requiredDistinctions=['event_timing','event_occurrence'].concat(lang.actionSequence&&lang.actionSequence.indexOf('約')>=0?['invitation_or_arrangement']:[]).concat(lang.willingness?['willingness']:[]);
         clauseReq=uniq(clauseReq.concat(['temporal_sequence','trajectory','event_action','realization']).concat(lang.actionSequence&&lang.actionSequence.indexOf('約')>=0?['invitation_or_arrangement']:[]).concat(lang.willingness?['willingness']:[]).concat((lang.participants||[]).length>1?['participant_structure']:[]));
-      }else if(lang.willingness&&lang.overtAction){eventType=lang.explicitSexualAct?'willingness_for_intimate_action':'willingness_for_action';predicate='assess_willingness_and_event_path';roles.willingness=true;roles.requestedAction=(lang.actionSequence||[]).slice();roles.explicitSexualAct=!!lang.explicitSexualAct;roles.requiredDistinctions=['willingness','invitation_or_arrangement','event_occurrence'];clauseReq=uniq(clauseReq.concat(['willingness','invitation_or_arrangement','event_action','realization']).concat((lang.participants||[]).length>1?['participant_structure']:[]));}
+      }else if(lang.willingness&&lang.overtAction){eventType=lang.explicitSexualAct?'willingness_for_intimate_action':'willingness_for_action';predicate='assess_willingness_and_event_path';roles.willingness=true;roles.requestedAction=(lang.actionSequence||[]).slice();roles.explicitSexualAct=!!lang.explicitSexualAct;roles.requiredDistinctions=['willingness','invitation_or_arrangement','event_occurrence'];clauseReq=uniq(clauseReq.concat(['willingness','invitation_or_arrangement','event_action','realization']).concat((lang.participants||[]).length>1?['participant_structure']:[]));
+      }else if(lang.overtAction&&lang.isQuestion&&lang.yesNo&&!lang.evaluation&&!lang.openChoiceSet&&!lang.privateState&&!meta.intent.choice&&!meta.intent.advice&&!meta.intent.causal&&!meta.intent.timing){
+        roles.eventActor=lang.subjectRef||'問卜者本人';roles.requestedAction=(lang.actionSequence||[]).slice();roles.actionObject=lang.objectRef||'';roles.explicitSexualAct=!!lang.explicitSexualAct;roles.recurrenceCue=lang.recurrenceCue||null;roles.priorOccurrenceVerified=!!(lang.recurrenceCue&&lang.confirmedOccurrence&&!lang.isQuestion);roles.requiredDistinctions=['event_action','event_occurrence'].concat(lang.actionSequence&&lang.actionSequence.indexOf('約')>=0?['invitation_or_arrangement']:[]).concat(lang.recurrenceCue?['recurrence_context']:[]);roles.conditionalEntity=rootEntityId||'';
+        clauseReq=uniq(clauseReq.concat(['event_action','realization']).concat(lang.actionSequence&&lang.actionSequence.indexOf('約')>=0?['invitation_or_arrangement']:[]).concat(lang.recurrenceCue?['recurrence_context']:[]).concat((lang.participants||[]).length>1?['participant_structure']:[]));
+      }
       if(lang.evaluation&&lang.evaluation.kind==='partner_fit'){eventType='partner_fit_evaluation';predicate='evaluate_relationship_fit';roles.evaluator=lang.evaluation.evaluatorRef||'問卜者本人';roles.evaluatedTarget=lang.evaluation.targetRef||'';roles.criterion=lang.evaluation.criterion||'伴侶適配';clauseReq=uniq(clauseReq.concat(['evaluation_outcome','relationship_context']));}
       if(lang.openChoiceSet){eventType='recommendation_with_unprovided_options';predicate='identify_candidate_options_and_selection_criteria';roles.recommendationTarget=lang.openChoiceSet.object||'';roles.optionSetState='unspecified';roles.selectionAction=(lang.actionSequence||[]).slice();clauseReq=uniq(clauseReq.concat(['option_set','decision_criteria','action_guidance']));}
       events.push({id:eventId,type:eventType,surface:clause,analysisSurface:analysisClause,predicate:predicate,roles:roles,languageFrame:clone(lang),causalSituation:clone(lang.causalSituation||null),modality:modality,timeScope:meta.scopes.map(function(s){return s.surface;}),resolvedTimeScopes:clone(meta.scopes),relationIds:rel?[rel.id]:[],shape:lang.openChoiceSet?'open_choice':lang.evaluation&&lang.evaluation.kind==='partner_fit'?'relationship_evaluation':buildShape(meta.intent,rel,meta.scopes,meta.domains),requiredObservables:clauseReq,dependsOn:index>0&&meta.attribute?['QUERY_EVENT']:[]});
@@ -1780,8 +1807,15 @@ function recommendReadingSystem(question) {
     var eventIds=setOf(events.map(function(e){return e.id;}));
     var hasActor=atoms.some(function(a){return a.role==='actor';}),noWhole=atoms.every(function(a){return normalize(a.text)!==q&&a.text.indexOf('?')<0&&a.text.indexOf('？')<0;}),allSensitive=deletion.every(function(x){return x.changesTruthConditions;});
     var everyEventTyped=events.length===clauses.length&&events.every(function(event){return !!event.predicate&&!!event.roles.queryOperator&&(!!event.roles.target||!!event.roles.subject||!!event.roles.leftOperand);});
+    // Don't mark a question fully atomized just because it can be serialized as a generic state.
+    // An overt yes/no action needs an actor, verb, and (when present) its object in the event graph.
+    var everyExplicitOutcomeTyped=clauseMeta.every(function(meta,i){
+      var lang=meta.languageFrame||{},event=events[i],roles=event&&event.roles||{};
+      if(!lang.isQuestion||!lang.yesNo||!lang.overtAction||lang.willingness||lang.privateState||lang.evaluation||lang.openChoiceSet||meta.intent.choice||meta.intent.advice||meta.intent.causal||meta.intent.timing)return true;
+      return /event_occurrence|opportunity_query/.test(event.type)&&!!roles.eventActor&&!!roles.target&&!!(roles.requestedAction||[]).length&&(!lang.objectRef||roles.actionObject===lang.objectRef);
+    });
     var noAdded=assumptions.every(function(a){return a.status==='explicitly_marked';});
-    var valid=hasActor&&noWhole&&allSensitive&&everyEventTyped&&noAdded;
+    var valid=hasActor&&noWhole&&allSensitive&&everyEventTyped&&everyExplicitOutcomeTyped&&noAdded;
     var graph={schema:'typed_query_graph/7',events:events,entities:entities,relations:relations.concat(graphRelations),constraints:constraints,assumptions:assumptions,requiredAtoms:atoms,requiredObservables:reqObs,unsupportedDimensions:unsupported,roundTripReconstruction:reconstructed,canonicalSemanticSignature:canonical,compilerStatus:valid?'validated_atomized':'invalid_atomization',validation:{roundTripCompatible:everyEventTyped&&!!reconstructed,deletionSensitivity:deletion,everyDeletionChangesTruthConditions:allSensitive,noAddedPremise:noAdded,uniqueAtomIds:new Set(atoms.map(function(a){return a.id;})).size===atoms.length,noWholeQuestionAtom:noWhole,allAtomsBound:atoms.every(function(a){return !!eventIds[a.eventId]&&!!a.role;}),subquestionCountPreserved:events.length===clauses.length},atomizationRequirement:'每個子問句先成獨立 event；主體／事件主體／人物共指／屬性／尺度／比較子／門檻／模態／期限／否定與排除須各自成為 essential atom。精確數字是查詢需求，不是牌面推算值。'};
     graph.subquestions=clauses.map(function(c,i){return {id:c.id,surface:c.surface,eventId:events[i]&&events[i].id,order:i+1};});
     graph.completionRules=['每個會改變答案真值的自然語言成分都必須成為 essential atom，且綁定其 eventId 與 role／scope。','多子題不得合併成單一 target；指示詞人物只能建立條件性 UNBOUND_ENTITY，並以明示 coreference 關係承接。','原句未明示的前提只能列為 assumption；附屬人物屬性問題必須受主要事件與實體共指是否成立所限制。'];
