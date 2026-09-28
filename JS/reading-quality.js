@@ -1,11 +1,7 @@
 /* Reading contract v8.2: answer-first output backed by complete, method-native evidence review. Never changes a cast. */
 (function(root){
   'use strict';
-  var RECOMMENDATION_TEXT=[
-    '【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。',
-    '材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。',
-    '手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。'
-  ].join('\n');
+  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。';
   var RECOMMENDATION_METHODS={
     bazi:'八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。',
     compat:'合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。',
@@ -34,14 +30,15 @@
   var PLAIN_TEXT=[
   "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。",
   "【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。",
-  "【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。",
+  "【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。",
   "【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。",
   "【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。",
-  "【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。",
-  "把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。本命／背景、當期觸發與條件走向分層；替代讀法只在會實質改變答案時提出。象徵不證明病情、他人心念或事件；限制集中一次。醫療、法律、財務行動另依現實資料與專業依據，不冒稱由盤面證明。",
-  "答案要落到現實：方法題說先做什麼及怎麼開口，結構題說最關鍵的一個循環，決策題用相同標準比較，時間題只用已提供資料的精度。以可執行做法或觀察指標收束，數量依本題需要，具體指出什麼行為／條件會支持、削弱或改變判斷；舊版「1～3項可執行做法或觀察指標」只可作簡答例子，不是上限，複雜題要把必要行動與檢查點寫足。"
+  "【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。",
+  "把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。",
+  "答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。",
+  "命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。"
 ].join('\n');
-  var FINAL_VOICE='【最後成稿提醒】第一句直接回答問題；後續段落各增加一個新的判斷、證據關係或現實做法，避免反覆重講結論。交代最重要的反證與它限制哪一層；勿按資料章節逐項解說、抄寫規則或把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。';
+  var FINAL_VOICE='【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。';
   // Native methods are analysis references, not a mandatory response outline.
   var METHODS={
   "tarot": [
@@ -218,9 +215,9 @@
     if(!q.trim()||/未來|何時|什麼時候|幾年|時機|長期走向|近年|全盤|整體运勢|整體運勢/.test(q))return {mode:'range',start:y,end:y+3};
     return {mode:'current',start:y,end:y};
   }
-  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.6.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n一般情況最後兩行：\n'+SHOP_FOOTER};}
-  function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n請在完整分析及行動建議之後，自然承接一項有盤面依據的手鍊推薦與邀請；有效解讀最後兩行依序為：\n'+SHOP_FOOTER;}
+  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.7.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
+  function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n'+SHOP_FOOTER;}
   function lines(kind){return [PLAIN_TEXT,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'4.6.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  root.JY_READING_QUALITY=Object.freeze({version:'4.7.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

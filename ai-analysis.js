@@ -60,6 +60,7 @@
         return {id:e.id,source:e.surface,type:e.type,predicate:e.predicate,clauseRole:f.role||'',requester:entities[r.actor]||r.actor||'問卜者本人',eventActor:r.eventActor||null,grammaticalSubject:f.subjectRef||null,target:entities[r.target]||entities[r.subject]||f.targetRef||null,actionObject:r.actionObject||null,conditionalEntity:r.conditionalEntity||null,
           actionSequence:(r.actionSequence||f.actionSequence||[]).slice(),willingness:r.willingness===true||f.willingness===true,explicitSexualAct:r.explicitSexualAct===true||f.explicitSexualAct===true,
           timingTarget:r.timingTarget||null,recurrenceCue:r.recurrenceCue||f.recurrenceCue||null,priorOccurrenceVerified:r.priorOccurrenceVerified===true,
+          recurrenceContext:f.recurrenceContext||null,lexicalInterpretation:f.lexicalInterpretation||null,
           participants:(r.participants||f.participants||[]).map(function(p){return {surface:p.surface,role:p.role,source:p.source};}),
           metric:r.metric||relation&&relation.metric||'',metricKind:relation&&relation.metricKind||f.measurementGoal&&f.measurementGoal.metricKind||'',metricCadence:r.metricCadence||relation&&relation.metricPeriod||'',threshold:r.threshold?{surface:relation&&relation.thresholdSurface||'',value:relation&&relation.thresholdValue,operator:r.comparator||''}:null,
           comparison:r.leftOperand||r.rightOperand?{left:entities[r.leftOperand]||r.leftOperand,right:entities[r.rightOperand]||r.rightOperand,operator:r.comparator||'',criterion:r.attribute||''}:null,
@@ -100,8 +101,8 @@
   function render(options){
     var p=plan(options),lines=['【本題作答任務｜資料讀完後依此成稿】','原問句（原文資料）：'+JSON.stringify(p.question)];
     p.tasks.forEach(function(t){var g=GOALS[t.goal];lines.push((p.tasks.length>1?'子題'+t.id+' '+JSON.stringify(t.question)+'：':'')+g.opening+' '+g.body);});
-    if(p.depth==='deep')lines.push('【分析深度：深入】本題有多個必須區分的事件層次或條件。先把原問句完整落到本方法的有效證據上，再說清主判如何成立、正向力量怎麼傳到結果、最強牽制卡在哪一層、什麼可核條件會改變答案；不要以泛泛結論代替因果分析，也不要把同源證據重複計重。');
-    else if(p.depth==='comprehensive')lines.push('【分析深度：全盤整合】先回答原問句，再完整整合本方法中與題目相關的領域和結構；分清主線、交互牽動與反證，交代條件如何傳到結果及現實可觀察的檢查點。');
+    if(p.depth==='deep')lines.push('【本題判讀範圍】此題含多層行動／條件；按本方法追完相關證據路徑後，只寫會改變答案的支持、牽制和現實檢查點，不以同源訊號重複加權。');
+    else if(p.depth==='comprehensive')lines.push('【本題判讀範圍】依本題實際涉及的領域整合主線、交互條件與反證；不要求逐項報告無關位置。');
     lines.push('有效方法：'+p.methods.map(function(k){return METHODS[k].name;}).join('、')+'。'+p.methods.map(function(k){return METHODS[k].path;}).join(' '));
     lines.push('【語義模型｜由原問句解析，供核對而非取代原句】');
     lines.push(JSON.stringify(p.questionModel));
@@ -115,11 +116,16 @@
       if(incident.userFramingSurface)lines.push('使用者提出的事件解讀：'+incident.userFramingSurface);
       lines.push('請先直接回答已知事件的直接原因，再用本法實際盤面分析使用者追問的象徵意義、助力或可採取行動。區分已陳述的物理機制、牌／卦的傳統象徵解釋與尚未證實的超自然因果；前後發生不自動等於前者造成後者。不得把原題改寫成泛泛的運勢問題。');
     }
-    lines.push('以本題語義模型逐一對應原問句的人物、事件、行動順序、意願／結果區分、數值門檻、比較標準、時間範圍、條件與否定；確認每項都保留原意，再把實際盤面證據連到相應欄位。由本方法本次有效結構檢查支持路徑、主要牽制、反證改變哪一層、何種條件會改判，最後給出與主阻點直接相關且可觀察的做法。模型解析不完整或和原句不一致時，回看原句並把解析缺口說清，不把缺口當成事件已發生。');
+    lines.push('語義模型是原句的核對輔助，不取代原句或盤面；若模型列出未核實預設或詞義候選，保留其狀態並按下方說明處理。');
+    (p.questionModel.events||[]).filter(function(e){return !!e.lexicalInterpretation;}).forEach(function(e){
+      var meaning=e.lexicalInterpretation;
+      lines.push('【原句多義詞】「'+meaning.surface+'」有多種候選：'+meaning.candidates.map(function(c){return c.label+'（'+c.scope+'）';}).join('；')+'。本次先採較少延伸原意的「'+meaning.selectedLabel+'」：正文要明說此處採用的意思，且不得把它延伸成更強的事件；若改採其他意思，請指出答案會改變哪一層。');
+    });
+    (p.questionModel.events||[]).filter(function(e){return !!e.recurrenceContext;}).forEach(function(e){lines.push('【重現／延續措辭】原句「'+(e.recurrenceCue||e.recurrenceContext.surfaceCue)+'」可暗示同類經驗或機會曾存在，但目前未核實（priorOccurrenceVerified=false）。不可稱為已發生；若會改變答案，只能寫成提問者用語或明確標示的待確認前提。');});
     var timedAction=(p.questionModel.events||[]).find(function(e){return e.queryOperator==='relative_timing'&&(e.actionSequence||[]).length>0;});
     if(timedAction){
       var timingFocusLabel={willingness_onset:'意願何時形成',action_onset:'指定行動何時開始',invitation_onset:'邀約何時發出',event_occurrence:'明示事件何時發生'}[timedAction.timingTarget]||'明示行動的時間';
-      lines.push('【明確行動的時間題】這題問的是「'+timingFocusLabel+'」：先直接給本方法實際支持的相對階段或時間範圍，再沿盤面說明從準備／意願到邀約安排、實際行動的承接與卡點。只在盤面提供日曆依據時才給日期；否則清楚說可判到哪個階段。'+(timedAction.recurrenceCue?'原句含「'+timedAction.recurrenceCue+'」，只保留為提問者用語，不當成前次事件已核實發生。':''));
+      lines.push('【明確行動的時間題】這題問的是「'+timingFocusLabel+'」：先直接給本方法實際支持的相對階段或時間範圍，再沿盤面說明從準備／意願到邀約安排、實際行動的承接與卡點。只在盤面提供日曆依據時才給日期；否則清楚說可判到哪個階段。');
       if(timedAction.explicitSexualAct)lines.push('【親密行動層次】分開對方意願、邀約／安排與實際性行為發生時間；對方位象徵不能替代當事人的明確、無壓力且可撤回的同意。依本次盤面回答已能支持的層次，沒有證據的層次直接指出缺口。');
     }
     if(p.methods.length>1)lines.push('各法先獨立形成切題判斷，再說明一致或矛盾的原因；同源資料不作多數投票。');
@@ -129,9 +135,6 @@
     }
     if(p.domains.includes('finance'))lines.push(incident?'本題提到財物損失，但語境不是賣場經營數據；按已報告的事故作答，不自行轉成收入、營業額或投資判斷。金額是使用者報告值，不是命理推算。':'財務部分先給本題經營／取捨方向，現實成敗再核對收入、成本、現金流和風險；沒有資料的數字不由象徵換算。');
     if(p.domains.includes('legal'))lines.push('法律部分分開盤面象義與實際程序；處理方式須核對文件、所在地規則及專業意見，不能由命理保證裁判結果。');
-    lines.push('成稿順序：先給能用的答案；再用必要依據說清為什麼、最大的牽制會改變哪部分；最後交代一個具體做法及檢查點。以「你可以先…，因為本盤…」承接，避免把中心、鏡像、格局或飛化逐項講成教學。具體互動未提供時，以「若實際出現…」作核對，不能寫成已發生。');
-    lines.push('交稿前實際重讀成稿：首段是否已回答原題？每個主要結論是否有本次有效依據？反向訊號是否改變了判斷？同一依據是否反覆重講？行動能否執行且沒有承擔他人病情或意願？若不符，直接改寫正文後再交稿，不另輸出自評或檢核表。');
-    lines.push('手鍊只在解答完成後以2～3句自然承接：一位佩戴者、一個明確設計、一項行動提醒與自選邀請；礦物不作醫療解法。最後原樣保留賣場連結及祝福。');
     return lines.join('\n');
   }
   function finish(prompt,options){
@@ -198,7 +201,7 @@
 var JY_REC_API = {
   "composite": {
     "mode": "needs_first",
-    "version": "4.6.0",
+    "version": "4.7.0",
     "requiredForValidReading": true,
     "stage": "after_reading",
     "mayAlterReading": false,
@@ -210,11 +213,11 @@ var JY_REC_API = {
       "shop_link",
       "blessing"
     ],
-    "outputRule": "【最後成稿提醒】第一句直接回答問題；後續段落各增加一個新的判斷、證據關係或現實做法，避免反覆重講結論。交代最重要的反證與它限制哪一層；勿按資料章節逐項解說、抄寫規則或把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。\n【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。\n合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。\n人格：從本盤實際優勢或壓力模式連到一項可練習的能力，不按人格名稱或分數配石。\n純排盤：柱表尚未完成喜忌分析時，不自行推用神；依原題用途給有條件的設計建議。\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。\n西洋占星：依本題宮主、相位或已算行運取材；不按太陽星座或生日月份直接套寶石。\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n六爻：依用神、世應、月日與動變連到本題行動；卦宮五行不等於佩戴者本命喜忌。\n易經：依本次主讀卦爻的條件與進退連到行動；不按卦名、古文意象直接配商品。\n靈籤：依完整詩意的勸進、待時或調整方向取材；不由籤號猜月份、五行或信仰。\n姓名學：依本題的表達或身份需求給設計建議；姓名筆畫不能推導人體缺礦或未提供的生辰。\n一般情況最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
+    "outputRule": "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。\n合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。\n人格：從本盤實際優勢或壓力模式連到一項可練習的能力，不按人格名稱或分數配石。\n純排盤：柱表尚未完成喜忌分析時，不自行推用神；依原題用途給有條件的設計建議。\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。\n西洋占星：依本題宮主、相位或已算行運取材；不按太陽星座或生日月份直接套寶石。\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n六爻：依用神、世應、月日與動變連到本題行動；卦宮五行不等於佩戴者本命喜忌。\n易經：依本次主讀卦爻的條件與進退連到行動；不按卦名、古文意象直接配商品。\n靈籤：依完整詩意的勸進、待時或調整方向取材；不由籤號猜月份、五行或信仰。\n姓名學：依本題的表達或身份需求給設計建議；姓名筆畫不能推導人體缺礦或未提供的生辰。\n最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
   },
   "tarot": {
     "mode": "needs_first",
-    "version": "4.6.0",
+    "version": "4.7.0",
     "requiredForValidReading": true,
     "stage": "after_reading",
     "mayAlterReading": false,
@@ -226,11 +229,11 @@ var JY_REC_API = {
       "shop_link",
       "blessing"
     ],
-    "outputRule": "【最後成稿提醒】第一句直接回答問題；後續段落各增加一個新的判斷、證據關係或現實做法，避免反覆重講結論。交代最重要的反證與它限制哪一層；勿按資料章節逐項解說、抄寫規則或把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。\n【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n一般情況最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
+    "outputRule": "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
   },
   "ootk": {
     "mode": "needs_first",
-    "version": "4.6.0",
+    "version": "4.7.0",
     "requiredForValidReading": true,
     "stage": "after_reading",
     "mayAlterReading": false,
@@ -242,7 +245,7 @@ var JY_REC_API = {
       "shop_link",
       "blessing"
     ],
-    "outputRule": "【最後成稿提醒】第一句直接回答問題；後續段落各增加一個新的判斷、證據關係或現實做法，避免反覆重講結論。交代最重要的反證與它限制哪一層；勿按資料章節逐項解說、抄寫規則或把假設寫成當事人的經歷或心聲。手鍊僅在完整解答之後自然邀請，不反過來改變主判。\n【本題延伸手鍊建議】先完整回答問題，再用一小段自然對話推薦一款具體手鍊；理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動。選品規則不得影響前面的占卜判斷，不先選商品再反推需求。只選一個主項，必要時才補一個替代，不列商品清單、不重講判讀步驟。\n材質或色系要符合本法資料與已知偏好；證據不足以指定礦物時，坦白說是依本題方向挑的象徵性提醒，仍給一個可辨認的設計建議，不編造使用者偏好、喜忌或信仰，也不把五行／星盤象徵說成身體實際缺少某種礦物。命理取象不代表礦物有療效，也不能保證改變事件；不捏造商品庫存、價格、成分、產地或認證。\n手鍊建議放在分析與行動之後，用2～3句自然承接：給誰佩戴、單一可辨認的材質或設計、它提醒的具體行動，再邀請有興趣者到靜月之光挑選喜歡的款式。這是自選的配戴建議，不是付費解法。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒，不能勸借貸或暗示不買會錯失轉機。不可為導購加重凶象、製造恐懼，亦不宣稱購買就能復合、治病或改運。最後保留指定賣場連結及祝福。\n【本法選材提醒】\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n一般情況最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
+    "outputRule": "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
   }
 };
 // END GENERATED RECOMMENDATION JY_REC_API
@@ -11606,7 +11609,7 @@ function analyzeFullCrystal(bazi, ziwei, type, question){
     result.ziwei.sihua=ziwei.sihua||[];
   }
   result.designBrief='先從這次原局作用與問題形成個人的選材主判，再比較實際佩戴條件。五行取用、色彩象徵與材質物性各自說清。';
-  result.recommendationGuide=window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText(['bazi','ziwei']):JY_REC_API.composite.outputRule;
+  result.recommendationGuide=window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText(['bazi','ziwei']):JY_REC_API.composite.outputRule;
   result.nextStep='確認預算、手圍、常戴哪手、金屬接觸反應與現有飾品，再定材料與尺寸。';
   return result;
 }
@@ -18456,7 +18459,7 @@ renderTarot = function(){
 
       // Needs-first guidance; no catalogue is attached to the analysis request.
       if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
-      p.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
+      p.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
 
       // ═══ v26：可變性標記（reversibility）═══
       // 每個系統的發現分三類：定（先天不可改）、時（時運會變，等窗口）、動（行為可改）
@@ -18859,7 +18862,7 @@ renderTarot = function(){
           if (_vsValid.length > 0) {
             html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
             html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
-            html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+            html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(可自願記錄實際情況；不代表準確率)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
             html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
             _vsValid.forEach(function(v, idx) {
               var conf = v.confidence || 'medium';
@@ -18873,10 +18876,11 @@ renderTarot = function(){
               if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _safeHtml(sources) + '</span>';
               html += '</div>';
               html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _safeHtml(v.signal) + '</div>';
+              if (window.JYForecastReview) html += window.JYForecastReview.renderControls(v, window._jyActiveResultMode || 'reading', (typeof S!=='undefined'&&S.form&&S.form.question)||'');
               html += '</div>';
             });
             html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
-            html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+            html += '💡 這些是可追蹤的象徵性判斷，不代表客觀預測已驗證。若要回顧，請先記明確事件與自選期限，再按實際情況記錄；回饋只能形成累積檢視資料，不能保證準確度。';
             html += '</div>';
             html += '</div></details>';
           }
@@ -21062,7 +21066,7 @@ function _buildTarotOnlyPayload() {
     rws.tarotData.foundationVersion=foundation.VERSION||'';
 
     if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
-    rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
+    rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
   }
   gd.normalizeDraw(drawn);
@@ -21129,7 +21133,7 @@ function _buildTarotOnlyPayload() {
       semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||''
     },
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
-    shopRecommendation:(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
+    shopRecommendation:(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
   };
   if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
   if(window._jyPhotos)result.photos=window._jyPhotos;
@@ -21858,7 +21862,7 @@ function _renderTarotAIResult(container, r, admin) {
         if (_vsTValid.length > 0) {
           html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
           html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
-          html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+          html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(可自願記錄實際情況；不代表準確率)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
           html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
           _vsTValid.forEach(function(v) {
             var conf = v.confidence || 'medium';
@@ -21872,10 +21876,11 @@ function _renderTarotAIResult(container, r, admin) {
             if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _esc(sources) + '</span>';
             html += '</div>';
             html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _esc(v.signal) + '</div>';
+            if (window.JYForecastReview) html += window.JYForecastReview.renderControls(v, window._jyActiveResultMode || 'tarot', (typeof S!=='undefined'&&S.form&&S.form.question)||'');
             html += '</div>';
           });
           html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
-          html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+          html += '💡 這些是可追蹤的象徵性判斷，不代表客觀預測已驗證。若要回顧，請先記明確事件與自選期限，再按實際情況記錄；回饋只能形成累積檢視資料，不能保證準確度。';
           html += '</div>';
           html += '</div></details>';
         }
@@ -22586,7 +22591,7 @@ async function _triggerTarotFollowUp() {
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // Previous readings are context, not authority for product choices.
   if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
-  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
+  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
   // ★ v46：追問強制主模型（不讓追問吃 Opus 深度配額；Worker 端也會強制清掉）
@@ -23093,7 +23098,7 @@ function _buildOOTKPayload() {
   }
 
   if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
-  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.6.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
+  payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;
 }
@@ -23264,7 +23269,7 @@ function _renderOOTKResult(container, r, admin) {
       if (_vsOValid.length > 0) {
         html += '<details open style="margin-bottom:.6rem;border:1px solid rgba(96,165,250,.18);border-radius:12px;overflow:hidden;background:linear-gradient(180deg,rgba(96,165,250,.04),transparent)">';
         html += '<summary style="padding:.65rem .85rem;font-size:.82rem;color:#93c5fd;cursor:pointer;user-select:none;background:rgba(96,165,250,.06);font-weight:600;display:flex;align-items:center;gap:.4rem">';
-        html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(到時候回來打勾,看準不準)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
+        html += '🔮 驗證信號 <span style="font-size:.68rem;color:var(--c-text-muted);font-weight:400">(可自願記錄實際情況；不代表準確率)</span><span style="font-size:.68rem;color:var(--c-text-muted);margin-left:auto">點擊收合</span></summary>';
         html += '<div style="padding:.6rem .8rem;display:flex;flex-direction:column;gap:.55rem">';
         _vsOValid.forEach(function(v) {
           var conf = v.confidence || 'medium';
@@ -23278,10 +23283,11 @@ function _renderOOTKResult(container, r, admin) {
           if (sources) html += '<span style="font-size:.62rem;color:var(--c-text-muted);margin-left:auto">來源:' + _esc(sources) + '</span>';
           html += '</div>';
           html += '<div style="font-size:.85rem;color:var(--c-text);line-height:1.6">' + _esc(v.signal) + '</div>';
+          if (window.JYForecastReview) html += window.JYForecastReview.renderControls(v, window._jyActiveResultMode || 'ootk', (typeof S!=='undefined'&&S.form&&S.form.question)||'');
           html += '</div>';
         });
         html += '<div style="margin-top:.4rem;padding:.4rem .55rem;font-size:.68rem;color:var(--c-text-muted);background:rgba(255,255,255,.015);border-radius:6px;line-height:1.65">';
-        html += '💡 這些是「可以驗證」的具體預測。到了那個時間點,你可以回來看「準/不準」——這是命理跟漂亮廢話的差別。';
+        html += '💡 這些是可追蹤的象徵性判斷，不代表客觀預測已驗證。若要回顧，請先記明確事件與自選期限，再按實際情況記錄；回饋只能形成累積檢視資料，不能保證準確度。';
         html += '</div>';
         html += '</div></details>';
       }

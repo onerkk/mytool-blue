@@ -1,12 +1,14 @@
-CHANGED-FILES.txt
+CSS/forecast-review.css
 JS/ai-analysis.js
 JS/bazi-prompt-root.js
 JS/bazi-suite-core.js
+JS/forecast-review.js
 JS/gua-prompt.js
 JS/lenormand.js
 JS/meihua-standalone.js
 JS/oracle.js
 JS/prompt-export.js
+JS/reading-quality.js
 JS/reading-workflow.js
 JS/relationship-core.js
 JS/selftest-core.js
@@ -21,6 +23,7 @@ JS/ziwei-prompt-root.js
 JS/ziwei-standalone.js
 README-引擎根因修復.md
 ai-analysis.js
+bazi-prompt-root.js
 bazi-suite-core.js
 functions/api/ai.js
 index.html
@@ -29,6 +32,7 @@ meihua-standalone.js
 oracle.js
 package.json
 prompt-export.js
+reading-review.html
 review/accuracy-prompts/01-tarot.txt
 review/accuracy-prompts/02-ootk-five-operations.txt
 review/accuracy-prompts/03-lenormand.txt
@@ -48,5 +52,7 @@ tests/lenormand-v19-engine-rootfix-20260925.cjs
 tests/prompt-accuracy-20260811.test.cjs
 tests/question-model-regression-20260927.cjs
 tests/reading-depth-20260912.cjs
+tests/semantic-review-followup-20260928.cjs
 tests/tarot-native-structure-20260927.cjs
 tests/ziwei-root-spec-v1.test.js
+ziwei-prompt-root.js

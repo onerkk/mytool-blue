@@ -383,6 +383,7 @@
 <link rel="stylesheet" href="CSS/immersive-experience.css?v=20260912immersion1">
 <link rel="stylesheet" href="CSS/living-cards.css?v=20260912craft1">
 <link rel="stylesheet" href="CSS/ritual-story.css?v=20260923mobile-action1">
+<link rel="stylesheet" href="CSS/forecast-review.css?v=20260928review1">
 <link rel="stylesheet" href="CSS/oracle-result.css?v=20260912oracle1">
 <link rel="stylesheet" href="CSS/celestial-craft.css?v=20260912jewel2">
 <link rel="stylesheet" href="CSS/relationship.css?v=20260917pair1">
@@ -1282,14 +1283,14 @@
   <!-- ═══ 回饋區：評分 + 診斷包 ═══ -->
   <div id="feedback-section" class="card" style="margin:1.2rem 1rem;padding:1.2rem;border:2px solid rgba(212,175,55,0.45);border-radius:14px;background:linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(147,51,234,0.05) 100%);box-shadow:0 4px 20px rgba(212,175,55,0.12);display:none;position:relative;overflow:hidden">
     <!-- 左上角強調標籤 -->
-    <div style="position:absolute;top:-1px;left:-1px;background:linear-gradient(135deg, #c9a84c, #b8923c);color:#1a1a2e;font-size:0.72rem;font-weight:800;padding:0.25rem 0.7rem;border-radius:0 0 10px 0;letter-spacing:0.05em">⚡ 你的回饋會直接讓系統變更準</div>
+    <div style="position:absolute;top:-1px;left:-1px;background:linear-gradient(135deg, #c9a84c, #b8923c);color:#1a1a2e;font-size:0.72rem;font-weight:800;padding:0.25rem 0.7rem;border-radius:0 0 10px 0;letter-spacing:0.05em">品質回饋 · 自願提供</div>
 
     <!-- 主標 + 副說明 -->
     <div style="text-align:center;margin-top:1.6rem;margin-bottom:1rem">
       <div style="font-size:1.15rem;color:var(--c-gold,#c9a84c);font-weight:700;margin-bottom:0.4rem;letter-spacing:0.02em">這次解讀,準嗎?</div>
       <div style="font-size:0.78rem;color:var(--c-text-dim,#a09880);line-height:1.5;padding:0 0.5rem">
-        系統會根據你的回饋調整七維度權重,<br>
-        <strong style="color:#c9a84c">回訪時解讀會越來越貼合你</strong>
+        回饋供品質檢視與後續改版參考。<br>
+        <strong style="color:#c9a84c">單次滿意度不代表預測已驗證，也不保證會更準。</strong>
       </div>
     </div>
 
@@ -1332,14 +1333,14 @@
       </div>
       <textarea id="fb-comment" placeholder="其他想說的...(選填)" style="width:100%;margin-top:0.6rem;padding:0.5rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:var(--c-text,#e8e0d0);font-size:0.85rem;resize:vertical;min-height:45px;font-family:inherit"></textarea>
       <textarea id="fb-actual" placeholder="實際上是什麼狀況?(選填,越具體越能幫我們改進)&#10;例:時間已過但沒發生／對方早已有伴侶／方向剛好相反..." style="width:100%;margin-top:0.5rem;padding:0.5rem;background:rgba(212,175,55,0.04);border:1px solid rgba(212,175,55,0.2);border-radius:8px;color:var(--c-text,#e8e0d0);font-size:0.85rem;resize:vertical;min-height:55px;font-family:inherit"></textarea>
-      <button onclick="submitFeedbackDetail()" style="margin-top:0.6rem;width:100%;padding:0.7rem;background:linear-gradient(135deg,#c9a84c,#b8923c);color:#1a1a2e;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:0.02em;font-family:inherit">送出回饋,讓系統下次更準</button>
+      <button onclick="submitFeedbackDetail()" style="margin-top:0.6rem;width:100%;padding:0.7rem;background:linear-gradient(135deg,#c9a84c,#b8923c);color:#1a1a2e;border:none;border-radius:10px;font-weight:700;font-size:0.95rem;cursor:pointer;letter-spacing:0.02em;font-family:inherit">送出品質回饋</button>
     </div>
 
     <!-- 送出後的感謝 -->
     <div id="fb-thanks" style="display:none;text-align:center;padding:0.8rem">
       <div style="font-size:2rem;margin-bottom:0.3rem">✨</div>
       <p style="color:var(--c-gold,#c9a84c);font-size:1rem;font-weight:700;margin-bottom:0.3rem">收到了,謝謝你!</p>
-      <p style="color:var(--c-text-dim,#a09880);font-size:0.78rem;line-height:1.5">下次你回訪時,我會記得這次的對話脈絡,<br>解讀會更貼近你。</p>
+      <p style="color:var(--c-text-dim,#a09880);font-size:0.78rem;line-height:1.5">已收到這次回饋，供品質檢視參考。<br>事件是否符合，請以明確條件和期限回顧。</p>
     </div>
 
     <!-- 診斷包複製(隱藏,連點感謝文字3次才顯示) -->
@@ -1425,6 +1426,7 @@
 <script src="JS/recorded-audio.js?v=20260923final1" defer></script>
 <script src="JS/reading-workflow.js?v=20260928semantic1" defer></script>
 <script src="JS/reading-quality.js?v=20260927depth1" defer></script>
+<script src="JS/forecast-review.js?v=20260928review1" defer></script>
 <script src="JS/tarot-foundation.js?v=20260928semantic1" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20260925ootkroot1" defer></script>
 <script src="JS/cinematic-stage.js?v=20260913vedic1" defer></script>

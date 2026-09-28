@@ -10,6 +10,8 @@
     textarea,select{width:100%;border:1px solid #475267;border-radius:12px;padding:13px;background:#131922;color:#f0f1f3;font:inherit;font-size:16px;line-height:1.6}textarea{resize:vertical;min-height:100px}textarea:focus,select:focus{outline:2px solid #d6b878;outline-offset:2px}
     button{background:#d6b878;color:#191814;border:0;border-radius:12px;padding:13px 20px;font:inherit;font-weight:650;cursor:pointer;min-height:48px}button:disabled{opacity:.45;cursor:default}.actions{display:flex;gap:12px;flex-wrap:wrap;margin:20px 0}.secondary{background:#2c3544;color:#e8e9ee}.card{border:1px solid #3d495d;border-radius:16px;background:#1a202b;padding:20px;margin-top:24px}h2{font-size:19px;margin:0 0 12px}li{line-height:1.7;margin:12px 0}small{display:block;line-height:1.7;color:#b9c1cd}.status{min-height:28px;color:#d6b878}.hidden{display:none}details summary{cursor:pointer;margin:20px 0;color:#d6b878}#repair{min-height:240px}footer{margin-top:32px;font-size:14px;text-align:center}
   </style>
+  <link rel="stylesheet" href="CSS/forecast-review.css?v=20260928review1">
+  <script src="JS/forecast-review.js?v=20260928review1" defer></script>
   <script src="JS/reading-workflow.js?v=20260924root2" defer></script>
   <script src="JS/reading-review-ui.js?v=20260924root2" defer></script>
 </head>
@@ -23,5 +25,6 @@
   <div id="status" class="status" role="status" aria-live="polite"></div>
   <section id="result" class="card hidden" aria-labelledby="result-title"><h2 id="result-title"></h2><ul id="issues"></ul><p id="scope"></p><button id="repair-button" class="secondary" type="button">產生重新解讀的提示詞</button></section>
   <section id="repair-panel" class="card hidden"><h2>保留盤面，重新解讀</h2><textarea id="repair" readonly aria-label="重新解讀的完整提示詞"></textarea><div class="actions"><button id="copy" type="button">複製重新解讀提示詞</button></div><small>貼回你使用的 AI，依原盤重新回答。網站不會替你重新抽牌。</small></section>
+  <section id="forecast-review" class="card" aria-labelledby="forecast-review-title"><h2 id="forecast-review-title">預測回顧（只存在此瀏覽器）</h2><p>這裡保存你自願記下的象徵性判斷、自己選的回顧日期與實際結果。回顧日不是占卜算出的日期，不會自動通知；回填資料是個人自述，不能單獨證明準確率。</p><div class="actions"><button id="forecast-review-export" class="secondary" type="button">匯出本機紀錄</button><button id="forecast-review-clear" class="secondary" type="button">清除全部紀錄</button></div><div id="forecast-review-status" class="status" role="status" aria-live="polite"></div><div id="forecast-review-list"></div></section>
   <footer><a href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener">靜月之光蝦皮賣場</a><p>願你諸事順遂。</p></footer>
 </main></body></html>

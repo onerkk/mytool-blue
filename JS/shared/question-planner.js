@@ -66,6 +66,27 @@ function analyzeReadingQuestion(value) {
       {id:'partner_fit',terms:['是不是正緣','是否正緣','正緣','合不合適','適不適合交往','適不適合結婚']}
     ]
   };
+  // Preserve lexical polysemy as data instead of silently forcing a single reading.
+  // The default is the least-committing interpretation; downstream prose must
+  // name that scope and must not promote it to a stronger event without evidence.
+  var LEXICAL_SENSES=[
+    {term:'肉體桃花',defaultCandidate:'physical_attraction_opportunity',candidates:[
+      {id:'physical_attraction_opportunity',label:'帶有身體吸引／性張力的相遇或機會',scope:'只表示可能遇到有身體吸引力的人或場合，不等於實際發生性行為。'},
+      {id:'sexual_contact_occurrence',label:'實際發生性接觸或性行為',scope:'比「遇到桃花」更強，須原句或牌面明確支持事件層。'},
+      {id:'casual_sexual_relationship',label:'不以感情承諾為主的性關係',scope:'描述關係形式，不由「肉體桃花」單獨推定。'}
+    ]},
+    {term:'桃花',defaultCandidate:'romantic_or_attraction_opportunity',candidates:[
+      {id:'romantic_or_attraction_opportunity',label:'吸引、示好或認識對象的機會',scope:'不等於確立關係或性行為。'},
+      {id:'relationship_start',label:'開始交往或形成關係',scope:'須由「交往、在一起」等語義或位置另行支持。'},
+      {id:'sexual_encounter',label:'性接觸或性關係',scope:'須由明確親密行為語義另行支持。'}
+    ]}
+  ];
+  function lexicalInterpretation(s){
+    var text=String(s||''),matches=LEXICAL_SENSES.filter(function(x){return text.indexOf(x.term)>=0;}).sort(function(a,b){return b.term.length-a.term.length;});
+    if(!matches.length)return null;
+    var entry=matches[0],chosen=entry.candidates.find(function(x){return x.id===entry.defaultCandidate;});
+    return {surface:entry.term,candidates:entry.candidates.map(function(x){return {id:x.id,label:x.label,scope:x.scope};}),selectedInterpretation:entry.defaultCandidate,selectionBasis:'least_committing_default',selectedLabel:chosen&&chosen.label||'',selectedScope:chosen&&chosen.scope||'',userConfirmed:false};
+  }
   var SUBJECT_WORDS=['我','我們','你','你們','他','她','他們','她們','對方','這個人','那個人','有人','某人','女生','女性','男生','男性','異性','同事','女同事','男同事','異性同事','女性同事','男性同事','主管','客戶','朋友','好友','閨蜜','女友','男友','伴侶','現任','前任','前男友','前女友','老婆','老公','妻子','丈夫','家人','媽媽','爸爸','父母','孩子'];
   var CONTINUATION=['未來','之後','後來','往後','接下來','再來','下一步','那','那麼','然後','後續','到時','如果','若','假如','所以','並且','以及','還有'];
   var EXAMPLE_CUES=['例如','比如','譬如','舉例','像是','比方說','例如說'];
@@ -447,7 +468,7 @@ function analyzeReadingQuestion(value) {
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s);
+    var subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
     if(ill.reportedSpeech&&ill.reportedSpeech.speakerRef)subject=ill.reportedSpeech.speakerRef;
     if(evalFrame&&subject&&!PERSONISH.test(subject)&&!/^(?:unknown_person)$/.test(subject))subject=null;
     if(subject&&/^(?:每|每月|每週|每周|每天|每日|月均|週均|周均)/.test(subject))subject=null;
@@ -466,6 +487,8 @@ function analyzeReadingQuestion(value) {
       privateState:!evalFrame&&hasPrivateState(s),overtAction:hasAny(s,ONTOLOGY.overtAction)||actionMentions(s).some(function(a){return a.verb==='約';}),actorBoundFutureEvent:false,
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
       explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||null,
+      lexicalInterpretation:lexical,
+      recurrenceContext:(/(?:還(?=(?:會|能|有|可以|可能|要|想))|再次|重新|再(?!是)|又)/.test(s))?{surfaceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||'',suggestedPremise:'可能延續或重現先前同類事件／機會',status:'linguistic_presupposition_unverified',priorOccurrenceVerified:false,instruction:'記錄原句暗示即可；除非使用者另行確認，不可當成先前事件已發生。'}:null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
       actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
@@ -726,8 +749,9 @@ function analyzeReadingQuestion(value) {
 
   var ambiguities=[];
   frames.forEach(function(f){if(f.subjectSource==='surface_pronoun_ambiguous_context')ambiguities.push({clause:f.index,type:f.subjectSource,candidates:(f.coreferenceCandidates||[]).slice(),text:f.text});});
+  frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:'lexical_polysemy',surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,userConfirmed:false,text:f.text});});
   var notes=[],criticalIssues=[];
-  if(ambiguities.length)notes.push('有代名詞尚未唯一對應；語義圖保留候選，不把它硬綁成某個人物。');
+  if(ambiguities.some(function(a){return a&&a.type==='entity_coreference';}))notes.push('有代名詞尚未唯一對應；語義圖保留候選，不把它硬綁成某個人物。');
   if(decision.kind==='multiple'&&!options.length)notes.push('比較題已辨識為多方案決策，但原文沒有提供可綁定的完整方案；保留缺失槽位，不自行造出選項。');
   if(decision.kind==='incomplete')notes.push('比較題只辨識到部分方案；不自行補造缺少的選項。');
   var mode=options.length>2?'multi_option':options.length===2?'binary':groups.length>1?'multi_question':'single';

@@ -1,0 +1,11 @@
+.jy-forecast-save{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-top:.65rem;padding:.55rem .65rem;border:1px solid rgba(147,197,253,.2);border-radius:9px;background:rgba(15,23,42,.36);font-size:.72rem;line-height:1.5}
+.jy-forecast-save label{display:flex;align-items:center;gap:.4rem;margin:0;color:var(--c-text-muted,#b9c1cd)}
+.jy-forecast-save input[type=date]{max-width:145px;min-height:36px;padding:.35rem .45rem;border:1px solid rgba(147,197,253,.35);border-radius:7px;background:#111824;color:inherit;font:inherit}
+.jy-forecast-add{min-height:36px;padding:.35rem .6rem;border:1px solid rgba(147,197,253,.35);border-radius:7px;background:rgba(59,130,246,.13);color:#bfdbfe;font:inherit;cursor:pointer}
+.jy-forecast-add:disabled{opacity:.65;cursor:default}.jy-forecast-save a{color:#bfdbfe}.jy-forecast-save-status{flex-basis:100%;color:#a8c7eb}
+.jy-forecast-record{border:1px solid #3d495d;border-radius:14px;background:#1a202b;padding:16px;margin:14px 0}
+.jy-forecast-record-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;color:#d6b878}.jy-forecast-due-label{font-size:.85rem}
+.jy-forecast-question{color:#cbd5e1;font-size:.9rem}.jy-forecast-signal{padding:12px;border-left:3px solid #93c5fd;background:rgba(147,197,253,.06);line-height:1.7}.jy-forecast-meta{color:#9aa7b9}.jy-forecast-local-status{font-size:.85rem;color:#d6b878}
+.jy-forecast-field{display:block;margin:12px 0 0;font-weight:600}.jy-forecast-field select,.jy-forecast-field textarea{display:block;width:100%;margin-top:7px;border:1px solid #475267;border-radius:10px;padding:10px;background:#131922;color:#f0f1f3;font:inherit;line-height:1.6}.jy-forecast-field select{min-height:46px}.jy-forecast-field textarea{resize:vertical}
+.jy-forecast-record-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.jy-forecast-delete{background:#38262b;color:#f3c6cb}.jy-forecast-empty{padding:18px;border:1px dashed #475267;border-radius:14px;color:#b9c1cd}
+@media(max-width:520px){.jy-forecast-save{align-items:stretch}.jy-forecast-save label{justify-content:space-between}.jy-forecast-save input[type=date]{max-width:none;flex:1}.jy-forecast-add{width:100%}}
