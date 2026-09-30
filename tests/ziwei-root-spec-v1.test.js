@@ -41,7 +41,7 @@ function load(rel){
 
 load('JS/ziwei-prompt-root.js');
 assert(ctx.JY_ZIWEI_PROMPT_ROOT, 'root api missing');
-assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '6.1.0');
+assert.strictEqual(ctx.JY_ZIWEI_PROMPT_ROOT.version, '7.0.0');
 
 const head = ctx.JY_ZIWEI_PROMPT_ROOT.composeHead();
 const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
@@ -56,7 +56,7 @@ const tail = ctx.JY_ZIWEI_PROMPT_ROOT.composeTail();
 ].forEach(x => assert(!(head + tail).includes(x), 'legacy/answer patch remains: ' + x));
 assert(!(head + tail).includes('ROOT-SPEC'));
 assert(!(head + tail).includes('證據帳本'));
-assert((head + tail).replace(ctx.JY_ZIWEI_PROMPT_ROOT.brandTailLines().join('\n'),'').length < 5000, 'analysis root stays concise; reviewed material guidance has its own scope');
+assert(head.includes('【紫微深入全盤與限流合參】'),'native full-chart depth is included');
 assert.equal(tail.split('【本題延伸手鍊建議】').length-1,1, 'bracelet guidance is included once');
 assert(tail.includes('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)'));
 assert(tail.includes('願你諸事順遂。'));

@@ -170,7 +170,8 @@ function assessZiweiPatterns(palaces) {
       evidence:witnesses(ps,ns),support:support,modifiers:blockers,source:source,variant:variant||null,
       desc:note+'；依實際落宮、廟旺、輔煞與四化判成色，不以格名保證事件。',
       observedStructure:witnesses(ps,ns).map(function(w){return w.palace+'('+w.branch+') '+w.star+(w.hua||'');}),
-      review:blockers.length?'三方四正見 '+blockers.map(function(w){return w.palace+' '+w.star+(w.hua||'');}).join('、'):'三方四正未見本表六煞或生年忌；仍合看星性與運限'});
+      reviewRegion:region.map(function(p){return {palace:p.name,branch:p.branch};}),
+      review:blockers.length?'所列格局相關宮位及各自三方四正見 '+blockers.map(function(w){return w.palace+' '+w.star+(w.hua||'');}).join('、'):'所列格局相關宮位及各自三方四正未見本表六煞或生年忌；仍合看星性與運限'});
   }
   function check(label,passed){return {label:label,passed:!!passed};}
   var sf=four(ming),all=function(ns){return ns.every(function(n){return sf.some(function(p){return has(p,n);});});};

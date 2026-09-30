@@ -890,7 +890,7 @@ async function _jyPrepareCompositeAstro(birth) {
       ['JS/solar-location.js?v=20260923final1', function(){return typeof calcTrueSolarTime === 'function';}],
       ['JS/bazi.js?v=20260925engine1', function(){return typeof computeBazi === 'function';}],
       ['JS/bazi_upgrade.js?v=20260925engine1', function(){return typeof enhanceBazi === 'function';}],
-      ['JS/ziwei.js?v=20260923final1', function(){return typeof computeZiwei === 'function';}]
+      ['JS/ziwei.js?v=20261001full1', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
       if (!entry[1]()) await new Promise(function(resolve, reject) {

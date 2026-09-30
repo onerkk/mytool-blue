@@ -8,13 +8,18 @@ var JY_READING_ZIWEI = [
   "疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。",
   "逐筆核四化引用的來源方、層級、宮干、星曜、化象、受方和落宮。相同天干在生年與宮干重現不是兩份獨立證據；不同來源的化祿、化忌必須同時保留。命宮格局不能替代關係題的夫妻、福德與運限結構；化祿不證明本人目前有錢或對特定人願意付出。",
   "【紫微判讀主線】主宮回答事情怎麼運作，三合宮查可調用的資源，對宮查角色與環境的牽動；先讀主星搭配的共同作用，再看輔煞與廟旺如何改變做法的成本。關係題把夫妻的互動方式、福德的內在滿足、田宅的生活安排與官祿的責任牽動串起來，選其中最卡住的一環回答。",
-  "四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。"
+  "四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。",
+  "【紫微深入全盤與限流合參】核十二宮宮干地支、命身、主星同宮組合、主輔煞曜廟旺及空宮借對，再由各主宮實際三方四正與夾宮建立資源、需求、成本及制化通道；單星亮度、格名與吉凶計票不能代替組合作用。",
+  "三合讀本命骨架；飛星追發射宮干→化曜→落宮→對宮牽動；欽天來因及向心／離心自化只按已採口徑解釋。河洛視角須有明列宮位數理與起例才具名推演；只有五行局不冒稱完成河洛專盤，不同派同源四化不當成多次驗證。",
+  "全盤題完整展開十二宮，再整合健康生活安排、學業、事業、財務、人際家庭和婚姻感情。每宮說主星組合如何承接命身、三方資源、對宮牽動與關鍵四化。財帛空宮、福德對宮、本命三方及運限財官分層連接，不能只說靠人脈或有財庫。",
+  "運限以本命、大限、流年三套座標合讀，保留本命與各層宮名，核四化、自化、流曜與同宮／對沖。小限、流月有實算資料才補充；原局資料的限流疊宮無不代表年度無疊宮。",
+  "逐年題依每一指定大限與每一流年分別成判，列年度／虛歲／大限、議題、偏利或偏阻及條件、象徵影響程度、具體星組和四化依據、需注意的事與行動。相同年干在不同大限及落宮不能套同一句；關鍵窗口給有據年段、領域、反證，不自造已發生事件或月日。"
 ];
 // END GENERATED READING JY_READING_ZIWEI
 // BEGIN GENERATED RECOMMENDATION JY_REC_ZIWEI
 var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。";
 // END GENERATED RECOMMENDATION JY_REC_ZIWEI
-/*! ziwei-prompt-root.js — 靜月之光紫微斗數共用核心 v6.1.0 (2026-09-17)
+/*! ziwei-prompt-root.js — 靜月之光紫微斗數共用核心 v7.0.0 (2026-09-17)
  *
  * 目標：提供正確盤面與必要方法脈絡，讓 AI 運用自身紫微斗數知識完成
  * 綜合判讀；不再以大量禁令、證據帳本與固定稽核句限制分析。
@@ -22,14 +27,14 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
 (function (root) {
   'use strict';
 
-  var VERSION = '6.1.0';
+  var VERSION = '7.0.0';
   var SHOP_LINK = '[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)';
   var FINAL_WISH = '願你諸事順遂。';
 
   function clone(lines) { return lines.slice(); }
 
   function roleText() {
-    return '你是一位資深紫微斗數命理師，熟悉十四主星、宮位、三方四正、廟旺、四化、格局、運限，以及三合、飛星與欽天等流派。請運用你自身完整的命理知識，綜合本次命盤資料，以白話直接回答使用者，讓結論有具體依據。';
+    return '你是一位資深紫微斗數命理師，熟悉十四主星、宮位、三方四正、廟旺、四化、格局、運限，以及三合、飛星、河洛與欽天四化等流派。請運用你自身完整的命理知識，綜合本次命盤資料，以白話直接回答使用者，讓結論有具體依據。';
   }
 
   function rootProtocolLines() {
@@ -85,7 +90,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
 
   function answerContractLines() {
     return [
-      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
+      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
       '數量與角色邊界：星曜、宮位或四化不推算性伴侶人數、婚姻次數、子女人數、外遇次數，也不給「不只一個」「至少兩次」等下限；命盤可談關係趨勢，不證明特定人的身分、愛意或同意。已知次數須來自使用者自述。'
     ];
   }
@@ -105,7 +110,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
   }
 
   function allCoreLines() {
-    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("8.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
+    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
   }
 
   function composeHead() {
