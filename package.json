@@ -83,7 +83,8 @@
     "test:name": "node tests/name-engine-20261001.cjs",
     "test:name:browser": "node tests/name-browser-20261001.cjs",
     "test:liuren": "node tests/liuren-engine-20261001.cjs",
-    "test:liuren:browser": "node tests/liuren-browser-20261001.cjs"
+    "test:liuren:browser": "node tests/liuren-browser-20261001.cjs && node tests/liuren-immersive-20261002.cjs",
+    "build:liuren-scene": "node scripts/build-liuren-scene.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

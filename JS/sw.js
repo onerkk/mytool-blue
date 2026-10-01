@@ -37,8 +37,9 @@
 // v103: 20260928actiondock1 固定式操作列初版。
 // v104: 20260928rootfix2 問句開放列舉、健檢詞義消歧、所有引擎醫療能力邊界、儀式內容獨立捲動與固定操作列改為視窗格線列。
 // v106: 20261001name1 姓名書房、跨欄入口、六法原生計算與提示詞9.1。
+// v108: 20261002atelier2 姓名與六壬雙卡、立體式盤及觸控課傳。
 // v107: 20261001liuren1 大六壬獨立入口、九宗門課盤及天地盤沉浸式閱讀。
-const CACHE_NAME = 'jy-main-v107';
+const CACHE_NAME = 'jy-main-v108';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

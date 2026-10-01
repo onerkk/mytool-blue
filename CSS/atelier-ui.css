@@ -481,3 +481,10 @@ body.jy-atelier{
  .jy-atelier .at-input-head h1{font-size:1.5rem!important;line-height:1.6!important;margin:10px 0!important}.jy-atelier .at-input-head p{font-size:.875rem!important;line-height:1.8!important;margin:0}
  .jy-atelier #input-screen .jy-tool-card{padding:13px!important}.jy-atelier #input-screen .jy-tool-head{grid-template-columns:50px 1fr;gap:8px!important}.jy-atelier #input-screen .at-mode-art{width:50px}.jy-atelier #input-screen .jy-tool-name{font-size:1.125rem!important}.jy-atelier #input-screen .jy-tool-desc{font-size:.875rem!important}.jy-atelier #input-screen .jy-tool-free{display:none}
 }
+
+/* Matching portrait entrances: name and liuren complete the final paired row. */
+.jy-atelier .at-tool[data-tool=name]{--at-accent:#d4c39f;--at-tint:#9b7c4436}
+.jy-atelier .at-tool[data-tool=liuren]{--at-accent:#b4d2c3;--at-tint:#436e5a40}
+.jy-atelier .at-art[data-art=name]{background-image:url('../assets/name/name-scroll.svg');background-size:contain;background-position:center}
+.jy-atelier .at-art[data-art=liuren]{background-image:url('../assets/liuren/liuren-astrolabe.svg');background-size:contain;background-position:center}
+@media(min-width:1001px){.jy-atelier .at-name-card,.jy-atelier .at-liuren-card{grid-column:span 2}.jy-atelier .at-name-card .at-art,.jy-atelier .at-liuren-card .at-art{width:190px}.jy-atelier .at-name-card .at-tool-desc,.jy-atelier .at-liuren-card .at-tool-desc{max-width:30em}}

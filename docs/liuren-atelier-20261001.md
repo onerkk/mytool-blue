@@ -1,11 +1,11 @@
-# 大六壬・天時之境 — 20261001liuren1
+# 大六壬・天時之境 — 20261002atelier2
 
-本次新增獨立「大六壬」入口，保留既有六爻、易經與姓名學。首頁新增第14個跨欄橫幅；姓名學原本的跨欄橫幅與六種分析角度保持完整。
+姓名學與大六壬在首頁最後一排左右並列，統一為上方的直式卡片樣式。大六壬使用獨立立體課盤；既有六爻、易經和姓名學六種分析角度保留。
 
 ## 操作與畫面
 
 - 金銅／青綠式盤；圓盤、清晰方盤可互切，十二地盤、天盤與天將均出自本課計算。
-- 圓盤可用滑桿、左右按鈕或滑鼠拖動視角，也可斜視／歸正。手機以滑桿操作，保留正常垂直捲動。
+- 立體盤可單指或滑鼠拖曳，有慣性；雙指可斜看／縮放，並支援分層、歸正、滑桿、方向鍵與左右按鈕。盤內手勢轉盤，盤外正常垂直捲動。
 - 點選宮位、四課或三傳，對應宮位會標示；檢視區交代上下生剋、六親、遁干與旬空。
 - 可重播「定地盤→轉天盤→布天將→起四課→取三傳」。跳過動畫、減少動態偏好與關閉取消皆保留同一課的計算資料。
 - 「起課脈絡」說明取法；「閱讀・筆記」保存本次明示觀察。「存盤圖」輸出1200×1260 PNG；該頁亦可另存SVG。盤圖輸出歸正圓盤，完整問題與取法資料另在JSON中。
@@ -60,3 +60,48 @@ npm run test:name
 ZIP保留原相對目錄，解壓後覆蓋專案根目錄再依原流程部署。以GitHub現有版本 `5aeab7b51876b40359a5a991252b80e044cefa75` 為基線，只含本次變更；不包含整份專案、依賴、測試截圖或舊的62檔更新包。部署後服務工作者快取版本改為 `jy-main-v107`。
 
 此版完成上述範圍的新增與本地驗證，尚未替你推送GitHub或部署到正式網站。
+
+
+## 20261002atelier2：入口與立體互動更新
+
+- 姓名學與大六壬使用首頁同一套直式卡片，在最後一排左右並列；手機兩欄、桌面各占半排，圖像、說明與底欄保持一致。
+- 新增本地按需載入的 Three.js 銅玉式盤：實體盤緣、刻度、地盤、天盤與天將層，標字沿實算課盤映射。布盤依定地盤、轉天盤、布天將、起四課、取三傳逐步演示，可跳過或重播。
+- 單指拖曳旋轉並有慣性；點支以立體射線定位原生地盤，雙指可斜看及縮放，雙點／Home／歸正重設視角。選四課或三傳會高亮相應宮位；分層觀盤與循三傳光軌可獨立操作。
+- 旋轉、手勢、分層及循傳皆屬視覺操作，完全不更動排盤、四課、三傳、天將與旬空。JSON／PNG／SVG／完整提示詞維持原生資料與原有匯出功能。
+- 立體元件下載失敗、WebGL 不可用或繪圖情境丟失時，改用可點選與旋轉的 SVG；方盤及完整資料持續可用。離開畫面停止動態，關閉頁面釋放畫布、觀察器、材質、紋理與動畫。減少動態偏好直接呈現完整課盤。
+- 本次未改動姓名學或大六壬計算政策與解讀提示詞，也未更換其他術數引擎。
+
+### 重建與驗證
+
+`npm run build:liuren-scene` 重建 `JS/liuren-scene.js`；網站直接使用已打包的腳本，不需安裝 Three.js 即可部署。
+
+`npm run test:liuren` 核對 720 課與時間／設定邊界；`npm run test:liuren:browser` 涵蓋 320、390、768、1440px 排版、真實 CDP 觸控、立體定位、分層、布盤、循傳、降級與匯出。另以 `npm run test:name`、`npm run test:name:browser` 與 `npm run test:ui` 核對姓名學和首頁既有流程。
+
+
+## Three.js r186 授權
+
+立體課盤的打包腳本使用 Three.js r186；以下保留該版本完整 MIT 授權。來源：https://github.com/mrdoob/three.js/blob/r186/LICENSE
+
+```text
+The MIT License
+
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+```
