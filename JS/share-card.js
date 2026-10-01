@@ -70,8 +70,9 @@
     text(c,str(d.tagline)||'感情的靠近，工作的轉彎，或下一個自己。',540,823,28,WHITE,400,'center',true,970);
     var systems=window.JYMethodCatalog,columns=3,gap=14,cell=(950-gap*(columns-1))/columns;
     if(!systems||!systems.some(function(v){return v[0]==='liuyao';})||!systems.some(function(v){return v[0]==='yijing';}))throw new Error('分享清單尚未更新，請重新整理後再試。');
-    systems.forEach(function(v,i){var wide=v[0]==='name',x=wide?65:65+(i%columns)*(cell+gap),y=861+Math.floor(i/columns)*46,w=wide?950:cell,tt=THEMES[v[6]]||t;plate(c,x,y,w,38,tt,10,i>=10);text(c,v[1],x+24,y+19,16,tt.accent,400,'center');line(c,x+43,y+9,x+43,y+29,rgba(tt,.4));text(c,v[3],x+w/2+14,y+19,25,WHITE,500,'center',true,w-65);});
-    note(c,systems.length===12?'十二種探索，從你最在意的事開始。':systems.length+' 種探索，從你最在意的事開始。',t,1101);
+    var row=0,column=0;
+    systems.forEach(function(v,i){var wide=v[0]==='name'||v[0]==='liuren';if(wide&&column){row++;column=0;}var x=wide?65:65+column*(cell+gap),y=861+row*40,w=wide?950:cell,tt=THEMES[v[6]]||t;plate(c,x,y,w,34,tt,9,i>=10);text(c,v[1],x+24,y+17,15,tt.accent,400,'center');line(c,x+43,y+8,x+43,y+26,rgba(tt,.4));text(c,v[3],x+w/2+14,y+17,23,WHITE,500,'center',true,w-65);if(wide){row++;column=0;}else if(++column===columns){row++;column=0;}});
+    note(c,systems.length===12?'十二種探索，從你最在意的事開始。':systems.length+' 種探索，從你最在意的事開始。',t,1114);
   }
 
   function renderBazi(c,d,t){heading(c,t,d);question(c,d,t);var ps=arr(d.pillars);if(!ps.length){missing(c,t);return;}ps.slice(0,4).forEach(function(p,i){var x=67+i*242;plate(c,x,483,220,347,t,22,p.label==='日柱');text(c,p.label||['年柱','月柱','日柱','時柱'][i],x+110,522,27,t.accent,500,'center');line(c,x+33,555,x+187,555,rgba(t,.25));text(c,p.gan||'—',x+110,627,95,WHITE,600,'center',true);text(c,p.zhi||'—',x+110,745,95,p.label==='日柱'?GOLD:WHITE,600,'center',true);if(p.label==='日柱'){star(c,x+191,508,6,GOLD);}});rows(c,[['日主',d.dayMaster],['喜用候選',d.yongShen],['現行大運',d.dayun]],867,t,218);note(c,'從命盤看傾向，從生活確認方向。',t);}

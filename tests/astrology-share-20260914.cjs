@@ -14,10 +14,11 @@ const texts=c=>c._rec.text.map(p=>p.s).join('\n');
 const svg=c=>decodeURIComponent(c._rec.images.find(a=>String(a[0].src).startsWith('data:image/svg+xml'))[0].src.split(',').slice(1).join(','));
 let passed=0;async function test(name,fn){await fn();passed++;console.log('PASS '+name);}
 (async()=>{
- await test('Invitation and homepage use the same frozen thirteen-method catalogue',async()=>{
-  const c=await A.render('invite',{}),labels=Array.from(ctx.JYMethodCatalog,m=>m[3]);assert.equal(labels.length,13);assert.equal(new Set(labels).size,13);
-  for(const label of labels){const t=c._rec.text.filter(t=>t.s===label);assert.equal(t.length,1,label);assert(t[0].x>64&&t[0].x<1016&&t[0].y<1070);}
-  assert.equal(new Set(c._rec.text.filter(t=>labels.includes(t.s)).map(t=>t.y)).size,5);
+ await test('Invitation and homepage use the same frozen fourteen-method catalogue',async()=>{
+  const c=await A.render('invite',{}),labels=Array.from(ctx.JYMethodCatalog,m=>m[3]);assert.equal(labels.length,14);assert.equal(new Set(labels).size,14);
+  for(const label of labels){const t=c._rec.text.filter(t=>t.s===label);assert.equal(t.length,1,label);assert(t[0].x>64&&t[0].x<1016&&t[0].y<1114-23);}
+  assert.equal(new Set(c._rec.text.filter(t=>labels.includes(t.s)).map(t=>t.y)).size,6);
+  const name=c._rec.text.find(t=>t.s==='姓名學'),liuren=c._rec.text.find(t=>t.s==='大六壬');assert.equal(name.x,liuren.x);assert(liuren.y>name.y+34,'full-width additions occupy distinct rows');
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');assert(html.indexOf('JS/method-catalog.js?')<html.indexOf('JS/share-card.js?'));assert(html.indexOf('JS/method-catalog.js?')<html.indexOf('<script src="JS/ui.js?'));
   assert(fs.readFileSync(path.join(ROOT,'JS/ui.js'),'utf8').includes('var methods = window.JYMethodCatalog;'));
  });
