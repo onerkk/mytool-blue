@@ -24,7 +24,7 @@ const options={civilTime:'14:55',timezoneId:'Asia/Taipei',timezoneOffset:8,refer
 const chart=engine.computeZiwei(1983,8,25,14,'male',options);assert(chart,r._jyZiweiError);
 const before=JSON.stringify(chart);
 test('14 native methods and full/focused/period scope',()=>{
- assert.equal(Q.readingVersion,'9.0.0');assert.equal(Q.methodKinds().length,14);
+ assert.equal(Q.readingVersion,'9.1.0');assert.equal(Q.methodKinds().length,14);
  for(const k of Q.methodKinds()){assert(Q.methodLines(k).some(x=>x.startsWith('【')&&x.includes('深入')),k+' native depth');assert(W.render({method:k,question:'完整分析命盤所有面向'}).includes('完整報告範圍'));}
  assert.equal(Q.reportScope('全面分析我的財運').fullChart,false);assert.equal(Q.reportScope('完整星盤').fullChart,true);
  assert.equal(Q.reportScope('前八個大限所有流年').requestedDecades,8);assert.equal(Q.reportScope('全部12個大限所有流年').allDecades,true);

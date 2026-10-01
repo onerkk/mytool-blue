@@ -70,7 +70,7 @@
     text(c,str(d.tagline)||'感情的靠近，工作的轉彎，或下一個自己。',540,823,28,WHITE,400,'center',true,970);
     var systems=window.JYMethodCatalog,columns=3,gap=14,cell=(950-gap*(columns-1))/columns;
     if(!systems||!systems.some(function(v){return v[0]==='liuyao';})||!systems.some(function(v){return v[0]==='yijing';}))throw new Error('分享清單尚未更新，請重新整理後再試。');
-    systems.forEach(function(v,i){var x=65+(i%columns)*(cell+gap),y=861+Math.floor(i/columns)*56,tt=THEMES[v[6]]||t;plate(c,x,y,cell,45,tt,10,i>=10);text(c,v[1],x+24,y+22,16,tt.accent,400,'center');line(c,x+43,y+11,x+43,y+33,rgba(tt,.4));text(c,v[3],x+cell/2+14,y+22,25,WHITE,500,'center',true,cell-65);});
+    systems.forEach(function(v,i){var wide=v[0]==='name',x=wide?65:65+(i%columns)*(cell+gap),y=861+Math.floor(i/columns)*46,w=wide?950:cell,tt=THEMES[v[6]]||t;plate(c,x,y,w,38,tt,10,i>=10);text(c,v[1],x+24,y+19,16,tt.accent,400,'center');line(c,x+43,y+9,x+43,y+29,rgba(tt,.4));text(c,v[3],x+w/2+14,y+19,25,WHITE,500,'center',true,w-65);});
     note(c,systems.length===12?'十二種探索，從你最在意的事開始。':systems.length+' 種探索，從你最在意的事開始。',t,1101);
   }
 

@@ -1,0 +1,25 @@
+{
+  "version": "20261001-name1",
+  "characters": 102998,
+  "kangxiResolved": 63696,
+  "modernResolved": 102998,
+  "kangxiAmbiguous": 0,
+  "kangxiPolicy": "Unicode 14.0.0 kRSKangXi 的康熙部首原筆畫＋餘筆畫；多條分類僅在總數相同時採用。這是可核的部首還原口徑，未宣稱逐字核對康熙原書。",
+  "modernPolicy": "Unicode 17.0.0 kTotalStrokes；有台灣 IRG_T alternate 時優先，否則標作 Unicode 現代筆畫，未宣稱教育部逐字核對。",
+  "unknownPolicy": "無康熙資料、多候選總數不同或未知字不以現代筆畫猜算；允許使用者核對後覆核。",
+  "sources": [
+    {
+      "url": "https://www.unicode.org/Public/14.0.0/ucd/Unihan.zip",
+      "sha256": "2ae4519b2b82cd4d15379c17e57bfb12c33c0f54da4977de03b2b04bcf11852d"
+    },
+    {
+      "url": "https://www.unicode.org/Public/17.0.0/ucd/Unihan.zip",
+      "sha256": "f7a48b2b545acfaa77b2d607ae28747404ce02baefee16396c5d2d7a8ef34b5e"
+    },
+    {
+      "url": "https://www.unicode.org/reports/tr38/",
+      "note": "kRSKangXi 已於15.1移除，因此本版使用可再現的14.0快照；現代筆畫不是康熙姓名筆畫。"
+    }
+  ],
+  "license": "Unicode License V3; see data/name/UNICODE-LICENSE.txt"
+}

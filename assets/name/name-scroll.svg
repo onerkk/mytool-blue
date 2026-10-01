@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" fill="none">
+ <defs>
+  <linearGradient id="paper" x1="80" y1="40" x2="370" y2="300" gradientUnits="userSpaceOnUse"><stop stop-color="#fbefd2"/><stop offset=".45" stop-color="#d8c29b"/><stop offset=".8" stop-color="#f5e8cc"/><stop offset="1" stop-color="#ae8b53"/></linearGradient>
+  <linearGradient id="gold" x1="0" x2="1"><stop stop-color="#866338"/><stop offset=".3" stop-color="#f2dca4"/><stop offset=".7" stop-color="#b99458"/><stop offset="1" stop-color="#544330"/></linearGradient>
+  <linearGradient id="wood" x1="0" x2="1"><stop stop-color="#171923"/><stop offset=".45" stop-color="#67605b"/><stop offset=".62" stop-color="#282a35"/><stop offset="1" stop-color="#0d151f"/></linearGradient>
+  <radialGradient id="halo"><stop stop-color="#d8b779" stop-opacity=".22"/><stop offset="1" stop-color="#d8b779" stop-opacity="0"/></radialGradient>
+  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="15" stdDeviation="13" flood-color="#000" flood-opacity=".55"/></filter>
+ </defs>
+ <ellipse cx="249" cy="181" rx="220" ry="170" fill="url(#halo)"/>
+ <ellipse cx="230" cy="292" rx="155" ry="20" fill="#000" opacity=".3"/>
+ <g transform="translate(235 171) rotate(-12) translate(-235 -171)" filter="url(#shadow)">
+  <path d="M100 74 Q230 51 369 79 L371 264 Q229 291 102 268Z" fill="url(#paper)"/>
+  <path d="M126 92 Q231 77 345 93 L346 247 Q233 263 126 248Z" stroke="#957544" stroke-opacity=".52"/>
+  <path d="M132 99 Q231 86 339 100 L339 241 Q232 254 133 242Z" stroke="#957544" stroke-opacity=".3"/>
+  <path d="M161 116 H312M161 133 H276" stroke="#6c5940" stroke-opacity=".25"/>
+  <text x="230" y="226" text-anchor="middle" font-size="92" font-family="Noto Serif TC,Songti TC,serif" fill="#33343a">名</text>
+  <rect x="292" y="211" width="25" height="27" rx="2" fill="#9e5348"/><path d="M299 216 V232M305 216 V232M296 223 H312" stroke="#dec59c" stroke-width="1.3"/>
+  <rect x="91" y="61" width="21" height="219" rx="10.5" fill="url(#wood)"/>
+  <rect x="355" y="64" width="21" height="219" rx="10.5" fill="url(#wood)"/>
+  <path d="M94 64 H109M94 275 H109M358 67 H373M358 278 H373" stroke="url(#gold)" stroke-width="9" stroke-linecap="round"/>
+ </g>
+ <g transform="rotate(31 343 178)" filter="url(#shadow)"><rect x="337" y="68" width="12" height="135" rx="6" fill="url(#wood)"/><rect x="337" y="180" width="12" height="24" rx="2" fill="url(#gold)"/><path d="M337 201 Q329 226 343 250 Q357 226 349 201Z" fill="#d5c4a3"/><path d="M338 224 Q338 240 343 250 Q348 236 348 224Z" fill="#383438"/></g>
+ <g stroke="#dcc792" stroke-linecap="round" opacity=".55"><path d="M82 90 V104M75 97 H89M390 249 V261M384 255 H396M312 41 V51M307 46 H317"/></g>
+</svg>

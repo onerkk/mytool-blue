@@ -77,9 +77,14 @@
     "test:causal-question": "node tests/causal-question-regression-20260927.cjs",
     "test:semantic-voice-followup": "npm run test:semantic-review-followup",
     "test:semantic-review-followup": "node tests/semantic-review-followup-20260928.cjs",
-    "test:comprehensive": "node scripts/sync-recommendation-guides.cjs --check && node tests/reading-depth-regression-20260927.cjs && node tests/ziwei-root-spec-v1.test.js && node tests/comprehensive-reading-20261001.cjs"
+    "test:comprehensive": "node scripts/sync-recommendation-guides.cjs --check && node tests/reading-depth-regression-20260927.cjs && node tests/ziwei-root-spec-v1.test.js && node tests/comprehensive-reading-20261001.cjs",
+    "build:name": "python scripts/build-name-data.py",
+    "build:name-scene": "node scripts/build-name-scene.mjs",
+    "test:name": "node tests/name-engine-20261001.cjs",
+    "test:name:browser": "node tests/name-browser-20261001.cjs"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "vite": "8.3.0"
   }
 }

@@ -14,7 +14,7 @@ function same(actual,expected,label){assert.equal(JSON.stringify(actual),JSON.st
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name);}
 
 test('All active methods receive the full answer-first depth contract and native synthesis path',()=>{
-  assert.equal(quality.readingVersion,'9.0.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
+  assert.equal(quality.readingVersion,'9.1.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
   for(const method of methods){
     const lines=quality.lines(method).join('\n'),payload=quality.payloadGuide([method]);
     for(const phrase of ['第一句就回答原問題','深度判讀流程','證據完整度','最有力的反向依據','深度來自完整推理'])assert(lines.includes(phrase),method+' '+phrase);
