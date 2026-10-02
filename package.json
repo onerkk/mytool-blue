@@ -80,7 +80,7 @@
     "test:comprehensive": "node scripts/sync-recommendation-guides.cjs --check && node tests/reading-depth-regression-20260927.cjs && node tests/ziwei-root-spec-v1.test.js && node tests/comprehensive-reading-20261001.cjs",
     "build:name": "python scripts/build-name-data.py",
     "build:name-scene": "node scripts/build-name-scene.mjs",
-    "test:name": "node tests/name-engine-20261001.cjs",
+    "test:name": "node tests/name-engine-20261001.cjs && node tests/name-comparison-rootfix-20261002.cjs",
     "test:name:browser": "node tests/name-browser-20261001.cjs",
     "test:liuren": "node tests/liuren-engine-20261001.cjs",
     "test:liuren:browser": "node tests/liuren-browser-20261001.cjs && node tests/liuren-immersive-20261002.cjs",
