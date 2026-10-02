@@ -1,0 +1,905 @@
+{
+  "source": "HTML h4 extraction, all 60 actual temple pages; independently checked poem edition and source fields",
+  "cases": [
+    {
+      "number": 1,
+      "ganzhi": "甲子",
+      "templePoem": "日出便見風雲散，\n光明清淨照世間。\n一向前途通大道，\n萬事清吉保平安。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "包公請雷驚仁宗。",
+        "包文拯審張世真。",
+        "包公審郭槐。",
+        "唐太宗登位享太平。",
+        "宋太祖黃袍加身。"
+      ],
+      "sourceSHA256": "3cd5b14197e256690e5396bd405ec8cf8213cc47f6a5b11158fde24c2d8afd7e"
+    },
+    {
+      "number": 2,
+      "ganzhi": "甲寅",
+      "templePoem": "於今此景正當時，\n看看欲吐百花魁。\n若能遇得春色到，\n一洒清吉脫塵埃。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "趙子龍救阿斗。",
+        "陳東初祭梅得救。",
+        "薛蛟薛癸旁州遇採樓得繡球。",
+        "唐太宗選武氏為才人。",
+        "姜太公渭濱垂釣。"
+      ],
+      "sourceSHA256": "74b4db7bcf261586c30f0d55c5f7621c6ea3bb092bb2c17e104e6c9f8dadb83f"
+    },
+    {
+      "number": 3,
+      "ganzhi": "甲辰",
+      "templePoem": "勸君把定心莫虛，\n天註衣祿自有餘。\n和合重重常吉慶，\n時來終遇得明珠。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "朱德武入寺相分明。",
+        "崔文德胡鳳嬌到家空成婚。",
+        "唐明皇遊月宮。",
+        "沈萬山正德君雙鬥寶。",
+        "昌國君獨守聊城。"
+      ],
+      "sourceSHA256": "5593124a8de294a862f351d0170b65062bf7ada097d5bb32676f00044d75063c"
+    },
+    {
+      "number": 4,
+      "ganzhi": "甲午",
+      "templePoem": "風恬浪靜可行舟，\n恰是中秋月一輪。\n凡事不須多憂慮，\n福祿自有慶家門。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "盧龍王次女招親。",
+        "趙雲重圍救阿斗。",
+        "李太白成仙。",
+        "長樂老歷相五代。",
+        "玄德入吳回荊州。"
+      ],
+      "sourceSHA256": "a1a5238b87b2e33a411ae85506956d671757a630a49a02453d3fb04a38461635"
+    },
+    {
+      "number": 5,
+      "ganzhi": "甲申",
+      "templePoem": "兒恐前途命有變，\n勸君作急可宜先。\n且守長江無大事，\n命逢太白守身邊。",
+      "matchesCanonical": false,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "韓文公過秦嶺遇霜雪凍。",
+        "王剪戰袁達。",
+        "孫臏假顛。",
+        "龐涓害孫臏。",
+        "燕昭王為郭傀築黃金台。"
+      ],
+      "sourceSHA256": "2c9d65f23f3cbeb379527b02277f5ebbd840ac1f5bb2db8ec87e54117db5d693"
+    },
+    {
+      "number": 6,
+      "ganzhi": "甲戌",
+      "templePoem": "風雲致雨落洋洋，\n天災時氣必有傷。\n命內此事難和合，\n更逢一足出外鄉。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "鳥精亂宋朝。",
+        "劉智遠戰瓜精。",
+        "陸遜入石頭陣。",
+        "藺相如完璧歸趙。",
+        "薛仁貴投軍。"
+      ],
+      "sourceSHA256": "523029a0cd040026e94a2670be683e0ea51ee2741f642d3578958f414c5e3e2c"
+    },
+    {
+      "number": 7,
+      "ganzhi": "乙丑",
+      "templePoem": "雲開月出正分明，\n不須進退問前程。\n婚姻皆由天註定，\n和合清吉萬事成。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "國公暗察白袍將。",
+        "包公盧訪白袍將。",
+        "尉遲恭掛帥。",
+        "昭君貶冷宮遇漢王叫合。",
+        "廉將軍思用趙人。"
+      ],
+      "sourceSHA256": "e9e7c51e5c26a0586a76d25930472c99233e0ccd3731bcbfaba9505f66303516"
+    },
+    {
+      "number": 8,
+      "ganzhi": "乙卯",
+      "templePoem": "禾稻看看結成完，\n此事必定兩相全。\n回到家中寬心坐，\n妻兒鼓舞樂團圓。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "薛仁貴回家。",
+        "朱弁回家。",
+        "孔明隴西割麥。",
+        "范文正公斷齋書粥。",
+        "莊子慕道。"
+      ],
+      "sourceSHA256": "1169b2c518d387aafb509b9f63d4a320066ac6a8bbf6f25bd7ff687a8d65f6f0"
+    },
+    {
+      "number": 9,
+      "ganzhi": "乙巳",
+      "templePoem": "龍虎相隨在深山，\n君爾何須背後看。\n不知此去相愛愉，\n他日與我卻無干。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "黃飛虎反出五關。",
+        "龍虎相會。",
+        "宋太祖遇烏延讚。",
+        "趙韓王半部論語定天下。",
+        "元仁使西安。"
+      ],
+      "sourceSHA256": "50415a7f1ee2e7310223caf186ed2897907a001ee4fb7857251d4350f46376ba"
+    },
+    {
+      "number": 10,
+      "ganzhi": "乙未",
+      "templePoem": "花開結子一半枯，\n可惜今年汝虛度。\n漸漸日落西山去，\n勸君不用向前途。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "岳飛掠秦檜。",
+        "奉吟受災。",
+        "李便奇救主。",
+        "李干戈往武當山求嗣。",
+        "文王囚羑里。"
+      ],
+      "sourceSHA256": "d3f1fc6d235eeaaaaad7e2bee516d682b7b89cc14c67a7680f405ddae11baf60"
+    },
+    {
+      "number": 11,
+      "ganzhi": "乙酉",
+      "templePoem": "靈雞漸漸見分明，\n凡事且看子丑寅。\n雲開月出照天下，\n郎君即便見太平。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "韓文公過秦嶺湘子掃霜雪。",
+        "高求楊戩當權。",
+        "大鵬鳥轉世為岳飛。",
+        "劉先主入贅東吳。",
+        "陶朱公積儲。"
+      ],
+      "sourceSHA256": "e0be70e47e6c30db9e6d0b37b6ab0a4737eb6d659c95ddc5f9e3c2820aa8fdf3"
+    },
+    {
+      "number": 12,
+      "ganzhi": "乙亥",
+      "templePoem": "長江風浪漸漸靜，\n于今得進可安寧。\n必有貴人相扶助，\n凶事脫出見太平。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "智遠戰瓜精。",
+        "桃花女流勿太歲。",
+        "梅良玉與陳春生同落難得救。",
+        "包胥泣秦庭。",
+        "狄仁傑中興大唐。"
+      ],
+      "sourceSHA256": "1ad7e6813c9b0295c41701d0982a84e3ca280687a929cb13cccdf68bd5383de6"
+    },
+    {
+      "number": 13,
+      "ganzhi": "丙子",
+      "templePoem": "命中正逢羅孛關，\n用盡心機總未休。\n作福問神難得過，\n恰是行舟上高灘。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "漢李廣父子陣亡。",
+        "撐渡伯行船遇太歲。",
+        "三藏被紅孩兒燒。",
+        "信陵君存趙辭封。",
+        "劉智遠顧瓜園。"
+      ],
+      "sourceSHA256": "5240906f94af872b651116e06c43a4b0106c5a3ba7cb1bb5b2382bca3cb9c44b"
+    },
+    {
+      "number": 14,
+      "ganzhi": "丙寅",
+      "templePoem": "財中漸漸見分明，\n花開花謝結子成。\n寬心且看月中桂，\n郎君即便見太平。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "桃園三結義。",
+        "曹公賜雲長馬袍贈金銀。",
+        "王太君雙生太子。",
+        "管仲三薰三沐見齊恒。",
+        "劉文良別妻。"
+      ],
+      "sourceSHA256": "b2408a2089f4a2e75a49adb6d93d8998ec41ef4fd8d439e72c0f51aa1b9d6479"
+    },
+    {
+      "number": 15,
+      "ganzhi": "丙辰",
+      "templePoem": "八十原來是太公，\n看看晚景遇文王。\n目下緊事休相問，\n勸君且守待運通。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "渭水河太公釣魚。",
+        "武吉挑柴打死人。",
+        "柳瀕公孫中狀元。",
+        "商君不聽趙良言。",
+        "朱亥勸孫臏。"
+      ],
+      "sourceSHA256": "bf5aba55951b209fbf91c9414507060ba04b8f7e52cabd11f29b8783db447e10"
+    },
+    {
+      "number": 16,
+      "ganzhi": "丙午",
+      "templePoem": "不須作福不須求，\n用盡心機總未休。\n陽世不知陰世事，\n官法如爐不自由。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "李世民初遊地府。",
+        "夏侯淳中箭。",
+        "潘安中狀元。",
+        "明神宗要還活海瑞。",
+        "杜甫月夜憶弟。"
+      ],
+      "sourceSHA256": "6275168782aaf0786d14d7883554a6ee04139cfe644ca59387f5993fd0b66baa"
+    },
+    {
+      "number": 17,
+      "ganzhi": "丙申",
+      "templePoem": "舊恨重重未改為，\n家中禍患不臨身。\n須當謹防宜作福，\n龍蛇交會得和合。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "莊子劈棺。",
+        "姜尚未卜吉凶事。",
+        "薛剛大鬧花燈。",
+        "龐涓馬陵中箭。",
+        "李斯遺藥殺韓非。"
+      ],
+      "sourceSHA256": "cf873045e7a334dffe0c359cef5949dd6de91a53ba251c2bc815f2a600654e59"
+    },
+    {
+      "number": 18,
+      "ganzhi": "丙戌",
+      "templePoem": "君問中間此言因，\n看看祿馬拱前程。\n若得貴人多得利，\n和合自有兩分明。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "楊館醉玉仝坐馬。",
+        "秦叔寶救李淵搬家。",
+        "邵良遇玉娘配。",
+        "鬼谷子演課。",
+        "薛禮進摩天嶺。"
+      ],
+      "sourceSHA256": "fa33896ba9b33f3ce3c62016cbe964289af7d2bd2126019f33939a171be9f2e0"
+    },
+    {
+      "number": 19,
+      "ganzhi": "丁丑",
+      "templePoem": "富貴由命天註定，\n心高必然誤君期。\n不然且回依舊路，\n雲開月出自分明。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "紅孩兒截住去路。",
+        "范丹妻未出身殺九夫。",
+        "蘇秦不第。",
+        "楊雄事新為莽大夫。",
+        "蔡文錦往京都。"
+      ],
+      "sourceSHA256": "588b68909249d93d0bd6acb23f894ec7e7d5f91cfabb4c01ed944eb36d6b3182"
+    },
+    {
+      "number": 20,
+      "ganzhi": "丁卯",
+      "templePoem": "前途功名未得意，\n只恐命內有交加。\n兩家必定防損失，\n勸君且退莫咨嗟。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "孫悟空大難火災。",
+        "薛丁山著飛刀。",
+        "朱弁冷山尋夫。",
+        "蘇武受官典屬國。",
+        "狄青取旗。"
+      ],
+      "sourceSHA256": "b2da2b0840f496437978fb93f34e6896f3188cb90d9ae90e5e4fa7086b6f4e84"
+    },
+    {
+      "number": 21,
+      "ganzhi": "丁巳",
+      "templePoem": "十方佛法有靈通，\n大難禍患不相同。\n紅日當空常照耀，\n還有貴人到家堂。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "朱壽昌尋母在長亭。",
+        "觀音收大鵬鳥。",
+        "須賈害范雎。",
+        "子儀見天孫。",
+        "正德嫖白牡丹。"
+      ],
+      "sourceSHA256": "98bfc15638265e7387651767fbd6f4c077e23a637b3d3520ab85ae98c8c51a49"
+    },
+    {
+      "number": 22,
+      "ganzhi": "丁未",
+      "templePoem": "太公家業八十成，\n月出光輝四海明。\n命內自然逢大吉，\n茅屋中間百事亨。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "周文王為姜太公拖車。",
+        "王孝先為民祈禱。",
+        "元二使西安。",
+        "韓信拜將。",
+        "洪武君勸農。"
+      ],
+      "sourceSHA256": "a90ca2abfb9216690ecbe8d83d914863f464af8317a63c9bac5a430bfe412c21"
+    },
+    {
+      "number": 23,
+      "ganzhi": "丁酉",
+      "templePoem": "欲去長江水闊茫，\n前途未遂運未通。\n如今絲綸常在手，\n只恐魚水不相逢。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "姜子牙火燒琵琶。",
+        "姜子牙送飯為武吉掩卦。",
+        "周王姐可遇陳春生。",
+        "孫策以玉璽借袁兵。",
+        "仁貴回家。"
+      ],
+      "sourceSHA256": "1138594466e3b8a06153873517e8b465bbc957dbeebfce47413412a8ab4d7c1b"
+    },
+    {
+      "number": 24,
+      "ganzhi": "丁亥",
+      "templePoem": "月出光輝四海明，\n前途祿位見太平。\n浮雲掃退終無事，\n可保禍患不臨身。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "秦叔寶救李淵。",
+        "孟良焦讚救宗保。",
+        "楊文廣征南蠻。",
+        "文種不聽范少伯。",
+        "許凜夢入仙台。"
+      ],
+      "sourceSHA256": "7174e7d86997209c55ee5a9885edcb91bb22169f6078402e6472a12da2c68ca7"
+    },
+    {
+      "number": 25,
+      "ganzhi": "戊子",
+      "templePoem": "總是前途莫心勞，\n求神問聖枉是多。\n但看雞犬日過後，\n不須作福事如何。",
+      "matchesCanonical": true,
+      "sourceCategories": 28,
+      "storyTitles": [
+        "鳳嬌觀音寺問籤中奸人計。",
+        "劉文龍別妻。",
+        "商君不聽趙良言。",
+        "沛公鴻門會。",
+        "孟姜女送寒衣。"
+      ],
+      "sourceSHA256": "aae5234d86d54b7cce9279602120ba9ff015e2246cffd14f2520de4aa26373fe"
+    },
+    {
+      "number": 26,
+      "ganzhi": "戊寅",
+      "templePoem": "選出牡丹第一枝，\n勸君折取莫遲疑。\n世間若問相知處，\n萬事逢春正及時。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "范丹洗浴遇賢妻。",
+        "薛丁山破收飛刀。",
+        "呂蒙正中狀元。",
+        "桓溫得殷浩書。",
+        "江中立回軒夜。"
+      ],
+      "sourceSHA256": "2f9ab3c5ba18dc5b599ad62990c20e314ad743a600d2f860e184b7a34cbfefe8"
+    },
+    {
+      "number": 27,
+      "ganzhi": "戊辰",
+      "templePoem": "君爾寬心且自由，\n門庭清吉家無憂。\n財寶自然終吉利，\n凡事無傷不用求。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "胡完救文氏母女。",
+        "崔文德請胡鳳嬌。",
+        "武吉遇太公解卦。",
+        "李鄴侯白衣宰相。",
+        "龐德公耕隴上。"
+      ],
+      "sourceSHA256": "0c876bacff19626b560be84c4ade03e9fb44f5ed9bc9162204ac99d9bcaa7cb3"
+    },
+    {
+      "number": 28,
+      "ganzhi": "戊午",
+      "templePoem": "於今莫作此當時，\n虎落平陽被犬欺。\n世間凡事何難定，\n千山萬水也遲疑。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "石存孝遇李克用收為誼子。",
+        "李存孝打虎。",
+        "楚項羽烏江自刎。",
+        "孟嘗君雞鳴度關。",
+        "莊子慕道。"
+      ],
+      "sourceSHA256": "73dc7ead887916815c304b60d2f8de7a2f27f53d2a04855a3cf6177538260a3f"
+    },
+    {
+      "number": 29,
+      "ganzhi": "戊申",
+      "templePoem": "枯木可惜未逢春，\n如今返在暗中藏。\n寬心且守風霜退，\n還君依舊作乾坤 。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "古城會關公斬蔡陽。",
+        "孔夫子過宋入陳除險解難。",
+        "孔子厄陳蔡。",
+        "百里奚食牛入相。",
+        "王沂公祈禱。"
+      ],
+      "sourceSHA256": "425376667f659482247ab631aa77d5d54534c3071cc88c6ab1bd00ab59aabe99"
+    },
+    {
+      "number": 30,
+      "ganzhi": "戊戌",
+      "templePoem": "漸漸看此月中和，\n過後須防未得高。\n改變顏色前途去，\n凡事必定見重勞。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "豬哥過柿山。",
+        "薛丁山三請樊梨花。",
+        "李通賠金牌救岳夫人出關。",
+        "氣死周瑜。",
+        "柳毅傳書。"
+      ],
+      "sourceSHA256": "9b277e80664ad13c6117fec5ed93a0350def91dfbb877bcca8a9e1433783b573"
+    },
+    {
+      "number": 31,
+      "ganzhi": "己丑",
+      "templePoem": "綠柳蒼蒼正當時，\n任君此去作乾坤。\n花果結實無殘謝，\n福祿自有慶家門。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "孟姜女招親。",
+        "董永皇都市仙女送孩兒。",
+        "彭祖三十六妻七十二子臨終無子。",
+        "達摩面壁。",
+        "唐三藏取經。"
+      ],
+      "sourceSHA256": "db719c36a2b462e6f97ee4fc0c6ae6a394250295d96bbf3e669736b5b8eb6cc2"
+    },
+    {
+      "number": 32,
+      "ganzhi": "己卯",
+      "templePoem": "龍虎相交在門前，\n此事必定兩相連。\n黃金忽然變成鐵，\n何用作福問神仙。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "龍虎交會。",
+        "劉備入東吳進贅。",
+        "孫臏陷五雷陣。",
+        "王戩入五雷陣。",
+        "常何薦馬周。"
+      ],
+      "sourceSHA256": "e64841f62f30c386f2bdbdd32c64681276879c5111e2f5a1a079e2f266ee2592"
+    },
+    {
+      "number": 33,
+      "ganzhi": "己巳",
+      "templePoem": "欲去長江水闊茫，\n行舟把定未遭風。\n戶內用心再作福，\n看看魚水得相逢。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "劉備入東吳回荊州。",
+        "銅銀買紙靴。",
+        "海瑞討貢封王。",
+        "鮑叔牙進管仲。",
+        "申鮮虞歸楚。"
+      ],
+      "sourceSHA256": "0aaf88a1a3408286551aa3ae68c41c3ff87f9d2dae2e8b1a8cb498994a2be013"
+    },
+    {
+      "number": 34,
+      "ganzhi": "己未",
+      "templePoem": "危險高山行過盡，\n莫嫌此路有重重。\n若見蘭桂漸漸發，\n長蛇反轉變成龍。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "曹公潼關遇馬超。",
+        "朱壽昌長亭尋親母。",
+        "文中子上太平策。",
+        "陶淵明歸隱。",
+        "聶政刺韓傀。"
+      ],
+      "sourceSHA256": "f659a0bcaeec693659a3f5a689fccd13fe4f7e07accb79712053693e4af337ef"
+    },
+    {
+      "number": 35,
+      "ganzhi": "己酉",
+      "templePoem": "此事何須用心機，\n前途變怪自然知。\n看看此去得和合，\n漸漸脫出見太平。",
+      "matchesCanonical": true,
+      "sourceCategories": 28,
+      "storyTitles": [
+        "吳漢殺妻。",
+        "朱文魁遇鬼。",
+        "劉關張古城相會。",
+        "胡僧相宋郊。",
+        "司馬遷被難。"
+      ],
+      "sourceSHA256": "2bb4f5869a0633f181b57309472a08450b845b407571af766e25d89c72394fce"
+    },
+    {
+      "number": 36,
+      "ganzhi": "己亥",
+      "templePoem": "福如東海壽如山，\n君爾何須嘆苦難。\n命內自然逢大吉，\n祈保分明自平安。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "薛仁貴救駕。",
+        "李世民落海灘。",
+        "崔文德祝壽辰。",
+        "文彥博萬壽山祝壽。",
+        "劉先主進蕸萌關。"
+      ],
+      "sourceSHA256": "3d943b3ad102e91faed91196be7ce6d344381b5265a28c3f7e801c1f8a8f3b0c"
+    },
+    {
+      "number": 37,
+      "ganzhi": "庚子",
+      "templePoem": "運逢得意身顯變，\n君爾身中皆有益。\n一向前途無難事，\n決意之中保清吉。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "正德君戲李鳳姐。",
+        "蔡君謨作陳三詩。",
+        "管公明避隱遼東。",
+        "劉皇叔未遇。",
+        "楊文廣破飛鵝山。"
+      ],
+      "sourceSHA256": "6c2865f93515c8460728bdbfa1d53fde15a75111340430be3850b3d4d467cba6"
+    },
+    {
+      "number": 38,
+      "ganzhi": "庚寅",
+      "templePoem": "名顯有意在中央，\n不須祈禱心自安。\n看看早晚日過後，\n即時得意在其間。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "劉備請孔明三顧茅蘆。",
+        "陳三樓下得荔枝。",
+        "蘇秦拜相。",
+        "淮陰侯背楚歸漢。",
+        "管鮑結義。"
+      ],
+      "sourceSHA256": "5d01df962f4e7c8affb5b4174092bb2eb87ff294ce7a23d9c83b044d24575840"
+    },
+    {
+      "number": 39,
+      "ganzhi": "庚辰",
+      "templePoem": "意中若問神仙路，\n勸爾且退望高樓。\n寬心且守寬心坐，\n必然遇得貴人扶。",
+      "matchesCanonical": true,
+      "sourceCategories": 28,
+      "storyTitles": [
+        "孔夫子小兒答。",
+        "楊文廣被困柳州城。",
+        "聞太師誤入十絕陣。",
+        "五娘悶相思。",
+        "曹操遣彌衡投黃祖。"
+      ],
+      "sourceSHA256": "3d50af5cc65d63afd811d9127670622d883c8a5532b99dba7cc76e60929f2f9e"
+    },
+    {
+      "number": 40,
+      "ganzhi": "庚午",
+      "templePoem": "平生富貴成祿位，\n君家門戶定光輝。\n此中必定無損失，\n夫妻百歲喜相隨。",
+      "matchesCanonical": true,
+      "sourceCategories": 28,
+      "storyTitles": [
+        "薛平貴探寒窯。",
+        "三元會葛其量夫妻相會。",
+        "三元會喜葛其蔡坤買書。",
+        "郭子儀夫妻拜壽。",
+        "長樂老歷相五代。"
+      ],
+      "sourceSHA256": "0089f20441e5c5785d8ede458030f0e2d648b6fbdd25917b608ba66919cb6d3b"
+    },
+    {
+      "number": 41,
+      "ganzhi": "庚申",
+      "templePoem": "今行到此實難推，\n歌歌暢飲自徘徊。\n雞犬相聞消息近，\n婚姻夙世結成雙。",
+      "matchesCanonical": true,
+      "sourceCategories": 28,
+      "storyTitles": [
+        "王小姐為色事到禍審月英。",
+        "山伯探英台。",
+        "黃五娘病相思。",
+        "陳三過樓五娘益春打荔枝。",
+        "李固柳汁染衣。"
+      ],
+      "sourceSHA256": "0a52bf2f514b4bd19a4f73181ff6f27d2d95c763ecd3aedeb9e66b0692006246"
+    },
+    {
+      "number": 42,
+      "ganzhi": "庚戌",
+      "templePoem": "一重江水一重山，\n誰知此去路又難。\n任他改求終不過，\n是非終久未得安。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "孟姜女送寒衣哭倒萬里長城。",
+        "郭子儀雙拜壽。",
+        "聞仲西征過後逃十絕陣。",
+        "溫公入相除新法。",
+        "司馬遷被難。"
+      ],
+      "sourceSHA256": "d2f2976115b72b5f7ff26699a6c91edb2572617d211cd2e6f27ce60031a6a749"
+    },
+    {
+      "number": 43,
+      "ganzhi": "辛丑",
+      "templePoem": "一年作事急如飛，\n君爾寬心莫遲疑。\n貴人還在千里外，\n音信月中漸漸知。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "母子井邊相會。",
+        "劉智遠汾州投軍。",
+        "泗水亭長作天子。",
+        "三嬸報喜蘇秦假不第。",
+        "洪武君勸農。"
+      ],
+      "sourceSHA256": "bbe2ebce124ccf238e8eff3b39f271abcd4dfe76565bee06668f15b9c4848f01"
+    },
+    {
+      "number": 44,
+      "ganzhi": "辛卯",
+      "templePoem": "客到前途多得利，\n君爾何故兩相疑。\n雖是中間防進退，\n月出光輝得運時。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "益春留傘。",
+        "蕭何月下追韓信。",
+        "周郎赤壁敗曹兵。",
+        "唐玄宗遊元宵。",
+        "牛郎織女。"
+      ],
+      "sourceSHA256": "9b5dbd5159512843ff040e9645bfbeb1a0cd793d41f316d2d55ebc2ef433d762"
+    },
+    {
+      "number": 45,
+      "ganzhi": "辛巳",
+      "templePoem": "花開今已結成果，\n富貴榮華終到老。\n君子小人相會合，\n萬事清吉莫煩惱。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "孔夫子過番逢小兒。",
+        "薛仁貴困白虎關父子不相逢。",
+        "董永酆都伺仙女送孩兒。",
+        "張良受書圯上老人。",
+        "楚襄王避巫山。"
+      ],
+      "sourceSHA256": "726aa2e2af86bb15c2eaa7dbc2985f9448dd370a79a0e8277e4596352b30f6d3"
+    },
+    {
+      "number": 46,
+      "ganzhi": "辛未",
+      "templePoem": "功名得意與君顯，\n前途富貴喜安然。\n若遇一輪明月照，\n十五團圓光滿天。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "江中立欽賜狀元。",
+        "狄仁傑中興大唐。",
+        "狄仁傑議繼嗣太子。",
+        "趙韓王為村學究。",
+        "雲長古城會戰。"
+      ],
+      "sourceSHA256": "4c153399ab69ff6cdd64c5b25769b138ae2500d93ce511c6b7919e1c11d9821f"
+    },
+    {
+      "number": 47,
+      "ganzhi": "辛酉",
+      "templePoem": "君爾何須問聖跡，\n自己心中皆有益。\n於今且看月中旬，\n凶事脫出化成吉。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "劉永做官蔭妻兒。",
+        "李三娘井邊會。",
+        "宋文舉中狀元玉真走路。",
+        "高達夫五十得名。",
+        "賈似道木棉庵許。"
+      ],
+      "sourceSHA256": "c2f5730e9a0ed2de6e1ab898900f58d7dd2774f9735d2fe1d3f392804e95b3fb"
+    },
+    {
+      "number": 48,
+      "ganzhi": "辛亥",
+      "templePoem": "陽世作事未和同，\n雲遮月色正朦朧。\n心中意欲前途去，\n只恐命內運未通。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "蜻蜓飛入蜘蛛網。",
+        "王昭君和番投水。",
+        "楊管醉玉仝坐馬。",
+        "班超萬里封侯。",
+        "秦始皇造築長城。"
+      ],
+      "sourceSHA256": "a27079b30ab844f022243a2d2e5ea61843ae5f5c0ea891e9bb0a29805a340087"
+    },
+    {
+      "number": 49,
+      "ganzhi": "壬子",
+      "templePoem": "言語雖多不可從，\n風雲靜處未行龍。\n暗中終得明消息，\n君爾何須問重重。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "伍子胥過昭關。",
+        "蘇小妹答佛印。",
+        "劉先主三顧茅廬。",
+        "太子丹尊事荊軻。",
+        "老子煉丹。"
+      ],
+      "sourceSHA256": "d941d81a8fde41183183b7e78c28c68c22f40a52a999632d47f9dd004253b58c"
+    },
+    {
+      "number": 50,
+      "ganzhi": "壬寅",
+      "templePoem": "佛前發誓無異心，\n且看前途得好音。\n此物原來本是鐵，\n也能變化得成金。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "小兒路遇惡鬼。",
+        "潘安遇陳姑叫合。",
+        "三寶太監下西洋。",
+        "劉小姐勸募正。",
+        "雷勝遠絕招未逞。"
+      ],
+      "sourceSHA256": "1b0a2635ee099c85b4dfdff71e26b736966eb951d4e17bc164b7a65fd4ee1699"
+    },
+    {
+      "number": 51,
+      "ganzhi": "壬辰",
+      "templePoem": "東西南北不堪行，\n前途此事正可當。\n勸君把定莫煩惱，\n家門自有保安康。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "趙玄郎河東大戰龍虎關。",
+        "唐三藏取經。",
+        "諸葛公隆中高臥。",
+        "包龍圖勸民。",
+        "鮑自安打擂臺。"
+      ],
+      "sourceSHA256": "4f9db9b41e3339fc1974af7a1ee396c85d92682c4b6eebf3023921d0e04802b4"
+    },
+    {
+      "number": 52,
+      "ganzhi": "壬午",
+      "templePoem": "功名事業本由天，\n不須掛念意懸懸。\n若問中間遲與速，\n風雲際會在眼前。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "薛仁貴回家遇丁山。",
+        "上帝公收龜蛇。",
+        "鄭元和嫖阿仙。",
+        "張生長亭後中探花。",
+        "李白醉中撈月。"
+      ],
+      "sourceSHA256": "db0c4f67191f1454e0d789107e7e92fb88b138328afa70f73eb3cdc3d68ea83f"
+    },
+    {
+      "number": 53,
+      "ganzhi": "壬申",
+      "templePoem": "看君來問心中事，\n積善之家慶有餘。\n運亨財子雙雙至，\n指日喜氣溢門閭。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "蘇秦夫妻相會。",
+        "蘇秦回家賈不第。",
+        "劉元普雙生貴子。",
+        "王景略門師談兵。",
+        "藺相如題橋。"
+      ],
+      "sourceSHA256": "5a817492eec09c76c429343883603f69a9924533c73b6d5e8e718b22e3712528"
+    },
+    {
+      "number": 54,
+      "ganzhi": "壬戌",
+      "templePoem": "孤燈寂寂夜沉沉，\n萬事清吉萬事成。\n若逢陰中有善果，\n燒得好香達神明。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "小姐求佛嫁良緣。",
+        "念月英相國寺。",
+        "郭華買胭脂。",
+        "呂仙枕黃梁未熟。",
+        "釋迦傳燈。"
+      ],
+      "sourceSHA256": "370b123fb3545fe4f71f3dea341fbef37d76dc43c12d9521fee4650ab10cbc42"
+    },
+    {
+      "number": 55,
+      "ganzhi": "癸丑",
+      "templePoem": "須知進退總言虛，\n看看發暗未必全。\n珠玉深藏還未變，\n心中但得枉徒然。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "玉堂春求佛嫁良緣。",
+        "郭華醉酒誤佳期。",
+        "朱買臣負薪。",
+        "郭曖尚公主。",
+        "侯氏望張睽。"
+      ],
+      "sourceSHA256": "c2bc47522b0a203c8c060a304783952e5e56cbce929c943f069f73af0839ebae"
+    },
+    {
+      "number": 56,
+      "ganzhi": "癸卯",
+      "templePoem": "病中若得苦心勞，\n到底完全總未遭。\n去後不須回頭問，\n心中事務盡消磨。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "楊戩得病在西軒。",
+        "李三娘井邊會子。",
+        "武則天坐天。",
+        "范少伯泛舟五湖。",
+        "張子房學道。"
+      ],
+      "sourceSHA256": "38e077df93871e944ec69149abc801766819a7c5797e94aac3fadbf3ac863c81"
+    },
+    {
+      "number": 57,
+      "ganzhi": "癸巳",
+      "templePoem": "勸君把定心莫虛，\n前途清吉得運時。\n到底中間無大事，\n又遇神仙守安居。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "白蛇精遇許漢文。",
+        "龐涓孫臏學法。",
+        "武則天登基。",
+        "李三娘井邊會子。",
+        "寧戚飯牛叩角。"
+      ],
+      "sourceSHA256": "9cc5739a06ffa75e022e8bc0341a9445db982e85afd50f5218a74c848ba019a0"
+    },
+    {
+      "number": 58,
+      "ganzhi": "癸未",
+      "templePoem": "蛇身意欲變成龍，\n只恐命內運未通。\n久病且作寬心坐，\n言語雖多不可從。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "白蛇精詐言往南海遇許漢文。",
+        "袁達入昭谷關。",
+        "漢高祖斬白蛇。",
+        "羅隱歸吳越王。",
+        "王莽篡位。"
+      ],
+      "sourceSHA256": "f330494a1f2121fac84a50c195a743f34f6bda17e80acc5dfb62e2b894830e67"
+    },
+    {
+      "number": 59,
+      "ganzhi": "癸酉",
+      "templePoem": "有心作福莫遲疑，\n求名清吉正當時。\n此事必能成會合，\n財寶自然喜相隨。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "皇都市上有神仙。",
+        "老鼠精鬧宋朝。",
+        "管仲鮑叔為賈。",
+        "李德裕貶崖州。",
+        "蘇秦受六國相印。"
+      ],
+      "sourceSHA256": "ed7e3d101029ee7c4c8c8bc1475c630841907a04835ff2471e32cdf87c1ec0f4"
+    },
+    {
+      "number": 60,
+      "ganzhi": "癸亥",
+      "templePoem": "月出光輝本清吉，\n浮雲總是蔽陰色。\n戶內用心再作福，\n當官分理便有益。",
+      "matchesCanonical": true,
+      "sourceCategories": 29,
+      "storyTitles": [
+        "薛剛踢死太子驚死聖駕。",
+        "楊六婿斬子。",
+        "黃巢試劍法明。",
+        "先主火燒蓮營。",
+        "嚴光與世祖同宿。"
+      ],
+      "sourceSHA256": "df8f57a8582b304c127239e55e5179b4108f420c1e412875597a898394fe283b"
+    }
+  ]
+}

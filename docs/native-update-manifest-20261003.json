@@ -1,368 +1,464 @@
 {
-  "version": "20261003native1",
-  "completeAllEngines": false,
-  "sourceArchive": "mytool-blue-master(20261002-125839).zip",
-  "sourceArchiveSha256": "4743509fce5fad2a878bd4117ad2bd1efc65a3e1b575eefe06f35de82b712547",
-  "format": "overlay-patch",
-  "applyAt": "existing mytool-blue-master root; preserve every unlisted original file",
+  "release": "20261003native2",
+  "baseArchive": "mytool-blue-master(20261002-125839).zip",
+  "packageType": "merge-overlay",
+  "install": "Merge all files into the original project root that contains index.html; retain unrelated original assets.",
+  "coverage": "15 current native interfaces; exact chosen calculation profiles and remaining scope in docs/native-engine-implementation-20261003.md",
   "files": [
     {
       "path": "CSS/name-room.css",
       "sha256": "0c9d772c49db556957b38a02ad9afef0f284a4733f4bf626f489ef2e003821fd",
-      "baseSha256": "4974ae402d4f88a6124ee3d0f0ddaf17a90750cc13a306325690fe7c040aca2c",
       "bytes": 16137
     },
     {
       "path": "CSS/native-analysis.css",
       "sha256": "22ddebb513d93b6f0757026577cc31c2f1301796c1b05428026f4ffbf4c47878",
-      "baseSha256": null,
       "bytes": 1834
+    },
+    {
+      "path": "JS/bazi-classical.js",
+      "sha256": "2085fad9246fe8e8d3a5e10779c40166d79b92edd7c41ca983dade868e60497f",
+      "bytes": 14449
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "sha256": "2b2a4dce4d037210fd78ff7b685b040ea31f8e590f5f7c3d9178d577fce32158",
+      "bytes": 39079
     },
     {
       "path": "JS/bazi-standalone.js",
       "sha256": "b0980bd809d585d6f746f4e130c3d139a6d842e06847fb19a02edff3aae51be5",
-      "baseSha256": "a2f0b6cd8d9690b1d6015887b33752a5f9ca223cc7b8a3969babc730427d9a96",
       "bytes": 85254
     },
     {
       "path": "JS/bazi-suite-core.js",
       "sha256": "b44531ed402b6eb03edbdcf2d13b3696ce588fb11416030ddf7408ce40e0077a",
-      "baseSha256": "d0133f26075b02af2f1e20aaf8bb1de8f25f147d3cfb1889f0390106d084a01f",
       "bytes": 110702
     },
     {
       "path": "JS/bazi-suite.js",
       "sha256": "5ceeaa0a1ae8da1be892c551b490ace476a3f7fb7fb4ea2c008b9307bdbb8d93",
-      "baseSha256": "3cad006c5b6821ca4e6ae36e7569ca8ef29ac593824574b78ab6c8e2063bf636",
       "bytes": 77113
+    },
+    {
+      "path": "JS/bazi.js",
+      "sha256": "ee521bd6098ab9d5165564b3114a316332f43f192143f3d0dc0cdeae5fe8844b",
+      "bytes": 342910
     },
     {
       "path": "JS/gua-prompt.js",
       "sha256": "da6936839ed66769b086a7bbd3f230f719e6d1e4e99508791f3caa2fb6d41a3e",
-      "baseSha256": "9097b8afb799ac38254b919c931dce06af96b3bee26e2538b381c0bcd5f4ad60",
       "bytes": 75219
     },
     {
       "path": "JS/gua-room.js",
       "sha256": "ecea9c504000d1828f60cf7857ae085a15b07ecdcd2e48013507d9d4faf9a617",
-      "baseSha256": "c6c9aa53784a8e55aa663ba7ef581ec4eb69606928a3fd6aeca058b78f212e5b",
       "bytes": 38036
     },
     {
       "path": "JS/lenormand.js",
       "sha256": "504ccccbeebbe4e51c411f0f57ed09aee391c6b8a55f7aef0d7199e48c611c5a",
-      "baseSha256": "6109f3a2a5c87272ffce2dfb3ae89508500039204aba24a6d608108cc9ccecf1",
       "bytes": 275661
     },
     {
+      "path": "JS/liuren-classes.js",
+      "sha256": "bc6826c5c7f46f3c774c12e6eb760434d292e8b783295d8ed418f4e42699cdbb",
+      "bytes": 35768
+    },
+    {
+      "path": "JS/liuren-core.js",
+      "sha256": "29b95cc52481458f4342fd74780cff3d90641e0f570ba04f4246dc9cbc083bd6",
+      "bytes": 15934
+    },
+    {
       "path": "JS/liuren-prompt.js",
-      "sha256": "3e329e4ab95d883dd66370215dad5e0ec127037c195aa03d653a123f8c3b08c5",
-      "baseSha256": "9b1bc492af6415accbab0b5319825a163c3611ae1b1bf5c0b43bc055b3e9e6fa",
-      "bytes": 6701
+      "sha256": "897cc4c108f5087ddd6abd991ed336021a57b488912b1e2f25a9104e3e5401a9",
+      "bytes": 7580
     },
     {
       "path": "JS/liuren-room.js",
-      "sha256": "73fd3889cd10ab06b933e43169936c41855c7d0a5615ef7f3c4b6a80fbb7356c",
-      "baseSha256": "c07c279152cab79f3dbbe19bce4e9209cefe32648532bc634bb6d199604296b0",
-      "bytes": 47503
+      "sha256": "4c479c1ef6ef924830926325397889377cca9331df4f0262aad109e2a212d8b9",
+      "bytes": 49137
     },
     {
       "path": "JS/meihua-standalone.js",
       "sha256": "8187f8abcf3f72a03940f5249041816c7297a0cd824b85ed05918f5fe3e1ad70",
-      "baseSha256": "c3d810ab6bac4c63c1a97e58dd4418e90e76de082eb0d8616db79eb6c0d0ef08",
       "bytes": 119540
     },
     {
+      "path": "JS/name-data.js",
+      "sha256": "98a84f0ee36b086913998c8bfb241af6ec7097642463168af2d0568f3866e864",
+      "bytes": 4805558
+    },
+    {
       "path": "JS/name-engine.js",
-      "sha256": "fc77f50325054307952c5dfa48af5e6708f762b32d384af9e6f05e445752bcbd",
-      "baseSha256": "d46f63b202ca850b3fdbdc379c9a9c6065b7d92d8bedf7a48289a635ef6adc32",
-      "bytes": 38772
+      "sha256": "097d2f2937f9bf9923582898d6012b2fb4325486529eb5c080787e61b1a89d3a",
+      "bytes": 39281
     },
     {
       "path": "JS/name-prompt.js",
-      "sha256": "a3bb51f2a59c8f6e87f6e83f6c93040cfe5b5bcd0c066f9fc36ffcd97a498aa7",
-      "baseSha256": "b2d29583c56b7c80387c7e39ecce08b89bc7eb598b8fbca24b55ed9910e77c06",
-      "bytes": 69211
+      "sha256": "b37f438ff140d7513808f036e27d630b70a7063ab808bfaa17e71d47eaddbaae",
+      "bytes": 69779
     },
     {
       "path": "JS/name-standalone.js",
-      "sha256": "eb4c7363e45240d827a27f73adab9cea61e1bbe60b6b816469d9661d3c76ff7b",
-      "baseSha256": "f397c0b848ada59f017e31fb8473451361dc181e3c9fcbed3bdeb8c61e65ef48",
-      "bytes": 35793
+      "sha256": "f67b514d576178ae58530aa9a818408930e437effc62efc8cdf44faa93dd299a",
+      "bytes": 35795
     },
     {
       "path": "JS/native-analysis-view.js",
       "sha256": "1fdf95ee486079a748de039a3800d6487e04e88fcbc561cc2273f3988c229bb7",
-      "baseSha256": null,
       "bytes": 12363
     },
     {
       "path": "JS/native-card-analysis.js",
-      "sha256": "1ca617b137ed34278a445c12d5451364cb95c56532ca0a6ad1c46ddb33681248",
-      "baseSha256": null,
-      "bytes": 5981
+      "sha256": "c7be24e7ba4291e470d20da107b48ed2651dbc1a5189824fae0cc4ac9d28d0c7",
+      "bytes": 6626
     },
     {
       "path": "JS/native-chart-analysis.js",
-      "sha256": "6706f2c32269701dad4c71865843934e69193bc1839794c2572f35f68abbf727",
-      "baseSha256": null,
-      "bytes": 28973
+      "sha256": "f7ae25352ec841874b135530cb21ccfff2dce6bc82fcf382c5fc7204131c932c",
+      "bytes": 32239
     },
     {
       "path": "JS/native-rule-sources.js",
-      "sha256": "b4e950905297bf3186e12cb48347e0632d37b733694c610f338009139c0f2aea",
-      "baseSha256": null,
-      "bytes": 5375
+      "sha256": "e19da83aba6d313e8405e5ee03a71acebec5b8351880a30d7d4c974294cda574",
+      "bytes": 7755
+    },
+    {
+      "path": "JS/oracle-register.js",
+      "sha256": "37dd754ac2528e52b7f001c71d6d41f825c5ee88aac0f5dec4b34d208cdb16c8",
+      "bytes": 449588
     },
     {
       "path": "JS/oracle.js",
-      "sha256": "b4793da1507b6e29849a63f03e916c8923f71177786586a62585a1516b298f32",
-      "baseSha256": "33d2a9f7ad1527a2a302a8428d89dd518bbfd37cfdc88fcbad871b7c05a8488b",
-      "bytes": 187264
+      "sha256": "b6d69d4d6a22bedc034aad51b2f4ca0478617ac038eaf63200f3ec712df8fd60",
+      "bytes": 187530
     },
     {
       "path": "JS/prompt-export.js",
       "sha256": "ebb5521e4078932763dd6383b9d4c9fdd5e04bbd04a478f7917a69e8a481f3c3",
-      "baseSha256": "0c6119a5a0870d45c1220ee1c5baa8063295f6d812ffbee4634b4af957ba9f29",
       "bytes": 161737
     },
     {
       "path": "JS/relationship-core.js",
       "sha256": "8ef4d225cda0f8cb3ca675a1daf65ef04e6eb70e45005b878df7db8e78ee7d65",
-      "baseSha256": "3b98168efd3c3349b87b83e2246727484058929933c1fc11a8908ee39cf58b4d",
       "bytes": 89087
     },
     {
       "path": "JS/relationship-ui.js",
       "sha256": "965d6beee48a66239d139ac4113a1d73b410c038432b872dbf12751bac0b1403",
-      "baseSha256": "2a2c178feb45b13eeaf22cf4d1700b291c8ad934e12ca145f2d96ce7886c03fe",
       "bytes": 8303
     },
     {
       "path": "JS/sw.js",
-      "sha256": "deab7eba7fc84c6b327f00bdbdcc540a4c9036d9ff56e46838db527e7a477548",
-      "baseSha256": "32b52760dcf755372d4fcd7f8eced078eef1fc890f452573322938cfe2f8de6f",
-      "bytes": 6660
+      "sha256": "723be36ef07f1e039f48f3b17c23212a865d705a1770bcace3a426adef829752",
+      "bytes": 6783
     },
     {
       "path": "JS/ui.js",
       "sha256": "813ffb6b0ca1f5db37c12bfc5137851da6afe82e7822e9da902cd1c35667e2d0",
-      "baseSha256": "bc4ebb5cbbdf928002890e7bba01fbbc9b106fce5e2601521a293fdd66ac3346",
       "bytes": 434780
     },
     {
       "path": "JS/vedic-engine.js",
-      "sha256": "89e3af15eb922ee91d03416d5419d83ac085dba26763e3df9956f16615ff8f4a",
-      "baseSha256": "edd4cdf13755649095eb0a88a86249b3acde27aea415c01bd3a6ac34a1e4c054",
-      "bytes": 41450
+      "sha256": "7bbefff1b0214f4ed581c11fb00d8dfe22a60c3ddc0700ee5b80bb10e944bc81",
+      "bytes": 41694
     },
     {
       "path": "JS/vedic-prompt.js",
-      "sha256": "9b4e871f09f95a20fbd0abdc2b2cb67da9d7d6d87ba53a47a72a1c821a41b2e5",
-      "baseSha256": "ee123c76d4dcf21a01f1d6a00f85aacde79fc1bea5d95fa7c0e71eee87fd8efb",
-      "bytes": 74777
+      "sha256": "b8125defdd4dd9a144d1fd034b922385bf27cd918fc8abfe6b7c60466b3fe47a",
+      "bytes": 75711
     },
     {
       "path": "JS/vedic-standalone.js",
-      "sha256": "17243e1de977e8ba550f6a1712373279c2878eb19fcbcbb43b1befa828ce10fc",
-      "baseSha256": "92b1ad405994c3ff66a20144196a7f8f6abf90c25894a5926c921c752aa18aef",
-      "bytes": 41268
+      "sha256": "b93f95221097866387b26b29411d0dd032d311ba4659ada892bc8bfef2a4126d",
+      "bytes": 41291
     },
     {
       "path": "JS/vedic-strength.js",
-      "sha256": "0924367c718663f07faa7cba807837acada9960403f7f216b750e3670785bfe1",
-      "baseSha256": null,
-      "bytes": 5891
+      "sha256": "8db12a25b5696f28384b2da49ef109f4cee2e715a592534513a774af1bb6cc11",
+      "bytes": 21416
     },
     {
       "path": "JS/western-dignities.js",
       "sha256": "720f94100212486575c7f501ef8d8366a204619866e787e4ef8c2fa3bc510931",
-      "baseSha256": null,
       "bytes": 6304
     },
     {
       "path": "JS/western-engine.js",
-      "sha256": "e7dd280bee064aefe09741d36dfeab57c4d240cb23b823ab04ae0dbf36fcc98a",
-      "baseSha256": "58ddd2806cc261e449e0c9824c079ad865e2f517c173359977b117fbcac162d8",
-      "bytes": 23184
+      "sha256": "10720edd381d53064e7a95e85e462f021face7e10173adc926bce6130f2a966d",
+      "bytes": 25762
     },
     {
       "path": "JS/western-prompt.js",
-      "sha256": "35d0bd4b7df59d35de68c573d7f633715eb035b03e3377eaefad127bb00ce000",
-      "baseSha256": "0eece751080a0aa3654843c9c2bf4d68b8a1056555baae6285ba32ee654a19ea",
-      "bytes": 67676
+      "sha256": "8e6ef7fe74be8ccbc2f2e9600ac549ce5e1bf706842efad8f8f7113df71b93ed",
+      "bytes": 68295
     },
     {
       "path": "JS/western-standalone.js",
-      "sha256": "911fdab8f50843c47f098cbb9dd77ae6f1424076d5aade918a37037b2208e01c",
-      "baseSha256": "d3298886ec9156516e32a1327a13814c9fc1eea65d5b99cef6f79ed8b01fca3f",
-      "bytes": 30671
+      "sha256": "31aa341ece4974a4ff35334764b6d0de71b9da9e80a5c3947aad2a5d22cb8f7b",
+      "bytes": 30697
     },
     {
       "path": "JS/ziwei-standalone.js",
-      "sha256": "6cb2afc84353653ccf8179df62056ebadb8b4359c8d6ba959f369328d2fcfa4a",
-      "baseSha256": "122774badcd760c853dbc85c797126e07597624f25f74067ba3fa372c8b8c9ba",
+      "sha256": "02e2b5520755e51828c0140ce6cd64572a467f3ccd959c33c962793910665d59",
       "bytes": 143052
     },
     {
       "path": "JS/ziwei.js",
-      "sha256": "e26e2c04fe138c0fc94b8f3bbaad978691ac441e90dcb073f5dede94df3d4224",
-      "baseSha256": "7a306c5e72c30fb655b3bd723c88df2ac9381e0d4ed71fcd1f0e0ebaa6d0c08a",
-      "bytes": 245403
+      "sha256": "0f3fc4e6d6706ae40ffa6773ccc083417cb7951437d34a2ded5640ec4b890c95",
+      "bytes": 245915
+    },
+    {
+      "path": "README_NATIVE_UPDATE.md",
+      "sha256": "354a310e5268a857ba8b540d47ab0b61c48a6f22ec7fdd1e01b785f14e4a29ce",
+      "bytes": 1224
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "sha256": "2b2a4dce4d037210fd78ff7b685b040ea31f8e590f5f7c3d9178d577fce32158",
+      "bytes": 39079
     },
     {
       "path": "bazi-suite-core.js",
       "sha256": "b44531ed402b6eb03edbdcf2d13b3696ce588fb11416030ddf7408ce40e0077a",
-      "baseSha256": "d0133f26075b02af2f1e20aaf8bb1de8f25f147d3cfb1889f0390106d084a01f",
       "bytes": 110702
+    },
+    {
+      "path": "data/name/numerology-original-1935.json",
+      "sha256": "d8ff5291c67d94912ebe9ea9b96ce6fb034ccb31deb2c731579f3dcb50e2a3ce",
+      "bytes": 33630
+    },
+    {
+      "path": "data/oracle/temple-analysis-20261003.json",
+      "sha256": "d7fbe5d45ed50496b21dad01420c7ceb341d6f56f59cbc7ac03e371197f69b0b",
+      "bytes": 652176
+    },
+    {
+      "path": "docs/engine-supplements-validation-20261003.json",
+      "sha256": "4bbc0597b072705619d44059eb77b4dffd4ca0ccb7b356a4872a99ff96f0e63b",
+      "bytes": 1383
+    },
+    {
+      "path": "docs/liuren-class-validation-20261003.json",
+      "sha256": "6e9a6d691f0902a9c10a0858411d0e3203a3cf7ea5fba7baff2a8ccc3e24618c",
+      "bytes": 1256
     },
     {
       "path": "docs/name-comparison-rootfix-20261002.md",
       "sha256": "739e6e0d2df074cc8074ba11fd7e505a3ed80bf33e474933d75ff8a1a6c9e89b",
-      "baseSha256": null,
       "bytes": 6247
     },
     {
+      "path": "docs/name-native-browser-validation-20261003.json",
+      "sha256": "f5a33e4e192ee2283efded3c313ec47a0bc54c77ee3ae204fdda3067738179bc",
+      "bytes": 423
+    },
+    {
+      "path": "docs/name-original-validation-20261003.json",
+      "sha256": "b351b30f44c311d66a42861afa32550392428ae6213fa7c605a50bf25efdbb83",
+      "bytes": 585
+    },
+    {
       "path": "docs/native-browser-validation-20261003.json",
-      "sha256": "88fb1ef932651b1c774c6bccf697d807913bf1ff31c6dbd1cfdfdce604689389",
-      "baseSha256": null,
+      "sha256": "3559af07e4d2f9bb5300cbbe9049ae032cd5b4742d8ac234069a163d7f1bed0b",
       "bytes": 548
     },
     {
       "path": "docs/native-engine-implementation-20261003.md",
-      "sha256": "c56902de704f17708d24350a3933b0f303c3ec310791c4ccc803335ee5aaead0",
-      "baseSha256": null,
-      "bytes": 11479
+      "sha256": "3328c453103b8d578d905082f572a19ec292973b97dce88df452ecaa97f5983b",
+      "bytes": 8203
     },
     {
       "path": "docs/native-entry-validation-20261003.json",
-      "sha256": "d986974df190862c05cf540ad68e0410f64b58cd679cfab99d3dcab599f33caf",
-      "baseSha256": null,
+      "sha256": "56beaf3636bef7c93e4be7a2697d987070d09ecf610c09475849e192a06b47eb",
       "bytes": 884
     },
     {
       "path": "docs/native-result-1280.png",
       "sha256": "481503193ac79cf1b084d75679b130a0328f42c139d1e316a0438faa9331658c",
-      "baseSha256": null,
       "bytes": 273665
     },
     {
       "path": "docs/native-result-390.png",
       "sha256": "c8dbf8289b2f080303d6ae95df6e1a97df83c19d2f59923ae59fdb6ea5e64a4f",
-      "baseSha256": null,
       "bytes": 141086
     },
     {
       "path": "docs/native-scope-20261003.json",
-      "sha256": "0577c5362fbc2cd622d8c4b643a3236b6505bff5a16c2bdacd87c325dad5be24",
-      "baseSha256": null,
-      "bytes": 11908
+      "sha256": "b042089b4d5146e5a79be8b5b6bcf3122bdbc208d64590c253580621cfb33954",
+      "bytes": 15983
     },
     {
       "path": "docs/native-validation-20261003.json",
-      "sha256": "6608eea20f0e313f662aa25f410af3394e25ffd2c9f3a5a6e725c9f9d27f0440",
-      "baseSha256": null,
-      "bytes": 4489
+      "sha256": "2a2b92e343902a1e3e03b21b8d5513430f9b5416a586d721acf02fbf8320482f",
+      "bytes": 4491
+    },
+    {
+      "path": "docs/oracle-register-validation-20261003.json",
+      "sha256": "9d551a4f0f2824982d99171ffc9da4c81cd2b3d7f1f3d216714327d6b8893cb4",
+      "bytes": 917
+    },
+    {
+      "path": "docs/vedic-strength-validation-20261003.json",
+      "sha256": "f38fa19d6abff55699efbae1932adf8545ff03fc93a6ce04acbe1d4332783b42",
+      "bytes": 2124
     },
     {
       "path": "index.html",
-      "sha256": "e985b57200e74ca05c398d18c919512ab81f689646d39690dd6a11678e07c7ca",
-      "baseSha256": "d46166b2c57cf7a4e85c4c5102ae77d7b7c6656f223ae1195745999f77f7b2bb",
-      "bytes": 150294
+      "sha256": "7bc67f4f79b9c59eeab106c2cbb8c7d5d02add947e660ea0cea2d14132980c77",
+      "bytes": 150429
+    },
+    {
+      "path": "ink-flow.js",
+      "sha256": "a01f030229762cab29c18852f86a43a850b35833663a68da6839988ee580948f",
+      "bytes": 43608
     },
     {
       "path": "lenormand.js",
       "sha256": "504ccccbeebbe4e51c411f0f57ed09aee391c6b8a55f7aef0d7199e48c611c5a",
-      "baseSha256": "6109f3a2a5c87272ffce2dfb3ae89508500039204aba24a6d608108cc9ccecf1",
       "bytes": 275661
     },
     {
       "path": "meihua-standalone.js",
       "sha256": "8187f8abcf3f72a03940f5249041816c7297a0cd824b85ed05918f5fe3e1ad70",
-      "baseSha256": "c3d810ab6bac4c63c1a97e58dd4418e90e76de082eb0d8616db79eb6c0d0ef08",
       "bytes": 119540
     },
     {
       "path": "oracle.js",
-      "sha256": "b4793da1507b6e29849a63f03e916c8923f71177786586a62585a1516b298f32",
-      "baseSha256": "33d2a9f7ad1527a2a302a8428d89dd518bbfd37cfdc88fcbad871b7c05a8488b",
-      "bytes": 187264
+      "sha256": "b6d69d4d6a22bedc034aad51b2f4ca0478617ac038eaf63200f3ec712df8fd60",
+      "bytes": 187530
     },
     {
       "path": "package.json",
-      "sha256": "ce3283770874817b17b896d480389d76080788f5f92419ef1ac4de52b5c63245",
-      "baseSha256": "657b8fb1ddad75f52b2821d4eb7f7804ad67f21b3e1cfe448dfaa216fab092c2",
-      "bytes": 8864
+      "sha256": "ce2e20b801dafa1419590d5ada79928bed65d44b93bcc796c305453fd248b362",
+      "bytes": 9078
     },
     {
       "path": "prompt-export.js",
       "sha256": "ebb5521e4078932763dd6383b9d4c9fdd5e04bbd04a478f7917a69e8a481f3c3",
-      "baseSha256": "0c6119a5a0870d45c1220ee1c5baa8063295f6d812ffbee4634b4af957ba9f29",
       "bytes": 161737
     },
     {
+      "path": "scripts/build-name-data.py",
+      "sha256": "c9c2a8af087275730ccb1c498a4afc1f7d4f795e1b1c895e0ef81eaba2037962",
+      "bytes": 5668
+    },
+    {
+      "path": "scripts/build-oracle-analysis.py",
+      "sha256": "56cfd7be22b0ec308f59efaf0ca2bc20cab710a54fc4de7a3ff371463a2ffc59",
+      "bytes": 17971
+    },
+    {
+      "path": "scripts/update-name-rule-tables.py",
+      "sha256": "c5a6c247152758310bfbf5624d4ee6490733f301ea8dc2f611b8221ee3e92f68",
+      "bytes": 1470
+    },
+    {
+      "path": "selftest-core.js",
+      "sha256": "c199ca2a1d3747f21a1743fcd617dc336bae72cd5c1aa02a54242febd0570ae5",
+      "bytes": 30006
+    },
+    {
       "path": "sw.js",
-      "sha256": "deab7eba7fc84c6b327f00bdbdcc540a4c9036d9ff56e46838db527e7a477548",
-      "baseSha256": "32b52760dcf755372d4fcd7f8eced078eef1fc890f452573322938cfe2f8de6f",
-      "bytes": 6660
+      "sha256": "723be36ef07f1e039f48f3b17c23212a865d705a1770bcace3a426adef829752",
+      "bytes": 6783
+    },
+    {
+      "path": "tarot-semantic-engine.js",
+      "sha256": "535b076510cea36c690ecca8afba6abfddf01375ca753793d9c4641704fcc252",
+      "bytes": 119188
+    },
+    {
+      "path": "tests/engine-supplements-20261003.cjs",
+      "sha256": "9f6b542e577001ba32993472cf4621acf52f76b7d855688143d27df72266cf38",
+      "bytes": 9085
+    },
+    {
+      "path": "tests/fixtures/oracle-temple-20261003.json",
+      "sha256": "a31f950e028c381d69fb94051a4056815f3d80941727f52aaef75da93916a5bb",
+      "bytes": 32648
+    },
+    {
+      "path": "tests/fixtures/western-progressions-swiss-20261003.json",
+      "sha256": "b91387f269fb3345b244cd3893bf090adf4a6a3b53ee9fc4a2cd8baf2bc93ad6",
+      "bytes": 35442
     },
     {
       "path": "tests/lenormand-v19-engine-rootfix-20260925.cjs",
       "sha256": "652cefde3b8a76fead47c106c45a5aed64e149d147b2a574257168c6a2a70e7a",
-      "baseSha256": "6970a3d467a621508e1d7a6fc535f93d5420d99ddb8791434722a4e954aaafe8",
       "bytes": 11954
+    },
+    {
+      "path": "tests/liuren-classes-20261003.cjs",
+      "sha256": "5d68d8c432cd400c7fbe7e231851be6d92b4f18a1f8b675b7c36e062fbe9fa3a",
+      "bytes": 8698
     },
     {
       "path": "tests/liuren-engine-20261001.cjs",
       "sha256": "90431badc4922f98879f025de5aed459855146b61dae543b737afd23d12e00b1",
-      "baseSha256": "90351e96f7342a441ae56432302b8422b9207adc531563221f41c1060abb3a94",
       "bytes": 7914
     },
     {
       "path": "tests/name-browser-20261001.cjs",
       "sha256": "4c97ac7fea39d164928f957abc0594acfadaf9088096c88d8f12047655c98ba9",
-      "baseSha256": "d7c63e5858bd9f68ee9e1570112a3a5ab6a9b6bcc9c6f0a0a05212059d7af2dc",
       "bytes": 12170
     },
     {
       "path": "tests/name-comparison-rootfix-20261002.cjs",
       "sha256": "2f896a42e00b03faf98149f7ffe9fced2fe76c3960dc0ac934ecb72e198d8715",
-      "baseSha256": null,
       "bytes": 11939
     },
     {
+      "path": "tests/name-engine-20261001.cjs",
+      "sha256": "b3d66dff7e1454ecc9d296ea63977083c596471453a5c99c00131825b92b4a6b",
+      "bytes": 9397
+    },
+    {
+      "path": "tests/name-original-20261003.cjs",
+      "sha256": "003959ae49dad03cb59ad8f47486b41554fc95d5102e20d81b0475a34f448dd2",
+      "bytes": 3174
+    },
+    {
       "path": "tests/native-analysis-20261003.cjs",
-      "sha256": "be1bbb1da529307a4ecaa1d1078745eb6a7cca26ebae514e00d0841411213553",
-      "baseSha256": null,
-      "bytes": 21086
+      "sha256": "b31e3a6767a85ad079407881a020579783fd2f4721e552457cac95904f267322",
+      "bytes": 21754
     },
     {
       "path": "tests/native-browser-20261003.cjs",
-      "sha256": "eab8dd9045efc622452a7435a3aa35673a1418c81e08720af8a4a72059cf674f",
-      "baseSha256": null,
-      "bytes": 4680
+      "sha256": "460e84f19c56f4cff5c903970523d0934c68dadbfe982ebcfdd63fa6f476734c",
+      "bytes": 4758
     },
     {
       "path": "tests/native-entry-browser-20261003.cjs",
-      "sha256": "07d3ef4191348a3fa7d69b9415bd2ba045499a4f09d3dd4b5dfa2c9c95c05e28",
-      "baseSha256": null,
-      "bytes": 5920
+      "sha256": "0ec6bf82b44038487a4a031771c05f25d480fa41575bedfc09f28840aa445c84",
+      "bytes": 6038
     },
     {
       "path": "tests/native-fixtures-20261003.cjs",
-      "sha256": "65d563408d36339456df9c15229128e433ff319a3a99a1476659db8cc681ee4a",
-      "baseSha256": null,
-      "bytes": 3880
+      "sha256": "bb4dc15da6eb91ef7a5ad89804223a6d6cf62b3fb8f2df5a9a58dc8cddefec7c",
+      "bytes": 3936
+    },
+    {
+      "path": "tests/oracle-register-20261003.cjs",
+      "sha256": "9f6aadaec25cf2b0cfae81f16bb7701dfa1e925bb03c97e1f1c74b0b9129de8c",
+      "bytes": 3890
+    },
+    {
+      "path": "tests/vedic-strength-20261003.cjs",
+      "sha256": "bc2f354b6f6b43f417f3844c5d88e6f6dadd795caefb4bb1e220aa682ea38710",
+      "bytes": 9236
+    },
+    {
+      "path": "tests/western-engine-20260914.cjs",
+      "sha256": "2583a36bb13fdee5c081553f9c25ed34d20db2a459583d8e5ee98c4f4687706b",
+      "bytes": 8059
     },
     {
       "path": "ui.js",
       "sha256": "813ffb6b0ca1f5db37c12bfc5137851da6afe82e7822e9da902cd1c35667e2d0",
-      "baseSha256": "bc4ebb5cbbdf928002890e7bba01fbbc9b106fce5e2601521a293fdd66ac3346",
       "bytes": 434780
     }
-  ],
-  "syntaxChecked": 47,
-  "indexLocalAssetsChecked": 95,
-  "validation": "31/31 native groups; 2 result-panel viewports; 5 actual calculation entry flows plus Name at 2 widths",
-  "report": "docs/native-engine-implementation-20261003.md"
+  ]
 }

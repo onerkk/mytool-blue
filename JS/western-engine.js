@@ -4,7 +4,7 @@
  */
 (function(root){
   'use strict';
-  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.1.0';
+  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.2.0';
   const KEYS=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
   const NAMES=['太陽','月亮','水星','金星','火星','木星','土星','天王星','海王星','冥王星'];
   const SYMBOLS=['☉','☽','☿','♀','♂','♃','♄','♅','♆','♇'];
@@ -32,7 +32,11 @@
   }
   function position(key,ms){const A=setup(),t=A.MakeTime(instant(ms)),v=A.Ecliptic(A.GeoVector(key,t,true));return {longitude:norm(v.elon),latitude:v.elat,distanceAU:Math.hypot(v.vec.x,v.vec.y,v.vec.z)};}
   function angles(ms,latitude,longitude){
-    const A=setup(),t=A.MakeTime(instant(ms)),eps=A.e_tilt(t).tobl*RAD,theta=norm(A.SiderealTime(t)*15+longitude)*RAD;
+    const A=setup(),t=A.MakeTime(instant(ms));return anglesFromARMC(norm(A.SiderealTime(t)*15+longitude),latitude,A.e_tilt(t).tobl);
+  }
+  function anglesFromARMC(armc,latitude,obliquity){
+    if(!Number.isFinite(armc)||!Number.isFinite(latitude)||Math.abs(latitude)>=90||!Number.isFinite(obliquity)||obliquity<=0||obliquity>=90)throw Error('ARMC、緯度或黃赤交角無效');
+    const eps=obliquity*RAD,theta=norm(armc)*RAD;
     let asc=norm(Math.atan2(-Math.cos(theta),Math.sin(theta)*Math.cos(eps)+Math.tan(latitude*RAD)*Math.sin(eps))/RAD);
     const east=-Math.sin(theta)*Math.cos(asc*RAD)+Math.cos(theta)*Math.cos(eps)*Math.sin(asc*RAD);
     if(east<0)asc=norm(asc+180);
@@ -42,7 +46,11 @@
   function houses(ms,latitude,longitude,system='P'){
     if(!Object.hasOwn(SYSTEMS,system))throw Error('宮制無效');
     if(!Number.isFinite(latitude)||Math.abs(latitude)>=90||!Number.isFinite(longitude)||Math.abs(longitude)>180)throw Error('請填有效的出生地經緯度');
-    const a=angles(ms,latitude,longitude),c=new Array(12),eps=a.obliquity*RAD,phi=latitude*RAD;
+    const a=angles(ms,latitude,longitude);return housesFromARMC(a.ramc,latitude,a.obliquity,system);
+  }
+  function housesFromARMC(armc,latitude,obliquity,system='P'){
+    if(!Object.hasOwn(SYSTEMS,system))throw Error('宮制無效');
+    const a=anglesFromARMC(armc,latitude,obliquity),c=new Array(12),eps=a.obliquity*RAD,phi=latitude*RAD;
     if(system==='P'&&Math.abs(latitude)>=90-a.obliquity)throw Error('這個緯度的 Placidus 宮位無法完整定義，請改選整宮制或等宮制');
     if(system==='E'||system==='W'){const start=system==='W'?Math.floor(a.ASC/30)*30:a.ASC;for(let i=0;i<12;i++)c[i]=norm(start+i*30);}
     else{
@@ -138,6 +146,14 @@
   function sect(ms,lat,lon){const A=setup(),t=A.MakeTime(instant(ms)),sun=A.Ecliptic(A.GeoVector('Sun',t,true)),a=angles(ms,lat,lon),eps=a.obliquity*RAD,l=sun.elon*RAD,b=sun.elat*RAD,dec=Math.asin(Math.sin(b)*Math.cos(eps)+Math.cos(b)*Math.sin(eps)*Math.sin(l)),ra=Math.atan2(Math.sin(l)*Math.cos(eps)-Math.tan(b)*Math.sin(eps),Math.cos(l)),ha=a.ramc*RAD-ra,alt=Math.asin(Math.sin(lat*RAD)*Math.sin(dec)+Math.cos(lat*RAD)*Math.cos(dec)*Math.cos(ha))/RAD;return {name:alt>=0?'日間盤':'夜間盤',solarAltitude:alt,nearHorizon:Math.abs(alt)<.25,policy:'幾何太陽中心高度，未加大氣折射'};}
   function crossAspects(moving,natal,maxOrb=2){const out=[];for(const a of Object.values(moving).filter(p=>KEYS.includes(p.key)))for(const b of Object.values(natal).filter(p=>KEYS.includes(p.key)||['ASC','MC'].includes(p.key))){const x=pairAspect({ ...b,speed:0},{...a},ASPECTS,maxOrb);if(x)out.push({...x,a:a.key,b:b.key,kind:'行運對本命'});}return out.sort((a,b)=>a.orb-b.orb);}
   function solarReturn(birth,year,latitude,longitude,system){const b=instant(birth),target=position('Sun',b).longitude;let lo=Date.UTC(year,b.getUTCMonth(),b.getUTCDate())-4*DAY,hi=lo+8*DAY;const f=t=>diff(position('Sun',t).longitude,target);if(f(lo)>0||f(hi)<0)throw Error('太陽回歸未能建立求根區間');for(let i=0;i<32;i++){const mid=(lo+hi)/2;if(f(mid)>0)hi=mid;else lo=mid;}const utc=(lo+hi)/2,hs=houses(utc,latitude,longitude,system);return {year,utc:new Date(utc).toISOString(),residualDegrees:Math.abs(f(utc)),houses:hs,planets:planets(utc,hs.cusps),locationPolicy:'出生地回歸盤；未使用現居地搬遷盤'};}
+  function secondaryProgression(birth,reference,latitude,longitude,system,natal,natalHouses,method='naibod_ra'){
+    if(!['naibod_ra','secondary_sidereal'].includes(method))throw Error('次限角點起法無效');
+    const age=(+reference-birth)/(YEAR*DAY),ms=+birth+(+reference-birth)/YEAR,A=setup(),eps=A.e_tilt(A.MakeTime(new Date(ms))).tobl,armc=method==='naibod_ra'?norm(natalHouses.angles.ramc+age*.98564733):angles(ms,latitude,longitude).ramc,hs=housesFromARMC(armc,latitude,eps,system),ps=planets(ms,hs.cusps),targets={...natal};
+    for(const key of ['ASC','MC'])targets[key]={key,longitude:natalHouses.angles[key],sign:Math.floor(natalHouses.angles[key]/30),speed:0};
+    const toNatal=crossAspects(ps,targets,1).map(a=>({...a,kind:'次限行星對本命',phase:null})),angleAspects=[];
+    for(const key of ['ASC','MC'])for(const b of Object.values(targets).filter(x=>KEYS.includes(x.key)||['ASC','MC'].includes(x.key))){const a={key,longitude:hs.angles[key],sign:Math.floor(hs.angles[key]/30),speed:0},x=pairAspect(a,b,ASPECTS,1);if(x)angleAspects.push({...x,kind:'次限角點對本命',phase:null});}
+    return {utc:new Date(ms).toISOString(),referenceUTC:reference.toISOString(),ageYears:age,yearDays:YEAR,policy:'行星次限：出生後一日象徵一年；角點採明示ARMC起法重算全12宮，不加同一黃經弧到全部宮頭',angleMethod:method,angleMethodLabel:method==='naibod_ra'?'ARMC 1 Naibod：每年平均太陽日弧0.98564733°加出生RAMC':'ARMC 361°：次限星曆時刻的實際地方恆星時',angleCalculation:{birthRAMC:natalHouses.angles.ramc,progressedRAMC:armc,naibodDegreesPerYear:.98564733,progressedObliquity:eps,latitude,longitude,houseSystem:system,locationPolicy:'出生地；沒有混入搬遷宮位'},houses:hs,planets:ps,aspects:toNatal,angleAspects,chartAspects:aspects(ps,hs),natalHouseOverlay:KEYS.map(k=>({planet:k,progressedHouse:ps[k].house,natalHouse:houseOf(ps[k].longitude,natalHouses.cusps)})),sources:['https://www.astro.com/faq/fq_fh_owtype_e.htm','https://www.astro.com/swisseph/swephprg.htm#_Toc283735486'],scope:'Naibod均日弧角點是命名的方向推運，與實際次限恆星時分列；不聲稱兩種角點算法通用等價'};
+  }
   function compute(input){
     const birth=checkDate(input.utc),reference=checkDate(input.reference||new Date());if(reference<birth)throw Error('觀察日不能早於出生日期');
     const latitude=Number(input.latitude),longitude=Number(input.longitude),system=input.houseSystem||'P',unknown=!!input.unknownTime,uncertainty=Number(input.uncertaintyMinutes||0);
@@ -162,7 +178,7 @@
     if(samples.length){for(const key of KEYS){const values=samples.map(t=>position(key,t).longitude),offsets=values.map(x=>diff(x,ps[key].longitude));sensitivity.planets.push({key,minimum:norm(ps[key].longitude+Math.min(...offsets)),maximum:norm(ps[key].longitude+Math.max(...offsets)),signs:[...new Set(values.concat(ps[key].longitude).map(x=>Math.floor(x/30)))],spanDegrees:Math.max(...offsets)-Math.min(...offsets)});}if(!unknown){for(const key of ['ASC','MC'])sensitivity.angles.push({key,alternatives:samples.map(t=>angles(t,latitude,longitude)[key])});sensitivity.houseAlternatives=Object.fromEntries(KEYS.map(k=>[k,[...new Set(samples.map(t=>houseOf(position(k,t).longitude,houses(t,latitude,longitude,system).cusps)).concat(ps[k].house))]]));}}
     const natalTargets={...ps};if(hs)for(const key of ['ASC','MC'])natalTargets[key]={key,longitude:hs.angles[key],sign:Math.floor(hs.angles[key]/30),speed:0};
     const transiting=planets(reference),transits={utc:reference.toISOString(),planets:transiting,aspects:crossAspects(transiting,natalTargets),orb:2};
-    const progressMs=+birth+(+reference-birth)/YEAR,progressed=unknown?null:planets(progressMs),progressions=progressed?{utc:new Date(progressMs).toISOString(),yearDays:YEAR,policy:'次限推運：出生後一日象徵一年，只推行星；未推進角點與宮位',planets:progressed,aspects:crossAspects(progressed,natalTargets,1).map(a=>({...a,kind:'次限對本命',phase:null}))}:null;
+    const progressions=unknown?null:secondaryProgression(birth,reference,latitude,longitude,system,ps,hs,input.progressionAngleMethod||'naibod_ra');
     const returns=unknown?null:solarReturn(birth,reference.getUTCFullYear(),latitude,longitude,system);
     let activeSolarReturn=returns;
     if(activeSolarReturn&&Date.parse(activeSolarReturn.utc)>+reference)activeSolarReturn=solarReturn(birth,activeSolarReturn.year-1,latitude,longitude,system);
@@ -172,5 +188,5 @@
     if(root.JYWesternDignities)out.essentialDignities=root.JYWesternDignities.compute(out);
     return freeze(out);
   }
-  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,houses,houseOf,dignity,pairAspect,aspects,patterns,chartShapes,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
+  root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,anglesFromARMC,houses,housesFromARMC,secondaryProgression,houseOf,dignity,pairAspect,aspects,patterns,chartShapes,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});
 })(globalThis);

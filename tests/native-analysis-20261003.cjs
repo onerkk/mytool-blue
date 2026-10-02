@@ -32,7 +32,7 @@ test('Ziwei daily/hourly locations: year/month/leap/day boundaries, twelve hours
   for(const date of dates)for(const hour of [0,2,4,6,8,10,12,14,16,18,20,22,23]){
    const utc=new Date(Date.parse(date+'T00:00:00Z')+(hour-8)*3600000).toISOString(),effective=new Date(Date.parse(date+'T00:00:00Z')+(boundary==='ZI_HOUR_23'&&hour===23?86400000:0)),ln=c.Solar.fromYmd(effective.getUTCFullYear(),effective.getUTCMonth()+1,effective.getUTCDate()).getLunar(),rm=ln.getMonth(),month=((Math.abs(rm)-1+(rm<0&&leap==='SPLIT_AT_15'&&ln.getDay()>15?1:0))%12)+1,hourIndex=Math.floor((hour+1)%24/2),yearBranch=(ln.getYear()-4)%12,first=(yearBranch-(chart.calculationPolicy.effectiveMonth-1)+chart.birthInput.hourBranchIndex+24)%12,day=(first+month-1+ln.getDay()-1)%12;
    const d=chart.getLiuRiZw(utc),h=chart.getLiuShiZw(utc);assert.equal(d.mingBranch,br[day]);assert.equal(h.mingBranch,br[(day+hourIndex)%12]);assert.equal(d.context.effectiveDate,effective.toISOString().slice(0,10));assert.equal(d.gz,ln.getDayInGanZhi());assert.equal(h.gz[1],br[hourIndex]);assert.equal(d.hua.length,4);assert.equal(h.hua.length,4);
-   for(const p of [d,h]){assert.equal(p.palaces.length,12);assert.equal(p.flowStars.length,0);for(const x of p.hua){assert(chart.palaces.find(v=>v.branch===x.palaceBranch).stars.some(s=>s.name===x.star));assert.equal(x.periodPalace,p.palaces.find(v=>v.branch===x.palaceBranch).name);}}
+   for(const p of [d,h]){assert.equal(p.palaces.length,12);assert.equal(p.flowStars.length,10);assert.equal(new Set(p.flowStars.map(s=>s.star)).size,10);for(const s of p.flowStars){assert.equal(s.stem,p.gz[0]);assert.equal(s.referenceBranch,p.gz[1]);assert.equal(s.periodPalace,p.palaces.find(v=>v.branch===s.branch).name);}for(const x of p.hua){assert(chart.palaces.find(v=>v.branch===x.palaceBranch).stars.some(s=>s.name===x.star));assert.equal(x.periodPalace,p.palaces.find(v=>v.branch===x.palaceBranch).name);}}
   }
  }
  const unknown=c.computeZiwei(1983,8,25,14,'male',{btimeUnknown:true,referenceDate:instant});assert.equal(unknown.getLiuRiZw(),null);assert.equal(unknown.getLiuShiZw(),null);const partial=N.analyze('ziwei',unknown),exported=c.JYNativeAnalysisView.exportData('ziwei',unknown,partial);assert.equal(partial.coverage.palaces,0);assert.equal(exported.schema,'jy.partial-ziwei/1');assert.equal(exported.palaces,undefined);assert.throws(()=>z.getLiuRiZw('2026-10-02T12:00:00'));
@@ -50,13 +50,13 @@ test('Published Raman Standard Horoscope: Sun Saptavargaja 90 and Sthana 198.0',
  assert(Math.abs(S.uchcha('Sun',lon)+90+S.oja('Sun',6,6)+S.kendra(10)+S.drekkana('Sun',lon%30)-198.0)<.04);
  assert.notEqual(S.sapta(x,'Sun','bphs').virupas,90);
 });
-test('Vedic strength endpoint/boundary values, independently tested tropical angles and missing-total contract',()=>{
+test('Vedic six-strength totals, endpoint/boundary values, independent tropical angles and unknown-time contract',()=>{
  const S=c.JYVedicStrength,exalt={Sun:10,Moon:33,Mars:298,Mercury:165,Jupiter:95,Venus:357,Saturn:200};
  for(const [k,lon]of Object.entries(exalt)){assert.equal(S.uchcha(k,lon),60);assert.equal(S.uchcha(k,(lon+180)%360),0);assert.equal(S.uchcha(k,(lon+90)%360),30);}
  assert.equal(S.drekkana('Sun',9.999),15);assert.equal(S.drekkana('Sun',10),0);assert.equal(S.drekkana('Mercury',10),15);assert.equal(S.drekkana('Mercury',20),0);assert.equal(S.drekkana('Moon',20),15);
- const ledger=v.strength;assert.equal(ledger.planets.length,7);assert.equal(ledger.totalVirupas,null);assert.equal(ledger.complete,false);
+ const ledger=v.strength;assert.equal(ledger.planets.length,7);assert.equal(ledger.complete,true);assert.equal(Object.keys(ledger.totalVirupas).length,7);
  for(const k of ['ASC','DSC','MC','IC'])assert(S.arc(ledger.angles[k],w.houses.angles[k]-v.policy.ayanamsaDegrees)<1e-8);
- for(const p of ledger.planets){assert.equal(p.totalVirupas,null);assert.equal(p.cheshta.virupas,null);assert.equal(p.drik.virupas,null);assert(p.dig.virupas>=0&&p.dig.virupas<=60);}
+ for(const p of ledger.planets){assert(Number.isFinite(p.totalVirupas));assert.equal(p.totalVirupas,['sthana','dig','kala','cheshta','naisargika','drik'].reduce((sum,k)=>sum+p[k].virupas,0));assert.equal(p.totalRupas,p.totalVirupas/60);assert.equal(p.relativeStrength,p.totalVirupas/p.minimumVirupas);assert(p.dig.virupas>=0&&p.dig.virupas<=60);}
  const unknown=c.JYVedic.compute({...input,unknownTime:true});assert.equal(unknown.strength.planets.length,0);assert.equal(unknown.strength.totalVirupas,null);
 });
 test('Published dignity tables and two consistent examples; discrepant Cancer answer is recorded',()=>{
@@ -100,7 +100,7 @@ test('384 Meihua charts preserve original body; pure Qian/Kun use changed nuclea
 });
 test('Name comparison includes original, every candidate and all pair calculations',()=>{const a=N.analyze('name',nm);assert.equal(a.items.length,3);assert.equal(a.comparisons.length,2);assert.equal(a.items[0].label,'陳政軒');});
 test('1931 original cycle examples remain auditable in actual five-grid output',()=>{
- for(const n of [81,82,83]){const name=c.JYNameEngine.analyze({surname:'王',given:'小明',overrides:{王:{stroke:30},小:{stroke:26},明:{stroke:n-56}}}),g=name.fiveGrids.grids.find(g=>g.role==='總格');assert.equal(g.num,n);assert.equal(g.number81,n===81?81:n-80);assert.equal(g.numberCycleAudit.baseNumber,n-80);assert(g.numberCycleAudit.scope.includes('未逐條原圖考證'));}
+ for(const n of [81,82,83]){const name=c.JYNameEngine.analyze({surname:'王',given:'小明',overrides:{王:{stroke:30},小:{stroke:26},明:{stroke:n-56}}}),g=name.fiveGrids.grids.find(g=>g.role==='總格');assert.equal(g.num,n);assert.equal(g.number81,n===81?81:n-80);assert.equal(g.numberCycleAudit.baseNumber,n-80);assert(g.numberCycleAudit.scope.includes('逐條核對'));assert.equal(g.originalNumerology.number,g.number81);}
 });
 test('Compatibility preserves directed ten gods and native cross-pillar data',()=>{const a=N.analyze('compat',comp);assert.equal(a.coverage.people,2);assert.equal(a.system,'bazi');assert(a.items.find(x=>x.id==='direction').evidence[2]);assert(a.items.find(x=>x.id==='branchRelations').evidence[0].length);});
 test('Personality axis outcomes are independently reproduced from exported numeric inputs',()=>{
@@ -117,7 +117,7 @@ test('OOTK incomplete/abandoned rounds retain records without being counted comp
 test('OOTK not-started state keeps zero operations and explicitly withholds divination',()=>{const a=N.analyze('ootk',{ootkData:{operations:{}}});assert.equal(a.coverage.records,0);assert.equal(a.items[0].id,'not-started');assert.equal(a.methodData.completed.length,0);assert.equal(a.methodData.status,'not-started');});
 test('Combined prompt with native modules keeps all four systems/people in a practical scoped export',()=>{
  const zz=c.computeZiwei(1994,6,20,23,'female',{minute:26,referenceDate:instant}),question='未來三年，雙方的相處與承諾條件',pair=c.JYRelationshipCore.createZiweiPair(z,zz,{question}),p=c.JYRelationshipCore.buildPrompt(comp,pair,question);
- assert(p.length<65000,p.length);for(const marker of ['A方八字','B方八字','A方紫微','B方紫微','八字歲運同步','紫微同期大限與流年'])assert(p.includes(marker),marker);
+ assert(p.length<150000,p.length);assert.equal((p.match(/"classicalAssessment":/g)||[]).length,2);assert(p.includes('SANMING_MAIN_30'));for(const marker of ['A方八字','B方八字','A方紫微','B方紫微','八字歲運同步','紫微同期大限與流年'])assert(p.includes(marker),marker);
  assert.equal((p.match(/【引擎原生作用資料】/g)||[]).length,4);assert(p.includes('annualSegments'));assert(p.includes('topicPlacements'));assert(p.includes('補充前文已列的排盤事實'));assert(p.includes('2028'));
 });
 test('Oracle lines retain exact poem, source and literal condition positions',()=>{const a=c.JYNativeCards.oracle(oracle);assert.equal(a.lines.length,4);assert.equal(a.poem,oracle.p);assert.equal(a.source,oracle.sourceUrl);assert.throws(()=>c.JYNativeCards.oracle({...oracle,sourceUrl:null}));});
@@ -128,7 +128,7 @@ test('All compact JSON pointers resolve to present complete evidence without a c
  for(const [kind,x]of Object.entries(charts)){const text=N.prompt(kind,x,q),raw=text.slice(text.indexOf('\n')+1).split('\n')[0],a=JSON.parse(raw);function walk(v){if(!v||typeof v!=='object')return;if(v.$ref){let target=a;for(const key of v.$ref.slice(2).split('/'))target=target[key.replace(/~1/g,'/').replace(/~0/g,'~')];assert(target&&typeof target==='object');assert(!target.$ref);return;}for(const child of Object.values(v))walk(child);}walk(a);}
 });
 test('User input is escaped in native HTML and no capability becomes a fabricated total',()=>{
- const x={...ln,cards:ln.cards.map(p=>({...p,name:'<img src=x onerror=alert(1)>'}))},html=N.render('lenormand',x);assert(!html.includes('<img src=x'));assert(html.includes('&lt;img'));assert(N.analyze('vedic',v).unavailable.includes('完整Shadbala六力總分'));
+ const x={...ln,cards:ln.cards.map(p=>({...p,name:'<img src=x onerror=alert(1)>'}))},html=N.render('lenormand',x);assert(!html.includes('<img src=x'));assert(html.includes('&lt;img'));assert.equal(N.analyze('vedic',v).coverage.shadbalaPlanets,7);assert(N.analyze('vedic',c.JYVedic.compute({...input,unknownTime:true})).unavailable.some(x=>x.startsWith('六力總分：')));
 });
 const output=path.resolve(__dirname,'../docs/native-validation-20261003.json');fs.writeFileSync(output,JSON.stringify({testedAt:new Date().toISOString(),scope:'Traditional rule implementation and calculation/data agreement; not prediction validation',results,passed:results.filter(x=>x.status==='passed').length,total:results.length},null,2));
 console.log(JSON.stringify({passed:results.filter(x=>x.status==='passed').length,total:results.length}));

@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "name": "24 independent Swiss ARMC geometries, including explicitly rejected polar Placidus",
+      "status": "passed"
+    },
+    {
+      "name": "32 independently timed progressed charts, two angle policies and all four house systems",
+      "status": "passed"
+    },
+    {
+      "name": "Five Ziwei time layers use their own stem/branch; all sixty annual ganzhi match author position tables",
+      "status": "passed"
+    },
+    {
+      "name": "All twelve primary commander schedules and exact fractional-day boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "Eight primary pattern matrices retain 63 clauses, real roots and three-state qualitative decisions",
+      "status": "passed"
+    },
+    {
+      "name": "Exact 劫財 and complete combinations are distinct from 比肩 and incomplete arches",
+      "status": "passed"
+    },
+    {
+      "name": "Supplemental real prompt and JSON retain eight-pattern commander and progressed houses",
+      "status": "passed"
+    }
+  ],
+  "maximum": {
+    "cuspArcseconds": 0.12452061137082637,
+    "angleArcseconds": 0.12452061137082637,
+    "armcArcseconds": 0.10157960759897833,
+    "geometryDegrees": 2.817637323460076e-8
+  },
+  "referenceCases": {
+    "progressedCharts": 32,
+    "armcGeometries": 24,
+    "ziweiAnnualGanzhi": 60,
+    "commanderMonths": 12,
+    "patternClauses": 63
+  }
+}

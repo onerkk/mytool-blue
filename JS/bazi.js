@@ -719,43 +719,23 @@ function findJieqiForBirth(year, month, day, hour, minute){
 // 格式: RENYUAN[地支] = [[天干, 用事天數], ...]
 // ══════════════════════════════════════════════════════
 const RENYUAN={
-  子:[['壬',10],['癸',20]],
-  丑:[['癸',9],['辛',3],['己',18]],
-  寅:[['戊',7],['丙',7],['甲',16]],
-  卯:[['甲',10],['乙',20]],
-  辰:[['乙',9],['癸',3],['戊',18]],
-  巳:[['戊',5],['庚',9],['丙',16]],
-  午:[['丙',10],['己',9],['丁',11]],
-  未:[['丁',9],['乙',3],['己',18]],
-  申:[['戊',10],['壬',3],['庚',17]],
-  酉:[['庚',10],['辛',20]],
-  戌:[['辛',9],['丁',3],['戊',18]],
-  亥:[['戊',7],['甲',5],['壬',18]]
+  子:[['壬',7],['癸',23]], 丑:[['癸',7],['庚',5],['己',18]],
+  寅:[['戊',5],['丙',5],['甲',20]], 卯:[['甲',7],['乙',23]],
+  辰:[['乙',7],['壬',5],['戊',18]], 巳:[['戊',7],['庚',5],['丙',18]],
+  午:[['丙',7],['丁',23]], 未:[['丁',7],['甲',5],['己',18]],
+  申:[['戊',5],['壬',5],['庚',20]], 酉:[['庚',7],['辛',23]],
+  戌:[['辛',7],['丙',5],['戊',18]], 亥:[['戊',5],['甲',5],['壬',20]]
 };
-
-// 計算人元司令：根據出生在節氣後的天數，判斷哪個藏干當令
-// 返回 {gan:'庚', el:'金', name:'庚金用事', daysInTerm:6}
+// Selected primary-text schedule: 三命通會卷二論人元司事正文.
+// This differs from several tables printed later in that chapter and from CG.
+// 24-hour days after the actual jie; last segment continues until next jie.
 function getRenyuanSiling(monthZhi, daysAfterJie){
-  const schedule = RENYUAN[monthZhi];
-  if(!schedule) return null;
-  let cumDays = 0;
-  for(const [gan, days] of schedule){
-    cumDays += days;
-    if(daysAfterJie < cumDays){
-      return {
-        gan: gan,
-        el: WX_G[gan],
-        name: gan + WX_G[gan] + '用事',
-        daysInTerm: daysAfterJie - (cumDays - days),
-        totalDays: days
-      };
-    }
-  }
-  // 超出天數（接近下一個節氣），取最後一個
-  const last = schedule[schedule.length - 1];
-  return { gan: last[0], el: WX_G[last[0]], name: last[0] + WX_G[last[0]] + '用事', daysInTerm: daysAfterJie, totalDays: last[1] };
+  const schedule=RENYUAN[monthZhi];
+  if(!schedule||!Number.isFinite(daysAfterJie)||daysAfterJie<0)return null;
+  let start=0,segment=schedule.length-1;
+  for(let i=0;i<schedule.length;i++){if(daysAfterJie<start+schedule[i][1]){segment=i;break;}if(i<schedule.length-1)start+=schedule[i][1];}
+  const pair=schedule[segment];return {gan:pair[0],el:WX_G[pair[0]],name:pair[0]+WX_G[pair[0]]+'用事',daysInTerm:daysAfterJie-start,totalDays:pair[1],elapsedDaysAfterJie:daysAfterJie,nominalStartDay:start,nominalEndDay:start+pair[1],segment:segment,schedule:schedule.map((p,i)=>({gan:p[0],nominalDays:p[1],index:i})),profile:'SANMING_MAIN_30',source:'https://zh.wikisource.org/zh-hant/三命通會/卷二#論人元司事',policy:'三命通會正文5/5/20與7/23、7/5/18分日表；從實際交節瞬間每86400秒計一天，最後一氣延續至下節。不用民用日0時截斷。',sourceAudit:'同章附表及現代7/7/16等別表不混算；艮坤土具體寫為戊，巳已字形依地支及己干區分；墓氣壬甲丙庚與常用藏干癸乙丁辛不相同，兩表各有用途。'};
 }
-
 
 // ══════════════════════════════════════════════════════
 // 空亡計算
@@ -4844,7 +4824,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     const a=new Date(prev.date.replace(' ','T')+'+08:00'),b=new Date(next.date.replace(' ','T')+'+08:00');
     const tradName=n=>n.replace('惊蛰','驚蟄').replace('芒种','芒種');
     const ap=new Date(a.getTime()+8*3600000),bp=new Date(b.getTime()+8*3600000),idx=JQ_NAMES.indexOf(tradName(prev.name));
-    jqInfo={jieIdx:idx,jieName:tradName(prev.name),jieMonth:ap.getUTCMonth()+1,jieDay:ap.getUTCDate(),jieHour:ap.getUTCHours(),jieMinute:ap.getUTCMinutes(),jieSecond:ap.getUTCSeconds(),nextJieName:tradName(next.name),nextJieMonth:bp.getUTCMonth()+1,nextJieDay:bp.getUTCDate(),nextJieHour:bp.getUTCHours(),nextJieMinute:bp.getUTCMinutes(),nextJieSecond:bp.getUTCSeconds(),daysAfterJie:Math.floor((termInstant-a.getTime())/86400000),monthMi:JQ_MI[idx],monthZhi:JQ_MZI[idx],source:'lunar-javascript'};
+    jqInfo={jieIdx:idx,jieName:tradName(prev.name),jieMonth:ap.getUTCMonth()+1,jieDay:ap.getUTCDate(),jieHour:ap.getUTCHours(),jieMinute:ap.getUTCMinutes(),jieSecond:ap.getUTCSeconds(),nextJieName:tradName(next.name),nextJieMonth:bp.getUTCMonth()+1,nextJieDay:bp.getUTCDate(),nextJieHour:bp.getUTCHours(),nextJieMinute:bp.getUTCMinutes(),nextJieSecond:bp.getUTCSeconds(),daysAfterJie:Math.floor((termInstant-a.getTime())/86400000),elapsedDaysAfterJie:(termInstant-a.getTime())/86400000,monthMi:JQ_MI[idx],monthZhi:JQ_MZI[idx],source:'lunar-javascript'};
   }
 
   let yGi,yZi,yG,yZ,mGi,mZi,mG,mZ,dGi,dZi,dG,dZ,hGi,hZi,hG,hZ,mi;
@@ -4876,7 +4856,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   }
   const pillars={year:{gan:yG,zhi:yZ},month:{gan:mG,zhi:mZ},day:{gan:dG,zhi:dZ},hour:{gan:hG,zhi:hZ}};
   // 人元司令的分日規則屬流派模型；日數與四柱使用同一節氣邊界。
-  const renyuan=jqInfo?getRenyuanSiling(mZ,jqInfo.daysAfterJie):null;
+  const renyuan=jqInfo?getRenyuanSiling(mZ,jqInfo.elapsedDaysAfterJie==null?jqInfo.daysAfterJie:jqInfo.elapsedDaysAfterJie):null;
 
   const dm=dG, dmEl=WX_G[dm];
 
@@ -5367,7 +5347,9 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   const zodiac = getZodiac(month, day);
   const xingxiu = getXingXiu(year, month, day);
 
-  return{_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deXiang,deDi,deShi,dmMonthState,monthSupportClass,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialRuleAssessment:specialRuleAssessment,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionAssessment:branchInteractionAssessment,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
+  const classicalResult={_birthYear:year,_birthTimestamp:birthTimestamp,_referenceInstantTimestamp:referenceResolved.instantTimestamp,_referenceTimestamp:referenceMs,_referenceBasis:referenceResolved.basis,pillars,structureFacts,fuyiAssessment,seasonalAssessment,sittingRoot,dm,dmEl,strong,strongLevel,strengthConflict,strengthConflictReason,isNeutral,structType,bearingCapacity,energyFlow,verification,weightedEC,capacity,proximityNotes,deLing,deXiang,deDi,deShi,dmMonthState,monthSupportClass,selfRatio:Math.min(100,Math.round(selfRatio*100)),selfPts,ec,ep,fav,unfav,medicineGod,relayGod,gods,cs,shensha,nayin,nayinAll,tianYunEl,dayun,qiyun,cangGan:{year:CG[yZ],month:CG[mZ],day:CG[dZ],hour:CG[hZ]},tiaohou:tiaohou,jqInfo:jqInfo,calendarBoundary:calendarFact?{previousJie:calendarFact.previousJie||null,nextJie:calendarFact.nextJie||null,precision:calendarFact.precision||null,engine:calendarFact.engine||null}:null,renyuan:renyuan,kongwang:kongwang,mingGong:mingGong,taiYuan:taiYuan,taiXi:taiXi,shenGong:shenGong,chenggu:chenggu,godBreakdown:godBreakdown,zodiac:zodiac,xingxiu:xingxiu,specialRuleAssessment:specialRuleAssessment,specialStructure:specialStructure,specialStructureCandidates:specialStructureCandidates,huaQiAssessments:huaQiAssessments,strengthAssessment:strengthAssessment,gender:gender,branchInteractions:branchInteractions,branchInteractionAssessment:branchInteractionAssessment,branchInteractionPolicy:branchInteractionPolicy,branchInterpretationPolicy:branchInterpretationPolicy,calculationPolicy:{termTimeBasis:'出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘',birthInstant:new Date(termInstant).toISOString(),civilTimeStatus:options.civilTimeStatus||null,qiyunMethod:'分鐘折算：三日一年',mingGongMethod:'八字中氣换月變體；非紫微安命法',taiYuanMethod:'月干進一、月支進三之常用法',dayBoundaryMode:dayBoundaryMode,dayBoundaryLabel:dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日',annualBoundary:'立春',daYunInterval:'[start,end)',trueSolarTimeApplied:!!(options&&options.trueSolarTimeApplied),timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,longitude:options.longitude!=null?options.longitude:null,referenceTimeBasis:referenceResolved.basis,referenceInstant:new Date(referenceResolved.instantTimestamp).toISOString(),referenceChartWall:_baziFormatDateTime(referenceMs),calendarEngine:calendarFact?calendarFact.engine:'LOCAL_JIEQI_FALLBACK',calendarEngineVersion:calendarFact?calendarFact.engineVersion:null,calendarPrecision:calendarFact?calendarFact.precision:'minute-or-approximate',calendarFallback:!calendarFact,interpretationModel:BAZI_DEFAULT_POLICY.interpretationModel,relativeWeightDisclaimer:'五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。',interactionDisclaimer:'刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。',forecastInteractionScoring:false,forecastClimateScoring:false,rootScope:'FOUR_BRANCHES'}};
+  if(typeof window!=='undefined'&&window.JYBaziClassical)classicalResult.classicalAssessment=window.JYBaziClassical.compute(classicalResult);
+  return classicalResult;
 }
 
 

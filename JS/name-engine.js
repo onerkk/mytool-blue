@@ -14,7 +14,7 @@
   MEANINGS.水='水與液體；也用來稱江河湖海等水域';
   MEANINGS.扁='寬而薄；也有匾額等字義及不同讀法，姓名用意須核對';
   var MEANING_SOURCES={政:'https://dict.variants.moe.edu.tw/dictView.jsp?educode=A01720',軒:'https://dict.variants.moe.edu.tw/dictView.jsp?ID=44309&la=0',淋:'https://dict.variants.moe.edu.tw/dictView.jsp?ID=24038&powerMode=2&q=1',鴻:'https://pedia.cloud.edu.tw/Entry/Detail?title=%E9%B4%BB',洪:'https://pedia.cloud.edu.tw/Entry/Detail?title=%E6%B4%AA',水:'https://pedia.cloud.edu.tw/Entry/Detail?title=%E6%B0%B4',扁:'https://pedia.cloud.edu.tw/Entry/Detail?title=%E6%89%81'};
-  var VERSION='20261002-name2';
+  var VERSION='20261003-name3';
   var SHAPE_ELEMENTS={木:['木','艹','艸','竹'],火:['火','灬'],土:['土','山','石'],金:['金','釒','钅'],水:['水','氵','冫']};
   function data(){if(!root.JYNameData)throw new Error('姓名字表尚未準備完成，請重試。');return root.JYNameData;}
   function chars(value){return Array.from(String(value||'').trim());}
@@ -42,8 +42,9 @@
     return {char:ch,stroke:Number.isInteger(stroke)?stroke:null,strokeSource:source,kangxi:r?r[0]:null,modern:r?r[1]:null,kangxiRadicalResidual:r?r[5]:null,radical:r?r[2]:null,readings:r?Array.from(new Set((r[3]+' '+(r[6]||'')).trim().split(/\s+/).filter(Boolean))):[],reading:manual.reading?String(manual.reading).trim():null,readingSource:manual.reading?'使用者明示':'Unicode普通話候選，未確認姓名實際讀法',meaning:manual.meaning?String(manual.meaning).trim():MEANINGS[ch]||null,meaningSource:manual.meaning?'使用者明示':MEANINGS[ch]?'本站字義摘要，須結合用名情境':'未作中文詞義斷言',definitionEnglish:r&&r[4]||null,roots:roots,rootCoverage:d.traditional.CHAR_ROOTS[ch]?'本站明列字根表':'僅字典部首參考，未完成全字拆解',structure:decomp?decomp.struct:null,elementReferences:Object.keys(SHAPE_ELEMENTS).map(function(element){return {element:element,matchedRoots:roots.filter(function(r){return SHAPE_ELEMENTS[element].includes(r);})};}).filter(function(x){return x.matchedRoots.length;})};
   }
   function numberFact(n,role,formula){
-    var d=data().numerology,k=cycle(n),theme=d.themes[k-1];
-    return {role:role,num:n,number81:k,numberCycleAudit:{baseNumber:n>=81?(n-1)%80+1:n,source:'https://dl.ndl.go.jp/pid/1104862/1/7',scope:'1931原圖4–5頁核對81→1、82→2、83→3；本表保留81條標籤，未逐條原圖考證'},element:element(n),polarity:n%2?'陽':'陰',level:d.favorable.includes(k)?'偏利':d.mixed.includes(k)?'吉阻並存':'偏阻',theme:theme[0],focus:theme[1],practice:theme[2],formula:formula,scope:ROLES[role]};
+    var d=data().numerology,k=cycle(n),theme=d.themes[k-1],original=d.original&&d.original.rows[k-1];
+    if(!original||original.number!==k)throw new Error('81數原著表未核齊，請重新載入姓名資料。');
+    return {role:role,num:n,number81:k,numberCycleAudit:{baseNumber:n>=81?(n-1)%80+1:n,alias81:1,source:d.original.cycle.sourceUrl,scope:'1931循環例與1935原著54頁一致：81返1，超81每次減80。81條主題已逐條核對1935原圖46–54頁。'},element:element(n),polarity:n%2?'陽':'陰',level:original.tone,theme:original.theme,focus:original.summary,practice:theme[2],practiceSource:'本站實務建議，與原著摘要分開',originalNumerology:{profile:d.original.profile,...original,scope:d.original.scope},commonModernTable:{level:d.favorable.includes(k)?'偏利':d.mixed.includes(k)?'吉阻並存':'偏阻',theme:theme[0],focus:theme[1],scope:'前版通行三分分類與本站中性主題，保留供版本差異核對，不混作原著斷語'},formula:formula,scope:ROLES[role]};
   }
   function fiveGrids(surname,given, facts){
     if(facts.some(function(f){return f.stroke==null;}))return {status:'incomplete',missing:facts.filter(function(f){return f.stroke==null;}).map(function(f){return f.char;}),reason:'筆畫尚未覆核，五格、三才與筆畫起卦暫不計算。'};

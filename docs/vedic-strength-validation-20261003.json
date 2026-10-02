@@ -1,0 +1,60 @@
+{
+  "testedAt": "2026-10-02T23:06:39.302Z",
+  "scope": "Chosen Raman/Sripathi and explicitly separate Santanam formulas; published component examples, boundary and real pipeline checks",
+  "sources": [
+    "https://www.scribd.com/document/340918236/Bhava-and-Graha-Balas-B-v-RAMAN-pdf",
+    "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf"
+  ],
+  "results": [
+    {
+      "name": "Raman printed Example 48: five Cheshta values, independent given mean/true/seeghra inputs",
+      "status": "passed"
+    },
+    {
+      "name": "Raman printed Example 55: all seven signed Drik strengths, Mercury combust",
+      "status": "passed"
+    },
+    {
+      "name": "Raman Examples 20-22: 1918 Ahargana and year/month/day lords independently recorded",
+      "status": "passed"
+    },
+    {
+      "name": "Mean-motion epoch and printed motions reproduce continuous rates without coercing table errors",
+      "status": "passed"
+    },
+    {
+      "name": "Directed ordinary and special aspect breakpoints retain selected Raman/Santanam profiles",
+      "status": "passed"
+    },
+    {
+      "name": "Temporal endpoint values: apparent midnight/noon, lunar phase and north/south Ayana",
+      "status": "passed"
+    },
+    {
+      "name": "Twelve Sripathi centres/sandhis cover the circle once; boundaries are half-open",
+      "status": "passed"
+    },
+    {
+      "name": "Full seven-ledger arithmetic, minimum ratios and explicit luminary/variant rules",
+      "status": "passed"
+    },
+    {
+      "name": "Planetary war: five-graha eligibility, one-degree exclusion, conservation and circular proximity",
+      "status": "passed"
+    },
+    {
+      "name": "Before-sunrise day/Hora retains preceding date; on-sunrise switches by real event",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown time and polar absence withhold complete totals and never publish fictitious rankings",
+      "status": "passed"
+    },
+    {
+      "name": "Prompt, native activation and full JSON all consume the same calculated strength ledger",
+      "status": "passed"
+    }
+  ],
+  "passed": 12,
+  "total": 12
+}

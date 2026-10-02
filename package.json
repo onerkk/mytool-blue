@@ -85,7 +85,7 @@
     "test:liuren": "node tests/liuren-engine-20261001.cjs",
     "test:liuren:browser": "node tests/liuren-browser-20261001.cjs && node tests/liuren-immersive-20261002.cjs",
     "build:liuren-scene": "node scripts/build-liuren-scene.mjs",
-    "test:native": "node tests/native-analysis-20261003.cjs"
+    "test:native": "node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

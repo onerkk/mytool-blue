@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "name": "All sixty actual primary poems, five explicit absent fields and 300 original story titles",
+      "status": "passed"
+    },
+    {
+      "name": "Wrong edition, same-number foreign poem, fake source and missing register never get a reading",
+      "status": "passed"
+    },
+    {
+      "name": "Corrupt mixed paragraphs do not become advice; incompatible source conditions stay distinct",
+      "status": "passed"
+    },
+    {
+      "name": "All sixty native result/export records retain unique interpretation, 29 category slots and edition evidence",
+      "status": "passed"
+    },
+    {
+      "name": "Actual sixty-lot prompt entry carries source audits and reviewed structural conditions",
+      "status": "passed"
+    }
+  ],
+  "scope": "60 actual temple-page poems, 1735 published fields plus five absent slots, 300 story titles, edition validation and prompt/export entry"
+}

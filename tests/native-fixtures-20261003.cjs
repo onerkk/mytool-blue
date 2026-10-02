@@ -5,10 +5,10 @@ function environment(){
   const e=require('./dom-fixture.cjs').environment(),c=e.ctx;
   c.console={log(){},warn(){},error:console.error};c.Uint8Array=Uint8Array;c.crypto=require('node:crypto').webcrypto;
   function load(name){vm.runInContext(fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8'),c,{filename:name});}
-  ['reading-quality','reading-workflow','vedic-strength','western-dignities','native-rule-sources','native-card-analysis','native-chart-analysis','native-analysis-view','vendor/lunar','bazi-calendar-core','solar-location','bazi','bazi_upgrade','bazi-prompt-root','bazi-suite-core','tarot','meihua_upgrade','meihua_output_layer','meihua_upgrade2','ziwei-prompt-root'].forEach(load);
+  ['reading-quality','reading-workflow','vedic-strength','western-dignities','native-rule-sources','oracle-register','native-card-analysis','native-chart-analysis','native-analysis-view','vendor/lunar','bazi-calendar-core','solar-location','bazi-classical','bazi','bazi_upgrade','bazi-prompt-root','bazi-suite-core','tarot','meihua_upgrade','meihua_output_layer','meihua_upgrade2','ziwei-prompt-root'].forEach(load);
   const src=fs.readFileSync(path.join(root,'JS/ai-analysis.js'),'utf8'),ast=acorn.parse(src,{ecmaVersion:'latest',sourceType:'script'}),needed=new Set(['SIHUA_TABLE','ZW_PALACES','ZW_MAJOR','ZW_BRIGHTNESS','getStarBright']);
   for(const n of ast.body){if(n.type==='VariableDeclaration')for(const d of n.declarations)if(needed.has(d.id.name))vm.runInContext(n.kind+' '+src.slice(d.start,d.end)+';',c);if(n.type==='FunctionDeclaration'&&needed.has(n.id.name))vm.runInContext(src.slice(n.start,n.end),c);}
-  ['ziwei','ziwei-standalone','relationship-core','vendor/astronomy-engine-2.1.19.min','vedic-ayanamsa','astro-time','vedic-engine','vedic-prompt','western-engine','western-prompt','liuyao-core','yijing-data','yijing-core','gua-prompt','liuren-core','liuren-prompt','name-data','name-engine','name-prompt','lenormand'].forEach(load);
+  ['ziwei','ziwei-standalone','relationship-core','vendor/astronomy-engine-2.1.19.min','vedic-ayanamsa','astro-time','vedic-engine','vedic-prompt','western-engine','western-prompt','liuyao-core','yijing-data','yijing-core','gua-prompt','liuren-classes','liuren-core','liuren-prompt','name-data','name-engine','name-prompt','lenormand'].forEach(load);
   return {...e,load};
 }
 function examples(c){
@@ -24,7 +24,7 @@ const bb=c.computeBazi(1994,6,20,23,26,'female',{referenceDate:instant});c.enhan
 const comp=c.BaziSuiteCore.createCompatibility(b,bb,{scenarioId:'couple'}),profile=c.BaziSuiteCore.buildPersonality(b,{});
 const cards=vm.runInContext('TAROT',c),tarot={sourceProfile:'rws_reversals',cards:[{...plain(cards[0]),isUp:true,position:'目前'},{...plain(cards[22]),isUp:false,position:'阻力'}]};
 const ln={spreadType:'nine',expectedCount:9,cards:Array.from({length:9},(_,i)=>({id:i+1,name:'牌'+(i+1)}))},ootk={operations:{op1:{valid:true,sequence:[1,2,3]},op2:{valid:false},op3:{valid:true,abandoned:true}}};
-const oracle={n:1,g:'甲子',p:'日出便見風雲散，光明清淨照世間，一向前途通大道，萬事清吉保平安。',sourceUrl:'https://www.matsu.org.tw/'};
+const registered=c.JYOracleRegister.get(1),oracle={n:1,g:registered.ganzhi,p:registered.canonicalPoem,sourceUrl:registered.poemSource,sourceNote:'本次逐首覆核版本'};
 const charts={bazi:b,ziwei:z,astro:w,vedic:v,liuren:l,liuyao:six,yijing:yi,meihua:mh,name:nm,compat:comp,personality:profile,tarot,lenormand:ln,ootk,oracle};
  return {instant,q,b,z,input,v,w,l,six,yi,mh,nm,bb,comp,profile,cards,tarot,ln,ootk,oracle,charts};
 }

@@ -15,7 +15,7 @@ const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/j
    const pending=page.waitForEvent('download');await section.locator('[data-jna-download]').click();const d=await pending,saved=JSON.parse(fs.readFileSync(await d.path(),'utf8'));assert.equal(saved.nativeAnalysis.method,kind);
    const prompt=await page.evaluate(copy);assert(prompt.includes('jy.native-analysis/1'),kind);assert(prompt.includes('"method":"'+kind+'"'),kind);assert(!/NaN|undefined|\[object Object\]/.test(prompt),kind);
    if(kind==='ziwei')assert(saved.nativeAnalysis.layers.daily&&saved.nativeAnalysis.layers.hourly);
-   if(kind==='vedic')assert.equal(saved.strength.totalVirupas,null);
+   if(kind==='vedic'){assert.equal(saved.strength.complete,true);assert.equal(saved.strength.planets.length,7);assert(Object.values(saved.strength.totalVirupas).every(Number.isFinite));}
    if(kind==='astro')assert.equal(saved.essentialDignities.planets.length,7);
    await page.evaluate(close);results.push({method:kind,status:'passed',width:390,nativeDownload:true,prompt:true});console.log('PASS actual '+kind+' entry: calculation, native panel, full JSON download and prompt');
   }

@@ -307,6 +307,7 @@ ${root.JYNativeAnalysis?root.JYNativeAnalysis.prompt('astro',chart,question):''}
 4. 合相看功能融合與掌控關係，對分看兩端需求與協商，四分看摩擦如何促使建立能力，三分看順手資源與慣性，六分看需要主動採取的合作。先用緊密、切題且涉及日月、命主星或題目宮主的相位；再讀較寬相位。入出相依相對速度；跨星座相位仍保留度數關係及表達差異。次要相位只作補充；相位容許度是本站明示設定，不宣稱各派一致。
 5. 相位格局以實際連線成立。T 三角先找頂點與兩端如何集中壓力，大三角看三個功能如何互相供給及如何轉為行動，大十字整合四向責任；其內部單相位不是額外獨立證據。盤形是十顆行星的經度分布，不是相位組合；chartShapes 僅核定 120° 集中形或明確的 240° 火車頭形，未辨識其餘盤形時不能自行報成已驗證。未列出的格局若自行辨識，必須核對每條必要相位與容許度。空宮仍有宮頭與宮主，並非該領域不存在。
 6. 日夜盤與角宮可補充表達條件；盤中未提供完整偶然尊貴分數、行星時、界主、反映點、固定星、凱龍星或小行星時，不生成這些資料。切題的推論可自由深入，但必須接回已有幾何。十顆行星的元素／模式分布僅說明配置，不直接推薦「缺什麼補什麼」。
+7. 次限角點與12宮使用 progressions.angleMethod 明示起法（Naibod平均日弧加RAMC，或次限實際恆星時），角點、黃赤交角、宮頭皆實算。不可把Naibod與ARMC361混稱同一算法。次限落宮用自己的宮頭，natalHouseOverlay另列跨本命宮位，角點對本命相位只用 angleAspects。
 7. 時間分析分本命、行運、次限、回歸。不同層次若同時觸及同一主題，可提高該主題值得關注的程度；不要將同一行星的幾種說法當三份證明。回歸盤有它自己的宮頭；本命落宮與回歸落宮要明確分開。區分現有壓力、推進條件、可以準備的事與尚未確認的外部結果。太陽回歸數學求根收斂不表示天文精度或人生事件準到秒。
 8. 以上方法用於判讀，正文依共用解讀規則；只有實質改變主判的分歧才補充。
 </方法參考>
@@ -344,7 +345,7 @@ ${summary(chart.transits.planets)}
 ${chart.transits.aspects.map(aspect).join('\n')||'此時點無符合條件的主要相位'}
 </觀察日行運>
 <次限推運>
-${chart.progressions?chart.progressions.policy+'；象徵年長 '+chart.progressions.yearDays+' 日；對應星曆時刻 '+chart.progressions.utc+'\n'+summary(chart.progressions.planets)+'\n左側為次限星、右側為本命星；最大容許度 1°：\n'+chart.progressions.aspects.map(aspect).join('\n'):'時間不詳，未計算'}
+${chart.progressions?chart.progressions.policy+'；象徵年長 '+chart.progressions.yearDays+' 日；對應星曆時刻 '+chart.progressions.utc+'\n'+summary(chart.progressions.planets)+'\n左側為次限星、右側為本命星；最大容許度 1°：\n'+chart.progressions.aspects.map(aspect).join('\n')+'\n次限角點與宮頭：\n'+JSON.stringify({angleMethod:chart.progressions.angleMethod,angleCalculation:chart.progressions.angleCalculation,houses:chart.progressions.houses,angleAspects:chart.progressions.angleAspects,natalHouseOverlay:chart.progressions.natalHouseOverlay},null,2):'時間不詳，未計算'}
 </次限推運>
 <觀察年太陽回歸>
 ${chart.solarReturn?chart.solarReturn.year+' 年；UTC '+chart.solarReturn.utc+'；'+chart.solarReturn.locationPolicy+'\n'+summary(chart.solarReturn.planets)+'\n回歸宮頭：'+JSON.stringify(chart.solarReturn.houses.cusps)+'\n回歸角點：'+JSON.stringify(chart.solarReturn.houses.angles):'時間不詳，未計算'}

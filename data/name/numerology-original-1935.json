@@ -1,0 +1,846 @@
+{
+  "schema": "jy.name-original/1",
+  "profile": "KUMAZAKI-UN-NI-NORU-HO-1935",
+  "book": {
+    "title": "運に乗る法",
+    "author": "熊崎健翁",
+    "publisher": "今日の問題社",
+    "year": 1935,
+    "pid": "1094933",
+    "manifest": "https://dl.ndl.go.jp/api/iiif/1094933/manifest.json",
+    "pages": "47–54"
+  },
+  "scope": "81條數理主題已逐條核對所選1935原圖。tone是本站依原文主次與條件整理的三分分類，並非原著另印的固定分類欄。與現代通行表不同的結果分開保留。疾病、死亡、性別禁忌與保證富貴等歷史斷語不作個人事件判斷；摘要保留支持、阻滯及條件。",
+  "cycle": {
+    "period": 80,
+    "alias81": 1,
+    "sourcePage": 54,
+    "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/29",
+    "examples": [
+      {
+        "number": 81,
+        "base": 1
+      },
+      {
+        "number": 82,
+        "base": 2
+      },
+      {
+        "number": 83,
+        "base": 3
+      }
+    ]
+  },
+  "rows": [
+    {
+      "number": 1,
+      "theme": "立基",
+      "tone": "偏利",
+      "summary": "以根基、獨立起步及向上發展為主題，原書連結聲望、資源與長期穩定。原書也保留缺損、孤立及破折的反面，不能只取有利一面。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 2,
+      "theme": "分離",
+      "tone": "偏阻",
+      "summary": "重點是結構未成、支持分散與自主決斷不足；遇到變動容易失去方向。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 3,
+      "theme": "成形",
+      "tone": "偏利",
+      "summary": "陰陽相成的開展象，強調理解力、才智、清楚判斷及由此帶來的表現與聲望。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 4,
+      "theme": "破損",
+      "tone": "偏阻",
+      "summary": "以結構缺損與崩解為主題，安定不足，事情可能出現難以持續或突然中斷的象。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 5,
+      "theme": "和合",
+      "tone": "偏利",
+      "summary": "重點是協調、完整與資源平衡，原書視為身心調和、聲望與福祿相兼的象。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 6,
+      "theme": "豐厚",
+      "tone": "吉阻並存",
+      "summary": "以資源充足、承接與家庭協調為主要象義；原書同時保留繁盛外表下有反面失衡的可能。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 7,
+      "theme": "剛毅",
+      "tone": "偏利",
+      "summary": "強調意志、決斷與克服困難的能力；自我過強、過剛或冒進則可能增加障礙。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 8,
+      "theme": "勤進",
+      "tone": "偏利",
+      "summary": "如堅石般耐力充足，透過努力推進目標；原書亦提醒過於僵硬的代價。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 9,
+      "theme": "窮迫",
+      "tone": "偏阻",
+      "summary": "以壓迫、孤立及多重阻難為主題，原書把支持破裂及反覆困難列為阻滯象。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 10,
+      "theme": "空亂",
+      "tone": "偏阻",
+      "summary": "以空虛、失序、波動與難以留住成果為主題，支持及安全感較薄弱。",
+      "printedPage": 47,
+      "canvas": 25,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 11,
+      "theme": "穩展",
+      "tone": "偏利",
+      "summary": "重點是紮實基礎與順序發展，透過再建立與累積，形成較長久的資源和承接。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 12,
+      "theme": "薄弱",
+      "tone": "偏阻",
+      "summary": "重點是力量不足而勉強伸展，容易承擔超過支持條件的任務，造成未完成與耗損。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 13,
+      "theme": "才學",
+      "tone": "偏利",
+      "summary": "強調學習、才華、智慧與忍耐，透過持續執行把志向轉成實際表現及認可。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 14,
+      "theme": "離散",
+      "tone": "偏阻",
+      "summary": "支持關係及基礎薄弱，努力不易形成成果；原書把勤作無功、起伏與不如意並列。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 15,
+      "theme": "德望",
+      "tone": "偏利",
+      "summary": "強調寬和、信任與協調，獲得上下支持，具組織事業及資源承接的主題。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 16,
+      "theme": "承望",
+      "tone": "偏利",
+      "summary": "以器量、信用、責任及居於主導位置為主題，原書連到資源整合和組織成長。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 17,
+      "theme": "自立",
+      "tone": "偏利",
+      "summary": "自主意志強，有克服難關的毅力；權威與剛強如果成為排斥協作，會增加阻力。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 18,
+      "theme": "智勇",
+      "tone": "偏利",
+      "summary": "意志、智謀與行動兼具，向上推進能力強；原書特別提醒自滿會招來難題。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 19,
+      "theme": "智困",
+      "tone": "偏阻",
+      "summary": "才智存在，但障礙多、展開不易，可能因失意與變動難以承接成果。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 20,
+      "theme": "虛耗",
+      "tone": "偏阻",
+      "summary": "原書視為破滅與孤立的極端阻滯象，重點是支持、連結及持續性不足。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 21,
+      "theme": "首領",
+      "tone": "偏利",
+      "summary": "意志堅定、主導性強，連到組織與成果；原書的性別禁忌屬歷史觀念，不作本版個人判斷。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 22,
+      "theme": "未伸",
+      "tone": "偏阻",
+      "summary": "力量與伸展不足，志向難以完成，外部支援及連結較弱。",
+      "printedPage": 48,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 23,
+      "theme": "旭升",
+      "tone": "偏利",
+      "summary": "如旭日上升，強調積極進取、帶領及擴大成果；原書的性別禁忌不作本版判斷。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 24,
+      "theme": "積富",
+      "tone": "偏利",
+      "summary": "才智出眾，具從少量資源起步、逐步累積與轉成豐厚成果的主題。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 25,
+      "theme": "俊敏",
+      "tone": "吉阻並存",
+      "summary": "才智及專長突出，發展機會存在；個性過剛、偏執或拘泥自身做法會限制合作。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 26,
+      "theme": "巨變",
+      "tone": "偏阻",
+      "summary": "具有非常人物與劇烈變化的象，才能和破折並見；原書明說多數情形偏向阻難，不保證特殊成功。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 27,
+      "theme": "爭衡",
+      "tone": "偏阻",
+      "summary": "自我主張強，可能有表現能力，但容易在中途遭到挫折、爭議、不和與未完成。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 28,
+      "theme": "重難",
+      "tone": "偏阻",
+      "summary": "原書把過剛、分離、阻難及多重耗損並列，重點是強撐與支持不足的代價。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 29,
+      "theme": "智進",
+      "tone": "吉阻並存",
+      "summary": "以才智、改善及成果為主要線索；原書也提醒不滿足、欲望擴張與策略失衡。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 30,
+      "theme": "浮沉",
+      "tone": "吉阻並存",
+      "summary": "成果反覆、起落較大，機會與風險共存；以投機或小巧取代穩固基礎時，波動會增加。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 31,
+      "theme": "智仁勇",
+      "tone": "偏利",
+      "summary": "理解、協調與行動兼具，形成穩健的領導與長期向上，重點是完整承接而非單點才華。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 32,
+      "theme": "德助",
+      "tone": "偏利",
+      "summary": "重點是聲望、人際親和與機會承接，原書把得到支持、累積資源和整合成果並列。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 33,
+      "theme": "盛極",
+      "tone": "吉阻並存",
+      "summary": "氣勢、行動與擴張力旺，原書亦明列盛極轉衰的反面；性別限制屬歷史觀念，不作本版推斷。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 34,
+      "theme": "毀損",
+      "tone": "偏阻",
+      "summary": "以嚴重破損、混亂及多重難題為主題，成果與支持關係容易受到中斷。",
+      "printedPage": 49,
+      "canvas": 26,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/26",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 35,
+      "theme": "文藝",
+      "tone": "偏利",
+      "summary": "理解力、溫和與文藝技術有發揮空間；進取動力較弱，需把才能連到持續執行。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 36,
+      "theme": "侠波",
+      "tone": "偏阻",
+      "summary": "有俠義與承擔的力量，但原書把波動、損失及家庭負擔並列，表示行動成本較高。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 37,
+      "theme": "篤成",
+      "tone": "偏利",
+      "summary": "重點是忠實、熱誠與長期和合，透過責任、信用及持續投入形成穩定成果。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 38,
+      "theme": "志弱",
+      "tone": "吉阻並存",
+      "summary": "志向與技藝可以存在，但承接力量不足；原書認為專業方向可發展，領導及擴張需另看支持。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 39,
+      "theme": "權望",
+      "tone": "吉阻並存",
+      "summary": "有聲望、資源與主導的強勢象；原書同時明列極盛下的反面風險，不能只取有利一面。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 40,
+      "theme": "巧波",
+      "tone": "吉阻並存",
+      "summary": "才幹、策略及機會感強，但傾向投機時會有較大的反覆，信用與基礎需要維持。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 41,
+      "theme": "健德",
+      "tone": "偏利",
+      "summary": "以穩健、有德、志向成就和長久承接為主題，強調資源、責任及組織共同建立。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 42,
+      "theme": "博散",
+      "tone": "偏阻",
+      "summary": "涉獵與技藝雖多，力量卻易分散，方向不定可能造成完成度及續航不足。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 43,
+      "theme": "外盛內弱",
+      "tone": "偏阻",
+      "summary": "外表或形式可能有利，內部支持卻薄弱；原書把消耗、資源散失及失意列為主要風險。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 44,
+      "theme": "大破",
+      "tone": "偏阻",
+      "summary": "原書視為嚴重破壞與混亂的象，重點是支援、穩定及持續成果受到多重牽制。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 45,
+      "theme": "智謀",
+      "tone": "偏利",
+      "summary": "思考深入、志向明確與器量較廣，具把判斷和行動連成成果的主題。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 46,
+      "theme": "力弱",
+      "tone": "偏阻",
+      "summary": "精力或承接力量不足，孤立與反覆較多；原書保留少數特殊突破的例外，不能保證普遍順利。",
+      "printedPage": 50,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 47,
+      "theme": "開花",
+      "tone": "偏利",
+      "summary": "才華透過信任及支持得以發揮，原書連到成果開展與資源承接。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 48,
+      "theme": "賢助",
+      "tone": "偏利",
+      "summary": "聰慧、堅定與協作能力兼具，適合顧問、支持及整合的位置，透過貢獻形成認可。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 49,
+      "theme": "吉阻交替",
+      "tone": "吉阻並存",
+      "summary": "有利與阻滯反覆出現，損失、波動及眼前局勢不清並存，不能只依一時成敗成判。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 50,
+      "theme": "成敗波動",
+      "tone": "吉阻並存",
+      "summary": "成功與失敗交替，容易受投機、變動與失意影響；原書也保留少數穩定情形。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 51,
+      "theme": "一時成就",
+      "tone": "吉阻並存",
+      "summary": "可能出現一段成果或認可，但續航與後續支持未必相稱，需分開取得與維持。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 52,
+      "theme": "先見",
+      "tone": "偏利",
+      "summary": "有預見、策略與捕捉時機的能力，能把長遠判斷轉成具體成果。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 53,
+      "theme": "外吉內困",
+      "tone": "偏阻",
+      "summary": "外表似有利，內在卻有消耗與困局；原書保留先後階段相反的樣態，不單憑外觀成判。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 54,
+      "theme": "交難",
+      "tone": "偏阻",
+      "summary": "不和、失序、損失與苦難互相牽動，表示支持結構及合作條件較難承接。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 55,
+      "theme": "盛虛並見",
+      "tone": "吉阻並存",
+      "summary": "繁盛的外觀與空弱的內容同時存在，有利和阻滯相生；意志及支持不足時更難保持成果。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 56,
+      "theme": "乏行",
+      "tone": "偏阻",
+      "summary": "執行與進取不足，重複障礙會增加消耗，原書把失去成果與連續困難並列。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 57,
+      "theme": "剛克",
+      "tone": "偏利",
+      "summary": "勇毅與堅持能穿過困難而形成成果；原書也保留過程中一度遭遇重大難關的可能。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 58,
+      "theme": "先阻後成",
+      "tone": "吉阻並存",
+      "summary": "起伏與消長較多，原書並列多幸、多難及失敗後重新成功的樣態。",
+      "printedPage": 51,
+      "canvas": 27,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/27",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 59,
+      "theme": "乏忍",
+      "tone": "偏阻",
+      "summary": "忍耐與勇氣不足時，事情難以完成，損失及反覆障礙是主要線索。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 60,
+      "theme": "暗動",
+      "tone": "偏阻",
+      "summary": "不安與變動並見，缺少清楚規劃時更難形成成果，支持與方向感较弱。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 61,
+      "theme": "富盛戒滿",
+      "tone": "偏利",
+      "summary": "有資源與成果累積的主題；原書明確把傲慢連到不和，守住協調才能承接有利一面。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 62,
+      "theme": "志不達",
+      "tone": "偏阻",
+      "summary": "志向不易完成，信用與合作關係受牽制，內外不和可能增加反覆。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 63,
+      "theme": "順成",
+      "tone": "偏利",
+      "summary": "重點是目的達成、少阻與長期穩定，原書把資源、支持及組織承接共同列為有利線索。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 64,
+      "theme": "破波",
+      "tone": "偏阻",
+      "summary": "波動、破損與多重牽制並見，關係和事業的支持結構不易維持。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 65,
+      "theme": "長承",
+      "tone": "偏利",
+      "summary": "以長久承接、家庭或組織延續與資源穩定為主題，原書把權望和成果整合視為有利象。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 66,
+      "theme": "內外難",
+      "tone": "偏阻",
+      "summary": "推進困難、消耗與反覆損失並列，內外支持都可能受到牽制。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 67,
+      "theme": "和達",
+      "tone": "偏利",
+      "summary": "進取與協調能相互支持，較少阻礙，才華、資源與長期承接連成一體。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 68,
+      "theme": "周密",
+      "tone": "偏利",
+      "summary": "理解全面、思慮周密、志向堅定與勤行，特別連到發明、工藝及具體改善的成果。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 69,
+      "theme": "窮阻",
+      "tone": "偏阻",
+      "summary": "推進受到阻塞，反覆危機與消耗是主要線索，成果較難被留住。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 70,
+      "theme": "虛變",
+      "tone": "偏阻",
+      "summary": "原書以空弱、變動、失去支持及孤立為主題，難以建立持續的穩定感。",
+      "printedPage": 52,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 71,
+      "theme": "自然有利",
+      "tone": "吉阻並存",
+      "summary": "外部有利與內在艱難並存，原書特別指出缺少執行與貫徹時，成果仍不易落實。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 72,
+      "theme": "先吉後阻",
+      "tone": "偏阻",
+      "summary": "外在看似有利、實際支持不足；原書保留先順後難的變化，提醒短期表象不足以定長期。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 73,
+      "theme": "高志薄行",
+      "tone": "吉阻並存",
+      "summary": "志向高但执行承接弱，積極落實可有成果，缺乏意志则容易中斷；外在機會與內部不足需分開。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 74,
+      "theme": "徒耗",
+      "tone": "偏阻",
+      "summary": "原書以能力未成、消耗與難以獨立承接為主題，表示實際支援及執行需要補足。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 75,
+      "theme": "退守",
+      "tone": "吉阻並存",
+      "summary": "外表有利而內在可能不和或失衡，原書特別以退守較有利、持續擴張成本高為條件。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 76,
+      "theme": "離耗",
+      "tone": "偏阻",
+      "summary": "內外失和、散失資源與支持分離互相牽動，聲望及成果維持受到牽制。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 77,
+      "theme": "花而未實",
+      "tone": "吉阻並存",
+      "summary": "能得到上位或外部支援，也可能有階段性展開，但收成果與後續承接不足；原書保留少數相反例外。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 78,
+      "theme": "晚續不足",
+      "tone": "吉阻並存",
+      "summary": "智慧及發展力量可存在，卻與後續負擔、阻難並見，原書提示維持與警惕的重要。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 79,
+      "theme": "志力不足",
+      "tone": "偏阻",
+      "summary": "目標未能展開、精力與原則承接不足是主要線索，原書把空有期望而難以實作列為風險。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 80,
+      "theme": "終途多難",
+      "tone": "偏阻",
+      "summary": "反覆苦惱、資源不足與波動障礙并存，重點是缺少穩定支持而難以承接长期成果。",
+      "printedPage": 53,
+      "canvas": 28,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/28",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    },
+    {
+      "number": 81,
+      "theme": "返本",
+      "tone": "偏利",
+      "summary": "原書明說此數回歸基數一，以重新立基、資源與旺盛發展為主題；81與1不是兩項獨立吉象。",
+      "printedPage": 54,
+      "canvas": 29,
+      "sourceUrl": "https://dl.ndl.go.jp/pid/1094933/1/29",
+      "verification": "原圖人工逐條對讀，繁體中文摘要；非逐字翻譯"
+    }
+  ]
+}

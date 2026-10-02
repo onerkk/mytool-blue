@@ -319,7 +319,8 @@ ${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&St
 【本命方法參考：供判讀，不是正文清單】
 1. 先以 D1 上升與上升主確定整盤參照，沿上升主的掌宮、落宮、座性、尊貴、定位星與受照關係，說明命主如何實際行動。月亮及月宿描述習慣與感受，太陽描述主導和價值感；三者的支持或牴觸要整合，不給三份互不相干的個性清單。
 2. 每個問題選直接相關的宮位與宮主，區分自然象徵星和本盤功能宮主。天然吉曜仍可能承擔困難宮位；逆行不自動等於弱，落陷不等於一生失敗。宮主連到哪裡才是事情如何發生的路徑。空宮仍由宮主、受照與定位星分析。
-3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距與 solar 是已算的傳統角距判定；月 12°、火 17°、水順 14°／逆 12°、木 11°、金順 10°／逆 8°、土 15°。燃燒角距表示所採方法的近日狀態，不是精確偕日升落可見性。nearBoundary 或 motionSensitive 為真時，具體說明接近哪個分界。勿將未計算的完整 Shadbala 當現成分數。
+3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距與 solar 是已算的傳統角距判定；月 12°、火 17°、水順 14°／逆 12°、木 11°、金順 10°／逆 8°、土 15°。燃燒角距表示所採方法的近日狀態，不是精確偕日升落可見性。nearBoundary 或 motionSensitive 為真時，具體說明接近哪個分界。
+3a. strength.complete=true 時，六力已有逐曜位置、方向、時間（含年／月／日／Hora、日夜三分、月相、Ayana及行星戰）、動力、自然與照射分量。以 relativeStrength（總力／該曜門檻）比較，再指出哪項分量支持或拖累；不以原始總分跨曜排優劣。力度盤 Kendradi 採 Sripathi，本命解盤採整宮，兩者宮位不可混寫。Raman 平均運動表、日月動力取法、照射版本與 sourceAudit 須保留；不暗換另一軟體分數。Ishta/Kashta 是另一具名平方根指標，與六力分開。強的困難宮主可能更能帶來責任或壓力，低於門檻也不是事情必敗；須連到本盤功能宮位、D1/D9及本次大副運主。若 complete=false，只讀確定分量及 missing；不得自行補總分或排名。
 4. 同座先說共享哪個生活領域，再分析雙曜性質及各自掌宮如何協作或競爭；精確角距補充親近程度。同座和互容分開：互容是互入對方本垣，須追蹤交換的宮位與代價。沿 dispositors 找終點或循環，指出表面現象背後由哪顆星承接。
 5. graha drishti 為有方向的行星相位：七曜第七照，火星另第四／八，木星另第五／九，土星另第三／十。核對 A 照 B 和 B 照 A；未相互照見不寫互相。rasi drishti 為另一套星座關係，兩者獨立命名。交點在此不安特殊行星相位，羅睺計都以落宮、同座、星座相位、月宿主與定位星看放大或抽離的方向。
 6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。Subha、Asubha 和十二宮 Kartari 共用相鄰座位，不當作兩份證據；水星為 mixed 時只按確定星曜判定，未定就不寫成已成立。Bhaaskara、Chapa 只按本次逐項實算結果使用。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，依成立條件從本盤原始座位重查，不能看到名稱就套結果。
@@ -351,6 +352,7 @@ ${JSON.stringify(payload)}
 
 【方法書目】
 P.V.R. Narasimha Rao, Vedic Astrology: An Integrated Approach（尊貴、分盤、宮主、相位、Ashtakavarga、Vimshottari）：https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf
+B. V. Raman, Graha and Bhava Balas（本次預設六力口徑、逐項分量與算例）：https://www.scribd.com/document/340918236/Bhava-and-Graha-Balas-B-v-RAMAN-pdf
 Astronomy Engine 官方原始碼與精度設計：https://github.com/cosinekitty/astronomy
 Swiss Ephemeris 參照介面與恆星黃道政策：https://www.astro.com/swisseph/swephprg.htm
 Drik Panchang 公開的 Surya Siddhanta 燃燒角距與順逆行差異：木星 https://www.drikpanchang.com/planet/asta/guru-asta-date-time.html 、水星 https://www.drikpanchang.com/planet/asta/budha-asta-date-time.html 、金星 https://www.drikpanchang.com/planet/asta/shukra-asta-date-time.html

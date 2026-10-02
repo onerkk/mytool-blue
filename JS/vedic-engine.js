@@ -291,7 +291,7 @@
     }
     return {version:'1.1.0',source,profile:'PVR-CH11-EXPLICIT-20260923',checks,matched:checks.filter(x=>x.status==='structural'),kartari,
       limitation:'本命結構清單；不是全流派 Yoga 或完整強度分數。取消、異說與缺資料必須保留；不引用古籍的貧富、疾病或道德斷言為事實。',
-      unavailable:['完整 Shadbala','全派落陷取消 Neechabhanga','Jaimini／其他大運','未實算的 Yoga 不作已驗證格局']};
+      unavailable:['全派落陷取消 Neechabhanga','Jaimini／其他大運','未實算的 Yoga 不作已驗證格局']};
   }
   function timeSensitivity(input,base,minutes){
     if(minutes===0)return {minutes:0,sampled:false,changes:[],note:'依使用者所填精確時間計算；星曆角度仍有數值誤差'};
@@ -358,7 +358,7 @@
     out.sensitivity.nearAngularBoundaries=[];
     KEYS.concat(lagna?['Lagna']:[]).forEach(k=>{const x=k==='Lagna'?lagna.longitude:planets[k].longitude;
       Object.keys(VARGAS).forEach(d=>{const left=varga(x-1/60,+d),right=varga(x+1/60,+d);if(left.sign!==right.sign)out.sensitivity.nearAngularBoundaries.push({key:k+'/D'+d,alternatives:[left.signName,right.signName]});});});
-    if(root.JYVedicStrength)out.strength=root.JYVedicStrength.compute(out);
+    if(root.JYVedicStrength){out.strength=root.JYVedicStrength.compute(out);out.policy.scope=out.policy.scope.replace('not a full Shadbala or Jaimini-dasha calculator','six-strength ledger under '+out.strength.school+' profile when birth clock/geometry permits; other dashas not selected');out.policy.strengthStatus=out.strength.status;}
     return freeze(out);
   }
   root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});

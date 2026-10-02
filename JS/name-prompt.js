@@ -262,6 +262,7 @@ var JY_READING_NAME = [
   "【姓名：字形與多派原生資料】先核明列姓／名、繁簡及異體字、民用生辰、筆畫來源與覆核。康熙部首還原、現代筆畫、數字按字形／數值是不同口徑；字表未知不以碼位、現代數或字形猜數。每字保留原數、來源與實際讀音，未確認的多音候選不當本人讀法。",
   "五格先核公式：單姓天格加1，複姓取姓總和；人格取姓末字與名首字；單名地格加1，多字名取名總和；外格天格＋地格−人格；總格全名總和。保留原數及81循環參照，虛數不當實際字的筆畫。",
   "五格81數理、三才五行與陰陽分開成判；五行按數尾、陰陽按奇偶，不冒稱字義五行或八字喜用。先讀天→人、人→地如何相生相剋及全名組合，再看數理主題，不把吉凶張數加成總分。姓名格位不指定年齡、婚姻次數、健康器官或事件。",
+  "本次81主題採 originalNumerology：熊崎1935原圖47–54頁，逐數含來源頁、摘要及條件。先讀摘要內的反面、支持、執行及退守／擴張條件，再連到格位角色與三才。tone是本站依原文整理的三分標記，不是原著另印的固定欄。commonModernTable是前版通行分類，兩者不同須說明採用哪個口徑，不投票取平均。practice是本站實務建議，不冒充古書。81返1，不能當成兩個獨立證据。歷史疾病、死亡、性別禁忌或保證富貴不作個人事件斷言。",
   "生肖形義只在明列完整出生日期與農曆年界實算時使用；八字年柱依立春，兩者不可混年。喜忌字根保留匹配來源、字位與覆蓋限制；同一字根不重複加權，部首參照不冒稱完整拆字。民俗牲畜、食物或栖息取象不移植為本人遭遇。",
   "八字用字只依本次實算四柱、月令根氣與原局取用，分扶抑、調候及成敗條件。沒有完整生時就保留缺口，不假設正午；不以生肖替代用神，不按五行數量補字。字義、字形及音韻五行多表不一，未明列所採字表不自造某字唯一五行。",
   "姓名易卦須保留選定起例、筆畫總數、上下卦、動爻、本卦與之卦及原文來源；本版姓數÷8上卦、名數÷8下卦、全名÷6動爻，餘0依8／6。這是固定姓名數理參照，不是對問題另起事件卦，不混入六爻納甲或冒稱河洛專盤；若本次無資料就不啟用。",
@@ -333,5 +334,5 @@ var JY_REC_NAME = "【成稿檢查】後續各段各增加一個新的判斷、�
     lines.push('【本次資料與記憶邊界】只使用上述原問句、明列姓名、生辰、覆核與原生資料；不得引用帳號記憶、個人檔案、其他對話、先前占卜或先前生成結論。沒有明列者均為未知，不補人物、偏好與經歷。','正文完成後簡短提醒：上述分析僅供研究或娛樂用途，屬傳統象徵解釋；姓名與數理不保證事件或改運結果。醫療、法律與財務決策須結合實際資料與專業意見。',root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('name'):JY_REC_NAME);
     return lines.join('\n\n');
   }
-  root.JYNamePrompt=Object.freeze({version:'20261002-name2',build:build});if(typeof module==='object'&&module.exports)module.exports=root.JYNamePrompt;
+  root.JYNamePrompt=Object.freeze({version:'20261003-name3',build:build});if(typeof module==='object'&&module.exports)module.exports=root.JYNamePrompt;
 })(globalThis);

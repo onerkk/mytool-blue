@@ -1,8 +1,7 @@
 {
-  "version": "20261003native1",
-  "generatedAt": "2026-10-02T20:53:42.832Z",
-  "completeAllSchools": false,
-  "exampleCoverage": {
+  "version": "20261003native2",
+  "scope": "Current fifteen native interfaces, chosen named policies and actual input omissions; not all historical schools",
+  "methods": {
     "bazi": {
       "coverage": {
         "pillars": 4,
@@ -12,10 +11,12 @@
         "annualSegments": 110
       },
       "unavailable": [
-        "全部古籍特殊格局的自動成敗裁決"
+        "未採用的外格異派；原典權輕权重與合去救應須依已列實際證據質性審核"
       ],
       "sources": [
-        "ziping"
+        "ziping",
+        "zipingrescue",
+        "renyuan"
       ]
     },
     "ziwei": {
@@ -26,11 +27,11 @@
         "monthlyLayers": 12
       },
       "unavailable": [
-        "流月／流日／流時的短期流曜表未實作",
         "未採用門派的四化、流曜異表與河洛專盤"
       ],
       "sources": [
-        "ziwei"
+        "ziwei",
+        "zwflow"
       ]
     },
     "astro": {
@@ -41,7 +42,6 @@
         "aspects": 23
       },
       "unavailable": [
-        "次限角點與宮位",
         "未選用的卜卦、搬遷及其他專盤"
       ],
       "sources": [
@@ -49,7 +49,8 @@
         "swiss",
         "dignity",
         "ruler",
-        "return"
+        "return",
+        "progression"
       ]
     },
     "vedic": {
@@ -58,10 +59,10 @@
         "houses": 12,
         "vargas": 16,
         "vargaHouses": 192,
-        "activeDashaLayers": 3
+        "activeDashaLayers": 3,
+        "shadbalaPlanets": 7
       },
       "unavailable": [
-        "完整Shadbala六力總分",
         "未列出的其他大運法與門派專算法"
       ],
       "sources": [
@@ -77,16 +78,32 @@
         "earthSkyPositions": 12,
         "courses": 4,
         "transmissions": 3,
+        "classFamilies": 64,
+        "classCounts": {
+          "implemented": 64,
+          "established": 5,
+          "notEstablished": 54,
+          "insufficientData": 5
+        },
         "seasonAvailable": true,
         "seasonPolicy": "節氣月建；辰戌丑未全月採土旺，未按土旺十八日分段"
       },
       "unavailable": [
-        "六十四課體全表",
-        "全部神煞與本命行年"
+        "兩人完整行年干支",
+        "兩人本命與行年",
+        "兩人行年",
+        "節氣月建",
+        "節氣月建或占人年命",
+        "占人行年",
+        "其他未選版本的神煞與占類應期口訣"
       ],
       "sources": [
         "liuren",
-        "battle"
+        "battle",
+        "liurenclasses7",
+        "liurenclasses8",
+        "liurenclasses9",
+        "liurenclasses10"
       ]
     },
     "liuyao": {
@@ -135,13 +152,13 @@
         "comparisons": 2
       },
       "unavailable": [
-        "81數原著逐條覆核",
-        "未知字未覆核筆畫"
+        "未知字未覆核筆畫與本表以外姓名學門派"
       ],
       "sources": [
         "unihan",
         "moe",
         "kumazaki1931",
+        "kumazaki1935",
         "namebook"
       ]
     },
@@ -209,13 +226,18 @@
     },
     "oracle": {
       "coverage": {
-        "records": 4
+        "records": 4,
+        "editionMatched": true,
+        "categorySlots": 29,
+        "sourceCategories": 29,
+        "storyTitles": 5,
+        "registerVersion": "20261003oracle1"
       },
       "unavailable": [
-        "全部廟宇版本與典故逐首考證",
-        "自動全面解籤算法"
+        "其他廟宇版本與未獨立考證的故事歷史真偽"
       ],
       "sources": [
+        "oraclefull",
         "oracle"
       ]
     }
@@ -227,6 +249,22 @@
       "type": "原典校錄",
       "url": "https://www.donglishuzhai.net/chapter/3721.html",
       "scope": "月令、用神與位置先後；不是全部古籍格局已完成",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "zipingrescue",
+      "title": "《子平真詮》論用神成敗救應",
+      "type": "原典校錄",
+      "url": "https://www.donglishuzhai.net/chapter/3722.html",
+      "scope": "八格成敗帶忌救應條件矩陣；權輕權重與有效制化另審",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "renyuan",
+      "title": "《三命通會》卷二論人元司事",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/三命通會/卷二",
+      "scope": "正文5/5/20、7/23、7/5/18表；同章異表、墓氣與藏干不混換",
       "checkedAt": "2026-10-02"
     },
     {
@@ -282,7 +320,23 @@
       "title": "P. V. R. Narasimha Rao：Vedic Astrology, An Integrated Approach",
       "type": "作者教材",
       "url": "https://vedicastrologer.org/articles/vedic_astro_textbook.pdf",
-      "scope": "Parashari 分盤、相位、運期、15.4.1–15.4.2 行星狀態；未完成完整六力",
+      "scope": "Parashari 分盤、相位、運期、15.4.1–15.4.2 行星狀態；六力的流派與資料範圍另見 strengthLedger.policy",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "progression",
+      "title": "Astrodienst 次限宮位說明",
+      "type": "計算法發布者",
+      "url": "https://www.astro.com/faq/fq_fh_owtype_e.htm",
+      "scope": "Naibod均日弧加出生RAMC及ARMC361實際次限恆星時分列；重算角點與12宮",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "zwflow",
+      "title": "iztro v2.6.1作者流曜程式",
+      "type": "作者技術原文",
+      "url": "https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts",
+      "scope": "五層魁鉞昌曲祿羊陀馬鸞喜獨立干支安星；既有七星八星政策保留",
       "checkedAt": "2026-10-02"
     },
     {
@@ -366,6 +420,14 @@
       "checkedAt": "2026-10-02"
     },
     {
+      "id": "oraclefull",
+      "title": "東海龍門天聖宮六十甲子籤",
+      "type": "廟方逐首全文",
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs01/",
+      "scope": "60首詩、29事項欄、配籤名稱與逐首摘要；第5首詩採香山財神廟原文校勘，解說採正確fs05-2，來源混段與缺欄明列",
+      "checkedAt": "2026-10-02"
+    },
+    {
       "id": "oracle",
       "title": "北港朝天宮靈籤程序",
       "type": "廟方資料",
@@ -394,7 +456,7 @@
       "title": "BPHS 第27章",
       "type": "原典英譯文本",
       "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
-      "scope": "三個力度完整分量與月相子項；沒有六力總分",
+      "scope": "Santanam英譯六力公式；與Raman月相、動力、照射等差異明列",
       "checkedAt": "2026-10-02"
     },
     {
@@ -402,7 +464,7 @@
       "title": "B. V. Raman《Graha and Bhava Balas》",
       "type": "作者教材文本",
       "url": "https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996",
-      "scope": "七分盤與十度分組取法；文本識別錯誤不盲採",
+      "scope": "七星六力全部分項、Ahargana、平行度動力、Sripathi方位、戰爭與照射算例；OCR衝突保留稽核",
       "checkedAt": "2026-10-02"
     },
     {
@@ -411,6 +473,46 @@
       "type": "國會圖書館原圖",
       "url": "https://dl.ndl.go.jp/pid/1104862/1/7",
       "scope": "正文4–5頁核對超81循環；不是81條斷語全表已核對",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "kumazaki1935",
+      "title": "熊崎健翁《運に乗る法》1935",
+      "type": "國會圖書館原圖",
+      "url": "https://dl.ndl.go.jp/pid/1094933/1/25",
+      "scope": "正文46–54頁81數全表與循環逐頁覆核；保留正負條件，現代簡表與編輯練習分開",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "liurenclasses7",
+      "title": "《六壬大全》課經卷七",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/7",
+      "scope": "九宗門與三光三陽三奇六儀時泰龍德",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "liurenclasses8",
+      "title": "《六壬大全》課經卷八",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/8",
+      "scope": "官爵至閉口；行年丙寅順壬申逆及德孕旺孕算例",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "liurenclasses9",
+      "title": "《六壬大全》課經卷九",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/9",
+      "scope": "遊子至災厄；古法月宿、四立四離、迍福逐條条件",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "liurenclasses10",
+      "title": "《六壬大全》課經卷十",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/10",
+      "scope": "殃咎至物類；間傳24型及無祿絕嗣、雜狀物類分族",
       "checkedAt": "2026-10-02"
     },
     {

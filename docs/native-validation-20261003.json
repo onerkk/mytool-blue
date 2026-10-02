@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-02T21:01:03.647Z",
+  "testedAt": "2026-10-02T23:06:46.600Z",
   "scope": "Traditional rule implementation and calculation/data agreement; not prediction validation",
   "results": [
     {
@@ -39,7 +39,7 @@
       "status": "passed"
     },
     {
-      "name": "Vedic strength endpoint/boundary values, independently tested tropical angles and missing-total contract",
+      "name": "Vedic six-strength totals, endpoint/boundary values, independent tropical angles and unknown-time contract",
       "status": "passed"
     },
     {

@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-03",
+  "engineVersion": "20261003liuren2",
+  "classVersion": "20261003liurenclasses1",
+  "results": [
+    {
+      "name": "Published 課經 charts independently establish their named class and actual transmissions",
+      "pass": true
+    },
+    {
+      "name": "Original 行年 examples, 60-year cycle and all ages 1–150 keep valid 干支",
+      "pass": true
+    },
+    {
+      "name": "Published two-person 德孕 and 旺孕 require their actual separate inputs",
+      "pass": true
+    },
+    {
+      "name": "Ancient lunar-mansion table repeats each of six specified mansions and preserves real calendar limits",
+      "pass": true
+    },
+    {
+      "name": "四立、四離 and 分至 are computed from solar-term civil dates, including timezone crossings",
+      "pass": true
+    },
+    {
+      "measurement": "symbolicDecisions",
+      "decisions": 1105920,
+      "positiveFamilies": 61
+    },
+    {
+      "name": "All 720 symbolic charts × 2 noble modes × 12 month contexts execute all 64 rule families without unknown math",
+      "pass": true
+    },
+    {
+      "name": "Missing inputs remain tri-valued, prompt/native export keeps calculated rule evidence",
+      "pass": true
+    }
+  ],
+  "passed": 7,
+  "total": 7
+}

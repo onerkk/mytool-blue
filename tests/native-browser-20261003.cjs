@@ -26,7 +26,7 @@ data.push({kind:'bazi',chart:b,a:c.JYNativeAnalysis.analyze('bazi',b,{unknown:tr
     const pending=page.waitForEvent('download');await button.click();const download=await pending;
     const saved=JSON.parse(fs.readFileSync(await download.path(),'utf8'));assert.equal(saved.nativeAnalysis.method,data[i].kind);
     if(data[i].partial){assert.equal(saved.schema,'jy.partial-bazi/1');assert.equal(saved.pillars.hour,undefined);assert.equal(saved.nativeAnalysis.coverage.pillars,3);}
-    else if(data[i].kind==='vedic'){assert.equal(saved.strength.complete,false);assert.equal(saved.strength.totalVirupas,null);}
+    else if(data[i].kind==='vedic'){assert.equal(saved.strength.complete,true);assert.equal(Object.keys(saved.strength.totalVirupas).length,7);assert.equal(saved.nativeAnalysis.coverage.shadbalaPlanets,7);}
     else if(data[i].kind==='astro')assert.equal(saved.essentialDignities.planets.length,7);
     else if(data[i].kind==='ziwei')assert(saved.nativeAnalysis.layers.daily&&saved.nativeAnalysis.layers.hourly);
    }
