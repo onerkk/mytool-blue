@@ -42,7 +42,7 @@
   function results(pair,metaA,metaB){
     if(!pair)return '';
     var a=metaA.name||'甲方',b=metaB.name||'乙方';
-    return '<section class="pair-result" id="pair-ziwei-result"><header class="pair-section-heading"><span>02 / TWELVE PALACES</span><h2>紫微斗數 · 雙星合參</h2><p>先看見各自的需要，再讀彼此的牽動。</p></header>'+
+    return (window.JYNativeAnalysis?window.JYNativeAnalysis.render('compat',pair):'')+'<section class="pair-result" id="pair-ziwei-result"><header class="pair-section-heading"><span>02 / TWELVE PALACES</span><h2>紫微斗數 · 雙星合參</h2><p>先看見各自的需要，再讀彼此的牽動。</p></header>'+
       (pair.unavailable.length?'<p class="bzs-note warning">'+esc(pair.unavailable.join('；'))+'。雙向紫微對照暫不推算。</p>':'')+
       '<div class="pair-chart-grid">'+person(pair.personA,'A',a,pair.focusPalaces)+person(pair.personB,'B',b,pair.focusPalaces)+'</div>'+
       (pair.directions.length?'<section class="bzs-card"><h3>雙向四化引動</h3><p>以對方生年干映射本人的星曜落宮，作為相處議題的參照；兩個方向分別閱讀。</p><div class="pair-directions">'+pair.directions.map(function(d){return '<article><h4>'+esc(d.sourcePerson==='A'?a+' → '+b:b+' → '+a)+'</h4>'+d.birthStemProjection.map(function(h){return '<div class="pair-flight"><b>'+esc(h.stem)+'干</b><span>'+esc(h.star+h.hua)+'</span><i>→</i><strong>'+esc(h.targetPerson+' '+h.targetPalace+'・'+h.targetBranch)+'</strong></div>';}).join('')+'</article>';}).join('')+'</div><p class="pair-caption">跨盤引動屬所選流派的參照，不會改寫任何一方的生年四化，也不代表對方已經產生特定感情或行為。</p></section>':'')+

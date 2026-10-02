@@ -40,7 +40,8 @@
 // v108: 20261002atelier2 姓名與六壬雙卡、立體式盤及觸控課傳。
 // v107: 20261001liuren1 大六壬獨立入口、九宗門課盤及天地盤沉浸式閱讀。
 // v109: 20261002name2 原名全算、逐一對照、姓名語義與覆核資料完整性。
-const CACHE_NAME = 'jy-main-v109';
+// v110: 20261003native1 實際盤面作用、原典力度、五項尊貴與流日時；資料缺項明列。
+const CACHE_NAME = 'jy-main-v110';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

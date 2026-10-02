@@ -531,7 +531,9 @@ var JY_READING_RELATIONSHIP = "【白話優先】【像命理師當面解惑】�
       '年度時間硬規則：使用共同 UTC／UTC+8 區間；年度起點是立春，segments 是各方大運交界切出的分段。真太陽時讀數不可加上 +08:00 冒充民用時間，不能將兩地鐘面差當成節氣誤差。',
       '推論硬規則：旺衰、格局與取用屬可覆核判法；與前端候選不同不等於排盤算錯。關係期待、自主程度、欲望與投入差異只能列為待現實核對的假設，不可由投影落夫妻或身弱逕定誰更愛、誰順從。日主相生不能直接翻譯成持續付出；忌某五行不能翻譯成排斥某人。限制說明集中一次，正文用具體支持、反向條件與未知資料推進。',
       '【本情境焦點】'+s.focus+'。'+s.cautions,
-      root.BaziSuiteCore.buildCompatibilityDataBlock(comp,{compact:true,question:question}),dataBlock(pair,{compact:true}),
+      root.BaziSuiteCore.buildCompatibilityDataBlock(comp,{compact:true,question:question,nativeSupplement:true}),dataBlock(pair,{compact:true}),
+      root.JYNativeAnalysis?root.JYNativeAnalysis.prompt('compat',pair,question,{supplement:true}):'',
+      root.JYNativeAnalysis?root.JYNativeAnalysis.prompt('compat',comp,question,{supplement:true}):'',
       '【本題成稿落點】請直接解答：主判是什麼、兩方的核心需要在哪裡相撞、哪些已列依據支持及牽制、目前運限如何影響、哪一項相處協議最值得先試。每段先給對提問者有用的判斷再補理由；不逐項朗讀資料。沒有現實互動紀錄時，具體相處循環是待核對的假設，不能替B斷言感受。四化引用逐筆核來源方、干、星、化、受方及落宮；不符合資料就刪除受影響結論。',
       bz.brandTailLines('compatibility').join('\n')
     ];

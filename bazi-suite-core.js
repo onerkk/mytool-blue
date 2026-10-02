@@ -681,7 +681,7 @@
     var report=root.JY_READING_QUALITY&&root.JY_READING_QUALITY.reportScope?root.JY_READING_QUALITY.reportScope(options.question,'bazi'):root.JYReadingWorkflow.reportScope(options.question,'bazi');
     options=Object.assign({},options,{compact:!!options.compact||report.annualRequested||!!report.requestedDecades||report.allDecades});
     var verified=birthFactLines(chart,meta);
-    if (meta.unknown) return [
+    if (meta.unknown) return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement}):'',
       '【A. 三柱資料：時辰未知】',
       verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.birthLine||'出生日期未標示'),
@@ -693,7 +693,7 @@
     var scope=options.scope||promptScope(options.question,referenceBaziYear(chart));
     var chosen=options.compact?selectedAnnuals(chart,scope):[];
     var decades=options.compact?scopedDayun(chart,scope).filter(function(d){return scope.mode==='all'||d.isCurrent||chosen.some(function(y){return y.dayun===d.gz;});}):[];
-    return [
+    return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement}):'',
       '【A. 排盤與曆法資料】',
       verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),
@@ -814,6 +814,7 @@
         buildChartDataBlock(comp._chartB||{},comp._metaB||{},{compact:true,question:userQuestion}),
         '【跨盤事實與模型整理】',
         relationFacts(comp).join('\n'),
+        globalThis.JYNativeAnalysis?globalThis.JYNativeAnalysis.prompt('compat',comp,userQuestion):'',
         '資料可信度：'+safeText(comp.uncertainty&&comp.uncertainty.note,'未標示')+'。',
         '【雙向十神映射】',
         'A看B：'+comp.directionalTenGods.aViewsB.map(function(x){return PILLAR_LABEL[x.partnerPillar]+x.partnerStem+'＝'+x.tenGod+(x.hidden&&x.hidden.length?'（藏干 '+x.hidden.map(function(h){return h.stem+'＝'+h.tenGod;}).join('、')+'）':'');}).join('；')+'。',
@@ -863,11 +864,11 @@
     var resilient=!!(chart&&(chart.strong===true||['中和','偏強','身強','太強'].indexOf(chart.strongLevel)>=0));
     var adaptive=yin>yang || safeArray(chart&&chart.branchInteractions).length>=2;
     return [
-      {key:'energy',left:'內省',right:'外放',rightSelected:outward>inward,evidence:'輸出／財星訊號 '+outward+'，印比訊號 '+inward},
-      {key:'order',left:'自主',right:'秩序',rightSelected:structured>=free,evidence:'官印訊號 '+structured+'，食傷比劫訊號 '+free},
-      {key:'relation',left:'獨行',right:'協作',rightSelected:relational>selfLed,evidence:'關係導向訊號 '+relational+'，自我驅動訊號 '+selfLed},
-      {key:'pressure',left:'敏感',right:'韌行',rightSelected:resilient,evidence:'旺衰候選 '+safeText(chart&&chart.strongLevel,'未判定')},
-      {key:'rhythm',left:'穩態',right:'變通',rightSelected:adaptive,evidence:'陰干數 '+yin+'、陽干數 '+yang+'；原局作用 '+safeArray(chart&&chart.branchInteractions).length+' 項'}
+      {key:'energy',left:'內省',right:'外放',rightSelected:outward>inward,inputs:{outward:outward,inward:inward,comparison:'>'},evidence:'輸出／財星訊號 '+outward+'，印比訊號 '+inward},
+      {key:'order',left:'自主',right:'秩序',rightSelected:structured>=free,inputs:{structured:structured,free:free,comparison:'>='},evidence:'官印訊號 '+structured+'，食傷比劫訊號 '+free},
+      {key:'relation',left:'獨行',right:'協作',rightSelected:relational>selfLed,inputs:{relational:relational,selfLed:selfLed,comparison:'>'},evidence:'關係導向訊號 '+relational+'，自我驅動訊號 '+selfLed},
+      {key:'pressure',left:'敏感',right:'韌行',rightSelected:resilient,inputs:{strong:chart.strong,strongLevel:chart.strongLevel,acceptedLevels:['中和','偏強','身強','太強']},evidence:'旺衰候選 '+safeText(chart&&chart.strongLevel,'未判定')},
+      {key:'rhythm',left:'穩態',right:'變通',rightSelected:adaptive,inputs:{yin:yin,yang:yang,branchInteractions:safeArray(chart.branchInteractions).length,operator:'yin>yang OR branchInteractions>=2'},evidence:'陰干數 '+yin+'、陽干數 '+yang+'；原局作用 '+safeArray(chart&&chart.branchInteractions).length+' 項'}
     ];
   }
 
@@ -898,6 +899,7 @@
       system:'靜月五軸人格', version:'1.0.0', independent:true,
       disclaimer:'此為本地自建的生日人格翻譯工具，不是 OpenFate BZTI，也未使用其未公開演算法。結果屬傳統命理語言的輕量自我觀察，不是心理測驗或科學診斷。',
       index:idx, code:code, name:name, traits:traits, axes:axes,
+      modelInputs:{godCounts:godCounts(chart),pillars:getPillars(chart),strong:chart.strong,strongLevel:chart.strongLevel,branchInteractions:safeArray(chart.branchInteractions)},
       strengths:uniq(strengths), watch:uniq(watch),
       chart:chartSummary(chart,meta||{}),
       natalEvidence:buildChartDataBlock(chart,meta||{},{compact:true,question:'原局人格與壓力反應'})
@@ -921,6 +923,7 @@
       universalQuestionRootLines('personality'),
       [
         '【人格原局依據】',personality.natalEvidence||'舊人格紀錄未保存完整原局；先依已保留資料分析，完整制化需重新排盤。',
+        globalThis.JYNativeAnalysis?globalThis.JYNativeAnalysis.prompt('personality',personality,userQuestion):'',
         '【人格卡】',
         personality.name+'｜代碼 '+personality.code+'｜五軸：'+personality.traits.join('／'),
         personality.axes.map(function(x){return '・'+x.left+'／'+x.right+'：選擇 '+(x.rightSelected?x.right:x.left)+'；依據 '+x.evidence+'。';}).join('\n'),

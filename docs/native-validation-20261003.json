@@ -1,0 +1,132 @@
+{
+  "testedAt": "2026-10-02T21:01:03.647Z",
+  "scope": "Traditional rule implementation and calculation/data agreement; not prediction validation",
+  "results": [
+    {
+      "name": "15 methods consume real records without mutating charts; complete JSON and HTML preserve scope",
+      "status": "passed"
+    },
+    {
+      "name": "Independent ten-god and directional five-element tables",
+      "status": "passed"
+    },
+    {
+      "name": "Bazi annual segments retain both sides of a luck transition and independently reconstruct all links",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown Bazi export has only three pillars and excludes temporary-hour strength/luck claims",
+      "status": "passed"
+    },
+    {
+      "name": "Ziwei twelve actual trines/oppositions, 14 major stars, 48 flights and 12 monthly overlays",
+      "status": "passed"
+    },
+    {
+      "name": "Western active return changes only at the actual solar-return instant",
+      "status": "passed"
+    },
+    {
+      "name": "Ziwei daily/hourly locations: year/month/leap/day boundaries, twelve hours and four real transformations",
+      "status": "passed"
+    },
+    {
+      "name": "PVR published avastha examples and sign-only D9 dignity avoid fictitious degree precision",
+      "status": "passed"
+    },
+    {
+      "name": "Published Raman Standard Horoscope: Sun Saptavargaja 90 and Sthana 198.0",
+      "status": "passed"
+    },
+    {
+      "name": "Vedic strength endpoint/boundary values, independently tested tropical angles and missing-total contract",
+      "status": "passed"
+    },
+    {
+      "name": "Published dignity tables and two consistent examples; discrepant Cancer answer is recorded",
+      "status": "passed"
+    },
+    {
+      "name": "Requested first two Bazi decades export only those actually calculated decades",
+      "status": "passed"
+    },
+    {
+      "name": "Two unknown Ziwei birth clocks do not fabricate compatibility overlays",
+      "status": "passed"
+    },
+    {
+      "name": "All 16 varga house owners/occupants and three exact active dasha intervals",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown Vedic and Western clocks never introduce varga houses, active dasha or solar return",
+      "status": "passed"
+    },
+    {
+      "name": "Liuren twelve generals and inner/outer battle retain element direction and emptiness",
+      "status": "passed"
+    },
+    {
+      "name": "4096 line states: Yijing geometry and Liuyao changing line facts remain exact",
+      "status": "passed"
+    },
+    {
+      "name": "384 Meihua charts preserve original body; pure Qian/Kun use changed nuclear chart",
+      "status": "passed"
+    },
+    {
+      "name": "Name comparison includes original, every candidate and all pair calculations",
+      "status": "passed"
+    },
+    {
+      "name": "1931 original cycle examples remain auditable in actual five-grid output",
+      "status": "passed"
+    },
+    {
+      "name": "Compatibility preserves directed ten gods and native cross-pillar data",
+      "status": "passed"
+    },
+    {
+      "name": "Personality axis outcomes are independently reproduced from exported numeric inputs",
+      "status": "passed"
+    },
+    {
+      "name": "156 RWS orientations retain actual card identity, direction, meaning and unknown-direction gap",
+      "status": "passed"
+    },
+    {
+      "name": "Lenormand independent 3x3, 8x4+4, 9x4 geometry; choices and branches never cross",
+      "status": "passed"
+    },
+    {
+      "name": "OOTK incomplete/abandoned rounds retain records without being counted completed",
+      "status": "passed"
+    },
+    {
+      "name": "OOTK not-started state keeps zero operations and explicitly withholds divination",
+      "status": "passed"
+    },
+    {
+      "name": "Combined prompt with native modules keeps all four systems/people in a practical scoped export",
+      "status": "passed"
+    },
+    {
+      "name": "Oracle lines retain exact poem, source and literal condition positions",
+      "status": "passed"
+    },
+    {
+      "name": "Prompt integration includes calculated native structures; source chart stays unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "All compact JSON pointers resolve to present complete evidence without a cycle",
+      "status": "passed"
+    },
+    {
+      "name": "User input is escaped in native HTML and no capability becomes a fabricated total",
+      "status": "passed"
+    }
+  ],
+  "passed": 31,
+  "total": 31
+}

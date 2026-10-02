@@ -399,6 +399,7 @@
     h += '</div><div class="bzx-ai-foot">點擊 AI 按鈕 → 自動複製＋開啟 → 貼上送出</div></div>';
     h += '<div style="text-align:center;margin-top:.2rem"><button type="button" class="at-share-button" onclick="_baziShare()" style="padding:.72rem 1.5rem;border-radius:12px;border:1px solid rgba(201,168,76,.5);background:linear-gradient(135deg,rgba(201,168,76,.18),rgba(201,168,76,.05));color:#c9a84c;font-family:inherit;font-size:.92rem;font-weight:600;letter-spacing:1px;cursor:pointer">📤 生成分享卡</button></div>';
     h += '<div style="text-align:center"><button class="bzx-reset-btn" onclick="_baziReset()">↺ 重新排盤</button></div>';
+    if(window.JYNativeAnalysis)h+=window.JYNativeAnalysis.render('bazi',b,{unknown:unknown});
     return h;
   }
 
@@ -488,7 +489,8 @@
     if (meta && meta.unknown) {
       if(typeof baziRootLines==='function')L=L.concat(baziRootLines(b,{unknown:true}));
       L.push('【三柱分析】出生時辰未知，已排除午時時柱及其衍生旺衰比例、喜忌、神煞和精確起運。請依年、月、日三柱分析可確認的結構；可能隨時柱或節氣／換日邊界改變的部分列為候選，確認時辰後再定。');
-      return L.concat(spec.universalRulesLines(), spec.domainRouterLines('single'), spec.answerContractLines('single'), spec.brandTailLines()).join('\n');
+      if(window.JYNativeAnalysis)L.push(window.JYNativeAnalysis.prompt('bazi',b,question,{unknown:!!(meta&&meta.unknown)}));
+    return L.concat(spec.universalRulesLines(), spec.domainRouterLines('single'), spec.answerContractLines('single'), spec.brandTailLines()).join('\n');
     }
     if(b.renyuan)L.push('・人元司令：'+_fmt(b.renyuan)+'（輔助月令用事，不改變月柱）。');
     if(b.kongwang){var kw=[].concat(b.kongwang.year||[],b.kongwang.day||[]).filter(function(v,i,a){return v&&a.indexOf(v)===i;});if(kw.length)L.push('・空亡：'+kw.join('、')+'。');}
@@ -560,6 +562,7 @@
     (b.extraShenSha||[]).forEach(function(x){var t=x&&x.name?x.name:_fmt(x);if(t&&ss.indexOf(t)<0)ss.push(t);});
     if(ss.length){L.push('【神煞資料（輔助）】');L.push(ss.join('、')+'。請放回干支生剋、格局、宮位與歲運中綜合。');L.push('');}
 
+    if(window.JYNativeAnalysis)L.push(window.JYNativeAnalysis.prompt('bazi',b,question,{unknown:!!(meta&&meta.unknown)}));
     L=L.concat(spec.universalRulesLines());
     L.push('');
     L=L.concat(spec.domainRouterLines('single'));

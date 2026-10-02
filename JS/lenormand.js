@@ -2169,6 +2169,9 @@ function _lnPushBrandModule(lines) {
   lines.push('</品牌附加層>','');
 }
 
+function _lnNativeData(drawn,spreadId,sp){
+  return {spreadType:spreadId,expectedCount:sp.count,cards:drawn.map(function(p,i){var d=CARDS.find(function(x){return x.id===p.id;})||p;return {id:p.id,name:d.name,position:sp.positions&&sp.positions[i],meaning:{keywords:d.key,scope:d.scope},guard:d.guard};}),methodData:sp};
+}
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readingPlan) {
   var sp = readingPlan||_lnBuildSpreadDef(spreadId,question);
   if(!sp||!Array.isArray(drawn)||drawn.length!==sp.count||drawn.some(function(c){return !c||!Number.isInteger(c.id)||c.id<1||c.id>36||!c.name;})||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('雷諾曼牌陣未完成或牌面資料重複，請重新抽牌');
@@ -2212,6 +2215,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);
+  if(window.JYNativeAnalysis)lines.push(window.JYNativeAnalysis.prompt('lenormand',_lnNativeData(drawn,spreadId,sp),question));
   _lnPushGeometryData(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushOutputContract(lines, legalNames);
   _lnPushBrandModule(lines);
@@ -2407,6 +2411,7 @@ function _render() {
     h += '<div style="text-align:center"><button class="ln-reset-btn" onclick="_lnReset()">↺ 重新抽牌</button></div>';
   }
   h += '<div class="ln-footer">靜月之光 ・ jingyue.uk<br>Petit Lenormand 雷諾曼牌</div></div>';
+  if(window.JYNativeAnalysis&&_lnPhase==='result'&&_lnDrawn.length)h+=window.JYNativeAnalysis.render('lenormand',_lnNativeData(_lnDrawn,_lnResolved,_lnReadingPlan||SPREADS[_lnResolved]));
   w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     w.scrollTop=savedScroll;

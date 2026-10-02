@@ -43,7 +43,7 @@
   }
   function numberFact(n,role,formula){
     var d=data().numerology,k=cycle(n),theme=d.themes[k-1];
-    return {role:role,num:n,number81:k,element:element(n),polarity:n%2?'陽':'陰',level:d.favorable.includes(k)?'偏利':d.mixed.includes(k)?'吉阻並存':'偏阻',theme:theme[0],focus:theme[1],practice:theme[2],formula:formula,scope:ROLES[role]};
+    return {role:role,num:n,number81:k,numberCycleAudit:{baseNumber:n>=81?(n-1)%80+1:n,source:'https://dl.ndl.go.jp/pid/1104862/1/7',scope:'1931原圖4–5頁核對81→1、82→2、83→3；本表保留81條標籤，未逐條原圖考證'},element:element(n),polarity:n%2?'陽':'陰',level:d.favorable.includes(k)?'偏利':d.mixed.includes(k)?'吉阻並存':'偏阻',theme:theme[0],focus:theme[1],practice:theme[2],formula:formula,scope:ROLES[role]};
   }
   function fiveGrids(surname,given, facts){
     if(facts.some(function(f){return f.stroke==null;}))return {status:'incomplete',missing:facts.filter(function(f){return f.stroke==null;}).map(function(f){return f.char;}),reason:'筆畫尚未覆核，五格、三才與筆畫起卦暫不計算。'};

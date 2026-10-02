@@ -305,6 +305,7 @@ var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、
       notEstablished:checks.filter(r=>r.status==='not-established').map(r=>({id:r.id,name:r.name,status:r.status})),
       matchedIds:matched.map(r=>r.id),
       exportNote:'未成立規則只列名稱與狀態；成立、取消、被取代與資料不足的檢核保留原文。完整檢核見原始JSON；未列細節不代表成立。'}};
+    if(root.JYNativeAnalysis)payload.nativeAnalysis=root.JYNativeAnalysis.analyze('vedic',chart);
     const q=String(question||'請分析我的命盤主軸、當前處境與可以採取的方向。').slice(0,6000);
     return globalThis.JYReadingWorkflow.finish(`你是一位熟悉 Parashari Jyotisha（印度／吠陀占星）的資深解盤者。使用繁體中文，根據本次完整計算資料，給迷惘中的使用者明確、有取捨、可追溯的分析。
 

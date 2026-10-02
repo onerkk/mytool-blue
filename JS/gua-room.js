@@ -121,6 +121,7 @@
       else h+='<p>問題未提供可辨識的期限，這次保留相對時機。</p>';
       h+='</div></details>';
     }
+    if(root.JYNativeAnalysis)h+=root.JYNativeAnalysis.render(s.kind,r);
     h+='<details class="gw-fold"><summary>查看起卦紀錄與方法</summary><div class="gw-fold-body"><p>'+esc(d.wall+' · UTC '+(d.timezoneOffset>=0?'+':'')+d.timezoneOffset)+'<br>'+esc(s.kind==='liuyao'?'節氣月建 · '+(d.dayBoundaryMode==='ZI_HOUR_23'?'23:00':'00:00')+' 換日':'起卦時間僅供記錄')+'</p><p>初爻至上爻：'+r.values.join(' · ')+'</p>';
     if(r.method==='coins')h+='<ol>'+r.records.map(function(c){return '<li>'+c.coins.map(function(f){return f==='back'?'背（3）':'字（2）';}).join(' + ')+' = '+c.value+'</li>';}).join('')+'</ol>';
     else if(r.method==='yarrow')h+='<ol>'+r.records.map(function(c){return '<li>'+c.changes.map(function(v){return v.total+'策 → '+v.remaining+'策（歸餘'+v.removed+'）';}).join('；')+'；爻值 '+c.value+'</li>';}).join('')+'</ol><p>大衍蓍法：五十策虛一，每變皆掛一；三變後餘策除四成爻。本次為四種餘數等機率的數位取樣。</p>';

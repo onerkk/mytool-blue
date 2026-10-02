@@ -364,7 +364,7 @@ var JY_REC_GUA = {
     var q=root.JY_READING_QUALITY,supported=q&&String(q.readingVersion||'0').localeCompare('9.0.0',undefined,{numeric:true})>=0&&typeof q.lines==='function'&&typeof q.methodKinds==='function'&&q.methodKinds().includes(kind);
     var guide=supported?q.lines(kind):JY_READING_GUA[kind];
     var end=q&&String(q.version||'0').localeCompare('4.6.0',undefined,{numeric:true})>=0&&typeof q.recommendationEnding==='function'?q.recommendationEnding(kind):JY_REC_GUA[kind];
-    return globalThis.JYReadingWorkflow.finish(['你是一位熟悉'+(kind==='liuyao'?'六爻納甲與《增刪卜易》':'《周易》卦爻辭及朱子變占')+'的資深命理師。請用繁體中文，直接替提問者解盤。',guide.join('\n'),facts(r),
+    return globalThis.JYReadingWorkflow.finish(['你是一位熟悉'+(kind==='liuyao'?'六爻納甲與《增刪卜易》':'《周易》卦爻辭及朱子變占')+'的資深命理師。請用繁體中文，直接替提問者解盤。',guide.join('\n'),facts(r),root.JYNativeAnalysis?root.JYNativeAnalysis.prompt(kind,r,r.question):'',
       '【本題輸出】依問題複雜度給足解釋：第一句直接回答原問題，後續段落串起主判路徑、最有力依據、最大阻力與現實檢查點。原文與排盤表供判讀，不逐列複述；只用實際提供的資料，不自行重起、補卦或把題目當成卦象證據。',end].join('\n\n'),{method:kind,question:r.question});
   }
   root.JYGuaPrompt=Object.freeze({build:build,facts:facts,status:status});

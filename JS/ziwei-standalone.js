@@ -802,6 +802,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     parts.push('提問者的問題：' + (q || '(未填寫，請以命盤為主，分析命格、事業、財運、感情婚姻、健康風險與近年大限流年走勢)'));
     parts.push('────────────────────────────\n');
     parts.push(serializeChart(zw, form,{compact:true}));
+    if(window.JYNativeAnalysis&&!form.btimeUnknown)parts.push(window.JYNativeAnalysis.prompt('ziwei',zw,q));
     parts.push('\n────────────────────────────\n');
     parts.push(_zwTailText());
     return globalThis.JYReadingWorkflow.finish(parts.join('\n'),{method:'ziwei',question:q});
@@ -919,7 +920,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20260924root2', null);};
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native1', null);};
         if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20260925engine1', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
@@ -995,6 +996,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
         '</div>' +
         '<div class="zw-res-foot">靜月之光 ・ jingyue.uk<br>紫微斗數 ・ 命盤僅供參考，不構成醫療、法律或財務建議</div>' +
       '</div>';
+    if(window.JYNativeAnalysis&&!form.btimeUnknown)w.insertAdjacentHTML('beforeend',window.JYNativeAnalysis.render('ziwei',zw));
     document.body.appendChild(w);
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     if(window.JYExperience&&!form.btimeUnknown)window.JYExperience.mountZiwei(w,zw);

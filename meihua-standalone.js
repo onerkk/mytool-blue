@@ -493,6 +493,7 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】（可選）手鍊建議放�
       h += '<div style="text-align:center"><button class="mhx-reset-btn" onclick="_mhReset()">↺ 重新起卦</button></div>';
     }
     h += '<div class="mhx-footer">靜月之光 ・ jingyue.uk<br>梅花易數 ・ 體用占</div></div>';
+    if(window.JYNativeAnalysis&&_mhPhase==='result'&&_mhResult)h+=window.JYNativeAnalysis.render('meihua',_mhResult);
     w.innerHTML = h;
     if (window.JY_ATELIER) window.JY_ATELIER.enhance(w);
     if (window.JYExperience && _mhResult && w.querySelector('.mhx-gua-row')) window.JYExperience.mountMeihua(w,_mhResult);
@@ -885,6 +886,7 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】（可選）手鍊建議放�
         typeof _readingQuality.recommendationText==='function');
     } catch(e) { _recommendationCurrent=false; }
     L.push(_recommendationCurrent?_readingQuality.recommendationText('meihua'):JY_REC_MEIHUA);
+    if(window.JYNativeAnalysis)L.push(window.JYNativeAnalysis.prompt('meihua',mh,question));
     L.push('最後保留以下兩行：');
     L.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
     L.push('願你諸事順遂。');

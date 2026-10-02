@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-02T20:58:29.939Z",
+  "scope": "Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths",
+  "results": [
+    {
+      "method": "bazi",
+      "status": "passed",
+      "width": 390,
+      "nativeDownload": true,
+      "prompt": true
+    },
+    {
+      "method": "ziwei",
+      "status": "passed",
+      "width": 390,
+      "nativeDownload": true,
+      "prompt": true
+    },
+    {
+      "method": "vedic",
+      "status": "passed",
+      "width": 390,
+      "nativeDownload": true,
+      "prompt": true
+    },
+    {
+      "method": "astro",
+      "status": "passed",
+      "width": 390,
+      "nativeDownload": true,
+      "prompt": true
+    },
+    {
+      "method": "liuren",
+      "status": "passed",
+      "width": 390,
+      "nativeDownload": true,
+      "prompt": true
+    }
+  ]
+}

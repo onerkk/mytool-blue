@@ -1472,6 +1472,7 @@ else if(_phase==='shengjia'){
 }
 else if(_phase==='poem'){
 var _aiPrompt=_buildOraclePrompt(_poem,_qText);
+if(window.JYNativeAnalysis)h+=window.JYNativeAnalysis.render('oracle',_poem);
 h+=_oracleResultHTML({poem:_poem,numberLabel:'第'+(CN[_poem.n]||_poem.n)+'籤',question:_qText,confirmed:_holy>=3,hasPrompt:!!_aiPrompt,art:IMG.cardWm});
 }
 
@@ -1813,6 +1814,7 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('依完整原詩定調，正文聚焦改變答案的關鍵句。等候須說清在等什麼條件；不好籤意仍保留可做的選擇，不把困境歸咎於不夠虔誠。');
   lines.push('');
   lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('oracle'):JY_REC_ORACLE));
+  if(window.JYNativeAnalysis)lines.push(window.JYNativeAnalysis.prompt('oracle',poem,qText));
   lines.push('最後保留以下兩行：');
   lines.push('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)');
   lines.push('願你諸事順遂。');

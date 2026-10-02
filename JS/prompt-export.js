@@ -1166,6 +1166,7 @@ var JY_REC_EXPORT = {
       '',
       (tool === 'tarot' && rawPayload.tarotData && rawPayload.tarotData.referenceDate ? '問題時間基準：'+rawPayload.tarotData.referenceDate+'（依建立本輪問題時的本地日期）；今年、下月等相對詞以此為錨。' : ''),
       payload,
+      window.JYNativeAnalysis?window.JYNativeAnalysis.prompt(tool,rawPayload,question):'',
       '',
       rws?'請依實際正逆位、牌位關係與前述情境完成分析，回答原問句並說明行動與條件。':t.tail,
       FRAG_PLAINTEXT,
@@ -1358,6 +1359,7 @@ var JY_REC_EXPORT = {
 
     el.innerHTML = '';
     el.appendChild(card);
+    if(window.JYNativeAnalysis&&rawPayload){var nativeKind=rawPayload.mode==='ootk'||rawPayload.ootkData?'ootk':tool;el.insertAdjacentHTML('beforeend',window.JYNativeAnalysis.render(nativeKind,rawPayload));}
     if(window.JYCinemaUI)window.JYCinemaUI.handoff(el);
     if(window.JYCinemaUI&&window.JYCinemaUI.results&&(tool==='tarot'||tool==='ootk'))window.JYCinemaUI.results(document.getElementById('step-tarot'),tool+'|'+prompt);
   }

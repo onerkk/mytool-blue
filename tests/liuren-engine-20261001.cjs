@@ -52,6 +52,6 @@ test('invalid calendar, time, branch, parity and policy inputs fail without gues
 });
 test('homepage and mirrored entry files preserve name/six-lines and add independent six-ren assets',()=>{
  assert.equal(read('JS/ui.js'),read('ui.js'));assert.equal(read('JS/sw.js'),read('sw.js'));const ctx={};vm.createContext(ctx);vm.runInContext(read('JS/method-catalog.js'),ctx);assert.equal(ctx.JYMethodCatalog.length,14);for(const key of ['name','liuyao','yijing','liuren'])assert(ctx.JYMethodCatalog.some(m=>m[0]===key));
- const html=read('index.html');for(const f of ['CSS/liuren-room.css','JS/liuren-room.js','JS/method-catalog.js','JS/atelier-ui.js','JS/ui.js','JS/share-card.js'])assert(html.includes(f+'?v=20261002atelier2'));for(const f of ['JS/liuren-core.js','JS/liuren-prompt.js','JS/liuren-scene.js','JS/liuren-scene-src.mjs','assets/liuren/liuren-astrolabe.svg','data/liuren/REFERENCE-LICENSE.txt'])assert(fs.existsSync(path.join(root,f)));
+ const html=read('index.html');for(const f of ['CSS/liuren-room.css','JS/liuren-room.js','JS/method-catalog.js','JS/atelier-ui.js','JS/ui.js','JS/share-card.js'])require('./production-assets.cjs').assetVersion(html,f,'20261002');for(const f of ['JS/liuren-core.js','JS/liuren-prompt.js','JS/liuren-scene.js','JS/liuren-scene-src.mjs','assets/liuren/liuren-astrolabe.svg','data/liuren/REFERENCE-LICENSE.txt'])assert(fs.existsSync(path.join(root,f)));
 });
 console.log(passed+' Da Liu Ren engine/integration groups completed.');

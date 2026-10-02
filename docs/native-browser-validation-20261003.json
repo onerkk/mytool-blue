@@ -1,0 +1,24 @@
+{
+  "testedAt": "2026-10-02T20:58:28.034Z",
+  "scope": "Calculated result panels and JSON export; actual complete Name UI flow is verified separately",
+  "results": [
+    {
+      "width": 390,
+      "status": "passed",
+      "methods": 15,
+      "partialCharts": 1,
+      "jsonDownloads": 16,
+      "pageErrors": 0,
+      "viewportOverflow": false
+    },
+    {
+      "width": 1280,
+      "status": "passed",
+      "methods": 15,
+      "partialCharts": 1,
+      "jsonDownloads": 16,
+      "pageErrors": 0,
+      "viewportOverflow": false
+    }
+  ]
+}

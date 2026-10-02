@@ -285,6 +285,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   const referenceDate = options.referenceDate ? new Date(options.referenceDate) : new Date();
   if(!Number.isFinite(referenceDate.getTime())) throw new Error('參考日期無效。');
   const refClock = new Date(referenceDate.getTime()+8*3600000);
+  if(dayBoundaryMode==='ZI_HOUR_23'&&refClock.getUTCHours()===23)refClock.setUTCDate(refClock.getUTCDate()+1);
   const referenceLunar = approxLunar(refClock.getUTCFullYear(),refClock.getUTCMonth()+1,refClock.getUTCDate());
   const ageAtLunarYear = function(y){ return y-lunar.year+1; };
   const currentAge = ageAtLunarYear(referenceLunar.year);
@@ -303,6 +304,9 @@ function computeZiwei(year,month,day,hour,gender,options){
     sihuaTable:'甲廉破武陽；乙機梁紫陰；丙同機昌廉；丁陰同機巨；戊貪陰弼機；己武貪梁曲；庚陽武陰同；辛巨陽曲昌；壬梁紫輔武；癸破巨陰貪',
     referenceDate:referenceDate.toISOString(), referenceLunarYear:referenceLunar.year, referenceLunar:referenceLunar,
     ageMethod:'LUNAR_NEW_YEAR_NOMINAL', predictionValidated:false,
+    shortPeriodMethod:'流月命宮起初一順行；流日命宮起子時順行',
+    shortPeriodHuaMethod:'日干、時干沿用本盤具名四化表；短期流曜未計算',
+    referenceDayBoundary:dayBoundaryMode,
     birthTimeBasis:'LOCAL_CIVIL_WALL_CLOCK',referenceTimezone:'Asia/Taipei',
     effectiveCivilDate:civil.toISOString().slice(0,10),
     sources:['https://iztro.com/zh_TW/learn/setup','https://github.com/SylarLong/iztro/blob/main/src/astro/astro.ts','https://github.com/SylarLong/iztro/blob/main/src/star/location.ts','https://github.com/SylarLong/iztro/blob/main/src/astro/palace.ts']
@@ -1021,6 +1025,31 @@ function computeZiwei(year,month,day,hour,gender,options){
   }
 
   // ═══ 小限（流年個人宮位走法）═══
+  // Daily/hourly locations: iztro author Setup §§46–47. The lunar calendar,
+  // day boundary and leap-month convention remain explicit local policies.
+  function shortPeriodContext(targetInstant) {
+    if(birthInput.timePrecision==='unknown')return null;
+    var target=targetInstant==null?new Date(referenceDate):new Date(targetInstant);
+    if(typeof targetInstant==='string'&&!/(?:Z|[+-]\d{2}:\d{2})$/i.test(targetInstant))throw new Error('流日時觀察瞬間須明示時區。');
+    if(!Number.isFinite(+target))throw new Error('流日時觀察瞬間無效。');
+    var wall=new Date(+target+8*3600000),hourIndex=Math.floor(((wall.getUTCHours()+1)%24)/2),effective=new Date(wall);
+    if(dayBoundaryMode==='ZI_HOUR_23'&&wall.getUTCHours()===23)effective.setUTCDate(effective.getUTCDate()+1);
+    var year=effective.getUTCFullYear();if(year<1900||year>2300)throw new Error('流日時年度超出範圍。');
+    var sf=typeof Solar!=='undefined'?Solar:Lunar.Solar,solar=sf.fromYmd(year,effective.getUTCMonth()+1,effective.getUTCDate()),ln=solar.getLunar();
+    var rawMonth=ln.getMonth(),month=((Math.abs(rawMonth)-1+(rawMonth<0&&leapMonthPolicy==='SPLIT_AT_15'&&ln.getDay()>15?1:0))%12)+1;
+    var parent=getLiuYueZw(ln.getYear()).find(function(p){return p.month===month;}),dayGz=ln.getDayInGanZhi(),dayIndex=(DZ.indexOf(parent.mingBranch)+ln.getDay()-1)%12;
+    var hourGan=TG[(2*(TG.indexOf(dayGz[0])%5)+hourIndex)%10];
+    return {utc:target.toISOString(),timezone:'Asia/Taipei',civilDate:wall.toISOString().slice(0,10),civilTime:wall.toISOString().slice(11,16),effectiveDate:effective.toISOString().slice(0,10),year:ln.getYear(),lunar:{year:ln.getYear(),rawMonth:rawMonth,month:Math.abs(rawMonth),effectiveMonth:month,day:ln.getDay(),isLeap:rawMonth<0},parentMonth:parent,dayGz:dayGz,dayIndex:dayIndex,hourIndex:hourIndex,hourGz:hourGan+DZ[hourIndex]};
+  }
+  function shortPeriodLayer(context,hourly) {
+    if(!context)return null;
+    var layer=hourly?'流時':'流日',index=(context.dayIndex+(hourly?context.hourIndex:0))%12,gz=hourly?context.hourGz:context.dayGz,mapping=periodPalaces(index,layer),table=SIHUA_TABLE[gz[0]],hua=[];
+    [{type:'祿',label:'化祿'},{type:'權',label:'化權'},{type:'科',label:'化科'},{type:'忌',label:'化忌'}].forEach(function(h){var sn=table[h.type];palaces.forEach(function(p){if(p.stars.some(function(s){return s.name===sn;}))hua.push(periodHua(sn,h.label,p,mapping,layer,gz[0]));});});
+    return {layer:layer,year:context.year,month:context.lunar.effectiveMonth,gz:gz,mingBranch:DZ[index],mingPalace:palaces.find(function(p){return p.branch===DZ[index];}).name,palaces:mapping,hua:hua,flowStars:[],context:context,policy:{location:hourly?'流日命宮起子時，順行一時辰一宮':'流月命宮起初一，順行一日一宮',sihua:hourly?'時干四化；五鼠遁以本盤換日政策後日干起時干':'日干四化',dayBoundary:dayBoundaryMode,leapMonth:leapMonthPolicy,timezone:'Asia/Taipei',flowStars:'未計算短期流曜；不複用流年流曜',score:'沒有將宮位或四化換算為成功率'}};
+  }
+  function getLiuRiZw(targetInstant){return shortPeriodLayer(shortPeriodContext(targetInstant),false);}
+  function getLiuShiZw(targetInstant){return shortPeriodLayer(shortPeriodContext(targetInstant),true);}
+
   // 小限按出生年支三合起宮，男順女逆；虛歲每年正月初一遞增。
   function getXiaoXian(targetAge) {
     if (!Number.isInteger(targetAge) || targetAge < 1) return null;
@@ -1063,7 +1092,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   } catch (_e) {}
 
   const integrity=validateZiweiPlacements(palaces,huaMap);
-  const result={integrity,palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260917-policy1', birthInput:birthInput,birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
+  const result={integrity,palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getLiuRiZw, getLiuShiZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20260917-policy1', birthInput:birthInput,birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
   result.patternAssessment=patternAssessment;
   result.calculatedFacts=ziweiCalculatedFacts(result);
   // Legacy rendering properties above remain aliases for existing screens only.

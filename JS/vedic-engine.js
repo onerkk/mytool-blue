@@ -358,6 +358,7 @@
     out.sensitivity.nearAngularBoundaries=[];
     KEYS.concat(lagna?['Lagna']:[]).forEach(k=>{const x=k==='Lagna'?lagna.longitude:planets[k].longitude;
       Object.keys(VARGAS).forEach(d=>{const left=varga(x-1/60,+d),right=varga(x+1/60,+d);if(left.sign!==right.sign)out.sensitivity.nearAngularBoundaries.push({key:k+'/D'+d,alternatives:[left.signName,right.signName]});});});
+    if(root.JYVedicStrength)out.strength=root.JYVedicStrength.compute(out);
     return freeze(out);
   }
   root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});

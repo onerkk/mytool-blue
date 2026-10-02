@@ -27,6 +27,7 @@
     parts.push('【原生計算事實與取法紀錄｜JSON資料】\n'+JSON.stringify(r,null,2));
     parts.push('【資料完整度】天地盤、四課三傳、九宗門、十二天將、旬空、遁干、六親、日馬與日祿已實算。未實算六十四課體全表、本命行年、所有神煞、天文晝夜、真太陽時或應期日表；不能冒稱全流派均已驗證。取法對照來源僅驗證所採排盤口徑，不等於事件預測有效。');
     parts.push('【本題作答任務】依原問題各子題，分開象徵支持的方向與尚未知的現實條件；引用會改變結論的宮位、課與傳，指出作用如何送達或受阻，再給一項可採第一步及一項可觀察的改判條件。結尾研究娛樂提醒只寫一次，最後保留賣場連結與祝福。');
+    if(root.JYNativeAnalysis)parts.push(root.JYNativeAnalysis.prompt('liuren',r,r.question));
     return parts.filter(Boolean).join('\n\n')+'\n\n'+FOOTER;
   }
   root.JYLiurenPrompt={version:'20261001liuren1',build:build,guide:GUIDE.slice()};
