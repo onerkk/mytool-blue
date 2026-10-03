@@ -1,0 +1,407 @@
+{
+  "testedAt": "2026-10-03T23:02:23.411Z",
+  "version": "20261004native10",
+  "total": 45,
+  "passed": 45,
+  "failed": 0,
+  "results": [
+    {
+      "name": "all fifteen actual engines expose arithmetic audit and distinguish an unfinished OOTK session",
+      "status": "passed"
+    },
+    {
+      "name": "unknown Bazi needs only three actual pillars, and never exports a fabricated hour",
+      "status": "passed"
+    },
+    {
+      "name": "unknown Ziwei supplement has no palace dereference crash or confirmed palace data",
+      "status": "passed"
+    },
+    {
+      "name": "unknown-clock compatibility JSON excludes the temporary hour in its nested chart too",
+      "status": "passed"
+    },
+    {
+      "name": "Jia-Chen with exposed Yi never becomes Jianlu or Yuejie merely from secondary qi",
+      "status": "passed"
+    },
+    {
+      "name": "Yin day with a true monthly Jie main qi keeps the monthly gate even when food is exposed",
+      "status": "passed"
+    },
+    {
+      "name": "all ten genuine Lu branches remain Jianlu in both pattern modules",
+      "status": "passed"
+    },
+    {
+      "name": "every selected Qiongtong paragraph has a clause record, including prose without regex predicates",
+      "status": "passed"
+    },
+    {
+      "name": "qualitative Qiongtong clauses retain unresolved context and do not certify the historical outcome",
+      "status": "passed"
+    },
+    {
+      "name": "all fifteen native datasets survive dense tables and scalar/object pointers exactly",
+      "status": "passed"
+    },
+    {
+      "name": "every Bazi fact line restores all original conditions instead of truncating its arrays",
+      "status": "passed"
+    },
+    {
+      "name": "compact functional text restores every source example and policy for each person",
+      "status": "passed"
+    },
+    {
+      "name": "printed Meihua Guanmei arithmetic reproduces Dui/Li moving first line and Xian",
+      "status": "passed"
+    },
+    {
+      "name": "printed Meihua peony arithmetic reproduces Qian/Xun moving fifth line and Ding",
+      "status": "passed"
+    },
+    {
+      "name": "printed Meihua six-character arithmetic reproduces Sheng to Tai with upper Zhen and lower Dui nuclear",
+      "status": "passed"
+    },
+    {
+      "name": "printed Zengshan You-month Xin-Hai Dui to Jie example matches all original branch relatives",
+      "status": "passed"
+    },
+    {
+      "name": "corrupt Western NaN cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "a Western sign inconsistent with longitude cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "a plausible but incorrect Western house is caught using the actual cusps",
+      "status": "passed"
+    },
+    {
+      "name": "invalid Vedic D60 signs cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "a plausible but incorrect Vedic whole-sign house is caught",
+      "status": "passed"
+    },
+    {
+      "name": "six-power total corruption is caught before a Vedic prompt",
+      "status": "passed"
+    },
+    {
+      "name": "duplicated Ziwei major stars cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "an incorrect Liuren sky rotation is caught",
+      "status": "passed"
+    },
+    {
+      "name": "Liuyao original bits inconsistent with actual coin values cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "Yijing changed bits inconsistent with actual moving values cannot reach export",
+      "status": "passed"
+    },
+    {
+      "name": "Meihua rejects a seventh moving line before toggling its bit array",
+      "status": "passed"
+    },
+    {
+      "name": "a wrong five-grid total is caught rather than summarized into a name prompt",
+      "status": "passed"
+    },
+    {
+      "name": "a confirmed compatibility person with only three pillars is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "personality axes cannot silently contradict the type index",
+      "status": "passed"
+    },
+    {
+      "name": "Book T cards also need genuine card IDs, even without RWS reversals",
+      "status": "passed"
+    },
+    {
+      "name": "RWS unknown orientation is partial and has no invented reversal",
+      "status": "passed"
+    },
+    {
+      "name": "a two-card Lenormand layout cannot accept one card without expectedCount",
+      "status": "passed"
+    },
+    {
+      "name": "Lenormand choice needs its shared fourth card and both three-card branches",
+      "status": "passed"
+    },
+    {
+      "name": "both full Lenormand layouts have only legal indexed paths and knight moves",
+      "status": "passed"
+    },
+    {
+      "name": "an unknown sixth OOTK operation is rejected, never counted as a completed fifth round",
+      "status": "passed"
+    },
+    {
+      "name": "a changed oracle original cannot borrow its source edition",
+      "status": "passed"
+    },
+    {
+      "name": "all four BPHS entries carry a fully calculated commentary variant for every reference and house",
+      "status": "passed"
+    },
+    {
+      "name": "BPHS nominal duration disagreement is computed explicitly instead of changing source numbers",
+      "status": "passed"
+    },
+    {
+      "name": "synthetic ephemeris: future exact contact after day one and before sign exit remains visible",
+      "status": "passed"
+    },
+    {
+      "name": "synthetic ephemeris: full-sign conjunction includes past contact, distinct from modern future VOC",
+      "status": "passed"
+    },
+    {
+      "name": "synthetic ephemeris: Moon entry and exit are correct across the 360-degree wrap",
+      "status": "passed"
+    },
+    {
+      "name": "actual Astronomy Engine: Moon VOC is invariant to a one-day versus four-day general timeline",
+      "status": "passed"
+    },
+    {
+      "name": "all fifteen self-contained prompts and fallback exports preserve facts, chunks, audit and store footer",
+      "status": "passed"
+    },
+    {
+      "name": "absence of audit module is unverified and is never promoted to verified",
+      "status": "passed"
+    }
+  ],
+  "audits": [
+    {
+      "method": "bazi",
+      "status": "verified",
+      "checks": 126,
+      "missing": []
+    },
+    {
+      "method": "ziwei",
+      "status": "verified",
+      "checks": 4,
+      "missing": []
+    },
+    {
+      "method": "astro",
+      "status": "verified",
+      "checks": 57,
+      "missing": []
+    },
+    {
+      "method": "vedic",
+      "status": "verified",
+      "checks": 69,
+      "missing": []
+    },
+    {
+      "method": "liuren",
+      "status": "verified",
+      "checks": 17,
+      "missing": []
+    },
+    {
+      "method": "liuyao",
+      "status": "verified",
+      "checks": 7,
+      "missing": []
+    },
+    {
+      "method": "yijing",
+      "status": "verified",
+      "checks": 7,
+      "missing": []
+    },
+    {
+      "method": "meihua",
+      "status": "verified",
+      "checks": 4,
+      "missing": []
+    },
+    {
+      "method": "name",
+      "status": "verified",
+      "checks": 21,
+      "missing": []
+    },
+    {
+      "method": "compat",
+      "status": "verified",
+      "checks": 3,
+      "missing": []
+    },
+    {
+      "method": "personality",
+      "status": "verified",
+      "checks": 3,
+      "missing": []
+    },
+    {
+      "method": "tarot",
+      "status": "verified",
+      "checks": 1,
+      "missing": []
+    },
+    {
+      "method": "lenormand",
+      "status": "verified",
+      "checks": 2,
+      "missing": []
+    },
+    {
+      "method": "ootk",
+      "status": "partial",
+      "checks": 1,
+      "missing": [
+        {
+          "id": "operations",
+          "reason": "本次已完成 1／5 輪；未做或放棄的輪次不補造"
+        }
+      ]
+    },
+    {
+      "method": "oracle",
+      "status": "verified",
+      "checks": 2,
+      "missing": []
+    },
+    {
+      "method": "qiongtong-source-clause-coverage",
+      "entries": 120,
+      "uniqueParagraphIds": 490,
+      "contextOnlyOccurrences": 916
+    },
+    {
+      "method": "moon-voc-general-window-independence",
+      "status": "verified",
+      "ingress": "2026-10-04T22:54:12.887Z",
+      "generalEnd": "2026-10-05T04:00:00.000Z",
+      "events": 0
+    }
+  ],
+  "prompts": [
+    {
+      "method": "bazi",
+      "characters": 30488,
+      "utf8Bytes": 48916,
+      "parts": 5,
+      "attachmentRequired": false
+    },
+    {
+      "method": "ziwei",
+      "characters": 13824,
+      "utf8Bytes": 30232,
+      "parts": 2,
+      "attachmentRequired": false
+    },
+    {
+      "method": "astro",
+      "characters": 12483,
+      "utf8Bytes": 19607,
+      "parts": 2,
+      "attachmentRequired": false
+    },
+    {
+      "method": "vedic",
+      "characters": 105602,
+      "utf8Bytes": 130066,
+      "parts": 16,
+      "attachmentRequired": false
+    },
+    {
+      "method": "liuren",
+      "characters": 46842,
+      "utf8Bytes": 66622,
+      "parts": 7,
+      "attachmentRequired": false
+    },
+    {
+      "method": "liuyao",
+      "characters": 7134,
+      "utf8Bytes": 11352,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "yijing",
+      "characters": 8038,
+      "utf8Bytes": 14376,
+      "parts": 2,
+      "attachmentRequired": false
+    },
+    {
+      "method": "meihua",
+      "characters": 5699,
+      "utf8Bytes": 11627,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "name",
+      "characters": 12056,
+      "utf8Bytes": 20723,
+      "parts": 2,
+      "attachmentRequired": false
+    },
+    {
+      "method": "compat",
+      "characters": 17489,
+      "utf8Bytes": 27889,
+      "parts": 3,
+      "attachmentRequired": false
+    },
+    {
+      "method": "personality",
+      "characters": 2647,
+      "utf8Bytes": 5181,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "tarot",
+      "characters": 1543,
+      "utf8Bytes": 3505,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "lenormand",
+      "characters": 3566,
+      "utf8Bytes": 6005,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "ootk",
+      "characters": 1508,
+      "utf8Bytes": 3434,
+      "parts": 1,
+      "attachmentRequired": false
+    },
+    {
+      "method": "oracle",
+      "characters": 5775,
+      "utf8Bytes": 8666,
+      "parts": 1,
+      "attachmentRequired": false
+    }
+  ],
+  "scope": "Printed Meihua and Zengshan arithmetic, explicitly synthetic pattern/ephemeris fixtures, actual Astronomy Engine integration and fifteen actual chart exports. This is not historical event probability validation or a claim of all schools complete."
+}

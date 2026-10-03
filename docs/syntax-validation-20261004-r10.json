@@ -1,0 +1,839 @@
+{
+  "testedAt": "2026-10-03T23:15:20.061866+00:00",
+  "version": "20261004native10",
+  "scope": "Every modified/new JS/CJS/MJS against original production files, node_modules excluded",
+  "passed": 166,
+  "total": 166,
+  "results": [
+    {
+      "file": "JS/ai-analysis.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-classical.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-functional.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-prompt-root.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-qiongtong-data.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-qiongtong.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-suite-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-suite.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi-xiaoyun.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/bazi_upgrade.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/engine-computation-audit.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/gua-prompt.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/gua-room.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/horary-light.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/horary-perfection.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/lenormand.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-classes.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-prompt.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-room.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuren-shensha.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/liuyao-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/meihua-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/name-data.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/name-engine.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/name-prompt.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/name-sancai.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/name-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/native-analysis-view.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/native-card-analysis.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/native-chart-analysis.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/native-rule-sources.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/oracle-register.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/oracle.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/prompt-brief.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/prompt-export.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/prompt-packet.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/reading-quality.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/reading-workflow.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/relationship-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/relationship-ui.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ritual-ateliers.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/sw.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/tarot-foundation.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/tarot-reading.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/tarot-semantic-engine.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/tarot_upgrade.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/tool-guide.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ui.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-engine.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-prompt.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-strength.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-sudarsana-bphs.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-sudarsana.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-tajaka-rules.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-tajaka.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/vedic-transit-rules.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/western-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/western-dignities.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/western-engine.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/western-prompt.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/western-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/yijing-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/yijing-wings.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ziwei-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ziwei-prompt-root.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ziwei-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "JS/ziwei.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "ai-analysis.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-functional.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-prompt-root.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-qiongtong-data.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-qiongtong.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-suite-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi-xiaoyun.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "bazi.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "engine-computation-audit.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "functions/api/ai.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "horary-light.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "horary-perfection.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "ink-flow.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "lenormand.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "liuren-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "meihua-standalone.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "name-sancai.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "native-chart-analysis.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "native-rule-sources.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "oracle.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "prompt-brief.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "prompt-export.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "prompt-packet.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "scripts/audit-prompt-budget-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "scripts/build-completion-data.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "scripts/run-regression-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "scripts/sync-recommendation-guides.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "scripts/update-native-scope-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "selftest-core.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "sw.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tarot-foundation.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tarot-semantic-engine.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tarot_upgrade.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/bazi-qiongtong-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/card-audit-mathers-browser-20260923.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/card-audit-mathers-third-20260923.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/chinese-completion-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/core-engine-20260913.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/divination-professional-20260910.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/engine-and-recommendation-r8-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/engine-functional-r9-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/engine-integrity-r10-20261004.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/engine-missing-calculations-r7-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/engine-supplements-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/horary-denials-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/liuren-classes-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/liuren-completion-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/liuren-engine-20261001.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/liuren-shensha-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/method-engine-20260913.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/mobile-ritual-actions-20260928.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/name-browser-20261001.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/name-comparison-rootfix-20261002.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/name-engine-20261001.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/name-original-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-analysis-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-browser-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-entry-browser-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-fixtures-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-other-entry-browser-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/native-profile-entry-browser-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/oracle-register-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/prompt-accuracy-20260811.test.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/prompt-budget-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/question-model-regression-20260927.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/reader-voice-20260923.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/reading-grounding-20260924.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/reading-workflow-20260924.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/reading-workflow-integration-20260924.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/ritual-navigation-browser-r8-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/ritual-resume-r8-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/story-immersion-20260912.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/vedic-bhava-strength-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/vedic-completion-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/vedic-engine-20260913.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/vedic-panchanga-av-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/vedic-strength-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/western-completion-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/western-engine-20260914.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "tests/western-moon-orb-20261003.cjs",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "ui.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-sudarsana-bphs.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-sudarsana.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-tajaka-rules.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-tajaka.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "vedic-transit-rules.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "western-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "yijing-wings.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "ziwei-completion.js",
+      "passed": true,
+      "error": null
+    },
+    {
+      "file": "ziwei-prompt-root.js",
+      "passed": true,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+PASS Auto reveal spans 15 cards; order, reversal and one explicit completion stay intact
+PASS Pause at a page boundary leaves a usable Next Group button and resumes without re-reveals
+PASS Backgrounding pauses auto reveal, while Cancel invalidates all scheduled reveals
+PASS Reveal All handles 54 cards and duplicate clicks without a second draw or hidden-card omission
+PASS Every Lenormand spread supports automatic reveal with the same canonical ids
+PASS Ziwei atlas retains all 12 palaces; each click shows that palace, all stars and real trine/opposition
+PASS Bazi point-and-read preserves canonical values and does not expose a placeholder hour
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+PASS All 384 Meihua combinations preserve actual 本互變 names, moving line and bottom-up order
+PASS Camera choreography is finite at every phase and settles before the next explicit action
+Immersive experience: 9 regression groups passed. Physical Android touch and new WebGL pixels require device QA.

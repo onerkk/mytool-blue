@@ -1,0 +1,10 @@
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+PASS Both independent readers use the identical embedded parser
+PASS 40 new questions: continuation, hypotheses, choices, missing operands and three options stay distinct
+PASS Actual Lenormand prompt preserves options, all seven card ids and branch geometry
+PASS Real Key engine retains five operations and valid stopping states without retrying for a match
+PASS Skip before entrance and in each of five operations exports the same immutable calculation exactly once
+PASS A skipped abandoned reading cannot acquire fabricated later operations
+PASS Native picker paints 78 identical opaque backs while keeping only one image per card after reinitialization
+PASS Batched relief geometry and three local textures build without remote resources
+Craft: 8 groups passed; 40 new routing cases. No physical-phone or GPU pixel claim.

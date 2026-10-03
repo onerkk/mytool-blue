@@ -1,0 +1,13 @@
+{
+  "testedAt": "2026-10-03T23:15:20.091464+00:00",
+  "version": "20261004native10",
+  "cache": "jy-main-v119",
+  "baseFilesPresent": 834,
+  "missingBaseFiles": [],
+  "originalAssetsIdentical": true,
+  "javaScriptRootMirrorsMatch": true,
+  "serviceWorkerCopiesMatch": true,
+  "syntaxPassed": 166,
+  "releaseToolPolicy": "Both ZIP CRC, duplicate entries, safe paths and every file SHA256 checked; Android .down byte-identical to FULL ZIP. Any failure stops release.",
+  "ownArchiveHashPolicy": "Archive hashes emitted after verification, not embedded recursively in their own ZIP."
+}

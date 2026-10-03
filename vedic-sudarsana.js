@@ -63,8 +63,6 @@
       limits:['BPHS74 D1 nature-loss, raw tied-strength, own-lord and alternate polarity calculations are separately recorded in bphs when its module is available; named clock variants remain explicit.','Other historical dasha/Yoga variants outside the named source profile remain outside this model.']};
     if(root.JYVedicSudarsanaBPHS)out.bphs=root.JYVedicSudarsanaBPHS.compute(natal,out,tajaka);
     return out;
-    if(root.JYVedicSudarsanaBPHS)out.bphs=root.JYVedicSudarsanaBPHS.compute(natal,out,tajaka);
-    return out;
   }
   function chartForPeriod(natal,sudarsana,kind,index){
     if(sudarsana.status!=='calculated')throw Error('本次三重運期未能完成計算');
@@ -72,8 +70,6 @@
     if(!list||!Number.isInteger(index)||index<1||index>list.length)throw Error('請指定有效月序1–12或細段序1–144');
     const window=list[index-1],c=root.JYVedic.compute({...natal.input,utc:window.start,reference:window.start,civil:null,uncertaintyMinutes:0,transitRules:false,tajaka:false,sudarsana:false});
     const out={kind,window,chart:c,vargas:Object.fromEntries(Object.entries(sudarsana.vargas).map(([d,v])=>{const signs=(kind==='monthly'?v.monthlySigns:v.sixtyHourSigns)[index-1];return [d,{signs,readings:entryReadings(natal,c,signs,+d)}];}))};
-    if(root.JYVedicSudarsanaBPHS){const v=out.vargas[1],context=root.JYVedicSudarsanaBPHS.entryContext(c);out.bphs={context,readings:root.JYVedicSudarsanaBPHS.readings(natal,context,v.signs,sudarsana.vargas[1].bphsApplicability.references)};}
-    return out;
     if(root.JYVedicSudarsanaBPHS){const v=out.vargas[1],context=root.JYVedicSudarsanaBPHS.entryContext(c);out.bphs={context,readings:root.JYVedicSudarsanaBPHS.readings(natal,context,v.signs,sudarsana.vargas[1].bphsApplicability.references)};}
     return out;
   }

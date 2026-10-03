@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-03T20:58:58.986Z",
-  "version": "20261003native9",
+  "testedAt": "2026-10-03T23:02:53.019Z",
+  "version": "20261004native10",
   "passed": 32,
   "results": [
     {
@@ -135,106 +135,106 @@
   "prompts": [
     {
       "method": "bazi",
-      "characters": 29530,
-      "utf8Bytes": 47336,
+      "characters": 30488,
+      "utf8Bytes": 48916,
       "parts": 5,
       "requiresAttachment": false
     },
     {
       "method": "ziwei",
-      "characters": 13765,
-      "utf8Bytes": 30151,
+      "characters": 13824,
+      "utf8Bytes": 30232,
       "parts": 2,
       "requiresAttachment": false
     },
     {
       "method": "astro",
-      "characters": 12422,
-      "utf8Bytes": 19524,
+      "characters": 12483,
+      "utf8Bytes": 19607,
       "parts": 2,
       "requiresAttachment": false
     },
     {
       "method": "vedic",
-      "characters": 102318,
-      "utf8Bytes": 125948,
-      "parts": 15,
+      "characters": 105602,
+      "utf8Bytes": 130066,
+      "parts": 16,
       "requiresAttachment": false
     },
     {
       "method": "liuren",
-      "characters": 46780,
-      "utf8Bytes": 66538,
+      "characters": 46842,
+      "utf8Bytes": 66622,
       "parts": 7,
       "requiresAttachment": false
     },
     {
       "method": "liuyao",
-      "characters": 7074,
-      "utf8Bytes": 11270,
+      "characters": 7134,
+      "utf8Bytes": 11352,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "yijing",
-      "characters": 7978,
-      "utf8Bytes": 14294,
+      "characters": 8038,
+      "utf8Bytes": 14376,
       "parts": 2,
       "requiresAttachment": false
     },
     {
       "method": "meihua",
-      "characters": 5639,
-      "utf8Bytes": 11545,
+      "characters": 5699,
+      "utf8Bytes": 11627,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "name",
-      "characters": 11996,
-      "utf8Bytes": 20641,
+      "characters": 12056,
+      "utf8Bytes": 20723,
       "parts": 2,
       "requiresAttachment": false
     },
     {
       "method": "compat",
-      "characters": 17367,
-      "utf8Bytes": 27745,
+      "characters": 17489,
+      "utf8Bytes": 27889,
       "parts": 3,
       "requiresAttachment": false
     },
     {
       "method": "personality",
-      "characters": 2582,
-      "utf8Bytes": 5094,
+      "characters": 2647,
+      "utf8Bytes": 5181,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "tarot",
-      "characters": 1462,
-      "utf8Bytes": 3402,
+      "characters": 1543,
+      "utf8Bytes": 3505,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "lenormand",
-      "characters": 3503,
-      "utf8Bytes": 5920,
+      "characters": 3566,
+      "utf8Bytes": 6005,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "ootk",
-      "characters": 1411,
-      "utf8Bytes": 3273,
+      "characters": 1508,
+      "utf8Bytes": 3434,
       "parts": 1,
       "requiresAttachment": false
     },
     {
       "method": "oracle",
-      "characters": 5715,
-      "utf8Bytes": 8584,
+      "characters": 5775,
+      "utf8Bytes": 8666,
       "parts": 1,
       "requiresAttachment": false
     }

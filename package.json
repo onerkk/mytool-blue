@@ -89,7 +89,8 @@
     "test:prompt-budget": "node tests/prompt-budget-20261003.cjs && node tests/western-moon-orb-20261003.cjs && node tests/horary-denials-20261003.cjs",
     "test:r7": "node tests/engine-missing-calculations-r7-20261003.cjs",
     "test:r8": "node tests/engine-and-recommendation-r8-20261003.cjs && node tests/ritual-resume-r8-20261003.cjs",
-    "test:r9": "node tests/engine-functional-r9-20261003.cjs"
+    "test:r9": "node tests/engine-functional-r9-20261003.cjs",
+    "test:r10": "node tests/engine-integrity-r10-20261004.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",

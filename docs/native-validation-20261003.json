@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T20:56:26.659Z",
+  "testedAt": "2026-10-03T23:00:59.433Z",
   "scope": "Traditional rule implementation and calculation/data agreement; not prediction validation",
   "results": [
     {
@@ -31,7 +31,7 @@
       "status": "passed"
     },
     {
-      "name": "PVR published avastha examples and sign-only D9 dignity avoid fictitious degree precision",
+      "name": "PVR published avastha inputs use the state-only interface; sign-only D9 dignity avoids fictitious precision",
       "status": "passed"
     },
     {

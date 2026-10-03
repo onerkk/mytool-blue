@@ -1,0 +1,110 @@
+PASS all fifteen actual engines expose arithmetic audit and distinguish an unfinished OOTK session
+PASS unknown Bazi needs only three actual pillars, and never exports a fabricated hour
+PASS unknown Ziwei supplement has no palace dereference crash or confirmed palace data
+PASS Jia-Chen with exposed Yi never becomes Jianlu or Yuejie merely from secondary qi
+PASS Yin day with a true monthly Jie main qi keeps the monthly gate even when food is exposed
+PASS all ten genuine Lu branches remain Jianlu in both pattern modules
+PASS every selected Qiongtong paragraph has a clause record, including prose without regex predicates
+PASS qualitative Qiongtong clauses retain unresolved context and do not certify the historical outcome
+FAIL printed Meihua Guanmei arithmetic reproduces Dui/Li moving first line and Xian AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+undefined !== '革'
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:15:217
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:15:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+FAIL printed Meihua peony arithmetic reproduces Qian/Xun moving fifth line and Ding AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+undefined !== '姤'
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:16:217
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:16:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+FAIL printed Meihua six-character arithmetic reproduces Sheng to Tai with one moving line AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+undefined !== '升'
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:17:152
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:17:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+FAIL printed Zengshan You-month Xin-Hai Dui to Jie example matches all original branch relatives AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+'兌' !== '兌為澤'
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:18:205
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:18:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+PASS corrupt Western NaN cannot reach export
+PASS a Western sign inconsistent with longitude cannot reach export
+PASS a plausible but incorrect Western house is caught using the actual cusps
+PASS invalid Vedic D60 signs cannot reach export
+PASS a plausible but incorrect Vedic whole-sign house is caught
+PASS six-power total corruption is caught before a Vedic prompt
+PASS duplicated Ziwei major stars cannot reach export
+PASS an incorrect Liuren sky rotation is caught
+PASS Liuyao original bits inconsistent with actual coin values cannot reach export
+PASS Yijing changed bits inconsistent with actual moving values cannot reach export
+PASS Meihua rejects a seventh moving line before toggling its bit array
+PASS a wrong five-grid total is caught rather than summarized into a name prompt
+PASS a confirmed compatibility person with only three pillars is rejected
+PASS personality axes cannot silently contradict the type index
+PASS Book T cards also need genuine card IDs, even without RWS reversals
+PASS RWS unknown orientation is partial and has no invented reversal
+PASS a two-card Lenormand layout cannot accept one card without expectedCount
+PASS Lenormand choice needs its shared fourth card and both three-card branches
+PASS both full Lenormand layouts have only legal indexed paths and knight moves
+PASS an unknown sixth OOTK operation is rejected, never counted as a completed fifth round
+PASS a changed oracle original cannot borrow its source edition
+PASS all four BPHS entries carry a fully calculated commentary variant for every reference and house
+FAIL BPHS nominal duration disagreement is computed explicitly instead of changing source numbers AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 57.599999999999994
+- 57.6
+     ^
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:41:327
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-integrity-r10-20261004.cjs:41:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+PASS synthetic ephemeris: future exact contact after day one and before sign exit remains visible
+PASS synthetic ephemeris: full-sign conjunction includes past contact, distinct from modern future VOC
+PASS synthetic ephemeris: Moon entry and exit are correct across the 360-degree wrap
+PASS actual Astronomy Engine: Moon VOC is invariant to a one-day versus four-day general timeline
+PASS all fifteen self-contained prompts and fallback exports preserve facts, chunks, audit and store footer
+PASS absence of audit module is unverified and is never promoted to verified
+R10 36/41 groups passed

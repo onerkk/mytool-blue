@@ -1,0 +1,77 @@
+✓ tarot: user-led scenes never time out; completion, focus and cleanup occur once
+✓ lenormand: user-led scenes never time out; completion, focus and cleanup occur once
+✓ bazi: user-led scenes never time out; completion, focus and cleanup occur once
+✓ compat: user-led scenes never time out; completion, focus and cleanup occur once
+✓ ziwei: user-led scenes never time out; completion, focus and cleanup occur once
+✓ meihua: user-led scenes never time out; completion, focus and cleanup occur once
+✓ oracle: user-led scenes never time out; completion, focus and cleanup occur once
+✓ Skip, cancel, Escape, native close and navigation settle only once, including queued stale callbacks
+✓ Reduced motion preserves user control; hidden tabs cannot complete an untouched ritual
+✓ Partial holds cancel cleanly; release, pointer cancellation and visibility changes never reveal a result
+✓ Card faces are absent before touch; real card order, reversal and callbacks survive sequential reveal
+✓ Recorded sound starts with an interaction; hidden and cancelled rituals stop their own scope
+✓ Native-dialog failure retains keyboard controls and restores existing inert states
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Visible Start Shuffle works with no legacy button, then enables real selection without drawing early
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Stale legacy handlers are bypassed; cancel and return can start another shuffle safely
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Missing ritual reports an error, and changing spread invalidates an in-flight shuffle completion
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Tree of Life → Mathers 21 clears previous cards, derived data, visible meanings and analysis access together
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Reopening a completed spread preserves its cards and count; fresh and minor-only decks stay face down
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ An incomplete draw cannot render stale meanings; return and reselect of the same spread starts empty
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A pick interrupted before flight or before commit never enters the next reading
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Quick completion reveals only after the ceremony, preserves a manual card and cannot commit twice
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+✓ All five Lenormand spread ceremonies keep the original draw, delay results and cancel cleanly
+✓ Bazi, Meihua and Ziwei continuations run after completion only; Ziwei cancel restores the form
+✓ Compatibility commits its real calculation and history only after completion; cancel leaves both empty
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Oracle ceremony returns to its guide, advances to throwing only on completion and stops on close
+ritual-lifecycle: 25 groups passed (simulated DOM; no device-rendering claim).

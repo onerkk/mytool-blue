@@ -1,0 +1,9 @@
+PASS All 15 methods generate a question-specific answer task without changing supplied facts
+PASS Health context changes the action priority; an occupation or ordinary feeling is not a diagnosis
+PASS The actual failed answer is detected, including clinical inference and delayed care
+PASS A grounded reference answer is not flagged by the known-pattern rules, and is never certified correct
+PASS Source facts remain available during repair; a previous answer cannot stand in for the original cast
+PASS Explicit data errors and unsupported metaphysical inferences have distinct review results
+PASS All subquestions retain their text and actions; no arbitrary six-question truncation
+PASS The local review page and CLI have no network or persistence dependency
+reading workflow: 8 groups passed; pattern review is not semantic or external-model validation.

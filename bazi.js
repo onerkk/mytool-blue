@@ -4685,13 +4685,16 @@ function baziStrengthLabel(chart) {
 function baziCoreAnalysisLines(chart) {
   if(!chart||!chart.structureFacts)return [];
   var f=chart.structureFacts, lines=baziRootLines(chart);
+  var nativeCodec=typeof window!=='undefined'&&window.JYNativeAnalysis;
+  function factsJSON(value){return JSON.stringify(nativeCodec?nativeCodec.compact(nativeCodec.denseRows(value)):value);}
+  if(nativeCodec)lines.push('以下各行JSON的$table列名與rows依序還原物件；$ref只引用該行JSON內首次完整值。共用列名與值不刪計算事實。');
   lines.push('核心根氣：'+(f.dayMasterRoots.map(function(r){return r.label+'（'+r.qi+(r.clashedBy.length?'，有沖配對':'')+'）';}).join('、')||'四支藏干無同五行根')+'。');
   if(chart.functionalAssessment&&typeof window!=='undefined'&&window.JYBaziFunctional)lines.push(window.JYNativeAnalysis?'子平原典根氣與位置完整資料見後面引擎原生作用資料。':window.JYBaziFunctional.toText(chart.functionalAssessment));
-  if(chart.fuyiAssessment)lines.push('扶抑判別：'+JSON.stringify(chart.fuyiAssessment));
+  if(chart.fuyiAssessment)lines.push('扶抑判別：'+factsJSON(chart.fuyiAssessment));
   if(chart.seasonalAssessment){var seasonalData=chart.seasonalAssessment;if(typeof window!=='undefined'&&typeof window.JYNativeAnalysis?.denseRows==='function')seasonalData=window.JYNativeAnalysis.compact(window.JYNativeAnalysis.denseRows(seasonalData));lines.push('調候實盤條件：'+JSON.stringify(seasonalData)+'；$table列名與rows每行依序還原物件，$ref引用本段首次完整記錄。');}
-  lines.push('明干位置與生剋：'+JSON.stringify({links:f.links,combinations:f.combinations,adjacentGenerationPaths:f.adjacentGenerationPaths}));
-  if(chart.branchInteractionAssessment&&chart.branchInteractionAssessment.groups&&chart.branchInteractionAssessment.groups.length)lines.push('完整三合／三會成勢裁決：'+JSON.stringify(chart.branchInteractionAssessment));
-  if(chart.strengthAssessment)lines.push('旺衰模型依據：'+JSON.stringify(chart.strengthAssessment));
+  lines.push('明干位置與生剋：'+factsJSON({links:f.links,combinations:f.combinations,adjacentGenerationPaths:f.adjacentGenerationPaths}));
+  if(chart.branchInteractionAssessment&&chart.branchInteractionAssessment.groups&&chart.branchInteractionAssessment.groups.length)lines.push('完整三合／三會成勢裁決：'+factsJSON(chart.branchInteractionAssessment));
+  if(chart.strengthAssessment)lines.push('旺衰模型依據：'+factsJSON(chart.strengthAssessment));
   return lines;
 }
 

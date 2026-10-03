@@ -47,7 +47,7 @@
 // v116: 20261003native7 完整純文字複製、安全分段、月亮换座前進入光圈實算。
 // v118: 20261003native9 原典根氣、位置先後與BPHS七盤三輪實算；保留推薦與操作恢復。
 // v117: 20261003native8 三重運期、手鍊推薦與賣場結尾、儀式操作獨立於樣式與動畫、頁面快取返回保留原牌。
-const CACHE_NAME = 'jy-main-v118';
+const CACHE_NAME = 'jy-main-v119';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

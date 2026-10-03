@@ -1,0 +1,11 @@
+✓ All fourteen dialogs show their completed image with the production lazy observer active
+✓ Ready Blob and still-loading preview are distinct states; download remains available
+✓ Already-complete cached previews do not depend on a later load event
+✓ Decode error ends loading without discarding a valid downloadable PNG
+✓ Missing image events time out; a late successful image can still recover
+✓ PNG encoding failure ends loading and keeps empty downloads disabled
+✓ Privacy redraw immediately removes the old image and rejects its late events
+✓ Out-of-order privacy renders and stale failures cannot replace the newest card
+✓ Closing during rendering or decoding releases resources and ignores late completion
+✓ Cancelling native share does not start an unwanted download
+share-card-preview: 10 integration groups passed (simulated DOM/image lifecycle).

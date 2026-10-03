@@ -38,9 +38,9 @@ test('Ziwei daily/hourly locations: year/month/leap/day boundaries, twelve hours
  const unknown=c.computeZiwei(1983,8,25,14,'male',{btimeUnknown:true,referenceDate:instant});assert.equal(unknown.getLiuRiZw(),null);assert.equal(unknown.getLiuShiZw(),null);const partial=N.analyze('ziwei',unknown),exported=c.JYNativeAnalysisView.exportData('ziwei',unknown,partial);assert.equal(partial.coverage.palaces,0);assert.equal(exported.schema,'jy.partial-ziwei/1');assert.equal(exported.palaces,undefined);assert.throws(()=>z.getLiuRiZw('2026-10-02T12:00:00'));
  const a=N.analyze('ziwei',z);assert(a.layers.daily&&a.layers.hourly);
 });
-test('PVR published avastha examples and sign-only D9 dignity avoid fictitious degree precision',()=>{
+test('PVR published avastha inputs use the state-only interface; sign-only D9 dignity avoids fictitious precision',()=>{
  const cases=[['Cancer',3,23,'Kumaara'],['Libra',6,19,'Vriddha'],['Sagittarius',8,14,'Yuva'],['Pisces',11,27,'Saisava']];
- for(const [,sign,degree,expected]of cases){const x=plain(v);x.planets.Sun={...x.planets.Sun,sign,degree};assert.equal(N.analyze('vedic',x).states.find(s=>s.planet==='Sun').ageState,expected);}
+ for(const [,sign,degree,expected]of cases){const x=plain(v);x.planets.Sun={...x.planets.Sun,sign,degree};assert.equal(N.planetStates(x).find(s=>s.planet==='Sun').ageState,expected);}
  assert.equal(N.signDignity('Mercury',2),'own');assert.equal(N.signDignity('Mercury',5),'exalted');assert.equal(N.signDignity('Moon',1),'exalted');
 });
 test('Published Raman Standard Horoscope: Sun Saptavargaja 90 and Sthana 198.0',()=>{
@@ -125,7 +125,7 @@ test('Prompt integration includes calculated native structures; source chart sta
  for(const [kind,x,prompt]of [['vedic',v,c.JYVedicPrompt.build(q,v)],['astro',w,c.JYWesternPrompt.build(w,{question:q})],['liuren',l,c.JYLiurenPrompt.build(l)],['liuyao',six,c.JYGuaPrompt.build(six)],['yijing',yi,c.JYGuaPrompt.build(yi)],['ziwei',z,c._ziweiBuildPrompt(z,{question:q,bdate:'1983-08-25',btime:'14:55'})],['name',nm,c.JYNamePrompt.build(nm)],['bazi',b,c.BaziSuiteCore.buildSinglePrompt('general',b,{},q)],['personality',profile,c.BaziSuiteCore.buildPersonalityPrompt(profile,q)]]){assert(prompt.includes('jy.native-analysis/1'),kind);assert(prompt.includes('"method":"'+kind+'"'),kind);assert(!/NaN|undefined|\[object Object\]/.test(prompt),kind);}
 });
 test('All compact JSON pointers resolve to present complete evidence without a cycle',()=>{
- for(const [kind,x]of Object.entries(charts)){const text=N.prompt(kind,x,q),raw=text.slice(text.indexOf('\n')+1).split('\n')[0],a=JSON.parse(raw);function walk(v){if(!v||typeof v!=='object')return;if(v.$ref){let target=a;for(const key of v.$ref.slice(2).split('/'))target=target[key.replace(/~1/g,'/').replace(/~0/g,'~')];assert(target&&typeof target==='object');assert(!target.$ref);return;}for(const child of Object.values(v))walk(child);}walk(a);}
+ for(const [kind,x]of Object.entries(charts)){const text=N.prompt(kind,x,q),raw=text.slice(text.indexOf('\n')+1).split('\n')[0],a=JSON.parse(raw);function walk(v){if(!v||typeof v!=='object')return;if(v.$ref){let target=a;for(const key of v.$ref.slice(2).split('/'))target=target[key.replace(/~1/g,'/').replace(/~0/g,'~')];assert(target!==undefined);assert(typeof target==='string'||(target&&typeof target==='object'&&!target.$ref));return;}for(const child of Object.values(v))walk(child);}walk(a);}
 });
 test('User input is escaped in native HTML and no capability becomes a fabricated total',()=>{
  const x={...ln,cards:ln.cards.map(p=>({...p,name:'<img src=x onerror=alert(1)>'}))},html=N.render('lenormand',x);assert(!html.includes('<img src=x'));assert(html.includes('&lt;img'));assert.equal(N.analyze('vedic',v).coverage.shadbalaPlanets,7);assert(N.analyze('vedic',c.JYVedic.compute({...input,unknownTime:true})).unavailable.some(x=>x.startsWith('六力總分：')));

@@ -1,0 +1,25 @@
+{
+  "testedAt": "2026-10-03T23:02:55.924Z",
+  "version": "20261004native10",
+  "scope": "ritual",
+  "total": 2,
+  "passed": 2,
+  "results": [
+    {
+      "command": "JY_ENTRY_WIDTH=390 node tests/ritual-navigation-browser-r8-20261003.cjs",
+      "startedAt": "2026-10-03T23:02:19.742Z",
+      "endedAt": "2026-10-03T23:02:34.575Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r10-ritual/01.log"
+    },
+    {
+      "command": "JY_ENTRY_WIDTH=1280 node tests/ritual-navigation-browser-r8-20261003.cjs",
+      "startedAt": "2026-10-03T23:02:34.576Z",
+      "endedAt": "2026-10-03T23:02:55.923Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r10-ritual/02.log"
+    }
+  ]
+}

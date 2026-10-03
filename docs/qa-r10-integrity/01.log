@@ -1,0 +1,24 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r10
+> node tests/engine-integrity-r10-20261004.cjs
+
+PASS all fifteen actual engines expose arithmetic audit and distinguish an unfinished OOTK session
+PASS unknown Bazi needs only three actual pillars, and never exports a fabricated hour
+PASS unknown Ziwei supplement has no palace dereference crash or confirmed palace data
+PASS unknown-clock compatibility JSON excludes the temporary hour in its nested chart too
+PASS Jia-Chen with exposed Yi never becomes Jianlu or Yuejie merely from secondary qi
+PASS Yin day with a true monthly Jie main qi keeps the monthly gate even when food is exposed
+PASS all ten genuine Lu branches remain Jianlu in both pattern modules
+PASS every selected Qiongtong paragraph has a clause record, including prose without regex predicates
+PASS qualitative Qiongtong clauses retain unresolved context and do not certify the historical outcome
+PASS all fifteen native datasets survive dense tables and scalar/object pointers exactly
+PASS every Bazi fact line restores all original conditions instead of truncating its arrays
+PASS compact functional text restores every source example and policy for each person
+PASS printed Meihua Guanmei arithmetic reproduces Dui/Li moving first line and Xian
+PASS printed Meihua peony arithmetic reproduces Qian/Xun moving fifth line and Ding
+PASS printed Meihua six-character arithmetic reproduces Sheng to Tai with upper Zhen and lower Dui nuclear
+PASS printed Zengshan You-month Xin-Hai Dui to Jie example matches all original branch relatives
+PASS corrupt Western NaN cannot reach export
+PASS a Western sign inconsistent with longitude cannot reach export
+PASS a plausible but incorrect Western house is caught using the actual cusps

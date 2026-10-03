@@ -90,6 +90,15 @@ function baziDetectZhengGe(bazi) {
   var geGod = touChuGod || benQiGod;
   var geGan = touChu || benQi;
 
+  // A secondary exposed 比劫 does not make a non-比劫 month a 月劫.
+  // Keep that exposure as a fact, but select an ordinary exposed month stem,
+  // or the actual monthly main qi. 子平真詮「論建祿月劫」以月令為入口。
+  if (['比肩','劫財'].includes(geGod) && !['比肩','劫財'].includes(benQiGod)) {
+    var ordinaryExposed = monthCangGan.find(function(g){return allGan.includes(g) && !['比肩','劫財'].includes(tenGod(dm,g));});
+    geGan = ordinaryExposed || benQi;
+    geGod = tenGod(dm, geGan);
+  }
+
   // 特殊格局的「格名」與「月支本氣十神」分欄，避免把本氣十神誤稱為格神。
   // geGod/geGan 保留相容欄位，但對建祿／月刃改指格局核心十神與核心干；
   // monthMainQi* / monthExposed* 則保存月令藏透事實。
@@ -122,6 +131,15 @@ function baziDetectZhengGe(bazi) {
   }
 
   // 正格命名
+  if (benQiGod === '劫財') {
+    return {
+      geName:'月劫格（候選）',patternType:'月劫格',patternBasis:'MONTH_MAIN_QI_ROB_WEALTH',
+      patternStem:benQi,patternTenGod:'劫財',geGod:geGod,geGan:geGan,
+      touChu:touChu,benQiGod:benQiGod,monthMainQiStem:benQi,monthMainQiTenGod:benQiGod,
+      monthExposedStem:touChu,monthExposedTenGod:touChuGod||null,
+      isSpecial:true,zh:'月令本氣為劫財；按月劫入口另查財官殺食的作用，不把其他柱透出比劫或雜气透干獨自改稱建祿。'
+    };
+  }
   var geNames = {
     '正官': '正官格', '七殺': '七殺格', '正印': '正印格', '偏印': '偏印格',
     '食神': '食神格', '傷官': '傷官格', '正財': '正財格', '偏財': '偏財格'

@@ -49,7 +49,7 @@ var JY_REC_BRIEF = {
   const out=['【完整純文字分析提示詞】',JSON.stringify({schema:'jy.native-analysis/1',method:data.method}),'原問題：'+JSON.stringify(data.question),'使用繁體中文直接解盤：先回答原題，逐子題交代主判、作用如何傳到結果、最強支持與反證、成立条件、時間及行動。用完整盤面交叉核對，勿見單一吉凶即下結論。未知與未實作項保持未知；不得猜造生日、時辰、他人意願或事件保證。這則訊息已含閱讀資料，不需要上傳附件。數值顯示至小數4位，原始精度留在引擎。日期有Z為UTC；區間右端不含。日月水金火木土為七曜，羅計為交點。'];
   if(data.notes!==null)out.push('補充：'+JSON.stringify(data.notes));
   const add=(label,v)=>{if(v!==undefined&&v!==null&&v!=='')out.push('【'+label+'】\n'+(typeof v==='string'?v:text(v)));};
-  for(const e of entries){const c=e.chart,a=e.analysis,kind=e.method,section=l=>data.sections.find(s=>s.label===(e.label?e.label+' · ':'')+l)?.data,tag=e.label||kind;add(tag+'讀法',methodInstructions[kind]);
+  for(const e of entries){const c=e.chart,a=e.analysis,kind=e.method,section=l=>data.sections.find(s=>s.label===(e.label?e.label+' · ':'')+l)?.data,tag=e.label||kind;add(tag+'讀法',methodInstructions[kind]);add(tag+'本次計算查核',root.JYEngineComputationAudit?.summary(a.computationAudit)||a.computationAudit);
    if(a.coverage.provisional){for(const s of data.sections.filter(s=>!e.label||s.label.startsWith(e.label+' · ')))if(!/摘要|查核/.test(s.label))add(s.label,s.data);}
    else if(kind==='bazi'){
     add('四柱',a.pillars.map(p=>p.label+':'+p.gan+p.zhi+'透'+p.god+'藏'+p.hidden.map(h=>h.stem+h.god+(h.qi==='本氣'?'主':'')).join(',')+'納音'+(p.nayin||'')+'長生'+(p.lifeStage||'')).join('\n'));
@@ -130,5 +130,5 @@ var JY_REC_BRIEF = {
   let body=out.join('\n\n');const definitions=[],counts=sharedFragments;sharedFragments=null;const lineCounts=new Map();for(const line of body.split('\n'))if(line.length>100)lineCounts.set(line,(lineCounts.get(line)||0)+1);for(const [line,count]of lineCounts)counts.set(line,Math.max(counts.get(line)||0,count));for(const [fragment,count]of [...counts].filter(([,c])=>c>1).sort((a,b)=>b[0].length-a[0].length)){if(!body.includes(fragment)&&!definitions.some(p=>p.value.includes(fragment)))continue;const id='同項'+(definitions.length+1),ref='〔'+id+'〕';body=body.split(fragment).join(ref);for(const p of definitions)p.value=p.value.split(fragment).join(ref);definitions.push({id,value:fragment});}return (definitions.length?body+'\n【共用完整內容：參照可巢狀展開，資料未截斷】\n'+definitions.map(p=>p.id+'='+p.value).join('\n'):body)+'\n【資料結束】\n\n'+ending;
 
  }
- root.JYPromptBrief=Object.freeze({version:'20261003brief9',render,text});
+ root.JYPromptBrief=Object.freeze({version:'20261004brief10',render,text});
 })(typeof window==='undefined'?globalThis:window);

@@ -1,0 +1,19 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r8
+> node tests/engine-and-recommendation-r8-20261003.cjs && node tests/ritual-resume-r8-20261003.cjs
+
+PASS PVR31.3 printed age44 example gives house9 and Scorpio/Libra/Pisces; age59 gives house12
+PASS PVR Example126 synthetic reconstruction retains the six printed favorable D24 placements and Rahu literal conflict
+PASS All20 divisions calculate three natal wheels, 12 monthly and144 subperiod signs, and180 current reference readings
+PASS Period readings use actual entry positions and PVR25.5 physical D1 transit signs against natal Dn BAV
+PASS Shared signs retain the BPHS74 fallback as a separate profile without tripling the evidence
+PASS All windows remain half-open, cover the solar year, and preserve genuine variable solar durations
+PASS Noncurrent subperiod API actually computes its20 division chart and three reference readings, with index checks
+PASS Every15 native bounded-prompt path restores its canonical specific recommendation and exactly one final shop footer
+PASS Complete Vedic plaintext includes the new calculated three-reference signs, all20 matrices and audit limits
+PASS Composite chart export retains A-only selection constraints and deduplicates repeated method guides
+PASS Missing or stale shared guide and missing brief renderer retain current recommendation through the packet fallback
+PASS Answer review catches generic crystal-only ending and missing invitation; concrete handwritten example passes format checks
+R8 12 groups passed
+R8 ritual resume: 9 methods passed

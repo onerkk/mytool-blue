@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-03T23:08:20.286Z",
+  "version": "20261004native10",
+  "scope": "native",
+  "total": 1,
+  "passed": 1,
+  "results": [
+    {
+      "command": "npm run test:native",
+      "startedAt": "2026-10-03T23:00:32.319Z",
+      "endedAt": "2026-10-03T23:08:20.285Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r10-native/01.log"
+    }
+  ]
+}

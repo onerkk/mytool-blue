@@ -1,0 +1,7 @@
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations

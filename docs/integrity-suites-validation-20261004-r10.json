@@ -1,0 +1,25 @@
+{
+  "testedAt": "2026-10-03T23:02:53.137Z",
+  "version": "20261004native10",
+  "scope": "integrity",
+  "total": 2,
+  "passed": 2,
+  "results": [
+    {
+      "command": "npm run test:r10",
+      "startedAt": "2026-10-03T23:01:55.145Z",
+      "endedAt": "2026-10-03T23:02:23.474Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r10-integrity/01.log"
+    },
+    {
+      "command": "npm run test:r9",
+      "startedAt": "2026-10-03T23:02:23.475Z",
+      "endedAt": "2026-10-03T23:02:53.136Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r10-integrity/02.log"
+    }
+  ]
+}

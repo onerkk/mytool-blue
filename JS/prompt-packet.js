@@ -20,7 +20,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261003prompt9',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261004prompt10',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
@@ -84,10 +84,10 @@ var JY_REC_PACKET = {
   function vargaScope(q,topic){if(/(?:所有|全部|完整十六|16|十六).{0,8}分盤/.test(q))return null;const divisions=new Set([1,9]);if(/工作|事業|職|career|work/i.test(q)||topic==='career')divisions.add(10);if(/財|收入|金錢/.test(q))divisions.add(2);if(/孩子|子女|養育/.test(q))divisions.add(7);if(/父母|原生家庭/.test(q))divisions.add(12);if(/居住|房|住宅/.test(q))divisions.add(4);if(/學|教育/.test(q))divisions.add(24);if(/內在|精神|修行/.test(q))divisions.add(20);if(/壓力|健康/.test(q))divisions.add(27);return divisions;}
   function north(n){if(!n)return n;return pick(n,['profile','palaceStemBasis','tableSource','starPlacements','flights','paths','opposingAxes','symbolPairs','transitions','sourceAudit']);}
   function facts(kind,c,a,q,options){
-    const sections=[],add=(label,data)=>{if(data!==undefined&&data!==null)sections.push({label,data});};
+    const sections=[],add=(label,data)=>{if(data!==undefined&&data!==null)sections.push({label,data});};const finish=()=>{add('本次計算查核',root.JYEngineComputationAudit?.summary(a.computationAudit)||a.computationAudit);return sections;};
     const range=timeRange(q,c.input?.reference||c.calculationPolicy?.referenceInstant||c.calculationPolicy?.referenceDate||c._referenceTimestamp);
-    if(kind==='bazi'&&a.coverage.provisional){add('三柱與未知時辰界線',{pillars:a.pillars,dayMaster:c.dm,gender:c.gender,status:'出生時辰未知；不輸出假設時辰下的交運、旺衰喜忌或司令確定值。節氣或換日當日的三柱亦需核對。',calculationPolicy:{...pick(c.calculationPolicy,['dayBoundaryMode','yearBoundary','monthBoundary']),unknownTime:true}});add('引擎逐項作用摘要與反證',ledger(a));add('資料範圍與查核來源',{schema:a.schema,method:kind,coverage:a.coverage,unavailable:a.unavailable});return sections;}
-    if(kind==='ziwei'&&a.coverage.provisional){add('出生輸入與未定盤界線',pick(c,['birthInput','birthLunar','calculationPolicy']));add('引擎逐項作用摘要與反證',ledger(a));add('資料範圍與查核來源',{schema:a.schema,method:kind,coverage:a.coverage,unavailable:a.unavailable});return sections;}
+    if(kind==='bazi'&&a.coverage.provisional){add('三柱與未知時辰界線',{pillars:a.pillars,dayMaster:c.dm,gender:c.gender,status:'出生時辰未知；不輸出假設時辰下的交運、旺衰喜忌或司令確定值。節氣或換日當日的三柱亦需核對。',calculationPolicy:{...pick(c.calculationPolicy,['dayBoundaryMode','yearBoundary','monthBoundary']),unknownTime:true}});add('引擎逐項作用摘要與反證',ledger(a));add('資料範圍與查核來源',{schema:a.schema,method:kind,coverage:a.coverage,unavailable:a.unavailable});return finish();}
+    if(kind==='ziwei'&&a.coverage.provisional){add('出生輸入與未定盤界線',pick(c,['birthInput','birthLunar','calculationPolicy']));add('引擎逐項作用摘要與反證',ledger(a));add('資料範圍與查核來源',{schema:a.schema,method:kind,coverage:a.coverage,unavailable:a.unavailable});return finish();}
     if(kind==='bazi'){
       add('四柱、節令與換日依據', {...pick(c,['gender','dm','qiyun','calendarBoundary','calculationPolicy','jqInfo','renyuan','kongwang','nayinAll','mingGong','taiYuan','taiXi','shenGong']),pillars:a.pillars});
       if(!a.coverage.provisional){add('旺衰、格局與制化', {...pick(c,['functionalAssessment','strengthAssessment','fuyiAssessment','structureFacts','tongGen','huaQiAssessments','branchInteractions','hiddenInteractions','energyFlow','bearingCapacity']),specialRuleAssessment:{...pick(c.specialRuleAssessment,['version','policy','ordinaryUsePolicy']),rules:checkLedger(c.specialRuleAssessment?.rules),huaQi:c.specialRuleAssessment?.huaQi},classical:classical(c.classicalAssessment)});add('調候與本月原文條件',c.seasonalAssessment);const annualSegments=a.annualSegments.filter(y=>inRange(y.year,range)),computedYears=[...new Set(annualSegments.map(y=>y.year))],requestedYears=range.all?computedYears:range.years||Array.from({length:range.to-range.from+1},(_,i)=>range.from+i);add('大運與所問年度',{range,decades:arr(c.dayun).map(d=>pick(d,['gz','ageStart','ageEnd','ageStartText','ageEndText','level','god','zGod','isCurrent','startDate','endDateExclusive','window'])),annualSegments,xiaoyun:c.xiaoyun?{...pick(c.xiaoyun,['profile','alternativeProfile','direction','policy','current']),periods:arr(c.xiaoyun.periods).filter(x=>inRange(x.year,range))}:null,computedYears,missingYears:requestedYears.filter(y=>!computedYears.includes(y)),missingPolicy:'missingYears所列年度未在本次引擎流年表中計算，不得由AI自行補成確定結果；已排小運另列；不得補造未計年份。',liuYue:c.liuYue});}
@@ -126,7 +126,7 @@ var JY_REC_PACKET = {
     else {add('本次完整操作與牌籤作用',a.methodData);add('程序及原题背景',pick(c,['referenceDate','question','methodPlan','sourceProfile','spread','spreadType','drawProcedure','status','gate','tarotData','ootkData']));}
     add('引擎逐項作用摘要與反證',ledger(a));
     add('資料範圍與查核來源',{schema:a.schema,method:kind,coverage:a.coverage,unavailable:a.unavailable,policy:a.policy,sources:a.sources.map(s=>pick(s,['id','title','url','scope']))});
-    return sections;
+    return finish();
   }
   function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(16).padStart(8,'0');}
   function split(body,maxChars=LIMIT,maxBytes=BYTES){

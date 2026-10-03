@@ -1,0 +1,18 @@
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ All 60 poems keep their four original lines, number, source and actual prompt
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Question markup is escaped; an unconfirmed or unavailable prompt never gains a confirmation or AI controls
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Horizontal and vertical reading retain the result, prompt, DOM nodes and scroll position without drawing again
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Provider folding is repeatable and preserves all 10 handlers without adding duplicate introductions
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Clipboard success copies the full real prompt; denied APIs and false fallback report manual copying honestly
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ AI tab opens during the original tap, before copying settles; invalid destinations and stale feedback are ignored
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+✓ Share and image export receive the same poem and question after switching reading direction
+oracle-result: 7 groups passed (simulated DOM; no device-rendering claim).

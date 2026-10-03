@@ -1,0 +1,9 @@
+✓ foundation upgraded to method-data schema
+✓ export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger
+✓ prompt invites the AI to use its own tarot knowledge while keeping method data
+✓ five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain
+✓ Mathers methods remain ordered sequence methods
+✓ prompt preserves Book T, true adjacency and a concise recommendation ending
+✓ changed JS syntax is valid
+
+7 tests passed.
