@@ -1,0 +1,15 @@
+PASS Versioned offline dictionary covers >100k glyphs and retains verifiable Kangxi residuals
+PASS Single/compound surname, single/double/triple given names use actual formulas
+PASS 81 itself is retained; large numbers cycle by 80, not 81 and not zero
+PASS Every one of 81 entries and 125 configurations resolves; odd/even and five elements remain facts
+PASS Numeric special rule is explicit and modern/Kangxi sensitivity never leaks manual values
+PASS Unknown Kangxi glyph keeps sound/shape and zodiac independent; no code-point guessing
+PASS Chinese New Year zodiac boundary is real; civil date and leap dates are validated
+PASS Birth omissions do not fabricate a noon hour or favored element; exact pillars stay native
+PASS Name hexagram math resolves all 64 geometries and true moving/changed line
+PASS Candidate comparison uses identical policies, retains all names and refuses duplicates
+PASS Polyphonic sounds remain candidates; confirmed reading is explicit, not psychic inference
+PASS Prompt carries actual facts, all native schools, original question and one fixed ending
+PASS 字形參照只依明列字根，八字調候候選不冒稱唯一字五行
+PASS Bad splits, non-Han input and invalid stroke values fail with specific errors
+Name engine: 14 groups; native dictionary, 81/125 tables, 64 name hexagrams, birth boundaries and complete prompt.

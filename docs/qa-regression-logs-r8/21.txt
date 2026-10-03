@@ -1,0 +1,53 @@
+✓ All nine experiences have an actor and complete local transparent atlas
+✓ 3D deck moves through stack, split, interleave and fan without calling reading randomness
+✓ Touch gestures drive the scene; no card draw or completion happens before explicit exit
+✓ Wrong gesture direction does not instantly complete; pointer cancellation resets progress
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:40)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:8
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:331:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+✓ A renderer failure never blocks any ritual, and cancellation invalidates pending phase callbacks
+✓ Four-pillar and relationship inputs retain original nodes/values; validation can reveal any earlier field
+✓ Lenormand four sections become three steps; a rerender resumes spread selection
+✓ No WebGL context: real Three.js mount returns usable fallback and removes allocated DOM
+✓ All seven scenes release their Three.js geometries, textures, listeners and frame loop; late loads cannot resurrect them
+✓ Changing Tarot to Opening of the Key updates the guide without touching the question
+cinematic: 10 groups passed; WebGL pixels and physical-device rendering remain unverified.

@@ -1,7 +1,7 @@
 {
-  "release": "20261003native7",
+  "release": "20261003native8",
   "claim": "列出已驗證的實作範圍與未覆蓋的流派；特殊格局命中不能推定現實事件",
-  "sourceReview": "docs/engine-source-review-20261003-r7.md",
+  "sourceReview": "docs/engine-source-review-20261003-r8.md",
   "methods": [
     {
       "method": "tarot",
@@ -208,13 +208,14 @@
         "原子重算及未知時辰輸出邊界",
         "Subha/Asubha Kartari 命宮與十二宮相夾結構",
         "Bhaaskara、Chapa 明確格局與缺時辰反例",
-        "十六分盤、192宮、Vimshottari MD/AD/PD、七與八Karaka",
-        "七曜六力、12Bhava強度、九曜residential、16分盤PAV/BAV/SAV消減與Pinda、五支曆交界",
-        "17補充Dasha、16盤Arudha/Argala/共主、41補充Yoga與7曜4項Neechabhanga",
+        "二十分盤、240宮、Vimshottari MD/AD/PD、七與八Karaka",
+        "七曜六力、12Bhava強度、九曜residential、20分盤PAV/BAV/SAV消減與Pinda、五支曆交界",
+        "17補充Dasha、20盤Arudha/Argala/共主、41補充Yoga與7曜4項Neechabhanga",
         "11Upagraha及特殊Lagna、實際日夜段",
         "PVR20分盤包含D5/D6/D8/D11，全20盤PAV/BAV/SAV、Arudha/Argala與Narayana",
         "Vedha、27Tara、11特殊宿、9實際入座Murthi、20盤Kakshya/Pinda與行運啟動",
-        "年度及當期月／2.5°段完整原生盤、12月／144段精確UTC邊界、Harsha／Pancha／Dwadasa、歲月主、36Sahams、16格局、3年度MD/AD模型"
+        "年度及當期月／2.5°段完整原生盤、12月／144段精確UTC邊界、Harsha／Pancha／Dwadasa、歲月主、36Sahams、16格局、3年度MD/AD模型",
+        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算"
       ],
       "limits": [
         "PVR515頁與BPHS全部歷史Dasha／Yoga條款未逐條全數實作，採本版具名17補充運期與41Yoga",
@@ -222,7 +223,8 @@
         "各Dasha適用性、分盤職能、力量、取消與反證共同合讀；不同政策不重複投票",
         "其他原典變體不暗混；天文求解括區不是星曆絕對精度",
         "採本版具名原典資料與門檻；PVR29部分定義和原例不一致並列，不任選或隱去",
-        "20分盤是PVR第6章採用版本，沒有宣稱所有歷史分盤與Dasha均已驗證"
+        "20分盤是PVR第6章採用版本，沒有宣稱所有歷史分盤與Dasha均已驗證",
+        "BPHS74七分盤性質逆轉及同強定主等質性完整裁決，未套入本版PVR31通則；不能宣稱BPHS74整章已逐條自動化"
       ]
     },
     {
@@ -247,7 +249,8 @@
         "全七曜最後分離與首次成相三傳光、集光接納與中世紀空間近度／等距合相版本"
       ],
       "limits": [
-        "未將全部歷史月亮空亡定義及六種古典阻止類型語義自動裁決；候選紀錄不是完整卜卦判斷法",
+        "六類具名受阻時序、三型傳光與集光已計算；未選VOC異派、同距非合相完整階序、近駐留質性及介入者現實角色仍保留未定",
+        "六類具名受阻時序、三型傳光與集光已計算；未選VOC異派、同距非合相完整階序、近駐留質性及介入者現實角色仍保留未定",
         "換座前成相与現正入相分開；第三星相位不自动判成阻止，須核接納、力度與時序",
         "獨立星曆誤差只描述已測樣例",
         "同距非合相完整階序、未選VOC異派及介入者現實角色保留，不作人事結果保證"
@@ -335,5 +338,7 @@
   "latestAudit": "docs/full-audit-20260923.md",
   "sourceReviewLatest": "docs/native-scope-20261003.json",
   "promptDeliveryVerification": "docs/prompt-budget-validation-20261003.json",
-  "moonOrbEntryVerification": "docs/western-moon-orb-validation-20261003.json"
+  "moonOrbEntryVerification": "docs/western-moon-orb-validation-20261003.json",
+  "recommendationVerification": "docs/engine-and-recommendation-validation-20261003-r8.json",
+  "ritualVerification": "docs/ritual-browser-validation-20261003-r8-390.json"
 }

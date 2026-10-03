@@ -1,0 +1,57 @@
+✓ Tarot: 28 natural-language cases select the intended method without altering the question
+✓ Tarot: comparison branches, multiple choices and missing capabilities remain honest
+✓ Tarot: actual resolver → dynamic positions → draw → payload → exported guide agree
+✓ Tarot: each of 14 spread protocols has its own concrete reading sequence
+✓ Lenormand: 28 question cases distinguish focused lines, real branches, facets and panorama
+✓ Lenormand: actual auto/manual casting exports matching positions and complete cards
+✗ Lenormand: methods cannot substitute tarot meanings or each other’s geometry
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(text.includes('不捏造商品庫存'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:126:175
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:7:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:119:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+✓ Lenormand: all 36 houses, 32 mirror positions and all knight moves are geometrically valid
+✓ Lenormand: preset center is disclosed and optional focus never blocks a panorama
+✓ Lenormand: preview updates with current question without changing a completed draw
+✗ Bazi: each lens and each role scenario injects its distinct guide into the actual export
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(p.includes('不捏造商品庫存'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:154:241
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:7:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:152:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+✗ Meihua: both prompt paths preserve actual hexagrams, method boundaries and one shop ending
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(p.includes('不捏造商品庫存'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:162:261
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:7:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-professional-20260910.cjs:160:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+✓ Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements
+✓ The local API preserves its JSON contract with system-specific depth and honest brand constraints
+professional-regression: 11 groups passed; 56 routing cases plus real draw/export and geometry checks.

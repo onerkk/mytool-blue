@@ -1,0 +1,46 @@
+PASS All 15 methods generate a question-specific answer task without changing supplied facts
+PASS Health context changes the action priority; an occupation or ordinary feeling is not a diagnosis
+PASS The actual failed answer is detected, including clinical inference and delayed care
+node:assert:152
+  throw new AssertionError(obj);
+  ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
++ [
++   {
++     code: 'BRACELET_SELECTION_MISSING',
++     excerpt: '',
++     message: '補上一款具體手鍊及佩戴者，引用本題有效盤面並連到可行行動；不能只寫一般水晶提醒。',
++     severity: 'revision'
++   }
++ ]
+- []
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-workflow-20260924.cjs:32:63
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-workflow-20260924.cjs:5:37)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-workflow-20260924.cjs:31:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      code: 'BRACELET_SELECTION_MISSING',
+      severity: 'revision',
+      message: '補上一款具體手鍊及佩戴者，引用本題有效盤面並連到可行行動；不能只寫一般水晶提醒。',
+      excerpt: ''
+    }
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

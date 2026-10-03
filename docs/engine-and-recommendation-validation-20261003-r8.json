@@ -1,0 +1,133 @@
+{
+  "testedAt": "2026-10-03T14:04:54.018Z",
+  "passed": 12,
+  "results": [
+    {
+      "name": "PVR31.3 printed age44 example gives house9 and Scorpio/Libra/Pisces; age59 gives house12",
+      "status": "passed"
+    },
+    {
+      "name": "PVR Example126 synthetic reconstruction retains the six printed favorable D24 placements and Rahu literal conflict",
+      "status": "passed"
+    },
+    {
+      "name": "All20 divisions calculate three natal wheels, 12 monthly and144 subperiod signs, and180 current reference readings",
+      "status": "passed"
+    },
+    {
+      "name": "Period readings use actual entry positions and PVR25.5 physical D1 transit signs against natal Dn BAV",
+      "status": "passed"
+    },
+    {
+      "name": "Shared signs retain the BPHS74 fallback as a separate profile without tripling the evidence",
+      "status": "passed"
+    },
+    {
+      "name": "All windows remain half-open, cover the solar year, and preserve genuine variable solar durations",
+      "status": "passed"
+    },
+    {
+      "name": "Noncurrent subperiod API actually computes its20 division chart and three reference readings, with index checks",
+      "status": "passed"
+    },
+    {
+      "name": "Every15 native bounded-prompt path restores its canonical specific recommendation and exactly one final shop footer",
+      "status": "passed"
+    },
+    {
+      "name": "Complete Vedic plaintext includes the new calculated three-reference signs, all20 matrices and audit limits",
+      "status": "passed"
+    },
+    {
+      "name": "Composite chart export retains A-only selection constraints and deduplicates repeated method guides",
+      "status": "passed"
+    },
+    {
+      "name": "Missing or stale shared guide and missing brief renderer retain current recommendation through the packet fallback",
+      "status": "passed"
+    },
+    {
+      "name": "Answer review catches generic crystal-only ending and missing invitation; concrete handwritten example passes format checks",
+      "status": "passed"
+    }
+  ],
+  "prompts": {
+    "bazi": {
+      "characters": 24441,
+      "bytes": 40089,
+      "parts": 4
+    },
+    "ziwei": {
+      "characters": 13765,
+      "bytes": 30151,
+      "parts": 2
+    },
+    "astro": {
+      "characters": 12422,
+      "bytes": 19524,
+      "parts": 2
+    },
+    "vedic": {
+      "characters": 80104,
+      "bytes": 99394,
+      "parts": 12
+    },
+    "liuren": {
+      "characters": 46780,
+      "bytes": 66538,
+      "parts": 7
+    },
+    "liuyao": {
+      "characters": 7074,
+      "bytes": 11270,
+      "parts": 1
+    },
+    "yijing": {
+      "characters": 7978,
+      "bytes": 14294,
+      "parts": 2
+    },
+    "meihua": {
+      "characters": 5639,
+      "bytes": 11545,
+      "parts": 1
+    },
+    "name": {
+      "characters": 11996,
+      "bytes": 20641,
+      "parts": 2
+    },
+    "compat": {
+      "characters": 10119,
+      "bytes": 17499,
+      "parts": 2
+    },
+    "personality": {
+      "characters": 2582,
+      "bytes": 5094,
+      "parts": 1
+    },
+    "tarot": {
+      "characters": 1462,
+      "bytes": 3402,
+      "parts": 1
+    },
+    "lenormand": {
+      "characters": 3503,
+      "bytes": 5920,
+      "parts": 1
+    },
+    "ootk": {
+      "characters": 1411,
+      "bytes": 3273,
+      "parts": 1
+    },
+    "oracle": {
+      "characters": 5715,
+      "bytes": 8584,
+      "parts": 1
+    }
+  },
+  "sourceExamplesAre": "Published numeric/placement examples. Example126 is an explicitly synthetic placement reconstruction, not an astronomical chart claim.",
+  "aiAnswers": "No external AI answer was generated or fabricated; review examples are handwritten fixtures."
+}

@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T12:17:09.670Z",
+  "testedAt": "2026-10-03T13:54:12.267Z",
   "scope": "Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths",
   "results": [
     {
@@ -11,7 +11,7 @@
       "parts": 4,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 22034,
+      "promptCharacters": 22444,
       "numberedCopy": true
     },
     {
@@ -23,7 +23,7 @@
       "parts": 2,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 13216,
+      "promptCharacters": 13632,
       "numberedCopy": true
     },
     {
@@ -35,7 +35,7 @@
       "parts": 12,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 76014,
+      "promptCharacters": 80094,
       "numberedCopy": true
     },
     {
@@ -47,7 +47,7 @@
       "parts": 2,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 11961,
+      "promptCharacters": 12373,
       "numberedCopy": true
     },
     {
@@ -59,7 +59,7 @@
       "parts": 3,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 14240,
+      "promptCharacters": 14663,
       "numberedCopy": true
     }
   ]

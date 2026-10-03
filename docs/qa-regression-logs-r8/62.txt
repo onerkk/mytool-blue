@@ -1,0 +1,2 @@
+[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data
+card-audit: 7 real routing and completed oracle flow checks passed.

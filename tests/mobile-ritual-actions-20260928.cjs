@@ -62,9 +62,9 @@ for(const kind of ['tarot','lenormand','bazi','compat','ziwei','meihua','oracle'
   handle.cancel();
 }
 const html=read('index.html');
-assert(html.includes('CSS/mobile-ritual-actions-20260928.css?v=20260928rootfix2'),'root fix is loaded after the existing competing layout sheets');
-assert(html.includes('JS/ritual-ateliers.js?v=20260928rootfix2'),'the shared director cannot be served from the old cache-busted asset URL');
-for(const file of ['sw.js','JS/sw.js'])assert.match(read(file),/jy-main-v116/,'fresh service worker cache version: '+file);
+assert(html.includes('CSS/mobile-ritual-actions-20260928.css?v=20261003ritual8'),'root fix is loaded after the existing competing layout sheets');
+assert(html.includes('JS/ritual-ateliers.js?v=20261003ritual8'),'the shared director cannot be served from the old cache-busted asset URL');
+for(const file of ['sw.js','JS/sw.js'])assert.match(read(file),/jy-main-v117/,'fresh service worker cache version: '+file);
 assert.equal(read('sw.js'),read('JS/sw.js'),'the source and served service worker stay synchronized');
 
 console.log('mobile-ritual-actions: shared viewport, scroll, safe-area dock, and every ritual entry point verified');

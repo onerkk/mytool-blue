@@ -1,7 +1,7 @@
 /* 靜月之光 · 姓名書房。獨立輸入、筆畫覆核、六法原生結果、完整提示詞。 */
 (function(root){
   'use strict';
-  var REV='20261003native7',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
+  var REV='20261003native8',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
   var h=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
   var el=function(id){return room&&room.querySelector('#'+id);};
   function load(file,check){if(check&&check())return Promise.resolve();return new Promise(function(resolve,reject){if(typeof root._jyLazyScript!=='function'){reject(new Error('載入工具尚未完成，請稍後重試。'));return;}root._jyLazyScript(file,function(ok){if(ok&&(!check||check()))resolve();else reject(new Error('姓名學資料載入失敗，請重新整理或檢查網路後重試。'));});});}
@@ -103,7 +103,7 @@
       if(state.step===0){readForm();status('正在準備離線字表與各派計算資料…');await prepare();if(current!==epoch||!room)return;validateInput();state.step=1;render(true);}
       else{
         readReview();status('正在合讀筆畫、形義與原生資料…');var bazi=null,s=state.input;
-        if(s.birthDate&&s.birthTime){await load('JS/bazi.js?v=20261003native7',function(){return typeof root.computeBazi==='function';});if(current!==epoch||!room)return;var d=s.birthDate.split('-').map(Number),t=s.birthTime.split(':').map(Number);bazi=root.computeBazi(d[0],d[1],d[2],t[0],t[1],'male',{timezoneOffset:s.timezoneOffset,trueSolarTime:false,dayBoundaryMode:'MIDNIGHT_00'});}
+        if(s.birthDate&&s.birthTime){await load('JS/bazi.js?v=20261003native8',function(){return typeof root.computeBazi==='function';});if(current!==epoch||!room)return;var d=s.birthDate.split('-').map(Number),t=s.birthTime.split(':').map(Number);bazi=root.computeBazi(d[0],d[1],d[2],t[0],t[1],'male',{timezoneOffset:s.timezoneOffset,trueSolarTime:false,dayBoundaryMode:'MIDNIGHT_00'});}
         if(current!==epoch||!room)return;state.result=root.JYNameEngine.evaluate(Object.assign({},s,{candidates:state.mode==='compare'?s.candidates:[]}),{bazi:bazi});state.active=0;state.step=2;render(true);
       }
     }catch(e){if(current===epoch&&room)error(e.message||'資料尚未完成，請核對後重試。');}finally{if(current===epoch)busy=false;if(button.isConnected)button.disabled=false;}

@@ -1,0 +1,1 @@
+tarot-native-structure: all 24 selectable methods, native monthly geometry, independent branches, and invalid-route failures passed.

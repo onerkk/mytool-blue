@@ -1,0 +1,70 @@
+{
+  "testedAt": "2026-10-03T14:04:54.167Z",
+  "passed": 9,
+  "scope": "Simulated browser lifecycle events against actual ritual module; this is not a device rendering test",
+  "results": [
+    {
+      "method": "tarot",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "lenormand",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "ootk",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "vedic",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "bazi",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "compat",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "ziwei",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "meihua",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    },
+    {
+      "method": "oracle",
+      "status": "passed",
+      "cachedReturn": true,
+      "manualAnimationExit": true,
+      "completionExactlyOnce": true
+    }
+  ]
+}

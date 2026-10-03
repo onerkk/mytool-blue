@@ -426,6 +426,7 @@
     else out.policy.additionalAlgorithms='module-unavailable';
     if(root.JYVedicTransitRules&&options.transitRules!==false)out.transitRules=root.JYVedicTransitRules.compute(out);
     if(root.JYVedicTajaka&&options.tajaka!==false)out.tajaka=root.JYVedicTajaka.compute(out);
+    if(root.JYVedicSudarsana&&options.tajaka!==false&&options.sudarsana!==false)out.sudarsana=root.JYVedicSudarsana.compute(out);
     return freeze(out);
   }
   root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,trikonaReduce,ekadhipatyaReduce,sodhyaPinda,panchangaAngles,panchanga:panchangaComplete,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});

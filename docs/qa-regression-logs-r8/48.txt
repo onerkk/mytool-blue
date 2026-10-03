@@ -1,0 +1,28 @@
+PASS Default original-manuscript profile completes 512 casts across every court and conflicting expectations
+PASS Ace=5, inclusive counting, first-ring-card start, opposite-end pairing and packet inversion match the manuscript
+PASS Question keywords and preselected destinations never bias the original-manuscript shuffle
+PASS Legacy validation is explicit, still stops, and cannot fabricate later data
+node:internal/assert/utils:77
+    throw err;
+    ^
+
+AssertionError [ERR_ASSERTION]: 不捏造商品庫存
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/ootk-flow-20260915.cjs:71:87
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/ootk-flow-20260915.cjs:23:24)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/ootk-flow-20260915.cjs:66:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

@@ -1,0 +1,9 @@
+PASS No chart yields no fabricated reading and no remote request
+PASS Single real Bazi chart produces a fully local answer-first prompt without running score fusion
+PASS A second completed chart is included without fabricating uncomputed methods
+PASS Unknown birth hour excludes provisional hour from the exported chart
+PASS Unknown birth hour does not present a provisional Ziwei chart as finished
+PASS Failed astrology reports status without a fabricated horoscope
+PASS Stale native astrology is rejected when birth inputs change
+PASS Mathers Third Method export reflects only the implemented 66-card arches and two separate surprises
+PASS The legacy Opus and tarot entry points stay local even with admin flags

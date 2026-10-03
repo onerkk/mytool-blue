@@ -1,0 +1,21 @@
+✓ 首頁先載入 v6 共用提示詞根，再載入八字與紫微 standalone
+✓ 八字提示詞根在真實執行路徑可用，並開放 AI 自身命理知識
+✓ 紫微資料不再截掉第四顆之後的輔星、煞星或第九個格局
+✓ 梅花兩條 standalone 路徑完全一致，且不製造日曆假精確
+✓ 靈籤提示詞保留完整材料並開放 AI 的解籤知識
+✓ 雷諾曼保留合法幾何，並改為有主次的牌組整合方法
+✗ 七維 API 以盤面為主並允許模型使用自身跨系統知識
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(api.includes('選品規則不得影響前面的占卜判斷'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/prompt-accuracy-20260811.test.cjs:161:68
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/prompt-accuracy-20260811.test.cjs:18:5)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/prompt-accuracy-20260811.test.cjs:153:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47

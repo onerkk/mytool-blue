@@ -85,6 +85,17 @@
       '<div class="jr-stage">'+portrait+'<div class="jr-local-water" aria-hidden="true"></div></div><div class="jr-playfield"><span class="jr-touch-aura" aria-hidden="true"></span>'+constellation+interaction+'</div>'+
       '<section class="jr-dialogue">'+(mode==='cards'?'<div class="jr-reveal-controls" role="group" aria-label="揭牌方式"><button type="button" class="jr-auto-reveal" aria-pressed="false">自動依序翻牌</button><button type="button" class="jr-reveal-all">全部揭開</button></div>':'')+'<div class="jr-response" hidden><div><span class="jr-response-label">等待你的觸碰</span><span class="jr-response-value">0%</span></div><div class="jr-response-track" role="progressbar" aria-label="儀式互動進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i></i></div></div><p class="jr-hint" role="status"></p></section></div></div>'+
       '<div class="jr-action-dock" role="group" aria-label="儀式操作"><button type="button" class="jr-next">走進'+cfg.room+' <span aria-hidden="true">→</span></button><footer class="jr-footer"><ol aria-label="儀式進度"><li class="is-current">相遇</li><li>共鳴</li><li>啟程</li></ol><button type="button" class="jr-skip">跳過儀式 →</button></footer></div>';
+    // Navigation must survive a missing layout stylesheet or a stale theme.
+    // These are the original wired controls, outside the animated scene and its
+    // compositing/scroll containers. Only the minimum functional layout is inline.
+    function criticalStyle(node,values){Object.keys(values).forEach(function(key){node.style.setProperty(key,values[key],'important');});}
+    criticalStyle(dialog,{display:'grid','grid-template-rows':'minmax(0, 1fr) auto',width:'100vw',height:'100dvh','min-height':'0','max-height':'100dvh',overflow:'hidden','box-sizing':'border-box'});
+    criticalStyle(dialog.querySelector('.jr-scroll'),{'grid-row':'1','min-height':'0','min-width':'0',height:'auto','max-height':'100%','overflow-x':'hidden','overflow-y':'auto','touch-action':'pan-y pinch-zoom'});
+    criticalStyle(dialog.querySelector('.jr-shell'),{height:'auto','min-height':'100%','max-height':'none',overflow:'visible'});
+    criticalStyle(dialog.querySelector('.jr-action-dock'),{display:'grid',position:'relative','grid-row':'2','grid-template-columns':'minmax(0, 1fr)',gap:'8px',inset:'auto',width:'100%','max-width':'620px','box-sizing':'border-box',margin:'0 auto',padding:'8px 12px max(10px, env(safe-area-inset-bottom))','z-index':'20',background:'#09121f',visibility:'visible',opacity:'1','pointer-events':'auto',transform:'none'});
+    criticalStyle(dialog.querySelector('.jr-next'),{position:'static',display:'block','grid-row':'2',inset:'auto',width:'100%','max-width':'100%','min-height':'54px','box-sizing':'border-box',margin:'0',visibility:'visible',opacity:'1',transform:'none','white-space':'normal'});
+    criticalStyle(dialog.querySelector('.jr-footer'),{'grid-row':'1',margin:'0',padding:'4px 8px'});
+    criticalStyle(dialog.querySelector('.jr-dialogue'),{display:'block',visibility:'visible',opacity:'1',animation:'none',transform:'none',filter:'none','backdrop-filter':'none','-webkit-backdrop-filter':'none'});
     var resolve,finished=new Promise(function(r){resolve=r;});
     var handle={finished:finished,cancel:function(){finish(false,false);},skip:function(){finish(true,false);}};
     var entry={kind:kind,handle:handle};
@@ -124,7 +135,7 @@
     function cleanup(){
       stopHold();pauseReveal();timers.forEach(function(id){root.clearTimeout(id);});disposeAudio();
       if(story){story.dispose();story=null;}releaseStage();
-      root.removeEventListener('pagehide',onPageHide);root.removeEventListener('popstate',onPopState);doc.removeEventListener('visibilitychange',onVisibility);
+      root.removeEventListener('pagehide',onPageHide);root.removeEventListener('pageshow',onPageShow);root.removeEventListener('popstate',onPopState);doc.removeEventListener('visibilitychange',onVisibility);
       dialog.removeEventListener('close',onNativeClose);dialog.removeEventListener('keydown',onKeyDown);
       try{if(dialog.open)dialog.close();}catch(e){}
       inertSiblings.forEach(function(item){item.node.inert=item.value;});dialog.remove();doc.body.style.overflow=bodyOverflow;if(active===entry)active=null;
@@ -135,7 +146,18 @@
       if(previous&&previous.isConnected)focus(previous);resolve(completed);
       if(completed&&typeof options.onComplete==='function')options.onComplete();else if(!completed&&userCancel&&typeof options.onCancel==='function')options.onCancel();
     }
-    function onPageHide(){finish(false,false);}
+    function onPageHide(event){
+      if(event&&event.persisted){stopHold();pauseReveal();disposeAudio();dialog.classList.add('is-paused');stageCall('setCovered',true);return;}
+      finish(false,false);
+    }
+    function onPageShow(event){
+      if(!event||!event.persisted||settled)return;
+      dialog.classList.remove('is-paused');stageCall('setCovered',false);
+      // Back/forward cache keeps the real cast, callbacks and unresolved handle.
+      // Restoration never draws again or completes an unanswered interaction.
+      if(!dialog.open)try{dialog.showModal();}catch(e){dialog.setAttribute('open','');}
+      focus(phase===1&&mode==='cards'?dialog.querySelector('.jr-reveal:not([hidden])'):next);
+    }
     function onPopState(){finish(false,true);}
     function onNativeClose(){finish(false,true);}
     function onKeyDown(event){
@@ -161,7 +183,7 @@
       if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'逐張輕觸，或選擇自動翻牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
       if(value>=2)showProgress(1,value===2?'已接住你的心念':'準備好了，由你決定何時繼續');
       stageCall('setPhase',value);
-      if(story)story.setPhase(value,function(){if(phase===2)updatePhase(3);});
+      if(story)try{story.setPhase(value,function(){if(phase===2)updatePhase(3);});}catch(error){warn('story transition',error);try{story.dispose();}catch(e){}story=null;}
       var revealControls=dialog.querySelector('.jr-reveal-controls');if(revealControls)revealControls.hidden=value!==1;
       var choices=dialog.querySelector('.jr-intent');if(choices)choices.hidden=value!==0;
       dialog.querySelector('.jr-chapter').textContent=value===0?'入境':value===1?'凝心':'啟程';
@@ -175,7 +197,7 @@
         next.disabled=mode!=='hold';next.textContent=mode==='hold'?'直接啟動儀式 →':mode==='cards'?'等待你揭開牌面':'等待你點亮座標';
         if(mode==='hold')focus(next);else focus(dialog.querySelector(mode==='cards'?'.jr-reveal':'.jr-seal'));
       }else if(value===2){
-        setCopy(cfg.action,'');hint.textContent='';next.disabled=true;next.textContent='光正在展開…';if(question)dialog.querySelector('.jr-question').open=false;
+        setCopy(cfg.action,'');hint.textContent='可以略過動畫，繼續查看本次結果。';next.disabled=false;next.textContent='略過動畫，繼續 →';if(question)dialog.querySelector('.jr-question').open=false;
       }else if(value===3){
         setCopy(dealing?'你的牌陣，已在眼前。':cfg.ready,dealing?'保留你已親手選出的牌，接著查看本次完整牌陣與牌位。':cfg.outro+(intent==='action'?' 讀完後，選一件自己做得到的小事開始。':''));
         hint.textContent=options.spreadName?String(options.spreadName):'';next.disabled=false;next.textContent=(options.finishLabel||(dealing?'查看本次牌陣':cfg.finish))+' →';focus(next);
@@ -286,7 +308,7 @@
       cards.forEach(function(c,i){revealCard(i,true);});
       hint.textContent='本次 '+cards.length+' 張牌已全部揭開，牌序保持不變。';
     };
-    next.onclick=function(){if(settled||next.disabled)return;if(phase===0){soundCue('paper',.55);updatePhase(1);}else if(phase===1&&mode==='hold')awaken();else if(phase===1&&mode==='cards'&&lit<cards.length){cardPage++;showCardPage();next.disabled=true;next.textContent='等待你揭開牌面';var card=dialog.querySelector('.jr-reveal:not([hidden])');focus(card);}else if(phase===3)finish(true,false);};
+    next.onclick=function(){if(settled||next.disabled)return;if(phase===0){soundCue('paper',.55);updatePhase(1);}else if(phase===1&&mode==='hold')awaken();else if(phase===1&&mode==='cards'&&lit<cards.length){cardPage++;showCardPage();next.disabled=true;next.textContent='等待你揭開牌面';var card=dialog.querySelector('.jr-reveal:not([hidden])');focus(card);}else if(phase===2)updatePhase(3);else if(phase===3)finish(true,false);};
     dialog.querySelectorAll('[data-intent]').forEach(function(btn){btn.onclick=function(){if(phase!==0)return;intent=btn.getAttribute('data-intent');dialog.querySelectorAll('[data-intent]').forEach(function(b){b.setAttribute('aria-pressed',String(b===btn));});setCopy(intent==='action'?'好，我們一起找一個起點。':cfg.title,intent==='action'?'帶著你真正能改變的部分進入探索。解讀之後，我們再把提醒整理成可以採取的行動。':cfg.intro);};});
     dialog.querySelector('.jr-motion').onclick=function(){
       if(settled)return;stopHold();reduced=!reduced;dialog.setAttribute('data-motion',reduced?'still':'full');
@@ -309,7 +331,7 @@
     if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});}catch(e){fallbackStage(e);}}
     if(root.JYStory&&typeof root.JYStory.mount==='function'){try{story=root.JYStory.mount(dialog,kind,{reduced:reduced,onShot:function(shot){stageCall('setShot',shot);},onFilm:function(covered){stageCall('setCovered',covered);}});if(story)next.textContent=story.invitation+' →';}catch(error){warn('story',error);}}
     updatePhase(0);if(mode==='cards')showCardPage();focus(next);if(dealing)updatePhase(1);
-    root.addEventListener('pagehide',onPageHide);root.addEventListener('popstate',onPopState);doc.addEventListener('visibilitychange',onVisibility);
+    root.addEventListener('pagehide',onPageHide);root.addEventListener('pageshow',onPageShow);root.addEventListener('popstate',onPopState);doc.addEventListener('visibilitychange',onVisibility);
     return handle;
     }catch(error){finish(false,false);throw error;}
   }

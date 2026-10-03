@@ -1,0 +1,4 @@
+PASS Store links and dynamic prices cannot be presented as verified
+PASS Product cards render price and inventory verification without promises
+PASS Legacy stone panel is a neutral style sample without efficacy or old prices
+PASS Sacrifice and clash labels never change name score or predict incidents

@@ -1,0 +1,37 @@
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ RWS and Book T prompts ignore stale inventory, preserve actual cards and prefer everyday language
+✓ Five valid OOTK operations retain their record while recommendations do not read inventory
+✓ An invalid OOTK operation stays invalid and does not acquire a sales recommendation
+✗ Shared and standalone brand policies agree; no fixed gemstone or fabricated measurements are injected
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(policy.outputRule.includes('若提問者提到預算吃緊或暫不想購買'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-audit-20260908.cjs:212:2
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-audit-20260908.cjs:7:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/divination-audit-20260908.cjs:201:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/plain-reading-20260912.cjs:74:3)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+✓ Legacy API entry points send needs-first policy and do not attach catalogue candidates
+plain-reading: stock-independent exports and needs-first policy verified; no external-model claim.

@@ -1,0 +1,9 @@
+✓ Fourteen home entrances are native buttons and reach the right flow; direct compatibility remains separate
+✓ Spread picker preserves incoming options, traps Tab, closes with Escape and restores prior focus/overflow
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+✓ All five Lenormand results keep complete, ordered cards; the grand tableau tail stays independent
+✓ Meihua text survives changing method without becoming markup; the three actual input methods remain available
+✓ Compatibility opens directly with two independent forms; single/personality/tools/history still open
+✓ Tarot home and edit buttons have real handlers and preserve the question and chosen mode
+✓ Returning from Ziwei restores the known or unknown birth time, date, gender and question
+atelier-ui: 7 groups passed (simulated DOM; visual/device checks remain separate).

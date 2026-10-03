@@ -1,5 +1,5 @@
 {
-  "version": "20261003native7",
+  "version": "20261003native8",
   "scope": "15 existing interfaces and named calculation profiles, with explicit source versions, actual chart outputs and tested arithmetic; not every historical school and not a guarantee of AI interpretation",
   "inputOmissionsAreNotUnimplemented": true,
   "methods": {
@@ -334,9 +334,15 @@
         "bhavaStrengthHouses": 12,
         "residentialPlanets": 9,
         "vargaAshtakavargas": 20,
-        "panchangaLimbs": 5
+        "panchangaLimbs": 5,
+        "sudarsanaVargas": 20,
+        "sudarsanaReferences": 3,
+        "sudarsanaMonthlyWindows": 12,
+        "sudarsanaSubperiodWindows": 144,
+        "sudarsanaCurrentReadings": 180
       },
       "sourceIds": [
+        "sudarsana",
         "tajaka",
         "pvr20",
         "vedictransit",
@@ -368,12 +374,14 @@
         "bhavaStrengthStatus": "calculated",
         "ashtakavarga": "PVR12：D1及二十分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變",
         "panchangaStatus": "calculated",
-        "additionalAlgorithms": "20261003-completion1"
+        "additionalAlgorithms": "20261003-completion1",
+        "sudarsana": "PVR31 year-house=completedYears%12+1; three natal anchors with real annual/month/2.5-degree ENTRY positions; BPHS74 distinct-sign restriction and printed-example conflicts stay separate"
       },
       "status": "implemented-with-explicit-boundaries",
       "implementationOmissions": [
         "PVR515頁與BPHS全部歷史Dasha／Yoga條款未逐條全數實作，採本版具名17補充運期與41Yoga",
-        "等強／同度規則沒有唯一解時保留候選，未任選結果"
+        "等強／同度規則沒有唯一解時保留候選，未任選結果",
+        "BPHS74七分盤性質逆轉及同強定主等質性完整裁決，未套入本版PVR31通則；不能宣稱BPHS74整章已逐條自動化"
       ],
       "inputRequirements": [
         "可靠出生瞬間與地點；Bhava／六力需可用日出及宮界"
@@ -394,7 +402,8 @@
         "20盤行運啟動、七曜Kakshya及每盤84項Pinda算式",
         "實際恆星太陽年度回歸、12月與144個2.5度時窗、年度及當期月/段完整實算；其他月/段按chartForPeriod計算",
         "36Sahams、七曜Harsha、三版Panchavargeeya、Dwadasa、五/六候選歲月主、16Tajaka格局的具名定義及原例差異",
-        "Patyayini/Mudda及20盤VarshaNarayana完整MD/AD太陽度日期與當期區間"
+        "Patyayini/Mudda及20盤VarshaNarayana完整MD/AD太陽度日期與當期區間",
+        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算"
       ]
     },
     "liuren": {
@@ -813,8 +822,16 @@
       ]
     }
   },
-  "sourceCount": 63,
+  "sourceCount": 64,
   "sources": [
+    {
+      "id": "sudarsana",
+      "title": "PVR第31章／BPHS第74章三重運期",
+      "type": "作者原典教材／原典英譯",
+      "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+      "scope": "20分盤上升月日三參照、12月及144段、各次起始盤位和宮主相位、原生BAV核對；原例歧異及BPHS適用條件分列",
+      "checkedAt": "2026-10-03"
+    },
     {
       "id": "tajaka",
       "title": "PVR27–30與Balabhadra《Hayanaratna》2.4–5",
@@ -844,7 +861,7 @@
       "title": "P.V.R. Narasimha Rao：Ch25–26行運",
       "type": "作者技術原文",
       "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
-      "scope": "Vedha與兩父子例外、入座時Murthi、27Tara及11特殊宿、PAV Kakshya、原BAV乘消減Pinda、16分盤雙向啟動",
+      "scope": "Vedha與兩父子例外、入座時Murthi、27Tara及11特殊宿、PAV Kakshya、原BAV乘消減Pinda、20分盤雙向啟動",
       "checkedAt": "2026-10-02"
     },
     {
@@ -932,7 +949,7 @@
       "title": "P. V. R. Narasimha Rao：Vedic Astrology, An Integrated Approach",
       "type": "作者教材",
       "url": "https://vedicastrologer.org/articles/vedic_astro_textbook.pdf",
-      "scope": "第1章五支曆角度與日出日界、第12章八分PAV/BAV/SAV、十六分盤、兩階段消減與Pinda；Parashari分盤相位運期及15.4行星狀態；不是515頁全部規則都實作的宣稱",
+      "scope": "第1章五支曆角度與日出日界、第12章八分PAV/BAV/SAV、20分盤、兩階段消減與Pinda；Parashari分盤相位運期及15.4行星狀態；不是515頁全部規則都實作的宣稱",
       "checkedAt": "2026-10-03"
     },
     {
@@ -1220,7 +1237,7 @@
       "title": "PVR教材第4、5、9–11、15、17–24章",
       "type": "作者原典教材",
       "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
-      "scope": "17補充Dasha、16盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對",
+      "scope": "17補充Dasha、20盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對",
       "checkedAt": "2026-10-03"
     },
     {
@@ -1326,10 +1343,10 @@
     "qualitativeJudgments": "提供計算證據，但需綜合判讀的條件",
     "evidenceLimits": "原典差異、缺文或尚未證明的效度；與算法完成度分開"
   },
-  "testedAt": "2026-10-03T12:20:51.170Z",
+  "testedAt": "2026-10-03T14:15:51.593448+00:00",
   "completenessClaim": "所列選定方法可實際排盤、重算、查核依據及複製完整閱讀資料；全部歷史流派與原典質性語義不作已全部自動化的宣稱。",
   "promptDelivery": {
-    "version": "20261003prompt7",
+    "version": "20261003prompt8",
     "default": "直接複製完整純文字正文，不要求上傳附件或付費AI；原始排盤JSON另供查核",
     "fallback": "同份正文的編號純文字分段，全部貼齊才分析，可無損拼回原文",
     "localMessageLimits": {
@@ -1338,6 +1355,8 @@
     },
     "limitMeaning": "本站保守上限，不是ChatGPT官方最大輸入或保證所有AI的上下文足夠",
     "dataPreservation": "不直接截字；同表欄序與具名共用內容可以還原；所有所問候選日期完整保留",
-    "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。歲時年度有16族完整裁決，成立及未定項附證據；明示所有歲時條件展開全部逐項矩陣，詢問月/小時盤即展開該層細表。未計算年度、未知時辰及未實作規則明列，不由AI猜補"
-  }
+    "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。歲時年度有16族完整裁決，成立及未定項附證據；明示所有歲時條件展開全部逐項矩陣，詢問月/小時盤即展開該層細表。未計算年度、未知時辰及未實作規則明列，不由AI猜補",
+    "recommendation": "有效解讀完成後，按本題有效證據提出具體手鍊／佩戴者／象徵理由與行動，再接指定蝦皮邀請及最後兩行；程序中止／資料錯誤時不推定命理選材"
+  },
+  "sourceReview": "docs/engine-source-review-20261003-r8.md"
 }

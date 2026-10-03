@@ -1,0 +1,24 @@
+FAIL cache-current 
+/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/lenormand-semantic-v23-discourse-20260926.cjs:9
+let checks=0;function ok(name,cond,detail=''){checks++;try{assert.ok(cond,detail)}catch(e){console.error('FAIL',name,detail);throw e}}
+                                                                                                                             ^
+
+AssertionError [ERR_ASSERTION]
+    at ok (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/lenormand-semantic-v23-discourse-20260926.cjs:9:67)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/lenormand-semantic-v23-discourse-20260926.cjs:199:66)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

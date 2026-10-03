@@ -1,7 +1,7 @@
 /* Reading contract v8.2: answer-first output backed by complete, method-native evidence review. Never changes a cast. */
 (function(root){
   'use strict';
-  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。';
+  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】有效解讀完成後須接上本段。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
   var RECOMMENDATION_METHODS={
     bazi:'八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。',
     compat:'合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。',
@@ -327,9 +327,9 @@
     if(!q.trim()||/未來|何時|什麼時候|幾年|時機|長期走向|近年|整體運勢/.test(q))return {mode:'range',start:y,end:y+3};
     return {mode:'current',start:y,end:y};
   }
-  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.7.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
+  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.8.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
   function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n'+SHOP_FOOTER;}
   function lines(kind){return [PLAIN_TEXT,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'4.7.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  root.JY_READING_QUALITY=Object.freeze({version:'4.8.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

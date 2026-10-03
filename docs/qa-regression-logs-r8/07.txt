@@ -1,0 +1,1 @@
+counter-proxy: all assertions passed

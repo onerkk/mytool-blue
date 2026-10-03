@@ -8,6 +8,8 @@ const workflowTargets=['JS/gua-prompt.js','JS/bazi-suite-core.js','JS/ziwei-stan
 const textMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationText(k)]));
 const endingMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationEnding(k)]));
 const targets=[
+  ['JS/prompt-packet.js','JY_REC_PACKET',endingMap(q.methodKinds())],
+  ['JS/prompt-brief.js','JY_REC_BRIEF',endingMap(q.methodKinds())],
   ['JS/name-prompt.js','JY_REC_NAME',q.recommendationEnding('name')],
   ['JS/gua-prompt.js','JY_REC_GUA',{liuyao:q.recommendationEnding('liuyao'),yijing:q.recommendationEnding('yijing')}],
   ['JS/bazi-prompt-root.js','JY_REC_BAZI',textMap(['bazi','compat','personality','chart'])],

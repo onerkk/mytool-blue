@@ -1,0 +1,24 @@
+PASS Noon regression: exact four pillars and civil / solar hours survive
+PASS Direct spouse branches include Chou-You half-trine, not a clash or a completed transformation
+PASS All 144 branch pairs preserve relations when people swap; directed punishment edge remains explicit
+PASS Projection provenance distinguishes Jia Lian-Zhen Lu from Bing Lian-Zhen Ji; duplicates are not evidence votes
+  actual relationship prompt characters: 42417
+PASS Current question exports both complete natal charts and current periods without lifetime/no-match flooding
+PASS Question windows preserve requested future years and unknown-time boundaries
+FAIL All fifteen methods use answer-led paragraphs, limits only when relevant and voluntary single-design close
+AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+
+  assert(p.includes('不可為導購'))
+
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-grounding-20260924.cjs:118:21
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-grounding-20260924.cjs:18:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/reading-grounding-20260924.cjs:113:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+PASS A stale shared guide cannot override the new embedded evidence and voice safeguards
+reading-grounding: 7/8 groups passed; no external AI requests.

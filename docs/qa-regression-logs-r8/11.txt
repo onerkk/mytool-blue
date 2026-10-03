@@ -1,0 +1,8 @@
+✓ Touch, narrow and reduced-motion pages create no canvas, context, polling or input effects
+✓ Desktop 2D fallback initializes without BACK error; picker suspension survives polling and visibility changes
+✓ A desktop viewport becoming narrow suspends its existing background renderer
+✓ Picker close, native close, replacement and failed showModal release the backdrop and focus lock
+✓ All birth picker content is present at native showModal, before any timer or animation frame
+✓ Full analysis module initializes in the real script order without eager optional-engine references
+✓ Mobile styles make the picker opaque and contain no deferred image-paint rule
+display-lifecycle: 7 groups passed (source/runtime contracts; device raster output requires browser/device validation)

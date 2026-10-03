@@ -1,0 +1,1 @@
+traffic tap: hidden entry works, visits count once, and upstream failures are identified without duplicate reads

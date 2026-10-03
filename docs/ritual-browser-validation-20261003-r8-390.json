@@ -1,0 +1,849 @@
+{
+  "testedAt": "2026-10-03T13:45:20.998Z",
+  "width": 390,
+  "passed": 24,
+  "results": [
+    {
+      "label": "actual-three-initial-sheet-false",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 778,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 292.671875,
+          "y": 725,
+          "w": 76.328125,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 711,
+          "w": 390,
+          "h": 133,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-short-view-false",
+      "status": "passed",
+      "phase": "1",
+      "viewport": {
+        "w": 390,
+        "h": 620
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 554,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 270.234375,
+          "y": 501,
+          "w": 98.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 487,
+          "w": 390,
+          "h": 133,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-restored-sheet-false",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 620
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 554,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 270.234375,
+          "y": 501,
+          "w": 98.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 487,
+          "w": 390,
+          "h": 133,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-ready-sheet-false",
+      "status": "passed",
+      "phase": "3",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 778,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 270.234375,
+          "y": 725,
+          "w": 98.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 711,
+          "w": 390,
+          "h": 133,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-initial-sheet-true",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 778,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 309.671875,
+          "y": 726,
+          "w": 60.328125,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 713,
+          "w": 390,
+          "h": 131,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-short-view-true",
+      "status": "passed",
+      "phase": "1",
+      "viewport": {
+        "w": 390,
+        "h": 620
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 554,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 287.234375,
+          "y": 502,
+          "w": 82.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 489,
+          "w": 390,
+          "h": 131,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-restored-sheet-true",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 620
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 554,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 287.234375,
+          "y": 502,
+          "w": 82.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 489,
+          "w": 390,
+          "h": 131,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "actual-three-ready-sheet-true",
+      "status": "passed",
+      "phase": "3",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 778,
+          "w": 366,
+          "h": 56,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 287.234375,
+          "y": 726,
+          "w": 82.765625,
+          "h": 40,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 713,
+          "w": 390,
+          "h": 131,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "tarot-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "tarot-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "ootk-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "ootk-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "vedic-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "vedic-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "bazi-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "bazi-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "compat-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "compat-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "ziwei-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "ziwei-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "meihua-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "meihua-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "oracle-without-theme-css",
+      "status": "passed",
+      "phase": "0",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    },
+    {
+      "label": "oracle-animation-exit",
+      "status": "passed",
+      "phase": "2",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "values": {
+        ".jr-next": {
+          "x": 12,
+          "y": 780,
+          "w": 366,
+          "h": 54,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-skip": {
+          "x": 286,
+          "y": 724,
+          "w": 84,
+          "h": 44,
+          "visible": true,
+          "hit": true
+        },
+        ".jr-action-dock": {
+          "x": 0,
+          "y": 712,
+          "w": 390,
+          "h": 132,
+          "visible": true,
+          "hit": true
+        }
+      }
+    }
+  ],
+  "scope": "Real Chromium, actual Lenormand draw and production ritual buttons; software GPU absence, missing action stylesheet, absent theme, short viewport and cached-return events are deliberately exercised. Cached-return events are simulated, not an Android device certification.",
+  "errors": []
+}

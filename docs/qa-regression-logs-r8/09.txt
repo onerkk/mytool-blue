@@ -1,0 +1,29 @@
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+✓ Native astrology reaches the model once, preserving every structured fact
+✓ Dedicated casts, geometry and stopped operations survive the real API adapter
+✓ All dedicated divination engines arrive once while unique supplementary facts survive
+✓ Monthly tarot contract exposes its actual path and all eleven transitions once
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 選品規則不得影響前面的占卜判斷
+    at file:///workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/api-failure-regression.mjs:124:113
+    at async test (file:///workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/api-failure-regression.mjs:11:38)
+    at async file:///workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/api-failure-regression.mjs:119:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

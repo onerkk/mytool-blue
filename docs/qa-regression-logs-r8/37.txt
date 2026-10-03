@@ -1,0 +1,7 @@
+PASS 120 seasonal references keep stem roles and derived elements consistent
+PASS Text anchors distinguish months, seasonal paragraphs and conditional branches
+PASS Ten birth stems: all decade/year/month layers preserve twelve identities and all four transformations
+PASS Actual composite adapter uses nominal age and lunar reference year across New Year
+PASS Actual composite adapter binds palace names to records, independent of serialization order
+PASS Fifteen native methods reach the API system instructions without a tarot default
+Method/engine regression groups passed: 6

@@ -1,0 +1,18 @@
+✓ A real tap commits its original card once even when the later click is retargeted to the table
+✓ Drag, cancellation, secondary pointers and vertical scrolling never select a card
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A missing destination neither consumes a card nor locks selection; the same question can retry
+✓ Explicit A/B alternatives preserve the full two-week condition in real observed questions
+✓ Civil reference dates survive western and eastern timezones without moving to the previous day
+✓ Stopped Key exports explain validity and cannot turn failed first-operation cards into a reading
+✓ Result question, completion heading and share access follow one payload, including recovery
+✓ Luck handover retains both yearly segments, and null exposed stems cannot become an asserted fact
+✓ Five, nine and thirty-six actual cards reveal in user-controlled pages, without reordering or premature faces
+✓ Action notes never copy automatically, keep literal text and offer a readable clipboard failure
+✓ Each instrument follows a finite distinct motion without using divination randomness
+✓ Quality rules are integrated before system exports; styles parse and current dependencies bypass old caches
+reading-depth: 12/12 groups passed; no claim of physical-device or predictive accuracy.

@@ -1,0 +1,7 @@
+PASS Mobile and desktop camera cross the threshold before the instrument reveal
+PASS Camera never jumps at a chapter boundary, and always keeps a finite target
+PASS Twelve physical houses rise after the orbit chapter and settle before the open action
+PASS Touch inspection is bounded; the final twelve-house board stays visible from both sides
+PASS The browser bundle exposes the native-data model without requiring a WebGL context at load
+PASS Palace materials and cache are wired into the delivered entry page
+{"passed":6,"checks":["Mobile and desktop camera cross the threshold before the instrument reveal","Camera never jumps at a chapter boundary, and always keeps a finite target","Twelve physical houses rise after the orbit chapter and settle before the open action","Touch inspection is bounded; the final twelve-house board stays visible from both sides","The browser bundle exposes the native-data model without requiring a WebGL context at load","Palace materials and cache are wired into the delivered entry page"]}

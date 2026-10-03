@@ -18,7 +18,7 @@ var JY_READING_ZIWEI = [
 ];
 // END GENERATED READING JY_READING_ZIWEI
 // BEGIN GENERATED RECOMMENDATION JY_REC_ZIWEI
-var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。";
+var JY_REC_ZIWEI = "【本題延伸手鍊建議】有效解讀完成後須接上本段。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。";
 // END GENERATED RECOMMENDATION JY_REC_ZIWEI
 /*! ziwei-prompt-root.js — 靜月之光紫微斗數共用核心 v7.0.0 (2026-09-17)
  *
@@ -98,7 +98,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
 
   function brandTailLines() {
     return [
-      (root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationText('ziwei'):JY_REC_ZIWEI),
+      (root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.8.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationText('ziwei'):JY_REC_ZIWEI),
       '最後保留以下兩行：\n' + SHOP_LINK + '\n' + FINAL_WISH
     ];
   }
