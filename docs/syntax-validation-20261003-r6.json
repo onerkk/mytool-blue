@@ -1,0 +1,642 @@
+{
+  "testedAt": "2026-10-03T10:06:11.201827+00:00",
+  "passed": 127,
+  "failed": 0,
+  "results": [
+    {
+      "path": "JS/ai-analysis.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-classical.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-qiongtong-data.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-qiongtong.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi-suite.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/bazi.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/gua-room.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/horary-perfection.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/lenormand.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-classes.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-prompt.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-room.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuren-shensha.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/liuyao-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/name-data.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/name-engine.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/name-prompt.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/name-sancai.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/name-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/native-analysis-view.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/native-card-analysis.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/native-chart-analysis.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/native-rule-sources.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/oracle-register.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/oracle.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/prompt-brief.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/prompt-packet.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/reading-workflow.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/relationship-ui.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/sw.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/tool-guide.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/ui.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/vedic-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/vedic-engine.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/vedic-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/vedic-strength.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/western-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/western-dignities.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/western-engine.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/western-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/yijing-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/yijing-wings.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/ziwei-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "JS/ziwei.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "ai-analysis.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "bazi-qiongtong-data.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "bazi-qiongtong.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "bazi-suite-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "functions/api/ai.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "horary-perfection.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "ink-flow.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "lenormand.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "liuren-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "meihua-standalone.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "name-sancai.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "oracle.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "prompt-brief.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "prompt-export.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "prompt-packet.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "scripts/audit-prompt-budget-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "scripts/build-completion-data.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "scripts/run-regression-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "scripts/update-native-scope-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "selftest-core.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "sw.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tarot-semantic-engine.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/bazi-qiongtong-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/chinese-completion-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/core-engine-20260913.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/divination-professional-20260910.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/engine-supplements-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/horary-denials-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/liuren-classes-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/liuren-completion-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/liuren-engine-20261001.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/liuren-shensha-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/method-engine-20260913.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/mobile-ritual-actions-20260928.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/name-browser-20261001.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/name-comparison-rootfix-20261002.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/name-engine-20261001.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/name-original-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-analysis-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-browser-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-entry-browser-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-fixtures-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-other-entry-browser-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/native-profile-entry-browser-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/oracle-register-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/prompt-accuracy-20260811.test.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/prompt-budget-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/question-model-regression-20260927.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/reader-voice-20260923.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/reading-grounding-20260924.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/reading-workflow-20260924.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/reading-workflow-integration-20260924.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/story-immersion-20260912.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/vedic-bhava-strength-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/vedic-completion-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/vedic-panchanga-av-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/vedic-strength-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/western-completion-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/western-engine-20260914.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "tests/western-moon-orb-20261003.cjs",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "ui.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "vedic-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "western-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "yijing-wings.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "ziwei-completion.js",
+      "exitCode": 0,
+      "error": null
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "exitCode": 0,
+      "error": null
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T08:33:01.951Z",
+  "testedAt": "2026-10-03T09:54:25.698Z",
   "scope": "Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths",
   "results": [
     {
@@ -8,9 +8,10 @@
       "width": 390,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 7,
-      "attachmentPromptCharacters": 319,
-      "readingFileDownload": true,
+      "parts": 2,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "promptCharacters": 13366,
       "numberedCopy": true
     },
     {
@@ -19,9 +20,10 @@
       "width": 390,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 14,
-      "attachmentPromptCharacters": 317,
-      "readingFileDownload": true,
+      "parts": 3,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "promptCharacters": 15189,
       "numberedCopy": true
     },
     {
@@ -30,9 +32,10 @@
       "width": 390,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 24,
-      "attachmentPromptCharacters": 316,
-      "readingFileDownload": true,
+      "parts": 6,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "promptCharacters": 42146,
       "numberedCopy": true
     },
     {
@@ -41,9 +44,10 @@
       "width": 390,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 7,
-      "attachmentPromptCharacters": 316,
-      "readingFileDownload": true,
+      "parts": 2,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "promptCharacters": 11909,
       "numberedCopy": true
     },
     {
@@ -52,9 +56,10 @@
       "width": 390,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 10,
-      "attachmentPromptCharacters": 319,
-      "readingFileDownload": true,
+      "parts": 3,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "promptCharacters": 15122,
       "numberedCopy": true
     }
   ]

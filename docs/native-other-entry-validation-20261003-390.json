@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T08:17:59.688Z",
+  "testedAt": "2026-10-03T09:54:57.206Z",
   "scope": "Actual controls and production local calculations; no remote AI or injected chart results. Oracle receives fixed raw uint32 words through the production RNG fallback; all other random draws use browser entropy.",
   "results": [
     {
@@ -7,21 +7,21 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 321,
-      "parts": 2,
-      "attachmentPromptCharacters": 321,
-      "readingFileDownload": true,
-      "numberedCopy": true
+      "promptCharacters": 7148,
+      "parts": 1,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "numberedCopy": false
     },
     {
       "method": "yijing",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 321,
+      "promptCharacters": 8076,
       "parts": 2,
-      "attachmentPromptCharacters": 321,
-      "readingFileDownload": true,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": true
     },
     {
@@ -29,21 +29,21 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 319,
-      "parts": 2,
-      "attachmentPromptCharacters": 319,
-      "readingFileDownload": true,
-      "numberedCopy": true
+      "promptCharacters": 5805,
+      "parts": 1,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "numberedCopy": false
     },
     {
       "method": "lenormand",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 339,
+      "promptCharacters": 25254,
       "parts": 4,
-      "attachmentPromptCharacters": 339,
-      "readingFileDownload": true,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": true
     },
     {
@@ -51,10 +51,10 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 7497,
-      "parts": 11,
-      "attachmentPromptCharacters": 320,
-      "readingFileDownload": true,
+      "promptCharacters": 56077,
+      "parts": 9,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": true
     },
     {
@@ -62,10 +62,10 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 4043,
+      "promptCharacters": 2005,
       "parts": 1,
-      "attachmentPromptCharacters": 334,
-      "readingFileDownload": false,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": false
     },
     {
@@ -73,32 +73,32 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 315,
-      "parts": 2,
-      "attachmentPromptCharacters": 315,
-      "readingFileDownload": true,
-      "numberedCopy": true
+      "promptCharacters": 3645,
+      "parts": 1,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "numberedCopy": false
     },
     {
       "method": "name",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 315,
-      "parts": 2,
-      "attachmentPromptCharacters": 315,
-      "readingFileDownload": true,
-      "numberedCopy": true
+      "promptCharacters": 3645,
+      "parts": 1,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "numberedCopy": false
     },
     {
       "method": "tarot",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 7497,
-      "parts": 21,
-      "attachmentPromptCharacters": 329,
-      "readingFileDownload": true,
+      "promptCharacters": 11116,
+      "parts": 2,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": true
     },
     {
@@ -106,10 +106,10 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 7497,
-      "parts": 22,
-      "attachmentPromptCharacters": 312,
-      "readingFileDownload": true,
+      "promptCharacters": 120623,
+      "parts": 17,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
       "numberedCopy": true
     },
     {
@@ -117,11 +117,11 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 321,
-      "parts": 2,
-      "attachmentPromptCharacters": 321,
-      "readingFileDownload": true,
-      "numberedCopy": true
+      "promptCharacters": 5283,
+      "parts": 1,
+      "completeTextCopy": true,
+      "requiresAttachment": false,
+      "numberedCopy": false
     }
   ]
 }

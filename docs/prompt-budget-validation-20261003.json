@@ -1,68 +1,68 @@
 {
-  "testedAt": "2026-10-03T08:29:18.214Z",
+  "testedAt": "2026-10-03T10:02:56.948Z",
   "limits": {
     "characters": 8000,
     "utf8Bytes": 20000
   },
   "results": [
     {
-      "name": "bazi full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "bazi full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "ziwei full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "ziwei full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "astro full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "astro full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "vedic full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "vedic full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "liuren full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "liuren full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "liuyao full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "liuyao full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "yijing full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "yijing full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "meihua full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "meihua full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "name full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "name full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "compat full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "compat full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "personality full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "personality full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "tarot full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "tarot full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "lenormand full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "lenormand full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "ootk full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "ootk full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
-      "name": "oracle full chart unchanged, bounded messages, reversible packet and actual core facts",
+      "name": "oracle full chart unchanged, complete text, bounded optional parts and actual core facts",
       "status": "passed"
     },
     {
@@ -98,7 +98,11 @@
       "status": "passed"
     },
     {
-      "name": "real builder APIs return bounded first messages and preserve their full packet",
+      "name": "real builder APIs return complete self-contained text and preserve their full packet",
+      "status": "passed"
+    },
+    {
+      "name": "complete body has no attachment instructions and all native bodies contain valid display values",
       "status": "passed"
     }
   ]

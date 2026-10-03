@@ -1,0 +1,76 @@
+{
+  "testedAt": "2026-10-03T10:03:02.974Z",
+  "results": [
+    {
+      "name": "six separate named rule profiles, no universal yes/no event claim",
+      "status": "passed"
+    },
+    {
+      "name": "applicant Rx before exact is refranation; receiver Rx is not",
+      "status": "passed"
+    },
+    {
+      "name": "station after perfection cannot retroactively deny it",
+      "status": "passed"
+    },
+    {
+      "name": "receiver sign change is evasion; applicant change is separately excluded",
+      "status": "passed"
+    },
+    {
+      "name": "published Venus22Cancer/Jupiter29Taurus evasion geometry with synthetic ordered dates",
+      "status": "passed"
+    },
+    {
+      "name": "Lilly Sun6/Mars7/Saturn12 temporal prohibition requires third first reaching receiver",
+      "status": "passed"
+    },
+    {
+      "name": "third contacts an unrelated planet first cannot count as first-receiver prohibition",
+      "status": "passed"
+    },
+    {
+      "name": "Lilly Mercury10/Mars12/Jupiter13 abscission b and c retain overlap rather than duplicate votes",
+      "status": "passed"
+    },
+    {
+      "name": "abscission a requires backward ingress and receiver-only contact before AB",
+      "status": "passed"
+    },
+    {
+      "name": "strict contrariety requires direct start, intermediate heaviness, Rx, first B then A",
+      "status": "passed"
+    },
+    {
+      "name": "receiver-only retrograde contact does not become contrariety",
+      "status": "passed"
+    },
+    {
+      "name": "already-Rx interpositor remains outside strict direct-at-chart profile",
+      "status": "passed"
+    },
+    {
+      "name": "combust receiver return; cazimi is not automatically combustion",
+      "status": "passed"
+    },
+    {
+      "name": "two Rx without combustion is follower, not automatically return",
+      "status": "passed"
+    },
+    {
+      "name": "missing exact within window leaves untriggered future rules undetermined",
+      "status": "passed"
+    },
+    {
+      "name": "non-applying pair has no denial of a perfection that was not present",
+      "status": "passed"
+    },
+    {
+      "name": "actual Astronomy Engine horary exports all six checks with ephemeris evidence",
+      "status": "passed"
+    }
+  ],
+  "syntheticRuleOrderFixtures": 16,
+  "actualEphemerisFixtures": 1,
+  "publishedDegreesAreIllustrativeNotHistoricalSky": "Author example positions with explicitly synthetic UTC orders; actual sky is tested separately."
+}

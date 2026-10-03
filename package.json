@@ -86,7 +86,7 @@
     "build:liuren-scene": "node scripts/build-liuren-scene.mjs",
     "test:native": "node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs && node tests/vedic-bhava-strength-20261003.cjs && node tests/liuren-shensha-20261003.cjs && node tests/vedic-panchanga-av-20261003.cjs",
     "test:completion": "node scripts/build-completion-data.cjs --check && node tests/vedic-completion-20261003.cjs && node tests/liuren-completion-20261003.cjs && node tests/chinese-completion-20261003.cjs && node tests/bazi-qiongtong-20261003.cjs && node tests/western-completion-20261003.cjs",
-    "test:prompt-budget": "node tests/prompt-budget-20261003.cjs && node tests/western-moon-orb-20261003.cjs"
+    "test:prompt-budget": "node tests/prompt-budget-20261003.cjs && node tests/western-moon-orb-20261003.cjs && node tests/horary-denials-20261003.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",
