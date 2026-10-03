@@ -1,0 +1,143 @@
+{
+  "computedAt": "2026-10-03T04:44:17.886286+00:00",
+  "independentLibrary": "pyswisseph2.10.03, SWIEPH with automatic Moshier fallback, not distributed",
+  "maxAngularErrorDegrees": 0.005008509424499152,
+  "maxRootDifferenceSeconds": 262.23575323820114,
+  "events": [
+    {
+      "a": "Moon",
+      "b": "Venus",
+      "angle": 120,
+      "engineUTC": "2026-10-03T10:15:01.593Z",
+      "swissUTC": "2026-10-03T10:15:27.813944+00:00",
+      "angularErrorDegrees": 0.00430125040699636,
+      "rootDifferenceSeconds": 26.220940053462982
+    },
+    {
+      "a": "Sun",
+      "b": "Moon",
+      "angle": 90,
+      "engineUTC": "2026-10-03T13:25:03.094Z",
+      "swissUTC": "2026-10-03T13:25:04.651451+00:00",
+      "angularErrorDegrees": 0.00023742294092699012,
+      "rootDifferenceSeconds": 1.5574648976325989
+    },
+    {
+      "a": "Moon",
+      "b": "Saturn",
+      "angle": 90,
+      "engineUTC": "2026-10-03T15:08:13.451Z",
+      "swissUTC": "2026-10-03T15:08:29.760663+00:00",
+      "angularErrorDegrees": 0.002685590937744564,
+      "rootDifferenceSeconds": 16.309668123722076
+    },
+    {
+      "a": "Sun",
+      "b": "Saturn",
+      "angle": 180,
+      "engineUTC": "2026-10-04T12:25:54.401Z",
+      "swissUTC": "2026-10-04T12:29:12.903709+00:00",
+      "angularErrorDegrees": 0.0024435577046233448,
+      "rootDifferenceSeconds": 198.5027253627777
+    },
+    {
+      "a": "Moon",
+      "b": "Mars",
+      "angle": 0,
+      "engineUTC": "2026-10-05T06:01:27.396Z",
+      "swissUTC": "2026-10-05T06:01:26.360023+00:00",
+      "angularErrorDegrees": 0.00016051425211571768,
+      "rootDifferenceSeconds": 1.035962998867035
+    },
+    {
+      "a": "Moon",
+      "b": "Mercury",
+      "angle": 90,
+      "engineUTC": "2026-10-05T09:43:19.200Z",
+      "swissUTC": "2026-10-05T09:43:24.173040+00:00",
+      "angularErrorDegrees": 0.0007320564557176112,
+      "rootDifferenceSeconds": 4.97305691242218
+    },
+    {
+      "a": "Moon",
+      "b": "Venus",
+      "angle": 90,
+      "engineUTC": "2026-10-05T13:19:21.639Z",
+      "swissUTC": "2026-10-05T13:19:49.368269+00:00",
+      "angularErrorDegrees": 0.004496226590674723,
+      "rootDifferenceSeconds": 27.729280292987823
+    },
+    {
+      "a": "Moon",
+      "b": "Saturn",
+      "angle": 120,
+      "engineUTC": "2026-10-05T18:10:47.699Z",
+      "swissUTC": "2026-10-05T18:11:03.460091+00:00",
+      "angularErrorDegrees": 0.0025489140764989315,
+      "rootDifferenceSeconds": 15.761089324951172
+    },
+    {
+      "a": "Sun",
+      "b": "Moon",
+      "angle": 60,
+      "engineUTC": "2026-10-05T20:37:59.388Z",
+      "swissUTC": "2026-10-05T20:38:00.343106+00:00",
+      "angularErrorDegrees": 0.0001425338987246505,
+      "rootDifferenceSeconds": 0.9550943970680237
+    },
+    {
+      "a": "Moon",
+      "b": "Jupiter",
+      "angle": 0,
+      "engineUTC": "2026-10-06T10:22:05.775Z",
+      "swissUTC": "2026-10-06T10:22:07.537546+00:00",
+      "angularErrorDegrees": 0.00027802960352119044,
+      "rootDifferenceSeconds": 1.762533187866211
+    },
+    {
+      "a": "Mercury",
+      "b": "Venus",
+      "angle": 0,
+      "engineUTC": "2026-10-07T00:05:58.978Z",
+      "swissUTC": "2026-10-07T00:10:21.213770+00:00",
+      "angularErrorDegrees": 0.004019217112528395,
+      "rootDifferenceSeconds": 262.23575323820114
+    },
+    {
+      "a": "Moon",
+      "b": "Venus",
+      "angle": 60,
+      "engineUTC": "2026-10-07T17:07:27.858Z",
+      "swissUTC": "2026-10-07T17:07:59.269794+00:00",
+      "angularErrorDegrees": 0.005008509424499152,
+      "rootDifferenceSeconds": 31.411778926849365
+    },
+    {
+      "a": "Moon",
+      "b": "Mercury",
+      "angle": 60,
+      "engineUTC": "2026-10-07T18:56:31.205Z",
+      "swissUTC": "2026-10-07T18:56:36.640921+00:00",
+      "angularErrorDegrees": 0.0007823367077719467,
+      "rootDifferenceSeconds": 5.435939133167267
+    },
+    {
+      "a": "Moon",
+      "b": "Mars",
+      "angle": 60,
+      "engineUTC": "2026-10-09T20:25:53.632Z",
+      "swissUTC": "2026-10-09T20:25:55.075023+00:00",
+      "angularErrorDegrees": 0.00021095734706477742,
+      "rootDifferenceSeconds": 1.4430418610572815
+    },
+    {
+      "a": "Moon",
+      "b": "Saturn",
+      "angle": 180,
+      "engineUTC": "2026-10-10T03:53:30.590Z",
+      "swissUTC": "2026-10-10T03:53:49.671559+00:00",
+      "angularErrorDegrees": 0.002916237274632749,
+      "rootDifferenceSeconds": 19.081570208072662
+    }
+  ]
+}

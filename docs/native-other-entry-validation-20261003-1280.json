@@ -1,0 +1,83 @@
+{
+  "testedAt": "2026-10-03T05:01:21.838Z",
+  "scope": "Actual controls and production local calculations; no remote AI or injected chart results. Oracle receives fixed raw uint32 words through the production RNG fallback; all other random draws use browser entropy.",
+  "results": [
+    {
+      "method": "liuyao",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 25134
+    },
+    {
+      "method": "yijing",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 24589
+    },
+    {
+      "method": "meihua",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 11133
+    },
+    {
+      "method": "lenormand",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 60998
+    },
+    {
+      "method": "compat",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 162991
+    },
+    {
+      "method": "personality",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 81264
+    },
+    {
+      "method": "name",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 59563
+    },
+    {
+      "method": "name",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 59621
+    },
+    {
+      "method": "tarot",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 36147
+    },
+    {
+      "method": "ootk",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 107211
+    },
+    {
+      "method": "oracle",
+      "status": "passed",
+      "width": 1280,
+      "nativeDownload": true,
+      "promptCharacters": 16704
+    }
+  ]
+}

@@ -2213,7 +2213,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);

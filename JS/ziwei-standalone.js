@@ -258,7 +258,7 @@
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_ZIWEI_FALLBACK
-var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n【列舉題與詞義分流】『有哪些／哪幾項／有什麼問題要注意』是開放列舉，即使句尾有『嗎』也先回答使用者要知道的類別；只有原句明確提出會不會、有沒有、是否等門檻時，才另加是非判斷。若詞義候選會改變答案，查看語義模型的候選、選取依據與未確認狀態：可按清楚的上下文作暫定解讀，但必須標出仍待確認之處；上下文不足時保留兩種實質不同的答案，不可暗中選一種或停在抽象的不確定。\n【題目能力邊界】先辨認使用者真正要的事實層與方法能支持的層次。若方法不能回答精確的現實項目，就明說缺少哪種資料，再回答最近的可用問題與下一個核實步驟；不得以更多術語或牌數填補缺口。健康檢查題尤其不能由命理推斷疾病、器官、實際檢查項目、異常數值或報告結果；可給檢查前核對官方指示、取得並詢問正式報告等具體步驟。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【紫微：主宮星組與牽動】核命身、宮支、五行局、農曆與運限政策；按本題選主宮及實際三方四正。本命、大限、流年同名宮未必同一格。\n本宮主星組合連同廟旺、輔煞、三合資源及對宮牽制成判；空宮借對宮是參照，不改原盤。逐顆吉凶計票不能取代組合作用。\n四化保留星性與來源、落宮：生年、宮干、大限、流年各自定位，自化及來因宮依本次流派；祿忌或權忌同會不直接抵銷。\n疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。\n逐筆核四化引用的來源方、層級、宮干、星曜、化象、受方和落宮。相同天干在生年與宮干重現不是兩份獨立證據；不同來源的化祿、化忌必須同時保留。命宮格局不能替代關係題的夫妻、福德與運限結構；化祿不證明本人目前有錢或對特定人願意付出。\n【紫微判讀主線】主宮回答事情怎麼運作，三合宮查可調用的資源，對宮查角色與環境的牽動；先讀主星搭配的共同作用，再看輔煞與廟旺如何改變做法的成本。關係題把夫妻的互動方式、福德的內在滿足、田宅的生活安排與官祿的責任牽動串起來，選其中最卡住的一環回答。\n四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。\n【紫微深入全盤與限流合參】核十二宮宮干地支、命身、主星同宮組合、主輔煞曜廟旺及空宮借對，再由各主宮實際三方四正與夾宮建立資源、需求、成本及制化通道；單星亮度、格名與吉凶計票不能代替組合作用。\n三合讀本命骨架；飛星追發射宮干→化曜→落宮→對宮牽動；欽天來因及向心／離心自化只按已採口徑解釋。河洛視角須有明列宮位數理與起例才具名推演；只有五行局不冒稱完成河洛專盤，不同派同源四化不當成多次驗證。\n全盤題完整展開十二宮，再整合健康生活安排、學業、事業、財務、人際家庭和婚姻感情。每宮說主星組合如何承接命身、三方資源、對宮牽動與關鍵四化。財帛空宮、福德對宮、本命三方及運限財官分層連接，不能只說靠人脈或有財庫。\n運限以本命、大限、流年三套座標合讀，保留本命與各層宮名，核四化、自化、流曜與同宮／對沖。小限、流月有實算資料才補充；原局資料的限流疊宮無不代表年度無疊宮。\n逐年題依每一指定大限與每一流年分別成判，列年度／虛歲／大限、議題、偏利或偏阻及條件、象徵影響程度、具體星組和四化依據、需注意的事與行動。相同年干在不同大限及落宮不能套同一句；關鍵窗口給有據年段、領域、反證，不自造已發生事件或月日。";
+var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n【列舉題與詞義分流】『有哪些／哪幾項／有什麼問題要注意』是開放列舉，即使句尾有『嗎』也先回答使用者要知道的類別；只有原句明確提出會不會、有沒有、是否等門檻時，才另加是非判斷。若詞義候選會改變答案，查看語義模型的候選、選取依據與未確認狀態：可按清楚的上下文作暫定解讀，但必須標出仍待確認之處；上下文不足時保留兩種實質不同的答案，不可暗中選一種或停在抽象的不確定。\n【題目能力邊界】先辨認使用者真正要的事實層與方法能支持的層次。若方法不能回答精確的現實項目，就明說缺少哪種資料，再回答最近的可用問題與下一個核實步驟；不得以更多術語或牌數填補缺口。健康檢查題尤其不能由命理推斷疾病、器官、實際檢查項目、異常數值或報告結果；可給檢查前核對官方指示、取得並詢問正式報告等具體步驟。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【紫微：主宮星組與牽動】核命身、宮支、五行局、農曆與運限政策；按本題選主宮及實際三方四正。本命、大限、流年同名宮未必同一格。\n本宮主星組合連同廟旺、輔煞、三合資源及對宮牽制成判；空宮借對宮是參照，不改原盤。逐顆吉凶計票不能取代組合作用。\n四化保留星性與來源、落宮：生年、宮干、大限、流年各自定位，自化及來因宮依本次流派；祿忌或權忌同會不直接抵銷。\n疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。\n逐筆核四化引用的來源方、層級、宮干、星曜、化象、受方和落宮。相同天干在生年與宮干重現不是兩份獨立證據；不同來源的化祿、化忌必須同時保留。命宮格局不能替代關係題的夫妻、福德與運限結構；化祿不證明本人目前有錢或對特定人願意付出。\n十干四化版本依本次選表，壬科左輔與天府不可混表。48宮干飛化及連續路徑是實際圖關係；楚天雲闊两轉象條件以生年為體，運層宮職重標不冒稱重配運干。尚未提供的口訣、案例人物私事不得補造。\n【紫微判讀主線】主宮回答事情怎麼運作，三合宮查可調用的資源，對宮查角色與環境的牽動；先讀主星搭配的共同作用，再看輔煞與廟旺如何改變做法的成本。關係題把夫妻的互動方式、福德的內在滿足、田宅的生活安排與官祿的責任牽動串起來，選其中最卡住的一環回答。\n四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。\n【紫微深入全盤與限流合參】核十二宮宮干地支、命身、主星同宮組合、主輔煞曜廟旺及空宮借對，再由各主宮實際三方四正與夾宮建立資源、需求、成本及制化通道；單星亮度、格名與吉凶計票不能代替組合作用。\n三合讀本命骨架；飛星追發射宮干→化曜→落宮→對宮牽動；欽天來因及向心／離心自化只按已採口徑解釋。河洛視角須有明列宮位數理與起例才具名推演；只有五行局不冒稱完成河洛專盤，不同派同源四化不當成多次驗證。\n全盤題完整展開十二宮，再整合健康生活安排、學業、事業、財務、人際家庭和婚姻感情。每宮說主星組合如何承接命身、三方資源、對宮牽動與關鍵四化。財帛空宮、福德對宮、本命三方及運限財官分層連接，不能只說靠人脈或有財庫。\n運限以本命、大限、流年三套座標合讀，保留本命與各層宮名，核四化、自化、流曜與同宮／對沖。小限、流月有實算資料才補充；原局資料的限流疊宮無不代表年度無疊宮。\n逐年題依每一指定大限與每一流年分別成判，列年度／虛歲／大限、議題、偏利或偏阻及條件、象徵影響程度、具體星組和四化依據、需注意的事與行動。相同年干在不同大限及落宮不能套同一句；關鍵窗口給有據年段、領域、反證，不自造已發生事件或月日。";
 // END GENERATED READING JY_READING_ZIWEI_FALLBACK
 /*! ziwei-standalone.js — 靜月之光 紫微斗數獨立流程  [v4.0.0]
  *  v3.0.0(2026/9/4)：提示詞改為知識開放核心；保留動態三方四正、四化、飛星欽天與運限資料，移除 ROOT-SPEC、帳本、稽核及大量限制式指令。
@@ -606,7 +606,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       L.push('【紫微 calculationPolicy｜本盤唯一計算政策】'+JSON.stringify(policy));
       L.push('本站預設 dayDivide=current：23:00–23:59 仍歸民用當日，00:00 換日；fixLeap=false：閏月整月沿用本月。這兩項非 iztro 預設。若本盤另選23時換日／閏月拆分，以以上實際政策為準。');
       L.push('命主按命宮地支，身主按生年地支；天傷交友、天使疾厄；解神為月解；流月採斗君、小限按生年三合起宮；旬空／截空保留雙支，依生年陰陽分正副（旬空／副旬、截空／副截），不作兩顆同等正星。不同設定須重排，不能混套別派星位。');
-      L.push('本盤四化順序為祿權科忌：'+policy.sihuaTable+'。');
+      L.push('本盤四化版本：'+(policy.sihuaProfileName||policy.sihuaProfile)+'，順序祿權科忌：'+JSON.stringify(policy.sihuaTable)+'。來源：'+policy.sihuaSource);
       L.push('參考時刻：'+policy.referenceDate+'；參考農曆年：'+policy.referenceLunarYear+'；目前虛歲：'+zw.currentAge+'，每年正月初一增歲。');
     }
 
@@ -788,7 +788,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
 
   function _zwHeadText() {
     var api = _zwPromptRootApi();
-    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
+    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
   }
 
   function _zwTailText() {
@@ -901,6 +901,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
             '<button type="button" class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</button>' +
             '<button type="button" class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</button>' +
           '</div></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label" for="zw-sihua-profile">四化版本</label><select class="zw-in-select" id="zw-sihua-profile"><option value="IZTRO_261">現代／iztro（壬科左輔）</option><option value="QUANSHU_XINGGE">全書引表／星格（壬科天府）</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-leap-policy">農曆閏月安宮</label><select class="zw-in-select" id="zw-leap-policy"><option value="SAME_MONTH">沿用本月</option><option value="SPLIT_AT_15">十五日後作次月</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-day-policy">晚子時換日</label><select class="zw-in-select" id="zw-day-policy"><option value="MIDNIGHT_00">00:00 午夜換日</option><option value="ZI_HOUR_23">23:00 子初換日</option></select></div>' +
           '<p class="zw-in-hint">兩項設定存在流派差異，會隨命盤保留。沿用本月與午夜換日為本站預設。</p>' +
@@ -914,6 +915,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     if (draft) {
       document.getElementById('zw-q').value = draft.question || '';
       window._zwSetGender(_zwGender);
+      document.getElementById('zw-sihua-profile').value=draft.sihuaProfile||'IZTRO_261';
       document.getElementById('zw-leap-policy').value=draft.leapMonthPolicy||'SAME_MONTH';
       document.getElementById('zw-day-policy').value=draft.dayBoundaryMode||'MIDNIGHT_00';
     }
@@ -922,8 +924,8 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native3', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native3', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native4', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native4', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;
@@ -1040,7 +1042,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
 
     var bdate = y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (d < 10 ? '0' : '') + d;
     var btime = btimeUnknown ? '' : (exact||((hh < 10 ? '0' : '') + hh + ':00'));
-    var form = {hour:hh,minute:exact?Number(exact.split(':')[1]):null,timePrecision:exact?'minute':'shichen', type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
+    var form = {sihuaProfile:(document.getElementById('zw-sihua-profile')||{}).value||'IZTRO_261',hour:hh,minute:exact?Number(exact.split(':')[1]):null,timePrecision:exact?'minute':'shichen', type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
     try { if (typeof S !== 'undefined') { S.form = form; S._tarotOnlyMode = false; S._autoMode = false; } } catch (e) {}
 
     // 亮度表由共用引擎單一來源提供，避免此入口與其他入口覆寫成不同盤。

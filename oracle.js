@@ -1811,7 +1811,7 @@ function _buildOraclePrompt(poem, qText) {
   lines.push('傳統附記：'+poem.t+'（只作該版本文化資料，不據此推造日期、投資方向或事件機率）');
   lines.push('原詩、廟方附記與補充典故分清來源。引擎原生作用資料含逐籤摘要、29事項文字特徵、配籤典故名稱與來源稽核。合讀 reading.premises、domainNotes、sourceAudit，保留相反條件。textFeatureTags 是傳統條目文字特徵，不能當事件成功率；present:false 表示廟頁缺欄。典故名稱已對照廟頁，但歷史真偽未獨立考證，不自行編故事情節。');
   lines.push('────────────────');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('oracle'):JY_READING_ORACLE);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('oracle'):JY_READING_ORACLE);
   lines.push('【本籤補充方法】時間題須辨季節詞是時令、典故或轉機象徵；沒有獨立時間依據不換算日曆日期。傳統治病與六甲條目不作診斷、療程或胎兒性別預測。');
   lines.push('依完整原詩定調，正文聚焦改變答案的關鍵句。等候須說清在等什麼條件；不好籤意仍保留可做的選擇，不把困境歸咎於不夠虔誠。');
   lines.push('');

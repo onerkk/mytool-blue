@@ -1,0 +1,5 @@
+'use strict';
+// Source revisions, original/modern status and source SHA256 are preserved in these audited datasets.
+const fs=require('node:fs'),path=require('node:path'),root=path.resolve(__dirname,'..'),check=process.argv.includes('--check');
+const specs=[['qiongtong-120','bazi-qiongtong-data','JYQiongtongData','窮通寶鑑120入口校錄；各段月份範圍保留。',false],['name-sancai-250','name-sancai','JYNameSancai','兩個具名發布者的125项事實表；不是熊崎原著125表。',true],['yijing-wings-64','yijing-wings','JYYijingWings','周易易傳逐卦校錄；保留來源、修訂及原文異讀。',true]];
+for(const [source,file,name,comment,positiveWindow]of specs){const data=JSON.parse(fs.readFileSync(path.join(root,'docs/sources/'+source+'.json'),'utf8')),suffix=positiveWindow?'typeof window!=="undefined"?window:globalThis':'typeof window==="undefined"?globalThis:window',body='/* '+comment+' */\n(function(root){"use strict";root.'+name+'='+JSON.stringify(data)+';})('+suffix+');\n',out=path.join(root,'JS/'+file+'.js');if(check){if(fs.readFileSync(out,'utf8')!==body)throw Error('Data module differs from audited dataset: '+file);}else fs.writeFileSync(out,body);console.log((check?'CHECK ':'BUILD ')+file);}

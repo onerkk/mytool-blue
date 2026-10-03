@@ -1,0 +1,60 @@
+{
+  "testedAt": "2026-10-03T04:43:00.065Z",
+  "passed": 13,
+  "failed": 0,
+  "independentEphemeris": "Swiss Ephemeris2.10.03 rise_trans sea level 0m, atmospheric pressure auto,15C at25.03N121.56E; not distributed with the application",
+  "results": [
+    {
+      "name": "四立前十八日半開邊界；初秋與整月土旺政策分立",
+      "status": "passed"
+    },
+    {
+      "name": "旺相休囚死依當選土旺政策进入64課條件",
+      "status": "passed"
+    },
+    {
+      "name": "日出日落對照獨立Swiss Ephemeris，海平面標準折射誤差小於60秒",
+      "status": "passed"
+    },
+    {
+      "name": "日出／日落前後一秒貴人晝夜切换",
+      "status": "passed"
+    },
+    {
+      "name": "無坐標與極圈不捏造日出時刻，手動晝夜仍能排盤",
+      "status": "passed"
+    },
+    {
+      "name": "真太陽時固定原瞬間；真鐘跨日重新計算日柱且不挪交節",
+      "status": "passed"
+    },
+    {
+      "name": "實際寒露瞬間分段；一日內丁酉與戊戌月不混為整日",
+      "status": "passed"
+    },
+    {
+      "name": "00／23换日应期区间不同，真太阳逆解不丢分钟",
+      "status": "passed"
+    },
+    {
+      "name": "客观值日／冲合候选均来自实排日干支，不排序成保证发生日",
+      "status": "passed"
+    },
+    {
+      "name": "只在真实离旬日列首次出旬；远期窗口不伪造首次离旬",
+      "status": "passed"
+    },
+    {
+      "name": "未明议题、多议题与过去窗口保持实际状态",
+      "status": "passed"
+    },
+    {
+      "name": "同一计算结果进入原生JSON及提示词",
+      "status": "passed"
+    },
+    {
+      "name": "無效／倒置日期拒絕；土旺十八日邊界所在日以實際時刻分段",
+      "status": "passed"
+    }
+  ]
+}

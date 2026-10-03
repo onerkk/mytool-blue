@@ -1,0 +1,91 @@
+{
+  "testedAt": "2026-10-03T04:42:59.566Z",
+  "sourceExamples": [
+    "PVR17 Example59",
+    "PVR24 Examples95,96",
+    "PVR Table40",
+    "PVR9 Example30",
+    "PVR10.6 Mercury example",
+    "PVR21 Example80",
+    "PVR4 Example6",
+    "PVR5 Example10",
+    "BPHS46 28slot boundaries",
+    "BPHS51 same-lord antardasa"
+  ],
+  "results": [
+    {
+      "name": "PVR17 Example59: Moon24Leo has6years remaining; Mars follows; AD starts next planet",
+      "status": "passed"
+    },
+    {
+      "name": "BPHS46 distinct Abhijit slots and BPHS51 same-lord AD retained alongside PVR",
+      "status": "passed"
+    },
+    {
+      "name": "PVR24 Example95: Rohini2, paramayush83, elapsed62.25, Scbalance4.75 and original nine sequence",
+      "status": "passed"
+    },
+    {
+      "name": "PVR24 Example96: Punarvasu4, Pi8.6 balance, boundary goes into Savya2 sequence",
+      "status": "passed"
+    },
+    {
+      "name": "Explicit BPHS46 corrects PVR Table44/45 Revati/UttaraBhadrapada transcription conflict",
+      "status": "passed"
+    },
+    {
+      "name": "PVR Table40 independently printed twelve normal Narayana sequences, Saturn and Ketu exceptions",
+      "status": "passed"
+    },
+    {
+      "name": "PVR15 co-lord hierarchical stop, doubled Mercury/dispositor roles, reverse node advancement",
+      "status": "passed"
+    },
+    {
+      "name": "PVR9 Example30 all nine graha arudhas, original exception destinations preserved",
+      "status": "passed"
+    },
+    {
+      "name": "PVR10 MercuryGe sample: Saturn fourth blocked Jupiter tenth; Venus eleventh unobstructed",
+      "status": "passed"
+    },
+    {
+      "name": "PVR21 Example80 Libra lagna Drigdasa exact order; all major and minor intervals close without gap",
+      "status": "passed"
+    },
+    {
+      "name": "PVR4 Example6 five solar upagrahas and PVR5 Example10 SreeLagna348°47",
+      "status": "passed"
+    },
+    {
+      "name": "Full16 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant",
+      "status": "passed"
+    },
+    {
+      "name": "BPHS conditional dashas compute eligibility and17 systems; old Yogini cycles cover actual reference",
+      "status": "passed"
+    },
+    {
+      "name": "Confirmed lagna computes all41 additional Yoga statuses and7 actual Neechabhanga predicates",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown birth clock withholds all17 timelines,16 house arudhas, special ascendants and deterministic AK role",
+      "status": "passed"
+    },
+    {
+      "name": "Full native data and prompt preserve17 timelines,all16 Jaimini calculations without mutating chart",
+      "status": "passed"
+    },
+    {
+      "name": "Exact highest-degree ties preserve bothAK candidates and withhold unique Karakamsa",
+      "status": "passed"
+    },
+    {
+      "name": "Lossless PAV bitmasks and JSONPointer dedup reconstruct all16 original contribution tables",
+      "status": "passed"
+    }
+  ],
+  "passed": 18,
+  "total": 18
+}

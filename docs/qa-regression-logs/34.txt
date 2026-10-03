@@ -1,0 +1,5 @@
+✓ All eight particle paths stay finite and bounded through hold, turn and scene changes
+✓ Local effects load no textures and add at most five drawable objects per scene
+✓ Touch echoes fade out and reduced motion keeps every particle stationary
+✓ Touch feedback does not advance the ritual prematurely and cancellation leaves no timer
+realtime-free: 4 groups passed; geometry and interaction checks, not GPU pixel or phone validation.

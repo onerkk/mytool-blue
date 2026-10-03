@@ -1152,7 +1152,7 @@ var JY_REC_EXPORT = {
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return globalThis.JYReadingWorkflow.finish([
       buildRootQuestionLock(question, tool),
-      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
+      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
       rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
       (isRootTarot?buildSpreadReadingGuide(tool, rawPayload):''),
       (tool==='tarot'?'方法參考：Waite 凱爾特十字 https://sacred-texts.com/tarot/pkt/pkt0307.htm；Mathers 1888 https://sacred-texts.com/tarot/mathers/mtar04.htm。現代布局與本次選用的牌義流派分開標示；書目不表示本次 AI 已即時查網。':''),

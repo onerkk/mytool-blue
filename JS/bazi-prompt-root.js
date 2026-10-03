@@ -8,6 +8,7 @@ var JY_READING_BAZI = {
     "合沖刑害先核成立，再分合絆、牽動、根損與成化；合化查季節、化神透根、爭合及阻隔，從格需核有效根氣和逆勢援助。",
     "十神與柱位依本題角色成義。大運改變階段背景，流年干支觸發原局；正文只用最切題的生剋作用及歲運變化說明主判，不重講全套格局推導。",
     "十神不是人格好壞分級，旺極等自動標籤與相對分不是原典定論。某行可洩身不等於任何數量都適合；土的燥濕、水火所處季節、透藏根氣及制合會改變效果。只說與答案有關的取用與作用，不能從『喜土』跳成理財可靠或佩戴土色必有益。",
+    "《窮通寶鑑》120入口依本盤日干、節令月及實際透藏證據核對；合述季節保留合述。同一句有強弱、清濁、有效制化等待判條件時，不得把字面透藏符合寫成全條成立，或直接照搬原文富貴斷語。",
     "【八字判讀主線】先判月令格局需要哪些條件才能運作，再核日主是否承受得住，找出目前最先要處理的生剋阻點。官印能接續時，壓力可經由規範、學習或資源承接；食傷能生財時，表達或產出才有變現通路。每條路徑都以本盤透藏、根氣、位置及制合作依據，再落到原題中的能力、責任、資源與代價。",
     "歲運題要說出「新增什麼、牽動原局哪裡、原有制化能否接住」，比較進運前後可承擔的事如何改變。婚戀聚焦日支與關係角色、財務聚焦產出到所得再到保留、職涯聚焦能力到位置與權責。最後選一個最值得調整的環節，說清做何事會有幫助、在哪些條件下反會增加負擔。",
     "【八字深入全局】先核四柱、藏干、月令、節氣及交運政策，將日主承受力、格局需要和調候需求分開。根氣、透藏、生剋通路與合沖刑害共同成判，不以五行數量、單一十神或前端旺衰標籤下結論。",
@@ -197,8 +198,8 @@ var JY_REC_BAZI = {
     if(mode==='chart')return ['【排盤呈現】以資料校核為主，指出可確認與仍需確認的欄位；未另問人生議題時，不輸出人生預測。'];
     var lines = [];
     var readingKind=mode==='compatibility'?'compat':'bazi';
-    lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
-    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.methodLines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
+    lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
+    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.methodLines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
     lines.push('參考脈絡：《子平真詮·論用神》https://www.donglishuzhai.net/chapter/3721.html；香港天文台曆法與視太陽時 https://www.hko.gov.hk/tc/gts/time/basicterms-apparentsolartime.htm。前者是傳統判法，後者只支持時間概念；列出書目不表示本次已即時查網。');
     if (mode === 'compatibility') {
       lines.push('6. 合盤請清楚區分 A 方、B 方與共同關係層，說明吸引、支持、摩擦、溝通、時間節奏與長期相處條件。');

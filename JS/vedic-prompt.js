@@ -258,7 +258,7 @@
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_VEDIC
-var JY_READING_VEDIC = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n【列舉題與詞義分流】『有哪些／哪幾項／有什麼問題要注意』是開放列舉，即使句尾有『嗎』也先回答使用者要知道的類別；只有原句明確提出會不會、有沒有、是否等門檻時，才另加是非判斷。若詞義候選會改變答案，查看語義模型的候選、選取依據與未確認狀態：可按清楚的上下文作暫定解讀，但必須標出仍待確認之處；上下文不足時保留兩種實質不同的答案，不可暗中選一種或停在抽象的不確定。\n【題目能力邊界】先辨認使用者真正要的事實層與方法能支持的層次。若方法不能回答精確的現實項目，就明說缺少哪種資料，再回答最近的可用問題與下一個核實步驟；不得以更多術語或牌數填補缺口。健康檢查題尤其不能由命理推斷疾病、器官、實際檢查項目、異常數值或報告結果；可給檢查前核對官方指示、取得並詢問正式報告等具體步驟。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【吠陀占星：D1與實算運期】核 ayanamsa、出生時間、上升、月亮星宿與分盤；本題宮主在D1的職責、落宮、尊貴與受照先成主線，自然吉凶不等於依上升定的功能吉凶。\n力量含擢升、本位、落陷、燃燒、逆行及關聯；Parashari 與 Rashi 相位各循明示體系。Yoga 核實際構成、力量和破壞條件，不能以名稱保證事件。\nMahadasha／Antardasha 採月亮實算起訖，運主職責與相互關係讀當期主題；D9、D10等在相應領域檢查D1承接且保留時間敏感性。正文只講切題結構和運期轉折，不另寫格局驗算報告。\n【印度占星判讀主線】由D1的主題宮、宮主及定位星建立可成事的通路，再以尊貴、受照、燃燒與關聯辨能力和代價。D9或D10等有效分盤檢查同一主題能否承接：本命有資源而專題條件弱時，重點在落實方式；兩層同向時，說明最適合把力量用在哪裡。\n當期大運主開啟它掌管與落入的領域，副運主決定這段事情透過什麼條件展開；兩主的相對位置、受照與定位關係解釋順阻。將本命可承擔的事、有效分盤及實算運期接成一條答案，指出此階段可推進的工作、關係或資源安排及相應成本。\n【印度占星深入原局與運期】核恒星黃道、歲差、宮制、月宿及D1；九曜的掌宮、落宮、尊貴、受照及功能吉凶合讀，Yoga須核完整條件與制化，不能逐星或按吉凶名單成判。\n分盤只在本次實算且出生精度足夠時使用，D9等依自己的角色合參，不能以分盤好壞覆蓋D1。各人生領域說明宮主如何承接資源及成本。\nVimshottari大運、副運、次副運按實算起訖，讀運主掌宮落宮、兩主關係及分盤承接，再合實際行運。逐期或逐年給議題、象徵順阻程度、條件和行動；沒有行運快照的日期只用運期，不造精確入座時間。";
+var JY_READING_VEDIC = "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。\n【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。\n【證據完整度】成判前至少核對：最有力的正向依據及其實際作用路徑；最有力的反向依據及它改變的是意願、行動、成事、承諾還是持續；兩者是否談同一人物、層次與時間；若結論要改變，會是哪個可核條件。相同來源或重複出現的訊號只算一次，背景訊號不冒充當期觸發，方法規則不冒充本次證據。依據相持時只保留真正未定的一層，不把已能判斷的部分一起說成模糊。替代讀法只在會實質改變答案時提出。\n【分清層次】好感／情緒、意願、同意、決定、實際行動、事件發生、承諾與持續不能互相代答；多方情境逐一確認角色，沒有角色依據的對象保留未指認。問題若涉及親密互動，盤面不代替任何人的明確、無壓力且可撤回的同意。具體情境未由使用者提供時，以「若實際出現…」作核對，不能寫成已發生。\n【深度來自完整推理，不靠字數】先用本法核完所有與原題有關的實際位置、組合、旺衰、動變、週期或來源，再挑出會改變答案的訊號。把證據連成清楚路徑：什麼支持結果、力量如何傳遞、在哪一環受阻、哪個條件能解除或加重阻礙；說明最強反證限制的是哪一層。若某環節沒有資料，指出缺口及其影響，不用泛泛術語填補。只輸出整理後的判斷與可核理由，不展示隱藏思考過程。\n【篇幅由問題決定】單一問題可直截回答；有多個角色、條件、時間層、比較方案或盤面矛盾時，補足各自會改變主判的分析，數量依本題需要。不要為了縮短漏掉必要因果，也不要為了顯得深入而抄盤、堆術語或重複同一訊號。每段都要增加新的判斷、證據作用或現實做法。\n【列舉題與詞義分流】『有哪些／哪幾項／有什麼問題要注意』是開放列舉，即使句尾有『嗎』也先回答使用者要知道的類別；只有原句明確提出會不會、有沒有、是否等門檻時，才另加是非判斷。若詞義候選會改變答案，查看語義模型的候選、選取依據與未確認狀態：可按清楚的上下文作暫定解讀，但必須標出仍待確認之處；上下文不足時保留兩種實質不同的答案，不可暗中選一種或停在抽象的不確定。\n【題目能力邊界】先辨認使用者真正要的事實層與方法能支持的層次。若方法不能回答精確的現實項目，就明說缺少哪種資料，再回答最近的可用問題與下一個核實步驟；不得以更多術語或牌數填補缺口。健康檢查題尤其不能由命理推斷疾病、器官、實際檢查項目、異常數值或報告結果；可給檢查前核對官方指示、取得並詢問正式報告等具體步驟。\n把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。\n答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。\n命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。\n【吠陀占星：D1與實算運期】核 ayanamsa、出生時間、上升、月亮星宿與分盤；本題宮主在D1的職責、落宮、尊貴與受照先成主線，自然吉凶不等於依上升定的功能吉凶。\n力量含擢升、本位、落陷、燃燒、逆行及關聯；Parashari 與 Rashi 相位各循明示體系。Yoga 核實際構成、力量和破壞條件，不能以名稱保證事件。\nMahadasha／Antardasha 採月亮實算起訖，運主職責與相互關係讀當期主題；D9、D10等在相應領域檢查D1承接且保留時間敏感性。正文只講切題結構和運期轉折，不另寫格局驗算報告。\n17補充運期各有適用條件；只在本次所選方法與適用性下合讀，不以運期個數投票。16盤Arudha／Argala、8Karaka與Neechabhanga均對照實排；同度、等強或未知時計算標記未定時，不能挑一個候選冒稱唯一。若資料用位元遮罩或JSON Pointer，先依明列編碼還原。\n【印度占星判讀主線】由D1的主題宮、宮主及定位星建立可成事的通路，再以尊貴、受照、燃燒與關聯辨能力和代價。D9或D10等有效分盤檢查同一主題能否承接：本命有資源而專題條件弱時，重點在落實方式；兩層同向時，說明最適合把力量用在哪裡。\n當期大運主開啟它掌管與落入的領域，副運主決定這段事情透過什麼條件展開；兩主的相對位置、受照與定位關係解釋順阻。將本命可承擔的事、有效分盤及實算運期接成一條答案，指出此階段可推進的工作、關係或資源安排及相應成本。\n【印度占星深入原局與運期】核恒星黃道、歲差、宮制、月宿及D1；九曜的掌宮、落宮、尊貴、受照及功能吉凶合讀，Yoga須核完整條件與制化，不能逐星或按吉凶名單成判。\n分盤只在本次實算且出生精度足夠時使用，D9等依自己的角色合參，不能以分盤好壞覆蓋D1。各人生領域說明宮主如何承接資源及成本。\nVimshottari大運、副運、次副運按實算起訖，讀運主掌宮落宮、兩主關係及分盤承接，再合實際行運。逐期或逐年給議題、象徵順阻程度、條件和行動；沒有行運快照的日期只用運期，不造精確入座時間。";
 // END GENERATED READING JY_READING_VEDIC
 // BEGIN GENERATED RECOMMENDATION JY_REC_VEDIC
 var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。";
@@ -293,7 +293,7 @@ var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、
       naturalNatures:chart.naturalNatures,aspects:chart.aspects,dispositors:chart.dispositors,relationships:chart.relationships,arudhas:chart.arudhas,karakas:chart.karakas,yogas:chart.yogas,panchanga:chart.panchanga,
       ashtakavarga:chart.ashtakavarga,vargaAshtakavarga:chart.vargaAshtakavarga,ashtakavargaSignOrder:C.SIGNS,
       dasha:chart.input.unknownTime?{status:'時間未知：不輸出中午假設下的確定交運表'}:{yearDays:chart.dasha.yearDays,firstLord:chart.dasha.firstLord,balanceYears:chart.dasha.balanceYears,current:current&&{maha:{lord:current.maha.lord,start:iso(current.maha.start),end:iso(current.maha.end)},antar:{lord:current.antar.lord,start:iso(current.antar.start),end:iso(current.antar.end)},pratyantars:current.pratyantars.map(p=>({lord:p.lord,start:iso(p.start),end:iso(p.end),active:p===current.pratyantar}))},nextThreeYears:periods},
-      specialRules:chart.specialRules,transits:chart.transits,transitSnapshots:chart.transitSnapshots||[],sensitivity:chart.sensitivity};
+      specialRules:chart.specialRules,advanced:chart.advanced||{status:'module-unavailable'},transits:chart.transits,transitSnapshots:chart.transitSnapshots||[],sensitivity:chart.sensitivity};
   }
   function build(question,chart,topic='general'){
     const t=TOPICS[topic]||TOPICS.general,full=data(chart,topic),n=chart.planets.Moon.nakshatra;
@@ -302,16 +302,30 @@ var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、
     // entries retain their status without repeating the full rulebook. The
     // data() and chart JSON exports still contain every original check.
     const {matched,checks,...specialChecks}=full.specialRules;
-    const payload={...full,specialRules:{...specialChecks,
+    const payload={...full,advanced:root.JYVedicCompletion?root.JYVedicCompletion.promptSnapshot(chart.advanced):full.advanced,specialRules:{...specialChecks,
       checks:checks.filter(r=>r.status!=='not-established'),
       notEstablished:checks.filter(r=>r.status==='not-established').map(r=>({id:r.id,name:r.name,status:r.status})),
       matchedIds:matched.map(r=>r.id),
       exportNote:'未成立規則只列名稱與狀態；成立、取消、被取代與資料不足的檢核保留原文。完整檢核見原始JSON；未列細節不代表成立。'}};
-    if(root.JYNativeAnalysis)payload.nativeAnalysis=root.JYNativeAnalysis.analyze('vedic',chart);
+    if(root.JYNativeAnalysis){
+      const native=root.JYNativeAnalysis.analyze('vedic',chart);
+      // The full native export retains the intermediate ledgers. Avoid copying
+      // the same16 BAV tables and6-strength evidence into the prompt twice.
+      payload.vargas=native.vargas;payload.strength=native.strength;
+      payload.nativeAnalysis={method:'vedic',schema:native.schema,coverage:native.coverage,states:native.states,activation:native.activation,unavailable:native.unavailable,items:native.items.map(({id,label,summary,support,caution})=>({id,label,summary,support,caution}))};
+    }
+    function avSnapshot(a){if(!a)return null;const first=Object.values(a.reductions)[0].pinda;return {bav:a.bav,sav:a.sav,
+      prastaraMasks:Object.fromEntries(Object.entries(a.prastara).map(([k,rows])=>[k,rows.map(row=>row.reduce((mask,bit,s)=>mask|(bit<<s),0))])),
+      total:a.total,occupied:a.occupied,referenceOrder:a.referenceOrder,
+      pindaFactors:{rasi:first.rasiTerms.map(t=>t.multiplier),graha:first.grahaTerms.map(t=>({planet:t.planet,sign:t.sign,multiplier:t.multiplier}))},
+      reductions:Object.fromEntries(Object.entries(a.reductions).map(([k,r])=>[k,{trikona:r.trikona.values,ekadhipatya:r.ekadhipatya.values,soav:r.soav,pinda:{rasi:r.pinda.rasi,graha:r.pinda.graha,total:r.pinda.total}}]))};}
+    payload.ashtakavarga=avSnapshot(chart.ashtakavarga);payload.vargaAshtakavarga=chart.vargaAshtakavarga?Object.fromEntries(Object.entries(chart.vargaAshtakavarga).map(([k,v])=>[k,avSnapshot(v)])):null;
+    payload.referenceEncoding='若有$ref，它是本段JSON根物件#下的JSON Pointer；引用首次完整紀錄，先解析再合讀。';
+    payload.ashtakavargaEncoding={prastaraMasks:'每星8個整數按referenceOrder排列；第s位(bit0至bit11)是牡羊起第s座的0／1貢獻。與完整8×12 PAV逐格等值，沒有去掉計算。',pinda:'RasiPinda=Σ soav[s]*pindaFactors.rasi[s]；GrahaPinda=Σ soav[planet.sign]*planet.multiplier。Total為兩者相加，每一乘積可直接重建。',sourceAudit:chart.ashtakavarga?.sourceAudit,sourcePolicy:chart.ashtakavarga?.policy,sources:chart.ashtakavarga?.sources};
     const q=String(question||'請分析我的命盤主軸、當前處境與可以採取的方向。').slice(0,6000);
     return globalThis.JYReadingWorkflow.finish(`你是一位熟悉 Parashari Jyotisha（印度／吠陀占星）的資深解盤者。使用繁體中文，根據本次完整計算資料，給迷惘中的使用者明確、有取捨、可追溯的分析。
 
-${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
 
 【本次問題與出生資料】
 問題以 JSON 字串保留原文：${JSON.stringify(q)}
@@ -326,6 +340,7 @@ ${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&St
 3b. bhavaStrength 另給十二宮的宮主總力、方向力及逐曜有符號照射；宮主按Sripathi宮中心星座，不能與D1整宮宮主互換。宮位照射水星依Raman腳註固定為完整吉照，與行星Drik吉凶政策不同；木水全值、其他四分之一。residential為九曜在實際宮界與宮中心的比例，不能當概率，也不加成第四種宮位力量。只在complete=true比較本盤各宮總力，仍合整宮議題、宮主職責、D9及運期；高分不直接等於吉事。缺時或宮主總力未定時不得補總分或排名。
 3c. ashtakavarga保留原BAV、八參照PAV與337點SAV；reductions逐步列Trikona、五組共主座Ekadhipatya、SoAV及Rasi/Graha/Sodhya Pinda。行運座支持讀原BAV/SAV，不能拿消減值換掉原表或把Pinda當概率。vargaAshtakavarga依PVR12.5用各分盤七曜與該盤上升重新計算；分盤間同源資料不累加成獨立證據。保留sourceAudit，未輸入出生時刻時沒有確定八分表。
 3d. panchanga.limbs列Tithi、Yoga、Karana、Nakshatra與Vaara的名稱及實際UTC起迄；角度項採所選歲差，星期在實際日出換日。出生前日出日期及dateBasis不能改成民用午夜；end是排除的界點。時辰未知的provisional-anchor與極區sunrise-unavailable不能當確定資料；五支曆是出生象徵背景，不據此補編節慶、擇日或事件日期。
+3e. advanced 已實算十一副星、BL/HL/GL/SL、八Karaka、十六分盤的雙宮主選擇、十二Bhava及九Graha Arudha、Argala/Virodhargala與Narayana。讀出共同宮主比較的decisive及sourceAudit；同數阻擋須比較實際力量，不能自造argala總分。Ketu所在座反算，宮位／行星引用同座ledger。七、八Karaka是兩個版本；同度未決不得強指單一AK。BL採每4分鐘1度，HL每分鐘0.5度、GL1.25度，均以本地前次實際日出太陽為起點。傳統數學副星並非可觀測天體。
 4. 同座先說共享哪個生活領域，再分析雙曜性質及各自掌宮如何協作或競爭；精確角距補充親近程度。同座和互容分開：互容是互入對方本垣，須追蹤交換的宮位與代價。沿 dispositors 找終點或循環，指出表面現象背後由哪顆星承接。
 5. graha drishti 為有方向的行星相位：七曜第七照，火星另第四／八，木星另第五／九，土星另第三／十。核對 A 照 B 和 B 照 A；未相互照見不寫互相。rasi drishti 為另一套星座關係，兩者獨立命名。交點在此不安特殊行星相位，羅睺計都以落宮、同座、星座相位、月宿主與定位星看放大或抽離的方向。
 6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。Subha、Asubha 和十二宮 Kartari 共用相鄰座位，不當作兩份證據；水星為 mixed 時只按確定星曜判定，未定就不寫成已成立。Bhaaskara、Chapa 只按本次逐項實算結果使用。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，依成立條件從本盤原始座位重查，不能看到名稱就套結果。
@@ -344,6 +359,8 @@ D2 採日月 Hora，D30 採不等區段，D60 從本命星座起算；不要改�
 【運期與行運的合成】
 Vimshottari 從本命月宿取起運主。出生時第一大運已走過的部分保留在出生前，副運按完整大運比例分配，不能把剩餘大運重新分成九份。年長以 policy.dashaYearDays 為準。
 大運主開啟它的落宮、掌宮和所連星體；副運主說明這段主題透過誰、何種生活領域實現。先讀兩主是否同座、互照、互容或定位相連，再看相對宮位與所選分盤；次副運只作較短的焦點。比較交運前後是責任、資源、支持方式如何改變，不把交運寫成瞬間翻轉命運。
+advanced.dashas的17個具名模型均已計算原大運起點、出生餘額、完整大副運與當期位置。條件運先查applicability；算出運表不表示人人適用，也不把17個模型當17票。Ashtottari/PVR等角弧與BPHS-Abhijit28有不同餘額／副運起點，必須具名區分。Kalachakra用實際月宿足、Deha/Jeeva、Paramayush及基序，不能按十二星座順排。Narayana分盤的虛擬起點按D1種子宮主在Dn的位置，並非直接取Dn上升；LagnaKendradi、Sudasa、Drig及Shoola各依自身運序。所有時間模型只作象徵分析，不從Shoola/Niryaana名稱推斷死亡日期。提示詞列全部已算大運分界與當期完整副運；歷史／未來所有副運及完整不成立條件仍在原始JSON，不要求AI重算。
+advanced.yogas逐條記41項額外格局及7曜Neechabhanga；not-established不可套格局結果，insufficient-data保留未決。Phaladeepika7.26/29/30重複同一取消條件，只作一組作用；7.27相互角宮版本與7.28定位星照見分列。落陷取消不是刪掉debilitation、燃燒、六力不足或困難掌宮；仍判能否承接。strong用本次六力門檻，是已明列的引擎操作定義，不能冒稱唯一古義。
 行運分上升起算與月亮起算，木土及交點的背景配合本命和運期讀，單顆行運不推翻全盤。BAV 是某曜在十二座的八參照點計數，SAV 是七曜 BAV 之和（總數 337），不是成功機率或人格能力。相對較高／低的座位可修飾承接背景，但不取代宮主、運期與現實條件。
 月度快照若有提供，只是指定日期的星位，不是入座時間表。近三年未提供快照的月份仍可用已算運期判讀，不編造精確行運日期。若 reference 早於出生或出生時間未知，current 空值有實際原因，先依可用層級完成分析。
 
@@ -353,7 +370,7 @@ ${t.guide}
 
 【可核對計算資料】
 以下是同一個出生時刻產生的原生資料，角度單位為度、sign 索引 0=牡羊，house 由 1 起算。每個分盤有自己的 lagna。
-${JSON.stringify(payload)}
+${JSON.stringify(root.JYNativeAnalysis?.compact?root.JYNativeAnalysis.compact(payload):payload)}
 
 【方法書目】
 P.V.R. Narasimha Rao, Vedic Astrology: An Integrated Approach（尊貴、分盤、宮主、相位、Ashtakavarga、Vimshottari）：https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf

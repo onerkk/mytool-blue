@@ -7,6 +7,7 @@ var JY_READING_ZIWEI = [
   "四化保留星性與來源、落宮：生年、宮干、大限、流年各自定位，自化及來因宮依本次流派；祿忌或權忌同會不直接抵銷。",
   "疊宮保留本命與運限宮名，限年需有實算資料。正文只引用改變答案的宮組、四化或運限；全盤題才展開十二宮，不強制報每層飛化過程。",
   "逐筆核四化引用的來源方、層級、宮干、星曜、化象、受方和落宮。相同天干在生年與宮干重現不是兩份獨立證據；不同來源的化祿、化忌必須同時保留。命宮格局不能替代關係題的夫妻、福德與運限結構；化祿不證明本人目前有錢或對特定人願意付出。",
+  "十干四化版本依本次選表，壬科左輔與天府不可混表。48宮干飛化及連續路徑是實際圖關係；楚天雲闊两轉象條件以生年為體，運層宮職重標不冒稱重配運干。尚未提供的口訣、案例人物私事不得補造。",
   "【紫微判讀主線】主宮回答事情怎麼運作，三合宮查可調用的資源，對宮查角色與環境的牽動；先讀主星搭配的共同作用，再看輔煞與廟旺如何改變做法的成本。關係題把夫妻的互動方式、福德的內在滿足、田宅的生活安排與官祿的責任牽動串起來，選其中最卡住的一環回答。",
   "四化依星性說清增加的是什麼、主導的是什麼、可疏解的是什麼、代價集中在哪裡；順著來源宮到落宮說明兩個領域怎麼牽連。大限改變焦點與可用資源，流年再指出本年何處被觸發。遇到祿忌同會時，回答取得某種好處需要付出什麼代價，以及現有輔助通道能處理多少。",
   "【紫微深入全盤與限流合參】核十二宮宮干地支、命身、主星同宮組合、主輔煞曜廟旺及空宮借對，再由各主宮實際三方四正與夾宮建立資源、需求、成本及制化通道；單星亮度、格名與吉凶計票不能代替組合作用。",
@@ -90,7 +91,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
 
   function answerContractLines() {
     return [
-      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
+      root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.plainText==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.plainText():JY_READING_ZIWEI[0],
       '數量與角色邊界：星曜、宮位或四化不推算性伴侶人數、婚姻次數、子女人數、外遇次數，也不給「不只一個」「至少兩次」等下限；命盤可談關係趨勢，不證明特定人的身分、愛意或同意。已知次數須來自使用者自述。'
     ];
   }
@@ -110,7 +111,7 @@ var JY_REC_ZIWEI = "【本題延伸手鍊建議】（可選）手鍊建議放在
   }
 
   function allCoreLines() {
-    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
+    return rootProtocolLines().concat(technicalRulesLines()).concat(domainRouterLines()).concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('ziwei').slice(1):JY_READING_ZIWEI.slice(1));
   }
 
   function composeHead() {

@@ -4,7 +4,7 @@
  */
 (function(root){
   'use strict';
-  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.2.0';
+  const DAY=86400000,RAD=Math.PI/180,YEAR=365.24219,VERSION='jy-western-1.3.0';
   const KEYS=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
   const NAMES=['太陽','月亮','水星','金星','火星','木星','土星','天王星','海王星','冥王星'];
   const SYMBOLS=['☉','☽','☿','♀','♂','♃','♄','♅','♆','♇'];
@@ -13,7 +13,7 @@
   const LORDS=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
   const EXALT={Sun:0,Moon:1,Mercury:5,Venus:11,Mars:9,Jupiter:3,Saturn:6};
   const HOUSE_NAMES=['自我與行動','收入與資源','學習與交流','家庭與根基','戀愛與創作','工作日常與照顧','伴侶與合作','共享資源與信任','遠行與觀點','職涯與社會角色','朋友與願景','獨處與內在整理'];
-  const SYSTEMS={P:'Placidus',W:'整宮制',E:'等宮制',O:'Porphyry'};
+  const SYSTEMS={P:'Placidus',W:'整宮制',E:'等宮制',O:'Porphyry',R:'Regiomontanus'};
   const ASPECTS=[{angle:0,name:'合相',symbol:'☌',orb:8},{angle:60,name:'六分相',symbol:'⚹',orb:4},{angle:90,name:'四分相',symbol:'□',orb:8},{angle:120,name:'三分相',symbol:'△',orb:8},{angle:180,name:'對分相',symbol:'☍',orb:8}];
   const MINOR=[{angle:30,name:'十二分相',symbol:'⚺',orb:2},{angle:45,name:'八分相',symbol:'∠',orb:2},{angle:135,name:'補八分相',symbol:'⚼',orb:2},{angle:150,name:'梅花相',symbol:'⚻',orb:2}];
   const norm=x=>((x%360)+360)%360,diff=(a,b)=>norm(a-b+180)-180,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -52,7 +52,8 @@
     if(!Object.hasOwn(SYSTEMS,system))throw Error('宮制無效');
     const a=anglesFromARMC(armc,latitude,obliquity),c=new Array(12),eps=a.obliquity*RAD,phi=latitude*RAD;
     if(system==='P'&&Math.abs(latitude)>=90-a.obliquity)throw Error('這個緯度的 Placidus 宮位無法完整定義，請改選整宮制或等宮制');
-    if(system==='E'||system==='W'){const start=system==='W'?Math.floor(a.ASC/30)*30:a.ASC;for(let i=0;i<12;i++)c[i]=norm(start+i*30);}
+    if(system==='R'){for(let i=0;i<12;i++){const ra=(armc+((i+3)%12)*30)*RAD;c[i]=norm(Math.atan2(Math.sin(ra),Math.cos(ra)*Math.cos(eps)+Math.tan(phi)*Math.sin(armc*RAD-ra)*Math.sin(eps))/RAD);}}
+    else if(system==='E'||system==='W'){const start=system==='W'?Math.floor(a.ASC/30)*30:a.ASC;for(let i=0;i<12;i++)c[i]=norm(start+i*30);}
     else{
       // Porphyry at polar latitudes follows the eastern-ASC quadrant convention.
       let mc=a.MC;if(norm(a.ASC-mc)>180)mc=norm(mc+180);
@@ -155,7 +156,8 @@
     return {utc:new Date(ms).toISOString(),referenceUTC:reference.toISOString(),ageYears:age,yearDays:YEAR,policy:'行星次限：出生後一日象徵一年；角點採明示ARMC起法重算全12宮，不加同一黃經弧到全部宮頭',angleMethod:method,angleMethodLabel:method==='naibod_ra'?'ARMC 1 Naibod：每年平均太陽日弧0.98564733°加出生RAMC':'ARMC 361°：次限星曆時刻的實際地方恆星時',angleCalculation:{birthRAMC:natalHouses.angles.ramc,progressedRAMC:armc,naibodDegreesPerYear:.98564733,progressedObliquity:eps,latitude,longitude,houseSystem:system,locationPolicy:'出生地；沒有混入搬遷宮位'},houses:hs,planets:ps,aspects:toNatal,angleAspects,chartAspects:aspects(ps,hs),natalHouseOverlay:KEYS.map(k=>({planet:k,progressedHouse:ps[k].house,natalHouse:houseOf(ps[k].longitude,natalHouses.cusps)})),sources:['https://www.astro.com/faq/fq_fh_owtype_e.htm','https://www.astro.com/swisseph/swephprg.htm#_Toc283735486'],scope:'Naibod均日弧角點是命名的方向推運，與實際次限恆星時分列；不聲稱兩種角點算法通用等價'};
   }
   function compute(input){
-    const birth=checkDate(input.utc),reference=checkDate(input.reference||new Date());if(reference<birth)throw Error('觀察日不能早於出生日期');
+    const purpose=input.chartPurpose||'natal';if(!['natal','horary','event'].includes(purpose))throw Error('星盤用途無效');
+    const birth=checkDate(input.utc),reference=checkDate(input.reference||new Date());if(reference<birth&&purpose==='natal')throw Error('觀察日不能早於出生日期');
     const latitude=Number(input.latitude),longitude=Number(input.longitude),system=input.houseSystem||'P',unknown=!!input.unknownTime,uncertainty=Number(input.uncertaintyMinutes||0);
     if(!Number.isFinite(latitude)||Math.abs(latitude)>=90||!Number.isFinite(longitude)||Math.abs(longitude)>180)throw Error('請核對出生座標');if(!Number.isFinite(uncertainty)||uncertainty<0||uncertainty>120)throw Error('時間誤差須為 0–120 分鐘');
     const hs=unknown?null:houses(birth,latitude,longitude,system),ps=planets(birth,hs?.cusps),asp=aspects(ps,hs,{minor:!!input.minorAspects}),sensitivity={unknownTime:unknown,minutes:unknown?null:uncertainty,planets:[],angles:[]};
@@ -178,14 +180,17 @@
     if(samples.length){for(const key of KEYS){const values=samples.map(t=>position(key,t).longitude),offsets=values.map(x=>diff(x,ps[key].longitude));sensitivity.planets.push({key,minimum:norm(ps[key].longitude+Math.min(...offsets)),maximum:norm(ps[key].longitude+Math.max(...offsets)),signs:[...new Set(values.concat(ps[key].longitude).map(x=>Math.floor(x/30)))],spanDegrees:Math.max(...offsets)-Math.min(...offsets)});}if(!unknown){for(const key of ['ASC','MC'])sensitivity.angles.push({key,alternatives:samples.map(t=>angles(t,latitude,longitude)[key])});sensitivity.houseAlternatives=Object.fromEntries(KEYS.map(k=>[k,[...new Set(samples.map(t=>houseOf(position(k,t).longitude,houses(t,latitude,longitude,system).cusps)).concat(ps[k].house))]]));}}
     const natalTargets={...ps};if(hs)for(const key of ['ASC','MC'])natalTargets[key]={key,longitude:hs.angles[key],sign:Math.floor(hs.angles[key]/30),speed:0};
     const transiting=planets(reference),transits={utc:reference.toISOString(),planets:transiting,aspects:crossAspects(transiting,natalTargets),orb:2};
-    const progressions=unknown?null:secondaryProgression(birth,reference,latitude,longitude,system,ps,hs,input.progressionAngleMethod||'naibod_ra');
-    const returns=unknown?null:solarReturn(birth,reference.getUTCFullYear(),latitude,longitude,system);
+    const progressions=unknown||purpose!=='natal'?null:secondaryProgression(birth,reference,latitude,longitude,system,ps,hs,input.progressionAngleMethod||'naibod_ra');
+    const returns=unknown||purpose!=='natal'?null:solarReturn(birth,reference.getUTCFullYear(),latitude,longitude,system);
     let activeSolarReturn=returns;
     if(activeSolarReturn&&Date.parse(activeSolarReturn.utc)>+reference)activeSolarReturn=solarReturn(birth,activeSolarReturn.year-1,latitude,longitude,system);
     if(activeSolarReturn&&activeSolarReturn.year<=birth.getUTCFullYear())activeSolarReturn=null;
     const distribution={elements:{火:0,土:0,風:0,水:0},modalities:{基本:0,固定:0,變動:0},policy:'十顆行星各計一次，交點與角點不計入；是分布而非能力分數'};for(const k of KEYS){distribution.elements[ps[k].element]++;distribution.modalities[ps[k].modality]++;}
-    const out={version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,location:input.location||'自訂出生地',civil:input.civil?{...input.civil}:null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],patternAspects:'格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算',chartType:'本命盤；不是卜卦、合盤或印度分盤'},planets:ps,houses:hs,aspects:asp,patterns:patterns(aspects(ps,null,{minor:true})),chartShapes:chartShapes(ps),specialConditions:aspectExceptions(ps,asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns,activeSolarReturn};
+    const out={version:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude,longitude,chartPurpose:purpose,location:input.location||'自訂出生地',civil:input.civil?{...input.civil}:null},policy:{zodiac:'回歸黃道',origin:'地心視位置／當日真黃道與真春分點',ephemeris:'Astronomy Engine 2.1.19',precision:'設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測',node:'平均月交點',houseSystem:system,houseName:SYSTEMS[system],orbs:ASPECTS,minorOrbs:input.minorAspects?MINOR:[],patternAspects:'格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算',chartType:{natal:'本命盤',horary:'明示問事時刻卜卦盤',event:'明示事件時刻盤'}[purpose]},planets:ps,houses:hs,aspects:asp,patterns:patterns(aspects(ps,null,{minor:true})),chartShapes:chartShapes(ps),specialConditions:aspectExceptions(ps,asp),dispositors:dispositors(ps),sect:unknown?null:sect(birth,latitude,longitude),chartRuler:hs?LORDS[Math.floor(hs.angles.ASC/30)]:null,distribution,sensitivity,transits,progressions,solarReturn:returns,activeSolarReturn};
     if(root.JYWesternDignities)out.essentialDignities=root.JYWesternDignities.compute(out);
+    if(purpose!=='natal'){out.progressions=null;out.solarReturn=null;out.activeSolarReturn=null;out.policy.timing='問事／事件時刻盤不借本命出生運限分析';}
+    out.relocated=root.JYWesternCompletion?root.JYWesternCompletion.relocated(out,input):null;
+    out.horary=purpose==='horary'?(root.JYWesternCompletion?root.JYWesternCompletion.horary(out,input):{status:'module-unavailable'}):null;
     return freeze(out);
   }
   root.JYWestern=freeze({version:VERSION,compute,position,planets,angles,anglesFromARMC,houses,housesFromARMC,secondaryProgression,houseOf,dignity,pairAspect,aspects,patterns,chartShapes,solarConditions,aspectExceptions,dispositors,solarReturn,crossAspects,sect,norm,diff,zh,KEYS,NAMES,SYMBOLS,SIGNS,GLYPHS,LORDS,HOUSE_NAMES,SYSTEMS,ASPECTS,MINOR});

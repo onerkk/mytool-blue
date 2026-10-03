@@ -1,0 +1,9 @@
+PASS 720 day/offset charts × both noble modes match pinned independent Python output
+PASS reference demonstration time has the same four pillars, 辰 general and 卯申丑 transmissions
+PASS middle qi is a second-resolution instant boundary, including year crossing
+PASS civil day/hour carry follows explicit midnight or early Zi policy
+PASS live hour, manual general and explicit noble settings retain automatic facts
+PASS questions cannot influence chart selection and native prompt keeps all facts and boundaries
+PASS invalid calendar, time, branch, parity and policy inputs fail without guessing
+PASS homepage and mirrored entry files preserve name/six-lines and add independent six-ren assets
+8 Da Liu Ren engine/integration groups completed.

@@ -269,6 +269,7 @@ var JY_READING_NAME = [
   "姓名易卦須保留選定起例、筆畫總數、上下卦、動爻、本卦與之卦及原文來源；本版姓數÷8上卦、名數÷8下卦、全名÷6動爻，餘0依8／6。這是固定姓名數理參照，不是對問題另起事件卦，不混入六爻納甲或冒稱河洛專盤；若本次無資料就不啟用。",
   "音形字義評估完整連讀、已確認音韻、字義聯想、書寫與辨識成本及本人期待；普通話候選不代替台語、客語、粵語。未提供的諧音、典故、家族字輩與他人評價只列待核，不捏造。來源英文釋義改寫成白話時標其參考性，不假裝教育部中文原文。",
   "比較候選以同姓、同生辰、同筆畫與同用途評估。若不同流派取捨衝突，指出它們各自支持什麼、代價在哪裡、哪個實際條件能改判；不平均各派吉凶、不把相同筆畫多次驗證。先按本人用途與實際使用成本定優先，数理不能保证人生結果。",
+  "三才按本次CDI或靈昭125表；兩具名現代版本與未核實旧表保留來源差異，不冒稱熊崎原著。分類原詞与归一等级分開，不把同版多網站當獨立印證；兩網站25共吉不是四來源研究的23共識。",
   "【姓名判讀主線】先回答這個名字在本題用途上是否合適；比較候選時，分別看字義想表達的方向、叫讀是否順口、辨識與書寫成本，再看同一筆畫體系下五格三才的傳統象義。若數理與實際使用感受不一致，說清各自回答哪一層，再按使用者的目的定優先順序。",
   "建議須落到具體字、音或組合：保留什麼、調整什麼、理由及代價各是什麼。可用口頭自我介紹、電話報名或正式署名作試用，觀察辨識度與本人感受，再決定是否採用；改名題同時考慮既有認知與實際更換成本。",
   "【姓名深入取捨與多派合參】讀完所有有效姓名資料，逐字核讀音、字義、原筆畫與覆核，連到姓／名接合、五格角色、三才作用與全名辨識。只用本次算出的資料，不拿單個吉數、名字五行或生肖斷一生。",
@@ -335,5 +336,5 @@ var JY_REC_NAME = "【成稿檢查】後續各段各增加一個新的判斷、�
     lines.push('【本次資料與記憶邊界】只使用上述原問句、明列姓名、生辰、覆核與原生資料；不得引用帳號記憶、個人檔案、其他對話、先前占卜或先前生成結論。沒有明列者均為未知，不補人物、偏好與經歷。','正文完成後簡短提醒：上述分析僅供研究或娛樂用途，屬傳統象徵解釋；姓名與數理不保證事件或改運結果。醫療、法律與財務決策須結合實際資料與專業意見。',root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.recommendationEnding==="function"&&String(root.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.recommendationEnding('name'):JY_REC_NAME);
     return lines.join('\n\n');
   }
-  root.JYNamePrompt=Object.freeze({version:'20261003-name3',build:build});if(typeof module==='object'&&module.exports)module.exports=root.JYNamePrompt;
+  root.JYNamePrompt=Object.freeze({version:'20261003-name4',build:build});if(typeof module==='object'&&module.exports)module.exports=root.JYNamePrompt;
 })(globalThis);

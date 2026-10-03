@@ -1,4 +1,4 @@
-/*! Jingyue Liuyao / Wen Wang Gua · 1.2.0
+/*! Jingyue Liuyao / Wen Wang Gua · 1.3.0
  * Pure, deterministic Na Jia calculation. Arrays always run bottom → top.
  * Sources and deliberate school policies: docs/liuyao-20260922.md.
  * A correctly calculated traditional chart does not validate prediction.
@@ -210,11 +210,30 @@
   function structuredTarget(relative,role,priority,intent){
     return {selector:relative==='世'||relative==='應'?'role':relative==='世應'?'roles':'relative',value:relative,relative:relative,role:role,priority:priority||'primary',intent:intent||null};
   }
+  // 增刪卜易第八章逐項取用；例外與同詞異義保留，不強配唯一。
+  var TARGET_SOURCE='https://zh.wikisource.org/w/index.php?title=增刪卜易/8&oldid=2100700';
+  function canonicalTargets(question){
+    var q=normalizeQuestion(question),rules=[
+      ['父母',/祖父|祖母|外公|外婆|伯父|叔父|姑母|姨母|師長|老師|師父|岳父|岳母|公公|婆婆|繼父|繼母|乳母|文書|文契|房契|宅舍|屋宇|房屋|舟船|船隻|車輛|汽車|衣服|雨具|布匹|綢緞|章奏/,'長輩／庇護／文契'],
+      ['官鬼',/功名|官府|丈夫|先生的|老公|盜賊|賊盜|失竊|邪祟|鬼神/,'夫／功名／拘束'],
+      ['兄弟',/結拜兄弟|族兄|族弟|堂兄|堂弟|表兄|表弟|姊妹|姐妹|兄弟/,'同輩'],
+      ['妻財',/妻子|老婆|妻妾|婢女|僕役|僕人|珠寶|貨財|倉庫/,'妻／財物／役使'],
+      ['子孫',/女婿|姪子|姪女|侄子|侄女|外甥|門生|醫藥|藥物|藥品|僧人|和尚|道士|兵卒|忠臣|良將|六畜|禽獸|寵物|狗|貓/,'晚輩／醫藥／六畜']
+    ],out=[];
+    rules.forEach(function(r){var m=q.match(r[1]);if(m)out.push({relative:r[0],role:r[2],match:m[0],source:TARGET_SOURCE});});
+    if(/姑姨|我的姑姑|我的阿姨/.test(q))['父母','兄弟'].forEach(function(k){out.push({relative:k,role:'姑姨：章內兩處列法不同，需明示輩分',match:'姑姨',source:TARGET_SOURCE,ambiguous:true});});
+    if(/姊丈|姐夫|妹夫/.test(q)){out=out.filter(function(x){return x.relative!=='兄弟';});out.push({relative:'世',role:'姊丈妹夫：作者案語以世爻取用',match:(q.match(/姊丈|姐夫|妹夫/)||[])[0],source:TARGET_SOURCE,variant:'章末作者驗例；前段兄弟通則另保留',alternative:'兄弟'});}
+    return out.filter(function(x,i,a){return a.findIndex(function(y){return y.relative===x.relative&&y.role===x.role;})===i;});
+  }
   function focusFor(question, selected) {
-    var allowed=['auto','世應','妻財','官鬼','父母','兄弟','子孫'];
+    var allowed=['auto','世','應','世應','妻財','官鬼','父母','兄弟','子孫'];
     if (selected && allowed.indexOf(selected)<0) throw new Error('用神設定無效');
     if (selected && selected!=='auto') return {mode:'manual',status:'resolved',primary:selected,candidates:[selected],targets:[structuredTarget(selected,'提問者指定','primary','manual')],intent:{status:'manual',frames:[]},note:'提問者手動指定取用方向；引擎保留此設定，不以自動分類覆蓋。'};
-    var parsed=resolveQuestionIntent(question),frames=parsed.frames;
+    var parsed=resolveQuestionIntent(question),frames=parsed.frames,canonical=canonicalTargets(question);
+    canonical.forEach(function(x){if(!frames.some(function(f){return f.relative===x.relative;}))frames.push({id:'classical-target-'+x.relative,domain:'classical-role',relative:x.relative,role:x.role,score:null,evidence:[x]});});
+    parsed.classicalTargets=canonical;parsed.classicalSource=TARGET_SOURCE;
+    if(canonical.some(function(x){return x.variant;})){frames=frames.filter(function(f){return f.relative!=='兄弟';});parsed.frames=frames;}
+    if(canonical.some(function(x){return x.ambiguous;}))parsed.ambiguity='原章列法不同；依問事身份分支，不能強制唯一';
     if(!frames.length)return {mode:'unresolved',status:'unresolved',primary:null,candidates:[],targets:[],intent:parsed,note:'原問句未能可靠映射到傳統用神；引擎停止自動猜測，不以世應作萬用備援。'};
     var targets=frames.map(function(f){return structuredTarget(f.relative,f.role,'primary',f.id);}),candidates=[];
     frames.forEach(function(f){if(candidates.indexOf(f.relative)<0)candidates.push(f.relative);});
@@ -313,6 +332,20 @@
     if(start<today||end<start||(end-start)/86400000>365)throw new Error('應期範圍須自起卦當日起，且不超過 366 日');
     return {status:'bounded',start:new Date(start).toISOString().slice(0,10),end:new Date(end).toISOString().slice(0,10),basis:why,startMs:start,endMs:end};
   }
+  function calendarSegments(dateLabel,date){
+    var d=new Date(dateLabel+'T00:00:00Z'),offset=date.timezoneOffset==null?8:date.timezoneOffset;
+    var start=+d-offset*3600000-(date.dayBoundaryMode==='ZI_HOUR_23'?3600000:0),end=start+86400000;
+    if(date.instant)start=Math.max(start,Date.parse(date.instant));
+    if(end<=start)return [];
+    var noon=calendar({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'});
+    var cuts=[start,end];
+    [noon.previousJie,noon.nextJie].forEach(function(t){var n=t&&Number(t.instant);if(!Number.isFinite(n)&&t)n=Date.parse(t.instant||t.utc||t.iso||'');if(n>start&&n<end)cuts.push(n);});
+    // Lunar's jieqi table exposes all instants, independent of the term wrapper schema.
+    var mid=localTimeAt((start+end)/2,8),l=root.Solar.fromYmdHms(mid.year,mid.month,mid.day,mid.hour,mid.minute,mid.second).getLunar(),table=l.getJieQiTable(),names=['立春','惊蛰','清明','立夏','芒种','小暑','立秋','白露','寒露','立冬','大雪','小寒'],alias={LI_CHUN:'立春',JING_ZHE:'惊蛰',DA_XUE:'大雪',XIAO_HAN:'小寒'};
+    Object.keys(table).forEach(function(k){if(names.indexOf(alias[k]||k)<0)return;var t=table[k],n=Date.UTC(t.getYear(),t.getMonth()-1,t.getDay(),t.getHour(),t.getMinute(),t.getSecond())-8*3600000;if(n>start&&n<end)cuts.push(n);});
+    cuts=Array.from(new Set(cuts)).sort(function(a,b){return a-b;});
+    return cuts.slice(0,-1).map(function(a,i){var b=cuts[i+1],w=localTimeAt((a+b)/2,offset),cal=calendar(Object.assign({},w,{timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'}));return {start:new Date(a).toISOString(),endExclusive:new Date(b).toISOString(),year:cal.year,month:cal.month,monthBranch:cal.monthBranch,day:cal.day,voidBranches:cal.voidBranches};});
+  }
   function interpretation(result,input){
     var lines=result.lines,date=result.calendar,assessments=lines.map(function(l){return assessLine(l,date,lines);});
     var targets=questionTargets(result.question,result.focus).map(function(t){
@@ -352,29 +385,23 @@
       if(a.every(function(l){return branchLinks(l.branch,l.changed.branch).same;}))transformed.push({name:(start?'外卦':'內卦')+'伏吟',positions:a.map(function(l){return l.position;}),kind:'repeated-branches'});
       if(a.every(function(l){return branchLinks(l.branch,l.changed.branch).clash;}))transformed.push({name:(start?'外卦':'內卦')+'反吟',positions:a.map(function(l){return l.position;}),kind:'opposed-branches'});
     });
-    var window=parseWindow(result.question,date,input.timeWindow),timing={window:window,status:window.status,candidates:[],policy:'條件觸發日，不是事件保證；多用神未定者不合併成唯一日期。日界沿用起卦設定，交節日须按瞬間核月。'};
+    var window=parseWindow(result.question,date,input.timeWindow),timing={window:window,status:window.status,candidates:[],inspectedDays:[],policy:'實際所選日界、交節瞬間分段。原課月破與未來月破分開，條件觸發日不等於事件發生。'};
     if(window.status==='bounded'){
-      var offset=date.timezoneOffset==null?8:date.timezoneOffset;
-      // 先讀窗外前一日的實際曆法，避免指定起始日已過交節／出旬，
-      // 卻因 previous 為 null 而誤把查詢視窗第一天叫作「首次進入」。
-      var prior=new Date(window.startMs-86400000);
-      var previous=calendar({year:prior.getUTCFullYear(),month:prior.getUTCMonth()+1,day:prior.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'});
       for(var ms=window.startMs;ms<=window.endMs;ms+=86400000){
-        var d=new Date(ms),cal=calendar({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:12,minute:0,timezoneOffset:offset,dayBoundaryMode:date.dayBoundaryMode||'MIDNIGHT_00'}),triggers=[];
-        targets.forEach(function(t){t.candidates.forEach(function(u){var l=u.hidden?lines[u.position-1].hidden:lines[u.position-1],links=branchLinks(u.branch,cal.day[1]),s=l.states,why=[];
-          var leavesVoid=s.void&&!cal.voidBranches.includes(u.branch)&&(!previous||previous.voidBranches.includes(u.branch));
-          var leavesMonth=s.monthBroken&&cal.monthBranch!==date.monthBranch&&(!previous||previous.monthBranch===date.monthBranch);
-          if(leavesVoid)why.push('起卦旬空解除候選');
-          if(s.monthBroken){if(links.same)why.push('月破逢值');if(links.combine)why.push('月破逢合');if(leavesMonth)why.push('首次進入新節令月');}
-          if(l.moving){if(links.same)why.push('動爻逢值');if(links.combine)why.push('動爻逢合');if(l.changed&&cal.day[1]===l.changed.branch)why.push('變支逢值');}
-          else{if(links.same)why.push('靜爻逢值');if(links.clash)why.push('靜爻逢沖');}
-          if(!u.hidden){var assessment=assessments[u.position-1];assessment.tombs.forEach(function(tomb){if(branchLinks(tomb.branch,cal.day[1]).clash)why.push('沖'+tomb.kind+'候選');});
-            if(l.moving&&s.dayCombine&&branchLinks(date.day[1],cal.day[1]).clash)why.push('沖開起卦日合候選');
-          }
-          if(why.length&&(leavesVoid||leavesMonth||links.same||links.clash||links.combine||why.some(function(w){return /^沖/.test(w);})||(l.changed&&l.moving&&cal.day[1]===l.changed.branch)))triggers.push({relative:t.relative,position:u.position,hidden:u.hidden,reasons:why,conditions:u.hidden?['伏神待出伏'].concat(u.flightAssessment?u.flightAssessment.cautions:[]):assessments[u.position-1].obstacles});
-        });});
-        if(triggers.length)timing.candidates.push({date:d.toISOString().slice(0,10),day:cal.day,month:cal.month,triggers:triggers});
-        previous=cal;
+        var label=new Date(ms).toISOString().slice(0,10),segments=calendarSegments(label,date),all=[];
+        segments.forEach(function(cal){var w=localTimeAt(Date.parse(cal.start)-1000,date.timezoneOffset==null?8:date.timezoneOffset),previous=calendar(Object.assign({},w,{timezoneOffset:date.timezoneOffset,dayBoundaryMode:date.dayBoundaryMode})),triggers=[];
+          targets.forEach(function(t){t.candidates.forEach(function(u){var l=u.hidden?lines[u.position-1].hidden:lines[u.position-1],links=branchLinks(u.branch,cal.day[1]),state=l.states,why=[],future=states(l,cal);
+            if(state.void&&!cal.voidBranches.includes(u.branch)&&previous.voidBranches.includes(u.branch))why.push('首次出原旬候選');
+            if(state.monthBroken){if(links.same)why.push('原課月破逢值');if(links.combine)why.push('原課月破逢合');if(cal.monthBranch!==date.monthBranch&&previous.monthBranch===date.monthBranch)why.push('首次進入新節令月');}
+            if(l.moving){if(links.same)why.push('動爻逢值');if(links.combine)why.push('動爻逢合');if(l.changed&&cal.day[1]===l.changed.branch)why.push('變支逢值');}
+            else {if(links.same)why.push('靜爻逢值');if(links.clash)why.push('靜爻逢沖');}
+            if(!u.hidden){var assessment=assessments[u.position-1];assessment.tombs.forEach(function(tomb){if(branchLinks(tomb.branch,cal.day[1]).clash)why.push('沖'+tomb.kind+'候選');});if(l.moving&&state.dayCombine&&branchLinks(date.day[1],cal.day[1]).clash)why.push('沖開起卦日合候選');}
+            if(why.length)triggers.push({relative:t.relative,position:u.position,hidden:u.hidden,reasons:why,futureStates:future,originalStates:state,conditions:u.hidden?['伏神待出伏'].concat(u.flightAssessment?u.flightAssessment.cautions:[]):assessments[u.position-1].obstacles});
+          });});
+          if(triggers.length)all.push(Object.assign({},cal,{triggers:triggers}));
+        });
+        timing.inspectedDays.push({date:label,segments:segments});
+        if(all.length)timing.candidates.push({date:label,day:segments[0].day,month:segments[0].month,segments:all,triggers:all.flatMap(function(s){return s.triggers.map(function(t){return Object.assign({},t,{start:s.start,endExclusive:s.endExclusive,month:s.month});});})});
       }
     }
     return {version:'1.0.0',school:'增刪卜易・條件規則',source:RULE_SOURCE,targets:targets,lines:assessments,influences:influences,
@@ -410,15 +437,15 @@
     });
     var links=[0,1,2].map(function(i){return branchLinks(lines[i].branch,lines[i+3].branch);});
     var changedLinks=[0,1,2].map(function(i){return branchLinks(changedLines[i].branch,changedLines[i+3].branch);});
-    var result={version:'1.2.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
+    var result={version:'1.3.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
       original:original,changed:changed,hasChange:code!==changedCode,lines:lines,movingPositions:lines.filter(function(l){return l.moving;}).map(function(l){return l.position;}),
       structures:{sixClash:links.every(function(p){return p.clash;}),sixCombine:links.every(function(p){return p.combine;}),changedSixClash:changedLinks.every(function(p){return p.clash;}),changedSixCombine:changedLinks.every(function(p){return p.combine;})},
       focus:focusFor(input.question,input.focus),policy:{lineOrder:'bottom-up',coinConvention:'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽',relativeBasis:'本卦卦宮五行（變爻亦同）',hiddenRule:'本卦缺六親時，取本宮純卦同位伏神',monthBasis:'節令交節瞬間，不以農曆初一換月',dayClash:'interpretation.lines 依動靜與月日生扶分類，矛盾不硬判',prediction:'傳統象徵解讀，不是現實事件的保證'}};
     result.interpretation=interpretation(result,input);
     return freeze(result);
   }
-  var api={version:'1.2.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
-    fromCoins:fromCoins,toss:toss,localTimeAt:localTimeAt,calendar:calendar,calculate:calculate,focusFor:focusFor,resolveQuestionIntent:resolveQuestionIntent,
+  var api={version:'1.3.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
+    fromCoins:fromCoins,toss:toss,localTimeAt:localTimeAt,calendar:calendar,calculate:calculate,focusFor:focusFor,resolveQuestionIntent:resolveQuestionIntent,canonicalTargets:canonicalTargets,calendarSegments:calendarSegments,
     assessLine:assessLine,lifeStage:lifeStage,parseWindow:parseWindow,interpretation:interpretation,trigramData:copy(TRIGRAMS),labels:LABELS.slice()};
   root.JYLiuyaoCore=freeze(api);
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JYLiuyaoCore;

@@ -1,0 +1,61 @@
+{
+  "testedAt": "2026-10-03T04:37:56.253Z",
+  "passed": 12,
+  "failed": 0,
+  "sourceCases": {
+    "yijingPairs": 4096,
+    "yijingWings": 514,
+    "nameRows": 250,
+    "ziweiTables": 80
+  },
+  "results": [
+    {
+      "name": "Wikisource逐卦64彖64大象384小象2用象與乾坤文言，來源修訂全部可追溯",
+      "status": "passed"
+    },
+    {
+      "name": "屯之互剝綜蒙錯鼎：具名獨立卦形算例，補充納甲含世應伏神",
+      "status": "passed"
+    },
+    {
+      "name": "所有4096本卦／之卦組合保留朱子原主讀與易傳對應，不被互綜錯覆蓋",
+      "status": "passed"
+    },
+    {
+      "name": "两个125三才版本逐項完整，NTU表4分類總數獨立對照且不混作熊崎原文",
+      "status": "passed"
+    },
+    {
+      "name": "姓名比較與JSON沿用選定三才版本，異版本保留不當多票",
+      "status": "passed"
+    },
+    {
+      "name": "增刪章8女婿醫藥父母文契姊丈妹夫逐項取用，姑姨重義保留分支",
+      "status": "passed"
+    },
+    {
+      "name": "六爻寒露交節瞬間前後分段曆法實算，不只附提醒文字",
+      "status": "passed"
+    },
+    {
+      "name": "六爻00／23日界與無效日期驗證，遠期窗不造首次出旬",
+      "status": "passed"
+    },
+    {
+      "name": "十干兩版四化全部40項：壬科差別真正作用於生年各運限宮干飛化",
+      "status": "passed"
+    },
+    {
+      "name": "紫微48實際飛化、48閉合路徑、18星、六對宮及祿忌權科數組全部保留",
+      "status": "passed"
+    },
+    {
+      "name": "自訂四化必須完整有名有來源，兩張不同版本盤不污染彼此閉包",
+      "status": "passed"
+    },
+    {
+      "name": "楚天雲闊2018具名部分盤例：癸酉貪狼忌轉巨門權、己巳武曲祿聯動辰戊天機忌",
+      "status": "passed"
+    }
+  ]
+}

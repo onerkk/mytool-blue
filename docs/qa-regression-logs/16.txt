@@ -1,0 +1,8 @@
+PASS Invitation and homepage use the same frozen fourteen-method catalogue
+PASS Both native snapshots survive rendering and privacy changes without recalculation
+PASS Indian D1 contains every graha in its real sign, with no tropical substitution
+PASS Western card embeds the exact native noninteractive wheel in all four house systems
+PASS Unknown time shares only the midday reference, without ASC, fixed houses or dasha
+PASS A concentrated D1 conjunction retains all nine grahas instead of truncating the cell
+PASS Absent, crossed-school and nonfinite snapshots never become fabricated birth charts
+Astrology share contracts: 7 groups passed.

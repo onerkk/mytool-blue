@@ -1,0 +1,30 @@
+[
+  {
+    "width": 390,
+    "fullRow": true,
+    "form": {
+      "overflow": false,
+      "bad": []
+    },
+    "result": {
+      "overflow": false,
+      "bad": []
+    },
+    "errors": [],
+    "missing": []
+  },
+  {
+    "width": 1280,
+    "fullRow": true,
+    "form": {
+      "overflow": false,
+      "bad": []
+    },
+    "result": {
+      "overflow": false,
+      "bad": []
+    },
+    "errors": [],
+    "missing": []
+  }
+]

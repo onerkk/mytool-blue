@@ -1,72 +1,124 @@
-# 15項命理引擎計算與文獻核對表
+# 15項命理引擎 R4：計算、文獻與驗證
 
-版本：20261003native3，2026-10-03（台北）。本更新基於原始 mytool-blue-master(20261002-125839).zip。十五個現有接口已接入實際計算、來源、提示詞與完整JSON。整合ZIP包含原專案全部素材及本次更新；「完整專案」指專案檔案齊備，不表示所有古籍、門派及專盤都已實作。基本排盤部分原已存在，以下列出目前範圍。
+版本：20261003native4；提示詞指引9.3.0；快取jy-main-v113。
 
-| 引擎 | 已計算及接入提示詞的資料 | 版本與資料條件 |
+本次已整合並實際驗證15個入口的排盤／抽取、原生作用資料、完整JSON下載与提示詞。這份報告**沒有宣稱所有古籍條款、全部流派或所有缺項均已完成**。所採用算法可追溯與重算，仍有下列明列未實作規則；完整排盤也不等於AI解讀必然零錯誤。
+
+## 實際操作驗證
+
+手機390px和桌面1280px各測15個具名入口；另測姓名兩版125表、紫微壬科天府、西洋Regiomontanus卜卦10宮與倫敦迁居。每個入口都實際產生計算、原生資料、提示詞與JSON下載。沒有呼叫遠端AI代替排盤。
+
+靈籤自動測試使用固定uint32原始隨機輸入，經正式fallback拒絕抽樣及筊杯解釋程序產生第17籤／三聖筊；未注入結果物件。其他隨機抽牌使用瀏覽器隨機源。這是可重複的流程驗證，不是抽樣分布或預測效力試驗。
+
+| 入口 | 本版實際計算與資料 | 手機／桌面 |
 |---|---|---|
-| 八字 | 四柱、藏透十神、根氣、月令、扶抑調候、特殊格候選、干支作用、大運起迄與年度分段；新增實際交節分秒後人元司事、八格成敗帶忌救應63條矩陣。 | 人元採《三命通會》正文5/5/20、7/23、7/5/18表，與同章異表和藏干分開。輕重、財印位置及有效合去需合盤審查，結構成立不直接判貴賤。 |
-| 紫微 | 十二宮、主輔曜與廟旺、生年四化、48宮干飛化、三方四正與借星；大限、年、月、日、時宮位與四化；五層各10流曜魁鉞昌曲祿羊陀馬鸞喜，流年另計年解。 | 預設IZTRO_261，依iztro v2.6.1作者表，流年11顆、其餘各10顆。保留COMMON_7／ZHONGZHOU_8／IZTRO_10。閏月與換日具名；其他四化異表及河洛專盤未全部實作。 |
-| 西洋 | 十星交點、四宮制、四角、宮主、七曜五項尊貴與接納、主星鏈、相位入出相、格局、行運、已開始的太陽回歸；新增次限四角十二宮、角點相位與本命／次限雙宮位。 | Naibod均日弧加出生RAMC和實際次限恆星時分開。Ptolemaic／Egyptian界表分開；極區無有效Placidus不捏造宮位。搬遷與卜卦專盤不在本版接口。 |
-| 印度 | 九曜、十六分盤及192宮位的宮主落宮受照、Arudha、Karaka、Yoga、Vimshottari主副次副運；七曜六力全部分項、Ishta／Kashta、門檻比率排名；十二Bhava宮主力／方向力／照射力與總分，九曜宮界居住比例；全部16分盤各自PAV／BAV／SAV、三角消減、共主座消減、Rasi／Graha／Sodhya Pinda；五支曆Tithi／Yoga／Karana／Nakshatra天文起迄與實際日出換Vaara。 | 六力、Bhava預設Raman/Sripathi，具名Santanam變體另列。Bhava宮主取實際宮中心星座，與整宮宮主分開；水星宮位照射按固定吉曜條款。八分消減採PVR並保存原始337與每步帳本，古譯等值及兩零異則另稽核。極區無日出時不宣稱五支全部成立。其他Dasha、Jaimini及未列出的專算法未全部實作。 |
-| 大六壬 | 換將、天地盤、四課三傳、九宗門、貴人天將、旬空遁干六親、月令旺衰、月破、內外戰、三傳網絡；64課族條件、男順女逆行年、兩人年命、四立四離分至及古法月宿；290條歲干／歲支／月／日干／日支／旬神煞定位，天地盤落位及四課三傳年命上神實際命中。 | 具名《指南》正文與庄氏辨訛，另用《大全》明列的天馬及罪至表。罪至第十月辰保留異文稽核。290條是所選登錄表，不表示每盤全部成立；別名不重複投票。神煞落位、實際命中及全日干支成立條件分開。缺年命等資料保留三態；土旺十八日、其他神煞版本、真太陽時及占類應期專算法未全部實作。 |
-| 六爻 | 八宮納甲、世應、六親六神伏神、月日旺衰、空破墓絕、實際動變、回頭生克、元忌仇作用網絡及填沖出旬應期條件。 | 不把日沖無條件算暗動；未選門派取用和神煞不混入。 |
-| 易經 | 本卦之卦、原文、動爻、朱子0–6動擇辭、當位中位陰陽應及乘承。 | 主讀參讀分清；結構不直接當吉凶票數，其他變占法未同時套用。 |
-| 梅花 | 實際起卦數值與瞬間、本互變、原體不改、四階段方向生克與節令；純乾坤取變後互。 | 外應動靜及起卦時間須真的提供，不借現在時間補造。 |
-| 姓名 | 102,998字離線資料、筆畫五格三才陰陽、生肖形義、音形字義、八字參照、姓名卦、原名與每個候選；新增1935原圖81數全表及循環，與現代簡表分開。 | 原圖46–54頁逐條覆核。三分傾向是編輯分類，非原著概率；125三才是既有通行資料，未冒稱原書全部分類。未知字筆畫及多音讀法需覆核。 |
-| 合盤 | 八字雙向十神、跨柱生克合沖刑害、各自格局與同期歲運；紫微各自原局、同支疊宮、雙向飛化及來源分組、同期運限。 | 未知時辰不作確定紫微疊宮；不自造配對成功率或對方心意。 |
-| 五軸人格 | 原始四柱十神通路、各軸數值輸入、選邊規則和模型摘要，可從匯出重算。 | 本站命理映射模型，沒有心理計量效度。 |
-| 塔羅 | 實際牌號牌位方向、議題綁定、方法與抽牌程序、元素占星對應、同階回聲及宮廷／大牌位置。 | RWS正逆與Book T分開；現代關鍵詞不冒稱Waite逐字翻譯，未記方向不猜。 |
-| Book T開鑰 | 各輪實際分堆、代表牌、合法計數、配對、元素尊貴及停止／無效／放棄紀錄。 | 只有有效且真正完成的操作計入，不代做未操作輪次。 |
-| 雷諾曼 | 真實布局、合法牌句與連續片段、鄰接鏡像騎士步、房屋人物參照；九宮、8×4＋4、9×4與選項分線。 | 主盤尾排及選項不錯接；人物指認需輸入。本版不冒稱全部歷史出版版本已考證。 |
-| 六十甲子籤 | 60原詩、籤號干支及抽籤筊杯程序；逐首摘要、前提及事項分歧；29欄共1735源文特徵＋5缺欄、300廟方配籤名稱與校勘。 | 第5舊址轉6，採fs05-2補充、原詩沿香山校勘。第22混23及第33混段排除。配籤名稱不等於歷史真偽已考證；文字特徵不當概率或固定日期。 |
+| 八字 | 四柱藏干十神、月令司事、八格成敗救應、外格、大運流年、120窮通入口原文與字面前提 | 通過 |
+| 紫微 | 十二宮安星、五層運限及12流月、兩版40項四化、48飛化與48路徑、18星及兩具名河洛轉象 | 通過 |
+| 西洋占星 | 十行星交點、四角五宮制、尊貴格局、次限回歸、迁居、卜卦宮主与成相／換座／轉向時序 | 通過 |
+| 印度占星 | 16分盤、Vimshottari三级運期、17補充運期、六力及宮力、16盤八分/Pinda、Arudha/Argala、41補充Yoga及Neechabhanga | 通過 |
+| 六壬 | 九宗門四課三傳天將、64課族、290神煞、18日土旺／整月政策、天文晝夜、真太陽時及交節应期 | 通過 |
+| 六爻 | 八宮納甲、世應伏神六親六神、月日空破墓、動變元忌仇、原典取用與交節應期 | 通過 |
+| 易經 | 64卦384爻、朱子0–6動爻選讀、彖象文言、本之互綜錯與纳甲 | 通過 |
+| 梅花 | 時間／報數／漢字起卦、體用、本互變、季節與來源政策 | 通過 |
+| 姓名 | 字形筆畫、五格81原典循環、兩份125三才表、原名與所有候選完整比較及出生八字 | 通過 |
+| 雙人合盤 | 兩人完整八字与紫微、雙向十神／飛化、跨柱关系及同期運限 | 通過 |
+| 人格 | 完整出生基礎與本站五軸32型模型及逐軸來源 | 通過 |
+| 塔羅 | 實際正逆位、牌位、主題支線、BookT元素關係、Mathers各選定布局 | 通過 |
+| 雷諾曼 | 合法牌句、九宮格與兩大牌陣、落宮長線、近域、鏡像、騎士步與宮鏈 | 通過 |
+| 開鑰 | Mathers／Liber78具名程序、五輪實際計數、配對、元素尊貴与停止紀錄 | 通過 |
+| 靈籤 | 60首原詩、29事項欄、逐籤校勘与配籤名稱；數位抽取及三聖筊流程 | 通過 |
 
-## 來源
+## 驗算證據
 
-40筆共用來源見 JS/native-rule-sources.js 與 docs/native-scope-20261003.json，另有81數各條原圖頁碼、60籤各首頁面、64課族及290神煞逐條來源。這40筆包含原典、作者教材／原始碼、資料發布者規格及書目，不是40本全部已讀的古籍，數量不等於所有文獻已搜尋完。
+- 原有78個獨立回歸命令全部通過；另有9組原生計算測試87個檢查組及5組補充測試57個檢查組通過。數字是各測試的檢查組數，不能當成57種原典全部規則已完成。
+- 易經4096本卦／之卦組合与386小象／用象；兩版250三才項；兩版80四化項及作者具名部分盤例；PVR原教材例6、10、30、59、80、95、96逐項核對。
+- 獨立Swiss數值核對Regiomontanus五地60宮頭。卜卦15個成相時刻最大角度差0.005009度、時刻差262.24秒；海平面六壬日出日落樣例差約2秒。數學求根的0.5秒容差不是星曆或事件秒級精度。
+- 印度占星提示詞16盤PAV位元編碼与JSON Pointer均做還原比對；資料可重建。完整原始JSON保留全部運期、原典檢核與中間項。提示詞只列當前活躍子運，歷史／未來子運與失敗檢核明細另在完整JSON；未輸出明細不代表算法未計算，也不能把未成立規則當成立。
+- 八字同一窮通句若包含「強弱、清濁、得所、有效制化」等詞，保留待判條件，不把字面透藏符合直接宣布原文全條成立。
 
-新增主要對照：Raman《Graha and Bhava Balas》、BPHS具名英譯、《六壬大全》課經卷7–10、熊崎健翁《運に乗る法》1935國會圖書館原圖、《三命通會》論人元司事、《子平真詮》論用神成敗救應、iztro v2.6.1作者流曜表、Astrodienst次限說明、東海龍門天聖宮60頁及香山財神廟第5籤。來源矛盾不靠改計算湊例題。
+## 仍然明列的邊界
 
-本輪主要原文定位：
+- 八字：窮通原文強弱、清濁、得所、有效制化等完整語義未全部自動裁決；各句保留原文與未定条件。
+- 八字：未採用的其他外格與人元司事異派。
+- 紫微：其他未選四化表及本文以外北派河洛口訣；沒有宣稱全部門派秘訣均已實作。
+- 西洋：未將全部歷史月亮空亡定義及六種古典阻止類型語義自動裁決；候選紀錄不是完整卜卦判斷法。
+- 印度：PVR515頁與BPHS全部歷史Dasha／Yoga條款未逐條全數實作，採本版具名17補充運期與41Yoga。
+- 印度：等強／同度規則沒有唯一解時保留候選，未任選結果。
+- 六壬：未選用的其他神煞及占類細則；具名來源歧異保留。
+- 六爻：未選用的其他神煞与取用門派細則。
+- 易經：未選用的其他漢易與變占規則；本版納甲不在無月日輸入時添造六神。
+- 姓名：舊LEGACY_UNVERIFIED125表未當熊崎原文核實；1931原書為1000式，不能冒造原著125表。
+- 姓名：所選來源以外姓名學門派。
+- 塔羅：Mathers1888第三法後段大圓重排句序有歧義，本站尚未完整復刻；已算66張初次布局与另抽2張意外牌。
+- 雷諾曼：歷史出版版本未全部考證。
+- 靈籤：其他廟宇版本；配籤故事史實未逐項独立考證。
 
-- [Raman教材](https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996)第IX章Bhava Bala、宮界比例及Example 59。第十二宮印表426.76與分量389.21＋40＋97.55不符，保留分量和526.76及印誤記錄，不自造扣分。
-- [P. V. R. Narasimha Rao作者教材](https://vedicastrologer.org/articles/vedic_astro_textbook.pdf)第1章五支曆、第12章16分盤八分／消減／Pinda、Example 40–43；Example 43核對Rasi 77、Graha 75、Sodhya 152。不是515頁全部技術已實作的宣稱。
-- [《Brihat Jataka》英譯原圖](https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf)正文p162，共主座等值例外；Trikona仍採具名PVR規則，古譯兩零清第三座不暗混入。
-- [iztro v2.6.1流曜程式](https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts)及同版location.ts：五層10流曜與流年年解。
-- [《六壬指南注解》前篇](https://shuyuan.zhiming.life/read/六壬指南注解/30)、[中篇](https://shuyuan.zhiming.life/read/六壬指南注解/31)、[後篇與庄氏辨訛](https://shuyuan.zhiming.life/read/六壬指南注解/32)：歲月日旬表與定位條件。[《六壬大全》卷五](https://zh.wikisource.org/zh-hant/六壬大全/5)罪至完整月序，具名另表解決《指南》轉錄「胡」字，不假稱修復原圖。
+此外，未知時辰、未提供坐標、未定用神與原文缺欄屬資料／來源條件，不能靠猜補成完整定盤。原廟頁有5個事項缺欄，JSON明列present:false；配籤名稱已校對，不代表配籤故事史實已全部考證。原文版本差異分表保留，不能把多個網站轉錄同一版本算成多份獨立證據。
 
-## 驗證
+## 可重建與檔案使用
 
-新增核心9套、87/87組通過。數值誤差只描述所測樣例，不延伸成全時代精度保證。
+完整包保留原專案全部834檔及原有素材，新增修補、資料、測試与報告。解壓後使用專案根目錄的index.html；如瀏覽器限制file路徑載入，可在電腦專案目錄以 `python -m http.server 8000` 啟動並開啟localhost:8000。API服務与原專案部署設定须照原環境啟用；本次未代為發布網站。
 
-- native-validation-20261003.json：31/31組；十五接口、4096爻態、384梅花幾何、156RWS正逆、364紫微短期日期與時辰政策案例、提示詞及完整匯出。
-- vedic-strength-validation-20261003.json：12/12組；出版算例、時間力、戰爭守恆、日出前後、Sripathi邊界、日月變體及缺時／極區處理。
-- liuren-class-validation-20261003.json：7/7組；720日干支／盤差×2貴人×12月令＝17,280盤、1,105,920課族決策，另有原典課例、150虛歲行年、古月宿與交節時區案例。
-- name-original-validation-20261003.json：3/3組；81數全表頁碼及循環、102,998字摘要一致，字庫未被規則更新覆寫。
-- engine-supplements-validation-20261003.json：7/7組；32個獨立Swiss次限盤、24個ARMC宮位幾何、60年度流曜干支、12月人元邊界、八格63條與實際提示詞。次限宮頭最大差约0.125角秒，是這批算例誤差，不代表所有年代保證。
-- oracle-register-validation-20261003.json：5/5組；60原詩、1735源文欄、5缺欄、300名稱、錯版拒絕、混段及實際入口。
-- vedic-bhava-strength-validation-20261003.json：7/7組；Raman例59獨立印表分量、全部方向組、居住比例及宮界；高緯實際宮主、缺時及極區。印表精度下最大分量差0.241 Virupa。
-- liuren-shensha-validation-20261003.json：7/7組；原典1998-11-30辛巳日寅將午時例、60年干支、12月表、日旬、參與人上神；8,640盤×290＝2,505,600規則決策；缺輸入及原典異表。窮舉檢查計算契約，不代表事件預測已驗證。
-- vedic-panchanga-av-validation-20261003.json：8/8組；PVR例40–43、共主座占曜分支、16盤原始337及消減帳本、60 Karana與27 Yoga；8個獨立Swiss案例、64個角度交界，1900–2100、Lahiri／Raman。最大交界差6.996秒；二分求解括區0.5秒不等於星曆絕對精度0.5秒。
-- legacy-regression-validation-20261003.json：原package.json回歸鏈展開去重的78個命令，78/78通過；修正後重跑失敗及受影響命令，保留原失敗狀態與重跑標記。
-- native-browser-validation-20261003.json：390／1280像素，各15類結果＋1三柱盤，各真正下載16份JSON，展開全部內容核對版面轉義。
-- native-entry-validation-20261003.json：手機八字、紫微、印度、西洋、六壬實際輸入排盤、提示詞及下載。姓名另在兩寬度操作筆畫覆核、原名對照、八字參照與下載。其他接口驗證計算與結果，不冒稱十五個輸入入口均已逐一操作。
-- 額外回歸：八字21組、姓名14組、印度數值14組、西洋11組含167獨立參考、六爻易經14組及籤詩操作7組均通過。
+差異包只適合覆蓋原專案，不是獨立完整網站。Android若下載檔名變成`.zip.down`，請把最後的`.down`移除，保留`.zip`再解壓；不要以程式碼編輯器開啟壓縮檔。
 
-重現新增核心檢查：npm install，然後npm run test:native。瀏覽器檢查另需Playwright與Chromium。原npm test在本次環境的巢狀npm呼叫未啟動子檢查，因此使用展開後78個原命令逐一執行，未宣稱原npm test命令已通過。未呼叫外部AI來驗證解讀品質，也未部署正式網站。通過測試證明所列計算與資料契約，不等於命理事件預測已獲科學驗證。
+資料重建：`node scripts/build-completion-data.cjs --check`；提示詞同步：`node scripts/sync-recommendation-guides.cjs --check`。補充測試：`npm run test:completion`；原生測試：`npm run test:native`。瀏覽器測試位於tests/native-*-entry-browser-20261003.cjs，使用本地檔案路由與已安裝Playwright／Chromium。
 
-## 提示詞及缺資料
+機器可讀範圍表：docs/native-scope-20261003.json；各套驗證明細：docs/*validation-20261003*.json；獨立卜卦誤差：docs/western-horary-independent-20261003.json。
 
-先計算原盤作用，再將同一資料傳給提示詞。完整JSON保留已算物件；提示詞按原問年份與範圍補入資料。$ref指向同段首次完整記錄，全部參照已驗證可解析，不為縮短而刪除新增條件。十二Bhava、16盤八分消減／Pinda、五支起迄、年解及290神煞帳本已傳入實際提示詞，不能交給AI憑空補算。六壬已加入共同問題任務，十五方法都保留原問題、時間範圍、子問題與原生證據。
+## 55筆具名來源索引
 
-未知時辰的八字只匯出三柱，排除暫時柱格局旺衰與精確起運結論。印度、西洋、紫微按各自政策保留時刻敏感度與排除未確定宮位運期。null、未操作、資料不足與不成立分別記錄。
-
-## 缺項分類
-
-| 類別 | 如何處理 | 例子 |
-|---|---|---|
-| 尚未實作的算法／流派 | 明列範圍，不報完成；不能用「缺輸入」掩蓋 | 其他印度Dasha、河洛、搬遷／卜卦、六壬土旺十八日 |
-| 已實作但缺輸入 | 保留可算部分，其他unknown／null | 不知時辰、缺年命、未覆核字、未操作輪次 |
-| 原典差異或原文缺欄 | 保存原文、採用政策及異表，不造通則 | 罪至異字、Raman印誤、八分等值異則、5籤文缺欄 |
-| 質性判讀或效度未知 | 提供實際證據與判讀條件，不輸出虛構概率 | 八字權輕權重及合去、配對成功率、五軸心理效度 |
-
-scope JSON按每項分列implementationOmissions、inputRequirements、qualitativeJudgments、evidenceLimits。sampleCoverage只是指定樣例的產物數量，不是每種輸入固定數量。
+- [沈孝瞻《子平真詮》](https://www.donglishuzhai.net/chapter/3721.html)：月令、用神與位置先後；不是全部古籍格局已完成。
+- [《子平真詮》論用神成敗救應](https://www.donglishuzhai.net/chapter/3722.html)：八格成敗帶忌救應條件矩陣；權輕權重與有效制化另審。
+- [《三命通會》卷二論人元司事](https://zh.wikisource.org/zh-hant/三命通會/卷二)：正文5/5/20、7/23、7/5/18表；同章異表、墓氣與藏干不混換。
+- [iztro 作者運限文件](https://iztro.com/zh_TW/posts/horoscope)：十二宮與流運定位；不同流派的四化、閏月、換日政策分開。
+- [Don Cross：Astronomy Engine](https://github.com/cosinekitty/astronomy)：地心視位置與獨立星曆比較。
+- [Swiss Ephemeris Programmer Manual](https://www.astro.com/swisseph/swephprg.htm)：獨立星曆、宫位數值覆核；沒有納入 Swiss 程式庫。
+- [Deborah Houlding：Essential Dignity Tables](https://www.skyscript.co.uk/essential_dignities.html)：七曜五項尊貴；Ptolemaic、Egyptian界表分開，作者例題獨立驗算。
+- [Deborah Houlding：House Ruler](https://www.skyscript.co.uk/glossary/house-ruler/)：傳統七曜宮主、落宮與相位。
+- [Skyscript：Returns](https://www.skyscript.co.uk/glossary/R)：太陽回到本命黃經，已開始年度與未開始年度分開。
+- [P. V. R. Narasimha Rao：Vedic Astrology, An Integrated Approach](https://vedicastrologer.org/articles/vedic_astro_textbook.pdf)：第1章五支曆角度與日出日界、第12章八分PAV/BAV/SAV、十六分盤、兩階段消減與Pinda；Parashari分盤相位運期及15.4行星狀態；不是515頁全部規則都實作的宣稱。
+- [Varahamihira《Brihat Jataka》英譯第IX章](https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf)：p162共主座一有曜一無曜等值清無曜座；本版Trikona仍採PVR，不混入本英譯兩零清第三座。
+- [Astrodienst 次限宮位說明](https://www.astro.com/faq/fq_fh_owtype_e.htm)：Naibod均日弧加出生RAMC及ARMC361實際次限恆星時分列；重算角點與12宮。
+- [iztro v2.6.1作者流曜程式](https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts)：五層魁鉞昌曲祿羊陀馬鸞喜獨立安星；流年另加年解，位置表依同版location.ts；舊七八十星政策保留。
+- [《六壬大全》畢法賦](https://zh.wikisource.org/zh/六壬大全_(四庫全書本)/卷09)：三傳遞生互克、旬空與各方向條件。
+- [《六壬大全》卷十殃咎課](https://zh.wikisource.org/zh-hant/六壬大全/10)：神克將內戰、將克神外戰。
+- [《六壬指南注解》神煞賦前篇](https://shuyuan.zhiming.life/read/六壬指南注解/30)：歲神、月神方圖及正二至臘月表；具名異表與錯字另稽核。
+- [《六壬指南注解》神煞賦中篇](https://shuyuan.zhiming.life/read/六壬指南注解/31)：月神順逆四组三合與十二位、旬神及干支神的實際定位。
+- [《六壬指南注解》神煞賦後篇及庄氏辨訛](https://shuyuan.zhiming.life/read/六壬指南注解/32)：日干支神、官鬼及天目等辨訛；定位與四課三傳年命上神實際命中分列。
+- [《六壬大全》卷五出軍凶日](https://zh.wikisource.org/zh-hant/六壬大全/5)：罪至正午至十二巳完整月序；第十月辰，具名另表解決《指南》轉錄胡字。
+- [《增刪卜易》元神忌神](https://zh.wikisource.org/zh-hant/增刪卜易/10)：用神、元忌仇、月日動變與生克有效條件。
+- [王弼、孔穎達《周易正義》](https://zh.wikisource.org/zh-hant/周易正義/06旅)：當位、中、應、乘承；不直接換算吉凶票數。
+- [朱熹《易學啟蒙》](https://zh.wikisource.org/zh-hant/易學啟蒙)：考變占與0至6動爻擇辭。
+- [《梅花易數》卷一至卷三](https://zh.wikisource.org/zh-hant/梅花易數/卷一)：卦數、體用、互變與純乾坤例外；外應未提供不編造。
+- [A. E. Waite：The Pictorial Key to the Tarot](https://sacred-texts.com/tarot/pkt/pkt0301.htm)：既有RWS關鍵詞為現代摘要，不是原著逐字翻譯。
+- [Liber LXXVIII／Book T](https://sacred-texts.com/oto/lib78.htm)：五輪操作與元素尊貴；不用RWS逆位覆蓋。
+- [S. L. MacGregor Mathers：The Tarot (1888)](https://sacred-texts.com/tarot/mathers/mtar04.htm)：原稿操作口徑與後來Book T分開。
+- [James R. Eads：Green Glyphs Lenormand / Grand Tableau](https://prismavisions.com/pages/lenormand-the-grand-tableau)：4×9布局；本站8×4＋4政策另列，幾何依本次布局實算。
+- [東海龍門天聖宮六十甲子籤](https://donghaimazu.com/post/fortune-sticks/fs01/)：60首詩、29事項欄、配籤名稱與逐首摘要；第5首詩採香山財神廟原文校勘，解說採正確fs05-2，來源混段與缺欄明列。
+- [北港朝天宮靈籤程序](https://www.matsu.org.tw/?act=menuinfo&ml_id=20240116003)：程序參考；每首詩使用自己的sourceUrl與版本。
+- [Unicode UAX #38：Unihan Database](https://www.unicode.org/reports/tr38/)：字庫字段；現代筆畫不冒稱康熙姓名筆畫。
+- [教育部異體字字典](https://dict.variants.moe.edu.tw/)：字形、字義、讀音覆核。
+- [BPHS 第27章](https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf)：Santanam英譯六力公式；與Raman月相、動力、照射等差異明列。
+- [B. V. Raman《Graha and Bhava Balas》](https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996)：七曜六力全部分項；第IX章十二Bhava方向／宮主／照射、九曜宮界比例及例59；第十二宮印表總分與分項不符，保留計算與印誤稽核。
+- [熊崎健翁《熊崎式姓名學大奧義 地之卷》1931](https://dl.ndl.go.jp/pid/1104862/1/7)：正文4–5頁核對超81循環；不是81條斷語全表已核對。
+- [熊崎健翁《運に乗る法》1935](https://dl.ndl.go.jp/pid/1094933/1/25)：正文46–54頁81數全表與循環逐頁覆核；保留正負條件，現代簡表與編輯練習分開。
+- [《六壬大全》課經卷七](https://zh.wikisource.org/zh-hant/六壬大全/7)：九宗門與三光三陽三奇六儀時泰龍德。
+- [《六壬大全》課經卷八](https://zh.wikisource.org/zh-hant/六壬大全/8)：官爵至閉口；行年丙寅順壬申逆及德孕旺孕算例。
+- [《六壬大全》課經卷九](https://zh.wikisource.org/zh-hant/六壬大全/9)：遊子至災厄；古法月宿、四立四離、迍福逐條条件。
+- [《六壬大全》課經卷十](https://zh.wikisource.org/zh-hant/六壬大全/10)：殃咎至物類；間傳24型及無祿絕嗣、雜狀物類分族。
+- [熊崎健翁《姓名の神秘》國會圖書館書目](https://ndlsearch.ndl.go.jp/books/R100000039-I2971289)：書目核對不等於取得全文或逐條覆核81數。
+- [《窮通寶鑑》十干十二月](https://zh.wikisource.org/wiki/窮通寶鑑)：120入口615段；合月原文保留合月，不把強弱清濁的質性條件冒稱全文語义判定。
+- [iztro2.6.1十干四化表](https://iztro.com/zh_TW/learn/mutagen)：10×4；壬科左輔，實際作用於生年、五層運限及宮干飛化。
+- [星格所引《紫微斗數全書》四化表](https://xingge.tw/zh-hant/learn/c4-birth-year)：具名10×4壬科天府版本；不是本次取得古籍原圖的宣稱。
+- [楚天雲闊2018北派河洛自化體系實例](https://fengshui-magazine.com.hk/No.251-May18/A208.htm)：18星、48圖路、六對宮、祿忌4+1／權科2+3，四D–E與五A–B兩轉象規則；二C與後文宮職歧異保留。
+- [Mantreswara《Phaladeepika》7.26–30](https://www.siva.sh/phaladeepika/7/26-30)：7曜4項Neechabhanga條件；力量門檻與互居角宮版本具名。
+- [PVR教材第4、5、9–11、15、17–24章](https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf)：17補充Dasha、16盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對。
+- [《選擇紀要》上編引神樞經](https://zh.wikisource.org/wiki/選擇紀要/上編)：四立前十八日UTC實際邊界，與整月土旺分開。
+- [《增刪卜易》第8章用神](https://zh.wikisource.org/w/index.php?title=增刪卜易/8&oldid=2100700)：女婿醫藥父母文契與妹夫世；姑姨重義保留候選。
+- [《周易》64卦彖象文言逐卦頁](https://zh.wikisource.org/wiki/周易/乾)：64彖、64大象、384小象、2用象與乾坤文言；各卦來源修訂與雜湊列於資料集。
+- [CDI公開三才表五頁](http://www.cdi.org.tw/name/n-3-wood.html)：木火土金水各25，金頁採gold；125項不是熊崎原文。
+- [靈昭道苑公開三才表](https://www.356.com.tw/teaching/?parent_id=1274)：完整125項與CDI版本分開，不把網站同版重複計票。
+- [陶宏麟2018姓名筆劃數吉凶與運勢](https://econ.ntu.edu.tw/ter/new/data/new/TER47-3/TER473-4.pdf)：表4分類總數獨立核對；研究4來源共識23與本次2網站共25不可混稱。
+- [Deborah Houlding行星光圈表](https://www.skyscript.co.uk/aspectorbs.html)：兩具名行星光圈取半；傳統相位和現代容許度分開。
+- [Deborah Houlding月亮空亡的定義](https://www.skyscript.co.uk/voc.html)：換座前精確成相與現正入相兩種政策分列；不是全歷史空亡定義自動化。
+- [Skyscript Reception](https://www.skyscript.co.uk/glossary/reception/)：主星接納來客方向，實際尊貴位置与古典相位條件。

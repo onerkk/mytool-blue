@@ -4629,7 +4629,7 @@ function assessBaziSeasonal(facts, reference) {
   if(facts.dm==='乙'&&month==='子'){
     clauses.push({id:'YI_ZI_BING_WARMTH',matched:true,conclusion:any('丙')?'所校仲冬乙木先取丙暖；本盘已見丙，續查壬癸、戊與丙的位置及根源':'所校仲冬乙木先取丙暖；本盤未見丙，丁火不能直接當成同一調候條件已滿足'});
   }
-  return {policy:'SEASONAL_STEM_CONDITIONS_V1',sourceUrl:reference.sourceUrl,sourceSection:reference.sourceSection,stems:rows,matchedClauses:clauses,
+  return {classicalClauses:window.JYBaziQiongtong?window.JYBaziQiongtong.evaluate(facts):null,policy:'SEASONAL_STEM_CONDITIONS_V2',sourceUrl:reference.sourceUrl,sourceSection:reference.sourceSection,stems:rows,matchedClauses:clauses,
     conclusion:rows.map(function(r){return r.stem+r.element+'：'+r.status;}).join('；')+(clauses.length?'。'+clauses.map(function(c){return c.conclusion;}).join('。'):''),
     coverage:'120個月令／季節入口逐干核對透藏、同五行根與相鄰制合；明示命中的條文分支。原文多寡、清濁與成化仍需按全局裁決，未寫入任意百分比。',climateScoreAdjustment:0};
 }

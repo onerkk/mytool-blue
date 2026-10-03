@@ -1,0 +1,15 @@
+PASS 167 independent Swiss / Moshier charts: sidereal planets, mean node, ascending intersection and ayanamsa
+PASS All 27 nakshatra and 108 pada boundaries, wrapping and half-open intervals
+PASS 72 polar ascendants and 6 Raman charts agree with separately generated Swiss references
+PASS Sixteen divisional charts: independent textbook examples and documented D3 erratum
+PASS Dignity degree transitions: Moon, Mercury, and moolatrikona end points
+PASS Vimshottari Example 50: 809.55-day remainder, pre-birth MD/AD, full-length proportion and exact transitions
+PASS IANA civil time: Taiwan, India, DST gap/fold, invalid dates and half-hour offset
+PASS Immutable chart: 16 vargas, whole signs, all nine grahas and 36 actual monthly transit samples
+PASS All seven BAV totals, SAV 337, and each prastara contribution independently reconstructed
+PASS Directed drishti and arudha exceptions are geometric, not interchangeable
+PASS Time sensitivity computes alternatives; unknown time omits houses and exact prompt dasha
+PASS Eight topic prompts reuse native facts, exact date anchors, proper method paths and branding
+PASS Input failures are explicit, never silently substitute a different mode/date
+PASS Legacy dasha projection also preserves pre-birth AD and uses the natal UTC Julian day
+{"passed":14,"total":14,"maxErrorArcseconds":{"Sun":1.96296506028375,"Moon":3.067910929075879,"Mars":9.3311763233487,"Mercury":9.026658206130378,"Jupiter":7.505899100260649,"Venus":18.799569845759834,"Saturn":11.24978715843099,"Rahu":0.10775612399811507,"ascendant":6.548065439528727,"ayanamsa":0.18725526279013138}}

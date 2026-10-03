@@ -1,0 +1,23 @@
+{
+  "testedAt": "2026-10-03T05:06:13.543Z",
+  "results": [
+    {
+      "method": "ziwei",
+      "profile": "QUANSHU_XINGGE",
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "method": "astro",
+      "profile": "horary-R-10",
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "method": "astro",
+      "profile": "relocated-R-London",
+      "width": 390,
+      "status": "passed"
+    }
+  ]
+}

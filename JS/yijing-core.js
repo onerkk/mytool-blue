@@ -7,6 +7,11 @@
   'use strict';
   function freeze(x){if(x&&typeof x==='object'&&!Object.isFrozen(x)){Object.keys(x).forEach(function(k){freeze(x[k]);});Object.freeze(x);}return x;}
   function textFor(number){var d=root.JYYijingData;if(!d||d.entries.length!==64)throw new Error('易經原文尚未載入，請稍後重試。');var e=d.entries[number-1];if(!e||e.number!==number||e.lines.length!==6)throw new Error('卦爻辭資料不完整');return e;}
+  function complementaryViews(hex){
+    var c=root.JYLiuyaoCore,code=hex.lines.reduce(function(n,y,i){return n|(y?1<<i:0);},0),nuclear=((code>>1)&7)|(((code>>2)&7)<<3),reversed=hex.lines.reduce(function(n,y,i){return n|(y?1<<(5-i):0);},0);
+    function view(value,name){var h=c.hexagram(value),lines=c.najia(value),pure=c.najia(h.palace.pureCode),present=lines.map(function(l){return l.relative;});return {name:name,code:value,hexagram:h,najia:lines.map(function(l,i){return {...l,role:l.position===h.palace.shi?'世':l.position===h.palace.ying?'應':null,hidden:present.includes(pure[i].relative)?null:pure[i]};})};}
+    return {profile:'inner-234-345-inverse-complement-and-JingFang-eight-palace-najia',original:view(code,'原卦'),mutual:view(nuclear,'互體二三四、三四五'),overturned:view(reversed,'綜卦六爻倒序'),opposite:view(code^63,'錯卦陰陽全反'),policy:'互、錯、綜及京房八宮納甲為另列的結構參照；不改朱子擇辭主讀，不無據添六神、旬空、月破或用神，不宣稱所有漢易體系同此一法。'};
+  }
   function calculate(input){
     input=input||{};var c=root.JYLiuyaoCore,values=input.values;
     if(!c)throw new Error('卦象元件尚未載入');
@@ -37,11 +42,12 @@
     else if(moving.length===5){rule='五爻動，以之卦唯一不變爻的爻辭為主。';line('changed',still[0],'主讀');}
     else if(original.number===1||original.number===2){rule='乾坤六爻皆動，分別用「用九」或「用六」。';selections.push({hexagram:base.name,number:base.number,side:'original',kind:'use',position:null,label:base.use.label,text:base.use.text,role:'主讀',source:base.source,revision:base.revision});}
     else{rule='六爻皆動，以之卦卦辭為主。';judgment('changed','主讀');}
-    return freeze({version:'1.1.0',system:'yijing',method:method,question:String(input.question||'').trim(),calendar:JSON.parse(JSON.stringify(input.calendar||{})),
+    var wings=root.JYYijingWings,expositions=wings?{edition:wings.edition,license:wings.license,original:wings.entries[original.number-1],changed:wings.entries[changed.number-1],selectedCompanions:selections.map(function(s){var e=wings.entries[s.number-1];return {side:s.side,number:s.number,role:s.role,position:s.position,kind:s.kind,text:s.kind==='line'?e.lineImages[s.position-1]:s.kind==='use'?e.lineImages[6]:e.tuan,source:e.source,revision:e.revision};})}:{status:'module-unavailable'};
+    return freeze({version:'1.2.0',system:'yijing',method:method,question:String(input.question||'').trim(),calendar:JSON.parse(JSON.stringify(input.calendar||{})),
       values:values.slice(),records:JSON.parse(JSON.stringify(records)),original:original,changed:changed,hasChange:code!==changedCode,movingPositions:moving,
       lines:values.map(function(v,i){return {position:i+1,label:c.labels[i],value:v,yang:!!(v%2),moving:v===6||v===9,valueName:{6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[v],marker:v===6?'×':v===9?'○':'',text:base.lines[i]};}),
-      originalText:base,changedText:to,reading:{policy:'朱子《易學啟蒙・考變占》',rule:rule,selections:selections},
+      originalText:base,changedText:to,expositions:expositions,complementaryViews:{original:complementaryViews(original),changed:complementaryViews(changed)},reading:{policy:'朱子《易學啟蒙・考變占》',rule:rule,selections:selections},
       policy:{lineOrder:'bottom-up',coinConvention:method==='coins'?'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽':null,yarrowPolicy:method==='yarrow'?root.JYYarrowCore.policy:null,scope:'周易卦爻辭；不套用六爻納甲或梅花體用',sourceEdition:root.JYYijingData.edition,threeChanges:'三動爻位置由初向上列二十組合，前十主貞、後十主悔；兩卦皆讀'}});
   }
-  root.JYYijingCore=Object.freeze({version:'1.1.0',calculate:calculate,textFor:textFor});
+  root.JYYijingCore=Object.freeze({version:'1.2.0',calculate:calculate,textFor:textFor,complementaryViews:complementaryViews});
 })(typeof window!=='undefined'?window:globalThis);

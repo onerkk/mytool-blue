@@ -1,11 +1,11 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES?process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright':'playwright');
-const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.mp3':'audio/mpeg'},results=[];
+const root=path.resolve(__dirname,'..'),width=Number(process.env.JY_ENTRY_WIDTH||390),types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.mp3':'audio/mpeg'},results=[];
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.JY_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage','--no-zygote','--single-process','--in-process-gpu','--disable-crash-reporter','--enable-unsafe-swiftshader']});
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block',reducedMotion:'reduce',acceptDownloads:true}),page=await context.newPage(),errors=[];
+  const context=await browser.newContext({viewport:{width,height:844},serviceWorkers:'block',reducedMotion:'reduce',acceptDownloads:true}),page=await context.newPage(),errors=[];
   page.setDefaultTimeout(45000);page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.dismiss());
   await page.route('**/*',async route=>{const url=new URL(route.request().url());if(url.origin!=='https://jingyue.uk')return route.abort();if(url.pathname.startsWith('/api/'))return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,total:1,remaining:10,isAdmin:false})});const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(!file.startsWith(root+'/'))return route.abort();try{return route.fulfill({body:fs.readFileSync(file),contentType:types[path.extname(file)]||'application/octet-stream'});}catch(e){return route.fulfill({status:404,body:''});}});
   await page.addInitScript(()=>{window.__nativeCopied='';Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__nativeCopied=text;}}});});
@@ -18,7 +18,7 @@ const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/j
    if(kind==='vedic'){assert.equal(saved.strength.complete,true);assert.equal(saved.strength.planets.length,7);assert(Object.values(saved.strength.totalVirupas).every(Number.isFinite));assert.equal(saved.bhavaStrength.houses.length,12);assert.equal(saved.bhavaStrength.residential.length,9);assert.equal(Object.keys(saved.vargaAshtakavarga).length,16);assert.equal(saved.panchanga.complete,true);assert(prompt.includes('pinda'));assert(prompt.includes('Bhava')||prompt.includes('bhavaStrength'));}
    if(kind==='astro')assert.equal(saved.essentialDignities.planets.length,7);
    if(kind==='liuren'){assert.equal(saved.shensha.counts.rules,290);assert(prompt.includes('shensha'));assert(saved.shensha.checks.some(s=>s.name==='罪至'));}
-   await page.evaluate(close);results.push({method:kind,status:'passed',width:390,nativeDownload:true,prompt:true});console.log('PASS actual '+kind+' entry: calculation, native panel, full JSON download and prompt');
+   await page.evaluate(close);results.push({method:kind,status:'passed',width,nativeDownload:true,prompt:true});console.log('PASS actual '+kind+' entry: calculation, native panel, full JSON download and prompt');
   }
   await page.waitForFunction(()=>typeof _baziStandaloneOpen==='function');await page.evaluate(()=>{_baziStandaloneOpen();_baziSetGender('male');});
   await page.waitForFunction(()=>typeof computeBazi==='function'&&typeof enhanceBazi==='function');
@@ -40,5 +40,5 @@ const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/j
   await verify('liuren',()=>JYLiurenPrompt.build(JYLiurenRoom.getState().result),()=>JYLiurenRoom.close());
   assert.deepEqual(errors,[]);await context.close();
  }finally{await browser.close();}
- fs.writeFileSync(path.join(root,'docs/native-entry-validation-20261003.json'),JSON.stringify({testedAt:new Date().toISOString(),scope:'Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths',results},null,2));
+ fs.writeFileSync(path.join(root,'docs/native-entry-validation-20261003-'+width+'.json'),JSON.stringify({testedAt:new Date().toISOString(),scope:'Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths',results},null,2));
 })().catch(e=>{console.error(e.stack);process.exitCode=1;});

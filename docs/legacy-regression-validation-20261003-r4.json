@@ -1,0 +1,404 @@
+{
+  "testedAt": "2026-10-03T04:58:57.704Z",
+  "scope": "All78 original unique regression commands, executed against final R4 files",
+  "results": [
+    {
+      "command": "node tests/prompt-accuracy-20260811.test.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/tarot-native-structure-20260927.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 1
+    },
+    {
+      "command": "node tests/ziwei-root-spec-v1.test.js",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/counter-proxy.test.mjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/picker-and-data-regression.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/api-failure-regression.mjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/interaction-hotfix-20260906.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/display-lifecycle-regression.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/divination-audit-20260908.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/divination-professional-20260910.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/share-card-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/share-card-preview-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/astrology-share-20260914.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/atelier-ui-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/ritual-lifecycle-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/ootk-scroll-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/mobile-ritual-actions-20260928.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 0
+    },
+    {
+      "command": "node tests/cinematic-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/shuffle-recovery-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/flow-interaction-20260911.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/reading-depth-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/flow-polish-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/engine-fixes-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/accuracy-engine-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/bazi-regression.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/bazi-suite-regression.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/export-accuracy-prompts-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/immersive-experience-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/plain-reading-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/story-immersion-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/realtime-free-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/oracle-result-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/deck-routing-scenes-20260912.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/method-engine-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 1
+    },
+    {
+      "command": "node tests/method-prompts-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/bazi-huaqi-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/core-engine-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/engine-output-consistency-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/vedic-engine-20260913.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/vedic-design-20260914.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/vedic-palace-20260914.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/western-engine-20260914.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/ootk-flow-20260915.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/ootk-source-fidelity-20260925.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/relationship-20260917.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/time-ownership-20260920.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/build-question-planner.cjs --check",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/question-routing-20260922.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/build-yijing-data.cjs --check",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/gua-engine-20260922.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/yarrow-20260922.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/special-rules-20260922.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 1
+    },
+    {
+      "command": "node tests/astro-bridge-20260922.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/birth-audit-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/astro-rules-audit-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/card-audit-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/card-audit-mathers-third-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/card-audit-legacy-meanings-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/prompt-only-audit-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/prompt-only-shop-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 1
+    },
+    {
+      "command": "node tests/traffic-tap-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/admin-updater-20260923.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/reading-workflow-20260924.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "exitCode": 0,
+      "status": "passed",
+      "originalExitCode": 1
+    },
+    {
+      "command": "node tests/causal-question-regression-20260927.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/semantic-review-followup-20260928.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/name-engine-20261001.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/name-comparison-rootfix-20261002.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    },
+    {
+      "command": "node tests/liuren-engine-20261001.cjs",
+      "exitCode": 0,
+      "status": "passed"
+    }
+  ],
+  "passed": 78,
+  "total": 78
+}

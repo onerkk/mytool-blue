@@ -18518,7 +18518,7 @@ renderTarot = function(){
       // Fix #5: p.verdict / p.topTags 已移除（Worker 不讀這些，浪費 payload tokens）
 
       // Needs-first guidance; no catalogue is attached to the analysis request.
-      if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
+      if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
       p.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
 
       // ═══ v26：可變性標記（reversibility）═══
@@ -21125,7 +21125,7 @@ function _buildTarotOnlyPayload() {
     }
     rws.tarotData.foundationVersion=foundation.VERSION||'';
 
-    if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+    if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
     rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
   }
@@ -21195,7 +21195,7 @@ function _buildTarotOnlyPayload() {
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
     shopRecommendation:(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
   };
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
 }
@@ -22650,7 +22650,7 @@ async function _triggerTarotFollowUp() {
   }
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // Previous readings are context, not authority for product choices.
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
   payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
@@ -23157,7 +23157,7 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.3.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
   payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;

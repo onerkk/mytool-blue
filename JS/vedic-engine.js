@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='jy-vedic-1.3.0', DAY=86400000, RAD=Math.PI/180;
+  const VERSION='jy-vedic-1.4.0', DAY=86400000, RAD=Math.PI/180;
   const KEYS=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
   const NAMES=['太陽','月亮','火星','水星','木星','金星','土星','羅睺','計都'];
   const SYMBOLS=['☉','☽','♂','☿','♃','♀','♄','☊','☋'];
@@ -402,7 +402,7 @@
     }
     const dashas=dasha(planets.Moon.longitude,birth,reference,input.yearDays);
     if(input.unknownTime)dashas.current=null;
-    const out={schema:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude:input.latitude,longitude:input.longitude,location:input.location||'',civil:input.civil?{...input.civil}:null,unknownTime:input.unknownTime},
+    const out={schema:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude:input.latitude,longitude:input.longitude,ayanamsa:input.ayanamsa,yearDays:input.yearDays,location:input.location||'',civil:input.civil?{...input.civil}:null,unknownTime:input.unknownTime},
       policy:{astronomy:'Astronomy Engine 2.1.19; geocentric apparent ecliptic of date',deltaT:'Swiss 2.10.03 Moshier monthly numeric model; future Delta T is a prediction',ayanamsa:input.ayanamsa,ayanamsaDegrees:raw.ayanamsa,meanAyanamsa:raw.meanAyanamsa,node:'mean',houses:'whole-sign',dashaYearDays:input.yearDays,vargas:'Parashari 16; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign',karakas:'7 grahas, no nodes',dignity:'degree-aware; Venus moolatrikona 0–15 Libra (PVR convention)',scope:'D1–D60, Vimshottari MD/AD/PD, graha/rasi drishti, BAV/SAV, dispositors, arudha, seven karakas, structural yogas; not a full Shadbala or Jaimini-dasha calculator'},
       julianDay:raw.jd,lagna,planets,houses,vargas,aspects:asp,relationships:rel,dispositors:dispositors(planets),ashtakavarga:av,vargaAshtakavarga:lagna?Object.fromEntries(Object.entries(vargas).map(([d,v])=>[d,d==='1'?av:ashtakavarga(v.planets,v.lagna.sign)])):null,arudhas:arudhas(planets,lagna&&lagna.sign),karakas,yogas:yogas(planets,lagna&&lagna.sign,asp),panchanga,dasha:dashas,transits,transitSnapshots};
     out.policy.combustion='Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility';
@@ -418,6 +418,8 @@
     if(root.JYVedicStrength){out.strength=root.JYVedicStrength.compute(out,{school:input.strengthSchool||'raman'});out.bhavaStrength=root.JYVedicStrength.bhavaStrength(out,out.strength);out.policy.scope=out.policy.scope.replace('not a full Shadbala or Jaimini-dasha calculator','six-strength ledger under '+out.strength.school+'; Raman/Sripathi twelve-house strength and nine residential proportions when birth clock/geometry permits; other dashas not selected');out.policy.strengthStatus=out.strength.status;out.policy.bhavaStrengthStatus=out.bhavaStrength.status;}
     out.panchanga=panchangaComplete(out);
     out.policy.ashtakavarga='PVR12：D1及十六分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變';out.policy.panchangaStatus=out.panchanga.complete?'calculated':'insufficient-data';
+    if(root.JYVedicCompletion){out.advanced=root.JYVedicCompletion.compute(out);out.policy.additionalAlgorithms=out.advanced.version;out.policy.scope+='; separate PVR/BPHS additional dasha, Jaimini and yoga ledgers';}
+    else out.policy.additionalAlgorithms='module-unavailable';
     return freeze(out);
   }
   root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,trikonaReduce,ekadhipatyaReduce,sodhyaPinda,panchangaAngles,panchanga:panchangaComplete,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});

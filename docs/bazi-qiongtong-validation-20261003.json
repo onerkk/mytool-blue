@@ -1,0 +1,33 @@
+{
+  "testedAt": "2026-10-03T04:15:47.631Z",
+  "passed": 6,
+  "failed": 0,
+  "sourceEntries": 120,
+  "grammar": "Explicit literal stems/branches and exact day/hour predicates. Qualitative effective transformation, balance and luck conditions retained for full-context judgment; this is not a claim that all ancient sentences have a unique Boolean algorithm.",
+  "results": [
+    {
+      "name": "120日干×節令月入口皆有具體校錄原文、逐條實算十干透藏與原文條件",
+      "status": "passed"
+    },
+    {
+      "name": "三月甲木庚壬兩透原文字面條件：兩者透、藏而未透、缺一分别實算",
+      "status": "passed"
+    },
+    {
+      "name": "正月甲木癸藏丙透與無丙癸正反條件、隱干和日主不冒充額外透干",
+      "status": "passed"
+    },
+    {
+      "name": "支局只列真實三支骨架，古文清濁強弱成化和風水前提保留未知",
+      "status": "passed"
+    },
+    {
+      "name": "乙丑原数字本重複十一月標題，冬月通則与校勘待核都明列，不偽造十二月專段",
+      "status": "passed"
+    },
+    {
+      "name": "既有八字原局實算、JSON與提示詞同步載入源句及條件，不改格局及旺衰計算",
+      "status": "passed"
+    }
+  ]
+}

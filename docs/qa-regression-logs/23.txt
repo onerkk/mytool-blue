@@ -1,0 +1,17 @@
+✓ Native deck has one node per actual card; mouse drag scrolls both rows and cannot pick on release
+✓ Touch delegates panning to the browser; pointer cancellation suppresses accidental card selection
+✓ A vertical gesture leaves the deck still; a later tiny tap selects its original target exactly once
+✓ Browse buttons clamp at both ends; keyboard and repeated initialization leave no duplicate handlers
+✓ Unshuffled cards cannot be selected and browse buttons remain inactive
+✓ Illustrated ritual follows the finger without WebGL; a second pointer cannot hijack it
+✓ Every ritual gives instructions before its interactive surface and the primary action after it
+✓ Changing Tarot / Key changes controls in place with no delayed scroll
+✓ Entering the question page does not focus the textarea or open the soft keyboard
+✓ Secondary AI providers keep the original nodes and handlers, with only one expandable group
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+✓ Lenormand and Meihua keep question text and viewport when changing an option
+✓ AI opens inside the click gesture; clipboard rejection offers the actual prompt instead of a dead end
+✓ Expanding all form fields survives an option rerender
+✓ Changing a compatibility scenario retains the scroll position and both birth forms
+✓ Updated styles parse; the intended gesture surfaces explicitly own touch-action
+flow-interaction: 15 groups passed; rendered layout and physical touch remain separate checks.

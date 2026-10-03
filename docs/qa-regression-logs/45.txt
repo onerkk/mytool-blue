@@ -1,0 +1,24 @@
+PASS 167 independent Swiss/Moshier references: ten planets, lunar node, four house systems
+PASS DST gap, fold and civil dates preserve the actual UTC instant
+PASS Unknown clock covers a 23/25-hour day and midnight DST transitions
+PASS Applying/separating handles retrograde, zero crossing, opposition and exactness
+PASS Classical dignities distinguish Mercury domicile plus exaltation and outer planets
+PASS Grand trine, T-square and grand cross require every actual link
+PASS Solar returns and secondary progression use independent Swiss timing references
+PASS Every displayed planet house matches the same snapshot; angles stay distinct from equal cusps
+PASS Unknown time has no houses, ruler, sect, progression or solar return
+PASS Every topic retains the actual question, chart sources and one shop link
+PASS Legacy ephemeris bridge never leaves stale derived fields after partial overwrite
+{
+  "passed": 11,
+  "referenceCases": 167,
+  "maximum": {
+    "longitude": 19.89461493358249,
+    "latitude": 21.13846054662183,
+    "speed": 2.6819158381546666,
+    "node": 0.22919314042155747,
+    "angles": 6.807551076371965,
+    "cusps": 6.807551076371965,
+    "returnMinutes": 0.29524305013020835
+  }
+}

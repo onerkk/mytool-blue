@@ -40,8 +40,23 @@
     ['liurenclasses8','《六壬大全》課經卷八','原典校錄','https://zh.wikisource.org/zh-hant/六壬大全/8','官爵至閉口；行年丙寅順壬申逆及德孕旺孕算例'],
     ['liurenclasses9','《六壬大全》課經卷九','原典校錄','https://zh.wikisource.org/zh-hant/六壬大全/9','遊子至災厄；古法月宿、四立四離、迍福逐條条件'],
     ['liurenclasses10','《六壬大全》課經卷十','原典校錄','https://zh.wikisource.org/zh-hant/六壬大全/10','殃咎至物類；間傳24型及無祿絕嗣、雜狀物類分族'],
-    ['namebook','熊崎健翁《姓名の神秘》國會圖書館書目','原著書目','https://ndlsearch.ndl.go.jp/books/R100000039-I2971289','書目核對不等於取得全文或逐條覆核81數']
-  ].map(([id,title,type,url,scope])=>({id,title,type,url,scope,checkedAt:['pvr','brihatav','zwflow','raman','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi'].includes(id)?'2026-10-03':'2026-10-02'}));
-  const methods={bazi:['ziping','zipingrescue','renyuan'],ziwei:['ziwei','zwflow'],astro:['astronomy','swiss','ruler','return','dignity','progression'],vedic:['astronomy','swiss','pvr','bphs','raman','brihatav'],liuren:['liuren','battle','liurenclasses7','liurenclasses8','liurenclasses9','liurenclasses10','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi'],liuyao:['liuyao'],yijing:['yijing','yizhu'],meihua:['meihua'],name:['unihan','moe','namebook','kumazaki1931','kumazaki1935'],compat:['ziping','ziwei'],personality:['ziping'],tarot:['waite','bookt','mathers'],ootk:['bookt','mathers'],lenormand:['lenormand'],oracle:['oracle','oraclefull']};
+    ['namebook','熊崎健翁《姓名の神秘》國會圖書館書目','原著書目','https://ndlsearch.ndl.go.jp/books/R100000039-I2971289','書目核對不等於取得全文或逐條覆核81數'],
+    ["qiongtong","《窮通寶鑑》十干十二月","原典校錄","https://zh.wikisource.org/wiki/窮通寶鑑","120入口615段；合月原文保留合月，不把強弱清濁的質性條件冒稱全文語义判定"],
+    ["sihuaiztro","iztro2.6.1十干四化表","作者發布表","https://iztro.com/zh_TW/learn/mutagen","10×4；壬科左輔，實際作用於生年、五層運限及宮干飛化"],
+    ["sihuaquanshu","星格所引《紫微斗數全書》四化表","發布者引原文","https://xingge.tw/zh-hant/learn/c4-birth-year","具名10×4壬科天府版本；不是本次取得古籍原圖的宣稱"],
+    ["zwheluo","楚天雲闊2018北派河洛自化體系實例","作者具名技術原文","https://fengshui-magazine.com.hk/No.251-May18/A208.htm","18星、48圖路、六對宮、祿忌4+1／權科2+3，四D–E與五A–B兩轉象規則；二C與後文宮職歧異保留"],
+    ["phala","Mantreswara《Phaladeepika》7.26–30","原典梵文與英譯","https://www.siva.sh/phaladeepika/7/26-30","7曜4項Neechabhanga條件；力量門檻與互居角宮版本具名"],
+    ["pvradvanced","PVR教材第4、5、9–11、15、17–24章","作者原典教材","https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf","17補充Dasha、16盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對"],
+    ["earth18","《選擇紀要》上編引神樞經","原典校錄","https://zh.wikisource.org/wiki/選擇紀要/上編","四立前十八日UTC實際邊界，與整月土旺分開"],
+    ["liuyaotarget","《增刪卜易》第8章用神","原典校錄","https://zh.wikisource.org/w/index.php?title=增刪卜易/8&oldid=2100700","女婿醫藥父母文契與妹夫世；姑姨重義保留候選"],
+    ["yijingwings","《周易》64卦彖象文言逐卦頁","原典校錄","https://zh.wikisource.org/wiki/周易/乾","64彖、64大象、384小象、2用象與乾坤文言；各卦來源修訂與雜湊列於資料集"],
+    ["sancaicdi","CDI公開三才表五頁","資料發布者原表","http://www.cdi.org.tw/name/n-3-wood.html","木火土金水各25，金頁採gold；125項不是熊崎原文"],
+    ["sancai356","靈昭道苑公開三才表","資料發布者原表","https://www.356.com.tw/teaching/?parent_id=1274","完整125項與CDI版本分開，不把網站同版重複計票"],
+    ["sancaistudy","陶宏麟2018姓名筆劃數吉凶與運勢","作者研究原文","https://econ.ntu.edu.tw/ter/new/data/new/TER47-3/TER473-4.pdf","表4分類總數獨立核對；研究4來源共識23與本次2網站共25不可混稱"],
+    ["horaryorbs","Deborah Houlding行星光圈表","作者技術原文","https://www.skyscript.co.uk/aspectorbs.html","兩具名行星光圈取半；傳統相位和現代容許度分開"],
+    ["horaryvoid","Deborah Houlding月亮空亡的定義","作者技術原文","https://www.skyscript.co.uk/voc.html","換座前精確成相與現正入相兩種政策分列；不是全歷史空亡定義自動化"],
+    ["horaryreception","Skyscript Reception","作者技術原文","https://www.skyscript.co.uk/glossary/reception/","主星接納來客方向，實際尊貴位置与古典相位條件"]
+  ].map(([id,title,type,url,scope])=>({id,title,type,url,scope,checkedAt:["qiongtong", "sihuaiztro", "sihuaquanshu", "zwheluo", "phala", "pvradvanced", "earth18", "liuyaotarget", "yijingwings", "sancaicdi", "sancai356", "sancaistudy", "horaryorbs", "horaryvoid", "horaryreception"].concat(['pvr','brihatav','zwflow','raman','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi']).includes(id)?'2026-10-03':'2026-10-02'}));
+  const methods={bazi:['ziping','zipingrescue','renyuan','qiongtong'],ziwei:['ziwei','zwflow','sihuaiztro','sihuaquanshu','zwheluo'],astro:['astronomy','swiss','ruler','return','dignity','progression','horaryorbs','horaryvoid','horaryreception'],vedic:['astronomy','swiss','pvr','bphs','raman','brihatav','pvradvanced','phala'],liuren:['liuren','battle','liurenclasses7','liurenclasses8','liurenclasses9','liurenclasses10','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi','earth18','astronomy'],liuyao:['liuyao','liuyaotarget','renyuan'],yijing:['yijing','yizhu','yijingwings'],meihua:['meihua'],name:['unihan','moe','namebook','kumazaki1931','kumazaki1935','sancaicdi','sancai356','sancaistudy'],compat:['ziping','qiongtong','ziwei','sihuaiztro','sihuaquanshu'],personality:['ziping'],tarot:['waite','bookt','mathers'],ootk:['bookt','mathers'],lenormand:['lenormand'],oracle:['oracle','oraclefull']};
   root.JYNativeRuleSources=Object.freeze({all:()=>records.map(x=>({...x})),forMethod:k=>records.filter(x=>(methods[k]||[]).includes(x.id)).map(x=>({...x}))});
 })(typeof window==='undefined'?globalThis:window);

@@ -1,0 +1,8 @@
+PASS Default original-manuscript profile completes 512 casts across every court and conflicting expectations
+PASS Ace=5, inclusive counting, first-ring-card start, opposite-end pairing and packet inversion match the manuscript
+PASS Question keywords and preselected destinations never bias the original-manuscript shuffle
+PASS Legacy validation is explicit, still stops, and cannot fabricate later data
+PASS Payload and final prompt retain version-specific counts, the question, five operations and contextual recommendation
+PASS Full automatic playback and skipping before/every stage export the same cast once, with no pending callbacks
+PASS A thrown animation callback and a lost callback recover to complete data; cancellation never exports
+ootk-flow-20260915: 7 groups passed.

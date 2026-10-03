@@ -1,0 +1,40 @@
+{
+  "testedAt": "2026-10-03T05:03:25.681Z",
+  "passed": 8,
+  "failed": 0,
+  "regiomontanusIndependentCusps": 60,
+  "results": [
+    {
+      "name": "Regiomontanus5個南北半球／赤道／高纬算例60宫头與Swiss獨立星曆相符",
+      "status": "passed"
+    },
+    {
+      "name": "迁居盤同一UTC十星黃經不變，實際重算四角十二宮和落宮",
+      "status": "passed"
+    },
+    {
+      "name": "問事時刻卜卦盤實算12宮主與问事10宫，無借用本命次限回歸",
+      "status": "passed"
+    },
+    {
+      "name": "行星光圈两版具名，取两星光圈之半而不借現代角度容許度",
+      "status": "passed"
+    },
+    {
+      "name": "未来7日精確相位、換座與轉向來自星曆求根；每筆星位條件皆重新驗算",
+      "status": "passed"
+    },
+    {
+      "name": "古典入相與換座前精確相位空亡分開，傳光集光及阻止候選不冒充實際結局",
+      "status": "passed"
+    },
+    {
+      "name": "新增卜卦與迁居全部事實傳入原生JSON和提示詞",
+      "status": "passed"
+    },
+    {
+      "name": "午後問事／事件盤接受同日中午觀察日，不計算負齡本命運限；本命仍拒絕觀察日早於出生",
+      "status": "passed"
+    }
+  ]
+}
