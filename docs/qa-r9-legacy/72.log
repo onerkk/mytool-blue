@@ -1,0 +1,23 @@
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ Real tarot, completed OOTK, Meihua and all sixty oracle exports carry the original answer task
+✓ User five-card case retains its entire real line and rejects ID/name/meaning mismatches
+✓ All Bazi lenses, compatibility scenarios and personality include facts before answer instructions
+✓ Native Western, Vedic, six-line and Yijing calculations are unchanged by the workflow
+✓ Actual composite name and Ziwei exports retain natal evidence and do not call paid APIs
+reading-workflow-integration: 5/5 groups; 15 native methods; no external-model answers evaluated.

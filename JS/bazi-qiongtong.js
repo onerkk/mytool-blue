@@ -18,6 +18,7 @@
      scan(/([甲乙丙丁戊己庚辛壬癸]{1,4})(?:[木火土金水])?(?:齊透天干|齊透|兩透|俱透|並透|同透|皆透|透出|透天干|透干|高透|出干|透|出)/g,m=>{if(spans.some(([a,b])=>m.index>=a&&m.index<b))return;add('exposed-'+m[1],Array.from(m[1]).every(g=>seen(g,'exposed')),{phrase:m[0],stems:Array.from(m[1]).map(stem)},m.index,m[0].length);});
      scan(/([甲乙丙丁戊己庚辛壬癸]{1,4})(?:[木火土金水])?(?:藏支下|藏支中|藏支|在支內|藏)/g,m=>{if(spans.some(([a,b])=>m.index>=a&&m.index<b))return;add('hidden-'+m[1],Array.from(m[1]).every(g=>seen(g,'hidden')),{phrase:m[0],stems:Array.from(m[1]).map(stem)},m.index,m[0].length);});
      scan(/(?:有|得|見)([甲乙丙丁戊己庚辛壬癸]{1,4})(?:[木火土金水])?/g,m=>{if(spans.some(([a,b])=>m.index>=a&&m.index<b))return;add('present-'+m[1],Array.from(m[1]).every(g=>seen(g,'any')),{phrase:m[0],stems:Array.from(m[1]).map(stem)},m.index,m[0].length);});
+     scan(/([甲乙丙丁戊己庚辛壬癸])(?:[木火土金水])?(有根|無根|通根)/g,m=>{if(root.JYBaziFunctional){const pillars=Object.fromEntries(['year','month','day','hour'].map(k=>[k,{zhi:hidden.find(x=>x.pillar===k)?.branch}])),premise=root.JYBaziFunctional.rootPremise(m[1],pillars);add('root-'+m[1]+'-'+m[2],m[2]==='無根'?!premise.hasRoot:premise.hasRoot,{phrase:m[0],rootPremise:premise},m.index,m[0].length);}});
      scan(/支(?:見|有)([子丑寅卯辰巳午未申酉戌亥]{1,4})/g,m=>add('branches-'+m[1],Array.from(m[1]).every(b=>branches.includes(b)),{phrase:m[0],actual:branches},m.index,m[0].length));
      scan(/支(?:成|會)([木火金水])局/g,m=>{const needed=bureau[m[1]],members=needed.filter(b=>branches.includes(b));add('bureau-structure-'+m[1],members.length===3,{phrase:m[0],needed,present:members,policy:'只判三支骨架，不把成局成化有效性當作已確定'},m.index,m[0].length);});
      scan(/([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])日/g,m=>add('exact-day-'+m[1],facts.stems.some(x=>x.pillar==='day'&&x.stem===m[1][0])&&hidden.some(x=>x.pillar==='day'&&x.branch===m[1][1]),{phrase:m[0]},m.index,m[0].length));
@@ -27,7 +28,7 @@
     });
    });
   }
-  return {version:'20261003qiongtong1',profile:'WIKISOURCE_LITERAL_PREMISES_WITH_FULL_CONTEXT',dayStem:facts.dm,monthBranch:month,monthNumber:entry.monthNumber,sourceScope:entry.sourceScope,source:data.source,sourceParagraphs:entry.paragraphs,stems:all,branches,checks,stemEdges:facts.stemEdges||facts.stemRelations||[],policy:{visible:'透／無另干不把日干本身當成額外一個透干；藏用既有四支全部藏干。四柱全局仍在原排盤列出。',conditions:'同一條文的可觀察條件分別實算；或若分支分开，不以命中數評分。出現任一未量化的強弱清濁制化、歲運、時間段或風水前提，不能宣告完整原條文已成立。',sourceAudit:key==='乙12'?'所校數位本重複十一月標題，十二月入口只採明言冬月的段落；重複段未擅自改字冒稱原本十二月。其餘校本應另具版本。':null,interpretation:'原文功名、貧夭、性別倫理語句只屬古代作者斷語，禁止轉成現實必然或人物污名。'}};
+  return {version:'20261003qiongtong2',profile:'WIKISOURCE_LITERAL_PREMISES_WITH_FULL_CONTEXT',dayStem:facts.dm,monthBranch:month,monthNumber:entry.monthNumber,sourceScope:entry.sourceScope,source:data.source,sourceParagraphs:entry.paragraphs,rootContext:root.JYBaziFunctional?Array.from(G).map(g=>{const p=root.JYBaziFunctional.rootPremise(g,Object.fromEntries(['year','month','day','hour'].map(k=>[k,{zhi:hidden.find(x=>x.pillar===k)?.branch}])));delete p.scope;return p;}):[],stems:all,branches,checks,stemEdges:facts.stemEdges||facts.stemRelations||[],policy:{roots:'四支實際藏干同五行根；字面有根無根可算，全句強弱制化仍需審核。',visible:'透／無另干不把日干本身當成額外一個透干；藏用既有四支全部藏干。四柱全局仍在原排盤列出。',conditions:'同一條文的可觀察條件分別實算；或若分支分开，不以命中數評分。出現任一未量化的強弱清濁制化、歲運、時間段或風水前提，不能宣告完整原條文已成立。',sourceAudit:key==='乙12'?'所校數位本重複十一月標題，十二月入口只採明言冬月的段落；重複段未擅自改字冒稱原本十二月。其餘校本應另具版本。':null,interpretation:'原文功名、貧夭、性別倫理語句只屬古代作者斷語，禁止轉成現實必然或人物污名。'}};
  }
- root.JYBaziQiongtong=Object.freeze({version:'20261003qiongtong1',evaluate});
+ root.JYBaziQiongtong=Object.freeze({version:'20261003qiongtong2',evaluate});
 })(typeof window==='undefined'?globalThis:window);

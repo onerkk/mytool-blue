@@ -1,0 +1,11 @@
+✓ Gregorian date validity and clamped month navigation
+✓ Modal viewport events, scroll lock and focus are fully restored
+✓ Legacy dialog fallback restores inert siblings and focus
+✓ Actual Ziwei and Bazi picker handlers render all six weeks and confirm leap day
+✓ Full Bazi suite keeps the last month clamped and confirms the selected date
+✓ Unknown Bazi birth time excludes artificial hour and full-chart judgments
+✓ Unknown time does not create a fixed personality type from a noon placeholder
+✓ Known Bazi preserves actual hour and full data, reference date stays reproducible
+✓ Unknown Ziwei time never exports an invented personal chart
+✓ All three pickers load after the shared core and body ID rules override legacy overflow
+picker-and-data-regression: 10 groups passed (DOM contract tests, not browser layout tests)

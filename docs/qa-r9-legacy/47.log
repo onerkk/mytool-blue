@@ -1,0 +1,29 @@
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+✓ Each reading method receives a question-grounded bracelet recommendation after analysis
+✓ All Tarot layouts preserve exact casts while using the method-specific recommendation
+✓ Bazi lenses, compatibility roles and both personality APIs use their own selection basis
+✓ All Lenormand layouts and all 60 poems include justified selection, preserving original data
+✓ Meihua standalone and generic exports keep the same casting facts and selection basis
+✓ Stopped Key cannot turn a failed validation into an accessory remedy
+✓ Recommendation prompt stays compact and avoids turning every reading into a material lecture
+✓ Standalone recommendation snapshots survive absent, v3 and earlier v4 shared scripts
+✓ Vedic and Western every topic and unknown-time chart keep native calculations in recommendation exports
+✓ Tarot, Key, Lenormand, oracle and Meihua use current snapshots when v4.1 is still loaded
+✓ Selection guidance does not hard-code a stone and follows the actual question
+recommendation-20260914: 11 groups passed; actual exports, no external-model compliance claim.

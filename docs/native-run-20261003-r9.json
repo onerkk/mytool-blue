@@ -1,0 +1,7 @@
+{
+  "command": "npm run test:native",
+  "exitCode": 0,
+  "status": "passed",
+  "testedAt": "2026-10-03T21:09:16.206696+00:00",
+  "log": "docs/native-verified-20261003-r9.log"
+}

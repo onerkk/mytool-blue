@@ -1,5 +1,5 @@
 {
-  "version": "20261003native8",
+  "version": "20261003native9",
   "scope": "15 existing interfaces and named calculation profiles, with explicit source versions, actual chart outputs and tested arithmetic; not every historical school and not a guarantee of AI interpretation",
   "inputOmissionsAreNotUnimplemented": true,
   "methods": {
@@ -10,14 +10,22 @@
         "stemPairs": 6,
         "xiaoyunPeriods": 120,
         "decades": 10,
-        "annualSegments": 116
+        "annualSegments": 116,
+        "functionalRootStems": 10,
+        "pureMixedSourceCases": 6,
+        "orderedMechanisms": 4,
+        "positionLayouts": 9
       },
       "sourceIds": [
         "xiaoyun",
         "ziping",
         "zipingrescue",
         "renyuan",
-        "qiongtong"
+        "qiongtong",
+        "zipingcombine",
+        "zipingroots",
+        "zipingpurity",
+        "zipingorder"
       ],
       "selectedPolicy": {
         "termTimeBasis": "出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘",
@@ -66,7 +74,15 @@
         "四柱藏干、十神、根氣、刑沖合害、大運與逐年交界",
         "八格63項成敗救應與外格條件",
         "120日干月令窮通入口615原文掛接、透藏與支局字面前提",
-        "三命通會卷二醉醒子時柱小運120期及古法固定起點異版；出生至起運前實際立春流年與八條原局作用"
+        "三命通會卷二醉醒子時柱小運120期及古法固定起點異版；出生至起運前實際立春流年與八條原局作用",
+        "十干四支實際同干／同五行根、根氣重輕與沖配對；陰長生文字類比獨立，未偽造藏干",
+        "四干五合隔制、遠合、本身合、較近先合與爭合實際位置",
+        "六组月令互用純雜原例、四組生克先後、七原文位置與兩明示重建位置",
+        "120窮通入口已識別的有根／無根／通根字面前提引用實算藏干，全句質性另審",
+        "十干四支實際同干／同五行根、根氣重輕與沖配對；陰長生文字類比獨立，未偽造藏干",
+        "四干五合隔制、遠合、本身合、較近先合與爭合實際位置",
+        "六组月令互用純雜原例、四組生克先後、七原文位置與兩明示重建位置",
+        "120窮通入口已識別的有根／無根／通根字面前提引用實算藏干，全句質性另審"
       ]
     },
     "ziwei": {
@@ -339,7 +355,10 @@
         "sudarsanaReferences": 3,
         "sudarsanaMonthlyWindows": 12,
         "sudarsanaSubperiodWindows": 144,
-        "sudarsanaCurrentReadings": 180
+        "sudarsanaCurrentReadings": 180,
+        "bphsEntryCharts": 4,
+        "bphsPhalaRows": 196,
+        "bphsRawStrengthRows": 28
       },
       "sourceIds": [
         "sudarsana",
@@ -353,7 +372,8 @@
         "bphs",
         "raman",
         "phala",
-        "pvradvanced"
+        "pvradvanced",
+        "bphssudarsana"
       ],
       "selectedPolicy": {
         "astronomy": "Astronomy Engine 2.1.19; geocentric apparent ecliptic of date",
@@ -381,7 +401,8 @@
       "implementationOmissions": [
         "PVR515頁與BPHS全部歷史Dasha／Yoga條款未逐條全數實作，採本版具名17補充運期與41Yoga",
         "等強／同度規則沒有唯一解時保留候選，未任選結果",
-        "BPHS74七分盤性質逆轉及同強定主等質性完整裁決，未套入本版PVR31通則；不能宣稱BPHS74整章已逐條自動化"
+        "BPHS名義兩日與12ghatika細分時計未選唯一曆法；極性喪失、等數力量匯總與宮主例外有具名異解並算，不偽造唯一經典结論。英譯衰月／水星註補另列自然性，未選註補整輪不冒稱已算。",
+        "BPHS名義兩日與12ghatika細分時計未選唯一曆法；極性喪失、等數力量匯總與宮主例外有具名異解並算，不偽造唯一經典结論。英譯衰月／水星註補另列自然性，未選註補整輪不冒稱已算。"
       ],
       "inputRequirements": [
         "可靠出生瞬間與地點；Bhava／六力需可用日出及宮界"
@@ -403,7 +424,15 @@
         "實際恆星太陽年度回歸、12月與144個2.5度時窗、年度及當期月/段完整實算；其他月/段按chartForPeriod計算",
         "36Sahams、七曜Harsha、三版Panchavargeeya、Dwadasa、五/六候選歲月主、16Tajaka格局的具名定義及原例差異",
         "Patyayini/Mudda及20盤VarshaNarayana完整MD/AD太陽度日期與當期區間",
-        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算"
+        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算",
+        "BPHS3/28/74獨立D1輪法：本命、年度、當期月與2.5度段四次起始盤；每次49七分盤Phala與7曜BPHS原始六力",
+        "原性喪失中性與極性逆轉異解、占宮／相位／宮主優先、本宮主占照吉助與自然性異解",
+        "等數兩方原始Virupa總量與最強單星異解，同強混合，交點缺力度保留未定；年度/月/段期間通則與獨羅計例外、BAV核對分列",
+        "非當期月／段按原API真正重排後增加BPHS作用；PVR20盤三參照與BPHS D1輪法分开，不混称來源",
+        "BPHS3/28/74獨立D1輪法：本命、年度、當期月與2.5度段四次起始盤；每次49七分盤Phala與7曜BPHS原始六力",
+        "原性喪失中性與極性逆轉異解、占宮／相位／宮主優先、本宮主占照吉助與自然性異解",
+        "等數兩方原始Virupa總量與最強單星異解，同強混合，交點缺力度保留未定；年度/月/段期間通則與獨羅計例外、BAV核對分列",
+        "非當期月／段按原API真正重排後增加BPHS作用；PVR20盤三參照與BPHS D1輪法分开，不混称來源"
       ]
     },
     "liuren": {
@@ -679,7 +708,11 @@
         "ziwei",
         "qiongtong",
         "sihuaiztro",
-        "sihuaquanshu"
+        "sihuaquanshu",
+        "zipingcombine",
+        "zipingroots",
+        "zipingpurity",
+        "zipingorder"
       ],
       "selectedPolicy": {
         "scenarioAware": true,
@@ -822,8 +855,48 @@
       ]
     }
   },
-  "sourceCount": 64,
+  "sourceCount": 69,
   "sources": [
+    {
+      "id": "bphssudarsana",
+      "title": "BPHS3/28/74 三輪作用與七盤Phala",
+      "type": "原典英譯",
+      "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
+      "scope": "D1三輪、49七分盤分類、BPHS原始等數比強、本宮主例外與版本並列",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "zipingcombine",
+      "title": "子平真詮5 合而不合",
+      "type": "原典校錄",
+      "url": "https://www.donglishuzhai.net/chapter/3718.html",
+      "scope": "隔制、遠合、本身合、先合及爭合位置實算；不自動合去成化",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "zipingroots",
+      "title": "子平真詮6 得時不旺失時不弱",
+      "type": "原典校錄",
+      "url": "https://www.donglishuzhai.net/chapter/3719.html",
+      "scope": "十干四支同干／同五行根、重輕與陰長生類比分列",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "zipingpurity",
+      "title": "子平真詮11 用神純雜",
+      "type": "原典校錄",
+      "url": "https://www.donglishuzhai.net/chapter/3724.html",
+      "scope": "六具名月令互用結構；甲辰壬例保留文本歧異",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "zipingorder",
+      "title": "子平真詮20 生克先後",
+      "type": "原典校錄",
+      "url": "https://www.donglishuzhai.net/chapter/3733.html",
+      "scope": "四種先後、七明示位置例及兩個重建例；不偽造歷史生辰",
+      "checkedAt": "2026-10-03"
+    },
     {
       "id": "sudarsana",
       "title": "PVR第31章／BPHS第74章三重運期",
@@ -1343,10 +1416,10 @@
     "qualitativeJudgments": "提供計算證據，但需綜合判讀的條件",
     "evidenceLimits": "原典差異、缺文或尚未證明的效度；與算法完成度分開"
   },
-  "testedAt": "2026-10-03T14:15:51.593448+00:00",
+  "testedAt": "2026-10-03T21:15:49.836730+00:00",
   "completenessClaim": "所列選定方法可實際排盤、重算、查核依據及複製完整閱讀資料；全部歷史流派與原典質性語義不作已全部自動化的宣稱。",
   "promptDelivery": {
-    "version": "20261003prompt8",
+    "version": "20261003prompt9",
     "default": "直接複製完整純文字正文，不要求上傳附件或付費AI；原始排盤JSON另供查核",
     "fallback": "同份正文的編號純文字分段，全部貼齊才分析，可無損拼回原文",
     "localMessageLimits": {
@@ -1354,9 +1427,10 @@
       "utf8Bytes": 20000
     },
     "limitMeaning": "本站保守上限，不是ChatGPT官方最大輸入或保證所有AI的上下文足夠",
-    "dataPreservation": "不直接截字；同表欄序與具名共用內容可以還原；所有所問候選日期完整保留",
+    "dataPreservation": "不直接截字；同表欄序與具名共用內容可以還原；所有所問候選日期完整保留；合盤原文調候前提只在同一完整正文內出現一次，其餘精確指回該資料段。；合盤原文調候前提只在同一完整正文內出現一次，其餘精確指回該資料段。",
     "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。歲時年度有16族完整裁決，成立及未定項附證據；明示所有歲時條件展開全部逐項矩陣，詢問月/小時盤即展開該層細表。未計算年度、未知時辰及未實作規則明列，不由AI猜補",
     "recommendation": "有效解讀完成後，按本題有效證據提出具體手鍊／佩戴者／象徵理由與行動，再接指定蝦皮邀請及最後兩行；程序中止／資料錯誤時不推定命理選材"
   },
-  "sourceReview": "docs/engine-source-review-20261003-r8.md"
+  "sourceReview": "docs/engine-source-review-20261003-r9.md",
+  "newValidation": "docs/functional-validation-20261003-r9.json"
 }

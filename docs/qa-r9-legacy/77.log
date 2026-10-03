@@ -1,0 +1,12 @@
+PASS Reported question computes original and all four candidates, preserving raw wording and input
+PASS Original/candidate with identical numbers retains distinct sound, shape and meanings
+PASS Single-name mode also turns an explicit original into a complete comparison
+PASS Baseline never consumes the five-candidate limit and is deduplicated if also a candidate
+PASS Baseline resolution refuses contradictions, ambiguity and surname guessing
+PASS A genuinely missing baseline or stroke leaves only the affected layer open
+PASS Manual baseline review affects the primary result while alternate sources stay intact
+PASS Natal chart is shared accurately, seasonal candidates remain conditional, stale birth charts fail
+PASS Prompt includes complete baseline, per-candidate duties, both hexagram policies and one ending
+PASS Older incomplete comparison exports are rehydrated before prompt construction, without mutation
+PASS Permutation leaves the same facts and every baseline comparison intact, without a built-in winner
+Name comparison root fix: 11 groups.

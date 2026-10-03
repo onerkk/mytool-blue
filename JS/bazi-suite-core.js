@@ -372,7 +372,7 @@
 
   function chartSummary(chart, meta) {
     var p = getPillars(chart);
-    if(meta && meta.unknown) return {name:meta.name||'',gender:chart&&chart.gender||'',birthLine:meta.birthLine||'',pillars:p.filter(function(x){return x.key!=='hour';}),dayMaster:chart&&chart.dm||'',dayMasterElement:chart&&chart.dmEl||'',unknownTime:true,provisional:true};
+    if(chart && chart.birthTimeUnknown || meta && meta.unknown) return {name:meta&&meta.name||'',gender:chart&&chart.gender||'',birthLine:meta&&meta.birthLine||'',pillars:p.filter(function(x){return x.key!=='hour';}),dayMaster:chart&&chart.dm||'',dayMasterElement:chart&&chart.dmEl||'',unknownTime:true,provisional:true};
     var current = safeArray(chart && chart.dayun).find(function(x){return x && x.isCurrent;}) || null;
     return {
       name: meta && meta.name || '',
@@ -392,6 +392,7 @@
       currentLuck: current,
       interactions: safeArray(chart && chart.branchInteractions),
       stemCombinations: safeArray(chart && chart.tianGanHe),
+      functionalAssessment: chart && chart.functionalAssessment || null,
       chineseZodiac: CHINESE_ZODIAC[(p[0] && p[0].zhi) || ''] || '',
       chenggu: chart && chart.chenggu || null,
       auxiliary: {mingGong:chart&&chart.mingGong||null,taiYuan:chart&&chart.taiYuan||null,taiXi:chart&&chart.taiXi||null,shenGong:chart&&chart.shenGong||null,kongwang:safeArray(chart&&chart.kongwang)},
@@ -689,7 +690,7 @@
     var report=root.JY_READING_QUALITY&&root.JY_READING_QUALITY.reportScope?root.JY_READING_QUALITY.reportScope(options.question,'bazi'):root.JYReadingWorkflow.reportScope(options.question,'bazi');
     options=Object.assign({},options,{compact:!!options.compact||report.annualRequested||!!report.requestedDecades||report.allDecades});
     var verified=birthFactLines(chart,meta);
-    if (meta.unknown) return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement}):'',
+    if (meta.unknown) return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement,seasonalAlreadyListed:!meta.unknown&&!!chart.structureFacts&&!!chart.seasonalAssessment}):'',
       '【A. 三柱資料：時辰未知】',
       verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.birthLine||'出生日期未標示'),
@@ -701,7 +702,7 @@
     var scope=options.scope||promptScope(options.question,referenceBaziYear(chart));
     var chosen=options.compact?selectedAnnuals(chart,scope):[];
     var decades=options.compact?scopedDayun(chart,scope).filter(function(d){return scope.mode==='all'||d.isCurrent||chosen.some(function(y){return y.dayun===d.gz;});}):[];
-    return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement}):'',
+    return [globalThis.JYNativeAnalysis&&chart&&chart.pillars?globalThis.JYNativeAnalysis.prompt('bazi',chart,options.question,{unknown:!!meta.unknown,supplement:!!options.nativeSupplement,seasonalAlreadyListed:!meta.unknown&&!!chart.structureFacts&&!!chart.seasonalAssessment}):'',
       '【A. 排盤與曆法資料】',
       verified,
       '命主：'+escapeLine(meta.name||'未具名')+'・'+escapeLine(meta.genderLabel||chart&&chart.gender||'')+'・'+escapeLine(meta.birthLine||'出生資料未標示'),

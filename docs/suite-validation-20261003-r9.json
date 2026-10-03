@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-03T20:55:39.667Z",
+  "version": "20261003native9",
+  "scope": "suites",
+  "total": 4,
+  "passed": 4,
+  "results": [
+    {
+      "command": "npm run test:completion",
+      "startedAt": "2026-10-03T20:53:51.394Z",
+      "endedAt": "2026-10-03T20:54:20.175Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-suites/01.log"
+    },
+    {
+      "command": "npm run test:prompt-budget",
+      "startedAt": "2026-10-03T20:54:20.176Z",
+      "endedAt": "2026-10-03T20:55:02.968Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-suites/02.log"
+    },
+    {
+      "command": "npm run test:r7",
+      "startedAt": "2026-10-03T20:55:02.969Z",
+      "endedAt": "2026-10-03T20:55:20.711Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-suites/03.log"
+    },
+    {
+      "command": "npm run test:r8",
+      "startedAt": "2026-10-03T20:55:20.712Z",
+      "endedAt": "2026-10-03T20:55:39.666Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-suites/04.log"
+    }
+  ]
+}

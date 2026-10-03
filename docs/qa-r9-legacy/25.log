@@ -1,0 +1,30 @@
+✓ A fast complete swipe commits before pointer release, across all four gesture rituals
+✓ Partial and cancelled gestures show feedback without false completion or orphaned timers
+✓ Motion switching releases the scene, keeps seal progress and requires an explicit final action
+✓ Card-by-card progress counts unique reveals and never inserts unseen faces
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A manual pick immediately reports busy, rejects a second pick and updates only committed progress
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Cancel and resume reuse the same pending draw and preserve the manually selected first card
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A reveal startup error releases the lock and retries the reserved cards without another draw
+✓ Reading notes persist during a rerender but clear when the reading changes or resets
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Cancelling shuffle returns to the same prepared deck and question without consuming cards
+flow-polish: 9/9 groups passed.

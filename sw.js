@@ -45,8 +45,9 @@
 // v112: 20261003native4 十二宮力量、290神煞、年解、16分盤消減Pinda與五支曆交界。
 // v113: 20261003native4 新增原典規則、專盤、運期與完整資料編碼。
 // v116: 20261003native7 完整純文字複製、安全分段、月亮换座前進入光圈實算。
+// v118: 20261003native9 原典根氣、位置先後與BPHS七盤三輪實算；保留推薦與操作恢復。
 // v117: 20261003native8 三重運期、手鍊推薦與賣場結尾、儀式操作獨立於樣式與動畫、頁面快取返回保留原牌。
-const CACHE_NAME = 'jy-main-v117';
+const CACHE_NAME = 'jy-main-v118';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

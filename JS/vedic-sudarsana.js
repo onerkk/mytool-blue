@@ -57,17 +57,25 @@
           monthly:m?{window:m.window,signs:monthSigns,readings:entryReadings(natal,m.chart,monthSigns,+d)}:null,
           sixtyHour:s?{window:s.window,signs:segmentSigns,readings:entryReadings(natal,s.chart,segmentSigns,+d)}:null}};
     }
-    return {version:VERSION,status:'calculated',profile:'PVR31-SUDARSANA-THREE-REFERENCES',source:SOURCE,completedYears:age,yearOfLife:age+1,yearHouse:yearOffset+1,window:tajaka.window,months:tajaka.months,sixtyHours:tajaka.sixtyHours,vargas,
+    const out={version:VERSION,status:'calculated',profile:'PVR31-SUDARSANA-THREE-REFERENCES',source:SOURCE,completedYears:age,yearOfLife:age+1,yearHouse:yearOffset+1,window:tajaka.window,months:tajaka.months,sixtyHours:tajaka.sixtyHours,vargas,
       sourceAudit:[{source:'PVR31.4 / Example126',issue:'The categorical Rahu sentence conflicts with the example favorable placement of Rahu in the 11th; both evaluations are recorded.'},{source:'PVR31.4 / Example127',issue:'General benefic rule excludes only houses 6 and 12; Example127 calls Venus in the 3rd a failure. That outcome is not forced into the generic arithmetic.'},{source:'BPHS74.21-23 vs PVR31.3',issue:'BPHS nominal month/2-day/12-ghatika descriptions and PVR actual solar-return entry times differ. This model uses the named PVR solar clock; it does not call each 2.5-degree interval a fixed 60 hours.'}],
       policy:'All20 calculated vargas retain natal Lagna/Moon/Sun anchors, 12-house wheels, all12 monthly and144 subperiod signs, and all3 currently active ENTRY charts. No strongest-reference shortcut is silently selected. Future/past period charts are computed on request, not claimed precomputed.',
-      limits:['BPHS74 SaptaVarga nature reversal and its tied-strength qualitative judgment are not added to the PVR31 arithmetic.','Other historical dasha/Yoga variants outside the named source profile remain outside this model.']};
+      limits:['BPHS74 D1 nature-loss, raw tied-strength, own-lord and alternate polarity calculations are separately recorded in bphs when its module is available; named clock variants remain explicit.','Other historical dasha/Yoga variants outside the named source profile remain outside this model.']};
+    if(root.JYVedicSudarsanaBPHS)out.bphs=root.JYVedicSudarsanaBPHS.compute(natal,out,tajaka);
+    return out;
+    if(root.JYVedicSudarsanaBPHS)out.bphs=root.JYVedicSudarsanaBPHS.compute(natal,out,tajaka);
+    return out;
   }
   function chartForPeriod(natal,sudarsana,kind,index){
     if(sudarsana.status!=='calculated')throw Error('本次三重運期未能完成計算');
     const list=kind==='monthly'?sudarsana.months:kind==='sixty-hour'?sudarsana.sixtyHours:null;
     if(!list||!Number.isInteger(index)||index<1||index>list.length)throw Error('請指定有效月序1–12或細段序1–144');
     const window=list[index-1],c=root.JYVedic.compute({...natal.input,utc:window.start,reference:window.start,civil:null,uncertaintyMinutes:0,transitRules:false,tajaka:false,sudarsana:false});
-    return {kind,window,chart:c,vargas:Object.fromEntries(Object.entries(sudarsana.vargas).map(([d,v])=>{const signs=(kind==='monthly'?v.monthlySigns:v.sixtyHourSigns)[index-1];return [d,{signs,readings:entryReadings(natal,c,signs,+d)}];}))};
+    const out={kind,window,chart:c,vargas:Object.fromEntries(Object.entries(sudarsana.vargas).map(([d,v])=>{const signs=(kind==='monthly'?v.monthlySigns:v.sixtyHourSigns)[index-1];return [d,{signs,readings:entryReadings(natal,c,signs,+d)}];}))};
+    if(root.JYVedicSudarsanaBPHS){const v=out.vargas[1],context=root.JYVedicSudarsanaBPHS.entryContext(c);out.bphs={context,readings:root.JYVedicSudarsanaBPHS.readings(natal,context,v.signs,sudarsana.vargas[1].bphsApplicability.references)};}
+    return out;
+    if(root.JYVedicSudarsanaBPHS){const v=out.vargas[1],context=root.JYVedicSudarsanaBPHS.entryContext(c);out.bphs={context,readings:root.JYVedicSudarsanaBPHS.readings(natal,context,v.signs,sudarsana.vargas[1].bphsApplicability.references)};}
+    return out;
   }
   root.JYVedicSudarsana=Object.freeze({version:VERSION,compute,chartForPeriod,yearHouse,anchors,periodSigns,generalPlacement,assess});
 })(typeof window==='undefined'?globalThis:window);

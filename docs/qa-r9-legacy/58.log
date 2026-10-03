@@ -1,0 +1,11 @@
+PASS Native snapshots equal standalone engines; original civil clock reaches both
+PASS Historical IANA offset overrides a stale fixed city offset; DST folds require a choice
+PASS All real composite payload wrappers and reading copy use the native facts without old scores
+PASS Actual renderers use native geometry, safe HTML, no legacy star scores
+PASS Unknown hour uses the whole 25-hour local day and omits noon-derived houses and exact dashas
+PASS Changed birth data is rejected at the API boundary, failed calculation clears the old chart
+PASS Concurrent submissions never commit a cancelled snapshot and recover after failure
+{
+  "passed": 7,
+  "total": 7
+}

@@ -114,7 +114,7 @@ for(const method of methods){
   assert(prompt.includes('"actionObject":"肉體桃花"'),`${method} receives the object of encounter`);
 }
 const indexHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
-for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20261003native8`),`${asset} cache token is updated`);
+for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20261003native9`),`${asset} cache token is updated`);
 assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v117"),'service worker cache version is refreshed');
 
 const choice=workflow.plan({method:'bazi',question:'我該選哪個商品上架？'}).questionModel.events[0];

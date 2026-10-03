@@ -1,0 +1,33 @@
+{
+  "testedAt": "2026-10-03T21:00:29.549Z",
+  "version": "20261003native9",
+  "scope": "browser1280",
+  "total": 3,
+  "passed": 3,
+  "results": [
+    {
+      "command": "node tests/native-entry-browser-20261003.cjs",
+      "startedAt": "2026-10-03T20:59:31.764Z",
+      "endedAt": "2026-10-03T20:59:48.983Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-browser1280/01.log"
+    },
+    {
+      "command": "node tests/native-other-entry-browser-20261003.cjs",
+      "startedAt": "2026-10-03T20:59:48.983Z",
+      "endedAt": "2026-10-03T21:00:25.603Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-browser1280/02.log"
+    },
+    {
+      "command": "node tests/native-profile-entry-browser-20261003.cjs",
+      "startedAt": "2026-10-03T21:00:25.604Z",
+      "endedAt": "2026-10-03T21:00:29.549Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-browser1280/03.log"
+    }
+  ]
+}

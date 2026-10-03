@@ -1,0 +1,29 @@
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Real OOTK entry opens without calling unrelated birth engines
+✓ Storage refusal does not break the entry button
+✓ OOTK two-step selection validates before dealing and restores scroll on cancel
+✓ Shared setup exports accept zero-index sign and sephirah without losing them
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Confirmed OOTK setup forwards all predeal bindings as an immutable snapshot
+✓ Ziwei uses one non-interactive grid with 14 child buttons including early and late Zi hour
+✓ Bazi hour and minute fields are complete on open and keep node identity when edited
+✓ Full Bazi suite commits minutes and cancellation preserves the original time
+✓ Canonical draws include actual upright/reversed values and normalization preserves them
+✓ Book T procedures stay upright and are explicitly labelled
+✓ Quick completion preserves manually chosen card identities and their directions
+✓ Automatic slot rendering and result display retain inverse image and readable direction
+✓ Real AI payload and final exported prompt agree on every card orientation and method
+✓ Manual pick commits its original reversal and waits for the entire spread before analysis
+✓ Concurrent engine requests share one script and notify every caller; a failed load can retry
+✓ Deferred engines wait for a closed picker and yield between dependent files
+✓ Real OOTK confirmation runs the engine and exposes immediate skip/cancel controls
+✓ Skipping the ritual hands off the same result and exports only actual OOTK operations
+interaction-hotfix: 18 groups passed (offline DOM/runtime contracts; no browser layout or live AI assertion)

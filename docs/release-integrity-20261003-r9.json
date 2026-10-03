@@ -1,0 +1,13 @@
+{
+  "testedAt": "2026-10-03T21:15:50.202803+00:00",
+  "version": "20261003native9",
+  "cache": "jy-main-v118",
+  "baseFilesPresent": 834,
+  "missingBaseFiles": [],
+  "originalAssetsIdentical": true,
+  "javaScriptRootMirrorsMatch": true,
+  "serviceWorkerCopiesMatch": true,
+  "syntaxPassed": 162,
+  "releaseToolPolicy": "Both ZIP CRC, duplicate entries, safe paths and every content SHA256 checked; .down byte-identical. Any failure stops release.",
+  "ownArchiveHashPolicy": "Archive hashes are emitted only after verification, not embedded recursively in their own ZIP."
+}

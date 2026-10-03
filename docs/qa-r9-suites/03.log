@@ -1,0 +1,22 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r7
+> node tests/engine-missing-calculations-r7-20261003.cjs
+
+PASS Sanming published Jiazi-hour example: first Yichou, sixth Gengwu; four sex/year directions and fixed ancient profile
+PASS Xiaoyun birth-clipped first solar year, contiguous half-open windows, no invented unknown-hour cycle
+PASS Mathers1888 physical stacking: circle first33 last66, original S66/33-1/34-2, last single65 and 66-card conservation
+PASS Tobyn type1 published degrees with synthetic dates: last separation and first next application, not arbitrary past link
+PASS Tobyn type2 receive/carry, caught carrier and true collection have separate source geometry
+PASS Bonatti published equidistance Moon4Aquarius/Venus4Aries/Mars9Aries uses 5-degree gaps, conjunction outranks earlier Moon contact
+PASS PVR6 supplemental published D6/D11 examples and D8 formula/printed discrepancy; D5 odd/even sequences
+PASS PVR26 original Pinda example86 times5: Maanasa25th, Capricorn10th; zero modulo means last, not nonexistent index
+published-year-chart: 14.633s
+PASS PVR Example118 independent printed solar return: difference below120s, real months/144 solar-degree segments contiguous
+PASS PVR Examples119/120: seven Harsha totals0,15,0,10,5,10,5; MunthaTaurus and Mars13.7/yearlord
+PASS PVR Example121 printed independent longitude operands reproduce Artha2Sc30/Samartha5Pi02/Vanik7Sg04 exactly
+PASS PVR Table75 independent Patyayini degrees: first24.98/next48.17 days and own-first subperiod, conserved365.2425
+PASS Three annual MD/AD systems and all20 Narayana conserve their named windows and active half-open subperiods
+PASS Vedha all7 profiles,27Tara,11 special anchors,9 actual ingress Murthi and all20 PAV Kakshya/Pinda are populated
+PASS Unknown clock keeps all Tajaka charts absent and does not fabricate month/60h charts
+PASS Complete copied prompt includes real new facts; month detail, full annual AD and matrices expand only when requested

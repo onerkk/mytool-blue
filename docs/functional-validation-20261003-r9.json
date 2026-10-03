@@ -1,0 +1,244 @@
+{
+  "testedAt": "2026-10-03T20:58:58.986Z",
+  "version": "20261003native9",
+  "passed": 32,
+  "results": [
+    {
+      "name": "actual four-branch roots use every hidden stem, with exact and element roots distinct",
+      "status": "passed"
+    },
+    {
+      "name": "grave roots retain literal storage without requiring a clash to open them",
+      "status": "passed"
+    },
+    {
+      "name": "a clash is actual evidence and does not erase a root",
+      "status": "passed"
+    },
+    {
+      "name": "yin longevity analogies never fabricate hidden wood in Wu or fire in You",
+      "status": "passed"
+    },
+    {
+      "name": "invalid stems and malformed pillars do not certify complete calculations",
+      "status": "passed"
+    },
+    {
+      "name": "unknown birth time excludes all full-chart functional judgments",
+      "status": "passed"
+    },
+    {
+      "name": "intervening controller blocks an actual five-stem pair",
+      "status": "passed"
+    },
+    {
+      "name": "a distant year-hour pair is retained as partial without a manufactured percentage",
+      "status": "passed"
+    },
+    {
+      "name": "day-self combinations do not remove the day masters own spouse or officer",
+      "status": "passed"
+    },
+    {
+      "name": "an adjacent rival can preempt a more distant day-self pair",
+      "status": "passed"
+    },
+    {
+      "name": "contested adjacent pairs are distinguished from separated partners",
+      "status": "passed"
+    },
+    {
+      "name": "six printed pure-mixed examples reproduce their role mechanisms",
+      "status": "passed"
+    },
+    {
+      "name": "Jia-Chen Ren is retained as a printed exception and never inserted into hidden stems",
+      "status": "passed"
+    },
+    {
+      "name": "the four source ordered-rescue cases use actual year-month-hour positions",
+      "status": "passed"
+    },
+    {
+      "name": "reverse cases with an adverse hour are distinctly recorded",
+      "status": "passed"
+    },
+    {
+      "name": "nine position fixtures distinguish seven printed layouts and two reconstructions",
+      "status": "passed"
+    },
+    {
+      "name": "BPHS literal-loss and opposite-polarity variants compute separate natures",
+      "status": "passed"
+    },
+    {
+      "name": "equal-count raw-bala party sums and strongest-member variants may disagree",
+      "status": "passed"
+    },
+    {
+      "name": "equal strength is mixed while missing node raw-bala remains undetermined",
+      "status": "passed"
+    },
+    {
+      "name": "four actual entry instants have 196 phala rows and 28 independently computed BPHS strength rows",
+      "status": "passed"
+    },
+    {
+      "name": "all nine category points and complementary half-phala arithmetic are exact",
+      "status": "passed"
+    },
+    {
+      "name": "Mercury joined to any malefic uses BPHS literal nature with commentary separate",
+      "status": "passed"
+    },
+    {
+      "name": "occupants take priority over aspectors and lord fallback",
+      "status": "passed"
+    },
+    {
+      "name": "source Sun-first-house, exalted-malefic and sole-node exceptions are computed",
+      "status": "passed"
+    },
+    {
+      "name": "own house lord support is local and the natural-only alternative is preserved",
+      "status": "passed"
+    },
+    {
+      "name": "shared birth anchors select only Lagna for every BPHS entry",
+      "status": "passed"
+    },
+    {
+      "name": "a requested non-current month recomputes its actual entry and BPHS wheels",
+      "status": "passed"
+    },
+    {
+      "name": "Bazi compatibility keeps separate A and B functional facts and hides unknown-hour judgments",
+      "status": "passed"
+    },
+    {
+      "name": "name with real matching birth keeps the functional chart and rejects an unknown hour",
+      "status": "passed"
+    },
+    {
+      "name": "lossless dense rows and JSON references expand to unchanged actual data",
+      "status": "passed"
+    },
+    {
+      "name": "all 120 Qiongtong source entries retain context and any literal root predicates use actual branches",
+      "status": "passed"
+    },
+    {
+      "name": "all fifteen complete plain-text prompts keep full-copy chunks, facts and the exact store footer",
+      "status": "passed"
+    }
+  ],
+  "prompts": [
+    {
+      "method": "bazi",
+      "characters": 29530,
+      "utf8Bytes": 47336,
+      "parts": 5,
+      "requiresAttachment": false
+    },
+    {
+      "method": "ziwei",
+      "characters": 13765,
+      "utf8Bytes": 30151,
+      "parts": 2,
+      "requiresAttachment": false
+    },
+    {
+      "method": "astro",
+      "characters": 12422,
+      "utf8Bytes": 19524,
+      "parts": 2,
+      "requiresAttachment": false
+    },
+    {
+      "method": "vedic",
+      "characters": 102318,
+      "utf8Bytes": 125948,
+      "parts": 15,
+      "requiresAttachment": false
+    },
+    {
+      "method": "liuren",
+      "characters": 46780,
+      "utf8Bytes": 66538,
+      "parts": 7,
+      "requiresAttachment": false
+    },
+    {
+      "method": "liuyao",
+      "characters": 7074,
+      "utf8Bytes": 11270,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "yijing",
+      "characters": 7978,
+      "utf8Bytes": 14294,
+      "parts": 2,
+      "requiresAttachment": false
+    },
+    {
+      "method": "meihua",
+      "characters": 5639,
+      "utf8Bytes": 11545,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "name",
+      "characters": 11996,
+      "utf8Bytes": 20641,
+      "parts": 2,
+      "requiresAttachment": false
+    },
+    {
+      "method": "compat",
+      "characters": 17367,
+      "utf8Bytes": 27745,
+      "parts": 3,
+      "requiresAttachment": false
+    },
+    {
+      "method": "personality",
+      "characters": 2582,
+      "utf8Bytes": 5094,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "tarot",
+      "characters": 1462,
+      "utf8Bytes": 3402,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "lenormand",
+      "characters": 3503,
+      "utf8Bytes": 5920,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "ootk",
+      "characters": 1411,
+      "utf8Bytes": 3273,
+      "parts": 1,
+      "requiresAttachment": false
+    },
+    {
+      "method": "oracle",
+      "characters": 5715,
+      "utf8Bytes": 8584,
+      "parts": 1,
+      "requiresAttachment": false
+    }
+  ],
+  "sourceCases": "Printed source positions and explicitly identified synthetic layouts, not historical birth-date verification.",
+  "aiAnswers": "No external AI replies were generated or substituted."
+}

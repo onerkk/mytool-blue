@@ -1,0 +1,638 @@
+{
+  "testedAt": "2026-10-03T20:56:46.686Z",
+  "version": "20261003native9",
+  "scope": "legacy",
+  "total": 78,
+  "passed": 78,
+  "results": [
+    {
+      "command": "node tests/prompt-accuracy-20260811.test.cjs",
+      "startedAt": "2026-10-03T20:53:52.725Z",
+      "endedAt": "2026-10-03T20:53:54.287Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/01.log"
+    },
+    {
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "startedAt": "2026-10-03T20:53:54.287Z",
+      "endedAt": "2026-10-03T20:53:54.620Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/02.log"
+    },
+    {
+      "command": "node tests/tarot-native-structure-20260927.cjs",
+      "startedAt": "2026-10-03T20:53:54.621Z",
+      "endedAt": "2026-10-03T20:53:54.839Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/03.log"
+    },
+    {
+      "command": "node tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "startedAt": "2026-10-03T20:53:54.840Z",
+      "endedAt": "2026-10-03T20:53:54.970Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/04.log"
+    },
+    {
+      "command": "node tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "startedAt": "2026-10-03T20:53:54.970Z",
+      "endedAt": "2026-10-03T20:53:55.330Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/05.log"
+    },
+    {
+      "command": "node tests/ziwei-root-spec-v1.test.js",
+      "startedAt": "2026-10-03T20:53:55.330Z",
+      "endedAt": "2026-10-03T20:53:55.412Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/06.log"
+    },
+    {
+      "command": "node tests/counter-proxy.test.mjs",
+      "startedAt": "2026-10-03T20:53:55.412Z",
+      "endedAt": "2026-10-03T20:53:56.030Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/07.log"
+    },
+    {
+      "command": "node tests/picker-and-data-regression.cjs",
+      "startedAt": "2026-10-03T20:53:56.032Z",
+      "endedAt": "2026-10-03T20:53:57.368Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/08.log"
+    },
+    {
+      "command": "node tests/api-failure-regression.mjs",
+      "startedAt": "2026-10-03T20:53:57.369Z",
+      "endedAt": "2026-10-03T20:53:57.515Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/09.log"
+    },
+    {
+      "command": "node tests/interaction-hotfix-20260906.cjs",
+      "startedAt": "2026-10-03T20:53:57.516Z",
+      "endedAt": "2026-10-03T20:53:58.222Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/10.log"
+    },
+    {
+      "command": "node tests/display-lifecycle-regression.cjs",
+      "startedAt": "2026-10-03T20:53:58.223Z",
+      "endedAt": "2026-10-03T20:53:58.368Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/11.log"
+    },
+    {
+      "command": "node tests/divination-audit-20260908.cjs",
+      "startedAt": "2026-10-03T20:53:58.368Z",
+      "endedAt": "2026-10-03T20:54:04.905Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/12.log"
+    },
+    {
+      "command": "node tests/divination-professional-20260910.cjs",
+      "startedAt": "2026-10-03T20:54:04.906Z",
+      "endedAt": "2026-10-03T20:54:08.203Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/13.log"
+    },
+    {
+      "command": "node tests/share-card-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:08.204Z",
+      "endedAt": "2026-10-03T20:54:08.352Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/14.log"
+    },
+    {
+      "command": "node tests/share-card-preview-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:08.352Z",
+      "endedAt": "2026-10-03T20:54:08.456Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/15.log"
+    },
+    {
+      "command": "node tests/astrology-share-20260914.cjs",
+      "startedAt": "2026-10-03T20:54:08.457Z",
+      "endedAt": "2026-10-03T20:54:10.250Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/16.log"
+    },
+    {
+      "command": "node tests/atelier-ui-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:10.251Z",
+      "endedAt": "2026-10-03T20:54:10.511Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/17.log"
+    },
+    {
+      "command": "node tests/ritual-lifecycle-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:10.511Z",
+      "endedAt": "2026-10-03T20:54:19.526Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/18.log"
+    },
+    {
+      "command": "node tests/ootk-scroll-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:19.527Z",
+      "endedAt": "2026-10-03T20:54:19.659Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/19.log"
+    },
+    {
+      "command": "node tests/mobile-ritual-actions-20260928.cjs",
+      "startedAt": "2026-10-03T20:54:19.659Z",
+      "endedAt": "2026-10-03T20:54:19.776Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/20.log",
+      "initialFailure": {
+        "exitCode": 1,
+        "log": "docs/qa-r9-legacy/20.log"
+      },
+      "recheckLog": "docs/mobile-recheck-20261003-r9.log"
+    },
+    {
+      "command": "node tests/cinematic-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:19.776Z",
+      "endedAt": "2026-10-03T20:54:20.114Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/21.log"
+    },
+    {
+      "command": "node tests/shuffle-recovery-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:20.115Z",
+      "endedAt": "2026-10-03T20:54:20.422Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/22.log"
+    },
+    {
+      "command": "node tests/flow-interaction-20260911.cjs",
+      "startedAt": "2026-10-03T20:54:20.423Z",
+      "endedAt": "2026-10-03T20:54:21.118Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/23.log"
+    },
+    {
+      "command": "node tests/reading-depth-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:21.118Z",
+      "endedAt": "2026-10-03T20:54:22.811Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/24.log"
+    },
+    {
+      "command": "node tests/flow-polish-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:22.811Z",
+      "endedAt": "2026-10-03T20:54:23.764Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/25.log"
+    },
+    {
+      "command": "node tests/engine-fixes-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:23.765Z",
+      "endedAt": "2026-10-03T20:54:28.749Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/26.log"
+    },
+    {
+      "command": "node tests/accuracy-engine-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:28.749Z",
+      "endedAt": "2026-10-03T20:54:31.112Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/27.log"
+    },
+    {
+      "command": "node tests/bazi-regression.cjs",
+      "startedAt": "2026-10-03T20:54:31.112Z",
+      "endedAt": "2026-10-03T20:54:54.871Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/28.log"
+    },
+    {
+      "command": "node tests/bazi-suite-regression.cjs",
+      "startedAt": "2026-10-03T20:54:54.871Z",
+      "endedAt": "2026-10-03T20:54:58.425Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/29.log"
+    },
+    {
+      "command": "node tests/export-accuracy-prompts-20260912.cjs",
+      "startedAt": "2026-10-03T20:54:58.426Z",
+      "endedAt": "2026-10-03T20:55:07.171Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/30.log"
+    },
+    {
+      "command": "node tests/immersive-experience-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:07.171Z",
+      "endedAt": "2026-10-03T20:55:07.731Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/31.log"
+    },
+    {
+      "command": "node tests/plain-reading-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:07.731Z",
+      "endedAt": "2026-10-03T20:55:14.606Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/32.log"
+    },
+    {
+      "command": "node tests/story-immersion-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:14.607Z",
+      "endedAt": "2026-10-03T20:55:15.188Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/33.log"
+    },
+    {
+      "command": "node tests/realtime-free-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:15.189Z",
+      "endedAt": "2026-10-03T20:55:15.335Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/34.log"
+    },
+    {
+      "command": "node tests/oracle-result-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:15.335Z",
+      "endedAt": "2026-10-03T20:55:15.518Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/35.log"
+    },
+    {
+      "command": "node tests/deck-routing-scenes-20260912.cjs",
+      "startedAt": "2026-10-03T20:55:15.519Z",
+      "endedAt": "2026-10-03T20:55:17.440Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/36.log"
+    },
+    {
+      "command": "node tests/method-engine-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:17.441Z",
+      "endedAt": "2026-10-03T20:55:17.923Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/37.log"
+    },
+    {
+      "command": "node tests/method-prompts-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:17.923Z",
+      "endedAt": "2026-10-03T20:55:24.137Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/38.log"
+    },
+    {
+      "command": "node tests/bazi-huaqi-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:24.137Z",
+      "endedAt": "2026-10-03T20:55:25.600Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/39.log"
+    },
+    {
+      "command": "node tests/core-engine-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:25.601Z",
+      "endedAt": "2026-10-03T20:55:29.206Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/40.log"
+    },
+    {
+      "command": "node tests/engine-output-consistency-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:29.206Z",
+      "endedAt": "2026-10-03T20:55:32.212Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/41.log"
+    },
+    {
+      "command": "node tests/vedic-engine-20260913.cjs",
+      "startedAt": "2026-10-03T20:55:32.213Z",
+      "endedAt": "2026-10-03T20:55:33.735Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/42.log"
+    },
+    {
+      "command": "node tests/vedic-design-20260914.cjs",
+      "startedAt": "2026-10-03T20:55:33.735Z",
+      "endedAt": "2026-10-03T20:55:35.343Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/43.log"
+    },
+    {
+      "command": "node tests/vedic-palace-20260914.cjs",
+      "startedAt": "2026-10-03T20:55:35.344Z",
+      "endedAt": "2026-10-03T20:55:35.472Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/44.log"
+    },
+    {
+      "command": "node tests/western-engine-20260914.cjs",
+      "startedAt": "2026-10-03T20:55:35.472Z",
+      "endedAt": "2026-10-03T20:55:38.753Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/45.log"
+    },
+    {
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "startedAt": "2026-10-03T20:55:38.753Z",
+      "endedAt": "2026-10-03T20:55:38.924Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/46.log"
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "startedAt": "2026-10-03T20:55:38.924Z",
+      "endedAt": "2026-10-03T20:55:46.870Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/47.log"
+    },
+    {
+      "command": "node tests/ootk-flow-20260915.cjs",
+      "startedAt": "2026-10-03T20:55:46.870Z",
+      "endedAt": "2026-10-03T20:55:49.055Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/48.log"
+    },
+    {
+      "command": "node tests/ootk-source-fidelity-20260925.cjs",
+      "startedAt": "2026-10-03T20:55:49.056Z",
+      "endedAt": "2026-10-03T20:55:49.196Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/49.log"
+    },
+    {
+      "command": "node tests/relationship-20260917.cjs",
+      "startedAt": "2026-10-03T20:55:49.196Z",
+      "endedAt": "2026-10-03T20:55:54.468Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/50.log"
+    },
+    {
+      "command": "node tests/time-ownership-20260920.cjs",
+      "startedAt": "2026-10-03T20:55:54.469Z",
+      "endedAt": "2026-10-03T20:56:15.572Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/51.log"
+    },
+    {
+      "command": "node scripts/build-question-planner.cjs --check",
+      "startedAt": "2026-10-03T20:56:15.572Z",
+      "endedAt": "2026-10-03T20:56:15.633Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/52.log"
+    },
+    {
+      "command": "node tests/question-routing-20260922.cjs",
+      "startedAt": "2026-10-03T20:56:15.634Z",
+      "endedAt": "2026-10-03T20:56:16.291Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/53.log"
+    },
+    {
+      "command": "node scripts/build-yijing-data.cjs --check",
+      "startedAt": "2026-10-03T20:56:16.292Z",
+      "endedAt": "2026-10-03T20:56:16.350Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/54.log"
+    },
+    {
+      "command": "node tests/gua-engine-20260922.cjs",
+      "startedAt": "2026-10-03T20:56:16.350Z",
+      "endedAt": "2026-10-03T20:56:17.903Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/55.log"
+    },
+    {
+      "command": "node tests/yarrow-20260922.cjs",
+      "startedAt": "2026-10-03T20:56:17.904Z",
+      "endedAt": "2026-10-03T20:56:18.008Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/56.log"
+    },
+    {
+      "command": "node tests/special-rules-20260922.cjs",
+      "startedAt": "2026-10-03T20:56:18.008Z",
+      "endedAt": "2026-10-03T20:56:21.081Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/57.log"
+    },
+    {
+      "command": "node tests/astro-bridge-20260922.cjs",
+      "startedAt": "2026-10-03T20:56:21.081Z",
+      "endedAt": "2026-10-03T20:56:28.142Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/58.log"
+    },
+    {
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:28.143Z",
+      "endedAt": "2026-10-03T20:56:28.877Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/59.log"
+    },
+    {
+      "command": "node tests/birth-audit-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:28.878Z",
+      "endedAt": "2026-10-03T20:56:29.016Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/60.log"
+    },
+    {
+      "command": "node tests/astro-rules-audit-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:29.016Z",
+      "endedAt": "2026-10-03T20:56:30.054Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/61.log"
+    },
+    {
+      "command": "node tests/card-audit-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:30.054Z",
+      "endedAt": "2026-10-03T20:56:30.477Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/62.log"
+    },
+    {
+      "command": "node tests/card-audit-mathers-third-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:30.477Z",
+      "endedAt": "2026-10-03T20:56:30.600Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/63.log"
+    },
+    {
+      "command": "node tests/card-audit-legacy-meanings-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:30.601Z",
+      "endedAt": "2026-10-03T20:56:30.662Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/64.log"
+    },
+    {
+      "command": "node tests/prompt-only-audit-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:30.663Z",
+      "endedAt": "2026-10-03T20:56:31.986Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/65.log"
+    },
+    {
+      "command": "node tests/prompt-only-shop-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:31.987Z",
+      "endedAt": "2026-10-03T20:56:32.122Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/66.log"
+    },
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:32.122Z",
+      "endedAt": "2026-10-03T20:56:32.171Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/67.log"
+    },
+    {
+      "command": "node tests/traffic-tap-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:32.171Z",
+      "endedAt": "2026-10-03T20:56:32.242Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/68.log"
+    },
+    {
+      "command": "node tests/admin-updater-20260923.cjs",
+      "startedAt": "2026-10-03T20:56:32.242Z",
+      "endedAt": "2026-10-03T20:56:32.350Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/69.log"
+    },
+    {
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "startedAt": "2026-10-03T20:56:32.350Z",
+      "endedAt": "2026-10-03T20:56:35.269Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/70.log"
+    },
+    {
+      "command": "node tests/reading-workflow-20260924.cjs",
+      "startedAt": "2026-10-03T20:56:35.270Z",
+      "endedAt": "2026-10-03T20:56:35.618Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/71.log"
+    },
+    {
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "startedAt": "2026-10-03T20:56:35.619Z",
+      "endedAt": "2026-10-03T20:56:43.484Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/72.log"
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "startedAt": "2026-10-03T20:56:43.485Z",
+      "endedAt": "2026-10-03T20:56:43.678Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/73.log"
+    },
+    {
+      "command": "node tests/causal-question-regression-20260927.cjs",
+      "startedAt": "2026-10-03T20:56:43.679Z",
+      "endedAt": "2026-10-03T20:56:43.810Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/74.log"
+    },
+    {
+      "command": "node tests/semantic-review-followup-20260928.cjs",
+      "startedAt": "2026-10-03T20:56:43.811Z",
+      "endedAt": "2026-10-03T20:56:43.910Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/75.log"
+    },
+    {
+      "command": "node tests/name-engine-20261001.cjs",
+      "startedAt": "2026-10-03T20:56:43.910Z",
+      "endedAt": "2026-10-03T20:56:45.131Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/76.log"
+    },
+    {
+      "command": "node tests/name-comparison-rootfix-20261002.cjs",
+      "startedAt": "2026-10-03T20:56:45.132Z",
+      "endedAt": "2026-10-03T20:56:46.543Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/77.log"
+    },
+    {
+      "command": "node tests/liuren-engine-20261001.cjs",
+      "startedAt": "2026-10-03T20:56:46.544Z",
+      "endedAt": "2026-10-03T20:56:46.686Z",
+      "exitCode": 0,
+      "status": "passed",
+      "log": "docs/qa-r9-legacy/78.log"
+    }
+  ]
+}

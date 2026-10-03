@@ -1,7 +1,7 @@
 {
-  "release": "20261003native8",
+  "release": "20261003native9",
   "claim": "列出已驗證的實作範圍與未覆蓋的流派；特殊格局命中不能推定現實事件",
-  "sourceReview": "docs/engine-source-review-20261003-r8.md",
+  "sourceReview": "docs/engine-source-review-20261003-r9.md",
   "methods": [
     {
       "method": "tarot",
@@ -137,7 +137,15 @@
         "四柱藏干、十神、根氣、刑沖合害、大運與逐年交界",
         "八格63項成敗救應與外格條件",
         "120日干月令窮通入口615原文掛接、透藏與支局字面前提",
-        "120歲小運時柱法與固定起式分列，起運前流年與兩層原局作用補算"
+        "120歲小運時柱法與固定起式分列，起運前流年與兩層原局作用補算",
+        "十干四支實際同干／同五行根、根氣重輕與沖配對；陰長生文字類比獨立，未偽造藏干",
+        "四干五合隔制、遠合、本身合、較近先合與爭合實際位置",
+        "六组月令互用純雜原例、四組生克先後、七原文位置與兩明示重建位置",
+        "120窮通入口已識別的有根／無根／通根字面前提引用實算藏干，全句質性另審",
+        "十干四支實際同干／同五行根、根氣重輕與沖配對；陰長生文字類比獨立，未偽造藏干",
+        "四干五合隔制、遠合、本身合、較近先合與爭合實際位置",
+        "六组月令互用純雜原例、四組生克先後、七原文位置與兩明示重建位置",
+        "120窮通入口已識別的有根／無根／通根字面前提引用實算藏干，全句質性另審"
       ],
       "limits": [
         "窮通原文強弱、清濁、得所、有效制化等完整語義未全部自動裁決；各句保留原文與未定条件",
@@ -215,7 +223,15 @@
         "PVR20分盤包含D5/D6/D8/D11，全20盤PAV/BAV/SAV、Arudha/Argala與Narayana",
         "Vedha、27Tara、11特殊宿、9實際入座Murthi、20盤Kakshya/Pinda與行運啟動",
         "年度及當期月／2.5°段完整原生盤、12月／144段精確UTC邊界、Harsha／Pancha／Dwadasa、歲月主、36Sahams、16格局、3年度MD/AD模型",
-        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算"
+        "PVR31三重運期：20盤上升／月／日參照，12月與144段推宮，180當期作用盤；實際起始盤九曜、宮主、相位及PVR25.5本命Dn BAV核對；非當期按需實算",
+        "BPHS3/28/74獨立D1輪法：本命、年度、當期月與2.5度段四次起始盤；每次49七分盤Phala與7曜BPHS原始六力",
+        "原性喪失中性與極性逆轉異解、占宮／相位／宮主優先、本宮主占照吉助與自然性異解",
+        "等數兩方原始Virupa總量與最強單星異解，同強混合，交點缺力度保留未定；年度/月/段期間通則與獨羅計例外、BAV核對分列",
+        "非當期月／段按原API真正重排後增加BPHS作用；PVR20盤三參照與BPHS D1輪法分开，不混称來源",
+        "BPHS3/28/74獨立D1輪法：本命、年度、當期月與2.5度段四次起始盤；每次49七分盤Phala與7曜BPHS原始六力",
+        "原性喪失中性與極性逆轉異解、占宮／相位／宮主優先、本宮主占照吉助與自然性異解",
+        "等數兩方原始Virupa總量與最強單星異解，同強混合，交點缺力度保留未定；年度/月/段期間通則與獨羅計例外、BAV核對分列",
+        "非當期月／段按原API真正重排後增加BPHS作用；PVR20盤三參照與BPHS D1輪法分开，不混称來源"
       ],
       "limits": [
         "PVR515頁與BPHS全部歷史Dasha／Yoga條款未逐條全數實作，採本版具名17補充運期與41Yoga",
@@ -224,7 +240,8 @@
         "其他原典變體不暗混；天文求解括區不是星曆絕對精度",
         "採本版具名原典資料與門檻；PVR29部分定義和原例不一致並列，不任選或隱去",
         "20分盤是PVR第6章採用版本，沒有宣稱所有歷史分盤與Dasha均已驗證",
-        "BPHS74七分盤性質逆轉及同強定主等質性完整裁決，未套入本版PVR31通則；不能宣稱BPHS74整章已逐條自動化"
+        "BPHS名義兩日與12ghatika細分時計未選唯一曆法；極性喪失、等數力量匯總與宮主例外有具名異解並算，不偽造唯一經典结論。英譯衰月／水星註補另列自然性，未選註補整輪不冒稱已算。",
+        "BPHS名義兩日與12ghatika細分時計未選唯一曆法；極性喪失、等數力量匯總與宮主例外有具名異解並算，不偽造唯一經典结論。英譯衰月／水星註補另列自然性，未選註補整輪不冒稱已算。"
       ]
     },
     {
@@ -337,8 +354,13 @@
   "integrationVerification": "docs/astro-bridge-verification-20260922.json",
   "latestAudit": "docs/full-audit-20260923.md",
   "sourceReviewLatest": "docs/native-scope-20261003.json",
-  "promptDeliveryVerification": "docs/prompt-budget-validation-20261003.json",
+  "promptDeliveryVerification": "docs/functional-validation-20261003-r9.json",
   "moonOrbEntryVerification": "docs/western-moon-orb-validation-20261003.json",
-  "recommendationVerification": "docs/engine-and-recommendation-validation-20261003-r8.json",
-  "ritualVerification": "docs/ritual-browser-validation-20261003-r8-390.json"
+  "recommendationVerification": "docs/recommendation-validation-20261003-r9.json",
+  "ritualVerification": "docs/ritual-browser-validation-20261003-r8-390.json",
+  "functionalVerification": "docs/functional-validation-20261003-r9.json",
+  "integrationVerificationR9": {
+    "390": "docs/browser-validation-20261003-r9-390.json",
+    "1280": "docs/browser-validation-20261003-r9-1280.json"
+  }
 }

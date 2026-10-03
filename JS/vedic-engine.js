@@ -429,5 +429,5 @@
     if(root.JYVedicSudarsana&&options.tajaka!==false&&options.sudarsana!==false)out.sudarsana=root.JYVedicSudarsana.compute(out);
     return freeze(out);
   }
-  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,trikonaReduce,ekadhipatyaReduce,sodhyaPinda,panchangaAngles,panchanga:panchangaComplete,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
+  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,trikonaReduce,ekadhipatyaReduce,sodhyaPinda,panchangaAngles,panchanga:panchangaComplete,arudhas,relationships,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
 })(typeof globalThis!=='undefined'?globalThis:this);

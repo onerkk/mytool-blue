@@ -1,0 +1,65 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:completion
+> node scripts/build-completion-data.cjs --check && node tests/vedic-completion-20261003.cjs && node tests/liuren-completion-20261003.cjs && node tests/chinese-completion-20261003.cjs && node tests/bazi-qiongtong-20261003.cjs && node tests/western-completion-20261003.cjs
+
+CHECK bazi-qiongtong-data
+CHECK name-sancai
+CHECK yijing-wings
+PASS PVR17 Example59: Moon24Leo has6years remaining; Mars follows; AD starts next planet
+PASS BPHS46 distinct Abhijit slots and BPHS51 same-lord AD retained alongside PVR
+PASS PVR24 Example95: Rohini2, paramayush83, elapsed62.25, Scbalance4.75 and original nine sequence
+PASS PVR24 Example96: Punarvasu4, Pi8.6 balance, boundary goes into Savya2 sequence
+PASS Explicit BPHS46 corrects PVR Table44/45 Revati/UttaraBhadrapada transcription conflict
+PASS PVR Table40 independently printed twelve normal Narayana sequences, Saturn and Ketu exceptions
+PASS PVR15 co-lord hierarchical stop, doubled Mercury/dispositor roles, reverse node advancement
+PASS PVR9 Example30 all nine graha arudhas, original exception destinations preserved
+PASS PVR10 MercuryGe sample: Saturn fourth blocked Jupiter tenth; Venus eleventh unobstructed
+PASS PVR21 Example80 Libra lagna Drigdasa exact order; all major and minor intervals close without gap
+PASS PVR4 Example6 five solar upagrahas and PVR5 Example10 SreeLagna348°47
+PASS Full20 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant
+PASS BPHS conditional dashas compute eligibility and17 systems; old Yogini cycles cover actual reference
+PASS Confirmed lagna computes all41 additional Yoga statuses and7 actual Neechabhanga predicates
+PASS Unknown birth clock withholds all17 timelines,20 house arudhas, special ascendants and deterministic AK role
+PASS Full native data and prompt preserve17 timelines,all20 Jaimini calculations without mutating chart
+PASS Exact highest-degree ties preserve bothAK candidates and withhold unique Karakamsa
+PASS Lossless PAV bitmasks and JSONPointer dedup reconstruct all20 original contribution tables
+PASS 四立前十八日半開邊界；初秋與整月土旺政策分立
+PASS 旺相休囚死依當選土旺政策进入64課條件
+PASS 日出日落對照獨立Swiss Ephemeris，海平面標準折射誤差小於60秒
+PASS 日出／日落前後一秒貴人晝夜切换
+PASS 無坐標與極圈不捏造日出時刻，手動晝夜仍能排盤
+PASS 真太陽時固定原瞬間；真鐘跨日重新計算日柱且不挪交節
+PASS 實際寒露瞬間分段；一日內丁酉與戊戌月不混為整日
+PASS 00／23换日应期区间不同，真太阳逆解不丢分钟
+PASS 客观值日／冲合候选均来自实排日干支，不排序成保证发生日
+PASS 只在真实离旬日列首次出旬；远期窗口不伪造首次离旬
+PASS 未明议题、多议题与过去窗口保持实际状态
+PASS 同一计算结果进入原生JSON及提示词
+PASS 無效／倒置日期拒絕；土旺十八日邊界所在日以實際時刻分段
+PASS Wikisource逐卦64彖64大象384小象2用象與乾坤文言，來源修訂全部可追溯
+PASS 屯之互剝綜蒙錯鼎：具名獨立卦形算例，補充納甲含世應伏神
+PASS 所有4096本卦／之卦組合保留朱子原主讀與易傳對應，不被互綜錯覆蓋
+PASS 两个125三才版本逐項完整，NTU表4分類總數獨立對照且不混作熊崎原文
+PASS 姓名比較與JSON沿用選定三才版本，異版本保留不當多票
+PASS 增刪章8女婿醫藥父母文契姊丈妹夫逐項取用，姑姨重義保留分支
+PASS 六爻寒露交節瞬間前後分段曆法實算，不只附提醒文字
+PASS 六爻00／23日界與無效日期驗證，遠期窗不造首次出旬
+PASS 十干兩版四化全部40項：壬科差別真正作用於生年各運限宮干飛化
+PASS 紫微48實際飛化、48閉合路徑、18星、六對宮及祿忌權科數組全部保留
+PASS 自訂四化必須完整有名有來源，兩張不同版本盤不污染彼此閉包
+PASS 楚天雲闊2018具名部分盤例：癸酉貪狼忌轉巨門權、己巳武曲祿聯動辰戊天機忌
+PASS 120日干×節令月入口皆有具體校錄原文、逐條實算十干透藏與原文條件
+PASS 三月甲木庚壬兩透原文字面條件：兩者透、藏而未透、缺一分别實算
+PASS 正月甲木癸藏丙透與無丙癸正反條件、隱干和日主不冒充額外透干
+PASS 支局只列真實三支骨架，古文清濁強弱成化和風水前提保留未知
+PASS 乙丑原数字本重複十一月標題，冬月通則与校勘待核都明列，不偽造十二月專段
+PASS 既有八字原局實算、JSON與提示詞同步載入源句及條件，不改格局及旺衰計算
+PASS Regiomontanus5個南北半球／赤道／高纬算例60宫头與Swiss獨立星曆相符
+PASS 迁居盤同一UTC十星黃經不變，實際重算四角十二宮和落宮
+PASS 問事時刻卜卦盤實算12宮主與问事10宫，無借用本命次限回歸
+PASS 行星光圈两版具名，取两星光圈之半而不借現代角度容許度
+PASS 未来7日精確相位、換座與轉向來自星曆求根；每筆星位條件皆重新驗算
+PASS 古典入相與換座前精確相位空亡分開，傳光集光及阻止候選不冒充實際結局
+PASS 新增卜卦與迁居全部事實傳入原生JSON和提示詞
+PASS 午後問事／事件盤接受同日中午觀察日，不計算負齡本命運限；本命仍拒絕觀察日早於出生
