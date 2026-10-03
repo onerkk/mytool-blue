@@ -191,6 +191,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts

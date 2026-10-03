@@ -1,0 +1,220 @@
+{
+  "testedAt": "2026-10-03T08:31:42.065Z",
+  "version": "20261003prompt5",
+  "limits": {
+    "characters": 8000,
+    "utf8Bytes": 20000
+  },
+  "limitMeaning": "Conservative local output limits; not an official ChatGPT maximum or a guarantee for every AI service.",
+  "fixture": {
+    "utc": "2026-10-02T04:00:00Z",
+    "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+    "allSixteenDivisionsPositions": true,
+    "detailedVedicDivisions": "D1,D9,D10 by topic"
+  },
+  "results": [
+    {
+      "method": "bazi",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 49966,
+      "totalBytes": 65705,
+      "parts": 7,
+      "maxCharacters": 7495,
+      "maxBytes": 11017,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 326,
+      "defaultCopiedBytes": 672
+    },
+    {
+      "method": "ziwei",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 98563,
+      "totalBytes": 131327,
+      "parts": 14,
+      "maxCharacters": 7498,
+      "maxBytes": 11681,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 329,
+      "defaultCopiedBytes": 675
+    },
+    {
+      "method": "astro",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 46781,
+      "totalBytes": 55503,
+      "parts": 7,
+      "maxCharacters": 7495,
+      "maxBytes": 9683,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 329,
+      "defaultCopiedBytes": 675
+    },
+    {
+      "method": "vedic",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 169804,
+      "totalBytes": 184339,
+      "parts": 24,
+      "maxCharacters": 7499,
+      "maxBytes": 9769,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 329,
+      "defaultCopiedBytes": 675
+    },
+    {
+      "method": "liuren",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 191404,
+      "totalBytes": 232758,
+      "parts": 27,
+      "maxCharacters": 7499,
+      "maxBytes": 10451,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 332,
+      "defaultCopiedBytes": 678
+    },
+    {
+      "method": "liuyao",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 11823,
+      "totalBytes": 16430,
+      "parts": 2,
+      "maxCharacters": 7495,
+      "maxBytes": 9912,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 332,
+      "defaultCopiedBytes": 678
+    },
+    {
+      "method": "yijing",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 12181,
+      "totalBytes": 17230,
+      "parts": 2,
+      "maxCharacters": 7495,
+      "maxBytes": 11294,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 332,
+      "defaultCopiedBytes": 678
+    },
+    {
+      "method": "meihua",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 8074,
+      "totalBytes": 13810,
+      "parts": 2,
+      "maxCharacters": 7495,
+      "maxBytes": 13005,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 332,
+      "defaultCopiedBytes": 678
+    },
+    {
+      "method": "name",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 35400,
+      "totalBytes": 51610,
+      "parts": 5,
+      "maxCharacters": 7495,
+      "maxBytes": 12017,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 326,
+      "defaultCopiedBytes": 672
+    },
+    {
+      "method": "compat",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 39926,
+      "totalBytes": 55096,
+      "parts": 6,
+      "maxCharacters": 7495,
+      "maxBytes": 11493,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 332,
+      "defaultCopiedBytes": 678
+    },
+    {
+      "method": "personality",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 3618,
+      "totalBytes": 5902,
+      "parts": 1,
+      "maxCharacters": 3720,
+      "maxBytes": 6166,
+      "defaultCopyMode": "single",
+      "defaultCopiedCharacters": 3720,
+      "defaultCopiedBytes": 6166
+    },
+    {
+      "method": "tarot",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 2595,
+      "totalBytes": 4245,
+      "parts": 1,
+      "maxCharacters": 2697,
+      "maxBytes": 4509,
+      "defaultCopyMode": "single",
+      "defaultCopiedCharacters": 2697,
+      "defaultCopiedBytes": 4509
+    },
+    {
+      "method": "lenormand",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 4127,
+      "totalBytes": 6045,
+      "parts": 1,
+      "maxCharacters": 4229,
+      "maxBytes": 6309,
+      "defaultCopyMode": "single",
+      "defaultCopiedCharacters": 4229,
+      "defaultCopiedBytes": 6309
+    },
+    {
+      "method": "ootk",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 2269,
+      "totalBytes": 3853,
+      "parts": 1,
+      "maxCharacters": 2371,
+      "maxBytes": 4117,
+      "defaultCopyMode": "single",
+      "defaultCopiedCharacters": 2371,
+      "defaultCopiedBytes": 4117
+    },
+    {
+      "method": "oracle",
+      "question": "完整分析原局與2026至2029年的工作、關係與取捨",
+      "totalCharacters": 7141,
+      "totalBytes": 9524,
+      "parts": 1,
+      "maxCharacters": 7243,
+      "maxBytes": 9788,
+      "defaultCopyMode": "single",
+      "defaultCopiedCharacters": 7243,
+      "defaultCopiedBytes": 9788
+    }
+  ],
+  "additionalExamples": [
+    {
+      "method": "liuren",
+      "question": "近期工作怎樣推進？",
+      "totalCharacters": 80458,
+      "totalBytes": 102104,
+      "parts": 11,
+      "maxCharacters": 7498,
+      "maxBytes": 10421,
+      "defaultCopyMode": "attachment",
+      "defaultCopiedCharacters": 315,
+      "defaultCopiedBytes": 643,
+      "calculatedCandidateDays": 35,
+      "window": {
+        "startDate": "2026-10-01",
+        "endDateInclusive": "2026-11-29",
+        "calendarDays": 60,
+        "source": "default60-calendar-days",
+        "status": "calculated",
+        "originalStartDate": "2026-10-01"
+      }
+    }
+  ]
+}

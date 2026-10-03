@@ -1,5 +1,5 @@
 {
-  "release": "20261003native4",
+  "release": "20261003native5",
   "claim": "列出已驗證的實作範圍與未覆蓋的流派；特殊格局命中不能推定現實事件",
   "sourceReview": "docs/engine-rules-20260922.md",
   "methods": [
@@ -324,5 +324,7 @@
   ],
   "integrationVerification": "docs/astro-bridge-verification-20260922.json",
   "latestAudit": "docs/full-audit-20260923.md",
-  "sourceReviewLatest": "docs/native-scope-20261003.json"
+  "sourceReviewLatest": "docs/native-scope-20261003.json",
+  "promptDeliveryVerification": "docs/prompt-budget-validation-20261003.json",
+  "moonOrbEntryVerification": "docs/western-moon-orb-validation-20261003.json"
 }

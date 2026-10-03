@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -2181,6 +2182,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
     var canonical=CARDS[c.id-1];
     if(['name','en','key','scope','guard'].some(function(k){return c[k]!==canonical[k];}))throw new Error('雷諾曼牌號、牌名或牌義與本次牌庫不一致，請重新產生資料');
   });
+  if(window.JYPromptPacket)return window.JYPromptPacket.build('lenormand',_lnNativeData(drawn,spreadId,sp),question||'請依本次完整牌陣分析');
   var lines = [];
   var legalNames = drawn.map(function(c){ return c.name; });
   var personRepId = _lnPersonRepId(declaredGender);
@@ -2614,7 +2616,7 @@ function _lnLegacyCopy(text) {
 function _lnWriteClipboard(text) {
   if (navigator.clipboard && window.isSecureContext) {
     try {
-      return navigator.clipboard.writeText(text).then(function () { return true; }).catch(function () {
+      return (window.JYPromptPacket?window.JYPromptPacket.copy(text):navigator.clipboard.writeText(text)).then(function () { return true; }).catch(function () {
         return _lnLegacyCopy(text);
       });
     } catch (e) {}
@@ -2655,7 +2657,7 @@ window._lnPrimeAICopy = function(ev, link) {
   // 連結導覽完全由真實 <a href> 的瀏覽器預設行為執行。
   var copied = _lnLegacyCopy(_lastPrompt);
   if (!copied && navigator.clipboard && window.isSecureContext) {
-    try { navigator.clipboard.writeText(_lastPrompt).catch(function(){}); } catch (e) {}
+    try { (window.JYPromptPacket?window.JYPromptPacket.copy(_lastPrompt):navigator.clipboard.writeText(_lastPrompt)).catch(function(){}); } catch (e) {}
   }
 
   var label = link.querySelector('span');

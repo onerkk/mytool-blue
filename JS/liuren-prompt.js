@@ -18,6 +18,7 @@
     '成稿先答問題，後續每段增加新的依據、關係或具體做法。讓結論落到可觀察的檢查點；實務追蹤期限須標是自行安排，不能稱為六壬推得的應期。正文完成後簡短提醒：分析僅供研究或娛樂用途，屬傳統象徵解釋，不保證事件發生；醫療、法律與財務決策須依實際資料與專業意見。'
   ];
   function build(r,notes){
+    if(root.JYPromptPacket)return root.JYPromptPacket.build('liuren',r,r.question||'請分析本課',{notes:notes});
     if(!r||r.schema!=='jy.liuren/1'||!r.time)throw new Error('尚無本次六壬課盤，請先起課。');
     var q=r.question||'請完整分析本次大六壬課盤的干支、四課三傳、助力、牽制、成立條件與可採行動。',common=root.JY_READING_QUALITY&&root.JY_READING_QUALITY.plainText?root.JY_READING_QUALITY.plainText():'';
     var parts=[GUIDE[0],common].concat(GUIDE.slice(1));

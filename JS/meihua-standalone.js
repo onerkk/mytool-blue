@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -680,6 +681,7 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】（可選）手鍊建議放�
 
   function buildMeihuaPrompt(question, mh) {
     if(!mh||!mh.up||!mh.lo||!Number.isInteger(mh.dong)||mh.dong<1||mh.dong>6||!mh.ben||!mh.hu||!mh.bian||!mh.tiG||!mh.yoG)throw new Error('梅花卦盤資料不完整');
+    if(window.JYPromptPacket)return window.JYPromptPacket.build('meihua',mh,question||'請依本次梅花卦分析');
     var castDate=mh.castContext&&mh.castContext.timestamp?new Date(mh.castContext.timestamp):null;
     if(castDate&&!Number.isFinite(castDate.getTime()))throw new Error('起卦時間資料無效');
     var seasonDate=castDate||new Date(), seasonPrecision='未確認';
@@ -985,8 +987,8 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】（可選）手鍊建議放�
       var btn = document.querySelector('.mhx-ai-copy-btn');
       if (btn) { var o = btn.innerHTML; btn.innerHTML = '✓ 已複製！貼到 AI 送出即可'; btn.style.borderColor = 'rgba(52,211,153,.5)'; setTimeout(function(){ btn.innerHTML = o; btn.style.borderColor = ''; }, 2500); }
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(_lastPrompt).then(ok, function(){ _fallbackCopy(_lastPrompt); ok(); });
+    if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
+      (window.JYPromptPacket?window.JYPromptPacket.copy(_lastPrompt):navigator.clipboard.writeText(_lastPrompt)).then(ok, function(){ _fallbackCopy(_lastPrompt); ok(); });
     } else { _fallbackCopy(_lastPrompt); ok(); }
   };
   window._mhOpenAI = function (id, url, btn) {
@@ -997,8 +999,8 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】（可選）手鍊建議放�
       setTimeout(function(){ if (s) s.textContent = nm; }, 2000);
     };
     if (!_lastPrompt) { window.open(url, '_blank'); return; }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(_lastPrompt).then(open, function(){ _fallbackCopy(_lastPrompt); open(); });
+    if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
+      (window.JYPromptPacket?window.JYPromptPacket.copy(_lastPrompt):navigator.clipboard.writeText(_lastPrompt)).then(open, function(){ _fallbackCopy(_lastPrompt); open(); });
     } else { _fallbackCopy(_lastPrompt); open(); }
   };
   window._mhReset = function () {

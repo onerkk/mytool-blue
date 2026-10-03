@@ -15,6 +15,30 @@
   }
   events.sort((a,b)=>Date.parse(a.utc)-Date.parse(b.utc));ingresses.sort((a,b)=>Date.parse(a.utc)-Date.parse(b.utc));stations.sort((a,b)=>Date.parse(a.utc)-Date.parse(b.utc));return {start:chart.input.utc,endExclusive:new Date(end).toISOString(),calendarDays:days,events,ingresses,stations,precision:'求根小於0.5秒是數學容差；星曆本身約1角分，時刻解讀按分鐘，不宣稱事件秒準'};
  }
+ function moonOrbTimeline(chart,orbs){
+  const E=root.JYWestern,start=Date.parse(chart.input.utc),at=(k,t)=>E.position(k,t).longitude;
+  const initial=Math.floor(at('Moon',start)/30),step=DAY/8,maximum=start+5*DAY;
+  function zero(a,b,fn){let fa=fn(a);while(b-a>500){const m=(a+b)/2,f=fn(m);if(fa*f<=0)b=m;else{a=m;fa=f;}}return Math.round((a+b)/2);}
+  let ingress=null;
+  for(let a=start;a<maximum;a+=step){const b=Math.min(a+step,maximum),la=at('Moon',a),lb=at('Moon',b);if(Math.floor(lb/30)!==initial){const boundary=(initial+1)*30,t=zero(a,b,t=>diff(at('Moon',t),boundary));ingress={utc:new Date(t).toISOString(),from:initial,to:(initial+1)%12,errorDegrees:Math.abs(diff(at('Moon',t),boundary))};break;}}
+  if(!ingress)return {status:'moon-ingress-not-found-within-five-days',noApplicationBeforeIngress:null,intervals:[],entries:[]};
+  const end=Date.parse(ingress.utc),intervals=[],entries=[];
+  for(const planet of KEYS.filter(k=>k!=='Moon'))for(const angle of ANGLES)for(const oriented of angle===0||angle===180?[angle]:[angle,-angle]){
+   const moiety=(orbs.Moon+orbs[planet])/2,delta=t=>diff(at(planet,t)-at('Moon',t),oriented),margin=t=>Math.abs(delta(t))-moiety;
+   const cuts=[start];let previous=margin(start);
+   for(let a=start;a<end;){const b=Math.min(a+step,end),current=margin(b);if(previous*current<0)cuts.push(zero(a,b,margin));a=b;previous=current;}
+   cuts.push(end);
+   for(let i=0;i<cuts.length-1;i++){const a=cuts[i],b=cuts[i+1],middle=(a+b)/2;if(margin(middle)>1e-7)continue;
+    const nearEntry=a+Math.min(1000,(b-a)/4),change=diff(delta(nearEntry+60000),delta(nearEntry-60000)),applying=delta(nearEntry)*change<0;
+    const row={planet,angle,oriented,moiety,fromUTC:new Date(a).toISOString(),endExclusive:new Date(b).toISOString(),insideAtChart:a===start,applyingAtEntry:applying};intervals.push(row);
+    if(a>start&&a<end&&applying)entries.push({...row,entryErrorDegrees:Math.abs(margin(a))});
+   }
+  }
+  const currentApplications=[];
+  for(const planet of KEYS.filter(k=>k!=='Moon'))for(const angle of ANGLES)for(const oriented of angle===0||angle===180?[angle]:[angle,-angle]){const d=diff(at(planet,start)-at('Moon',start),oriented),change=diff(diff(at(planet,start+60000)-at('Moon',start+60000),oriented),diff(at(planet,start-60000)-at('Moon',start-60000),oriented)),moiety=(orbs.Moon+orbs[planet])/2;if(Math.abs(d)<=moiety&&d*change<0)currentApplications.push({planet,angle,oriented,moiety,orb:Math.abs(d)});}
+  entries.sort((a,b)=>Date.parse(a.fromUTC)-Date.parse(b.fromUTC));
+  return {version:'20261003moon-orb1',status:'calculated',profile:'HOULDING_2006_APPLICATION_ORB_ENTRY',startUTC:chart.input.utc,nextIngress:ingress,currentApplications,entries,intervals,noApplicationBeforeIngress:currentApplications.length===0&&entries.length===0,outOfAllOrbsAtChart:!intervals.some(i=>i.insideAtChart),source:'https://www.skyscript.co.uk/moon2.html',sourceSection:'When the Moon Translates Light or becomes Void; Schoner Opusculum Astrologicum II Canon XXIII',policy:'七曜五大相位，沿指定行星光圈求进入／退出的實際UTC，换座时刻另求。是否换座前精確成相與是否进入容許度分列；這個具名條件不是所有歷史VOC定義或事件成敗的保證。',precision:'求根0.5秒僅為數學容差，天文模型誤差及月速影響仍按分鐘判讀。'};
+ }
  function horary(chart,input){
   const E=root.JYWestern;if(chart.sensitivity.unknownTime||!chart.houses)return {status:'unknown-clock-no-horary-houses',significators:[],timeline:null};const topic=input.horaryHouse==null?null:Number(input.horaryHouse);if(topic!=null&&(!Number.isInteger(topic)||topic<1||topic>12))throw Error('問事宮須為1至12');
   const orbProfiles={HOULDING_STANDARD:{Sun:15,Moon:12,Mercury:7,Venus:7,Mars:7,Jupiter:9,Saturn:9},HOULDING_WIDE:{Sun:17,Moon:12.5,Mercury:7,Venus:8,Mars:8,Jupiter:12,Saturn:10}},orbProfile=input.horaryOrbProfile||'HOULDING_STANDARD';if(!orbProfiles[orbProfile])throw Error('卜卦行星光圈版本無效');const orbs=orbProfiles[orbProfile];
@@ -28,7 +52,7 @@
    if(slower&&pa.phase==='入相'&&pb.phase==='入相')collections.push({collector:fast,planets:[a,b],aspects:[pa,pb],status:'structural-candidate',requirement:'接納與中途干擾須合讀；第三者並不等於現實協助者已確定'});
   }
   for(const a of applications){const perfection=t.events.find(e=>[e.a,e.b].includes(a.a)&&[e.a,e.b].includes(a.b)&&e.angle===a.angle),until=perfection?Date.parse(perfection.utc):Date.parse(t.endExclusive),changes=t.ingresses.filter(e=>[a.a,a.b].includes(e.planet)&&Date.parse(e.utc)<until),reversals=t.stations.filter(e=>[a.a,a.b].includes(e.planet)&&Date.parse(e.utc)<until),third=t.events.filter(e=>Date.parse(e.utc)<until&&((e.a===a.a||e.b===a.a)&&e.a!==a.b&&e.b!==a.b||(e.a===a.b||e.b===a.b)&&e.a!==a.a&&e.b!==a.a));denials.push({pair:[a.a,a.b],angle:a.angle,perfection:perfection||null,status:perfection?'exact-within-window':'no-exact-within-window',signChanges:changes,refranationCandidates:reversals,interveningAspects:third,interpretation:'換座、轉向、第三星相位分別列明；不把任何第三星接觸自動宣告禁止／挫敗，不以缺少窗內相位當成永不發生。'});}
-  return {version:'20261003horary1',status:'calculated',orbPolicy:{profile:orbProfile,planetaryOrbs:orbs,pairRule:'兩星光圈相加後除二；七曜五大相位均同此容許度',source:SOURCES.orbs},selectedHouse:topic,querent:significators[0],quesited:topic?significators[topic-1]:null,significators,traditionalAspects:pairs,receptions,translationCandidates:translations,collectionCandidates:collections,perfectionAndInterference:denials,moon:{nextIngress:moonIngress||null,exactBeforeIngress:moonFuture,voidExactBeforeIngress:!moonFuture.length,currentApplyingAspects:currentMoon,traditionalCurrentApplicationStatus:currentMoon.length?'applying-with-selected-chart-orbs':'no-current-application-under-selected-orbs',policy:'按Houlding2004具名光圈表判当前入相，現代換座前無精確相位的空亡另算。forthwith是否允許出相後間隔等歷史釋義另保留，不冒稱單一空亡布林涵蓋全部古典版本。'},timeline:t,sourceAudit:{sources:SOURCES,scope:'指定問事時刻全盤；十二宮主、尊貴接納、實際入出相、星象精確相位／換座／轉向與傳遞／收集結構候選。非全歷史卜卦條款自动斷吉凶。'}};
+  return {version:'20261003horary1',status:'calculated',orbPolicy:{profile:orbProfile,planetaryOrbs:orbs,pairRule:'兩星光圈相加後除二；七曜五大相位均同此容許度',source:SOURCES.orbs},selectedHouse:topic,querent:significators[0],quesited:topic?significators[topic-1]:null,significators,traditionalAspects:pairs,receptions,translationCandidates:translations,collectionCandidates:collections,perfectionAndInterference:denials,moon:{orbEntryBeforeIngress:moonOrbTimeline(chart,orbs),nextIngress:moonIngress||null,exactBeforeIngress:moonFuture,voidExactBeforeIngress:!moonFuture.length,currentApplyingAspects:currentMoon,traditionalCurrentApplicationStatus:currentMoon.length?'applying-with-selected-chart-orbs':'no-current-application-under-selected-orbs',policy:'按Houlding2004具名光圈表判当前入相，現代換座前無精確相位的空亡另算。forthwith是否允許出相後間隔等歷史釋義另保留，不冒稱單一空亡布林涵蓋全部古典版本。'},timeline:t,sourceAudit:{sources:SOURCES,scope:'指定問事時刻全盤；十二宮主、尊貴接納、實際入出相、星象精確相位／換座／轉向與傳遞／收集結構候選。非全歷史卜卦條款自动斷吉凶。'}};
  }
- root.JYWesternCompletion=Object.freeze({version:'20261003western-completion1',relocated,horary,timeline,sources:SOURCES});
+ root.JYWesternCompletion=Object.freeze({version:'20261003western-completion2',relocated,horary,timeline,moonOrbTimeline,sources:SOURCES});
 })(typeof window==='undefined'?globalThis:window);

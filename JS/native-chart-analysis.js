@@ -1,7 +1,7 @@
 /* Native rule calculations consume the actual chart. No question selects a chart. */
 (function(root){
   'use strict';
-  const VERSION='20261003native4',arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x)),mod=(n,m)=>((n%m)+m)%m;
+  const VERSION='20261003native5',arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x)),mod=(n,m)=>((n%m)+m)%m;
   const GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥'),GE=['木','木','火','火','土','土','金','金','水','水'],ZE=['水','土','木','木','土','火','火','土','金','金','土','水'],ELS=['木','火','土','金','水'];
   const HIDDEN={子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','戊','庚'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
   const KEYS=['year','month','day','hour'],LABELS=['年柱','月柱','日柱','時柱'],GENERAL_ELEMENT=['土','火','火','木','土','木','土','金','土','水','金','水'];
@@ -45,7 +45,7 @@
     if(sr&&Date.parse(sr.utc)>Date.parse(c.input.reference))sr=E.solarReturn(new Date(c.input.utc),sr.year-1,c.input.latitude,c.input.longitude,c.policy.houseSystem);
     if(sr&&sr.year<=new Date(c.input.utc).getUTCFullYear())sr=null;
     const returnAnalysis=sr?{...copy(sr),aspects:copy(E.aspects(sr.planets,sr.houses,{minor:false})),natalOverlay:copy(E.crossAspects(sr.planets,c.planets,2)),purpose:'觀察日前已開始的回歸年度，出生地宮位'}:null;
-    return result('astro',items,{planets:10,nodes:2,houses:c.houses?12:0,aspects:c.aspects.length},{chartPurpose:c.input.chartPurpose||'natal',horary:copy(c.horary),relocated:copy(c.relocated),essentialDignities:c.essentialDignities||(root.JYWesternDignities?root.JYWesternDignities.compute(c):null),returnAnalysis,transits:copy(c.transits),progressions:copy(c.progressions),patterns:copy(c.patterns),unavailable:[]});
+    return result('astro',items,{planets:10,nodes:2,houses:c.houses?12:0,aspects:c.aspects.length},{chartPurpose:c.input.chartPurpose||'natal',horary:copy(c.horary),relocated:copy(c.relocated),essentialDignities:c.essentialDignities||(root.JYWesternDignities?root.JYWesternDignities.compute(c):null),returnAnalysis,transits:copy(c.transits),progressions:copy(c.progressions),patterns:copy(c.patterns),unavailable:c.horary?['全部歷史VOC定義與六種阻礙成事的完整自動裁定；此版已計實際相位、换座、駐留、入光圈與結構候選，未把候選冒充定論']:[]});
   }
   const OWN={Sun:[4],Moon:[3],Mars:[0,7],Mercury:[2,5],Jupiter:[8,11],Venus:[1,6],Saturn:[9,10]},EXALT={Sun:0,Moon:1,Mars:9,Mercury:5,Jupiter:3,Venus:11,Saturn:6};
   function signDignity(k,sign){if(!OWN[k])return 'node';if(EXALT[k]===sign)return 'exalted';if(mod(EXALT[k]+6,12)===sign)return 'debilitated';if(OWN[k].includes(sign))return 'own';return root.JYVedic.dignity(k,sign*30+25).status;}

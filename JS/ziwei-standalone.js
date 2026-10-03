@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -797,6 +798,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   }
 
   function buildPrompt(zw, form) {
+    if(window.JYPromptPacket)return window.JYPromptPacket.build('ziwei',zw,form.question||form.q||'請分析本命與所問運限',{unknown:!!form.btimeUnknown});
     var q = (form && form.question) ? form.question.trim() : '';
     var parts = [];
     parts.push(_zwHeadText());
@@ -924,8 +926,8 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native4', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native4', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native5', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native5', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;
@@ -1102,15 +1104,15 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       var b = document.querySelector('.zw-ai-copy');
       if (b) { var o = b.innerHTML; b.innerHTML = '✓ 已複製！貼到 AI 送出即可'; b.style.borderColor = 'rgba(52,211,153,.6)'; setTimeout(function(){ b.innerHTML = o; b.style.borderColor = ''; }, 2500); }
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(_lastPrompt).then(ok, function(){ _fallbackCopy(_lastPrompt); ok(); });
+    if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
+      (window.JYPromptPacket?window.JYPromptPacket.copy(_lastPrompt):navigator.clipboard.writeText(_lastPrompt)).then(ok, function(){ _fallbackCopy(_lastPrompt); ok(); });
     } else { _fallbackCopy(_lastPrompt); ok(); }
   };
   window._zwOpenAI = function (id, url, btn) {
     if (!_lastPrompt) { window.open(url, '_blank'); return; }
     function go(){ var s = btn && btn.querySelector('span'); var nm = s ? s.textContent : ''; if (s) s.textContent = '已複製！'; setTimeout(function(){ window.open(url, '_blank'); }, 280); setTimeout(function(){ if (s) s.textContent = nm; }, 2200); }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(_lastPrompt).then(go, function(){ _fallbackCopy(_lastPrompt); go(); });
+    if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
+      (window.JYPromptPacket?window.JYPromptPacket.copy(_lastPrompt):navigator.clipboard.writeText(_lastPrompt)).then(go, function(){ _fallbackCopy(_lastPrompt); go(); });
     } else { _fallbackCopy(_lastPrompt); go(); }
   };
   function _fallbackCopy(text) {

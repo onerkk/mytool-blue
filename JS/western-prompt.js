@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -278,6 +279,7 @@ var JY_REC_WESTERN = "【成稿檢查】後續各段各增加一個新的判斷�
   };
   const SOURCES=[['Astronomy Engine 技術文件','https://github.com/cosinekitty/astronomy/blob/master/source/js/README.md'],['Swiss Ephemeris 宮制與座標方法','https://www.astro.com/ftp/swisseph/doc/swisseph.pdf'],['Deborah Houlding：相位與尊貴','https://www.skyscript.co.uk/dig2.html'],['Nicholas Campion：相位與格局','https://www.skyscript.co.uk/aspects2.html'],['Walter Pullen：Astrolog 推運與回歸方法','https://www.astrolog.org/ftp/astrolog.htm']];
   function build(chart,{question='',topic='general'}={}){
+    if(root.JYPromptPacket)return root.JYPromptPacket.build('astro',chart,question||'請完整分析本次星盤',{topic});
     if(!chart||!chart.version?.startsWith('jy-western-'))throw Error('需要完整西洋命盤資料');const E=root.JYWestern;
     const deg=x=>x.toFixed(4)+'°',line=p=>`${p.name}｜${p.signName} ${deg(p.degree)}｜${p.house?'第 '+p.house+' 宮':'無宮位'}｜${p.retrograde?'逆行':'順行'} ${p.speed.toFixed(5)}°/日｜${p.dignity.name}`;
     const aspect=a=>`${E.zh(a.a)} ${a.name} ${E.zh(a.b)}：實際距離 ${deg(a.separation)}，容許誤差內偏離 ${deg(a.orb)}${a.phase?'，'+a.phase:''}${a.outOfSign?'，跨星座相位':''}`;

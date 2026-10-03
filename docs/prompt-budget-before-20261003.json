@@ -1,0 +1,94 @@
+{
+  "native": {
+    "bazi": {
+      "characters": 60300,
+      "utf8Bytes": 74620
+    },
+    "ziwei": {
+      "characters": 340372,
+      "utf8Bytes": 413472
+    },
+    "astro": {
+      "characters": 47411,
+      "utf8Bytes": 53469
+    },
+    "vedic": {
+      "characters": 482625,
+      "utf8Bytes": 509059
+    },
+    "liuren": {
+      "characters": 1250540,
+      "utf8Bytes": 1387330
+    },
+    "liuyao": {
+      "characters": 12050,
+      "utf8Bytes": 14795
+    },
+    "yijing": {
+      "characters": 16851,
+      "utf8Bytes": 19917
+    },
+    "meihua": {
+      "characters": 2241,
+      "utf8Bytes": 2945
+    },
+    "name": {
+      "characters": 50908,
+      "utf8Bytes": 74231
+    },
+    "compat": {
+      "characters": 55410,
+      "utf8Bytes": 72248
+    },
+    "personality": {
+      "characters": 2904,
+      "utf8Bytes": 3904
+    },
+    "tarot": {
+      "characters": 1860,
+      "utf8Bytes": 2424
+    },
+    "lenormand": {
+      "characters": 5711,
+      "utf8Bytes": 6484
+    },
+    "ootk": {
+      "characters": 1607,
+      "utf8Bytes": 2037
+    },
+    "oracle": {
+      "characters": 9142,
+      "utf8Bytes": 10563
+    }
+  },
+  "builders": {
+    "vedic": {
+      "characters": 457336,
+      "utf8Bytes": 484917
+    },
+    "astro": {
+      "characters": 64821,
+      "utf8Bytes": 87083
+    },
+    "liuren": {
+      "characters": 4067278,
+      "utf8Bytes": 4387025
+    },
+    "liuyao": {
+      "characters": 23532,
+      "utf8Bytes": 38394
+    },
+    "yijing": {
+      "characters": 21409,
+      "utf8Bytes": 32873
+    },
+    "name": {
+      "characters": 127349,
+      "utf8Bytes": 197188
+    },
+    "ziwei": {
+      "characters": 357792,
+      "utf8Bytes": 454418
+    }
+  }
+}

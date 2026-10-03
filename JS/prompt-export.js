@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -1149,6 +1150,7 @@ var JY_REC_EXPORT = {
     var isRootTarot = (tool === 'tarot' || tool === 'ootk');
     var sourceLock = tool === 'meihua' ? FRAG_SOURCELOCK_MEIHUA : (isRootTarot ? '' : FRAG_SOURCELOCK);
     var uncertainty = tool === 'meihua' ? FRAG_UNCERTAINTY_MEIHUA : (isRootTarot ? '' : FRAG_UNCERTAINTY_TAROT);
+    if(window.JYPromptPacket)return window.JYPromptPacket.build(tool,rawPayload,question||'請依本次完整操作分析');
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return globalThis.JYReadingWorkflow.finish([
       buildRootQuestionLock(question, tool),
@@ -1189,8 +1191,8 @@ var JY_REC_EXPORT = {
       btn.disabled = false;
       setTimeout(function () { btn.textContent = old; }, 2200);
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(); });
+    if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
+      (window.JYPromptPacket?window.JYPromptPacket.copy(text):navigator.clipboard.writeText(text)).then(function () { done(true); }, function () { fallback(); });
     } else { fallback(); }
     function fallback() {
       var ta=null,previous=document.activeElement;
@@ -1351,8 +1353,8 @@ var JY_REC_EXPORT = {
           function restore(){setTimeout(function(){label.textContent=aiNames[ai]||ai;},2200);}
           function copied(){label.textContent='已複製，請貼上';restore();}
           function failed(){label.textContent='請先按複製';restore();}
-          if(navigator.clipboard&&navigator.clipboard.writeText){
-            try{navigator.clipboard.writeText(prompt).then(copied,failed);}catch(e){failed();}
+          if(window.JYPromptPacket||(navigator.clipboard&&navigator.clipboard.writeText)){
+            try{(window.JYPromptPacket?window.JYPromptPacket.copy(prompt):navigator.clipboard.writeText(prompt)).then(copied,failed);}catch(e){failed();}
           }else{copyText(prompt,btn);}
 
         });

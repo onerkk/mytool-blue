@@ -1,5 +1,5 @@
 {
-  "version": "20261003native4",
+  "version": "20261003native5",
   "scope": "15 existing interfaces and named calculation profiles, with explicit source versions, actual chart outputs and tested arithmetic; not every historical school and not a guarantee of AI interpretation",
   "inputOmissionsAreNotUnimplemented": true,
   "methods": {
@@ -246,7 +246,8 @@
         "progression",
         "horaryorbs",
         "horaryvoid",
-        "horaryreception"
+        "horaryreception",
+        "horarymoonentry"
       ],
       "selectedPolicy": {
         "zodiac": "回歸黃道",
@@ -309,7 +310,8 @@
         "十行星、交點、四角、五宮制含Regiomontanus、尊貴、定位鏈、格局",
         "本命行運、兩種次限角度方法、太陽回歸",
         "固定UTC迁居重排、問事及事件盤",
-        "12卜卦宮主、兩光圈表、接納、傳光集光結構、未來相位/換座/轉向與干預紀錄"
+        "12卜卦宮主、兩光圈表、接納、傳光集光結構、未來相位/換座/轉向與干預紀錄",
+        "Houlding/Schoner具名政策：月亮换座前實際進入相位光圈的UTC時窗；與換座前精確成相和現正入相分列"
       ]
     },
     "vedic": {
@@ -789,7 +791,7 @@
       ]
     }
   },
-  "sourceCount": 40,
+  "sourceCount": 56,
   "sources": [
     {
       "id": "ziping",
@@ -1230,6 +1232,14 @@
       "url": "https://www.skyscript.co.uk/glossary/reception/",
       "scope": "主星接納來客方向，實際尊貴位置与古典相位條件",
       "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "horarymoonentry",
+      "title": "Deborah Houlding：When the Moon Translates Light or becomes Void",
+      "type": "作者技術原文",
+      "url": "https://www.skyscript.co.uk/moon2.html",
+      "scope": "Schoner具名解讀的换座前進入相位光圈；與换座前精確成相分列，不宣稱全部歷史空亡或六種阻止語義皆已自動化",
+      "checkedAt": "2026-10-03"
     }
   ],
   "classification": {
@@ -1238,6 +1248,18 @@
     "qualitativeJudgments": "提供計算證據，但需綜合判讀的條件",
     "evidenceLimits": "原典差異、缺文或尚未證明的效度；與算法完成度分開"
   },
-  "testedAt": "2026-10-03T05:05:14.475Z",
-  "completenessClaim": "可逐一重算所列排盤資料；有明列未實作規則，故不宣稱所有命理技術或全部古籍條款已補齊。"
+  "testedAt": "2026-10-03T08:31:41.694Z",
+  "completenessClaim": "可逐一重算所列排盤資料；有明列未實作規則，故不宣稱所有命理技術或全部古籍條款已補齊。",
+  "promptDelivery": {
+    "version": "20261003prompt5",
+    "default": "短附檔指令與完整閱讀範圍資料TXT；完整原始排盤另存JSON",
+    "fallback": "編號純文字分段，全部貼齊才分析",
+    "localMessageLimits": {
+      "unicodeCodePoints": 8000,
+      "utf8Bytes": 20000
+    },
+    "limitMeaning": "本站保守上限，不是ChatGPT官方最大輸入或保證所有AI的上下文足夠",
+    "dataPreservation": "不直接截字；同表欄序與JSON Pointer可還原；所有所問候選日期完整保留",
+    "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。未計算年度、未知時辰及未實作規則明列，不由AI猜補"
+  }
 }

@@ -1,7 +1,7 @@
 /* 靜月之光 · 姓名書房。獨立輸入、筆畫覆核、六法原生結果、完整提示詞。 */
 (function(root){
   'use strict';
-  var REV='20261003native4',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
+  var REV='20261003native5',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
   var h=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
   var el=function(id){return room&&room.querySelector('#'+id);};
   function load(file,check){if(check&&check())return Promise.resolve();return new Promise(function(resolve,reject){if(typeof root._jyLazyScript!=='function'){reject(new Error('載入工具尚未完成，請稍後重試。'));return;}root._jyLazyScript(file,function(ok){if(ok&&(!check||check()))resolve();else reject(new Error('姓名學資料載入失敗，請重新整理或檢查網路後重試。'));});});}
@@ -103,12 +103,12 @@
       if(state.step===0){readForm();status('正在準備離線字表與各派計算資料…');await prepare();if(current!==epoch||!room)return;validateInput();state.step=1;render(true);}
       else{
         readReview();status('正在合讀筆畫、形義與原生資料…');var bazi=null,s=state.input;
-        if(s.birthDate&&s.birthTime){await load('JS/bazi.js?v=20261003native4',function(){return typeof root.computeBazi==='function';});if(current!==epoch||!room)return;var d=s.birthDate.split('-').map(Number),t=s.birthTime.split(':').map(Number);bazi=root.computeBazi(d[0],d[1],d[2],t[0],t[1],'male',{timezoneOffset:s.timezoneOffset,trueSolarTime:false,dayBoundaryMode:'MIDNIGHT_00'});}
+        if(s.birthDate&&s.birthTime){await load('JS/bazi.js?v=20261003native5',function(){return typeof root.computeBazi==='function';});if(current!==epoch||!room)return;var d=s.birthDate.split('-').map(Number),t=s.birthTime.split(':').map(Number);bazi=root.computeBazi(d[0],d[1],d[2],t[0],t[1],'male',{timezoneOffset:s.timezoneOffset,trueSolarTime:false,dayBoundaryMode:'MIDNIGHT_00'});}
         if(current!==epoch||!room)return;state.result=root.JYNameEngine.evaluate(Object.assign({},s,{candidates:state.mode==='compare'?s.candidates:[]}),{bazi:bazi});state.active=0;state.step=2;render(true);
       }
     }catch(e){if(current===epoch&&room)error(e.message||'資料尚未完成，請核對後重試。');}finally{if(current===epoch)busy=false;if(button.isConnected)button.disabled=false;}
   }
-  async function copy(){try{var text=prompt();if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(text);else throw new Error('clipboard-unavailable');status('已複製完整提示詞，可貼到 AI 對話進行解讀。');}catch(e){if(!room)return;el('nm-prompt-details').open=true;var preview=el('nm-prompt-preview'),range=document.createRange();range.selectNodeContents(preview);var selection=getSelection();selection.removeAllRanges();selection.addRange(range);status('瀏覽器未允許自動複製，已選取完整提示詞，可手動複製。');}}
+  async function copy(){try{var text=prompt();if(window.JYPromptPacket||(navigator.clipboard&&navigator.clipboard.writeText))await (window.JYPromptPacket?window.JYPromptPacket.copy(text):navigator.clipboard.writeText(text));else throw new Error('clipboard-unavailable');status('已複製本次提示詞；分段時請依序貼齊，可貼到 AI 對話進行解讀。');}catch(e){if(!room)return;el('nm-prompt-details').open=true;var preview=el('nm-prompt-preview'),range=document.createRange();range.selectNodeContents(preview);var selection=getSelection();selection.removeAllRanges();selection.addRange(range);status('瀏覽器未允許自動複製，已選取完整提示詞，可手動複製。');}}
   function download(){var text=JSON.stringify({facts:state.result,prompt:prompt()},null,2),blob=new Blob([text],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='jingyue-name-analysis.json';a.click();setTimeout(function(){URL.revokeObjectURL(url);},1000);status('本次分析資料已下載。');}
   function click(event){var button=event.target.closest('button');if(!button||!room)return;if(button.getAttribute('data-nm-action')==='close'){close();return;}if(busy)return;var action=button.getAttribute('data-nm-action'),mode=button.getAttribute('data-nm-mode'),result=button.getAttribute('data-nm-result');
     if(mode){readForm();state.mode=mode;render();return;}

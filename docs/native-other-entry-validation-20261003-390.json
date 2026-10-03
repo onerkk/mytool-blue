@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T04:59:18.282Z",
+  "testedAt": "2026-10-03T08:17:59.688Z",
   "scope": "Actual controls and production local calculations; no remote AI or injected chart results. Oracle receives fixed raw uint32 words through the production RNG fallback; all other random draws use browser entropy.",
   "results": [
     {
@@ -7,77 +7,121 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 25134
+      "promptCharacters": 321,
+      "parts": 2,
+      "attachmentPromptCharacters": 321,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "yijing",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 24589
+      "promptCharacters": 321,
+      "parts": 2,
+      "attachmentPromptCharacters": 321,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "meihua",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 11133
+      "promptCharacters": 319,
+      "parts": 2,
+      "attachmentPromptCharacters": 319,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "lenormand",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 60873
+      "promptCharacters": 339,
+      "parts": 4,
+      "attachmentPromptCharacters": 339,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "compat",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 162991
+      "promptCharacters": 7497,
+      "parts": 11,
+      "attachmentPromptCharacters": 320,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "personality",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 81264
+      "promptCharacters": 4043,
+      "parts": 1,
+      "attachmentPromptCharacters": 334,
+      "readingFileDownload": false,
+      "numberedCopy": false
     },
     {
       "method": "name",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 59563
+      "promptCharacters": 315,
+      "parts": 2,
+      "attachmentPromptCharacters": 315,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "name",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 59621
+      "promptCharacters": 315,
+      "parts": 2,
+      "attachmentPromptCharacters": 315,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "tarot",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 36120
+      "promptCharacters": 7497,
+      "parts": 21,
+      "attachmentPromptCharacters": 329,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "ootk",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 95118
+      "promptCharacters": 7497,
+      "parts": 22,
+      "attachmentPromptCharacters": 312,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "oracle",
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 16704
+      "promptCharacters": 321,
+      "parts": 2,
+      "attachmentPromptCharacters": 321,
+      "readingFileDownload": true,
+      "numberedCopy": true
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T05:01:00.920Z",
+  "testedAt": "2026-10-03T08:33:02.573Z",
   "scope": "Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths",
   "results": [
     {
@@ -7,35 +7,55 @@
       "status": "passed",
       "width": 1280,
       "nativeDownload": true,
-      "prompt": true
+      "prompt": true,
+      "parts": 7,
+      "attachmentPromptCharacters": 319,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "ziwei",
       "status": "passed",
       "width": 1280,
       "nativeDownload": true,
-      "prompt": true
+      "prompt": true,
+      "parts": 14,
+      "attachmentPromptCharacters": 317,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "vedic",
       "status": "passed",
       "width": 1280,
       "nativeDownload": true,
-      "prompt": true
+      "prompt": true,
+      "parts": 24,
+      "attachmentPromptCharacters": 316,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "astro",
       "status": "passed",
       "width": 1280,
       "nativeDownload": true,
-      "prompt": true
+      "prompt": true,
+      "parts": 7,
+      "attachmentPromptCharacters": 316,
+      "readingFileDownload": true,
+      "numberedCopy": true
     },
     {
       "method": "liuren",
       "status": "passed",
       "width": 1280,
       "nativeDownload": true,
-      "prompt": true
+      "prompt": true,
+      "parts": 10,
+      "attachmentPromptCharacters": 319,
+      "readingFileDownload": true,
+      "numberedCopy": true
     }
   ]
 }

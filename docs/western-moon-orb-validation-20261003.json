@@ -1,0 +1,65 @@
+{
+  "testedAt": "2026-10-03T08:31:41.556Z",
+  "fixtures": "Four synthetic linear ephemerides test mathematical roots; one actual Astronomy Engine horary tests integration. Synthetic fixtures are not claimed as real astronomical charts.",
+  "results": [
+    {
+      "name": "linear fixture: enters orb before Moon ingress although exact conjunction is after ingress",
+      "status": "passed"
+    },
+    {
+      "name": "linear fixture: no current application or orb entry before ingress is identified",
+      "status": "passed"
+    },
+    {
+      "name": "linear fixture: contact after ingress cannot be included in this sign",
+      "status": "passed"
+    },
+    {
+      "name": "linear fixture: zodiac wrap does not corrupt Moon ingress or intervals",
+      "status": "passed"
+    },
+    {
+      "name": "actual-orb-entry-fixture",
+      "status": "passed",
+      "entries": [
+        {
+          "planet": "Mercury",
+          "angle": 120,
+          "oriented": 120,
+          "moiety": 9.5,
+          "fromUTC": "2026-10-02T07:58:28.297Z",
+          "endExclusive": "2026-10-02T19:54:06.932Z",
+          "insideAtChart": false,
+          "applyingAtEntry": true,
+          "entryErrorDegrees": 0.0000016776576785559882
+        },
+        {
+          "planet": "Sun",
+          "angle": 90,
+          "oriented": 90,
+          "moiety": 13.5,
+          "fromUTC": "2026-10-02T12:54:09.789Z",
+          "endExclusive": "2026-10-02T19:54:06.932Z",
+          "insideAtChart": false,
+          "applyingAtEntry": true,
+          "entryErrorDegrees": 0.000016727756815271277
+        },
+        {
+          "planet": "Venus",
+          "angle": 120,
+          "oriented": 120,
+          "moiety": 9.5,
+          "fromUTC": "2026-10-02T18:10:56.342Z",
+          "endExclusive": "2026-10-02T19:54:06.932Z",
+          "insideAtChart": false,
+          "applyingAtEntry": true,
+          "entryErrorDegrees": 0.000004113800059712958
+        }
+      ]
+    },
+    {
+      "name": "actual Astronomy Engine horary integrates full future orb-entry calculation with distinct exact convention",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');
+const {environment,examples}=require('../tests/native-fixtures-20261003.cjs');
+const e=environment(),x=examples(e.ctx);e.load('prompt-packet');
+const P=e.ctx.JYPromptPacket;
+const measure=(method,chart,question)=>{const packet=P.get(P.build(method,chart,question));return {method,question,totalCharacters:packet.totalCharacters,totalBytes:packet.totalBytes,parts:packet.parts.length,maxCharacters:Math.max(...packet.parts.map(P.chars)),maxBytes:Math.max(...packet.parts.map(P.utf8)),defaultCopyMode:packet.parts.length>1?'attachment':'single',defaultCopiedCharacters:P.chars(packet.parts.length>1?packet.attachmentPrompt:packet.parts[0]),defaultCopiedBytes:P.utf8(packet.parts.length>1?packet.attachmentPrompt:packet.parts[0])};};
+const results=Object.entries(x.charts).map(([method,chart])=>measure(method,chart,x.q));
+const liuren=e.ctx.JYLiurenCore.calculate({date:'2026-10-01',time:'22:06',question:'近期工作怎樣推進？'});
+fs.writeFileSync(path.resolve(__dirname,'../docs/prompt-budget-after-20261003.json'),JSON.stringify({testedAt:new Date().toISOString(),version:P.version,limits:P.limits,limitMeaning:'Conservative local output limits; not an official ChatGPT maximum or a guarantee for every AI service.',fixture:{utc:x.instant,question:x.q,allSixteenDivisionsPositions:true,detailedVedicDivisions:'D1,D9,D10 by topic'},results,additionalExamples:[{...measure('liuren',liuren,'近期工作怎樣推進？'),calculatedCandidateDays:liuren.timing.candidates.length,window:liuren.timing.window}]},null,2)+'\n');
+console.log(JSON.stringify({methods:results.length,maxDefaultCopiedCharacters:Math.max(...results.map(x=>x.defaultCopiedCharacters)),maxNumberedMessageCharacters:Math.max(...results.map(x=>x.maxCharacters)),maxNumberedMessageBytes:Math.max(...results.map(x=>x.maxBytes))}));

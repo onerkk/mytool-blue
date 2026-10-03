@@ -192,6 +192,7 @@
   }
   var MEMORY_BOUNDARY='【本次資料與記憶邊界】本次只使用這份提示詞明列的原問題、排盤／抽取事實、條件與提問者本次提供的背景。不得引用、調用或暗中依賴帳號記憶、個人檔案、其他對話、先前占卜或先前生成的結論；不得用記憶補缺、推定人物身分、關係、事件或偏好。若本題需要舊資料，只有該資料在本提示詞中重列才可使用；未列明者一律視為未知，指出資料缺口，依本次資料回答。';
   function finish(prompt,options){
+    if(root.JYPromptPacket)return root.JYPromptPacket.finish(prompt,options);
     var text=String(prompt||'');
     if(!text.trim())return text;
     // Only the exact application-owned final footer is moved; no source facts
@@ -511,6 +512,7 @@ var JY_READING_RELATIONSHIP = "【白話優先】【像命理師當面解惑】�
     var bz=root.JY_BAZI_PROMPT_ROOT,zw=root.JY_ZIWEI_PROMPT_ROOT;
     if(!bz||!zw||!root.BaziSuiteCore)throw new Error('合盤提示詞核心未載入。');
     pair.birthTimeAudit=verifyBirthTimes(comp,pair);
+    if(root.JYPromptPacket)return root.JYPromptPacket.buildMany([{method:'compat',chart:comp,label:'八字雙向'},{method:'compat',chart:pair,label:'紫微雙向'}],question||'請分析双方支持、磨合與運限');
     var s=comp.scenario;
     var lines=[
       '你是一位能分別運用子平八字與紫微斗數、再整合雙人關係的資深解盤者。使用繁體中文、白話而深入；先回答問題，再解釋依據與條件。',
