@@ -384,7 +384,7 @@
       ['sequence_member_node','ordered_period_row','declared_temporal_pair','period_summary','declared_outer_pair','surprise_triad_context','arch_surprise_synthesis'],
       {state:'qualitative_inference',trajectory:'qualitative_inference',outcome:'qualitative_inference',exact_date:'not_measured',cardinality:'not_measured'},
       {kind:'historical_arch_three_periods_with_surprises',independentComparableChannels:0},
-      ['過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；代表牌另置中央。','兩張意外牌從最初未用的11張另抽，不能當66張主盤或兩個獨立結果。','原文後段66張重排大圓有歧義，本站沒有模擬，禁止聲稱完整復刻。']
+      ['過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；代表牌另置中央。','兩張意外牌從最初未用的11張另抽，不能當66張主盤或兩個獨立結果。','原文後段按堆頂政策重排首33末66大圓；讀S66、32對及原65单張。']
     ),
     mathers_horseshoe: makeSpec(
       'mathers_horseshoe', 'Mathers 1888 第一法完整 Horseshoe', 'gd_book_t',
@@ -1097,7 +1097,7 @@
       synthesis('row_dependency_network', '三排連續答案、首尾配對與未配對成員綜合', rows.concat(pairs21, [center21]), {eventJoin:'row_summaries_and_declared_pairs_only'});
     } else if (id === 'mathers_66') {
       // Third Method: the indices below use the original numbered cards, zero-based.
-      // Surprise cards 67/68 were drawn from the original unused eleven; no circle is invented.
+      // Surprise cards 67/68 are separate; final circle uses the same original 66.
       var timeGroups=[{name:'過去',outer:0,inner:33,event:'PAST_RELATIVE'},{name:'現在',outer:22,inner:55,event:'PRESENT_RELATIVE'},{name:'未來',outer:11,inner:44,event:'FUTURE_CONDITIONAL'}];
       var periodSummaries=[];
       timeGroups.forEach(function(group){
@@ -1110,9 +1110,10 @@
         periodSummaries.push(synthesis('period_summary',group.name+'兩弧序列與原書對照整合',rows66.concat(pairIds),{eventBinding:group.event,eventJoin:'same_original_period_only'}));
       });
       var crossPairs=[];
-      for(var last=0;last<33;last++)crossPairs.push(direct('declared_outer_pair','66張末輪 '+(66-last)+'↔'+(1+last),[65-last,last],{topology:'declared_pair',metadata:{relationKind:'semantic_pair',elementalDignity:false},forbidden:['declared_pair_is_not_elemental_adjacency','large_circle_rearrangement_not_implemented']}));
+      for(var last=0;last<33;last++)crossPairs.push(direct('declared_outer_pair','66張末輪 '+(66-last)+'↔'+(1+last),[65-last,last],{topology:'declared_pair',metadata:{relationKind:'semantic_pair',elementalDignity:false},forbidden:['declared_pair_is_not_elemental_adjacency']}));
+      var circle66=[];for(var cir=32;cir>=0;cir--)circle66.push(cir,65-cir);var circleRest=circle66.slice(0,-1);crossPairs.push(direct('circle_significator_pair','大圓S與原66',[65],{topology:'separate_significator_pair',metadata:{elementalDignity:false}}));for(var cp=0;cp<32;cp++)crossPairs.push(direct('circle_final_pair','大圓最末配對 '+(33+cp)+'↔'+(cp+1),[32+cp,cp],{topology:'declared_pair',metadata:{relationKind:'semantic_pair',elementalDignity:false}}));crossPairs.push(direct('circle_unpaired','大圓未配對原65',[64],{topology:'unpaired_member',metadata:{independentResult:false}}));
       var surpriseUnit=direct('surprise_triad_context','右意外牌→另置代表牌→左意外牌',[67,66],{topology:'original_unused_surprise_cards',claimPolicy:'context_member_only',metadata:{significator:'recorded_separately_in_drawProcedure',fromInitialUnusedEleven:true},forbidden:['surprise_cards_are_not_part_of_initial_66','unrecorded_significator_must_not_be_invented']});
-      synthesis('arch_surprise_synthesis','三個原書時區、末輪核對與兩張意外牌共同收束',periodSummaries.concat(crossPairs,[surpriseUnit]),{eventJoin:'period_summaries_not_cross_period_single_cards',metadata:{largeCircleImplemented:false,remainingUnusedCardsNotInterpreted:true}});
+      synthesis('arch_surprise_synthesis','三個原書時區、末輪核對與兩張意外牌共同收束',periodSummaries.concat(crossPairs,[surpriseUnit]),{eventJoin:'period_summaries_not_cross_period_single_cards',metadata:{largeCircleImplemented:true,remainingUnusedCardsNotInterpreted:true}});
     } else if (id === 'mathers_horseshoe') {
       var groupA = direct('ordered_group', 'A 組 26 張由右往左', range(0, 26), { topology: 'ordered_group', eventBinding: 'GROUP_A_EVENT' });
       var groupC = direct('ordered_group', 'C 組 17 張由右往左', range(26, 43), { topology: 'ordered_group', eventBinding: 'GROUP_C_EVENT' });

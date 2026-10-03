@@ -11,14 +11,15 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
   const browser=await chromium.launch({executablePath:process.env.JY_CHROMIUM||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   try{
     const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block',reducedMotion:'reduce'});
-    const page=await context.newPage(),errors=[],requests=[];
+    const page=await context.newPage(),errors=[],requests=[],counterRequests=[];
     page.on('pageerror',error=>errors.push(error.stack||error.message));
     page.on('console',message=>{if(message.type()==='error'&&!/Failed to load resource: net::ERR_FAILED/.test(message.text()))errors.push('console: '+message.text());});
     page.on('dialog',dialog=>dialog.accept());
-    page.on('request',req=>{if(/\/api\/|jy-ai-proxy|mytool-blue\.pages\.dev/.test(req.url()))requests.push(req.url());});
+    page.on('request',req=>{if(new URL(req.url()).pathname==='/api/pulse')counterRequests.push(req.url());else if(/\/api\/|jy-ai-proxy|mytool-blue\.pages\.dev/.test(req.url()))requests.push(req.url());});
     await page.route('**/*',route=>{
       const url=new URL(route.request().url());
       if(url.origin!=='https://jingyue.uk')return route.abort();
+      if(url.pathname==='/api/pulse')return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true})});
       const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));
       if(!file.startsWith(root+path.sep)||!fs.existsSync(file))return route.fulfill({status:404,body:''});
       return route.fulfill({body:fs.readFileSync(file),contentType:mime[path.extname(file)]||'application/octet-stream'});
@@ -68,6 +69,15 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
     assert.equal(actual.metadata.initialDealtCount,66);
     assert.equal(actual.metadata.initialUnusedCount,11);
     assert.equal(actual.metadata.remainingUnusedCount,9);
+    assert.equal(actual.metadata.largeCircleImplemented,true);
+    const circle=actual.metadata.largeCircle;
+    assert.equal(circle.cardCount,66);
+    assert.deepEqual([circle.circle[0].ordinal,circle.circle.at(-1).ordinal],[33,66]);
+    assert.deepEqual(new Set(circle.circle.map(card=>card.id)),new Set(actual.idList.slice(0,66)));
+    assert.equal(circle.significatorPair.card.id,actual.idList[65]);
+    assert.deepEqual(circle.pairs[0].map(card=>card.id),[actual.idList[32],actual.idList[0]]);
+    assert.deepEqual(circle.pairs.at(-1).map(card=>card.id),[actual.idList[63],actual.idList[31]]);
+    assert.equal(circle.unpaired.id,actual.idList[64]);
     assert.equal(actual.metadata.surprises.left.id,actual.idList[66]);
     assert.equal(actual.metadata.surprises.right.id,actual.idList[67]);
     assert.equal(actual.grid,1);
@@ -94,7 +104,11 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
     assert(prompt.includes('右意外')&&prompt.includes('左意外'));
     assert(prompt.includes('過去')&&prompt.includes('現在')&&prompt.includes('未來'));
     assert(prompt.includes(actual.metadata.significator.name));
-    assert(prompt.includes('未模擬')||prompt.includes('沒有模擬'));
+    assert(prompt.includes('Mathers第三圈實算大圓'));
+    assert(prompt.includes('圓首至末='+circle.circle.map(card=>card.ordinal).join(',')));
+    assert(prompt.includes('最末32對='+circle.pairs.map(pair=>pair.map(card=>card.ordinal).join('↔')).join(';')));
+    assert(!prompt.includes('本站未模擬該段'));
+    assert.match(await page.locator('#t-chosen .m66-hint').innerText(),/首33、末66/);
     assert.equal(await page.evaluate(()=>drawnCards.length),68,'Viewing and exporting must preserve the same draw');
     // Exercise the live result-page share action, then inspect its real payload.
     await page.evaluate(()=>{
@@ -123,7 +137,9 @@ const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg'
     assert.deepEqual(requests,[],'No paid API or Worker should be invoked');
     if(errors.length)console.error('Browser diagnostics',errors,await page.evaluate(()=>window.__testErrors||[]));
     assert.deepEqual(errors,[],'No browser runtime error in the complete tarot flow');
-    console.log(JSON.stringify({status:'pass',viewport:'390x844',spread:'mathers_66',selectedSignificator:actual.sig.name,drawn:68,remainingUnused:9,visibleSlots:68,promptChars:prompt.length,paidRequests:0}));
+    const report={testedAt:new Date().toISOString(),status:'pass',viewport:'390x844',spread:'mathers_66',selectedSignificator:actual.sig.name,drawn:68,remainingUnused:9,visibleSlots:68,thirdCircleCards:66,thirdCirclePairs:32,thirdCircleUsesSameDraw:true,promptChars:prompt.length,paidRequests:0,localCounterTelemetryRequests:counterRequests.length,counterPolicy:'Counter pulse receives a local ok response; no AI, chart or interpretation result is injected'};
+    fs.writeFileSync(path.join(root,'docs/mathers-third-circle-browser-validation-20261003-r7.json'),JSON.stringify(report,null,2)+'\n');
+    console.log(JSON.stringify(report));
     await context.close();
   }finally{await browser.close();}
 })().catch(error=>{console.error(error.stack);process.exitCode=1;});

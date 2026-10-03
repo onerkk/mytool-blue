@@ -10,7 +10,7 @@ const source=fs.readFileSync(path.join(root,'JS/tarot_upgrade.js'),'utf8');
 const uiSource=fs.readFileSync(path.join(root,'JS/ui.js'),'utf8');
 function productionSlice(start,end){const a=source.indexOf(start);assert(a>=0,'Production function is present');const b=source.indexOf(end,a+start.length);assert(b>a,'Production function closes');return source.slice(a,b+end.length);}
 
-const window={_jyMathersSignificatorId:13,JYTarotReading:{orientation(){return true;},apply(card){card.sourceProfile='rws_reversals';}}};
+const window={JYTarotFoundation:F,_jyMathersSignificatorId:13,JYTarotReading:{orientation(){return true;},apply(card){card.sourceProfile='rws_reversals';}}};
 const sandbox={window,console,Math,Date,Set,makeSeededRng(seed){let state=0;for(const c of seed)state=(Math.imul(state,31)+c.charCodeAt(0))>>>0;return ()=>((state=(Math.imul(state,1664525)+1013904223)>>>0)/4294967296);}};
 vm.createContext(sandbox);
 vm.runInContext(productionSlice('(function(){\n  if (window.JY_buildCanonicalTarotDraw) return;','\n})();'),sandbox,{filename:'tarot_upgrade canonical production'});
@@ -40,7 +40,7 @@ assert(unusedBefore.includes(cards[66].id));
 assert(unusedBefore.includes(cards[67].id));
 assert.notEqual(cards[66].id,cards[67].id);
 const meta=cards[0].drawProcedure;
-assert.deepEqual([meta.initialDealtCount,meta.initialUnusedCount,meta.remainingUnusedCount,meta.largeCircleImplemented],[66,11,9,false]);
+assert.deepEqual([meta.initialDealtCount,meta.initialUnusedCount,meta.remainingUnusedCount,meta.largeCircleImplemented],[66,11,9,true]);
 assert.equal(meta.significator.id,13);
 assert.equal(meta.surprises.left.id,cards[66].id);
 assert.equal(meta.surprises.right.id,cards[67].id);
@@ -66,7 +66,7 @@ assert.deepEqual(slots.slice().sort((a,b)=>a-b),Array.from({length:68},(_,i)=>i+
 assert.match(html,/aria-label="Mathers 第三法可左右捲動/);
 assert.match(html,/琥珀＝過去/);
 assert.match(html,/從右往左讀/);
-assert.match(html,/原書最後重排大圓有文字歧義/);
+assert.match(html,/原文句序歧義採明列重建政策/);
 assert.match(html,/assets\/13.png/);
 assert(uiSource.includes("def.id === 'mathers_66'")&&uiSource.includes("'mathers_66','fifteen_card'"),'Both user-triggered and resumed UI paths call canonical constructor');
 assert(source.includes("/^(?:mathers_21|mathers_66|mathers_horseshoe)$/.test(def.id)"),'Tapping deck does not consume Mathers cards one by one');
@@ -97,7 +97,7 @@ assert.equal(contract.evidenceGraph.evidenceUnits.filter(unit=>unit.type==='orde
 assert.equal(contract.evidenceGraph.evidenceUnits.filter(unit=>unit.type==='declared_temporal_pair').length,66);
 assert.equal(contract.evidenceGraph.evidenceUnits.filter(unit=>unit.type==='declared_outer_pair').length,33);
 assert.equal(contract.evidenceGraph.evidenceUnits.filter(unit=>unit.type==='surprise_conclusion_member_node').length,2);
-assert.equal(contract.evidenceGraph.evidenceUnits.find(unit=>unit.type==='arch_surprise_synthesis').metadata.largeCircleImplemented,false);
+assert.equal(contract.evidenceGraph.evidenceUnits.find(unit=>unit.type==='arch_surprise_synthesis').metadata.largeCircleImplemented,true);
 const missing=E.compileReadingSpec({question:q,spreadId:'mathers_66',methodPlan:route.methodPlan,cards:gdCards.slice(0,67),sourceProfile:'gd_book_t',referenceDate:'2026-09-23'});
 assert.equal(missing.validation.ok,false);
 assert(missing.validation.errors.some(error=>error.startsWith('card_count_mismatch:67/68')));

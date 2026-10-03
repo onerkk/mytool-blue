@@ -1,0 +1,1176 @@
+{
+  "testedAt": "2026-10-03T12:15:37.179494+00:00",
+  "source": "Swiss Ephemeris 2.10.03/Moshier SIDM_LAHIRI, independent from browser",
+  "scope": "157 solar crossings and nine most recent native ingress/Murthi anchors",
+  "solverToleranceSeconds": 0.1,
+  "ownMoonIngressPolicy": "Moon sign evaluated one second after its independent ingress; other ingress Moon anchors evaluated at their independent root",
+  "maximumSolarDifferenceSeconds": 41.48712158203125,
+  "maximumIngressLongitudeErrorDegrees": 0.0013602938611256832,
+  "results": [
+    {
+      "layer": "annual",
+      "index": 1,
+      "differenceSeconds": -9.68170166015625,
+      "nativeUTC": "2000-03-07T23:11:02.583Z",
+      "swissUTC": "2000-03-07T23:11:12.264702+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 1,
+      "differenceSeconds": -9.68170166015625,
+      "nativeUTC": "2000-03-07T23:11:02.583Z",
+      "swissUTC": "2000-03-07T23:11:12.264702+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 2,
+      "differenceSeconds": -0.45318603515625,
+      "nativeUTC": "2000-04-07T05:07:17.107Z",
+      "swissUTC": "2000-04-07T05:07:17.560186+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 3,
+      "differenceSeconds": 3.99627685546875,
+      "nativeUTC": "2000-05-07T23:32:27.410Z",
+      "swissUTC": "2000-05-07T23:32:23.413723+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 4,
+      "differenceSeconds": 1.27716064453125,
+      "nativeUTC": "2000-06-08T04:30:16.316Z",
+      "swissUTC": "2000-06-08T04:30:15.038839+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 5,
+      "differenceSeconds": 6.22100830078125,
+      "nativeUTC": "2000-07-09T15:03:05.152Z",
+      "swissUTC": "2000-07-09T15:02:58.930992+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 6,
+      "differenceSeconds": 20.64056396484375,
+      "nativeUTC": "2000-08-10T00:32:21.526Z",
+      "swissUTC": "2000-08-10T00:32:00.885436+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 7,
+      "differenceSeconds": 26.16119384765625,
+      "nativeUTC": "2000-09-10T02:37:51.631Z",
+      "swissUTC": "2000-09-10T02:37:25.469806+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 8,
+      "differenceSeconds": 18.99261474609375,
+      "nativeUTC": "2000-10-10T17:10:41.126Z",
+      "swissUTC": "2000-10-10T17:10:22.133385+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 9,
+      "differenceSeconds": 13.63677978515625,
+      "nativeUTC": "2000-11-09T19:18:03.689Z",
+      "swissUTC": "2000-11-09T19:17:50.052220+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 10,
+      "differenceSeconds": 18.25103759765625,
+      "nativeUTC": "2000-12-09T11:25:14.620Z",
+      "swissUTC": "2000-12-09T11:24:56.368962+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 11,
+      "differenceSeconds": 25.58441162109375,
+      "nativeUTC": "2001-01-07T22:26:40.626Z",
+      "swissUTC": "2001-01-07T22:26:15.041588+00:00"
+    },
+    {
+      "layer": "monthly",
+      "index": 12,
+      "differenceSeconds": 28.30352783203125,
+      "nativeUTC": "2001-02-06T10:28:54.149Z",
+      "swissUTC": "2001-02-06T10:28:25.845472+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 1,
+      "differenceSeconds": -9.68170166015625,
+      "nativeUTC": "2000-03-07T23:11:02.583Z",
+      "swissUTC": "2000-03-07T23:11:12.264702+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 2,
+      "differenceSeconds": -3.83148193359375,
+      "nativeUTC": "2000-03-10T11:11:58.515Z",
+      "swissUTC": "2000-03-10T11:12:02.346482+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 3,
+      "differenceSeconds": 2.26593017578125,
+      "nativeUTC": "2000-03-12T23:18:19.623Z",
+      "swissUTC": "2000-03-12T23:18:17.357070+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 4,
+      "differenceSeconds": 4.90264892578125,
+      "nativeUTC": "2000-03-15T11:30:18.166Z",
+      "swissUTC": "2000-03-15T11:30:13.263351+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 5,
+      "differenceSeconds": 3.91387939453125,
+      "nativeUTC": "2000-03-17T23:47:53.892Z",
+      "swissUTC": "2000-03-17T23:47:49.978121+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 6,
+      "differenceSeconds": 2.51312255859375,
+      "nativeUTC": "2000-03-20T12:10:55.345Z",
+      "swissUTC": "2000-03-20T12:10:52.831877+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 7,
+      "differenceSeconds": 3.33709716796875,
+      "nativeUTC": "2000-03-23T00:39:04.194Z",
+      "swissUTC": "2000-03-23T00:39:00.856903+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 8,
+      "differenceSeconds": 5.06744384765625,
+      "nativeUTC": "2000-03-25T13:12:01.442Z",
+      "swissUTC": "2000-03-25T13:11:56.374556+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 9,
+      "differenceSeconds": 4.24346923828125,
+      "nativeUTC": "2000-03-28T01:49:33.753Z",
+      "swissUTC": "2000-03-28T01:49:29.509531+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 10,
+      "differenceSeconds": -0.37078857421875,
+      "nativeUTC": "2000-03-30T14:31:38.093Z",
+      "swissUTC": "2000-03-30T14:31:38.463789+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 11,
+      "differenceSeconds": -5.14984130859375,
+      "nativeUTC": "2000-04-02T03:18:23.342Z",
+      "swissUTC": "2000-04-02T03:18:28.491841+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 12,
+      "differenceSeconds": -5.39703369140625,
+      "nativeUTC": "2000-04-04T16:10:08.374Z",
+      "swissUTC": "2000-04-04T16:10:13.771034+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 13,
+      "differenceSeconds": -0.45318603515625,
+      "nativeUTC": "2000-04-07T05:07:17.107Z",
+      "swissUTC": "2000-04-07T05:07:17.560186+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 14,
+      "differenceSeconds": 5.31463623046875,
+      "nativeUTC": "2000-04-09T18:10:11.885Z",
+      "swissUTC": "2000-04-09T18:10:06.570364+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 15,
+      "differenceSeconds": 7.95135498046875,
+      "nativeUTC": "2000-04-12T07:19:07.027Z",
+      "swissUTC": "2000-04-12T07:18:59.075645+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 16,
+      "differenceSeconds": 7.37457275390625,
+      "nativeUTC": "2000-04-14T20:34:04.378Z",
+      "swissUTC": "2000-04-14T20:33:57.003427+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 17,
+      "differenceSeconds": 6.88018798828125,
+      "nativeUTC": "2000-04-17T09:54:52.205Z",
+      "swissUTC": "2000-04-17T09:54:45.324812+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 18,
+      "differenceSeconds": 8.44573974609375,
+      "nativeUTC": "2000-04-19T23:21:07.833Z",
+      "swissUTC": "2000-04-19T23:20:59.387260+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 19,
+      "differenceSeconds": 11.00006103515625,
+      "nativeUTC": "2000-04-22T12:52:23.365Z",
+      "swissUTC": "2000-04-22T12:52:12.364939+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 20,
+      "differenceSeconds": 10.67047119140625,
+      "nativeUTC": "2000-04-25T02:28:12.836Z",
+      "swissUTC": "2000-04-25T02:28:02.165529+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 21,
+      "differenceSeconds": 5.56182861328125,
+      "nativeUTC": "2000-04-27T16:08:18.738Z",
+      "swissUTC": "2000-04-27T16:08:13.176171+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 22,
+      "differenceSeconds": -1.35955810546875,
+      "nativeUTC": "2000-04-30T05:52:35.945Z",
+      "swissUTC": "2000-04-30T05:52:37.304558+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 23,
+      "differenceSeconds": -3.99627685546875,
+      "nativeUTC": "2000-05-02T19:41:11.889Z",
+      "swissUTC": "2000-05-02T19:41:15.885277+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 24,
+      "differenceSeconds": -0.61798095703125,
+      "nativeUTC": "2000-05-05T09:34:22.836Z",
+      "swissUTC": "2000-05-05T09:34:23.453981+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 25,
+      "differenceSeconds": 3.99627685546875,
+      "nativeUTC": "2000-05-07T23:32:27.410Z",
+      "swissUTC": "2000-05-07T23:32:23.413723+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 26,
+      "differenceSeconds": 4.57305908203125,
+      "nativeUTC": "2000-05-10T13:35:39.133Z",
+      "swissUTC": "2000-05-10T13:35:34.559941+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 27,
+      "differenceSeconds": 2.10113525390625,
+      "nativeUTC": "2000-05-13T03:44:00.199Z",
+      "swissUTC": "2000-05-13T03:43:58.097865+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 28,
+      "differenceSeconds": 1.02996826171875,
+      "nativeUTC": "2000-05-15T17:57:18.347Z",
+      "swissUTC": "2000-05-15T17:57:17.317032+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 29,
+      "differenceSeconds": 3.58428955078125,
+      "nativeUTC": "2000-05-18T08:15:07.841Z",
+      "swissUTC": "2000-05-18T08:15:04.256710+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 30,
+      "differenceSeconds": 7.78656005859375,
+      "nativeUTC": "2000-05-20T22:36:54.350Z",
+      "swissUTC": "2000-05-20T22:36:46.563440+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 31,
+      "differenceSeconds": 9.10491943359375,
+      "nativeUTC": "2000-05-23T13:02:02.337Z",
+      "swissUTC": "2000-05-23T13:01:53.232081+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 32,
+      "differenceSeconds": 4.82025146484375,
+      "nativeUTC": "2000-05-26T03:30:02.761Z",
+      "swissUTC": "2000-05-26T03:29:57.940749+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 33,
+      "differenceSeconds": -2.34832763671875,
+      "nativeUTC": "2000-05-28T18:00:38.724Z",
+      "swissUTC": "2000-05-28T18:00:41.072328+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 34,
+      "differenceSeconds": -5.80902099609375,
+      "nativeUTC": "2000-05-31T08:33:47.368Z",
+      "swissUTC": "2000-05-31T08:33:53.177021+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 35,
+      "differenceSeconds": -2.51312255859375,
+      "nativeUTC": "2000-06-02T23:09:37.417Z",
+      "swissUTC": "2000-06-02T23:09:39.930123+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 36,
+      "differenceSeconds": 1.93634033203125,
+      "nativeUTC": "2000-06-05T13:48:23.111Z",
+      "swissUTC": "2000-06-05T13:48:21.174660+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 37,
+      "differenceSeconds": 1.27716064453125,
+      "nativeUTC": "2000-06-08T04:30:16.316Z",
+      "swissUTC": "2000-06-08T04:30:15.038839+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 38,
+      "differenceSeconds": -2.67791748046875,
+      "nativeUTC": "2000-06-10T19:15:19.180Z",
+      "swissUTC": "2000-06-10T19:15:21.857917+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 39,
+      "differenceSeconds": -3.99627685546875,
+      "nativeUTC": "2000-06-13T10:03:19.533Z",
+      "swissUTC": "2000-06-13T10:03:23.529277+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 40,
+      "differenceSeconds": 0.04119873046875,
+      "nativeUTC": "2000-06-16T00:53:50.511Z",
+      "swissUTC": "2000-06-16T00:53:50.469801+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 41,
+      "differenceSeconds": 6.71539306640625,
+      "nativeUTC": "2000-06-18T15:46:14.554Z",
+      "swissUTC": "2000-06-18T15:46:07.838607+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 42,
+      "differenceSeconds": 10.83526611328125,
+      "nativeUTC": "2000-06-21T06:39:50.655Z",
+      "swissUTC": "2000-06-21T06:39:39.819734+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 43,
+      "differenceSeconds": 9.02252197265625,
+      "nativeUTC": "2000-06-23T21:34:02.626Z",
+      "swissUTC": "2000-06-23T21:33:53.603478+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 44,
+      "differenceSeconds": 3.83148193359375,
+      "nativeUTC": "2000-06-26T12:28:25.858Z",
+      "swissUTC": "2000-06-26T12:28:22.026518+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 45,
+      "differenceSeconds": 1.93634033203125,
+      "nativeUTC": "2000-06-29T03:22:50.492Z",
+      "swissUTC": "2000-06-29T03:22:48.555660+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 46,
+      "differenceSeconds": 6.63299560546875,
+      "nativeUTC": "2000-07-01T18:17:20.046Z",
+      "swissUTC": "2000-07-01T18:17:13.413004+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 47,
+      "differenceSeconds": 11.82403564453125,
+      "nativeUTC": "2000-07-04T09:12:05.976Z",
+      "swissUTC": "2000-07-04T09:11:54.151964+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 48,
+      "differenceSeconds": 10.83526611328125,
+      "nativeUTC": "2000-07-07T00:07:19.789Z",
+      "swissUTC": "2000-07-07T00:07:08.953734+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 49,
+      "differenceSeconds": 6.22100830078125,
+      "nativeUTC": "2000-07-09T15:03:05.152Z",
+      "swissUTC": "2000-07-09T15:02:58.930992+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 50,
+      "differenceSeconds": 4.82025146484375,
+      "nativeUTC": "2000-07-12T05:59:12.331Z",
+      "swissUTC": "2000-07-12T05:59:07.510749+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 51,
+      "differenceSeconds": 9.43450927734375,
+      "nativeUTC": "2000-07-14T20:55:16.719Z",
+      "swissUTC": "2000-07-14T20:55:07.284491+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 52,
+      "differenceSeconds": 17.26226806640625,
+      "nativeUTC": "2000-07-17T11:50:41.899Z",
+      "swissUTC": "2000-07-17T11:50:24.636732+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 53,
+      "differenceSeconds": 23.03009033203125,
+      "nativeUTC": "2000-07-20T02:44:46.372Z",
+      "swissUTC": "2000-07-20T02:44:23.341910+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 54,
+      "differenceSeconds": 23.35968017578125,
+      "nativeUTC": "2000-07-22T17:36:51.857Z",
+      "swissUTC": "2000-07-22T17:36:28.497320+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 55,
+      "differenceSeconds": 20.39337158203125,
+      "nativeUTC": "2000-07-25T08:26:30.626Z",
+      "swissUTC": "2000-07-25T08:26:10.232628+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 56,
+      "differenceSeconds": 20.31097412109375,
+      "nativeUTC": "2000-07-27T23:13:29.625Z",
+      "swissUTC": "2000-07-27T23:13:09.314026+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 57,
+      "differenceSeconds": 25.74920654296875,
+      "nativeUTC": "2000-07-30T13:57:50.177Z",
+      "swissUTC": "2000-07-30T13:57:24.427794+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 58,
+      "differenceSeconds": 30.94024658203125,
+      "nativeUTC": "2000-08-02T04:39:43.432Z",
+      "swissUTC": "2000-08-02T04:39:12.491753+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 59,
+      "differenceSeconds": 29.37469482421875,
+      "nativeUTC": "2000-08-04T19:19:22.981Z",
+      "swissUTC": "2000-08-04T19:18:53.606305+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 60,
+      "differenceSeconds": 23.68927001953125,
+      "nativeUTC": "2000-08-07T09:56:56.891Z",
+      "swissUTC": "2000-08-07T09:56:33.201730+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 61,
+      "differenceSeconds": 20.64056396484375,
+      "nativeUTC": "2000-08-10T00:32:21.526Z",
+      "swissUTC": "2000-08-10T00:32:00.885436+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 62,
+      "differenceSeconds": 23.35968017578125,
+      "nativeUTC": "2000-08-12T15:05:19.027Z",
+      "swissUTC": "2000-08-12T15:04:55.667320+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 63,
+      "differenceSeconds": 29.45709228515625,
+      "nativeUTC": "2000-08-15T05:35:19.185Z",
+      "swissUTC": "2000-08-15T05:34:49.727908+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 64,
+      "differenceSeconds": 33.90655517578125,
+      "nativeUTC": "2000-08-17T20:01:45.140Z",
+      "swissUTC": "2000-08-17T20:01:11.233445+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 65,
+      "differenceSeconds": 34.23614501953125,
+      "nativeUTC": "2000-08-20T10:24:01.186Z",
+      "swissUTC": "2000-08-20T10:23:26.949855+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 66,
+      "differenceSeconds": 32.25860595703125,
+      "nativeUTC": "2000-08-23T00:41:40.264Z",
+      "swissUTC": "2000-08-23T00:41:08.005394+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 67,
+      "differenceSeconds": 32.67059326171875,
+      "nativeUTC": "2000-08-25T14:54:28.920Z",
+      "swissUTC": "2000-08-25T14:53:56.249407+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 68,
+      "differenceSeconds": 37.44964599609375,
+      "nativeUTC": "2000-08-28T05:02:28.296Z",
+      "swissUTC": "2000-08-28T05:01:50.846354+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 69,
+      "differenceSeconds": 41.48712158203125,
+      "nativeUTC": "2000-08-30T19:05:50.926Z",
+      "swissUTC": "2000-08-30T19:05:09.438878+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 70,
+      "differenceSeconds": 39.17999267578125,
+      "nativeUTC": "2000-09-02T09:04:54.407Z",
+      "swissUTC": "2000-09-02T09:04:15.227007+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 71,
+      "differenceSeconds": 32.25860595703125,
+      "nativeUTC": "2000-09-04T22:59:53.825Z",
+      "swissUTC": "2000-09-04T22:59:21.566394+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 72,
+      "differenceSeconds": 26.73797607421875,
+      "nativeUTC": "2000-09-07T12:50:55.167Z",
+      "swissUTC": "2000-09-07T12:50:28.429024+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 73,
+      "differenceSeconds": 26.16119384765625,
+      "nativeUTC": "2000-09-10T02:37:51.631Z",
+      "swissUTC": "2000-09-10T02:37:25.469806+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 74,
+      "differenceSeconds": 28.71551513671875,
+      "nativeUTC": "2000-09-12T16:20:23.872Z",
+      "swissUTC": "2000-09-12T16:19:55.156485+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 75,
+      "differenceSeconds": 30.28106689453125,
+      "nativeUTC": "2000-09-15T05:58:04.093Z",
+      "swissUTC": "2000-09-15T05:57:33.811933+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 76,
+      "differenceSeconds": 29.20989990234375,
+      "nativeUTC": "2000-09-17T19:30:22.733Z",
+      "swissUTC": "2000-09-17T19:29:53.523100+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 77,
+      "differenceSeconds": 27.23236083984375,
+      "nativeUTC": "2000-09-20T08:56:55.754Z",
+      "swissUTC": "2000-09-20T08:56:28.521639+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 78,
+      "differenceSeconds": 27.80914306640625,
+      "nativeUTC": "2000-09-22T22:17:30.382Z",
+      "swissUTC": "2000-09-22T22:17:02.572857+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 79,
+      "differenceSeconds": 31.92901611328125,
+      "nativeUTC": "2000-09-25T11:32:07.663Z",
+      "swissUTC": "2000-09-25T11:31:35.733984+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 80,
+      "differenceSeconds": 35.55450439453125,
+      "nativeUTC": "2000-09-28T00:41:01.186Z",
+      "swissUTC": "2000-09-28T00:40:25.631496+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 81,
+      "differenceSeconds": 34.07135009765625,
+      "nativeUTC": "2000-09-30T13:44:32.425Z",
+      "swissUTC": "2000-09-30T13:43:58.353650+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 82,
+      "differenceSeconds": 27.72674560546875,
+      "nativeUTC": "2000-10-03T02:43:04.111Z",
+      "swissUTC": "2000-10-03T02:42:36.384254+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 83,
+      "differenceSeconds": 21.29974365234375,
+      "nativeUTC": "2000-10-05T15:36:53.523Z",
+      "swissUTC": "2000-10-05T15:36:32.223256+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 84,
+      "differenceSeconds": 18.66302490234375,
+      "nativeUTC": "2000-10-08T04:26:07.587Z",
+      "swissUTC": "2000-10-08T04:25:48.923975+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 85,
+      "differenceSeconds": 18.99261474609375,
+      "nativeUTC": "2000-10-10T17:10:41.126Z",
+      "swissUTC": "2000-10-10T17:10:22.133385+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 86,
+      "differenceSeconds": 18.66302490234375,
+      "nativeUTC": "2000-10-13T05:50:18.723Z",
+      "swissUTC": "2000-10-13T05:50:00.059975+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 87,
+      "differenceSeconds": 16.10870361328125,
+      "nativeUTC": "2000-10-15T18:24:39.631Z",
+      "swissUTC": "2000-10-15T18:24:23.522296+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 88,
+      "differenceSeconds": 13.63677978515625,
+      "nativeUTC": "2000-10-18T06:53:24.269Z",
+      "swissUTC": "2000-10-18T06:53:10.632220+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 89,
+      "differenceSeconds": 14.46075439453125,
+      "nativeUTC": "2000-10-20T19:16:20.470Z",
+      "swissUTC": "2000-10-20T19:16:06.009246+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 90,
+      "differenceSeconds": 18.99261474609375,
+      "nativeUTC": "2000-10-23T07:33:27.697Z",
+      "swissUTC": "2000-10-23T07:33:08.704385+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 91,
+      "differenceSeconds": 23.60687255859375,
+      "nativeUTC": "2000-10-25T19:44:58.106Z",
+      "swissUTC": "2000-10-25T19:44:34.499127+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 92,
+      "differenceSeconds": 24.51324462890625,
+      "nativeUTC": "2000-10-28T07:51:14.230Z",
+      "swissUTC": "2000-10-28T07:50:49.716755+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 93,
+      "differenceSeconds": 20.72296142578125,
+      "nativeUTC": "2000-10-30T19:52:44.006Z",
+      "swissUTC": "2000-10-30T19:52:23.283039+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 94,
+      "differenceSeconds": 15.44952392578125,
+      "nativeUTC": "2000-11-02T07:49:54.559Z",
+      "swissUTC": "2000-11-02T07:49:39.109476+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 95,
+      "differenceSeconds": 12.81280517578125,
+      "nativeUTC": "2000-11-04T19:43:06.422Z",
+      "swissUTC": "2000-11-04T19:42:53.609195+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 96,
+      "differenceSeconds": 13.30718994140625,
+      "nativeUTC": "2000-11-07T07:32:29.779Z",
+      "swissUTC": "2000-11-07T07:32:16.471810+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 97,
+      "differenceSeconds": 13.63677978515625,
+      "nativeUTC": "2000-11-09T19:18:03.689Z",
+      "swissUTC": "2000-11-09T19:17:50.052220+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 98,
+      "differenceSeconds": 10.91766357421875,
+      "nativeUTC": "2000-11-12T06:59:38.494Z",
+      "swissUTC": "2000-11-12T06:59:27.576336+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 99,
+      "differenceSeconds": 6.88018798828125,
+      "nativeUTC": "2000-11-14T18:37:00.706Z",
+      "swissUTC": "2000-11-14T18:36:53.825812+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 100,
+      "differenceSeconds": 6.13861083984375,
+      "nativeUTC": "2000-11-17T06:09:59.014Z",
+      "swissUTC": "2000-11-17T06:09:52.875389+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 101,
+      "differenceSeconds": 10.42327880859375,
+      "nativeUTC": "2000-11-19T17:38:29.728Z",
+      "swissUTC": "2000-11-19T17:38:19.304721+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 102,
+      "differenceSeconds": 16.43829345703125,
+      "nativeUTC": "2000-11-22T05:02:40.190Z",
+      "swissUTC": "2000-11-22T05:02:23.751707+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 103,
+      "differenceSeconds": 20.06378173828125,
+      "nativeUTC": "2000-11-24T16:22:49.262Z",
+      "swissUTC": "2000-11-24T16:22:29.198218+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 104,
+      "differenceSeconds": 19.23980712890625,
+      "nativeUTC": "2000-11-27T03:39:24.826Z",
+      "swissUTC": "2000-11-27T03:39:05.586193+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 105,
+      "differenceSeconds": 15.77911376953125,
+      "nativeUTC": "2000-11-29T14:52:58.990Z",
+      "swissUTC": "2000-11-29T14:52:43.210886+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 106,
+      "differenceSeconds": 13.63677978515625,
+      "nativeUTC": "2000-12-02T02:04:02.328Z",
+      "swissUTC": "2000-12-02T02:03:48.691220+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 107,
+      "differenceSeconds": 14.95513916015625,
+      "nativeUTC": "2000-12-04T13:12:58.654Z",
+      "swissUTC": "2000-12-04T13:12:43.698861+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 108,
+      "differenceSeconds": 17.92144775390625,
+      "nativeUTC": "2000-12-07T00:20:01.708Z",
+      "swissUTC": "2000-12-07T00:19:43.786552+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 109,
+      "differenceSeconds": 18.25103759765625,
+      "nativeUTC": "2000-12-09T11:25:14.620Z",
+      "swissUTC": "2000-12-09T11:24:56.368962+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 110,
+      "differenceSeconds": 13.96636962890625,
+      "nativeUTC": "2000-12-11T22:28:32.266Z",
+      "swissUTC": "2000-12-11T22:28:18.299630+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 111,
+      "differenceSeconds": 9.43450927734375,
+      "nativeUTC": "2000-12-14T09:29:45.896Z",
+      "swissUTC": "2000-12-14T09:29:36.461491+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 112,
+      "differenceSeconds": 10.01129150390625,
+      "nativeUTC": "2000-12-16T20:28:48.761Z",
+      "swissUTC": "2000-12-16T20:28:38.749709+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 113,
+      "differenceSeconds": 15.28472900390625,
+      "nativeUTC": "2000-12-19T07:25:41.214Z",
+      "swissUTC": "2000-12-19T07:25:25.929271+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 114,
+      "differenceSeconds": 20.47576904296875,
+      "nativeUTC": "2000-12-21T18:20:33.930Z",
+      "swissUTC": "2000-12-21T18:20:13.454231+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 115,
+      "differenceSeconds": 22.04132080078125,
+      "nativeUTC": "2000-12-24T05:13:48.404Z",
+      "swissUTC": "2000-12-24T05:13:26.362679+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 116,
+      "differenceSeconds": 19.73419189453125,
+      "nativeUTC": "2000-12-26T16:05:54.608Z",
+      "swissUTC": "2000-12-26T16:05:34.873808+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 117,
+      "differenceSeconds": 16.93267822265625,
+      "nativeUTC": "2000-12-29T02:57:26.470Z",
+      "swissUTC": "2000-12-29T02:57:09.537322+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 118,
+      "differenceSeconds": 17.17987060546875,
+      "nativeUTC": "2000-12-31T13:48:56.354Z",
+      "swissUTC": "2000-12-31T13:48:39.174129+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 119,
+      "differenceSeconds": 21.29974365234375,
+      "nativeUTC": "2001-01-03T00:40:49.967Z",
+      "swissUTC": "2001-01-03T00:40:28.667256+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 120,
+      "differenceSeconds": 25.83160400390625,
+      "nativeUTC": "2001-01-05T11:33:23.038Z",
+      "swissUTC": "2001-01-05T11:32:57.206396+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 121,
+      "differenceSeconds": 25.58441162109375,
+      "nativeUTC": "2001-01-07T22:26:40.626Z",
+      "swissUTC": "2001-01-07T22:26:15.041588+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 122,
+      "differenceSeconds": 19.81658935546875,
+      "nativeUTC": "2001-01-10T09:20:39.260Z",
+      "swissUTC": "2001-01-10T09:20:19.443411+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 123,
+      "differenceSeconds": 14.70794677734375,
+      "nativeUTC": "2001-01-12T20:15:11.356Z",
+      "swissUTC": "2001-01-12T20:14:56.648053+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 124,
+      "differenceSeconds": 15.20233154296875,
+      "nativeUTC": "2001-01-15T07:10:10.731Z",
+      "swissUTC": "2001-01-15T07:09:55.528668+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 125,
+      "differenceSeconds": 19.40460205078125,
+      "nativeUTC": "2001-01-17T18:05:37.730Z",
+      "swissUTC": "2001-01-17T18:05:18.325398+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 126,
+      "differenceSeconds": 22.37091064453125,
+      "nativeUTC": "2001-01-20T05:01:42.603Z",
+      "swissUTC": "2001-01-20T05:01:20.232089+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 127,
+      "differenceSeconds": 21.29974365234375,
+      "nativeUTC": "2001-01-22T15:58:46.206Z",
+      "swissUTC": "2001-01-22T15:58:24.906256+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 128,
+      "differenceSeconds": 17.67425537109375,
+      "nativeUTC": "2001-01-25T02:57:17.858Z",
+      "swissUTC": "2001-01-25T02:57:00.183745+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 129,
+      "differenceSeconds": 15.53192138671875,
+      "nativeUTC": "2001-01-27T13:57:50.923Z",
+      "swissUTC": "2001-01-27T13:57:35.391079+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 130,
+      "differenceSeconds": 17.83905029296875,
+      "nativeUTC": "2001-01-30T01:00:57.242Z",
+      "swissUTC": "2001-01-30T01:00:39.402950+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 131,
+      "differenceSeconds": 24.01885986328125,
+      "nativeUTC": "2001-02-01T12:07:01.898Z",
+      "swissUTC": "2001-02-01T12:06:37.879140+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 132,
+      "differenceSeconds": 29.29229736328125,
+      "nativeUTC": "2001-02-03T23:16:19.672Z",
+      "swissUTC": "2001-02-03T23:15:50.379703+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 133,
+      "differenceSeconds": 28.30352783203125,
+      "nativeUTC": "2001-02-06T10:28:54.149Z",
+      "swissUTC": "2001-02-06T10:28:25.845472+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 134,
+      "differenceSeconds": 21.95892333984375,
+      "nativeUTC": "2001-02-08T21:44:39.766Z",
+      "swissUTC": "2001-02-08T21:44:17.807077+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 135,
+      "differenceSeconds": 17.26226806640625,
+      "nativeUTC": "2001-02-11T09:03:26.283Z",
+      "swissUTC": "2001-02-11T09:03:09.020732+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 136,
+      "differenceSeconds": 17.83905029296875,
+      "nativeUTC": "2001-02-13T20:25:04.488Z",
+      "swissUTC": "2001-02-13T20:24:46.648950+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 137,
+      "differenceSeconds": 20.55816650390625,
+      "nativeUTC": "2001-02-16T07:49:31.590Z",
+      "swissUTC": "2001-02-16T07:49:11.031834+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 138,
+      "differenceSeconds": 20.72296142578125,
+      "nativeUTC": "2001-02-18T19:16:54.825Z",
+      "swissUTC": "2001-02-18T19:16:34.102039+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 139,
+      "differenceSeconds": 17.26226806640625,
+      "nativeUTC": "2001-02-21T06:47:32.256Z",
+      "swissUTC": "2001-02-21T06:47:14.993732+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 140,
+      "differenceSeconds": 13.05999755859375,
+      "nativeUTC": "2001-02-23T18:21:50.562Z",
+      "swissUTC": "2001-02-23T18:21:37.502002+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 141,
+      "differenceSeconds": 12.15362548828125,
+      "nativeUTC": "2001-02-26T06:00:20.358Z",
+      "swissUTC": "2001-02-26T06:00:08.204375+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 142,
+      "differenceSeconds": 16.43829345703125,
+      "nativeUTC": "2001-02-28T17:43:30.288Z",
+      "swissUTC": "2001-02-28T17:43:13.849707+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 143,
+      "differenceSeconds": 23.44207763671875,
+      "nativeUTC": "2001-03-03T05:31:41.466Z",
+      "swissUTC": "2001-03-03T05:31:18.023922+00:00"
+    },
+    {
+      "layer": "sixty-hour",
+      "index": 144,
+      "differenceSeconds": 27.39715576171875,
+      "nativeUTC": "2001-03-05T17:25:03.775Z",
+      "swissUTC": "2001-03-05T17:24:36.377844+00:00"
+    },
+    {
+      "layer": "ingress",
+      "planet": "Sun",
+      "differenceSeconds": 3.83148193359375,
+      "longitudeErrorDegrees": 4.321446573385401e-05,
+      "moonSignAtIndependentIngress": 3
+    },
+    {
+      "layer": "ingress",
+      "planet": "Moon",
+      "differenceSeconds": -1.85394287109375,
+      "longitudeErrorDegrees": 0.0002779602348255139,
+      "moonSignAtIndependentIngress": 11
+    },
+    {
+      "layer": "ingress",
+      "planet": "Mars",
+      "differenceSeconds": -22.28851318359375,
+      "longitudeErrorDegrees": 0.00018305674271346106,
+      "moonSignAtIndependentIngress": 8
+    },
+    {
+      "layer": "ingress",
+      "planet": "Mercury",
+      "differenceSeconds": 15.94390869140625,
+      "longitudeErrorDegrees": 0.0003501469091133913,
+      "moonSignAtIndependentIngress": 9
+    },
+    {
+      "layer": "ingress",
+      "planet": "Jupiter",
+      "differenceSeconds": -559.3551635742188,
+      "longitudeErrorDegrees": 0.0013602938611256832,
+      "moonSignAtIndependentIngress": 5
+    },
+    {
+      "layer": "ingress",
+      "planet": "Venus",
+      "differenceSeconds": -25.83160400390625,
+      "longitudeErrorDegrees": 0.0003682965985944975,
+      "moonSignAtIndependentIngress": 9
+    },
+    {
+      "layer": "ingress",
+      "planet": "Saturn",
+      "differenceSeconds": 175.38299560546875,
+      "longitudeErrorDegrees": 0.00025687554187925343,
+      "moonSignAtIndependentIngress": 8
+    },
+    {
+      "layer": "ingress",
+      "planet": "Rahu",
+      "differenceSeconds": -11.98883056640625,
+      "longitudeErrorDegrees": 7.356964033533586e-06,
+      "moonSignAtIndependentIngress": 6
+    },
+    {
+      "layer": "ingress",
+      "planet": "Ketu",
+      "differenceSeconds": -11.98883056640625,
+      "longitudeErrorDegrees": 7.356964033533586e-06,
+      "moonSignAtIndependentIngress": 6
+    }
+  ],
+  "passed": 166,
+  "total": 166,
+  "precisionNote": "Numerical root tolerance is separate from ephemeris error. Slow planet crossing time errors are reported, not hidden or presented as event precision."
+}

@@ -1,5 +1,5 @@
 {
-  "version": "20261003native5",
+  "version": "20261003native7",
   "scope": "15 existing interfaces and named calculation profiles, with explicit source versions, actual chart outputs and tested arithmetic; not every historical school and not a guarantee of AI interpretation",
   "inputOmissionsAreNotUnimplemented": true,
   "methods": {
@@ -8,10 +8,12 @@
         "pillars": 4,
         "hiddenStems": 9,
         "stemPairs": 6,
+        "xiaoyunPeriods": 120,
         "decades": 10,
-        "annualSegments": 110
+        "annualSegments": 116
       },
       "sourceIds": [
+        "xiaoyun",
         "ziping",
         "zipingrescue",
         "renyuan",
@@ -63,7 +65,8 @@
       "implemented": [
         "四柱藏干、十神、根氣、刑沖合害、大運與逐年交界",
         "八格63項成敗救應與外格條件",
-        "120日干月令窮通入口615原文掛接、透藏與支局字面前提"
+        "120日干月令窮通入口615原文掛接、透藏與支局字面前提",
+        "三命通會卷二醉醒子時柱小運120期及古法固定起點異版；出生至起運前實際立春流年與八條原局作用"
       ]
     },
     "ziwei": {
@@ -238,6 +241,7 @@
         "aspects": 23
       },
       "sourceIds": [
+        "horarylight",
         "astronomy",
         "swiss",
         "dignity",
@@ -247,7 +251,9 @@
         "horaryorbs",
         "horaryvoid",
         "horaryreception",
-        "horarymoonentry"
+        "horarymoonentry",
+        "horarydenials1",
+        "horarydenials2"
       ],
       "selectedPolicy": {
         "zodiac": "回歸黃道",
@@ -295,7 +301,8 @@
       },
       "status": "implemented-with-explicit-boundaries",
       "implementationOmissions": [
-        "未將全部歷史月亮空亡定義及六種古典阻止類型語義自動裁決；候選紀錄不是完整卜卦判斷法"
+        "所有歷史VOC異版、等距非合相階序與未量化近駐留，未宣稱全數自動裁決",
+        "第三星在現實問題中的人物身分與助阻角色需要題目證據"
       ],
       "inputRequirements": [
         "可靠出生瞬間、經緯度、時區；極區宮制可算性"
@@ -311,23 +318,28 @@
         "本命行運、兩種次限角度方法、太陽回歸",
         "固定UTC迁居重排、問事及事件盤",
         "12卜卦宮主、兩光圈表、接納、傳光集光結構、未來相位/換座/轉向與干預紀錄",
-        "Houlding/Schoner具名政策：月亮换座前實際進入相位光圈的UTC時窗；與換座前精確成相和現正入相分列"
+        "Houlding/Schoner具名政策：月亮换座前實際進入相位光圈的UTC時窗；與換座前精確成相和現正入相分列",
+        "六類具名受阻時序、三型正式傳光及慢星集光，最後離相與首個入相、接納及換座轉向干預",
+        "中古空間距離受阻及等距合相優先；無原典唯一階序的等距非合相保持未定"
       ]
     },
     "vedic": {
       "sampleCoverage": {
         "planets": 9,
         "houses": 12,
-        "vargas": 16,
-        "vargaHouses": 192,
+        "vargas": 20,
+        "vargaHouses": 240,
         "activeDashaLayers": 3,
         "shadbalaPlanets": 7,
         "bhavaStrengthHouses": 12,
         "residentialPlanets": 9,
-        "vargaAshtakavargas": 16,
+        "vargaAshtakavargas": 20,
         "panchangaLimbs": 5
       },
       "sourceIds": [
+        "tajaka",
+        "pvr20",
+        "vedictransit",
         "astronomy",
         "swiss",
         "pvr",
@@ -346,15 +358,15 @@
         "node": "mean",
         "houses": "whole-sign",
         "dashaYearDays": 365.2425,
-        "vargas": "Parashari 16; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign",
+        "vargas": "PVR chapter6 twenty; Parashari sixteen plus D5/D6/D8/D11; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign",
         "karakas": "7 grahas, no nodes",
         "dignity": "degree-aware; Venus moolatrikona 0–15 Libra (PVR convention)",
-        "scope": "D1–D60, Vimshottari MD/AD/PD, graha/rasi drishti, BAV/SAV, dispositors, arudha, seven karakas, structural yogas; six-strength ledger under raman; Raman/Sripathi twelve-house strength and nine residential proportions when birth clock/geometry permits; other dashas not selected; separate PVR/BPHS additional dasha, Jaimini and yoga ledgers",
+        "scope": "PVR20 vargas D1–D60; full native MD/AD/PD, graha/rasi drishti, all-varga PAV/BAV/SAV, Arudha/Argala and Narayana; degree-aware dignity, source-profile strengths, states, natal/transit/Tajaka rule ledgers; separate PVR/BPHS additional dasha, Jaimini and yoga ledgers",
         "combustion": "Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility",
         "friendship": "dignity friend/enemy labels: natural; relationships: compound; Gaja Kesari uses compound as in PVR",
         "strengthStatus": "calculated",
         "bhavaStrengthStatus": "calculated",
-        "ashtakavarga": "PVR12：D1及十六分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變",
+        "ashtakavarga": "PVR12：D1及二十分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變",
         "panchangaStatus": "calculated",
         "additionalAlgorithms": "20261003-completion1"
       },
@@ -373,10 +385,16 @@
         "其他原典變體不暗混；天文求解括區不是星曆絕對精度"
       ],
       "implemented": [
-        "十六分盤、192宮、Vimshottari MD/AD/PD、七與八Karaka",
-        "七曜六力、12Bhava強度、九曜residential、16分盤PAV/BAV/SAV消減與Pinda、五支曆交界",
-        "17補充Dasha、16盤Arudha/Argala/共主、41補充Yoga與7曜4項Neechabhanga",
-        "11Upagraha及特殊Lagna、實際日夜段"
+        "二十分盤、240宮、Vimshottari MD/AD/PD、七與八Karaka",
+        "七曜六力、12Bhava強度、九曜residential、20分盤PAV/BAV/SAV消減與Pinda、五支曆交界",
+        "17補充Dasha、20盤Arudha/Argala/共主、41補充Yoga與7曜4項Neechabhanga",
+        "11Upagraha及特殊Lagna、實際日夜段",
+        "PVR二十分盤，新增D5/D6/D8/D11及全部20盤AV/Arudha/Argala/Narayana",
+        "七曜Vedha與交點阻曜例外、27Tara與11特殊宿、九曜最近實際入座Murthi及半開換座邊界",
+        "20盤行運啟動、七曜Kakshya及每盤84項Pinda算式",
+        "實際恆星太陽年度回歸、12月與144個2.5度時窗、年度及當期月/段完整實算；其他月/段按chartForPeriod計算",
+        "36Sahams、七曜Harsha、三版Panchavargeeya、Dwadasa、五/六候選歲月主、16Tajaka格局的具名定義及原例差異",
+        "Patyayini/Mudda及20盤VarshaNarayana完整MD/AD太陽度日期與當期區間"
       ]
     },
     "liuren": {
@@ -707,16 +725,20 @@
       "selectedPolicy": null,
       "status": "implemented-with-explicit-boundaries",
       "implementationOmissions": [
-        "Mathers1888第三法後段大圓重排句序有歧義，本站尚未完整復刻；已算66張初次布局与另抽2張意外牌"
+        "原文明示首末與實物覆堆約束採具名重建政策；不宣稱唯一歷史復刻"
       ],
       "inputRequirements": [
         "實際牌ID、牌位、方向及抽牌程序"
       ],
       "qualitativeJudgments": [
-        "牌句、結構與原問對應"
+        "同一張牌的不同結構用途須合读，牌數不換算現實人數或固定日期"
       ],
       "evidenceLimits": [
         "現代摘要不是Waite逐字翻譯；不能證實人物心意"
+      ],
+      "implemented": [
+        "每張真實抽牌與原始正逆位、議題牌位及體系綁定",
+        "Mathers第三法66主牌與2保留意外牌，第三圈66張覆堆、首33末66、S66及32對/65單張；沿用同一次發牌"
       ]
     },
     "lenormand": {
@@ -791,8 +813,48 @@
       ]
     }
   },
-  "sourceCount": 56,
+  "sourceCount": 63,
   "sources": [
+    {
+      "id": "tajaka",
+      "title": "PVR27–30與Balabhadra《Hayanaratna》2.4–5",
+      "type": "作者原典教材／原典學術英譯",
+      "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+      "scope": "年度及当期月／60小時盤、Harsha／Pancha／Dwadasa、歳月主、36Sahams、16Yoga與3年度Dasha；三友敵版本與印例差異並列",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "pvr20",
+      "title": "PVR第6章20分盤",
+      "type": "作者原典教材",
+      "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+      "scope": "D5／D6／D8／D11補入全部原生分盤作用；Example15的D8末句與推導不符採公式",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "horarylight",
+      "title": "GraemeTobyn2007傳光／集光與空間禁止",
+      "type": "作者技術研究",
+      "url": "https://www.skyscript.co.uk/tobyn2.html",
+      "scope": "最後分離及首次成相三傳光、集光接納、空間近度與同距合相優先；未解的同距非合相保留",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "vedictransit",
+      "title": "P.V.R. Narasimha Rao：Ch25–26行運",
+      "type": "作者技術原文",
+      "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+      "scope": "Vedha與兩父子例外、入座時Murthi、27Tara及11特殊宿、PAV Kakshya、原BAV乘消減Pinda、16分盤雙向啟動",
+      "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "xiaoyun",
+      "title": "萬民英《三命通會》卷二·論小運",
+      "type": "原典校錄",
+      "url": "https://www.laoziliao.net/gu/jie/info/13068",
+      "scope": "醉醒子時柱起法與古法男丙寅／女壬申固定起式分列；立春歲界為本站曆法政策",
+      "checkedAt": "2026-10-02"
+    },
     {
       "id": "ziping",
       "title": "沈孝瞻《子平真詮》",
@@ -1240,6 +1302,22 @@
       "url": "https://www.skyscript.co.uk/moon2.html",
       "scope": "Schoner具名解讀的换座前進入相位光圈；與换座前精確成相分列，不宣稱全部歷史空亡或六種阻止語義皆已自動化",
       "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "horarydenials1",
+      "title": "Graeme Tobyn：Perfection and its denial I (2007)",
+      "type": "作者技術研究原文",
+      "url": "https://www.skyscript.co.uk/tobyn2.html",
+      "scope": "轉逆、換座、Lilly時間序禁止及三類截光形式核對；空間等距版本不混算",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "horarydenials2",
+      "title": "Graeme Tobyn：Perfection and its denial II (2007)",
+      "type": "作者技術研究原文",
+      "url": "https://www.skyscript.co.uk/tobyn3.html",
+      "scope": "嚴格中介輕重、駐留逆行B→A時序，返光燃燒／逆行與雙逆follower例外；近駐留質性及現實角色待判",
+      "checkedAt": "2026-10-03"
     }
   ],
   "classification": {
@@ -1248,18 +1326,18 @@
     "qualitativeJudgments": "提供計算證據，但需綜合判讀的條件",
     "evidenceLimits": "原典差異、缺文或尚未證明的效度；與算法完成度分開"
   },
-  "testedAt": "2026-10-03T08:31:41.694Z",
-  "completenessClaim": "可逐一重算所列排盤資料；有明列未實作規則，故不宣稱所有命理技術或全部古籍條款已補齊。",
+  "testedAt": "2026-10-03T12:20:51.170Z",
+  "completenessClaim": "所列選定方法可實際排盤、重算、查核依據及複製完整閱讀資料；全部歷史流派與原典質性語義不作已全部自動化的宣稱。",
   "promptDelivery": {
-    "version": "20261003prompt5",
-    "default": "短附檔指令與完整閱讀範圍資料TXT；完整原始排盤另存JSON",
-    "fallback": "編號純文字分段，全部貼齊才分析",
+    "version": "20261003prompt7",
+    "default": "直接複製完整純文字正文，不要求上傳附件或付費AI；原始排盤JSON另供查核",
+    "fallback": "同份正文的編號純文字分段，全部貼齊才分析，可無損拼回原文",
     "localMessageLimits": {
       "unicodeCodePoints": 8000,
       "utf8Bytes": 20000
     },
     "limitMeaning": "本站保守上限，不是ChatGPT官方最大輸入或保證所有AI的上下文足夠",
-    "dataPreservation": "不直接截字；同表欄序與JSON Pointer可還原；所有所問候選日期完整保留",
-    "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。未計算年度、未知時辰及未實作規則明列，不由AI猜補"
+    "dataPreservation": "不直接截字；同表欄序與具名共用內容可以還原；所有所問候選日期完整保留",
+    "selection": "預設年度及詳細分盤按原題範圍；明示全部運限或全部分盤則輸出全部所算。歲時年度有16族完整裁決，成立及未定項附證據；明示所有歲時條件展開全部逐項矩陣，詢問月/小時盤即展開該層細表。未計算年度、未知時辰及未實作規則明列，不由AI猜補"
   }
 }

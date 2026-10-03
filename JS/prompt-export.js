@@ -536,7 +536,7 @@ var JY_REC_EXPORT = {
       "fifteen_card": "十五張英式布局：讀五個三牌組——2–1–3核心、4–8–12自然發展、13–9–5替代路徑、6–10–14決策依據、7–11–15外在條件，再比較五組如何互相改寫。",
       "mathers_21": "二十一張Mathers衍生布局：三排從代表牌一側由右往左讀成連續故事，再讀1↔21至10↔12的首尾配對，以第11張作中心校正。",
       "mathers_horseshoe": "Mathers完整馬蹄布局：A組26張、C組17張與E組11張各自依原順序成句、首尾配對並處理中心，再比較後組如何補充或修正前組；F組為未解讀餘牌。",
-      "mathers_66": "Mathers 1888 第三法的本站可操作前段：主盤66張依原書牌號看過去、現在、將來各22張；從未用的11張再另抽左、右兩張意外牌。結語按右意外→代表牌→左意外；原書後段大圓重排文字有歧義，本站未模擬，不稱完整復刻。",
+      "mathers_66": "Mathers 1888 第三法：主盤66張依原書牌號看過去、現在、將來各22張；從未用的11張另抽左右兩張意外牌。結語按右意外→代表牌→左意外；末輪大圓依本次紀錄的具名覆堆重建政策，沿用同66張及正逆位。原文句序歧義明列，不宣稱唯一歷史復刻。",
       "horseshoe": "七張馬蹄形：串聯過去、現在、隱藏影響、建議、他人／環境、阻礙與結果，說明各位置如何共同形成走向。"
   };
 
@@ -585,7 +585,7 @@ var JY_REC_EXPORT = {
     fifteen_card: '直接觀測：五個三牌組的核心、自然發展、替代路徑、決策依據與不可控條件。能比較多層作用；三牌組與牌數不作現實計數。',
     mathers_21: '直接觀測：三排連續故事、首尾配對與中心校正。能深描歷程與相互呼應；二十一張與配對數不是人數、日期或機率。',
     mathers_horseshoe: '直接觀測：A、C、E三個大型證據群的連續故事與配對。能提供廣泛情勢與反證；牌組大小不是現實數量，F組不進入解讀。',
-    mathers_66: '直接觀測：66張主盤分為過去、現在、將來的原書牌號與由保留11張另抽的左右意外牌；代表牌另置。時間分段不等於精確日期；剩餘未用9張不進入判讀，未模擬的後段大圓不具觀測權限。',
+    mathers_66: '直接觀測：66張主盤的原書三時區、左右意外牌、獨立代表牌，以及本次紀錄實際完成的末輪大圓牌序及配對。時間分段不等於精確日期；剩餘未用9張不進入判讀；沒有記錄的圈序不能自行補造。',
     horseshoe: '直接觀測：過去、現在、隱藏作用、建議、他人／環境、阻礙與結果。未知的他人位是作用通道，不直接證明特定人物或數量。',
     ootk: '直接觀測：Book T 五次操作中實際完成的落點、完整計數故事、配對、元素尊貴與階段發展。計數值與步數只用於導航牌序，不量測現實人數、金額、年齡或日期；第四次操作是代表牌後方三十六張的環，不是旬位或公曆應期。程序若依 Book T 中止，未完成操作沒有觀測權限。'
   };
@@ -648,12 +648,13 @@ var JY_REC_EXPORT = {
     lines.push('閱讀順序：'+(protocol.phases||[]).join(' → ')+'。');
     if(spreadId==='mathers_66'){
       var draw=td.drawProcedure||{};
-      lines.push('Mathers 1888《The Tarot》第三法：本次只復刻可明確建構的66張雙拱主盤與保留牌另抽兩張意外牌。原書後段大圓重排文字存在歧義，本站沒有模擬；不得稱整段歷史程序均已完成。');
+      lines.push('Mathers 1888《The Tarot》第三法：66張雙拱主盤與保留牌另抽兩張意外牌。後段大圓的原文句序存在歧義；採用本次紀錄具名政策，不宣稱唯一歷史復刻。');
       lines.push('按原書牌號而非陣列索引：過去＝第1–11與34–44張；現在＝第23–33與56–66張；將來＝第12–22與45–55張。每一時段是盤面位置作用，不自行換算公曆日期。');
       lines.push('主盤66張之外，左意外牌為第67張、右意外牌為第68張，兩牌應來自原本未用的11張；' +
         '結語依「右意外牌 → 另置代表牌 → 左意外牌」成句。'+
         (draw.significator?'本次代表牌：'+(draw.significator.name||'未記錄名稱')+'（'+(draw.significator.policy||'實際抽牌紀錄')+'）。':'代表牌未見獨立紀錄時不可自行補造。'));
       if(draw.largeCircleImplemented===false)lines.push('本次紀錄明示未實作後段大圓；只能讀實際完成的主盤與意外牌。');
+      if(draw.largeCircleImplemented===true&&draw.largeCircle){const circle=draw.largeCircle;lines.push('本次大圓已實排；'+circle.policy);lines.push('以下均為原抽牌序號，牌名與正逆位查本次主牌，沒有重抽：圈首至末='+circle.circle.map(p=>p.ordinal).join(',')+'；起讀S與'+circle.significatorPair.card.ordinal+'；最末配對='+circle.pairs.map(p=>p.map(z=>z.ordinal).join('↔')).join('；')+'；未配對='+circle.unpaired.ordinal+'。');}
     }
     if(protocol.conclusionRule)lines.push('結果整合：'+protocol.conclusionRule);
     if(protocol.conflictRule)lines.push('矛盾處理：'+protocol.conflictRule);

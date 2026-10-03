@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T09:54:38.614Z",
+  "testedAt": "2026-10-03T11:47:43.030Z",
   "sourceExamples": [
     "PVR17 Example59",
     "PVR24 Examples95,96",
@@ -58,7 +58,7 @@
       "status": "passed"
     },
     {
-      "name": "Full16 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant",
+      "name": "Full20 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant",
       "status": "passed"
     },
     {
@@ -70,11 +70,11 @@
       "status": "passed"
     },
     {
-      "name": "Unknown birth clock withholds all17 timelines,16 house arudhas, special ascendants and deterministic AK role",
+      "name": "Unknown birth clock withholds all17 timelines,20 house arudhas, special ascendants and deterministic AK role",
       "status": "passed"
     },
     {
-      "name": "Full native data and prompt preserve17 timelines,all16 Jaimini calculations without mutating chart",
+      "name": "Full native data and prompt preserve17 timelines,all20 Jaimini calculations without mutating chart",
       "status": "passed"
     },
     {
@@ -82,7 +82,7 @@
       "status": "passed"
     },
     {
-      "name": "Lossless PAV bitmasks and JSONPointer dedup reconstruct all16 original contribution tables",
+      "name": "Lossless PAV bitmasks and JSONPointer dedup reconstruct all20 original contribution tables",
       "status": "passed"
     }
   ],

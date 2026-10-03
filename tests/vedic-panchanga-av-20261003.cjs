@@ -14,8 +14,8 @@ test('PVR Example42 all five occupation cases; independent classical equal and z
  for(const pair of [[0,7],[1,6],[2,5],[8,11],[9,10]])for(const [a,b,oa,ob,ea,eb]of cases){const r=Array(12).fill(0),o=Array(12).fill(false);r[pair[0]]=a;r[pair[1]]=b;o[pair[0]]=oa;o[pair[1]]=ob;const out=V.ekadhipatyaReduce(r,o).values;assert.equal(out[pair[0]],ea);assert.equal(out[pair[1]],eb);}
  const r=[5,0,0,3,0,0,0,0,0,0,0,0];assert.equal(V.trikonaReduce(r).values[0],5);assert.equal(V.ekadhipatyaReduce(Array(12).fill(3),Array(12).fill(false)).values[3],3);
 });
-test('All16 actual divisional charts retain raw337, 7 BAV totals, 8-source PAV and reductions for all5 lord pairs',()=>{
- assert.equal(Object.keys(chart.vargaAshtakavarga).length,16);
+test('All20 actual divisional charts retain raw337, 7 BAV totals, 8-source PAV and reductions for all5 lord pairs',()=>{
+ assert.equal(Object.keys(chart.vargaAshtakavarga).length,20);
  for(const [d,av]of Object.entries(chart.vargaAshtakavarga)){assert.equal(av.total,337);assert.deepEqual(plain(Object.values(av.bav).map(r=>r.reduce((n,v)=>n+v,0))),[48,49,39,54,56,52,39]);assert.equal(av.reductions.Sun.ekadhipatya.steps.length,5);
  for(const k of V.KEYS.slice(0,7))for(let s=0;s<12;s++){assert.equal(av.bav[k][s],av.prastara[k].reduce((n,r)=>n+r[s],0));assert(av.reductions[k].soav[s]<=av.bav[k][s]);assert.equal(av.occupied[s],V.KEYS.slice(0,7).some(p=>chart.vargas[d].planets[p].sign===s));}}
  assert.notDeepEqual(plain(chart.vargaAshtakavarga[1].bav),plain(chart.vargaAshtakavarga[10].bav));
@@ -50,7 +50,7 @@ test('Unknown clock and polar solar absence withhold Vaara/complete claim while 
 });
 test('Same entire AV/Pinda/Panchanga ledgers are exposed by native panel, full prompt and downloaded JSON',()=>{
  const before=JSON.stringify(chart),native=c.JYNativeAnalysis.analyze('vedic',chart),data=c.JYVedicPrompt.data(chart),prompt=c.JYVedicPrompt.build('完整分析',chart),saved=c.JYNativeAnalysisView.exportData('vedic',chart,native);
- assert(native.items.some(x=>x.id==='ashtakavarga'));assert(native.items.some(x=>x.id==='panchanga'));assert.deepEqual(plain(data.ashtakavarga),plain(chart.ashtakavarga));assert.equal(Object.keys(data.vargaAshtakavarga).length,16);assert.equal(saved.panchanga.limbs.vaara.name,'Thursday');assert.equal(saved.ashtakavarga.reductions.Mercury.pinda.total,chart.ashtakavarga.reductions.Mercury.pinda.total);assert(prompt.includes('Sodhya Pinda'));assert(prompt.includes('panchanga'));assert(!/NaN|undefined/.test(prompt));assert.equal(JSON.stringify(chart),before);
+ assert(native.items.some(x=>x.id==='ashtakavarga'));assert(native.items.some(x=>x.id==='panchanga'));assert.deepEqual(plain(data.ashtakavarga),plain(chart.ashtakavarga));assert.equal(Object.keys(data.vargaAshtakavarga).length,20);assert.equal(saved.panchanga.limbs.vaara.name,'Thursday');assert.equal(saved.ashtakavarga.reductions.Mercury.pinda.total,chart.ashtakavarga.reductions.Mercury.pinda.total);assert(prompt.includes('Sodhya Pinda'));assert(prompt.includes('panchanga'));assert(!/NaN|undefined/.test(prompt));assert.equal(JSON.stringify(chart),before);
 });
-fs.writeFileSync(path.resolve(__dirname,'../docs/vedic-panchanga-av-validation-20261003.json'),JSON.stringify({testedAt:new Date().toISOString(),scope:'PVR Ch1 five limbs with astronomical intervals; Ch12 all16 AV/PAV/BAV, reductions and Pindas; published examples and independent Swiss numerical crossings',independentCrossings:64,maximumCrossingErrorSeconds:maximumSeconds,results,passed:results.filter(x=>x.status==='passed').length,total:results.length},null,2));
+fs.writeFileSync(path.resolve(__dirname,'../docs/vedic-panchanga-av-validation-20261003.json'),JSON.stringify({testedAt:new Date().toISOString(),scope:'PVR Ch1 five limbs with astronomical intervals; Ch12 all20 AV/PAV/BAV, reductions and Pindas; published examples and independent Swiss numerical crossings',independentCrossings:64,maximumCrossingErrorSeconds:maximumSeconds,results,passed:results.filter(x=>x.status==='passed').length,total:results.length},null,2));
 console.log(JSON.stringify({passed:results.filter(x=>x.status==='passed').length,total:results.length,maximumSeconds}));

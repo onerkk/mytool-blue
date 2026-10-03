@@ -1,0 +1,12 @@
+{
+  "testedAt": "2026-10-03T12:36:53.665894+00:00",
+  "baseFilesPresent": 834,
+  "missingBaseFiles": [],
+  "changedJavaScriptRootMirrorsMatch": true,
+  "serviceWorkerCopiesMatch": true,
+  "version": "20261003native7",
+  "cache": "jy-main-v116",
+  "syntaxPassed": 147,
+  "releaseToolPolicy": "Archive CRC, all original filenames, all recorded content hashes and critical script bytes are checked after packaging; release stops on any failure.",
+  "ownArchiveHashPolicy": "ZIP hashes are not embedded in their own contents. Final archive hashes are emitted after validation."
+}

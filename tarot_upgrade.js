@@ -1015,7 +1015,7 @@ enhanceTarot = function(tarot) {
       var surpriseLeft=chooseSurprise(),surpriseRight=chooseSurprise();
       out.push(_jyCloneCard(surpriseLeft,_jyOrient(surpriseLeft,seed,spreadId,66,false),_jyPos(spreadDef,66),67,{mathersMethod:'Third Method two fresh surprises',mathersPeriod:'conclusion',mathersSurprise:'left'}));
       out.push(_jyCloneCard(surpriseRight,_jyOrient(surpriseRight,seed,spreadId,67,false),_jyPos(spreadDef,67),68,{mathersMethod:'Third Method two fresh surprises',mathersPeriod:'conclusion',mathersSurprise:'right'}));
-      out[0].drawProcedure={id:'mathers_66',description:'Mathers第三法：從78張中抽出國王／皇后代表牌，餘下77張依序發66張成外拱與內三角：過去1–11及34–44、現在23–33及56–66、未來12–22及45–55。從保留的11張另抽兩張意外牌，結語依右意外牌→代表牌→左意外牌讀。原書另有66張末輪配對及大圓重排；末段文字有歧義，本站沒有模擬該重排，不聲稱完整復刻。牌義採本次選用體系。',significator:{id:sig66.id,name:sig66.n,policy:sigPolicy66},initialDealtCount:66,initialUnusedCount:11,surprises:{left:{id:surpriseLeft.id,name:surpriseLeft.n},right:{id:surpriseRight.id,name:surpriseRight.n},fromUnused:true},remainingUnusedCount:unused66.length,largeCircleImplemented:false};
+      out[0].drawProcedure={id:'mathers_66',description:'Mathers第三法：從78張中抽出國王／皇后代表牌，餘下77張依序發66張成外拱與內三角：過去1–11及34–44、現在23–33及56–66、未來12–22及45–55。從保留的11張另抽兩張意外牌，結語依右意外牌→代表牌→左意外牌讀。末輪66↔1至34↔33逐張覆堆頂，頂牌重新發成圓首33末66；最後S與66、33與1、34與2等32對及原序65單張，依明示堆頂政策實排。牌義採本次選用體系。',significator:{id:sig66.id,name:sig66.n,policy:sigPolicy66},initialDealtCount:66,initialUnusedCount:11,surprises:{left:{id:surpriseLeft.id,name:surpriseLeft.n},right:{id:surpriseRight.id,name:surpriseRight.n},fromUnused:true},remainingUnusedCount:unused66.length,largeCircleImplemented:true,largeCircle:window.JYTarotFoundation.mathersThirdCircle(out.slice(0,66),sig66)};
       if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
       if(window.JYGoldenDawn)window.JYGoldenDawn.normalizeDraw(out);
       return out;
@@ -1209,7 +1209,7 @@ enhanceTarot = function(tarot) {
       }
       h += '<div class="m66-sig">'+sigInner66+'</div></div></div></div>';
       h += '<div class="m66-surprise" aria-label="兩張意外牌與代表牌的結語"><div>'+S(66,67,pn(66))+'</div><div class="m66-surprise-center">意外結語<br>← '+(sig66?safe66(sig66.n):'代表牌')+' ←<br>從右往左讀</div><div>'+S(67,68,pn(67))+'</div></div>';
-      h += '<div class="m66-hint">兩張意外牌另從原本未用的11張抽出；原書最後重排大圓有文字歧義，本站未模擬該段。</div>';
+      h += '<div class="m66-hint">兩張意外牌另從原本未用的11張抽出。末輪沿用這66張主盤實算：覆堆後首33、末66，再讀代表牌與66、32組配對及65單張；原文句序歧義採明列重建政策，排盤與提示詞保留本次牌序及正逆位。</div>';
     }
     else if (spreadId === 'mathers_horseshoe') {
       // ── Mathers 1888 第一法：A=26, C=17, E=11；F=24 棄用不讀 ──

@@ -1,0 +1,17 @@
+{
+  "testedAt": "2026-10-03T12:30:20.417Z",
+  "status": "pass",
+  "viewport": "390x844",
+  "spread": "mathers_66",
+  "selectedSignificator": "權杖皇后",
+  "drawn": 68,
+  "remainingUnused": 9,
+  "visibleSlots": 68,
+  "thirdCircleCards": 66,
+  "thirdCirclePairs": 32,
+  "thirdCircleUsesSameDraw": true,
+  "promptChars": 11749,
+  "paidRequests": 0,
+  "localCounterTelemetryRequests": 1,
+  "counterPolicy": "Counter pulse receives a local ok response; no AI, chart or interpretation result is injected"
+}

@@ -61,12 +61,14 @@
       var proc=drawn[0]&&drawn[0].drawProcedure,surprises=proc&&proc.surprises;
       if(drawn.length!==68||!proc||proc.id!=='mathers_66'||proc.initialDealtCount!==66||proc.initialUnusedCount!==11||proc.remainingUnusedCount!==9||!proc.significator||!surprises||!surprises.fromUnused||surprises.left.id!==drawn[66].id||surprises.right.id!==drawn[67].id||drawn.some(function(c){return c.id===proc.significator.id;}))throw new Error('Mathers 第三法的代表牌、66張主盤或從未用牌抽出的兩張紀錄不一致，請重新發牌。');
     }
+    var circle=spread==='mathers_66'&&root.JYTarotFoundation?root.JYTarotFoundation.mathersThirdCircle(drawn.slice(0,66),drawn[0].drawProcedure.significator):null;
+    if(circle&&drawn[0].drawProcedure.largeCircle&&JSON.stringify(drawn[0].drawProcedure.largeCircle.circle.map(function(p){return [p.id,p.isUp];}))!==JSON.stringify(circle.circle.map(function(p){return [p.id,p.isUp];})))throw new Error('Mathers大圓與本次主盤牌序或正逆位不一致，請核對紀錄。');
     var s=stats(drawn);
     return {mode:'tarot_only',question:question,focusType:((root.S||{}).form||{}).type||'general',tarotData:{
       spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:RWS,sourceProfile:RWS,
       methodPlan:plan,sourceContract:{id:RWS,label:'Rider–Waite–Smith・正逆位',reversalPolicy:'每張牌依發牌時記錄的正位／逆位解讀；逆位可呈現內在化、受阻、延遲、過度或不足，依問題與牌組選擇最有支持的讀法。'},
       referenceDate:ta.compiledQuestion&&ta.compiledQuestion.features&&ta.compiledQuestion.features.referenceDate||'',
-      drawProcedure:drawn[0]&&drawn[0].drawProcedure||null,
+      drawProcedure:circle?Object.assign({},drawn[0].drawProcedure,{largeCircleImplemented:true,largeCircle:circle}):drawn[0]&&drawn[0].drawProcedure||null,
       cards:drawn.map(function(c,i){var slot=(plan.slots||[])[i]||{},pos=((def||{}).positions||[])[i]||{};return {
         id:c.id,name:c.n||c.name||'',isUp:c.isUp!==false,direction:c.isUp===false?'逆位':'正位',sourceProfile:RWS,
         position:slot.label||pos.name||c.pos||('位置'+(i+1)),positionMeaning:slot.label||pos.zh||c.pos||'',

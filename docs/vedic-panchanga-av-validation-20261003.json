@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-03T09:54:36.427Z",
-  "scope": "PVR Ch1 five limbs with astronomical intervals; Ch12 all16 AV/PAV/BAV, reductions and Pindas; published examples and independent Swiss numerical crossings",
+  "testedAt": "2026-10-03T11:59:40.380Z",
+  "scope": "PVR Ch1 five limbs with astronomical intervals; Ch12 all20 AV/PAV/BAV, reductions and Pindas; published examples and independent Swiss numerical crossings",
   "independentCrossings": 64,
   "maximumCrossingErrorSeconds": 6.995502471923828,
   "results": [
@@ -13,7 +13,7 @@
       "status": "passed"
     },
     {
-      "name": "All16 actual divisional charts retain raw337, 7 BAV totals, 8-source PAV and reductions for all5 lord pairs",
+      "name": "All20 actual divisional charts retain raw337, 7 BAV totals, 8-source PAV and reductions for all5 lord pairs",
       "status": "passed"
     },
     {

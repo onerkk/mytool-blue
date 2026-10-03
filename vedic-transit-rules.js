@@ -1,0 +1,33 @@
+/* PVR chapters25–26: actual transit activation, PAV kakshya, Pinda, vedha,
+ * ingress-specific murthi and all 27 tara classifications. No event guarantees. */
+(function(root){'use strict';
+ const K=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'],mod=(n,m)=>(n%m+m)%m,DAY=86400000;
+ const V={Sun:{3:9,6:12,10:4,11:5},Moon:{1:5,3:9,6:12,7:2,10:4,11:8},Mars:{3:12,6:9,11:5},Mercury:{2:5,4:3,6:9,8:1,10:8,11:12},Jupiter:{2:12,5:4,7:3,9:10,11:8},Venus:{1:8,2:7,3:1,4:10,5:9,8:5,9:11,11:6,12:3},Saturn:{3:12,6:9,11:5}};
+ const TARA=['Janma','Sampat','Vipat','Kshema','Pratyak','Saadhana','Naidhana','Mitra','ParamaMitra'],KAK=['Saturn','Jupiter','Mars','Sun','Venus','Mercury','Moon','Lagna'];
+ const SPECIAL=[[1,'Janma'],[10,'Karma'],[18,'Saamudaayika'],[16,'Sanghaatika'],[4,'Jaati'],[7,'Naidhana'],[12,'Desa'],[13,'Abhisheka'],[19,'Aadhaana'],[22,'Vainaasika'],[25,'Maanasa']];
+ const source='https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf';
+ function pindaTarget(pinda,rekhas){const product=pinda*rekhas;return {pinda,rekhas,product,nakshatraIndex:mod(product-1,27),sign:mod(product-1,12),sameLordNakshatras:[0,9,18].map(i=>mod(product-1+i,27)),zeroRemainderPolicy:'餘0按第27宿／第12座，數序自1開始'};}
+ function ingress(chart,key){
+  const E=root.JYVedic,start=Date.parse(chart.input.reference),min=Date.UTC(1900,0,1),step={Moon:0.125,Sun:2,Mercury:0.5,Venus:0.5,Mars:1,Jupiter:4,Saturn:7,Rahu:7,Ketu:7}[key]*DAY,limit=Math.max(min,start-1250*DAY),at=t=>E.astronomy(new Date(t),chart.input.latitude,chart.input.longitude,chart.input.ayanamsa).planets[key].sidereal;
+  const sign=Math.floor(at(start)/30);let later=start,lon=at(start);
+  for(let t=Math.max(limit,later-step);t<later;t=Math.max(limit,t-step)){
+   const past=at(t);if(Math.floor(past/30)!==sign){let a=t,b=later;const direct=E.diff(lon,past)>0,boundary=E.norm((direct?sign:sign+1)*30);for(let n=0;n<32&&b-a>500;n++){const mid=(a+b)/2;if(Math.floor(at(mid)/30)===sign)b=mid;else a=mid;}/* b is the first bracket endpoint inside the entered sign. A midpoint can still be before ingress; use the right endpoint for the half-open interval. */const utc=Math.ceil(b),moon=E.placement(E.astronomy(new Date(utc),chart.input.latitude,chart.input.longitude,chart.input.ayanamsa).planets.Moon.sidereal),fromMoon=mod(moon.sign-chart.planets.Moon.sign,12)+1,form=[1,6,11].includes(fromMoon)?'Swarna':[2,5,9].includes(fromMoon)?'Rajata':[3,7,10].includes(fromMoon)?'Taamra':'Loha';return {status:'calculated',utc:new Date(utc).toISOString(),sign,direct,boundary,moonAtIngress:moon,fromNatalMoon:fromMoon,murthi:form,errorDegrees:Math.abs(E.diff(at(utc),boundary)),boundaryPolicy:'入座後端點，區間含起不含迄；月亮自身入座必取新座',precision:'0.5秒求根容差，星曆誤差仍按分鐘'};}
+   later=t;lon=past;if(t===limit)break;
+  }
+  return {status:'undetermined',missing:['1250日／1900起點星曆窗內未找到本次入座'],currentSign:sign};
+ }
+ function compute(chart){
+  const E=root.JYVedic,trans=Object.fromEntries(chart.transits.map(p=>[p.planet,p])),natal=chart.planets,moon=natal.Moon.nakshatra.index,nature=E.naturalNatures(trans),vargas={};
+  const vedha=K.slice(0,7).map(k=>{const p=trans[k],h=mod(p.sign-natal.Moon.sign,12)+1,obstruction=V[k][h]||null,excluded=(a,b)=>[['Sun','Saturn'],['Moon','Mercury']].some(pair=>pair.includes(a)&&pair.includes(b)),blockers=obstruction?K.filter(other=>other!==k&&mod(trans[other].sign-natal.Moon.sign,12)+1===obstruction&&!excluded(k,other)):[];return {planet:k,fromMoon:h,auspiciousHouse:!!obstruction,vedhaHouse:obstruction,blockers,excludedAtVedha:obstruction?K.filter(other=>other!==k&&mod(trans[other].sign-natal.Moon.sign,12)+1===obstruction&&excluded(k,other)):[],status:!obstruction?'not-in-favorable-house':blockers.length?'favorable-house-obstructed':'favorable-house-unobstructed'};});
+  const taras=Array.from({length:27},(_,index)=>{const distance=mod(index-moon,27)+1,group=mod(distance-1,9),occupants=K.filter(k=>E.nakshatra(trans[k].longitude).index===index);return {index,name:E.NAKS[index],distance,tara:TARA[group],traditionalTone:group===0?'mixed':[2,4,6].includes(group)?'challenging':'supportive',special:SPECIAL.filter(([n])=>n===distance).map(([,name])=>name),transitOccupants:occupants.map(k=>({planet:k,nature:nature[k]}))};});
+  for(const [d,base]of Object.entries(chart.vargas)){const av=chart.vargaAshtakavarga?.[d],lagna=base.lagna?.sign;
+   const activation=K.map(k=>{const p=trans[k],n=base.planets[k],projected=E.varga(p.longitude,+d),aspects=K.slice(0,7).includes(k)?[7,...(k==='Mars'?[4,8]:k==='Jupiter'?[5,9]:k==='Saturn'?[3,10]:[])]:[],signs=aspects.map(h=>mod(p.sign+h-1,12));return {planet:k,transitRasiSign:p.sign,transitVargaSign:projected.sign,fromVargaLagna:lagna==null?null:mod(p.sign-lagna,12)+1,natalVargaOwns:lagna==null?[]:Array.from({length:12},(_,i)=>E.LORDS[mod(lagna+i,12)]===k?i+1:null).filter(Boolean),natalVargaOccupants:K.filter(other=>base.planets[other].sign===p.sign),rasiTransitAspectSigns:signs,aspectedNatalVargaPlanets:K.filter(other=>signs.includes(base.planets[other].sign)),natalRasiPlanetsInTransitVarga:K.filter(other=>natal[other].sign===projected.sign),bav:av?.bav[k]?.[p.sign]??null,sav:av?.sav[p.sign]??null};});
+   const kakshya=av?K.slice(0,7).map(k=>{const p=trans[k],index=Math.min(7,Math.floor(p.degree/3.75)),lord=KAK[index],ref=av.referenceOrder.indexOf(lord);return {planet:k,transitSign:p.sign,degree:p.degree,kakshyaIndex:index,lord,startDegree:index*3.75,endExclusive:(index+1)*3.75,rekha:av.prastara[k][ref][p.sign],bav:av.bav[k][p.sign],sav:av.sav[p.sign]};}):[];
+   const pinda=av?K.slice(0,7).flatMap(k=>Array.from({length:12},(_,i)=>{const h=i+1,sign=mod(base.planets[k].sign+i,12),target=pindaTarget(av.reductions[k].pinda.total,av.bav[k][sign]);return {planet:k,house:h,referenceSign:sign,...target,transitHits:K.filter(other=>E.nakshatra(trans[other].longitude).index===target.nakshatraIndex||trans[other].sign===target.sign)};})):[];
+   vargas[d]={division:+d,activation,kakshya,pinda,status:lagna==null?'unknown-lagna-no-ashtakavarga':'calculated'};
+  }
+  const murthis=chart.input.unknownTime?[]:K.map(k=>({planet:k,...ingress(chart,k)}));
+  return {version:'20261003transit1',status:chart.input.unknownTime?'provisional-birth-anchor':'calculated',reference:chart.input.reference,vedha,taras,murthis,vargas,source,policy:'PVR25–26具名規則分列，九曜當期星位實算。Vedha只採原表七曜，交點能當阻曜，不捏造交點Vedha主表。Murthi採本次行星最近入座時的月亮，不用現在月亮代替。八分Kakshya依七曜加Lagna原PAV參照；Pinda用原BAV配消減Pinda。分盤行運與原局作用保留雙向位置；原典有研究歧義的Pinda及事件象義不當保證。缺出生鐘不冒稱確定Murthi。'};
+ }
+ root.JYVedicTransitRules=Object.freeze({compute,pindaTarget,ingress,version:'20261003transit1'});
+})(typeof window==='undefined'?globalThis:window);

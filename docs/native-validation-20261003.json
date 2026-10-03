@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T09:53:50.477Z",
+  "testedAt": "2026-10-03T11:52:34.905Z",
   "scope": "Traditional rule implementation and calculation/data agreement; not prediction validation",
   "results": [
     {
@@ -55,7 +55,7 @@
       "status": "passed"
     },
     {
-      "name": "All 16 varga house owners/occupants and three exact active dasha intervals",
+      "name": "All 20 varga house owners/occupants and three exact active dasha intervals",
       "status": "passed"
     },
     {

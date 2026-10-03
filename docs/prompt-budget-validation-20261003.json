@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T10:02:56.948Z",
+  "testedAt": "2026-10-03T12:26:06.315Z",
   "limits": {
     "characters": 8000,
     "utf8Bytes": 20000
@@ -90,7 +90,7 @@
       "status": "passed"
     },
     {
-      "name": "requested all sixteen vargas includes all detailed AV tables; topic choice cannot silently discard requested vargas",
+      "name": "requested all twenty vargas includes all detailed AV tables; topic choice cannot silently discard requested vargas",
       "status": "passed"
     },
     {

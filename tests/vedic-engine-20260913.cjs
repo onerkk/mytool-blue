@@ -65,8 +65,8 @@ test('IANA civil time: Taiwan, India, DST gap/fold, invalid dates and half-hour 
  assert.throws(()=>V.civilToUTC({date:'2026-01-01',time:'25:00',timezone:'Asia/Taipei'}));
 });
 const c=V.compute(sample);
-test('Immutable chart: 16 vargas, whole signs, all nine grahas and 36 actual monthly transit samples',()=>{
- assert.equal(Object.keys(c.vargas).length,16);assert.equal(c.planets.Rahu.house,(c.planets.Rahu.sign-c.lagna.sign+12)%12+1);
+test('Immutable chart: 20 vargas, whole signs, all nine grahas and 36 actual monthly transit samples',()=>{
+ assert.equal(Object.keys(c.vargas).length,20);assert.equal(c.planets.Rahu.house,(c.planets.Rahu.sign-c.lagna.sign+12)%12+1);
  assert.equal(c.transitSnapshots.length,36);assert(Object.isFrozen(c.planets.Moon));assert.throws(()=>{c.planets.Moon.longitude=12;});
  for(const v of Object.values(c.vargas))for(const k of V.KEYS)assert.equal(v.planets[k].house,(v.planets[k].sign-v.lagna.sign+12)%12+1);
  assert(!/NaN|undefined|\[object Object\]/.test(JSON.stringify(c)));assert.equal(c.input.utc,sample.utc.replace('00Z','00.000Z'));

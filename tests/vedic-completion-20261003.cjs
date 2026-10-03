@@ -45,7 +45,7 @@ test('PVR4 Example6 five solar upagrahas and PVR5 Example10 SreeLagna348°47',()
  const q=plain(chart);q.planets.Sun.longitude=249+36/60;q.planets.Moon.nakshatra=plain(E.nakshatra(193.1));q.lagna.longitude=175+5/60;
  const a=C.specialPoints(q);close(a.upagrahas.Dhuma.longitude,22+56/60);close(a.upagrahas.Vyatipaata.longitude,337+4/60);close(a.upagrahas.Parivesha.longitude,157+4/60);close(a.upagrahas.Indrachaapa.longitude,202+56/60);close(a.upagrahas.Upaketu.longitude,219.6);close(a.specialLagnas.SreeLagna.longitude,348+47/60);assert.equal(Object.keys(a.upagrahas).length,11);assert.equal(a.dayNightParts.length,8);
 });
-test('Full16 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant',()=>{
+test('Full20 PVR18.5 varga seeds use actual D1 nth-house lord in Dn, never blindly Dn ascendant',()=>{
  for(const [d,v]of Object.entries(chart.advanced.vargas)){assert.equal(v.arudhas.graha.length,9);assert.equal(v.arudhas.bhava.length,12);assert.equal(v.argala.signs.length,12);assert.equal(v.argala.houses.length,12);if(d==='1')continue;const s=v.narayana.vargaSeed;assert.equal(s.seedHouse,((Number(d)-1)%12)+1);assert.equal(s.seedLagna,chart.vargas[d].planets[s.seedPlanet].sign);assert.equal(v.narayana.periods.length,24);}
 });
 test('BPHS conditional dashas compute eligibility and17 systems; old Yogini cycles cover actual reference',()=>{
@@ -55,21 +55,21 @@ test('BPHS conditional dashas compute eligibility and17 systems; old Yogini cycl
 test('Confirmed lagna computes all41 additional Yoga statuses and7 actual Neechabhanga predicates',()=>{
  const y=chart.advanced.yogas;assert.equal(y.checks.length,41);assert.equal(new Set(y.checks.map(r=>r.id)).size,41);assert.equal(y.neechabhanga.length,7);assert(y.neechabhanga.every(r=>r.conditions.length===4));for(const r of y.matched)assert.equal(r.established,true);assert(y.checks.every(r=>[true,false,null].includes(r.established)));
 });
-test('Unknown birth clock withholds all17 timelines,16 house arudhas, special ascendants and deterministic AK role',()=>{
+test('Unknown birth clock withholds all17 timelines,20 house arudhas, special ascendants and deterministic AK role',()=>{
  const q=E.compute({...input,unknownTime:true});for(const d of Object.values(q.advanced.dashas)){assert.equal(d.periods.length,0);assert.equal(d.current,null);}for(const v of Object.values(q.advanced.vargas))assert.equal(v.arudhas.bhava.length,0);assert.equal(q.advanced.specialPoints.specialLagnas.SreeLagna,undefined);assert.equal(q.advanced.eightKarakas.karakamsa,null);
 });
-test('Full native data and prompt preserve17 timelines,all16 Jaimini calculations without mutating chart',()=>{
- const before=JSON.stringify(chart),full=ctx.JYVedicPrompt.data(chart),s=C.promptSnapshot(chart.advanced),prompt=ctx.JYVedicPrompt.build('完整分析',chart);assert.deepEqual(plain(full.advanced),plain(chart.advanced));assert.equal(Object.keys(s.dashas).length,17);assert.equal(Object.keys(s.vargas).length,16);assert(prompt.includes('Kalachakra'));assert(prompt.includes('neechabhanga'));assert(!/NaN|undefined/.test(prompt));assert.equal(JSON.stringify(chart),before);
+test('Full native data and prompt preserve17 timelines,all20 Jaimini calculations without mutating chart',()=>{
+ const before=JSON.stringify(chart),full=ctx.JYVedicPrompt.data(chart),s=C.promptSnapshot(chart.advanced),prompt=ctx.JYVedicPrompt.build('完整分析',chart);assert.deepEqual(plain(full.advanced),plain(chart.advanced));assert.equal(Object.keys(s.dashas).length,17);assert.equal(Object.keys(s.vargas).length,20);assert(prompt.includes('Kalachakra'));assert(prompt.includes('neechabhanga'));assert(!/NaN|undefined/.test(prompt));assert.equal(JSON.stringify(chart),before);
 });
 test('Exact highest-degree ties preserve bothAK candidates and withhold unique Karakamsa',()=>{
  const q=plain(chart);for(const [i,k]of E.KEYS.entries())q.planets[k].degree=5+i;q.planets.Sun.degree=29;q.planets.Moon.degree=29;q.planets.Rahu.degree=20;
  const r=C.charaKarakas(q),t=r.rank.filter(r=>r.possibleRoles.includes('AK'));assert.equal(t.length,2);assert(t.every(r=>r.role===null&&r.tied));assert.equal(r.karakamsa,null);assert.equal(r.karakamsaCandidates.length,2);
 });
-test('Lossless PAV bitmasks and JSONPointer dedup reconstruct all16 original contribution tables',()=>{
+test('Lossless PAV bitmasks and JSONPointer dedup reconstruct all20 original contribution tables',()=>{
  const prompt=ctx.JYVedicPrompt.build('完整分析',chart),line=prompt.split('\n').find(s=>s.startsWith('{')&&s.includes('prastaraMasks')),encoded=JSON.parse(line);
  const at=p=>p.slice(2).split('/').reduce((x,k)=>x[k.replace(/~1/g,'/').replace(/~0/g,'~')],encoded);
  const expand=x=>x&&typeof x==='object'?(x.$ref?expand(at(x.$ref)):Array.isArray(x)?x.map(expand):Object.fromEntries(Object.entries(x).map(([k,v])=>[k,expand(v)]))):x;
- const full=expand(encoded);assert.equal(full.nativeAnalysis.method,'vedic');assert.equal(Object.keys(full.vargaAshtakavarga).length,16);
+ const full=expand(encoded);assert.equal(full.nativeAnalysis.method,'vedic');assert.equal(Object.keys(full.vargaAshtakavarga).length,20);
  for(const [d,a]of Object.entries(chart.vargaAshtakavarga)){const av=full.vargaAshtakavarga[d];for(const [k,rows]of Object.entries(a.prastara))assert.deepEqual(av.prastaraMasks[k].map(mask=>Array.from({length:12},(_,s)=>(mask>>s)&1)),plain(rows));}
 });
 fs.writeFileSync(path.resolve(__dirname,'../docs/vedic-completion-validation-20261003.json'),JSON.stringify({testedAt:new Date().toISOString(),sourceExamples:['PVR17 Example59','PVR24 Examples95,96','PVR Table40','PVR9 Example30','PVR10.6 Mercury example','PVR21 Example80','PVR4 Example6','PVR5 Example10','BPHS46 28slot boundaries','BPHS51 same-lord antardasa'],results,passed:results.filter(r=>r.status==='passed').length,total:results.length},null,2));

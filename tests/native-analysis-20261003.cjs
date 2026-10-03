@@ -12,8 +12,8 @@ test('Independent ten-god and directional five-element tables',()=>{
  for(const [a,b,r]of [['木','火','生'],['火','木','受生'],['木','土','克'],['土','木','受克'],['水','水','比和']])assert.equal(N.relation(a,b),r);
 });
 test('Bazi annual segments retain both sides of a luck transition and independently reconstruct all links',()=>{
- const a=N.analyze('bazi',b);assert.equal(a.annualSegments.length,b.dayun.flatMap(d=>d.liuNian||[]).length);assert(a.annualSegments.length>=100);assert.equal(a.stemPairs.length,6);
- for(const y of a.annualSegments){assert.equal(y.connections.length,8);for(const x of y.connections){const p=a.pillars.find(p=>p.label===x.to),gz=x.from==='大運'?y.dayun:y.annual;assert.equal(x.repeatedPillar,gz===p.gan+p.zhi);assert.deepEqual(plain(x.branchRelations),Object.entries(N.links(gz[1],p.zhi)).filter(([,v])=>v).map(([k])=>k));}}
+ const a=N.analyze('bazi',b);assert.equal(a.annualSegments.filter(y=>y.dayun!=='起運前').length,b.dayun.flatMap(d=>d.liuNian||[]).length);assert(a.annualSegments.some(y=>y.dayun==='起運前'));assert(a.annualSegments.length>=100);assert.equal(a.stemPairs.length,6);
+ for(const y of a.annualSegments){assert.equal(y.connections.length,8);for(const x of y.connections){const p=a.pillars.find(p=>p.label===x.to),gz=x.fromGZ||(x.from==='大運'?y.dayun:y.annual);assert.equal(x.repeatedPillar,gz===p.gan+p.zhi);assert.deepEqual(plain(x.branchRelations),Object.entries(N.links(gz[1],p.zhi)).filter(([,v])=>v).map(([k])=>k));}}
 });
 test('Unknown Bazi export has only three pillars and excludes temporary-hour strength/luck claims',()=>{
  const a=N.analyze('bazi',b,{unknown:true}),out=c.JYNativeAnalysisView.exportData('bazi',b,a);assert.equal(a.coverage.pillars,3);assert.equal(a.annualSegments,undefined);assert.equal(out.schema,'jy.partial-bazi/1');assert(!JSON.stringify(out).includes('"hour"'));assert.equal(out.qiyun,undefined);assert.equal(out.strengthAssessment,undefined);
@@ -81,10 +81,10 @@ test('Requested first two Bazi decades export only those actually calculated dec
 test('Two unknown Ziwei birth clocks do not fabricate compatibility overlays',()=>{
  const a=N.analyze('compat',{personA:null,personB:null,status:'partial',overlays:[],directions:[],policy:{unknownTime:true}});assert.equal(a.coverage.people,0);assert.equal(a.coverage.crossRelations,0);assert.equal(a.items[0].id,'unknown-time');
 });
-test('All 16 varga house owners/occupants and three exact active dasha intervals',()=>{
- const a=N.analyze('vedic',v);assert.equal(a.coverage.vargaHouses,192);assert.equal(a.activation.length,3);
+test('All 20 varga house owners/occupants and three exact active dasha intervals',()=>{
+ const a=N.analyze('vedic',v);assert.equal(a.coverage.vargaHouses,240);assert.equal(a.activation.length,3);
  for(const d of a.vargas){assert.equal(d.houses.length,12);for(const h of d.houses){assert.equal(h.lord,c.JYVedic.LORDS[h.sign]);assert.equal(h.lordHouse,v.vargas[d.division].planets[h.lord].house);assert.deepEqual(plain(h.occupants),plain(c.JYVedic.KEYS.filter(k=>v.vargas[d.division].planets[k].house===h.house)));}}
- for(const x of a.activation){assert(Date.parse(x.start)<=Date.parse(input.reference));assert(Date.parse(x.endExclusive)>Date.parse(input.reference));assert.equal(x.vargaHouses.length,16);}
+ for(const x of a.activation){assert(Date.parse(x.start)<=Date.parse(input.reference));assert(Date.parse(x.endExclusive)>Date.parse(input.reference));assert.equal(x.vargaHouses.length,20);}
 });
 test('Unknown Vedic and Western clocks never introduce varga houses, active dasha or solar return',()=>{
  const vv=N.analyze('vedic',c.JYVedic.compute({...input,unknownTime:true}));assert.equal(vv.coverage.vargaHouses,0);assert.equal(vv.activation.length,0);assert.equal(vv.states.length,0);assert(vv.vargas.every(v=>v.provisional));const ww=N.analyze('astro',c.JYWestern.compute({...input,unknownTime:true}));assert.equal(ww.returnAnalysis,null);assert.equal(ww.coverage.houses,0);

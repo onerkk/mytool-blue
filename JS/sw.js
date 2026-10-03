@@ -44,8 +44,8 @@
 // v111: 20261003native4 六力全分量、64課族、原典81數、五層流曜、次限宮位、八格與逐籤資料。
 // v112: 20261003native4 十二宮力量、290神煞、年解、16分盤消減Pinda與五支曆交界。
 // v113: 20261003native4 新增原典規則、專盤、運期與完整資料編碼。
-// v114: 20261003native6 短附檔指令、可還原閱讀資料與安全分段；月亮换座前進入光圈實算。
-const CACHE_NAME = 'jy-main-v115';
+// v116: 20261003native7 短附檔指令、可還原閱讀資料與安全分段；月亮换座前進入光圈實算。
+const CACHE_NAME = 'jy-main-v116';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
