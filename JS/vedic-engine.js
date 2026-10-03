@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='jy-vedic-1.2.0', DAY=86400000, RAD=Math.PI/180;
+  const VERSION='jy-vedic-1.3.0', DAY=86400000, RAD=Math.PI/180;
   const KEYS=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'];
   const NAMES=['太陽','月亮','火星','水星','木星','金星','土星','羅睺','計都'];
   const SYMBOLS=['☉','☽','♂','☿','♃','♀','♄','☊','☋'];
@@ -145,12 +145,69 @@
       KEYS.slice(i+1).forEach(k=>{if(s===planets[k].sign)conjunctions.push({planets:[key,k],sign:s,separation:Math.abs(diff(planets[key].longitude,planets[k].longitude))});});
     });return {graha,rasi,conjunctions,nodeGrahaPolicy:'交點不另安特殊行星相位；星座相位另列'};
   }
+  function trikonaReduce(row){
+    if(!Array.isArray(row)||row.length!==12||row.some(x=>!Number.isInteger(x)||x<0))throw Error('BAV須為12個非負整數');
+    const values=row.slice(),steps=[];
+    for(let i=0;i<4;i++){const signs=[i,i+4,i+8],before=signs.map(s=>values[s]),subtract=Math.min(...before);signs.forEach(s=>values[s]-=subtract);steps.push({signs,before,subtract,after:signs.map(s=>values[s])});}
+    return {values,steps,profile:'PVR12.7.1：任何一座為零即不消減；不採兩座零則清第三座的異法'};
+  }
+  function ekadhipatyaReduce(row,occupied){
+    if(!Array.isArray(row)||row.length!==12||row.some(x=>!Number.isInteger(x)||x<0))throw Error('消減值須為12個非負整數');
+    if(!Array.isArray(occupied)||occupied.length!==12||occupied.some(x=>typeof x!=='boolean'))throw Error('須明示12座是否有七曜');
+    const values=row.slice(),steps=[];
+    for(const [lord,a,b]of [['Mars',0,7],['Venus',1,6],['Mercury',2,5],['Jupiter',8,11],['Saturn',9,10]]){
+      const before=[values[a],values[b]],occupation=[occupied[a],occupied[b]];let rule;
+      if(!values[a]||!values[b])rule='zero-no-reduction';
+      else if(occupied[a]&&occupied[b])rule='both-occupied-no-reduction';
+      else if(!occupied[a]&&!occupied[b]){if(values[a]===values[b]){values[a]=values[b]=0;rule='both-empty-equal-to-zero';}else{values[a]=values[b]=Math.min(values[a],values[b]);rule='both-empty-to-smaller';}}
+      else{const full=occupied[a]?a:b,empty=full===a?b:a;if(values[empty]<=values[full]){values[empty]=0;rule=before[0]===before[1]?'one-empty-equal-to-zero':'one-empty-lower-to-zero';}else{values[empty]=values[full];rule='one-empty-higher-to-occupied';}}
+      steps.push({lord,signs:[a,b],before,occupied:occupation,rule,after:[values[a],values[b]]});
+    }
+    return {values,steps,profile:'PVR12.7.2；一有曜一無曜等值時依Brihat Jataka第IX章p162清無曜座；巨蟹獅子不作共主消減'};
+  }
+  function sodhyaPinda(row,planets){
+    const rasiWeights=[7,10,8,4,10,6,7,8,9,5,11,12],grahaWeights=[5,5,8,5,10,7,5];
+    const rasiTerms=row.map((value,sign)=>({sign,value,multiplier:rasiWeights[sign],product:value*rasiWeights[sign]}));
+    const grahaTerms=KEYS.slice(0,7).map((key,i)=>({planet:key,sign:planets[key].sign,value:row[planets[key].sign],multiplier:grahaWeights[i],product:row[planets[key].sign]*grahaWeights[i]}));
+    const rasi=rasiTerms.reduce((n,t)=>n+t.product,0),graha=grahaTerms.reduce((n,t)=>n+t.product,0);
+    return {rasi,graha,total:rasi+graha,rasiTerms,grahaTerms,profile:'PVR12.7.3 Tables28–29；只含七曜，不計交點或上升的Graha Pinda'};
+  }
   function ashtakavarga(planets,lagna){
     if(lagna==null)return null;const refs=KEYS.slice(0,7).map(k=>planets[k].sign).concat(lagna),bav={},prastara={};
     Object.keys(AV).forEach(k=>{bav[k]=Array(12).fill(0);prastara[k]=Array.from({length:8},()=>Array(12).fill(0));
       AV[k].forEach((bits,h)=>{[...bits].forEach((bit,c)=>{if(bit==='1'){const sign=mod(refs[c]+h,12);bav[k][sign]++;prastara[k][c][sign]=1;}});});});
     const sav=Array.from({length:12},(_,s)=>Object.values(bav).reduce((sum,row)=>sum+row[s],0));
-    return {bav,sav,prastara,total:sav.reduce((a,b)=>a+b,0),policy:'未作 Trikona / Ekadhipatya 消減；SAV 只合七曜 BAV'};
+    const occupied=Array.from({length:12},(_,s)=>KEYS.slice(0,7).some(k=>planets[k].sign===s)),reductions={};
+    for(const k of KEYS.slice(0,7)){const trikona=trikonaReduce(bav[k]),ekadhipatya=ekadhipatyaReduce(trikona.values,occupied);reductions[k]={trikona,ekadhipatya,soav:ekadhipatya.values,pinda:sodhyaPinda(ekadhipatya.values,planets)};}
+    return {bav,sav,prastara,total:sav.reduce((a,b)=>a+b,0),reductions,occupied,referenceOrder:KEYS.slice(0,7).concat('Lagna'),policy:'PVR第12章：原始BAV/PAV及337點SAV保留；Trikona後逐一消減全部五組共主座，再算SoAV及Sodhya Pinda。占座只看該分盤七曜，不含交點或上升。消減值不代替行運原BAV/SAV。',sourceAudit:[{issue:'PVR一有曜一無曜等值未明列',selected:'Brihat Jataka英譯第IX章p162：清無曜座；與Phaladeepika24.20一致'},{issue:'Trikona兩座零異法',selected:'採PVR任何一零不減；未混入Brihat Jataka英譯兩零清第三座'}],sources:['https://vedicastrologer.org/articles/vedic_astro_textbook.pdf','https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf']};
+  }
+  const YOGA_NAMES=['Vishkambha','Preeti','Aayushmaan','Saubhaagya','Sobhana','Atiganda','Sukarman','Dhriti','Shoola','Ganda','Vriddhi','Dhruva','Vyaaghaata','Harshana','Vajra','Siddhi','Vyatipaata','Variyan','Parigha','Shiva','Siddha','Saadhya','Subha','Sukla','Brahma','Indra','Vaidhriti'];
+  const TITHI_NAMES=['Pratipada','Dwitiya','Tritiya','Chaturthi','Panchami','Shashthi','Saptami','Ashtami','Navami','Dashami','Ekadashi','Dwadashi','Trayodashi','Chaturdashi'];
+  function panchangaAngles(sun,moon){
+    const phase=norm(finite(moon,'月亮黃經')-finite(sun,'太陽黃經')),half=partFloor(phase/6)%60,ti=partFloor(phase/12)%30,yi=partFloor(norm(sun+moon)*27/360)%27,ni=partFloor(norm(moon)*27/360)%27;
+    return {tithi:{index:ti+1,name:ti===14?'Purnima':ti===29?'Amavasya':TITHI_NAMES[ti%15],paksha:ti<15?'Shukla':'Krishna',angle:phase,width:12},yoga:{index:yi+1,name:YOGA_NAMES[yi],angle:norm(sun+moon),width:360/27},karana:{index:half+1,name:half===0?'Kimstughna':half>=57?['Shakuni','Chatushpada','Naga'][half-57]:['Bava','Balava','Kaulava','Taitila','Garaja','Vanija','Vishti'][(half-1)%7],angle:phase,width:6},nakshatra:{index:ni+1,name:NAKS[ni],pada:nakshatra(moon).pada,angle:norm(moon),width:360/27}};
+  }
+  function panchangaComplete(chart){
+    const angles=panchangaAngles(chart.planets.Sun.longitude,chart.planets.Moon.longitude),birth=Date.parse(chart.input.utc),limbs={},missing=[];
+    const result={schema:'jy.vedic-panchanga/1',tithi:angles.tithi.index,paksha:angles.tithi.paksha,elongation:angles.tithi.angle,yoga:angles.yoga.index,karana:angles.karana.name,nakshatra:angles.nakshatra.name,limbs,complete:false,source:'https://vedicastrologer.org/articles/vedic_astro_textbook.pdf',policy:'PVR1.3.8–1.3.12五支；日月地心視黃經，月宿與Yoga用所選恒星歲差，Tithi/Karana用日月差。四個角度支的實際交界二分至1秒，UTC半開區間。Vaara以前一次實際日出的當地日期定星期，海平面標準折射；不是民用午夜換日。',missing};
+    if(chart.input.unknownTime){for(const [k,a]of Object.entries(angles))limbs[k]={...a,status:'provisional-anchor',start:null,end:null};limbs.vaara={status:'unknown-time',index:null,name:null,start:null,end:null};missing.push('出生時刻未確認；角度項為假設時刻參照，五支名稱及交界不能當確定出生資料');return result;}
+    const cache=new Map();
+    function at(ms){if(cache.has(ms))return cache.get(ms);const A=root.Astronomy,t=A.MakeTime(new Date(ms)),tilt=A.e_tilt(t),aya=meanAyanamsa(t.ut+2451545,chart.policy.ayanamsa)+tilt.dpsi/3600;const q=panchangaAngles(norm(A.Ecliptic(A.GeoVector('Sun',t,true)).elon-aya),norm(A.Ecliptic(A.GeoVector('Moon',t,true)).elon-aya));cache.set(ms,q);return q;}
+    function boundary(key,target,direction){const residual=ms=>diff(at(ms)[key].angle,target);let a=birth,b=birth,fa=residual(a),fb=fa;if(Math.abs(fa)<1e-9)return birth;
+      for(let i=0;i<16;i++){b=birth+direction*(i+1)*DAY/4;fb=residual(b);if(direction<0?fb<=0:fb>=0)break;}
+      if(direction<0){[a,b]=[b,a];[fa,fb]=[fb,fa];}if(fa>0||fb<0)throw Error('未能包住'+key+'實際交界');
+      while(b-a>500){const mid=(a+b)/2,f=residual(mid);if(f<0)a=mid;else b=mid;}return Math.round((a+b)/2);}
+    for(const [key,value]of Object.entries(angles)){try{const lower=(value.index-1)*value.width,start=boundary(key,norm(lower),-1),end=boundary(key,norm(lower+value.width),1);limbs[key]={...value,status:'calculated',start:new Date(start).toISOString(),end:new Date(end).toISOString(),endExclusive:true,solverBracketSeconds:.5,ephemerisAccuracy:'解算精度不是天文絕對誤差；64個Swiss獨立交界案例最大約7秒，近界時須覆核'};}catch(e){limbs[key]={...value,status:'boundary-unavailable',start:null,end:null};missing.push(e.message);}}
+    let clock=chart.strength?.clock||(root.JYVedicStrength?root.JYVedicStrength.dayContext(chart):null);
+    if(!clock){const A=root.Astronomy,observer=new A.Observer(chart.input.latitude,chart.input.longitude,0);let cursor=new Date(birth-2*DAY),previous=null,next=null;for(let i=0;i<5;i++){const event=A.SearchRiseSet(A.Body.Sun,observer,1,cursor,3);if(!event)break;if(+event.date>birth){next=event.date.toISOString();break;}previous=event.date.toISOString();cursor=new Date(+event.date+1000);}clock={previousRise:previous,nextRise:next};}
+    const start=clock.previousRise,end=clock.nextRise,civil=chart.input.civil||{};
+    if(start&&end&&Date.parse(end)-Date.parse(start)<2*DAY){let localDate,basis;
+      if(civil.offsetMinutes!=null){const offset=finite(Number(civil.offsetMinutes),'民用UTC時差');if(Math.abs(offset)>840)throw Error('民用UTC時差超出範圍');localDate=new Date(Date.parse(start)+offset*60000).toISOString().slice(0,10);basis='explicit-offset';}
+      else if(civil.timezone){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:civil.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(start)),p=Object.fromEntries(parts.map(x=>[x.type,x.value]));localDate=p.year+'-'+p.month+'-'+p.day;basis='IANA:'+civil.timezone;}
+      else{localDate=new Date(Date.parse(start)+chart.input.longitude/360*DAY).toISOString().slice(0,10);basis='explicitly-named-local-mean-date';}
+      const index=new Date(localDate+'T12:00:00Z').getUTCDay();limbs.vaara={status:'calculated',index:index+1,name:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][index],lord:['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'][index],localDate,dateBasis:basis,start,end,endExclusive:true};
+    }else{limbs.vaara={status:'sunrise-unavailable',index:null,name:null,start:null,end:null};missing.push('極晝極夜無相鄰日出；Vaara區間未定');}
+    result.complete=Object.values(limbs).every(l=>l.status==='calculated');return result;
   }
   function relationships(planets){
     let out=[];KEYS.slice(0,7).forEach(a=>KEYS.slice(0,7).filter(b=>b!==a).forEach(b=>{
@@ -347,7 +404,7 @@
     if(input.unknownTime)dashas.current=null;
     const out={schema:VERSION,input:{utc:birth.toISOString(),reference:reference.toISOString(),latitude:input.latitude,longitude:input.longitude,location:input.location||'',civil:input.civil?{...input.civil}:null,unknownTime:input.unknownTime},
       policy:{astronomy:'Astronomy Engine 2.1.19; geocentric apparent ecliptic of date',deltaT:'Swiss 2.10.03 Moshier monthly numeric model; future Delta T is a prediction',ayanamsa:input.ayanamsa,ayanamsaDegrees:raw.ayanamsa,meanAyanamsa:raw.meanAyanamsa,node:'mean',houses:'whole-sign',dashaYearDays:input.yearDays,vargas:'Parashari 16; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign',karakas:'7 grahas, no nodes',dignity:'degree-aware; Venus moolatrikona 0–15 Libra (PVR convention)',scope:'D1–D60, Vimshottari MD/AD/PD, graha/rasi drishti, BAV/SAV, dispositors, arudha, seven karakas, structural yogas; not a full Shadbala or Jaimini-dasha calculator'},
-      julianDay:raw.jd,lagna,planets,houses,vargas,aspects:asp,relationships:rel,dispositors:dispositors(planets),ashtakavarga:av,arudhas:arudhas(planets,lagna&&lagna.sign),karakas,yogas:yogas(planets,lagna&&lagna.sign,asp),panchanga,dasha:dashas,transits,transitSnapshots};
+      julianDay:raw.jd,lagna,planets,houses,vargas,aspects:asp,relationships:rel,dispositors:dispositors(planets),ashtakavarga:av,vargaAshtakavarga:lagna?Object.fromEntries(Object.entries(vargas).map(([d,v])=>[d,d==='1'?av:ashtakavarga(v.planets,v.lagna.sign)])):null,arudhas:arudhas(planets,lagna&&lagna.sign),karakas,yogas:yogas(planets,lagna&&lagna.sign,asp),panchanga,dasha:dashas,transits,transitSnapshots};
     out.policy.combustion='Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility';
     out.policy.friendship='dignity friend/enemy labels: natural; relationships: compound; Gaja Kesari uses compound as in PVR';
     out.naturalNatures=naturalNatures(planets);
@@ -358,8 +415,10 @@
     out.sensitivity.nearAngularBoundaries=[];
     KEYS.concat(lagna?['Lagna']:[]).forEach(k=>{const x=k==='Lagna'?lagna.longitude:planets[k].longitude;
       Object.keys(VARGAS).forEach(d=>{const left=varga(x-1/60,+d),right=varga(x+1/60,+d);if(left.sign!==right.sign)out.sensitivity.nearAngularBoundaries.push({key:k+'/D'+d,alternatives:[left.signName,right.signName]});});});
-    if(root.JYVedicStrength){out.strength=root.JYVedicStrength.compute(out);out.policy.scope=out.policy.scope.replace('not a full Shadbala or Jaimini-dasha calculator','six-strength ledger under '+out.strength.school+' profile when birth clock/geometry permits; other dashas not selected');out.policy.strengthStatus=out.strength.status;}
+    if(root.JYVedicStrength){out.strength=root.JYVedicStrength.compute(out,{school:input.strengthSchool||'raman'});out.bhavaStrength=root.JYVedicStrength.bhavaStrength(out,out.strength);out.policy.scope=out.policy.scope.replace('not a full Shadbala or Jaimini-dasha calculator','six-strength ledger under '+out.strength.school+'; Raman/Sripathi twelve-house strength and nine residential proportions when birth clock/geometry permits; other dashas not selected');out.policy.strengthStatus=out.strength.status;out.policy.bhavaStrengthStatus=out.bhavaStrength.status;}
+    out.panchanga=panchangaComplete(out);
+    out.policy.ashtakavarga='PVR12：D1及十六分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變';out.policy.panchangaStatus=out.panchanga.complete?'calculated':'insufficient-data';
     return freeze(out);
   }
-  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
+  root.JYVedic=Object.freeze({version:VERSION,compute,astronomy,civilToUTC,varga,nakshatra,dignity,dasha,children,aspects,ashtakavarga,trikonaReduce,ekadhipatyaReduce,sodhyaPinda,panchangaAngles,panchanga:panchangaComplete,arudhas,solarCondition,naturalNatures,yogas,specialYogas,meanAyanamsa,placement,norm,diff,zh,KEYS:Object.freeze(KEYS),SIGNS:Object.freeze(SIGNS),LORDS:Object.freeze(LORDS),VARGAS:Object.freeze(VARGAS),NAKS:Object.freeze(NAKS)});
 })(typeof globalThis!=='undefined'?globalThis:this);

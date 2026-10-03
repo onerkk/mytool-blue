@@ -13,7 +13,7 @@ function sourceFunction(file,name,ctx=c){const src=read(file),ast=acorn.parse(sr
 function pillars(text){return Object.fromEntries(text.split(' ').map((s,i)=>[['year','month','day','hour'][i],{gan:s[0],zhi:s[1]}]));}
 let groups=0;const evidence={};
 function test(name,fn){try{fn();groups++;console.log('PASS '+name);}catch(e){console.error('FAIL '+name+'\n'+e.stack);process.exitCode=1;}}
-const b=c.enhanceBazi(c.computeBazi(1983,8,25,14,55,'male',{referenceDate:'2026-09-13T00:00:00Z'}));
+const b=c.enhanceBazi(c.computeBazi(1983,8,25,14,55,'male',{referenceDate:'2026-09-13T00:00:00Z',flowStarPolicy:'COMMON_7'}));
 test('Reported chart: year/hour roots reach the classifier; neutral is not silently weak',()=>{
   assert.equal(b.deDi,true);assert.equal(b.sittingRoot,false);
   assert.deepEqual(Array.from(b.structureFacts.dayMasterRoots,r=>[r.pillar,r.branch,r.stem]),[['year','亥','甲'],['hour','未','乙']]);
@@ -73,7 +73,7 @@ test('Changing prose alone cannot change decade/year scores; transit conditions 
   assert.equal(dy.climateScoreAdjustment,0);assert.equal(dy.scorePolicy,'ELEMENT_TEN_GOD_ONLY_CLIMATE_SEPARATE');
 });
 test('Ziwei flow-star published vectors, two profiles and natal identity remain separate',()=>{
-  const z=c.computeZiwei(1983,8,25,14,'male',{referenceDate:'2026-09-13T00:00:00Z'});assert(z,c._jyZiweiError);
+  const z=c.computeZiwei(1983,8,25,14,'male',{referenceDate:'2026-09-13T00:00:00Z',flowStarPolicy:'COMMON_7'});assert(z,c._jyZiweiError);
   const original=JSON.stringify(z.palaces),expected={2024:{祿存:'寅',擎羊:'卯',陀羅:'丑',天魁:'丑',天鉞:'未',天馬:'寅',文昌:'巳'},2026:{祿存:'巳',擎羊:'午',陀羅:'辰',天魁:'亥',天鉞:'酉',天馬:'申',文昌:'申'}};
   for(const yr of [2024,2026]){
     const y=z.getLiuNianZw(yr);assert.equal(y.flowStars.length,7);
@@ -106,7 +106,7 @@ test('Forty-five digital cut settings conserve all 78 cards through real countin
 });
 test('Single prompt, composite API and custom report preserve the same core; no second crystal classifier',()=>{
   const prompt=c.buildBaziPrompt('我適合配戴什麼手鍊？',b,{});assert(prompt.includes('YI_SHEN_GUI_WITHOUT_BING'));assert(prompt.includes('官殺—印—身'));
-  const z=c.computeZiwei(1983,8,25,14,'male',{referenceDate:'2026-09-13T00:00:00Z'}),zp=c._ziweiBuildPrompt(z,{bdate:'1983-08-25',btime:'14:55',gender:'male'});
+  const z=c.computeZiwei(1983,8,25,14,'male',{referenceDate:'2026-09-13T00:00:00Z',flowStarPolicy:'COMMON_7'}),zp=c._ziweiBuildPrompt(z,{bdate:'1983-08-25',btime:'14:55',gender:'male'});
   assert(zp.includes('運祿存'));assert(zp.includes('流文昌'));
   const src=read('JS/ai-analysis.js'),a=src.indexOf('// ═══ 4. 八字更多細節'),end=src.indexOf('// ═══ 5.',a);
   c.S.bazi=b;c.p={dims:{}};vm.runInContext(src.slice(a,end),c);

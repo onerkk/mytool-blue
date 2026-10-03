@@ -1,80 +1,302 @@
 {
-  "version": "20261003native2",
-  "scope": "Current fifteen native interfaces, chosen named policies and actual input omissions; not all historical schools",
+  "version": "20261003native3",
+  "scope": "Fifteen existing interfaces and explicitly named calculation profiles; sample coverage is evidence of structure, not a universal proof",
+  "inputOmissionsAreNotUnimplemented": true,
   "methods": {
     "bazi": {
-      "coverage": {
+      "sampleCoverage": {
         "pillars": 4,
         "hiddenStems": 9,
         "stemPairs": 6,
         "decades": 10,
         "annualSegments": 110
       },
-      "unavailable": [
-        "未採用的外格異派；原典權輕权重與合去救應須依已列實際證據質性審核"
-      ],
-      "sources": [
+      "sourceIds": [
         "ziping",
         "zipingrescue",
         "renyuan"
-      ]
+      ],
+      "selectedPolicy": {
+        "termTimeBasis": "出生瞬間轉UTC+8核對節氣；日與時柱用指定牆鐘",
+        "birthInstant": "1983-08-25T06:55:00.000Z",
+        "civilTimeStatus": null,
+        "qiyunMethod": "分鐘折算：三日一年",
+        "mingGongMethod": "八字中氣换月變體；非紫微安命法",
+        "taiYuanMethod": "月干進一、月支進三之常用法",
+        "dayBoundaryMode": "MIDNIGHT_00",
+        "dayBoundaryLabel": "00:00午夜換日",
+        "annualBoundary": "立春",
+        "daYunInterval": "[start,end)",
+        "trueSolarTimeApplied": false,
+        "timezoneId": null,
+        "timezoneOffset": 8,
+        "longitude": null,
+        "referenceTimeBasis": "local-civil-wall",
+        "referenceInstant": "2026-10-02T04:00:00.000Z",
+        "referenceChartWall": "2026-10-02 12:00:00",
+        "calendarEngine": "lunar-javascript",
+        "calendarEngineVersion": "1.7.7",
+        "calendarPrecision": "astronomical-estimate",
+        "calendarFallback": false,
+        "interpretationModel": "JINGYUE_RELATIVE_WEIGHT_V9",
+        "relativeWeightDisclaimer": "五行分數與吉凶分數是本系統相對權重模型，不是古籍固定百分比、科學測量或事件機率。",
+        "interactionDisclaimer": "刑沖合害先列配對事實；是否成化、力量及吉凶須再審月令、透干、位置、沖破與喜忌。",
+        "forecastInteractionScoring": false,
+        "forecastClimateScoring": false,
+        "rootScope": "FOUR_BRANCHES"
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "未採用的外格、調候及人元司事異派；本次未逐一實作全部古籍條款"
+      ],
+      "inputRequirements": [
+        "完整年月日時、已選換日與時區政策；未知時辰僅三柱"
+      ],
+      "qualitativeJudgments": [
+        "權輕權重、財印位置、合去是否有效及成化條件"
+      ],
+      "evidenceLimits": [
+        "相對五行／吉凶權重不是事件概率"
+      ],
+      "sampleOutputExclusions": [
+        "未採用的外格異派；原典權輕权重與合去救應須依已列實際證據質性審核"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "ziwei": {
-      "coverage": {
+      "sampleCoverage": {
         "palaces": 12,
         "majorStars": 14,
         "palaceFlights": 48,
         "monthlyLayers": 12
       },
-      "unavailable": [
-        "未採用門派的四化、流曜異表與河洛專盤"
-      ],
-      "sources": [
+      "sourceIds": [
         "ziwei",
         "zwflow"
-      ]
+      ],
+      "selectedPolicy": {
+        "version": "20261003-flow3",
+        "implementation": "JINGYUE_LOCAL_IZTRO_RULES_WITH_OVERRIDES",
+        "yearDivide": "normal",
+        "horoscopeDivide": "normal",
+        "ageDivide": "normal",
+        "dayDivide": "current",
+        "algorithm": "default",
+        "fixLeap": false,
+        "trueSolarTime": false,
+        "upstreamDefaults": {
+          "dayDivide": "forward",
+          "fixLeap": true
+        },
+        "overrides": [
+          "本站午夜換日與閏月沿用本月為預設，不等同 iztro 預設。",
+          "選用23時換日時，本站先完整推進民用日期再轉農曆；跨月跨年不宣稱等同 iztro 的所有邊界行為。"
+        ],
+        "yearBoundary": "LUNAR_NEW_YEAR",
+        "dayBoundaryMode": "MIDNIGHT_00",
+        "leapMonthPolicy": "SAME_MONTH",
+        "effectiveMonth": 7,
+        "effectiveDay": 17,
+        "flowStarPolicy": "IZTRO_261",
+        "flowStarLayers": [
+          "大限",
+          "流年",
+          "流月",
+          "流日",
+          "流時"
+        ],
+        "flowStarYearBoundary": "LUNAR_NEW_YEAR",
+        "flowStarScoreAdjustment": 0,
+        "mingZhuBasis": "MING_PALACE_BRANCH",
+        "shenZhuBasis": "BIRTH_YEAR_BRANCH",
+        "monthPalaceMethod": "DOUJUN",
+        "monthStemMethod": "YEAR_STEM_WUHU",
+        "monthScoreBasis": "ZERO_CENTERED_RELATIVE_MODEL",
+        "minorLimitMethod": "BIRTH_YEAR_TRINE_MALE_FORWARD_FEMALE_BACKWARD",
+        "injuryAngelMethod": "FIXED_FRIENDS_HEALTH",
+        "voidMethod": "TWO_BRANCHES_PRIMARY_SECONDARY_BY_YEAR_PARITY",
+        "sihuaTable": "甲廉破武陽；乙機梁紫陰；丙同機昌廉；丁陰同機巨；戊貪陰弼機；己武貪梁曲；庚陽武陰同；辛巨陽曲昌；壬梁紫輔武；癸破巨陰貪",
+        "referenceDate": "2026-10-02T04:00:00.000Z",
+        "referenceLunarYear": 2026,
+        "referenceLunar": {
+          "year": 2026,
+          "month": 8,
+          "rawMonth": 8,
+          "day": 22,
+          "isLeap": false,
+          "source": "lunar-javascript"
+        },
+        "ageMethod": "LUNAR_NEW_YEAR_NOMINAL",
+        "predictionValidated": false,
+        "shortPeriodMethod": "流月命宮起初一順行；流日命宮起子時順行",
+        "shortPeriodHuaMethod": "日干、時干沿用本盤具名四化表；各層流曜按該層干支獨立安星",
+        "referenceDayBoundary": "MIDNIGHT_00",
+        "birthTimeBasis": "LOCAL_CIVIL_WALL_CLOCK",
+        "referenceTimezone": "Asia/Taipei",
+        "effectiveCivilDate": "1983-08-25",
+        "sources": [
+          "https://iztro.com/zh_TW/learn/setup",
+          "https://github.com/SylarLong/iztro/blob/main/src/astro/astro.ts",
+          "https://github.com/SylarLong/iztro/blob/main/src/star/location.ts",
+          "https://github.com/SylarLong/iztro/blob/main/src/astro/palace.ts"
+        ]
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "未選四化異表、河洛與其他專盤"
+      ],
+      "inputRequirements": [
+        "出生日期、時辰、性別及閏月／換日政策"
+      ],
+      "qualitativeJudgments": [
+        "三方四正與限流條件的綜合判讀"
+      ],
+      "evidenceLimits": [
+        "星曜結構不能保證事件結果"
+      ],
+      "sampleOutputExclusions": [
+        "未採用門派的四化、流曜異表與河洛專盤"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "astro": {
-      "coverage": {
+      "sampleCoverage": {
         "planets": 10,
         "nodes": 2,
         "houses": 12,
         "aspects": 23
       },
-      "unavailable": [
-        "未選用的卜卦、搬遷及其他專盤"
-      ],
-      "sources": [
+      "sourceIds": [
         "astronomy",
         "swiss",
         "dignity",
         "ruler",
         "return",
         "progression"
-      ]
+      ],
+      "selectedPolicy": {
+        "zodiac": "回歸黃道",
+        "origin": "地心視位置／當日真黃道與真春分點",
+        "ephemeris": "Astronomy Engine 2.1.19",
+        "precision": "設計目標約 1 角分；回歸時間約分鐘級，非秒級事件預測",
+        "node": "平均月交點",
+        "houseSystem": "P",
+        "houseName": "Placidus",
+        "orbs": [
+          {
+            "angle": 0,
+            "name": "合相",
+            "symbol": "☌",
+            "orb": 8
+          },
+          {
+            "angle": 60,
+            "name": "六分相",
+            "symbol": "⚹",
+            "orb": 4
+          },
+          {
+            "angle": 90,
+            "name": "四分相",
+            "symbol": "□",
+            "orb": 8
+          },
+          {
+            "angle": 120,
+            "name": "三分相",
+            "symbol": "△",
+            "orb": 8
+          },
+          {
+            "angle": 180,
+            "name": "對分相",
+            "symbol": "☍",
+            "orb": 8
+          }
+        ],
+        "minorOrbs": [],
+        "patternAspects": "格局總是檢查五大相位及 150°（2°容許度）；小相位顯示開關不改格局計算",
+        "chartType": "本命盤；不是卜卦、合盤或印度分盤"
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "現有接口未實作搬遷、卜卦及其他專盤"
+      ],
+      "inputRequirements": [
+        "可靠出生瞬間、經緯度、時區；極區宮制可算性"
+      ],
+      "qualitativeJudgments": [
+        "相位格局與行運主題的權衡"
+      ],
+      "evidenceLimits": [
+        "獨立星曆誤差只描述已測樣例"
+      ],
+      "sampleOutputExclusions": [
+        "未選用的卜卦、搬遷及其他專盤"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "vedic": {
-      "coverage": {
+      "sampleCoverage": {
         "planets": 9,
         "houses": 12,
         "vargas": 16,
         "vargaHouses": 192,
         "activeDashaLayers": 3,
-        "shadbalaPlanets": 7
+        "shadbalaPlanets": 7,
+        "bhavaStrengthHouses": 12,
+        "residentialPlanets": 9,
+        "vargaAshtakavargas": 16,
+        "panchangaLimbs": 5
       },
-      "unavailable": [
-        "未列出的其他大運法與門派專算法"
-      ],
-      "sources": [
+      "sourceIds": [
         "astronomy",
         "swiss",
         "pvr",
+        "brihatav",
         "bphs",
         "raman"
-      ]
+      ],
+      "selectedPolicy": {
+        "astronomy": "Astronomy Engine 2.1.19; geocentric apparent ecliptic of date",
+        "deltaT": "Swiss 2.10.03 Moshier monthly numeric model; future Delta T is a prediction",
+        "ayanamsa": "lahiri",
+        "ayanamsaDegrees": 23.624229317779488,
+        "meanAyanamsa": 23.628656824697227,
+        "node": "mean",
+        "houses": "whole-sign",
+        "dashaYearDays": 365.2425,
+        "vargas": "Parashari 16; D2 Sun/Moon Hora; D30 unequal; D60 from natal sign",
+        "karakas": "7 grahas, no nodes",
+        "dignity": "degree-aware; Venus moolatrikona 0–15 Libra (PVR convention)",
+        "scope": "D1–D60, Vimshottari MD/AD/PD, graha/rasi drishti, BAV/SAV, dispositors, arudha, seven karakas, structural yogas; six-strength ledger under raman; Raman/Sripathi twelve-house strength and nine residential proportions when birth clock/geometry permits; other dashas not selected",
+        "combustion": "Surya Siddhanta angular thresholds: Moon 12, Mars 17, Mercury direct 14/retrograde 12, Jupiter 11, Venus direct 10/retrograde 8, Saturn 15 degrees; inside threshold, not heliacal visibility",
+        "friendship": "dignity friend/enemy labels: natural; relationships: compound; Gaja Kesari uses compound as in PVR",
+        "strengthStatus": "calculated",
+        "bhavaStrengthStatus": "calculated",
+        "ashtakavarga": "PVR12：D1及十六分盤各算BAV/PAV/SAV、兩階段消減、SoAV、Rasi/Graha/Sodhya Pinda；SAV原始337點不變",
+        "panchangaStatus": "calculated"
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "其他Dasha、Jaimini及未列出的Yoga／Neechabhanga專算法"
+      ],
+      "inputRequirements": [
+        "可靠出生瞬間與地點；Bhava／六力需可用日出及宮界"
+      ],
+      "qualitativeJudgments": [
+        "盤面、分盤、力量及運期的共同條件"
+      ],
+      "evidenceLimits": [
+        "其他原典變體不暗混；天文求解括區不是星曆絕對精度"
+      ],
+      "sampleOutputExclusions": [
+        "未列出的其他大運法與門派專算法"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "liuren": {
-      "coverage": {
+      "sampleCoverage": {
         "earthSkyPositions": 12,
         "courses": 4,
         "transmissions": 3,
@@ -85,10 +307,106 @@
           "notEstablished": 54,
           "insufficientData": 5
         },
+        "shenshaRules": 290,
+        "shenshaCalculated": 289,
         "seasonAvailable": true,
         "seasonPolicy": "節氣月建；辰戌丑未全月採土旺，未按土旺十八日分段"
       },
-      "unavailable": [
+      "sourceIds": [
+        "liuren",
+        "battle",
+        "liurenguide1",
+        "liurenguide2",
+        "liurenguide3",
+        "liurenzuizhi",
+        "liurenclasses7",
+        "liurenclasses8",
+        "liurenclasses9",
+        "liurenclasses10"
+      ],
+      "selectedPolicy": {
+        "version": "20261003liuren3",
+        "school": "本版九宗門：歷歸本家涉害，計地支與寄干；同深度依課序取孟、再仲、最後陽干／陰支上",
+        "nobleTable": "甲戊庚牛羊；乙己鼠猴；丙丁豬雞；辛馬虎；壬癸蛇兔（前晝後夜）",
+        "dayNight": "自動採卯辰巳午未申為晝，酉戌亥子丑寅為夜；可明示晝／夜",
+        "monthGeneral": "中氣換將；使用者手動覆核時另保留自動值",
+        "dayBoundary": "MIDNIGHT_00",
+        "trueSolarTime": false,
+        "predictionValidated": false,
+        "reference": "https://github.com/d1210182010/daliuren-web-engine",
+        "referenceRevision": "d5cb9a79ebe2c368ead76319ad37bac1e8096d22",
+        "notImplemented": [
+          "未明列或其他流派神煞",
+          "真太陽時與天文日出日落"
+        ],
+        "termTime": "起課瞬間轉UTC+8核對中氣，日柱依指定民用時間；不作真太陽時校正",
+        "shenshaProfile": "GUIDE_ZHUANG_EXPLICIT_WITH_NAMED_DAQUAN_FIELDS"
+      },
+      "sampleCalendarContext": {
+        "yearGan": "丙",
+        "yearBranch": "午",
+        "monthBranch": "酉",
+        "lunarYear": 2026,
+        "lunarMonth": 8,
+        "lunarDay": 21,
+        "lunarDayCount": 29,
+        "previousDayGan": "丁",
+        "previousDayBranch": "未",
+        "fourStarts": false,
+        "fourSeparations": false,
+        "fourCardinals": false,
+        "solarDayEvents": [],
+        "policy": "太歲以立春、月建以節；農曆月日以UTC+8朔曆；四立四離按起課地民用曆日；昨日干支使用同一民用時間與換日口徑"
+      },
+      "sampleClassStates": [
+        {
+          "name": "繁昌",
+          "missing": [
+            "兩人完整行年干支",
+            "兩人本命與行年",
+            "兩人行年",
+            "節氣月建"
+          ]
+        },
+        {
+          "name": "解離",
+          "missing": [
+            "兩人行年"
+          ]
+        },
+        {
+          "name": "迍福",
+          "missing": [
+            "節氣月建或占人年命"
+          ]
+        },
+        {
+          "name": "侵害",
+          "missing": [
+            "占人行年"
+          ]
+        },
+        {
+          "name": "刑傷",
+          "missing": [
+            "占人行年"
+          ]
+        }
+      ],
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "土旺十八日分段、其他神煞版本、真太陽時與占類應期專算法"
+      ],
+      "inputRequirements": [
+        "占時、已選月建／月將政策；需要年命的課族須提供參與人年命"
+      ],
+      "qualitativeJudgments": [
+        "實際命中、課傳旺衰與用神方向；別名不重複投票"
+      ],
+      "evidenceLimits": [
+        "古法月宿不是天文宿度；定位不等於觸發或事件證實"
+      ],
+      "sampleOutputExclusions": [
         "兩人完整行年干支",
         "兩人本命與行年",
         "兩人行年",
@@ -97,135 +415,275 @@
         "占人行年",
         "其他未選版本的神煞與占類應期口訣"
       ],
-      "sources": [
-        "liuren",
-        "battle",
-        "liurenclasses7",
-        "liurenclasses8",
-        "liurenclasses9",
-        "liurenclasses10"
-      ]
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "liuyao": {
-      "coverage": {
+      "sampleCoverage": {
         "lines": 6,
         "hiddenSpirits": 0,
         "targets": 1
       },
-      "unavailable": [
+      "sourceIds": [
+        "liuyao"
+      ],
+      "selectedPolicy": {
+        "lineOrder": "bottom-up",
+        "coinConvention": "字面=2、背面=3；6老陰、7少陽、8少陰、9老陽",
+        "relativeBasis": "本卦卦宮五行（變爻亦同）",
+        "hiddenRule": "本卦缺六親時，取本宮純卦同位伏神",
+        "monthBasis": "節令交節瞬間，不以農曆初一換月",
+        "dayClash": "interpretation.lines 依動靜與月日生扶分類，矛盾不硬判",
+        "prediction": "傳統象徵解讀，不是現實事件的保證"
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
         "未明列流派的神煞與取用異法"
       ],
-      "sources": [
-        "liuyao"
-      ]
+      "inputRequirements": [
+        "六爻真實老少陰陽、占時及問事"
+      ],
+      "qualitativeJudgments": [
+        "用神選擇、日沖是否構成暗動與動變有效條件"
+      ],
+      "evidenceLimits": [
+        "應期條件不是固定事件日期"
+      ],
+      "sampleOutputExclusions": [
+        "未明列流派的神煞與取用異法"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "yijing": {
-      "coverage": {
+      "sampleCoverage": {
         "lines": 6,
         "selectedReadings": 2
       },
-      "unavailable": [
-        "未選用的漢易納甲、互體與其他變占規則"
-      ],
-      "sources": [
+      "sourceIds": [
         "yijing",
         "yizhu"
-      ]
+      ],
+      "selectedPolicy": {
+        "lineOrder": "bottom-up",
+        "coinConvention": null,
+        "yarrowPolicy": null,
+        "scope": "周易卦爻辭；不套用六爻納甲或梅花體用",
+        "sourceEdition": "周易古經（維基文庫校錄本）",
+        "threeChanges": "三動爻位置由初向上列二十組合，前十主貞、後十主悔；兩卦皆讀"
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "未選用漢易、納甲、互體及其他變占規則"
+      ],
+      "inputRequirements": [
+        "真實六爻及動爻記錄"
+      ],
+      "qualitativeJudgments": [
+        "主讀參讀及原問脈絡"
+      ],
+      "evidenceLimits": [
+        "當位／中／應不是直接吉凶票數"
+      ],
+      "sampleOutputExclusions": [
+        "未選用的漢易納甲、互體與其他變占規則"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "meihua": {
-      "coverage": {
+      "sampleCoverage": {
         "originalLines": 6,
         "movingLines": 1,
         "stages": 4,
         "seasonAvailable": true
       },
-      "unavailable": [
+      "sourceIds": [
+        "meihua"
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [],
+      "inputRequirements": [
+        "真實起卦數值、已記錄起卦時間、現場外應與動靜"
+      ],
+      "qualitativeJudgments": [
+        "體用與外應依所問情境權衡"
+      ],
+      "evidenceLimits": [
+        "未提供外應不能編造"
+      ],
+      "sampleOutputExclusions": [
         "未提供的現場外應與動靜"
       ],
-      "sources": [
-        "meihua"
-      ]
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "name": {
-      "coverage": {
+      "sampleCoverage": {
         "names": 3,
         "comparisons": 2
       },
-      "unavailable": [
-        "未知字未覆核筆畫與本表以外姓名學門派"
-      ],
-      "sources": [
+      "sourceIds": [
         "unihan",
         "moe",
         "kumazaki1931",
         "kumazaki1935",
         "namebook"
-      ]
+      ],
+      "selectedPolicy": "原名／現名與每一候選共用本次生辰、筆畫、數字規則及用途；基準姓名完整實算並包含在names。不把不同派吉凶加成總分或事件機率。",
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "本表以外的姓名學門派；125三才尚未由原著逐項核對"
+      ],
+      "inputRequirements": [
+        "未知字覆核筆畫、多音讀法、原名候選及八字參照"
+      ],
+      "qualitativeJudgments": [
+        "音形義、字形與姓名風格"
+      ],
+      "evidenceLimits": [
+        "編輯三分傾向不是原著概率；已保留通行三才的資料性質"
+      ],
+      "sampleOutputExclusions": [
+        "未知字未覆核筆畫與本表以外姓名學門派"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "compat": {
-      "coverage": {
+      "sampleCoverage": {
         "people": 2,
         "crossRelations": 28,
         "projections": 0
       },
-      "unavailable": [
-        "經實證驗證的配對成功率"
-      ],
-      "sources": [
+      "sourceIds": [
         "ziping",
         "ziwei"
-      ]
+      ],
+      "selectedPolicy": {
+        "scenarioAware": true,
+        "roleAware": true,
+        "noSingleScore": true,
+        "noAutomaticTransformation": true,
+        "noDeterministicEvents": true,
+        "excludeUnknownHourRelations": true
+      },
+      "status": "implemented-as-listed",
+      "implementationOmissions": [],
+      "inputRequirements": [
+        "兩人真實出生資料；未知時辰不能確定紫微疊宮"
+      ],
+      "qualitativeJudgments": [
+        "雙向作用與同期運限的綜合判讀"
+      ],
+      "evidenceLimits": [
+        "沒有經實證的配對成功率；不能讀取對方真實心意"
+      ],
+      "sampleOutputExclusions": [
+        "經實證驗證的配對成功率"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "personality": {
-      "coverage": {
+      "sampleCoverage": {
         "axes": 5,
         "provisional": false
       },
-      "unavailable": [
+      "sourceIds": [
+        "ziping"
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [],
+      "inputRequirements": [
+        "真實四柱，未知時辰保留暫定模型"
+      ],
+      "qualitativeJudgments": [
+        "本站十神映射模型的象徵解讀"
+      ],
+      "evidenceLimits": [
+        "沒有心理計量效度"
+      ],
+      "sampleOutputExclusions": [
         "命理映射的心理計量效度"
       ],
-      "sources": [
-        "ziping"
-      ]
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "tarot": {
-      "coverage": {
+      "sampleCoverage": {
         "records": 2
       },
-      "unavailable": [
-        "由象徵證實人物心意或未發生事件"
-      ],
-      "sources": [
+      "sourceIds": [
         "waite",
         "bookt",
         "mathers"
-      ]
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [],
+      "inputRequirements": [
+        "實際牌ID、牌位、方向及抽牌程序"
+      ],
+      "qualitativeJudgments": [
+        "牌句、結構與原問對應"
+      ],
+      "evidenceLimits": [
+        "現代摘要不是Waite逐字翻譯；不能證實人物心意"
+      ],
+      "sampleOutputExclusions": [
+        "由象徵證實人物心意或未發生事件"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "lenormand": {
-      "coverage": {
+      "sampleCoverage": {
         "records": 9
       },
-      "unavailable": [
+      "sourceIds": [
+        "lenormand"
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "歷史出版版本未全部考證"
+      ],
+      "inputRequirements": [
+        "真實布局、人物指認及選項分線"
+      ],
+      "qualitativeJudgments": [
+        "合法牌句及主盤／尾排方向"
+      ],
+      "evidenceLimits": [
+        "象徵不能證實心意或未發生事件"
+      ],
+      "sampleOutputExclusions": [
         "由象徵證實人物心意或未發生事件"
       ],
-      "sources": [
-        "lenormand"
-      ]
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "ootk": {
-      "coverage": {
+      "sampleCoverage": {
         "records": 3
       },
-      "unavailable": [
-        "由象徵證實人物心意或未發生事件"
-      ],
-      "sources": [
+      "sourceIds": [
         "bookt",
         "mathers"
-      ]
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [],
+      "inputRequirements": [
+        "各輪真實操作、合法分堆、代表牌及順序"
+      ],
+      "qualitativeJudgments": [
+        "合法操作後的元素尊貴與配對"
+      ],
+      "evidenceLimits": [
+        "未操作輪次不能自動補做；停止與無效分開"
+      ],
+      "sampleOutputExclusions": [
+        "由象徵證實人物心意或未發生事件"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     },
     "oracle": {
-      "coverage": {
+      "sampleCoverage": {
         "records": 4,
         "editionMatched": true,
         "categorySlots": 29,
@@ -233,15 +691,31 @@
         "storyTitles": 5,
         "registerVersion": "20261003oracle1"
       },
-      "unavailable": [
-        "其他廟宇版本與未獨立考證的故事歷史真偽"
-      ],
-      "sources": [
+      "sourceIds": [
         "oraclefull",
         "oracle"
-      ]
+      ],
+      "selectedPolicy": null,
+      "status": "implemented-as-listed",
+      "implementationOmissions": [
+        "其他廟宇版本；配籤故事史實未逐項独立考證"
+      ],
+      "inputRequirements": [
+        "真實籤號、所採版本與問事"
+      ],
+      "qualitativeJudgments": [
+        "事項條件、摘要及原問對應"
+      ],
+      "evidenceLimits": [
+        "5個來源缺欄保留缺文；配籤名稱不是歷史考證"
+      ],
+      "sampleOutputExclusions": [
+        "其他廟宇版本與未獨立考證的故事歷史真偽"
+      ],
+      "sampleOutputExclusionsMeaning": "原樣例輸出排除／所需條件的混合標籤；完成度以上方四個分欄為準"
     }
   },
+  "sourceCount": 40,
   "sources": [
     {
       "id": "ziping",
@@ -320,8 +794,16 @@
       "title": "P. V. R. Narasimha Rao：Vedic Astrology, An Integrated Approach",
       "type": "作者教材",
       "url": "https://vedicastrologer.org/articles/vedic_astro_textbook.pdf",
-      "scope": "Parashari 分盤、相位、運期、15.4.1–15.4.2 行星狀態；六力的流派與資料範圍另見 strengthLedger.policy",
-      "checkedAt": "2026-10-02"
+      "scope": "第1章五支曆角度與日出日界、第12章八分PAV/BAV/SAV、十六分盤、兩階段消減與Pinda；Parashari分盤相位運期及15.4行星狀態；不是515頁全部規則都實作的宣稱",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "brihatav",
+      "title": "Varahamihira《Brihat Jataka》英譯第IX章",
+      "type": "原典英譯原圖",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf",
+      "scope": "p162共主座一有曜一無曜等值清無曜座；本版Trikona仍採PVR，不混入本英譯兩零清第三座",
+      "checkedAt": "2026-10-03"
     },
     {
       "id": "progression",
@@ -336,8 +818,8 @@
       "title": "iztro v2.6.1作者流曜程式",
       "type": "作者技術原文",
       "url": "https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts",
-      "scope": "五層魁鉞昌曲祿羊陀馬鸞喜獨立干支安星；既有七星八星政策保留",
-      "checkedAt": "2026-10-02"
+      "scope": "五層魁鉞昌曲祿羊陀馬鸞喜獨立安星；流年另加年解，位置表依同版location.ts；舊七八十星政策保留",
+      "checkedAt": "2026-10-03"
     },
     {
       "id": "liuren",
@@ -354,6 +836,38 @@
       "url": "https://zh.wikisource.org/zh-hant/六壬大全/10",
       "scope": "神克將內戰、將克神外戰",
       "checkedAt": "2026-10-02"
+    },
+    {
+      "id": "liurenguide1",
+      "title": "《六壬指南注解》神煞賦前篇",
+      "type": "原典校錄",
+      "url": "https://shuyuan.zhiming.life/read/六壬指南注解/30",
+      "scope": "歲神、月神方圖及正二至臘月表；具名異表與錯字另稽核",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "liurenguide2",
+      "title": "《六壬指南注解》神煞賦中篇",
+      "type": "原典校錄",
+      "url": "https://shuyuan.zhiming.life/read/六壬指南注解/31",
+      "scope": "月神順逆四组三合與十二位、旬神及干支神的實際定位",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "liurenguide3",
+      "title": "《六壬指南注解》神煞賦後篇及庄氏辨訛",
+      "type": "原典校錄",
+      "url": "https://shuyuan.zhiming.life/read/六壬指南注解/32",
+      "scope": "日干支神、官鬼及天目等辨訛；定位與四課三傳年命上神實際命中分列",
+      "checkedAt": "2026-10-03"
+    },
+    {
+      "id": "liurenzuizhi",
+      "title": "《六壬大全》卷五出軍凶日",
+      "type": "原典校錄",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/5",
+      "scope": "罪至正午至十二巳完整月序；第十月辰，具名另表解決《指南》轉錄胡字",
+      "checkedAt": "2026-10-03"
     },
     {
       "id": "liuyao",
@@ -464,8 +978,8 @@
       "title": "B. V. Raman《Graha and Bhava Balas》",
       "type": "作者教材文本",
       "url": "https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996",
-      "scope": "七星六力全部分項、Ahargana、平行度動力、Sripathi方位、戰爭與照射算例；OCR衝突保留稽核",
-      "checkedAt": "2026-10-02"
+      "scope": "七曜六力全部分項；第IX章十二Bhava方向／宮主／照射、九曜宮界比例及例59；第十二宮印表總分與分項不符，保留計算與印誤稽核",
+      "checkedAt": "2026-10-03"
     },
     {
       "id": "kumazaki1931",
@@ -523,5 +1037,11 @@
       "scope": "書目核對不等於取得全文或逐條覆核81數",
       "checkedAt": "2026-10-02"
     }
-  ]
+  ],
+  "classification": {
+    "implementationOmissions": "尚未實作／核對的算法與流派，不能以缺輸入代替說明",
+    "inputRequirements": "已實作算法所需的真實輸入或天文可算條件",
+    "qualitativeJudgments": "提供計算證據，但需綜合判讀的條件",
+    "evidenceLimits": "原典差異、缺文或尚未證明的效度；與算法完成度分開"
+  }
 }

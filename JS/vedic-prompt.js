@@ -2,7 +2,7 @@
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='1.2.0';
+  var VERSION='1.3.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -20,6 +20,7 @@
     astro:{name:'西洋占星',basis:'本題宮主、落宮、相位兩端與實算行運',path:'從宮主的事件路徑辨資源與代價，再比較相關星體的需求及當期承接。'},
     vedic:{name:'印度占星',basis:'D1宮主、有效分盤、尊貴受照與實算運期',path:'D1先成判，專題分盤查承接，大副運定位當期條件；相反訊號按各自層級取捨。'},
     name:{name:'姓名學',basis:'字形筆畫來源、字義讀音與同體系五格三才',path:'依實際用途比較名字的使用得失，數理象義與字義讀音分開，說清保留或調整哪個字。'},
+    liuren:{name:'大六壬',basis:'天地盤、四課三傳、天將六親旬空、64課族與290具名神煞及實際年命',path:'干支兩端先辨人事，沿初中末傳追生克及空破能否承接；由實際命中找支持、阻點和可介入條件，不從課名直接斷事件。'},
     personality:{name:'人格',basis:'原始四柱與十神通路、模型摘要和本人經驗',path:'由有力結構提出行為假設，分長處與負荷代價，給可用實際經驗驗證的小練習。'}
   };
   var GOALS={
@@ -49,6 +50,7 @@
       policy:'範圍來自原問句；資料仍須實算，深度字樣不自動擴成全盤或逐年題。'};
   }
   var FULL_AREAS = {
+  "liuren": "完整讀十二天地盤、四課、九宗門取傳、三傳的遞生互克、十二天將、六親旬空遁干、月令內外戰。64課族逐條成立／否／缺資料分開，290神煞只採實際課傳年命命中。同源別名不加票，雙人年命依明示輸入，應期沒有候選日實算不造日期；各子題交代最強支持、牽制、改判條件及可採行動。",
   "tarot": "【塔羅深入合讀】逐一核對全部實際牌位職責與正逆方向，形成完整牌陣的發展結構；需求、可採行動、環境、結果和阻礙各自成義，再串成結果能否落實的路徑。單張本義不能取代相鄰關係、核心牌與不同支線的共同作用。；主線與子題逐一成判，區分情緒、意願、實際行動與持續；人物牌不自行指認身分。逆位綜合牌面、位置與全局，分辨內化、受阻、過度或鬆動，不能一律翻成相反。；時間與影響程度來自實際時間位及發展順序；只有序列時給相對階段，不自造月份。每個關鍵轉折連同成立條件、支持牌位、最強反證及可採行動說明。",
   "ootk": "【開鑰之法深入合參】按本次完成輪次逐輪讀代表牌落域、合法計數故事、配對及元素尊貴；每輪先形成自己的主判，再追各輪如何承接或改變條件。不能把尚未完成的操作補成結果，也不能把所有計數牌當成相鄰。；跨輪相反時先辨領域、角色、條件是否相同；同一命題仍衝突才保留未決部分。全程核對停止紀錄、實際操作與牌組來源，重複牌只保留作用，不重複加權。；完整解讀涵蓋所有有效操作和子題，再給支持、代價及行動。五輪不硬配五個月；人物身分、事件次數及日期須有本法真實支持。",
   "lenormand": "【雷諾曼深入牌句】讀完全部切題相鄰牌句和長線，保留中心、起訖與方向，辨人物近域、問題主線及方案分支的共同作用；牌的含義由句法與角色限定，不能挑幾張吉凶牌取代整條牌句。；大牌陣依實際落宮和幾何讀近遠、行列及已採鏡像，分清人物、領域與環境；未指定人物不補指認，合法配對不可冒充相鄰。；全盤逐重要區域及已知人物整理支持、阻力與發展；單題將相關牌組合成主判。時間只依實際牌陣及明列口徑，牌號或距離不自行換成確切天數。",
@@ -286,10 +288,10 @@ var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、
     const periods=chart.input.unknownTime?[]:chart.dasha.periods.filter(p=>p.end>chart.dasha.reference&&p.start<+end).map(p=>({lord:p.lord,start:iso(p.start),end:iso(p.end),antar:p.children.filter(a=>a.end>chart.dasha.reference&&a.start<+end).map(a=>({lord:a.lord,start:iso(a.start),end:iso(a.end)}))}));
     const current=chart.dasha.current;
     return {engine:chart.schema,birth:chart.input,policy:chart.policy,topic:t.name,focusHouses:t.houses,focusVargas:t.vargas,
-      lagna:chart.lagna,planets:chart.planets,houses:chart.houses,
+      lagna:chart.lagna,planets:chart.planets,houses:chart.houses,bhavaStrength:chart.bhavaStrength,
       vargas:Object.values(chart.vargas).map(v=>({division:v.division,purpose:v.purpose,lagna:v.lagna&&v.lagna.signName,planets:C.KEYS.map(k=>({planet:k,sign:v.planets[k].signName,house:v.planets[k].house,vargottama:v.planets[k].vargottama}))})),
       naturalNatures:chart.naturalNatures,aspects:chart.aspects,dispositors:chart.dispositors,relationships:chart.relationships,arudhas:chart.arudhas,karakas:chart.karakas,yogas:chart.yogas,panchanga:chart.panchanga,
-      ashtakavarga:chart.ashtakavarga&&{bav:chart.ashtakavarga.bav,sav:chart.ashtakavarga.sav,total:chart.ashtakavarga.total,policy:chart.ashtakavarga.policy,signOrder:C.SIGNS},
+      ashtakavarga:chart.ashtakavarga,vargaAshtakavarga:chart.vargaAshtakavarga,ashtakavargaSignOrder:C.SIGNS,
       dasha:chart.input.unknownTime?{status:'時間未知：不輸出中午假設下的確定交運表'}:{yearDays:chart.dasha.yearDays,firstLord:chart.dasha.firstLord,balanceYears:chart.dasha.balanceYears,current:current&&{maha:{lord:current.maha.lord,start:iso(current.maha.start),end:iso(current.maha.end)},antar:{lord:current.antar.lord,start:iso(current.antar.start),end:iso(current.antar.end)},pratyantars:current.pratyantars.map(p=>({lord:p.lord,start:iso(p.start),end:iso(p.end),active:p===current.pratyantar}))},nextThreeYears:periods},
       specialRules:chart.specialRules,transits:chart.transits,transitSnapshots:chart.transitSnapshots||[],sensitivity:chart.sensitivity};
   }
@@ -309,7 +311,7 @@ var JY_REC_VEDIC = "【成稿檢查】後續各段各增加一個新的判斷、
     const q=String(question||'請分析我的命盤主軸、當前處境與可以採取的方向。').slice(0,6000);
     return globalThis.JYReadingWorkflow.finish(`你是一位熟悉 Parashari Jyotisha（印度／吠陀占星）的資深解盤者。使用繁體中文，根據本次完整計算資料，給迷惘中的使用者明確、有取捨、可追溯的分析。
 
-${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
+${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines('vedic').join('\n'):JY_READING_VEDIC}
 
 【本次問題與出生資料】
 問題以 JSON 字串保留原文：${JSON.stringify(q)}
@@ -321,6 +323,9 @@ ${root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&St
 2. 每個問題選直接相關的宮位與宮主，區分自然象徵星和本盤功能宮主。天然吉曜仍可能承擔困難宮位；逆行不自動等於弱，落陷不等於一生失敗。宮主連到哪裡才是事情如何發生的路徑。空宮仍由宮主、受照與定位星分析。
 3. 尊貴需讀度數區間與本次流派設定；本垣、擢升、本質強位、友敵座分別說明，結合當事領域判斷「有能力」是否等於「有利」。近日角距與 solar 是已算的傳統角距判定；月 12°、火 17°、水順 14°／逆 12°、木 11°、金順 10°／逆 8°、土 15°。燃燒角距表示所採方法的近日狀態，不是精確偕日升落可見性。nearBoundary 或 motionSensitive 為真時，具體說明接近哪個分界。
 3a. strength.complete=true 時，六力已有逐曜位置、方向、時間（含年／月／日／Hora、日夜三分、月相、Ayana及行星戰）、動力、自然與照射分量。以 relativeStrength（總力／該曜門檻）比較，再指出哪項分量支持或拖累；不以原始總分跨曜排優劣。力度盤 Kendradi 採 Sripathi，本命解盤採整宮，兩者宮位不可混寫。Raman 平均運動表、日月動力取法、照射版本與 sourceAudit 須保留；不暗換另一軟體分數。Ishta/Kashta 是另一具名平方根指標，與六力分開。強的困難宮主可能更能帶來責任或壓力，低於門檻也不是事情必敗；須連到本盤功能宮位、D1/D9及本次大副運主。若 complete=false，只讀確定分量及 missing；不得自行補總分或排名。
+3b. bhavaStrength 另給十二宮的宮主總力、方向力及逐曜有符號照射；宮主按Sripathi宮中心星座，不能與D1整宮宮主互換。宮位照射水星依Raman腳註固定為完整吉照，與行星Drik吉凶政策不同；木水全值、其他四分之一。residential為九曜在實際宮界與宮中心的比例，不能當概率，也不加成第四種宮位力量。只在complete=true比較本盤各宮總力，仍合整宮議題、宮主職責、D9及運期；高分不直接等於吉事。缺時或宮主總力未定時不得補總分或排名。
+3c. ashtakavarga保留原BAV、八參照PAV與337點SAV；reductions逐步列Trikona、五組共主座Ekadhipatya、SoAV及Rasi/Graha/Sodhya Pinda。行運座支持讀原BAV/SAV，不能拿消減值換掉原表或把Pinda當概率。vargaAshtakavarga依PVR12.5用各分盤七曜與該盤上升重新計算；分盤間同源資料不累加成獨立證據。保留sourceAudit，未輸入出生時刻時沒有確定八分表。
+3d. panchanga.limbs列Tithi、Yoga、Karana、Nakshatra與Vaara的名稱及實際UTC起迄；角度項採所選歲差，星期在實際日出換日。出生前日出日期及dateBasis不能改成民用午夜；end是排除的界點。時辰未知的provisional-anchor與極區sunrise-unavailable不能當確定資料；五支曆是出生象徵背景，不據此補編節慶、擇日或事件日期。
 4. 同座先說共享哪個生活領域，再分析雙曜性質及各自掌宮如何協作或競爭；精確角距補充親近程度。同座和互容分開：互容是互入對方本垣，須追蹤交換的宮位與代價。沿 dispositors 找終點或循環，指出表面現象背後由哪顆星承接。
 5. graha drishti 為有方向的行星相位：七曜第七照，火星另第四／八，木星另第五／九，土星另第三／十。核對 A 照 B 和 B 照 A；未相互照見不寫互相。rasi drishti 為另一套星座關係，兩者獨立命名。交點在此不安特殊行星相位，羅睺計都以落宮、同座、星座相位、月宿主與定位星看放大或抽離的方向。
 6. Yoga 先核對成立條件，再解釋成色、掌宮、受照及歲運承接。Gaja Kesari 採 PVR 的月木角宮、自然吉曜同座或全照、木星未落陷／未燃燒／非合成敵座條件；checks 列出每條實際結果。status=relation 的月木角宮關係可以分析兩者如何互動，但不是完整象獅格局。Subha、Asubha 和十二宮 Kartari 共用相鄰座位，不當作兩份證據；水星為 mixed 時只按確定星曜判定，未定就不寫成已成立。Bhaaskara、Chapa 只按本次逐項實算結果使用。dignity 的友敵標籤採自然友敵，relationships 和本條格局的敵座條件採合成友敵，兩者分開。結構成立只代表形成一種組合，不等於名人、財富或婚姻事件已證實。需要引入資料表以外的傳統組合時，依成立條件從本盤原始座位重查，不能看到名稱就套結果。

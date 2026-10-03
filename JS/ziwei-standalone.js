@@ -2,7 +2,7 @@
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='1.2.0';
+  var VERSION='1.3.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -20,6 +20,7 @@
     astro:{name:'西洋占星',basis:'本題宮主、落宮、相位兩端與實算行運',path:'從宮主的事件路徑辨資源與代價，再比較相關星體的需求及當期承接。'},
     vedic:{name:'印度占星',basis:'D1宮主、有效分盤、尊貴受照與實算運期',path:'D1先成判，專題分盤查承接，大副運定位當期條件；相反訊號按各自層級取捨。'},
     name:{name:'姓名學',basis:'字形筆畫來源、字義讀音與同體系五格三才',path:'依實際用途比較名字的使用得失，數理象義與字義讀音分開，說清保留或調整哪個字。'},
+    liuren:{name:'大六壬',basis:'天地盤、四課三傳、天將六親旬空、64課族與290具名神煞及實際年命',path:'干支兩端先辨人事，沿初中末傳追生克及空破能否承接；由實際命中找支持、阻點和可介入條件，不從課名直接斷事件。'},
     personality:{name:'人格',basis:'原始四柱與十神通路、模型摘要和本人經驗',path:'由有力結構提出行為假設，分長處與負荷代價，給可用實際經驗驗證的小練習。'}
   };
   var GOALS={
@@ -49,6 +50,7 @@
       policy:'範圍來自原問句；資料仍須實算，深度字樣不自動擴成全盤或逐年題。'};
   }
   var FULL_AREAS = {
+  "liuren": "完整讀十二天地盤、四課、九宗門取傳、三傳的遞生互克、十二天將、六親旬空遁干、月令內外戰。64課族逐條成立／否／缺資料分開，290神煞只採實際課傳年命命中。同源別名不加票，雙人年命依明示輸入，應期沒有候選日實算不造日期；各子題交代最強支持、牽制、改判條件及可採行動。",
   "tarot": "【塔羅深入合讀】逐一核對全部實際牌位職責與正逆方向，形成完整牌陣的發展結構；需求、可採行動、環境、結果和阻礙各自成義，再串成結果能否落實的路徑。單張本義不能取代相鄰關係、核心牌與不同支線的共同作用。；主線與子題逐一成判，區分情緒、意願、實際行動與持續；人物牌不自行指認身分。逆位綜合牌面、位置與全局，分辨內化、受阻、過度或鬆動，不能一律翻成相反。；時間與影響程度來自實際時間位及發展順序；只有序列時給相對階段，不自造月份。每個關鍵轉折連同成立條件、支持牌位、最強反證及可採行動說明。",
   "ootk": "【開鑰之法深入合參】按本次完成輪次逐輪讀代表牌落域、合法計數故事、配對及元素尊貴；每輪先形成自己的主判，再追各輪如何承接或改變條件。不能把尚未完成的操作補成結果，也不能把所有計數牌當成相鄰。；跨輪相反時先辨領域、角色、條件是否相同；同一命題仍衝突才保留未決部分。全程核對停止紀錄、實際操作與牌組來源，重複牌只保留作用，不重複加權。；完整解讀涵蓋所有有效操作和子題，再給支持、代價及行動。五輪不硬配五個月；人物身分、事件次數及日期須有本法真實支持。",
   "lenormand": "【雷諾曼深入牌句】讀完全部切題相鄰牌句和長線，保留中心、起訖與方向，辨人物近域、問題主線及方案分支的共同作用；牌的含義由句法與角色限定，不能挑幾張吉凶牌取代整條牌句。；大牌陣依實際落宮和幾何讀近遠、行列及已採鏡像，分清人物、領域與環境；未指定人物不補指認，合法配對不可冒充相鄰。；全盤逐重要區域及已知人物整理支持、阻力與發展；單題將相關牌組合成主判。時間只依實際牌陣及明列口徑，牌號或距離不自行換成確切天數。",
@@ -756,7 +758,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     L.push('【大限走勢】(按實際起止排序；本命為底色，大限為階段場域；只傳計算事實)');
     timeline.decades.forEach(function(d){L.push('・第'+d.index+'大限 '+d.ageStart+'–'+d.ageEnd+'虛歲'+(d.yearStart!=null?'／'+d.yearStart+'–'+d.yearEnd+'農曆年度':'')+'　走「'+(d.palaceName||'未列')+'」宮('+d.branch+')'+(d.gan?' 宮干'+d.gan:'')+'　限內四化:'+transformations(d.hua,'大限')+(d.isCurrent?' ◀現在':''));if(d.flowStars&&d.flowStars.length)L.push('  大限流曜：'+flows(d.flowStars));if(d.palaces&&d.palaces.length)L.push('  大限十二宮疊宮：'+overlay(d.palaces));});
     L.push('【流年走勢 '+(timeline.firstYear==null?'未取得有效範圍':timeline.firstYear+'–'+timeline.lastYear)+'】(年度觸發，不自造月份或精確事件)');
-    timeline.annual.forEach(function(y){L.push('・'+y.year+(y.isCurrent?'（現行農曆年度）':'')+(y.age!=null?'／'+y.age+'虛歲':'')+(y.decadeIndex!=null?'／第'+y.decadeIndex+'大限':'／未列所屬大限')+'　'+(y.gz||'')+'　流年命宮落本命「'+(y.mingPalace||'未列')+'」　流年四化:'+transformations(y.hua,'流年'));if(y.flowStars&&y.flowStars.length)L.push('  流年流曜：'+flows(y.flowStars));if(y.palaces&&y.palaces.length)L.push('  流年十二宮疊宮：'+overlay(y.palaces));if(y.minorLimit)L.push('  小限 '+y.minorLimit.age+'虛歲：本命'+y.minorLimit.palace+'['+y.minorLimit.branch+']（補充參照，非流年命宮）');});
+    timeline.annual.forEach(function(y){L.push('・'+y.year+(y.isCurrent?'（現行農曆年度）':y.year===timeline.referenceYear+1?'（下一農曆年度）':'')+(y.age!=null?'／'+y.age+'虛歲':'')+(y.decadeIndex!=null?'／第'+y.decadeIndex+'大限':'／未列所屬大限')+'　'+(y.gz||'')+'　流年命宮落本命「'+(y.mingPalace||'未列')+'」　流年四化:'+transformations(y.hua,'流年'));if(y.flowStars&&y.flowStars.length)L.push('  流年流曜：'+flows(y.flowStars));if(y.palaces&&y.palaces.length)L.push('  流年十二宮疊宮：'+overlay(y.palaces));if(y.minorLimit)L.push('  小限 '+y.minorLimit.age+'虛歲：本命'+y.minorLimit.palace+'['+y.minorLimit.branch+']（補充參照，非流年命宮）');});
     if(timeline.months.length){L.push('【實算流月】（月份干支與斗君命宮分開，平月不冒充閏月專盤）');timeline.months.forEach(function(m){L.push('・'+m.year+'年'+m.monthName+'／'+m.gz+'／流月命宮落本命'+m.mingPalace+'['+m.mingBranch+']　四化:'+transformations(m.hua,'流月'));if(m.palaces&&m.palaces.length)L.push('  流月十二宮疊宮：'+overlay(m.palaces));});}
     if(timeline.warnings.length)L.push('【未取得資料】'+timeline.warnings.join(' '));
 
@@ -786,7 +788,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
 
   function _zwHeadText() {
     var api = _zwPromptRootApi();
-    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
+    return (api && typeof api.composeHead === 'function') ? api.composeHead() : ZW_HEAD_FALLBACK+'\n'+(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('ziwei').join('\n'):JY_READING_ZIWEI_FALLBACK);
   }
 
   function _zwTailText() {
@@ -920,8 +922,8 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     // 趁使用者填表時背景預載排盤引擎（idle 載入器可能還沒載到），按「起盤」時就緒
     try {
       if (typeof computeZiwei !== 'function' && typeof window._jyLazyScript === 'function') {
-        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native2', null);};
-        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native2', function(ok){if(ok)loadZiwei();}); else loadZiwei();
+        var loadZiwei=function(){window._jyLazyScript('JS/ziwei.js?v=20261003native3', null);};
+        if(typeof TG==='undefined'||typeof DZ==='undefined') window._jyLazyScript('JS/bazi.js?v=20261003native3', function(ok){if(ok)loadZiwei();}); else loadZiwei();
       }
     } catch(e){}
     w.scrollTop = 0;

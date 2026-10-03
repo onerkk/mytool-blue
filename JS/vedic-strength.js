@@ -3,7 +3,7 @@
  * Classical 1900 mean motions are not advertised as a modern ephemeris. */
 (function(root){
   'use strict';
-  const VERSION='20261003strength2',DAY=86400000,RAD=Math.PI/180;
+  const VERSION='20261003strength3',DAY=86400000,RAD=Math.PI/180;
   const KEYS=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'],DIVISIONS=[1,2,3,7,9,12,30];
   const EXALT={Sun:10,Moon:33,Mars:298,Mercury:165,Jupiter:95,Venus:357,Saturn:200};
   const DECAN={Sun:0,Mars:0,Jupiter:0,Mercury:1,Saturn:1,Moon:2,Venus:2};
@@ -43,6 +43,41 @@
     return centres.map((centre,i)=>({house:i+1,centre,start:mod(centre-mod(centre-centres[mod(i-1,12)],360)/2,360),end:mod(centre+mod(centres[(i+1)%12]-centre,360)/2,360),sign:Math.floor(centre/30)}));
   }
   function locateBhava(longitude,bhavas){const b=bhavas.find(b=>mod(longitude-b.start,360)<mod(b.end-b.start,360));if(!b)throw Error('Sripathi宮界無法定位');return b.house;}
+  function bhavaDirection(house,longitude){
+    if(!Number.isInteger(house)||house<1||house>12)throw Error('宮位無效');
+    const lon=mod(finite(longitude,'宮中心'),360),sign=Math.floor(lon/30),degree=lon%30;
+    let category,weakHouse;
+    if(sign===7){category='insect';weakHouse=1;}
+    else if([2,5,6,10].includes(sign)||sign===8&&degree<15){category='human';weakHouse=7;}
+    else if(sign===3||sign===11||sign===9&&degree>=15){category='aquatic';weakHouse=10;}
+    else {category='quadruped';weakHouse=4;}
+    const steps=mod(weakHouse-house,12),distance=Math.min(steps,12-steps);
+    return {category,weakHouse,strongHouse:mod(weakHouse+5,12)+1,houseDistance:distance,virupas:distance*10};
+  }
+  function residence(longitude,bhavas){
+    const lon=mod(finite(longitude,'星曜黃經'),360),house=locateBhava(lon,bhavas),b=bhavas.find(b=>b.house===house);
+    const fromStart=mod(lon-b.start,360),firstHalf=mod(b.centre-b.start,360),secondHalf=mod(b.end-b.centre,360),beforeCentre=fromStart<=firstHalf;
+    const distance=beforeCentre?fromStart:mod(b.end-lon,360),halfExtent=beforeCentre?firstHalf:secondHalf;
+    if(!(halfExtent>0))throw Error('宮界半幅無效');
+    return {house,centre:b.centre,start:b.start,end:b.end,half:beforeCentre?'poorva':'uttara',arcDegrees:distance,halfExtentDegrees:halfExtent,fraction:distance/halfExtent,policy:'Raman II.12–16：宮界為0、宮中心為1，按所在半宮實際幅度線性比例；非事件概率'};
+  }
+  function bhavaStrength(chart,ledger){
+    const source={title:'B. V. Raman: Graha and Bhava Balas, IX.124–133 and II.12–16',url:'https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996'};
+    const base={schema:'jy.vedic-bhava-strength/1',version:VERSION,profile:'RAMAN_SRIPATHI_HOUSES',unit:'Virupa; 60 Virupa = 1 Rupa',source};
+    if(chart.input.unknownTime)return {...base,status:'unknown-time',complete:false,houses:[],residential:[],ranking:[],missing:['出生時刻未知：宮中心、宮界、宮主及宮位力量未確定']};
+    if(!ledger?.bhavas||ledger.bhavas.length!==12)return {...base,status:'undefined-house-geometry',complete:false,houses:[],residential:[],ranking:[],missing:ledger?.missing||['未取得有效Sripathi宮中心與宮界']};
+    const natures={...nature(chart).drik,Mercury:'benefic'};
+    const houses=ledger.bhavas.map(b=>{
+      const lord=root.JYVedic.LORDS[b.sign],adhipathi=ledger.planets.find(p=>p.planet===lord)?.totalVirupas??null;
+      const dig=bhavaDirection(b.house,b.centre),aspects=KEYS.map(key=>{
+        const a=aspectValue(key,mod(b.centre-chart.planets[key].longitude,360),'raman'),weight=['Jupiter','Mercury'].includes(key)?1:.25,polarity=natures[key]==='benefic'?1:-1;
+        return {planet:key,longitude:chart.planets[key].longitude,nature:natures[key],weight,polarity,...a,contributionVirupas:a.virupas*weight*polarity};
+      }),drishti=sum(aspects.map(a=>a.contributionVirupas)),complete=Number.isFinite(adhipathi),total=complete?adhipathi+dig.virupas+drishti:null;
+      return {...b,lord,adhipathi:{planet:lord,ledgerSchool:ledger.school,virupas:adhipathi,complete},dig,drishti:{complete:true,aspects,virupas:drishti},totalVirupas:total,totalRupas:complete?total/60:null,complete,occupants:Object.keys(chart.planets).filter(k=>locateBhava(chart.planets[k].longitude,ledger.bhavas)===b.house)};
+    });
+    const complete=houses.every(b=>b.complete),ranking=complete?houses.slice().sort((a,b)=>b.totalVirupas-a.totalVirupas).map((b,i)=>({rank:i+1,house:b.house,lord:b.lord,totalVirupas:b.totalVirupas,totalRupas:b.totalRupas})):[];
+    return {...base,status:complete?'calculated':'insufficient-lord-strength',complete,houses,ranking,residential:Object.keys(chart.planets).map(planet=>({planet,...residence(chart.planets[planet].longitude,ledger.bhavas)})),missing:complete?[]:['宮主六力總分未確定；保留已算方向及照射，不補宮位總分與排名'],policy:{geometry:'Sripathi：四角為宮中心，四象限三等分，相邻中心中點為宮界；與D1整宮定位分列',lord:'取實際宮中心所在星座的七曜宮主及具名六力總分；不沿用整宮宮主',lordStrengthSchool:ledger.school,dig:'依宮中心人形／水生／四足／蟲形及宮序距離，最大60；射手與摩羯15°分界',drishti:'Raman132：普通及火木土特殊照；木水取全值，其他1/4。宮位照射水星固定為吉，与行星Drik水星吉凶分開',residential:'九曜按各自所在Sripathi宮界比例另列；不加作第四項宮位力量',ranking:'只比本盤宮位總力；原文無统一吉凶門檻，不轉成事件概率'},sourceAudit:[{issue:'原書例59十二宮總分表426.76與389.21＋40＋97.55＝526.76不符，其他照射分量有舍入／印誤差異',selected:'依實算分量相加，十二宮不扣去無來源100分；不以印出的總數覆蓋計算'},{issue:'原書例59部分宮中心和前文四角相差6角分、總分表有印誤／OCR歧義',selected:'公式按124–133；算例測試保留其給定宮中心與宮主Virupa，實際排盤以天文四角重建，不改角點湊表'},{issue:'水星在行星Drik與宮位Drishti吉凶不同',selected:'例59腳註：宮位照射水星取完整吉照，即使本盤燃燒；兩份證據保留各自取法'}]};
+  }
   function nathonnatha(key,apparentHours){
     const diva=arc(mod(finite(apparentHours,'真太陽時間')*15,360),0)/3;
     return key==='Mercury'?60:['Sun','Jupiter','Venus'].includes(key)?diva:60-diva;
@@ -190,5 +225,5 @@
       sourceAudit:[{issue:'BPHS梵文26.12木星與Santanam英譯第27章特殊區段不一致',selected:'bphs政策採明示Santanam英譯；梵文公式不混入，另列原文來源https://enjoylearningsanskrit.com/scriptures/parashara/chapter-26/'},{issue:'金星年修正正文0.001／表IX0.0001',selected:'正文103節0.001'},{issue:'例題木星均值66.91與高位表連續重建66.84附近不同',selected:'採明列日率不湊例題；動力例題另按印出的給定均值驗算'},{issue:'BPHS英譯年公式60／360不一',selected:'依360日傳統年及Raman60節，非60日一年'},{issue:'Drekkana本篇15／摘要60不一',selected:'Raman36–39節及例題的15Virupa'},{issue:'月吉凶的盈虧與第8日界說不同',selected:'月相力採最短日月弧，Drik依117–118節盈虧'},{issue:'赤緯可超24度或黃赤交角',selected:'保留字面式與beyondReference，不隱藏截斷'}],
       sources:[{title:'B. V. Raman: Graha and Bhava Balas',url:'https://www.scribd.com/document/340918236/Bhava-and-Graha-Balas-B-v-RAMAN-pdf',scope:'III–VIII全部六力分量及138–139；取法與印誤另列'},{title:'BPHS ch.26–28',url:'https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf',scope:'照射與六力；所選英譯口徑、差異明列'},{title:'Don Cross Astronomy Engine',url:'https://github.com/cosinekitty/astronomy',scope:'日出日落、真角點與星曆'}]};
   }
-  root.JYVedicStrength=Object.freeze({version:VERSION,compute,uchcha,oja,kendra,drekkana,sapta,arc,directions,sripathi,locateBhava,nathonnatha,ayana,aspectValue,paksha,meanPositions,motional,ishtaKashta,dayContext,warAdjustments});
+  root.JYVedicStrength=Object.freeze({version:VERSION,compute,bhavaStrength,bhavaDirection,residence,uchcha,oja,kendra,drekkana,sapta,arc,directions,sripathi,locateBhava,nathonnatha,ayana,aspectValue,paksha,meanPositions,motional,ishtaKashta,dayContext,warAdjustments});
 })(typeof window==='undefined'?globalThis:window);

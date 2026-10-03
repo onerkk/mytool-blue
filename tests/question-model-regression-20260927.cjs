@@ -114,8 +114,8 @@ for(const method of methods){
   assert(prompt.includes('"actionObject":"肉體桃花"'),`${method} receives the object of encounter`);
 }
 const indexHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
-for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20260928rootfix2`),`${asset} cache token is updated`);
-assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v104"),'service worker cache version is refreshed');
+for(const asset of ['reading-workflow.js','tarot-foundation.js','lenormand.js'])assert(indexHtml.includes(`JS/${asset}?v=20261003native3`),`${asset} cache token is updated`);
+assert(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8').includes("jy-main-v112"),'service worker cache version is refreshed');
 
 const choice=workflow.plan({method:'bazi',question:'我該選哪個商品上架？'}).questionModel.events[0];
 assert.equal(choice.type,'recommendation_with_unprovided_options');
@@ -132,7 +132,7 @@ assert.deepEqual(comparison.negations,[],'會不會 is an interrogative, not a n
 assert.equal(comparison.temporal.actorBoundFutureEvent,false);
 
 const allMethodOutputs=methods.map(method=>workflow.render({method,question:orders}));
-assert.equal(allMethodOutputs.length,14);
+assert.equal(allMethodOutputs.length,15);
 for(const output of allMethodOutputs){
   assert(output.includes('jy.question_model/1'));
   assert(output.includes('"metricCadence":"monthly"'));
@@ -146,4 +146,4 @@ for(const method of methods){
   assert(output.includes('公司經營／營運檢視'),`${method} receives lexical alternatives`);
 }
 
-console.log('question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 14 methods passed.');
+console.log('question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 15 methods passed.');

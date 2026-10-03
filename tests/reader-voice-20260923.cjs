@@ -4,10 +4,10 @@ const quality = require('../JS/reading-quality.js');
 
 const expected = [
   'tarot', 'ootk', 'lenormand', 'bazi', 'compat', 'ziwei', 'meihua',
-  'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'personality'
+  'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'liuren', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '8.3.0');
+assert.equal(quality.readingVersion, '9.2.0');
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();
@@ -52,4 +52,4 @@ for (const phrase of [
 ]) assert(liuyaoGuide.includes(phrase), `six-line reading safeguard: ${phrase}`);
 
 assert(answerStyle.length > 900 && answerStyle.length < 1600, 'shared answer contract must carry a complete depth checklist without becoming a method textbook');
-console.log('reader voice: all 14 methods keep native depth, evidence-linked answers and a grounded bracelet close');
+console.log('reader voice: all 15 methods keep native depth, evidence-linked answers and a grounded bracelet close');

@@ -1,7 +1,6 @@
 {
   "dependencies": {
-    "javascript-obfuscator": "^5.3.0",
-    "three": "0.186.0"
+    "javascript-obfuscator": "^5.3.0"
   },
   "scripts": {
     "test": "npm run test:prompts && npm run test:tarot && npm run test:lenormand && npm run test:ziwei && npm run test:counter && npm run test:picker-data && npm run test:api-failures && npm run test:interactions && npm run test:display && npm run test:audit && npm run test:professional && npm run test:cards && npm run test:ui && npm run test:ritual && npm run test:cinematic && npm run test:flow && npm run test:depth && npm run test:flow-polish && npm run test:accuracy && npm run test:immersive && npm run test:plain && npm run test:story && npm run test:free && npm run test:oracle-result && npm run test:craft && npm run test:methods && npm run test:huaqi && npm run test:core-engines && npm run test:output-consistency && npm run test:vedic && npm run test:vedic-design && npm run test:vedic-palace && npm run test:western && npm run test:recommendations && npm run test:ootk && npm run test:relationship && npm run test:time-ownership && npm run test:question-routing && npm run test:gua && npm run test:yarrow && npm run test:special-rules && npm run test:astro-bridge && npm run test:latest-audit && npm run test:reading-grounding && npm run test:reading-workflow && npm run test:question-model-regression && npm run test:causal-question && npm run test:semantic-review-followup && npm run test:name && npm run test:liuren",
@@ -85,10 +84,13 @@
     "test:liuren": "node tests/liuren-engine-20261001.cjs",
     "test:liuren:browser": "node tests/liuren-browser-20261001.cjs && node tests/liuren-immersive-20261002.cjs",
     "build:liuren-scene": "node scripts/build-liuren-scene.mjs",
-    "test:native": "node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs"
+    "test:native": "node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs && node tests/vedic-bhava-strength-20261003.cjs && node tests/liuren-shensha-20261003.cjs && node tests/vedic-panchanga-av-20261003.cjs"
   },
   "devDependencies": {
+    "acorn": "^8.15.0",
     "esbuild": "^0.28.2",
+    "postcss": "^8.5.6",
+    "three": "^0.180.0",
     "vite": "8.3.0"
   }
 }

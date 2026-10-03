@@ -1,464 +1,810 @@
 {
-  "release": "20261003native2",
+  "release": "20261003native3",
   "baseArchive": "mytool-blue-master(20261002-125839).zip",
-  "packageType": "merge-overlay",
-  "install": "Merge all files into the original project root that contains index.html; retain unrelated original assets.",
-  "coverage": "15 current native interfaces; exact chosen calculation profiles and remaining scope in docs/native-engine-implementation-20261003.md",
+  "packageType": "complete-project-plus-optional-overlay",
+  "fullProject": "mytool-full-project-20261003.zip",
+  "overlay": "mytool-engines-20261003-r3.zip",
+  "install": "Full project: extract and use mytool-blue-master. Optional overlay: merge all files into the original project root, preserving original assets.",
+  "coverage": "15 current interfaces; implemented content, outside-profile omissions, input requirements and evidence limits are separately listed in docs/native-engine-implementation-20261003.md and docs/native-scope-20261003.json",
+  "tests": {
+    "nativeGroupsPassed": 87,
+    "nativeGroupsTotal": 87,
+    "legacyCommandsPassed": 78,
+    "legacyCommandsTotal": 78,
+    "resultPanelMethodsPerWidth": 15,
+    "resultPanelWidths": [
+      390,
+      1280
+    ],
+    "actualInputMethods": [
+      "bazi",
+      "ziwei",
+      "vedic",
+      "astro",
+      "liuren"
+    ],
+    "nameInputWidths": [
+      390,
+      1280
+    ]
+  },
+  "baseFileCount": 834,
+  "projectFileCount": 895,
+  "modifiedOrNewCount": 129,
   "files": [
     {
       "path": "CSS/name-room.css",
       "sha256": "0c9d772c49db556957b38a02ad9afef0f284a4733f4bf626f489ef2e003821fd",
-      "bytes": 16137
+      "bytes": 16137,
+      "status": "updated"
     },
     {
       "path": "CSS/native-analysis.css",
       "sha256": "22ddebb513d93b6f0757026577cc31c2f1301796c1b05428026f4ffbf4c47878",
-      "bytes": 1834
+      "bytes": 1834,
+      "status": "new"
+    },
+    {
+      "path": "JS/ai-analysis.js",
+      "sha256": "bf2d2210514416ac32d06e6f373a35b07feceeb47d8fa574502152f453933b71",
+      "bytes": 1482827,
+      "status": "updated"
     },
     {
       "path": "JS/bazi-classical.js",
       "sha256": "2085fad9246fe8e8d3a5e10779c40166d79b92edd7c41ca983dade868e60497f",
-      "bytes": 14449
+      "bytes": 14449,
+      "status": "new"
     },
     {
       "path": "JS/bazi-prompt-root.js",
-      "sha256": "2b2a4dce4d037210fd78ff7b685b040ea31f8e590f5f7c3d9178d577fce32158",
-      "bytes": 39079
+      "sha256": "24820a1f667863cae8e184df3f907f95eb05e9619e9fa478d59722d3de9281c2",
+      "bytes": 39079,
+      "status": "updated"
     },
     {
       "path": "JS/bazi-standalone.js",
       "sha256": "b0980bd809d585d6f746f4e130c3d139a6d842e06847fb19a02edff3aae51be5",
-      "bytes": 85254
+      "bytes": 85254,
+      "status": "updated"
     },
     {
       "path": "JS/bazi-suite-core.js",
-      "sha256": "b44531ed402b6eb03edbdcf2d13b3696ce588fb11416030ddf7408ce40e0077a",
-      "bytes": 110702
+      "sha256": "0f03a4c8df807b80e2f2db297bdc613cc71d6196ee1e319f4211e7df5b5f7b47",
+      "bytes": 111400,
+      "status": "updated"
     },
     {
       "path": "JS/bazi-suite.js",
       "sha256": "5ceeaa0a1ae8da1be892c551b490ace476a3f7fb7fb4ea2c008b9307bdbb8d93",
-      "bytes": 77113
+      "bytes": 77113,
+      "status": "updated"
     },
     {
       "path": "JS/bazi.js",
       "sha256": "ee521bd6098ab9d5165564b3114a316332f43f192143f3d0dc0cdeae5fe8844b",
-      "bytes": 342910
+      "bytes": 342910,
+      "status": "updated"
     },
     {
       "path": "JS/gua-prompt.js",
-      "sha256": "da6936839ed66769b086a7bbd3f230f719e6d1e4e99508791f3caa2fb6d41a3e",
-      "bytes": 75219
+      "sha256": "0784936789aab859fdda7358deb88dcc086bcede960e6f988043c4e2a8ddabc0",
+      "bytes": 75917,
+      "status": "updated"
     },
     {
       "path": "JS/gua-room.js",
       "sha256": "ecea9c504000d1828f60cf7857ae085a15b07ecdcd2e48013507d9d4faf9a617",
-      "bytes": 38036
+      "bytes": 38036,
+      "status": "updated"
     },
     {
       "path": "JS/lenormand.js",
-      "sha256": "504ccccbeebbe4e51c411f0f57ed09aee391c6b8a55f7aef0d7199e48c611c5a",
-      "bytes": 275661
+      "sha256": "45ee0c9cf2fbe1d5b153bc966944d8c8ff0335c306bf16428feaad75bfa0b901",
+      "bytes": 276359,
+      "status": "updated"
     },
     {
       "path": "JS/liuren-classes.js",
       "sha256": "bc6826c5c7f46f3c774c12e6eb760434d292e8b783295d8ed418f4e42699cdbb",
-      "bytes": 35768
+      "bytes": 35768,
+      "status": "new"
     },
     {
       "path": "JS/liuren-core.js",
-      "sha256": "29b95cc52481458f4342fd74780cff3d90641e0f570ba04f4246dc9cbc083bd6",
-      "bytes": 15934
+      "sha256": "cbcafeb98be0b38844687a22088f2a43421510eed5a26edf378d51f6e95a0432",
+      "bytes": 16255,
+      "status": "updated"
     },
     {
       "path": "JS/liuren-prompt.js",
-      "sha256": "897cc4c108f5087ddd6abd991ed336021a57b488912b1e2f25a9104e3e5401a9",
-      "bytes": 7580
+      "sha256": "5799b05e798caa2bf1ebe3da310c45a8588a5a3b1250bec47e7aeb82da5e29be",
+      "bytes": 8592,
+      "status": "updated"
     },
     {
       "path": "JS/liuren-room.js",
-      "sha256": "4c479c1ef6ef924830926325397889377cca9331df4f0262aad109e2a212d8b9",
-      "bytes": 49137
+      "sha256": "d551985a19eb34bc371b13027260d879bce35428601f982b78f59de9c1fdca30",
+      "bytes": 49247,
+      "status": "updated"
+    },
+    {
+      "path": "JS/liuren-shensha.js",
+      "sha256": "bf157225a7edd0bda6ade252918963af8b3f722ab7ee160a6c0c1c6294f7d6a0",
+      "bytes": 18560,
+      "status": "new"
     },
     {
       "path": "JS/meihua-standalone.js",
-      "sha256": "8187f8abcf3f72a03940f5249041816c7297a0cd824b85ed05918f5fe3e1ad70",
-      "bytes": 119540
+      "sha256": "9f0295cfa98e043220176961b800807009746543298e868fd4152c4a427eddd3",
+      "bytes": 120238,
+      "status": "updated"
     },
     {
       "path": "JS/name-data.js",
       "sha256": "98a84f0ee36b086913998c8bfb241af6ec7097642463168af2d0568f3866e864",
-      "bytes": 4805558
+      "bytes": 4805558,
+      "status": "updated"
     },
     {
       "path": "JS/name-engine.js",
       "sha256": "097d2f2937f9bf9923582898d6012b2fb4325486529eb5c080787e61b1a89d3a",
-      "bytes": 39281
+      "bytes": 39281,
+      "status": "updated"
     },
     {
       "path": "JS/name-prompt.js",
-      "sha256": "b37f438ff140d7513808f036e27d630b70a7063ab808bfaa17e71d47eaddbaae",
-      "bytes": 69779
+      "sha256": "b98df5f5a661ebd2aa8343eefaf86267c0971a78fb1130c4cf807de6ac1a5397",
+      "bytes": 69909,
+      "status": "updated"
     },
     {
       "path": "JS/name-standalone.js",
-      "sha256": "f67b514d576178ae58530aa9a818408930e437effc62efc8cdf44faa93dd299a",
-      "bytes": 35795
+      "sha256": "20a34944431fbb5de818b09c87134fcb6b1c0a63464a90a076b404c422ed03b4",
+      "bytes": 35795,
+      "status": "updated"
     },
     {
       "path": "JS/native-analysis-view.js",
       "sha256": "1fdf95ee486079a748de039a3800d6487e04e88fcbc561cc2273f3988c229bb7",
-      "bytes": 12363
+      "bytes": 12363,
+      "status": "new"
     },
     {
       "path": "JS/native-card-analysis.js",
       "sha256": "c7be24e7ba4291e470d20da107b48ed2651dbc1a5189824fae0cc4ac9d28d0c7",
-      "bytes": 6626
+      "bytes": 6626,
+      "status": "new"
     },
     {
       "path": "JS/native-chart-analysis.js",
-      "sha256": "f7ae25352ec841874b135530cb21ccfff2dce6bc82fcf382c5fc7204131c932c",
-      "bytes": 32239
+      "sha256": "6ed464701ea36c32f3bf31746c7917363c0e38ca5afb11db24e84f027b24641f",
+      "bytes": 34471,
+      "status": "new"
     },
     {
       "path": "JS/native-rule-sources.js",
-      "sha256": "e19da83aba6d313e8405e5ee03a71acebec5b8351880a30d7d4c974294cda574",
-      "bytes": 7755
+      "sha256": "2ff738cdb2e2068cc0cf276fde9442d1842388f6a3b56374a34022fad559aa3a",
+      "bytes": 9331,
+      "status": "new"
     },
     {
       "path": "JS/oracle-register.js",
       "sha256": "37dd754ac2528e52b7f001c71d6d41f825c5ee88aac0f5dec4b34d208cdb16c8",
-      "bytes": 449588
+      "bytes": 449588,
+      "status": "new"
     },
     {
       "path": "JS/oracle.js",
-      "sha256": "b6d69d4d6a22bedc034aad51b2f4ca0478617ac038eaf63200f3ec712df8fd60",
-      "bytes": 187530
+      "sha256": "5b15a150de769b885654132928ad641d2a129b06d43e1b2c51388c9dd687d490",
+      "bytes": 188228,
+      "status": "updated"
     },
     {
       "path": "JS/prompt-export.js",
-      "sha256": "ebb5521e4078932763dd6383b9d4c9fdd5e04bbd04a478f7917a69e8a481f3c3",
-      "bytes": 161737
+      "sha256": "a30fc3ec6f0c17f1d5014b382e3da20dee29dcb73f0cfe66d73226d728591d1c",
+      "bytes": 162435,
+      "status": "updated"
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "sha256": "daf341c1967d2307eae1a8e3e3eb5a188e0b9e6ec9c429cee60b3ccdba343e72",
+      "bytes": 53748,
+      "status": "updated"
+    },
+    {
+      "path": "JS/reading-workflow.js",
+      "sha256": "70964d72863b25c884e53affb340a65bf7ec8049408ab0f946a50b87edf41be7",
+      "bytes": 48266,
+      "status": "updated"
     },
     {
       "path": "JS/relationship-core.js",
-      "sha256": "8ef4d225cda0f8cb3ca675a1daf65ef04e6eb70e45005b878df7db8e78ee7d65",
-      "bytes": 89087
+      "sha256": "3dca90ad19f0ffd403927c7d2432c7578e1bff63892ac365de706e24c0d8c243",
+      "bytes": 89785,
+      "status": "updated"
     },
     {
       "path": "JS/relationship-ui.js",
       "sha256": "965d6beee48a66239d139ac4113a1d73b410c038432b872dbf12751bac0b1403",
-      "bytes": 8303
+      "bytes": 8303,
+      "status": "updated"
     },
     {
       "path": "JS/sw.js",
-      "sha256": "723be36ef07f1e039f48f3b17c23212a865d705a1770bcace3a426adef829752",
-      "bytes": 6783
+      "sha256": "74fc280b68be5204353301f0e206103c6f092b4eb14edc69cdc0e109f5752b73",
+      "bytes": 6888,
+      "status": "updated"
     },
     {
       "path": "JS/ui.js",
       "sha256": "813ffb6b0ca1f5db37c12bfc5137851da6afe82e7822e9da902cd1c35667e2d0",
-      "bytes": 434780
+      "bytes": 434780,
+      "status": "updated"
     },
     {
       "path": "JS/vedic-engine.js",
-      "sha256": "7bbefff1b0214f4ed581c11fb00d8dfe22a60c3ddc0700ee5b80bb10e944bc81",
-      "bytes": 41694
+      "sha256": "e4d3d99f15aefa2448a82de0491285edd0584a6eddbb7861ad22cd83a40aef93",
+      "bytes": 51879,
+      "status": "updated"
     },
     {
       "path": "JS/vedic-prompt.js",
-      "sha256": "b8125defdd4dd9a144d1fd034b922385bf27cd918fc8abfe6b7c60466b3fe47a",
-      "bytes": 75711
+      "sha256": "6b355bc20bd44e1294cfd539902e9aa5318f32befa6a1d8ba316ada19d940317",
+      "bytes": 77779,
+      "status": "updated"
     },
     {
       "path": "JS/vedic-standalone.js",
-      "sha256": "b93f95221097866387b26b29411d0dd032d311ba4659ada892bc8bfef2a4126d",
-      "bytes": 41291
+      "sha256": "08aba6407065e99458bfbc305418caaea4d8fd27fe03d9ddd22ab30d7c39c5aa",
+      "bytes": 41291,
+      "status": "updated"
     },
     {
       "path": "JS/vedic-strength.js",
-      "sha256": "8db12a25b5696f28384b2da49ef109f4cee2e715a592534513a774af1bb6cc11",
-      "bytes": 21416
+      "sha256": "2afbdf0321e63bbabb7231e08a82489d83fc649c1f03f0a6c91d9b539b47feb5",
+      "bytes": 26739,
+      "status": "new"
     },
     {
       "path": "JS/western-dignities.js",
       "sha256": "720f94100212486575c7f501ef8d8366a204619866e787e4ef8c2fa3bc510931",
-      "bytes": 6304
+      "bytes": 6304,
+      "status": "new"
     },
     {
       "path": "JS/western-engine.js",
       "sha256": "10720edd381d53064e7a95e85e462f021face7e10173adc926bce6130f2a966d",
-      "bytes": 25762
+      "bytes": 25762,
+      "status": "updated"
     },
     {
       "path": "JS/western-prompt.js",
-      "sha256": "8e6ef7fe74be8ccbc2f2e9600ac549ce5e1bf706842efad8f8f7113df71b93ed",
-      "bytes": 68295
+      "sha256": "a70f1ccecf65715988cf1fed08e2144ce68c3b89dd5b7281db65c3b8f25af273",
+      "bytes": 68993,
+      "status": "updated"
     },
     {
       "path": "JS/western-standalone.js",
-      "sha256": "31aa341ece4974a4ff35334764b6d0de71b9da9e80a5c3947aad2a5d22cb8f7b",
-      "bytes": 30697
+      "sha256": "c2512ea855028251b8afae1c66a2088e3f6d2160eb15d35ad4a71ba1c22e70e8",
+      "bytes": 30697,
+      "status": "updated"
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "sha256": "af0cc8db565f77254840b0dbe4a10371aaf5aefc311675908c749b0eea243491",
+      "bytes": 19983,
+      "status": "updated"
     },
     {
       "path": "JS/ziwei-standalone.js",
-      "sha256": "02e2b5520755e51828c0140ce6cd64572a467f3ccd959c33c962793910665d59",
-      "bytes": 143052
+      "sha256": "50d3ba902b27558abe01d42ba7b31304832b51c9b266a716cc0284678686a94f",
+      "bytes": 143811,
+      "status": "updated"
     },
     {
       "path": "JS/ziwei.js",
-      "sha256": "0f3fc4e6d6706ae40ffa6773ccc083417cb7951437d34a2ded5640ec4b890c95",
-      "bytes": 245915
+      "sha256": "acc920de0cb3e85226bf2a293b99b66dfe52355fcc36e146220fcd07e62749dd",
+      "bytes": 246190,
+      "status": "updated"
     },
     {
       "path": "README_NATIVE_UPDATE.md",
-      "sha256": "354a310e5268a857ba8b540d47ab0b61c48a6f22ec7fdd1e01b785f14e4a29ce",
-      "bytes": 1224
+      "sha256": "07992dec8cb940a918dd687dd1baf27f421370b010758201c7ede69881cf6f87",
+      "bytes": 1715,
+      "status": "new"
+    },
+    {
+      "path": "ai-analysis.js",
+      "sha256": "bf2d2210514416ac32d06e6f373a35b07feceeb47d8fa574502152f453933b71",
+      "bytes": 1482827,
+      "status": "updated"
     },
     {
       "path": "bazi-prompt-root.js",
-      "sha256": "2b2a4dce4d037210fd78ff7b685b040ea31f8e590f5f7c3d9178d577fce32158",
-      "bytes": 39079
+      "sha256": "24820a1f667863cae8e184df3f907f95eb05e9619e9fa478d59722d3de9281c2",
+      "bytes": 39079,
+      "status": "updated"
     },
     {
       "path": "bazi-suite-core.js",
-      "sha256": "b44531ed402b6eb03edbdcf2d13b3696ce588fb11416030ddf7408ce40e0077a",
-      "bytes": 110702
+      "sha256": "0f03a4c8df807b80e2f2db297bdc613cc71d6196ee1e319f4211e7df5b5f7b47",
+      "bytes": 111400,
+      "status": "updated"
     },
     {
       "path": "data/name/numerology-original-1935.json",
       "sha256": "d8ff5291c67d94912ebe9ea9b96ce6fb034ccb31deb2c731579f3dcb50e2a3ce",
-      "bytes": 33630
+      "bytes": 33630,
+      "status": "new"
     },
     {
       "path": "data/oracle/temple-analysis-20261003.json",
       "sha256": "d7fbe5d45ed50496b21dad01420c7ceb341d6f56f59cbc7ac03e371197f69b0b",
-      "bytes": 652176
+      "bytes": 652176,
+      "status": "new"
     },
     {
       "path": "docs/engine-supplements-validation-20261003.json",
       "sha256": "4bbc0597b072705619d44059eb77b4dffd4ca0ccb7b356a4872a99ff96f0e63b",
-      "bytes": 1383
+      "bytes": 1383,
+      "status": "new"
+    },
+    {
+      "path": "docs/legacy-regression-validation-20261003.json",
+      "sha256": "86c55a1ecee181188e19e70bebe5e84bcf272827cd456a916f9d190c662d2b5e",
+      "bytes": 10605,
+      "status": "new"
     },
     {
       "path": "docs/liuren-class-validation-20261003.json",
-      "sha256": "6e9a6d691f0902a9c10a0858411d0e3203a3cf7ea5fba7baff2a8ccc3e24618c",
-      "bytes": 1256
+      "sha256": "24d0375643c26382bbeaa3f51121b4ff4a10da6ce965d677e812dda3dbb2af5d",
+      "bytes": 1256,
+      "status": "new"
+    },
+    {
+      "path": "docs/liuren-shensha-validation-20261003.json",
+      "sha256": "ea39f107a5c6923ad6ebb2ace72b4b71321586b2ead53ad2c9e0462b278167ce",
+      "bytes": 1289,
+      "status": "new"
     },
     {
       "path": "docs/name-comparison-rootfix-20261002.md",
       "sha256": "739e6e0d2df074cc8074ba11fd7e505a3ed80bf33e474933d75ff8a1a6c9e89b",
-      "bytes": 6247
+      "bytes": 6247,
+      "status": "new"
     },
     {
       "path": "docs/name-native-browser-validation-20261003.json",
       "sha256": "f5a33e4e192ee2283efded3c313ec47a0bc54c77ee3ae204fdda3067738179bc",
-      "bytes": 423
+      "bytes": 423,
+      "status": "new"
     },
     {
       "path": "docs/name-original-validation-20261003.json",
       "sha256": "b351b30f44c311d66a42861afa32550392428ae6213fa7c605a50bf25efdbb83",
-      "bytes": 585
+      "bytes": 585,
+      "status": "new"
     },
     {
       "path": "docs/native-browser-validation-20261003.json",
-      "sha256": "3559af07e4d2f9bb5300cbbe9049ae032cd5b4742d8ac234069a163d7f1bed0b",
-      "bytes": 548
+      "sha256": "3f47f1669ae6501b6c25245837cd2d4c070948998d5154143540044fa2847a6e",
+      "bytes": 548,
+      "status": "new"
     },
     {
       "path": "docs/native-engine-implementation-20261003.md",
-      "sha256": "3328c453103b8d578d905082f572a19ec292973b97dce88df452ecaa97f5983b",
-      "bytes": 8203
+      "sha256": "6280563430ac10043876b7724a1a3e22403b6364aa141276af237ac113b837e7",
+      "bytes": 12980,
+      "status": "new"
     },
     {
       "path": "docs/native-entry-validation-20261003.json",
-      "sha256": "56beaf3636bef7c93e4be7a2697d987070d09ecf610c09475849e192a06b47eb",
-      "bytes": 884
+      "sha256": "c346bc4420ec7665c321d778cbbc4e0edd1ac260e3955fd9a343458f4298a1db",
+      "bytes": 884,
+      "status": "new"
     },
     {
       "path": "docs/native-result-1280.png",
       "sha256": "481503193ac79cf1b084d75679b130a0328f42c139d1e316a0438faa9331658c",
-      "bytes": 273665
+      "bytes": 273665,
+      "status": "new"
     },
     {
       "path": "docs/native-result-390.png",
       "sha256": "c8dbf8289b2f080303d6ae95df6e1a97df83c19d2f59923ae59fdb6ea5e64a4f",
-      "bytes": 141086
+      "bytes": 141086,
+      "status": "new"
     },
     {
       "path": "docs/native-scope-20261003.json",
-      "sha256": "b042089b4d5146e5a79be8b5b6bcf3122bdbc208d64590c253580621cfb33954",
-      "bytes": 15983
+      "sha256": "7d6e29f6da36d89ed880c61b57013d369a13d0216cd17b68f2ec4619a7b25d4a",
+      "bytes": 38596,
+      "status": "new"
     },
     {
       "path": "docs/native-validation-20261003.json",
-      "sha256": "2a2b92e343902a1e3e03b21b8d5513430f9b5416a586d721acf02fbf8320482f",
-      "bytes": 4491
+      "sha256": "d9855360608a55466468c6a74c8a96fddb9279d970f3a650276f102c487f7af8",
+      "bytes": 4491,
+      "status": "new"
     },
     {
       "path": "docs/oracle-register-validation-20261003.json",
       "sha256": "9d551a4f0f2824982d99171ffc9da4c81cd2b3d7f1f3d216714327d6b8893cb4",
-      "bytes": 917
+      "bytes": 917,
+      "status": "new"
+    },
+    {
+      "path": "docs/vedic-bhava-strength-validation-20261003.json",
+      "sha256": "69d4b88bac4140496a8881bc2c03ac9f8ccd783100a2c4cc9ade97fb6a1d7e7f",
+      "bytes": 1362,
+      "status": "new"
+    },
+    {
+      "path": "docs/vedic-panchanga-av-validation-20261003.json",
+      "sha256": "cfa68a37336ea02e2365697f81ad85e4dc44a6fa478d3e6d7ba98536fd4b6a1f",
+      "bytes": 1574,
+      "status": "new"
     },
     {
       "path": "docs/vedic-strength-validation-20261003.json",
-      "sha256": "f38fa19d6abff55699efbae1932adf8545ff03fc93a6ce04acbe1d4332783b42",
-      "bytes": 2124
+      "sha256": "4f788304fd0b06e5bc03160d37cc76e5fedd470134a6961127cf4cad4d584feb",
+      "bytes": 2124,
+      "status": "new"
+    },
+    {
+      "path": "functions/api/ai.js",
+      "sha256": "fb03d28c6b3c90ded02927d117b4bf237bf3cff4e0f6cce1d9880a6b8732d621",
+      "bytes": 64639,
+      "status": "updated"
     },
     {
       "path": "index.html",
-      "sha256": "7bc67f4f79b9c59eeab106c2cbb8c7d5d02add947e660ea0cea2d14132980c77",
-      "bytes": 150429
+      "sha256": "59a074699a4fca0142172a10a90f7dc3e1d21a59b62335e9d8b63e414e4cc8c1",
+      "bytes": 150437,
+      "status": "updated"
     },
     {
       "path": "ink-flow.js",
       "sha256": "a01f030229762cab29c18852f86a43a850b35833663a68da6839988ee580948f",
-      "bytes": 43608
+      "bytes": 43608,
+      "status": "updated"
     },
     {
       "path": "lenormand.js",
-      "sha256": "504ccccbeebbe4e51c411f0f57ed09aee391c6b8a55f7aef0d7199e48c611c5a",
-      "bytes": 275661
+      "sha256": "45ee0c9cf2fbe1d5b153bc966944d8c8ff0335c306bf16428feaad75bfa0b901",
+      "bytes": 276359,
+      "status": "updated"
     },
     {
       "path": "meihua-standalone.js",
-      "sha256": "8187f8abcf3f72a03940f5249041816c7297a0cd824b85ed05918f5fe3e1ad70",
-      "bytes": 119540
+      "sha256": "9f0295cfa98e043220176961b800807009746543298e868fd4152c4a427eddd3",
+      "bytes": 120238,
+      "status": "updated"
     },
     {
       "path": "oracle.js",
-      "sha256": "b6d69d4d6a22bedc034aad51b2f4ca0478617ac038eaf63200f3ec712df8fd60",
-      "bytes": 187530
+      "sha256": "5b15a150de769b885654132928ad641d2a129b06d43e1b2c51388c9dd687d490",
+      "bytes": 188228,
+      "status": "updated"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "75a79ed54502ac795ebfea76a6dcaf6260eda5082791082f2d834104ef7a9b83",
+      "bytes": 92720,
+      "status": "updated"
     },
     {
       "path": "package.json",
-      "sha256": "ce2e20b801dafa1419590d5ada79928bed65d44b93bcc796c305453fd248b362",
-      "bytes": 9078
+      "sha256": "9f018a9ee7c619c6c04cd19f1ad158fb9d5020bb4fec0e4a86e49e9d7d3e6f57",
+      "bytes": 9264,
+      "status": "updated"
     },
     {
       "path": "prompt-export.js",
-      "sha256": "ebb5521e4078932763dd6383b9d4c9fdd5e04bbd04a478f7917a69e8a481f3c3",
-      "bytes": 161737
+      "sha256": "a30fc3ec6f0c17f1d5014b382e3da20dee29dcb73f0cfe66d73226d728591d1c",
+      "bytes": 162435,
+      "status": "updated"
+    },
+    {
+      "path": "review/accuracy-prompts/01-tarot.txt",
+      "sha256": "171d8a16431ff32cd07fd16ffa4dc684cb8f84ae22491717a22dad310dd5d9f8",
+      "bytes": 19253,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/02-ootk-five-operations.txt",
+      "sha256": "0e6661fc4b1fc89e7ffa48ba1eceedbbc6b2301f96f46cc46210abd049569ace",
+      "bytes": 54080,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/03-lenormand.txt",
+      "sha256": "7cbd54d239a450af62b3be37a17fd4b8463eaba1ad2253ae280075f746acc332",
+      "bytes": 15500,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/04-bazi.txt",
+      "sha256": "e13917b7ee8a3565455dedf924a411241b5f493fa814d6d707e6c09155ff519f",
+      "bytes": 31215,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/05-bazi-compatibility.txt",
+      "sha256": "30cfb410bd5736033c15e2d8406e486435f203aae567bf7a1c938221fd7ace2a",
+      "bytes": 48563,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/06-ziwei.txt",
+      "sha256": "3aa0a6276155bd3ab1d87b17fee6f82f9e6af4c6748662c865789e955d896fb2",
+      "bytes": 35362,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/07-meihua.txt",
+      "sha256": "afb08eeea2615bebea43a9321a99cf7fe9443b7bed8105af90b70ec987809595",
+      "bytes": 17848,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/08-oracle.txt",
+      "sha256": "8d29051ff4938773f04cc1e53610034a80574f5c71d68af9191eb6501d7a8e2e",
+      "bytes": 11688,
+      "status": "new"
+    },
+    {
+      "path": "review/accuracy-prompts/INPUTS.json",
+      "sha256": "10e0c77354710fd35831b88ecc2803aa741ea17b6a9f95147225c7a67c79465a",
+      "bytes": 2721817,
+      "status": "new"
     },
     {
       "path": "scripts/build-name-data.py",
       "sha256": "c9c2a8af087275730ccb1c498a4afc1f7d4f795e1b1c895e0ef81eaba2037962",
-      "bytes": 5668
+      "bytes": 5668,
+      "status": "updated"
     },
     {
       "path": "scripts/build-oracle-analysis.py",
       "sha256": "56cfd7be22b0ec308f59efaf0ca2bc20cab710a54fc4de7a3ff371463a2ffc59",
-      "bytes": 17971
+      "bytes": 17971,
+      "status": "new"
     },
     {
       "path": "scripts/update-name-rule-tables.py",
       "sha256": "c5a6c247152758310bfbf5624d4ee6490733f301ea8dc2f611b8221ee3e92f68",
-      "bytes": 1470
+      "bytes": 1470,
+      "status": "new"
+    },
+    {
+      "path": "scripts/verify-vedic-panchanga-swiss-20261003.py",
+      "sha256": "ddd9304630f65efdffda6df90b3a6e602a0152b3b6c926691f9ec89bd10552c9",
+      "bytes": 2500,
+      "status": "new"
     },
     {
       "path": "selftest-core.js",
       "sha256": "c199ca2a1d3747f21a1743fcd617dc336bae72cd5c1aa02a54242febd0570ae5",
-      "bytes": 30006
+      "bytes": 30006,
+      "status": "updated"
     },
     {
       "path": "sw.js",
-      "sha256": "723be36ef07f1e039f48f3b17c23212a865d705a1770bcace3a426adef829752",
-      "bytes": 6783
+      "sha256": "74fc280b68be5204353301f0e206103c6f092b4eb14edc69cdc0e109f5752b73",
+      "bytes": 6888,
+      "status": "updated"
     },
     {
       "path": "tarot-semantic-engine.js",
       "sha256": "535b076510cea36c690ecca8afba6abfddf01375ca753793d9c4641704fcc252",
-      "bytes": 119188
+      "bytes": 119188,
+      "status": "updated"
+    },
+    {
+      "path": "tests/core-engine-20260913.cjs",
+      "sha256": "0739a52c4a50f3cf0ab7a470d64eaf4d479b7a572c26139fd06c038e3e536c42",
+      "bytes": 13173,
+      "status": "updated"
+    },
+    {
+      "path": "tests/divination-professional-20260910.cjs",
+      "sha256": "683d35df0735be4d2272a5debd4339ed42a8c9f0e7e14d8d760711096cf4f5bf",
+      "bytes": 19703,
+      "status": "updated"
     },
     {
       "path": "tests/engine-supplements-20261003.cjs",
-      "sha256": "9f6b542e577001ba32993472cf4621acf52f76b7d855688143d27df72266cf38",
-      "bytes": 9085
+      "sha256": "6f389f8514a3522df420178d0195c0accb9c2337ce8a01714137323b901075b6",
+      "bytes": 9240,
+      "status": "new"
     },
     {
       "path": "tests/fixtures/oracle-temple-20261003.json",
       "sha256": "a31f950e028c381d69fb94051a4056815f3d80941727f52aaef75da93916a5bb",
-      "bytes": 32648
+      "bytes": 32648,
+      "status": "new"
+    },
+    {
+      "path": "tests/fixtures/vedic-panchanga-swiss-20261003.json",
+      "sha256": "39d431c13fccf4a7948fe13c254c76394b1e2da9684b635e2894ab97999d41ed",
+      "bytes": 6290,
+      "status": "new"
     },
     {
       "path": "tests/fixtures/western-progressions-swiss-20261003.json",
       "sha256": "b91387f269fb3345b244cd3893bf090adf4a6a3b53ee9fc4a2cd8baf2bc93ad6",
-      "bytes": 35442
+      "bytes": 35442,
+      "status": "new"
+    },
+    {
+      "path": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "sha256": "1c76381c64e974c107e1fd65981e1b119beca3cc2e04dd25fb988a9b69d682cf",
+      "bytes": 14430,
+      "status": "updated"
     },
     {
       "path": "tests/lenormand-v19-engine-rootfix-20260925.cjs",
       "sha256": "652cefde3b8a76fead47c106c45a5aed64e149d147b2a574257168c6a2a70e7a",
-      "bytes": 11954
+      "bytes": 11954,
+      "status": "updated"
     },
     {
       "path": "tests/liuren-classes-20261003.cjs",
       "sha256": "5d68d8c432cd400c7fbe7e231851be6d92b4f18a1f8b675b7c36e062fbe9fa3a",
-      "bytes": 8698
+      "bytes": 8698,
+      "status": "new"
     },
     {
       "path": "tests/liuren-engine-20261001.cjs",
       "sha256": "90431badc4922f98879f025de5aed459855146b61dae543b737afd23d12e00b1",
-      "bytes": 7914
+      "bytes": 7914,
+      "status": "updated"
+    },
+    {
+      "path": "tests/liuren-shensha-20261003.cjs",
+      "sha256": "60dd1d8cac09c4154cec68d16f5d70df57a99dd4dcbe5f5c86b45a3efcb5eb56",
+      "bytes": 7527,
+      "status": "new"
+    },
+    {
+      "path": "tests/mobile-ritual-actions-20260928.cjs",
+      "sha256": "7c92b6a508f5e31edd9f2adca9211d18e59f7f3092b8825e0d923974578b08e0",
+      "bytes": 5531,
+      "status": "updated"
     },
     {
       "path": "tests/name-browser-20261001.cjs",
       "sha256": "4c97ac7fea39d164928f957abc0594acfadaf9088096c88d8f12047655c98ba9",
-      "bytes": 12170
+      "bytes": 12170,
+      "status": "updated"
     },
     {
       "path": "tests/name-comparison-rootfix-20261002.cjs",
       "sha256": "2f896a42e00b03faf98149f7ffe9fced2fe76c3960dc0ac934ecb72e198d8715",
-      "bytes": 11939
+      "bytes": 11939,
+      "status": "new"
     },
     {
       "path": "tests/name-engine-20261001.cjs",
       "sha256": "b3d66dff7e1454ecc9d296ea63977083c596471453a5c99c00131825b92b4a6b",
-      "bytes": 9397
+      "bytes": 9397,
+      "status": "updated"
     },
     {
       "path": "tests/name-original-20261003.cjs",
       "sha256": "003959ae49dad03cb59ad8f47486b41554fc95d5102e20d81b0475a34f448dd2",
-      "bytes": 3174
+      "bytes": 3174,
+      "status": "new"
     },
     {
       "path": "tests/native-analysis-20261003.cjs",
       "sha256": "b31e3a6767a85ad079407881a020579783fd2f4721e552457cac95904f267322",
-      "bytes": 21754
+      "bytes": 21754,
+      "status": "new"
     },
     {
       "path": "tests/native-browser-20261003.cjs",
-      "sha256": "460e84f19c56f4cff5c903970523d0934c68dadbfe982ebcfdd63fa6f476734c",
-      "bytes": 4758
+      "sha256": "3626a5d424fd1dec3c89b469e1775c85428b3d5dd34d9e519445765df3fda808",
+      "bytes": 4996,
+      "status": "new"
     },
     {
       "path": "tests/native-entry-browser-20261003.cjs",
-      "sha256": "0ec6bf82b44038487a4a031771c05f25d480fa41575bedfc09f28840aa445c84",
-      "bytes": 6038
+      "sha256": "1c02dd9c12bfc5de807f229757610653d7380f139d22ffca92f95bc566199fd4",
+      "bytes": 6612,
+      "status": "new"
     },
     {
       "path": "tests/native-fixtures-20261003.cjs",
-      "sha256": "bb4dc15da6eb91ef7a5ad89804223a6d6cf62b3fb8f2df5a9a58dc8cddefec7c",
-      "bytes": 3936
+      "sha256": "9aad053be89525d61d93d5affbc4258af05add978573bc332bb74897bf33a734",
+      "bytes": 3953,
+      "status": "new"
     },
     {
       "path": "tests/oracle-register-20261003.cjs",
       "sha256": "9f6aadaec25cf2b0cfae81f16bb7701dfa1e925bb03c97e1f1c74b0b9129de8c",
-      "bytes": 3890
+      "bytes": 3890,
+      "status": "new"
+    },
+    {
+      "path": "tests/prompt-accuracy-20260811.test.cjs",
+      "sha256": "8543de6a7a3b220ee4cb08fe153fccd0626de5dccb3a3b2af442bafa3c09c317",
+      "bytes": 7427,
+      "status": "updated"
+    },
+    {
+      "path": "tests/question-model-regression-20260927.cjs",
+      "sha256": "03dbd7502e674f9fd7b0cf99d1952c6a7066836cdec41e498b13352f3135ce07",
+      "bytes": 11089,
+      "status": "updated"
+    },
+    {
+      "path": "tests/reader-voice-20260923.cjs",
+      "sha256": "bdcb46093134131d5bc87e450c791b3df6600bcffbf9c2d6c19076f11edf8fac",
+      "bytes": 3370,
+      "status": "updated"
+    },
+    {
+      "path": "tests/reading-grounding-20260924.cjs",
+      "sha256": "65fa1204af85a3de4e7ff8a1dab0858b91be6326f0f5c0b3f26f7765b1a622c4",
+      "bytes": 11252,
+      "status": "updated"
+    },
+    {
+      "path": "tests/reading-workflow-20260924.cjs",
+      "sha256": "eafe960eaae0d54a042a11545d4661a8ccc2dda1a1d615d07d663b2fce976fd2",
+      "bytes": 5684,
+      "status": "updated"
+    },
+    {
+      "path": "tests/reading-workflow-integration-20260924.cjs",
+      "sha256": "9caded7ecce68f520e3002aab2f7db9c16d71d90c51429571551a25df92ea4ba",
+      "bytes": 8131,
+      "status": "updated"
+    },
+    {
+      "path": "tests/story-immersion-20260912.cjs",
+      "sha256": "349cf9df5facd63635343976a158de5e8956bc511f9dbc992ba27fbddf0b748e",
+      "bytes": 11733,
+      "status": "updated"
+    },
+    {
+      "path": "tests/vedic-bhava-strength-20261003.cjs",
+      "sha256": "f3b2182c9fb73e3ef3dc33dfa8b5dfb0e46623ae9977c401253c102265b539c7",
+      "bytes": 7255,
+      "status": "new"
+    },
+    {
+      "path": "tests/vedic-panchanga-av-20261003.cjs",
+      "sha256": "c968c38495b4fb7c5ec3b738a32a3612801556fd04d7549c3b3162c17ead8b33",
+      "bytes": 8274,
+      "status": "new"
     },
     {
       "path": "tests/vedic-strength-20261003.cjs",
       "sha256": "bc2f354b6f6b43f417f3844c5d88e6f6dadd795caefb4bb1e220aa682ea38710",
-      "bytes": 9236
+      "bytes": 9236,
+      "status": "new"
     },
     {
       "path": "tests/western-engine-20260914.cjs",
       "sha256": "2583a36bb13fdee5c081553f9c25ed34d20db2a459583d8e5ee98c4f4687706b",
-      "bytes": 8059
+      "bytes": 8059,
+      "status": "updated"
     },
     {
       "path": "ui.js",
       "sha256": "813ffb6b0ca1f5db37c12bfc5137851da6afe82e7822e9da902cd1c35667e2d0",
-      "bytes": 434780
+      "bytes": 434780,
+      "status": "updated"
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "sha256": "af0cc8db565f77254840b0dbe4a10371aaf5aefc311675908c749b0eea243491",
+      "bytes": 19983,
+      "status": "updated"
     }
   ]
 }

@@ -2,7 +2,7 @@
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='1.2.0';
+  var VERSION='1.3.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -20,6 +20,7 @@
     astro:{name:'西洋占星',basis:'本題宮主、落宮、相位兩端與實算行運',path:'從宮主的事件路徑辨資源與代價，再比較相關星體的需求及當期承接。'},
     vedic:{name:'印度占星',basis:'D1宮主、有效分盤、尊貴受照與實算運期',path:'D1先成判，專題分盤查承接，大副運定位當期條件；相反訊號按各自層級取捨。'},
     name:{name:'姓名學',basis:'字形筆畫來源、字義讀音與同體系五格三才',path:'依實際用途比較名字的使用得失，數理象義與字義讀音分開，說清保留或調整哪個字。'},
+    liuren:{name:'大六壬',basis:'天地盤、四課三傳、天將六親旬空、64課族與290具名神煞及實際年命',path:'干支兩端先辨人事，沿初中末傳追生克及空破能否承接；由實際命中找支持、阻點和可介入條件，不從課名直接斷事件。'},
     personality:{name:'人格',basis:'原始四柱與十神通路、模型摘要和本人經驗',path:'由有力結構提出行為假設，分長處與負荷代價，給可用實際經驗驗證的小練習。'}
   };
   var GOALS={
@@ -49,6 +50,7 @@
       policy:'範圍來自原問句；資料仍須實算，深度字樣不自動擴成全盤或逐年題。'};
   }
   var FULL_AREAS = {
+  "liuren": "完整讀十二天地盤、四課、九宗門取傳、三傳的遞生互克、十二天將、六親旬空遁干、月令內外戰。64課族逐條成立／否／缺資料分開，290神煞只採實際課傳年命命中。同源別名不加票，雙人年命依明示輸入，應期沒有候選日實算不造日期；各子題交代最強支持、牽制、改判條件及可採行動。",
   "tarot": "【塔羅深入合讀】逐一核對全部實際牌位職責與正逆方向，形成完整牌陣的發展結構；需求、可採行動、環境、結果和阻礙各自成義，再串成結果能否落實的路徑。單張本義不能取代相鄰關係、核心牌與不同支線的共同作用。；主線與子題逐一成判，區分情緒、意願、實際行動與持續；人物牌不自行指認身分。逆位綜合牌面、位置與全局，分辨內化、受阻、過度或鬆動，不能一律翻成相反。；時間與影響程度來自實際時間位及發展順序；只有序列時給相對階段，不自造月份。每個關鍵轉折連同成立條件、支持牌位、最強反證及可採行動說明。",
   "ootk": "【開鑰之法深入合參】按本次完成輪次逐輪讀代表牌落域、合法計數故事、配對及元素尊貴；每輪先形成自己的主判，再追各輪如何承接或改變條件。不能把尚未完成的操作補成結果，也不能把所有計數牌當成相鄰。；跨輪相反時先辨領域、角色、條件是否相同；同一命題仍衝突才保留未決部分。全程核對停止紀錄、實際操作與牌組來源，重複牌只保留作用，不重複加權。；完整解讀涵蓋所有有效操作和子題，再給支持、代價及行動。五輪不硬配五個月；人物身分、事件次數及日期須有本法真實支持。",
   "lenormand": "【雷諾曼深入牌句】讀完全部切題相鄰牌句和長線，保留中心、起訖與方向，辨人物近域、問題主線及方案分支的共同作用；牌的含義由句法與角色限定，不能挑幾張吉凶牌取代整條牌句。；大牌陣依實際落宮和幾何讀近遠、行列及已採鏡像，分清人物、領域與環境；未指定人物不補指認，合法配對不可冒充相鄰。；全盤逐重要區域及已知人物整理支持、阻力與發展；單題將相關牌組合成主判。時間只依實際牌陣及明列口徑，牌號或距離不自行換成確切天數。",
@@ -271,7 +273,7 @@ var JY_REC_API = {
       "shop_link",
       "blessing"
     ],
-    "outputRule": "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。\n合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。\n人格：從本盤實際優勢或壓力模式連到一項可練習的能力，不按人格名稱或分數配石。\n純排盤：柱表尚未完成喜忌分析時，不自行推用神；依原題用途給有條件的設計建議。\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。\n西洋占星：依本題宮主、相位或已算行運取材；不按太陽星座或生日月份直接套寶石。\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n六爻：依用神、世應、月日與動變連到本題行動；卦宮五行不等於佩戴者本命喜忌。\n易經：依本次主讀卦爻的條件與進退連到行動；不按卦名、古文意象直接配商品。\n靈籤：依完整詩意的勸進、待時或調整方向取材；不由籤號猜月份、五行或信仰。\n姓名學：依本題的表達或身份需求給設計建議；姓名筆畫不能推導人體缺礦或未提供的生辰。\n最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
+    "outputRule": "【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。\n【本題延伸手鍊建議】（可選）手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。最後才放指定賣場連結與祝福。\n【本法選材提醒】\n八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。\n合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。\n人格：從本盤實際優勢或壓力模式連到一項可練習的能力，不按人格名稱或分數配石。\n純排盤：柱表尚未完成喜忌分析時，不自行推用神；依原題用途給有條件的設計建議。\n紫微：以本題主宮、三方四正及已提供的運限連到行動；不由五行局或單顆煞忌直接指定補石。\n西洋占星：依本題宮主、相位或已算行運取材；不按太陽星座或生日月份直接套寶石。\n印度占星：先核本題宮主職能及有效分盤、運期；星弱或逢大運不單獨構成行星寶石建議。\n大六壬：只依本次實際課傳支持的行動取象選設計；課名、天將或神煞名不代表人體缺礦，也不直接指定補石。\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n六爻：依用神、世應、月日與動變連到本題行動；卦宮五行不等於佩戴者本命喜忌。\n易經：依本次主讀卦爻的條件與進退連到行動；不按卦名、古文意象直接配商品。\n靈籤：依完整詩意的勸進、待時或調整方向取材；不由籤號猜月份、五行或信仰。\n姓名學：依本題的表達或身份需求給設計建議；姓名筆畫不能推導人體缺礦或未提供的生辰。\n最後兩行：\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
   },
   "tarot": {
     "mode": "needs_first",
@@ -18516,7 +18518,7 @@ renderTarot = function(){
       // Fix #5: p.verdict / p.topTags 已移除（Worker 不讀這些，浪費 payload tokens）
 
       // Needs-first guidance; no catalogue is attached to the analysis request.
-      if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
+      if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)p.readingGuide=window.JY_READING_QUALITY.payloadGuide(['bazi','ziwei','astro','vedic','name','meihua','tarot']);
       p.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy():JY_REC_API.composite);
 
       // ═══ v26：可變性標記（reversibility）═══
@@ -21123,7 +21125,7 @@ function _buildTarotOnlyPayload() {
     }
     rws.tarotData.foundationVersion=foundation.VERSION||'';
 
-    if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+    if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)rws.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
     rws.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot);
     return rws;
   }
@@ -21193,7 +21195,7 @@ function _buildTarotOnlyPayload() {
     semanticContract:contract||null,semanticProgramVersion:contract&&contract.engineVersion||'',
     shopRecommendation:(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(['tarot']):JY_REC_API.tarot)
   };
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)result.readingGuide=window.JY_READING_QUALITY.payloadGuide(['tarot']);
   if(window._jyPhotos)result.photos=window._jyPhotos;
   return result;
 }
@@ -22648,7 +22650,7 @@ async function _triggerTarotFollowUp() {
   }
   if(payload.tarotData&&payload.tarotData.followUp)payload.tarotData.followUp.methodGuide='先依原問題與原牌陣的實際牌位和讀牌方式回顧結論，再說明追問新增加的條件。補充牌是另抽的Book T序列，先讀相鄰及全句並按元素尊貴校準，不是把原陣更換成另一個牌陣；原牌若採RWS正逆位，其方向保持原紀錄。原牌與補充牌不能跨序列自造元素鄰接，補牌也不延伸為開鑰的新操作。比較支持與反向訊號，說清維持或修正原結論的理由，回應追問並給可觀察的下一步，不因使用者重問就強改答案。';
   // Previous readings are context, not authority for product choices.
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
   payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   // ★ v46：追問 payload 帶 resultId（Worker 用此換 1 次免費追問）
   if (_resultId) payload.resultId = _resultId;
@@ -23155,7 +23157,7 @@ function _buildOOTKPayload() {
     console.warn('[TarotSemanticEngine] OOTK compile failed:', err);
   }
 
-  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.1.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
+  if(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.payloadGuide==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("9.2.0",undefined,{numeric:true})>=0)payload.readingGuide=window.JY_READING_QUALITY.payloadGuide(payload.ootkData?['ootk']:['tarot']);
   payload.shopRecommendation=(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("4.7.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationPolicy(payload.ootkData?['ootk']:['tarot']):(payload.ootkData?JY_REC_API.ootk:JY_REC_API.tarot));
   if (window._jyPhotos) payload.photos = window._jyPhotos;
   return payload;

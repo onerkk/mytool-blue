@@ -1,0 +1,230 @@
+{
+  "source": "Swiss Ephemeris 2.10 Moshier native sidereal Sun/Moon; independent 64 crossings",
+  "reference": "https://www.astro.com/swisseph/swephprg.htm",
+  "cases": [
+    {
+      "utc": "1900-01-01T12:00:00Z",
+      "ayanamsa": "lahiri",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 30,
+          "startEpochSeconds": -2209016599.3086395,
+          "endEpochSeconds": -2208938882.2714
+        },
+        "karana": {
+          "index": 60,
+          "startEpochSeconds": -2208977536.223397,
+          "endEpochSeconds": -2208938882.2714
+        },
+        "yoga": {
+          "index": 12,
+          "startEpochSeconds": -2208994279.264265,
+          "endEpochSeconds": -2208919729.361969
+        },
+        "nakshatra": {
+          "index": 20,
+          "startEpochSeconds": -2208968449.480006,
+          "endEpochSeconds": -2208889121.3225574
+        }
+      }
+    },
+    {
+      "utc": "1900-01-01T12:00:00Z",
+      "ayanamsa": "raman",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 30,
+          "startEpochSeconds": -2209016599.3086395,
+          "endEpochSeconds": -2208938882.2714
+        },
+        "karana": {
+          "index": 60,
+          "startEpochSeconds": -2208977536.223397,
+          "endEpochSeconds": -2208938882.2714
+        },
+        "yoga": {
+          "index": 12,
+          "startEpochSeconds": -2209010624.5405645,
+          "endEpochSeconds": -2208935803.1713037
+        },
+        "nakshatra": {
+          "index": 20,
+          "startEpochSeconds": -2208977138.6594296,
+          "endEpochSeconds": -2208897667.3304377
+        }
+      }
+    },
+    {
+      "utc": "1983-08-25T06:55:00Z",
+      "ayanamsa": "lahiri",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 17,
+          "startEpochSeconds": 430593194.4270462,
+          "endEpochSeconds": 430686831.4328939
+        },
+        "karana": {
+          "index": 34,
+          "startEpochSeconds": 430640125.3416717,
+          "endEpochSeconds": 430686831.4328939
+        },
+        "yoga": {
+          "index": 8,
+          "startEpochSeconds": 430637464.33281004,
+          "endEpochSeconds": 430725733.6838454
+        },
+        "nakshatra": {
+          "index": 25,
+          "startEpochSeconds": 430597927.94480324,
+          "endEpochSeconds": 430693583.1168115
+        }
+      }
+    },
+    {
+      "utc": "1983-08-25T06:55:00Z",
+      "ayanamsa": "raman",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 17,
+          "startEpochSeconds": 430593194.4270462,
+          "endEpochSeconds": 430686831.4328939
+        },
+        "karana": {
+          "index": 34,
+          "startEpochSeconds": 430640125.3416717,
+          "endEpochSeconds": 430686831.4328939
+        },
+        "yoga": {
+          "index": 8,
+          "startEpochSeconds": 430618218.7311441,
+          "endEpochSeconds": 430706650.23346245
+        },
+        "nakshatra": {
+          "index": 25,
+          "startEpochSeconds": 430587501.5048772,
+          "endEpochSeconds": 430683251.007092
+        }
+      }
+    },
+    {
+      "utc": "2026-06-21T10:00:00Z",
+      "ayanamsa": "lahiri",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 8,
+          "startEpochSeconds": 1782035468.058434,
+          "endEpochSeconds": 1782123027.893865
+        },
+        "karana": {
+          "index": 15,
+          "startEpochSeconds": 1782035468.058434,
+          "endEpochSeconds": 1782078922.5844324
+        },
+        "yoga": {
+          "index": 17,
+          "startEpochSeconds": 1782021092.0824976,
+          "endEpochSeconds": 1782104468.5577183
+        },
+        "nakshatra": {
+          "index": 12,
+          "startEpochSeconds": 1782014494.2355247,
+          "endEpochSeconds": 1782103950.2142816
+        }
+      }
+    },
+    {
+      "utc": "2026-06-21T10:00:00Z",
+      "ayanamsa": "raman",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 8,
+          "startEpochSeconds": 1782035468.058434,
+          "endEpochSeconds": 1782123027.893865
+        },
+        "karana": {
+          "index": 15,
+          "startEpochSeconds": 1782035468.058434,
+          "endEpochSeconds": 1782078922.5844324
+        },
+        "yoga": {
+          "index": 17,
+          "startEpochSeconds": 1782003288.0671382,
+          "endEpochSeconds": 1782086203.7388234
+        },
+        "nakshatra": {
+          "index": 12,
+          "startEpochSeconds": 1782004951.0882525,
+          "endEpochSeconds": 1782094122.1020699
+        }
+      }
+    },
+    {
+      "utc": "2100-12-25T12:00:00Z",
+      "ayanamsa": "lahiri",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 24,
+          "startEpochSeconds": 4133361805.064803,
+          "endEpochSeconds": 4133441387.1864347
+        },
+        "karana": {
+          "index": 48,
+          "startEpochSeconds": 4133401842.226598,
+          "endEpochSeconds": 4133441387.1864347
+        },
+        "yoga": {
+          "index": 5,
+          "startEpochSeconds": 4133371928.684485,
+          "endEpochSeconds": 4133448222.0793157
+        },
+        "nakshatra": {
+          "index": 13,
+          "startEpochSeconds": 4133338126.610899,
+          "endEpochSeconds": 4133420666.8819246
+        }
+      }
+    },
+    {
+      "utc": "2100-12-25T12:00:00Z",
+      "ayanamsa": "raman",
+      "latitude": 23.31,
+      "longitude": 120.31,
+      "expected": {
+        "tithi": {
+          "index": 24,
+          "startEpochSeconds": 4133361805.064803,
+          "endEpochSeconds": 4133441387.1864347
+        },
+        "karana": {
+          "index": 48,
+          "startEpochSeconds": 4133401842.226598,
+          "endEpochSeconds": 4133441387.1864347
+        },
+        "yoga": {
+          "index": 5,
+          "startEpochSeconds": 4133355167.826855,
+          "endEpochSeconds": 4133431802.0677147
+        },
+        "nakshatra": {
+          "index": 14,
+          "startEpochSeconds": 4133411808.3159328,
+          "endEpochSeconds": 4133492653.612447
+        }
+      }
+    }
+  ]
+}

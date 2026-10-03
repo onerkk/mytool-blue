@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const flow=require('../JS/reading-workflow.js'),quality=require('../JS/reading-quality.js');
 const fixture=require('./fixtures/reading-cases-20260924.json');
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name);}
-test('All 14 methods generate a question-specific answer task without changing supplied facts',()=>{
+test('All 15 methods generate a question-specific answer task without changing supplied facts',()=>{
  assert.deepEqual(flow.methods,quality.methodKinds());
  const cases=[['我該如何幫助','help'],['轉職還是留任','compare'],['何時會有進展','timing'],['結構性挑戰是什麼','explain'],['會主動聯絡嗎','direction'],['完整分析命盤','general']];
  for(const method of flow.methods)for(const [question,goal]of cases){

@@ -196,6 +196,6 @@ for(const q of ['他會回覆嗎？','她會回答嗎？','對方會說嗎？'])
 ok('planner-sync-lenormand',fs.readFileSync(path.join(root,'JS','lenormand.js'),'utf8').includes(fs.readFileSync(path.join(root,'JS','shared','question-planner.js'),'utf8').trim()));
 ok('planner-sync-tarot',fs.readFileSync(path.join(root,'JS','tarot-foundation.js'),'utf8').includes(fs.readFileSync(path.join(root,'JS','shared','question-planner.js'),'utf8').trim()));
 ok('root-copy-sync',fs.readFileSync(path.join(root,'lenormand.js'),'utf8')===fs.readFileSync(sourcePath,'utf8'));
-const index=fs.readFileSync(path.join(root,'index.html'),'utf8');ok('cache-current',index.includes('JS/lenormand.js?v=20260928rootfix2'));ok('api-v23',sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version==='23.0.0');
+const index=fs.readFileSync(path.join(root,'index.html'),'utf8');ok('cache-current',index.includes('JS/lenormand.js?v=20261003native3'));ok('api-v23',sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version==='23.0.0');
 
 console.log(`Lenormand v23 discourse-semantic suite: ${checks} checks PASS`);

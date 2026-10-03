@@ -173,7 +173,7 @@ test('Follow-up: original RWS reversals and branch positions survive alongside s
 });
 test('The local API preserves its JSON contract with system-specific depth and honest brand constraints',()=>{
  const src=read('functions/api/ai.js');acorn.parse(src,{ecmaVersion:'latest',sourceType:'module'});
- for(const x of ['SYSTEM_METHODS','【西洋占星：','【吠陀占星：','【姓名學：','按本次原生牌陣判讀','只回傳 JSON 物件','"answer"','"action"','"timing"','"honest_word"','https://shopee.tw/a50h95648d?tab=shop'])assert(src.includes(x),x);
+ for(const x of ['SYSTEM_METHODS','【西洋占星：','【吠陀占星：','【姓名：','按本次原生牌陣判讀','只回傳 JSON 物件','"answer"','"action"','"timing"','"honest_word"','https://shopee.tw/a50h95648d?tab=shop'])assert(src.includes(x),x);
 });
 console.log('professional-regression: '+passed+' groups passed; 56 routing cases plus real draw/export and geometry checks.');
 if(process.exitCode)process.exit(process.exitCode);

@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-03T00:21:10.945Z",
+  "passed": 7,
+  "total": 7,
+  "results": [
+    {
+      "name": "Published 1998-11-30 chart independently matches 辛巳日寅將午時 and winter 天目 on branch upper",
+      "status": "passed"
+    },
+    {
+      "name": "All twelve monthly tables use independent primary endpoints and preserve stem/direction distinctions",
+      "status": "passed"
+    },
+    {
+      "name": "Sixty annual ganzhi match independent twelve-god sequence, general and stem tables",
+      "status": "passed"
+    },
+    {
+      "name": "All daily stems/branches, real xun stems, multi-branch officers and Yin-day tile opposition",
+      "status": "passed"
+    },
+    {
+      "name": "Exhaustive placement count",
+      "status": "measurement",
+      "charts": 8640,
+      "decisions": 2505600
+    },
+    {
+      "name": "All 290 registry rules execute over 720 day/rotation charts and twelve actual month indices",
+      "status": "passed"
+    },
+    {
+      "name": "Missing year/month input, fixed-ganzhi establishment and unresolved source text never become false facts",
+      "status": "passed"
+    },
+    {
+      "name": "Real native prompt, participant upper hits and JSON stay source-aware and do not mutate registry",
+      "status": "passed"
+    }
+  ]
+}

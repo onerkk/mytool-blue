@@ -275,8 +275,8 @@ function computeZiwei(year,month,day,hour,gender,options){
     hour:hour,minute:options.btimeUnknown||options.timePrecision==='shichen'?null:minute,gender:gender,
     hourBranch:DZ[hourBranchIndex],hourBranchIndex:hourBranchIndex,representativeTime:String(representativeHour).padStart(2,'0')+':00',
     timezoneId:options.timezoneId||null,timezoneOffset:options.timezoneOffset!=null?Number(options.timezoneOffset):null,trueSolarTime:false};
-  const flowStarPolicy = options.flowStarPolicy || 'IZTRO_10';
-  if(!['COMMON_7','ZHONGZHOU_8','IZTRO_10'].includes(flowStarPolicy))throw new Error('未支援的流曜設定。');
+  const flowStarPolicy = options.flowStarPolicy || 'IZTRO_261';
+  if(!['COMMON_7','ZHONGZHOU_8','IZTRO_10','IZTRO_261'].includes(flowStarPolicy))throw new Error('未支援的流曜設定。');
   if(!['MIDNIGHT_00','ZI_HOUR_23'].includes(dayBoundaryMode) || !['SAME_MONTH','SPLIT_AT_15'].includes(leapMonthPolicy)) throw new Error('未支援的紫微曆法設定。');
   const birthLunar = approxLunar(year,month,day);
   if(dayBoundaryMode==='ZI_HOUR_23' && hour===23) civil.setUTCDate(civil.getUTCDate()+1);
@@ -290,7 +290,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   const ageAtLunarYear = function(y){ return y-lunar.year+1; };
   const currentAge = ageAtLunarYear(referenceLunar.year);
   const calculationPolicy = {
-    version:'20261003-flow2', implementation:'JINGYUE_LOCAL_IZTRO_RULES_WITH_OVERRIDES',
+    version:'20261003-flow3', implementation:'JINGYUE_LOCAL_IZTRO_RULES_WITH_OVERRIDES',
     yearDivide:'normal',horoscopeDivide:'normal',ageDivide:'normal',dayDivide:dayBoundaryMode==='ZI_HOUR_23'?'forward':'current',
     algorithm:'default',fixLeap:leapMonthPolicy==='SPLIT_AT_15',trueSolarTime:false,
     upstreamDefaults:{dayDivide:'forward',fixLeap:true},
@@ -711,14 +711,16 @@ function computeZiwei(year,month,day,hour,gender,options){
   }
   // Flow stars keep their own time layer and never alter natal placement.
   // Setup verses 48–49 / iztro author location.ts; 流曲 is a named optional
-  // Zhongzhou variant. Default IZTRO_10 includes 昌曲 and 鸞喜; all policies are named.
+  // Zhongzhou variant. IZTRO_261 includes all author flow stars: ten per layer,
+  // plus 年解 only in the yearly layer. Legacy ten-star selection stays explicit.
   function periodFlowStars(stem, branch, mapping, layer) {
     const lu=LUCUN_TABLE[stem],kui=TIANKU_TABLE[stem],yue=TIANYUE_TABLE[stem],ma=TIANMA_TABLE[branch];
     const chang={甲:5,乙:6,丙:8,丁:9,戊:8,己:9,庚:11,辛:0,壬:2,癸:3};
     const qu={甲:9,乙:8,丙:6,丁:5,戊:6,己:5,庚:3,辛:2,壬:0,癸:11};
     const positions=[['祿存',lu],['擎羊',(lu+1)%12],['陀羅',(lu+11)%12],['天魁',kui],['天鉞',yue],['天馬',ma],['文昌',chang[stem]]];
-    if(flowStarPolicy==='ZHONGZHOU_8'||flowStarPolicy==='IZTRO_10')positions.push(['文曲',qu[stem]]);
-    if(flowStarPolicy==='IZTRO_10'){const luan=(3+12-DZ.indexOf(branch))%12;positions.push(['紅鸞',luan],['天喜',(luan+6)%12]);}
+    if(['ZHONGZHOU_8','IZTRO_10','IZTRO_261'].includes(flowStarPolicy))positions.push(['文曲',qu[stem]]);
+    if(['IZTRO_10','IZTRO_261'].includes(flowStarPolicy)){const luan=(3+12-DZ.indexOf(branch))%12;positions.push(['紅鸞',luan],['天喜',(luan+6)%12]);}
+    if(flowStarPolicy==='IZTRO_261'&&layer==='流年')positions.push(['年解',[10,9,8,7,6,5,4,3,2,1,0,11][DZ.indexOf(branch)]]);
     return positions.map(function(pair){
       const br=DZ[pair[1]],p=mapping.find(p=>p.branch===br);
       if(!p)throw new Error('流曜落宮資料不完整。');
@@ -1046,7 +1048,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     if(!context)return null;
     var layer=hourly?'流時':'流日',index=(context.dayIndex+(hourly?context.hourIndex:0))%12,gz=hourly?context.hourGz:context.dayGz,mapping=periodPalaces(index,layer),table=SIHUA_TABLE[gz[0]],hua=[];
     [{type:'祿',label:'化祿'},{type:'權',label:'化權'},{type:'科',label:'化科'},{type:'忌',label:'化忌'}].forEach(function(h){var sn=table[h.type];palaces.forEach(function(p){if(p.stars.some(function(s){return s.name===sn;}))hua.push(periodHua(sn,h.label,p,mapping,layer,gz[0]));});});
-    return {layer:layer,year:context.year,month:context.lunar.effectiveMonth,gz:gz,mingBranch:DZ[index],mingPalace:palaces.find(function(p){return p.branch===DZ[index];}).name,palaces:mapping,hua:hua,flowStars:periodFlowStars(gz[0],gz[1],mapping,layer),context:context,policy:{location:hourly?'流日命宮起子時，順行一時辰一宮':'流月命宮起初一，順行一日一宮',sihua:hourly?'時干四化；五鼠遁以本盤換日政策後日干起時干':'日干四化',dayBoundary:dayBoundaryMode,leapMonth:leapMonthPolicy,timezone:'Asia/Taipei',flowStars:flowStarPolicy+'；按本層干支實算魁鉞昌曲祿羊陀馬鸞喜，明示七星／八星變體',source:'https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts',score:'沒有將宮位或四化換算為成功率'}};
+    return {layer:layer,year:context.year,month:context.lunar.effectiveMonth,gz:gz,mingBranch:DZ[index],mingPalace:palaces.find(function(p){return p.branch===DZ[index];}).name,palaces:mapping,hua:hua,flowStars:periodFlowStars(gz[0],gz[1],mapping,layer),context:context,policy:{location:hourly?'流日命宮起子時，順行一時辰一宮':'流月命宮起初一，順行一日一宮',sihua:hourly?'時干四化；五鼠遁以本盤換日政策後日干起時干':'日干四化',dayBoundary:dayBoundaryMode,leapMonth:leapMonthPolicy,timezone:'Asia/Taipei',flowStars:flowStarPolicy+'；按本層干支實算魁鉞昌曲祿羊陀馬鸞喜；IZTRO_261僅流年加年解，保留七／八／十星政策',source:'https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts',score:'沒有將宮位或四化換算為成功率'}};
   }
   function getLiuRiZw(targetInstant){return shortPeriodLayer(shortPeriodContext(targetInstant),false);}
   function getLiuShiZw(targetInstant){return shortPeriodLayer(shortPeriodContext(targetInstant),true);}
@@ -1093,7 +1095,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   } catch (_e) {}
 
   const integrity=validateZiweiPlacements(palaces,huaMap);
-  const result={integrity,palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getLiuRiZw, getLiuShiZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20261003-flow2', birthInput:birthInput,birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
+  const result={integrity,palaces, mingIdx, shenIdx, yGan, yZhi, wuxingJu, sihua: huaMap, selfHua: selfHuaMap, laiYin: laiYin, feiGongHua: feiGongHua, lunar, mingZhu, shenZhu, mingGan, ziweiIdx, tianfuIdx, daXian, getLiuNianZw, getLiuYueZw, getLiuRiZw, getLiuShiZw, getXiaoXian, patterns, starComboNotes, engineVersion:'20261003-flow3', birthInput:birthInput,birthLunar:birthLunar, calculationPolicy:calculationPolicy, currentAge:currentAge, orthodoxMode:false, notes:['農曆轉換採 Lunar.Solar 精準換算，未載入時停止排盤，不使用粗估農曆。','依 calculationPolicy 所列安星與曆法版本排盤；相對評分不代表機率或已驗證的預測準確度。']};
   result.patternAssessment=patternAssessment;
   result.calculatedFacts=ziweiCalculatedFacts(result);
   // Legacy rendering properties above remain aliases for existing screens only.

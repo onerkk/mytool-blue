@@ -14,9 +14,10 @@ const root=path.resolve(__dirname,'..'),types={'.html':'text/html','.js':'text/j
    const section=page.locator('.jy-native-analysis:visible').last();await section.waitFor();
    const pending=page.waitForEvent('download');await section.locator('[data-jna-download]').click();const d=await pending,saved=JSON.parse(fs.readFileSync(await d.path(),'utf8'));assert.equal(saved.nativeAnalysis.method,kind);
    const prompt=await page.evaluate(copy);assert(prompt.includes('jy.native-analysis/1'),kind);assert(prompt.includes('"method":"'+kind+'"'),kind);assert(!/NaN|undefined|\[object Object\]/.test(prompt),kind);
-   if(kind==='ziwei')assert(saved.nativeAnalysis.layers.daily&&saved.nativeAnalysis.layers.hourly);
-   if(kind==='vedic'){assert.equal(saved.strength.complete,true);assert.equal(saved.strength.planets.length,7);assert(Object.values(saved.strength.totalVirupas).every(Number.isFinite));}
+   if(kind==='ziwei'){assert(saved.nativeAnalysis.layers.daily&&saved.nativeAnalysis.layers.hourly);assert(saved.nativeAnalysis.layers.annual.palaces.some(p=>p.flowStars?.some(s=>s.star==='年解')));}
+   if(kind==='vedic'){assert.equal(saved.strength.complete,true);assert.equal(saved.strength.planets.length,7);assert(Object.values(saved.strength.totalVirupas).every(Number.isFinite));assert.equal(saved.bhavaStrength.houses.length,12);assert.equal(saved.bhavaStrength.residential.length,9);assert.equal(Object.keys(saved.vargaAshtakavarga).length,16);assert.equal(saved.panchanga.complete,true);assert(prompt.includes('pinda'));assert(prompt.includes('Bhava')||prompt.includes('bhavaStrength'));}
    if(kind==='astro')assert.equal(saved.essentialDignities.planets.length,7);
+   if(kind==='liuren'){assert.equal(saved.shensha.counts.rules,290);assert(prompt.includes('shensha'));assert(saved.shensha.checks.some(s=>s.name==='罪至'));}
    await page.evaluate(close);results.push({method:kind,status:'passed',width:390,nativeDownload:true,prompt:true});console.log('PASS actual '+kind+' entry: calculation, native panel, full JSON download and prompt');
   }
   await page.waitForFunction(()=>typeof _baziStandaloneOpen==='function');await page.evaluate(()=>{_baziStandaloneOpen();_baziSetGender('male');});

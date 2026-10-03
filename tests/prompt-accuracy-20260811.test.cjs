@@ -116,7 +116,7 @@ test('紫微資料不再截掉第四顆之後的輔星、煞星或第九個格�
   assert(!source.includes('(zw.patterns||[]).slice(0,8)'));
   assert.strictEqual(require('vm').runInNewContext(read('JS/ziwei-prompt-root.js') + ';window.JY_ZIWEI_PROMPT_ROOT.version', {
     window: {}, console
-  }), '6.1.0');
+  }), '7.0.0');
 });
 
 test('梅花兩條 standalone 路徑完全一致，且不製造日曆假精確', () => {

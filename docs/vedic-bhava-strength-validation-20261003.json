@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-03T00:20:55.849Z",
+  "passed": 7,
+  "total": 7,
+  "results": [
+    {
+      "name": "Published component precision",
+      "status": "measurement",
+      "maximumVirupaDifference": 0.24083333333327772,
+      "note": "Given printed house midpoints/minute-rounded planets; no fitting to inconsistent final sums"
+    },
+    {
+      "name": "Raman IX Example 59: twelve printed direction/aspect components and independent lord strengths",
+      "status": "passed"
+    },
+    {
+      "name": "Four sign groups, Sagittarius/Capricorn 15-degree boundaries and all twelve direction distances",
+      "status": "passed"
+    },
+    {
+      "name": "Residential ratios: both half widths, unequal quadrant geometry and every sandhi",
+      "status": "passed"
+    },
+    {
+      "name": "Runtime twelve-house sums, seven aspects per house, nine residents and distinct whole-sign lords",
+      "status": "passed"
+    },
+    {
+      "name": "Mercury always full benefic for house aspects even while planetary Drik sees combustion",
+      "status": "passed"
+    },
+    {
+      "name": "Unknown clock/polar incomplete lord totals keep unavailable separate from zero",
+      "status": "passed"
+    },
+    {
+      "name": "Native panel, real prompt data and immutable JSON retain exactly the same computed house ledger",
+      "status": "passed"
+    }
+  ]
+}

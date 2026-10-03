@@ -1,11 +1,11 @@
-/* Jingyue Da Liu Ren — native deterministic chart facts, 20261003liuren2.
+/* Jingyue Da Liu Ren — native deterministic chart facts, 20261003liuren3.
  * Nine-gate browser adaptation: d1210182010/daliuren-web-engine,
  * shipan.py 4ad0c57a1508c42b801d2608da0205e9397c1657 (MIT).
  * See data/liuren/REFERENCE-LICENSE.txt. No question-driven chart selection.
  */
 (function(root){
   'use strict';
-  var VERSION='20261003liuren2',GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥');
+  var VERSION='20261003liuren3',GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥');
   var ELEMENTS=['木','火','土','金','水'],GE=[0,0,1,1,2,2,3,3,4,4],ZE=[4,2,0,0,2,1,1,2,3,3,2,4],JI=[2,4,5,7,5,7,8,10,11,1];
   var GENERALS=['貴人','螣蛇','朱雀','六合','勾陳','青龍','天空','白虎','太常','玄武','太陰','天后'];
   var SHORT=['貴','蛇','雀','合','勾','龍','空','虎','常','玄','陰','后'];
@@ -91,6 +91,7 @@
     var groups=[[8,0,4],[11,3,7],[2,6,10],[5,9,1]];if(groups.some(function(a){return new Set(r.transmissions).size===3&&r.transmissions.every(function(b){return a.includes(b);});}))tags.push('三合傳');
     var out={schema:'jy.liuren/1',version:VERSION,day:{gan:GAN[g],zhi:ZHI[d],ganzhi:GAN[g]+ZHI[d],element:ELEMENTS[GE[g]],residence:ZHI[JI[g]],yang:g%2===0},monthGeneral:{branch:ZHI[month],name:JIANG_NAMES[month]},hourBranch:ZHI[hour],rotation:delta,daytime:daytime,noble:{mode:mode,branch:ZHI[noble],earth:ZHI[nobleEarth],direction:reverse?'逆布':'順布'},xun:{head:'甲'+ZHI[xun],empty:empties.map(function(b){return ZHI[b];})},plate:plate,courses:courses,transmissions:transmissions,method:{gate:r.gate,type:r.type,tags:Array.from(new Set(tags)),selectedCourses:r.selectedCourses,trace:r.trace,depths:r.depths},auxiliary:{dayHorse:ZHI[MA[d]],dayLu:ZHI[LU[g]],dayClash:ZHI[mod(d+6,12)]},calculationPolicy:{version:VERSION,school:'本版九宗門：歷歸本家涉害，計地支與寄干；同深度依課序取孟、再仲、最後陽干／陰支上',nobleTable:'甲戊庚牛羊；乙己鼠猴；丙丁豬雞；辛馬虎；壬癸蛇兔（前晝後夜）',dayNight:'自動採卯辰巳午未申為晝，酉戌亥子丑寅為夜；可明示晝／夜',monthGeneral:'中氣換將；使用者手動覆核時另保留自動值',dayBoundary:'MIDNIGHT_00',trueSolarTime:false,predictionValidated:false,reference:'https://github.com/d1210182010/daliuren-web-engine',referenceRevision:'d5cb9a79ebe2c368ead76319ad37bac1e8096d22',notImplemented:['未明列或其他流派神煞','真太陽時與天文日出日落']}};
     if(root.JYLiurenClasses){out.participants=(input.participants||[]).map(root.JYLiurenClasses.annual);out.calendarContext=input.context||{};out.classAnalysis=root.JYLiurenClasses.compute(out,out.calendarContext,out.participants);}else out.calculationPolicy.notImplemented.push('六十四課體元件尚未載入');
+    if(root.JYLiurenShensha)out.shensha=root.JYLiurenShensha.compute(out,input.context||{},input.shenshaOptions||{});
     return out;
   }
   function solarTime(s){return s.toYmdHms();}
@@ -113,8 +114,9 @@
     var table=lunar.getJieQiTable(),events=[],starts=['立春','立夏','立秋','立冬'],cardinals=['春分','夏至','秋分','冬至'],aliases={LI_CHUN:'立春',DONG_ZHI:'冬至'},civil=input.date;
     Object.keys(table).forEach(function(key){var name=aliases[key]||key;if(!starts.includes(name)&&!cardinals.includes(name))return;var s=table[key],instant=Date.UTC(s.getYear(),s.getMonth()-1,s.getDay(),s.getHour(),s.getMinute(),s.getSecond())-8*3600000,local=new Date(instant+tz*3600000),date=local.toISOString().slice(0,10),before=new Date(instant+tz*3600000-86400000).toISOString().slice(0,10);if(date===civil||before===civil)events.push({name:name,instant:new Date(instant).toISOString(),localDate:date,previousDate:before,isTermDay:date===civil,isPreviousDay:before===civil});});
     var lm=root.LunarMonth&&root.LunarMonth.fromYm(lunar.getYear(),lunar.getMonth());
-    r.calendarContext={yearBranch:calendar.pillars.year.zhi,monthBranch:calendar.pillars.month.zhi,lunarYear:lunar.getYear(),lunarMonth:lunar.getMonth(),lunarDay:lunar.getDay(),lunarDayCount:lm?lm.getDayCount():null,previousDayGan:previous.gan,previousDayBranch:previous.zhi,fourStarts:events.some(function(e){return starts.includes(e.name)&&e.isTermDay;}),fourSeparations:events.some(function(e){return cardinals.includes(e.name)&&e.isPreviousDay;}),fourCardinals:events.some(function(e){return cardinals.includes(e.name)&&e.isTermDay;}),solarDayEvents:events,policy:'太歲以立春、月建以節；農曆月日以UTC+8朔曆；四立四離按起課地民用曆日；昨日干支使用同一民用時間與換日口徑'};
+    r.calendarContext={yearGan:calendar.pillars.year.gan,yearBranch:calendar.pillars.year.zhi,monthBranch:calendar.pillars.month.zhi,lunarYear:lunar.getYear(),lunarMonth:lunar.getMonth(),lunarDay:lunar.getDay(),lunarDayCount:lm?lm.getDayCount():null,previousDayGan:previous.gan,previousDayBranch:previous.zhi,fourStarts:events.some(function(e){return starts.includes(e.name)&&e.isTermDay;}),fourSeparations:events.some(function(e){return cardinals.includes(e.name)&&e.isPreviousDay;}),fourCardinals:events.some(function(e){return cardinals.includes(e.name)&&e.isTermDay;}),solarDayEvents:events,policy:'太歲以立春、月建以節；農曆月日以UTC+8朔曆；四立四離按起課地民用曆日；昨日干支使用同一民用時間與換日口徑'};
     if(root.JYLiurenClasses)r.classAnalysis=root.JYLiurenClasses.compute(r,r.calendarContext,r.participants);
+    if(root.JYLiurenShensha){r.shensha=root.JYLiurenShensha.compute(r,r.calendarContext,input.shenshaOptions||{});r.calculationPolicy.shenshaProfile=r.shensha.profile;}
     return r;
   }
   root.JYLiurenCore={version:VERSION,calculate:calculate,chartFromSymbols:chartFromSymbols,branches:ZHI.slice(),stems:GAN.slice(),generals:GENERALS.slice(),elements:ELEMENTS.slice(),monthGeneralNames:JIANG_NAMES.slice(),relation:relation};

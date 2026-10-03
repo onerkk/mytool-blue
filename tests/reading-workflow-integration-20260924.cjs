@@ -49,7 +49,7 @@ test('All Bazi lenses, compatibility scenarios and personality include facts bef
 });
 test('Native Western, Vedic, six-line and Yijing calculations are unchanged by the workflow',()=>{
  const x={Date,Intl,console};x.globalThis=x;vm.createContext(x);
- for(const f of ['reading-quality','vendor/astronomy-engine-2.1.19.min','vedic-ayanamsa','astro-time','vedic-engine','vedic-prompt','western-engine','western-prompt','vendor/lunar','bazi-calendar-core','liuyao-core','yijing-data','yijing-core','gua-prompt'])vm.runInContext(read('JS/'+f+'.js'),x,{filename:f});
+ for(const f of ['reading-quality','vendor/astronomy-engine-2.1.19.min','vedic-ayanamsa','astro-time','vedic-strength','vedic-engine','vedic-prompt','western-engine','western-prompt','vendor/lunar','bazi-calendar-core','liuyao-core','yijing-data','yijing-core','gua-prompt','liuren-classes','liuren-shensha','liuren-core','liuren-prompt'])vm.runInContext(read('JS/'+f+'.js'),x,{filename:f});
  const data={utc:'1983-08-25T06:55:00Z',reference:'2026-09-24T04:00:00Z',latitude:22.99,longitude:120.23,civil:{date:'1983-08-25',time:'14:55',timezone:'Asia/Taipei'},houseSystem:'P'};
  for(const unknownTime of [false,true]){
   const v=x.JYVedic.compute({...data,unknownTime}),w=x.JYWestern.compute({...data,unknownTime}),before=JSON.stringify([v,w]);
@@ -62,6 +62,8 @@ test('Native Western, Vedic, six-line and Yijing calculations are unchanged by t
   const cast=engine.calculate({values:[9,7,9,6,7,6],calendar,question:currentQuestion}),before=JSON.stringify(cast);
   checkWorkflow(x.JYGuaPrompt.build(cast),kind);assert.equal(JSON.stringify(cast),before);
  }
+ const ren=x.JYLiurenCore.calculate({date:'2026-09-24',time:'12:00',timezoneOffset:8,question:currentQuestion}),unchanged=JSON.stringify(ren);
+ checkWorkflow(x.JYLiurenPrompt.build(ren),'liuren');assert.equal(JSON.stringify(ren),unchanged);assert.equal(ren.shensha.counts.rules,290);
 });
 test('Actual composite name and Ziwei exports retain natal evidence and do not call paid APIs',()=>{
  const env=runtime([]),x=env.ctx;x.Image=function(){return env.doc.createElement('img');};

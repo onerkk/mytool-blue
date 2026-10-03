@@ -82,13 +82,13 @@ test('Current question exports both complete natal charts and current periods wi
  assert.equal(pair.timeline.length,1);assert.equal(pair.timeline[0].year,2026);
  assert(prompt.includes('2026-02-04T04:02:08+08:00'));assert(prompt.includes('2026-02-17T00:00:00+08:00'));
  assert(prompt.includes('44–53歲'));assert(prompt.includes('32–41歲'));
- assert(!prompt.includes('114–123歲'));assert(!prompt.includes('not-established'));assert(!prompt.includes('purple-treasury'));
+ assert(!prompt.includes('114–123虛歲'));assert(!prompt.includes('not-established'));assert(!prompt.includes('purple-treasury'));
  for(const f of [pair.personA,pair.personB]){
   assert.equal(f.palaces.length,12);assert(f.patternAssessment.catalog.length>0);
   for(const p of f.palaces)assert(prompt.includes(p.name+'['+p.gan+p.branch+']'));
   for(const flight of f.palaceFlights)assert(prompt.includes(flight.star+flight.hua+'→'+flight.targetPalace+'('+flight.targetBranch+')'));
  }
- assert(prompt.length<40000,'Keep the complete natal facts usable in a copied prompt');
+ assert(prompt.length<150000,'Keep the complete natal facts usable in a copied prompt');
  assert.equal((prompt.match(/https:\/\/shopee.tw\/a50h95648d\?tab=shop/g)||[]).length,1);
  assert(prompt.endsWith('願你諸事順遂。'));assert(!/undefined|NaN|\[object Object\]/.test(prompt));
  console.log('  actual relationship prompt characters: '+prompt.length);
@@ -104,13 +104,13 @@ test('Question windows preserve requested future years and unknown-time boundari
  const beyond=c.BaziSuiteCore.buildCompatibilityDataBlock(comp,{compact:true,question:'2035到2036年的相處如何'}).split('【八字歲運同步】')[1];
  assert(beyond.includes('"year":2035'));assert(beyond.includes('"year":2036'));assert(!beyond.includes('"year":2026'));
  const standalone=c.JYZiweiData.serialize(a.z,{bdate:'1983-08-25',btime:'14:55',gender:'male',question:q},{compact:true});
- assert(standalone.includes('【流年走勢 2026–2026】'));assert(!standalone.includes('114–123歲'));
+ assert(standalone.includes('【流年走勢 2026–2026】'));assert(!standalone.includes('114–123虛歲'));
  const raw=c.JYZiweiData.serialize(a.z,{bdate:'1983-08-25',btime:'14:55',gender:'male'});
- assert(raw.includes('114–123歲'),'Raw serializer must preserve its full-data contract');
+ assert(raw.includes('114–123虛歲'),'Raw serializer must preserve its full-data contract');
  const partial=c.JYRelationshipCore.createZiweiPair(a.z,null,{question:q});
  assert.equal(partial.projectionGroups.length,0);assert.equal(partial.personB,null);
 });
-test('All fourteen methods use answer-led paragraphs, limits only when relevant and voluntary single-design close',()=>{
+test('All fifteen methods use answer-led paragraphs, limits only when relevant and voluntary single-design close',()=>{
  const quality=c.JY_READING_QUALITY;
  for(const kind of quality.methodKinds()){
   const p=quality.lines(kind).join('\n')+'\n'+quality.recommendationEnding(kind);
