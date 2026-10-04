@@ -92,7 +92,8 @@
     "test:r9": "node tests/engine-functional-r9-20261003.cjs",
     "test:r10": "node tests/engine-integrity-r10-20261004.cjs",
     "test:r11": "node tests/engine-and-reference-r11-20261004.cjs",
-    "test:r12": "node tests/depth-contract-r12-20261004.cjs"
+    "test:r12": "node tests/depth-contract-r12-20261004.cjs",
+    "test:r13": "node tests/engine-core-completion-r13-20261004.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",
