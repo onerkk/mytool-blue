@@ -20,7 +20,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261004prompt11',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261004prompt12',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
@@ -167,7 +167,7 @@ var JY_REC_PACKET = {
     const data={schema:'jy.native-analysis/1',method,question:q,notes:options.notes===undefined?null:String(options.notes),referenceAudits,sections};
     const encoded=root.JYPromptBrief?null:root.JYNativeAnalysis.compact(dense(data));
     const endingKinds=[method,...entries.map(e=>e.method)];
-    const body=root.JYPromptBrief?root.JYPromptBrief.render(calculated,data,METHODS,root.JYReadingWorkflow?.footer):['【原問題｜逐字保留】\n'+JSON.stringify(q)+'\n'+JSON.stringify({schema:'jy.native-analysis/1',method}),'【解讀要求】\n'+instructions(method,options,q),'$ref 是下方實算閱讀資料JSON根#起算的JSON Pointer，先還原$ref再還原$table。','【同盤人物注記查核】\n'+JSON.stringify(referenceAudits),'【實算閱讀資料】\n'+JSON.stringify(encoded),recommendationEnding(endingKinds)].join('\n\n');
+    const body=root.JYPromptBrief?root.JYPromptBrief.render(calculated,data,METHODS,root.JYReadingWorkflow?.footer):['【原問題｜逐字保留】\n'+JSON.stringify(q)+'\n'+JSON.stringify({schema:'jy.native-analysis/1',method}),'【解讀要求】\n'+instructions(method,options,q)+'\n若實算資料含 depthContract，必須依其判讀順序、反證規則、禁止捷徑與缺項界線執行；不得略過。','$ref 是下方實算閱讀資料JSON根#起算的JSON Pointer，先還原$ref再還原$table。','【同盤人物注記查核】\n'+JSON.stringify(referenceAudits),'【實算閱讀資料】\n'+JSON.stringify(encoded),recommendationEnding(endingKinds)].join('\n\n');
     const p=packet(body,method,q);p.readingData=data;entries.forEach(e=>byChart.set(e.chart,p.body));return p.body;
   }
   function build(method,chart,question,options={}){return buildMany([{method,chart}],question,options);}

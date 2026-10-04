@@ -137,6 +137,7 @@ var JY_REC_BRIEF = {
    }
    else{add('本次所有牌籤與程序',a.methodData);if(kind==='oracle'){const r=root.JYOracleRegister?.get(c.n??c.number);if(r)add('原廟分類索引(特徵非原文)',r.categories||r.classifications);}add('程序狀態',pick(c,['methodPlan','sourceProfile','spread','spreadType','drawProcedure','status','gate']));}
    add(tag+'逐項作用与反證',a.items.map(p=>p.label+':'+p.summary+(p.support?.length?' 支持='+p.support.join(','):'')+(p.caution?.length?' 反證='+p.caution.join(','):'')).join('\n'));
+   if(a.depthContract)add(tag+'深度判讀契約',root.JYNativeDepthContract?.toPrompt?root.JYNativeDepthContract.toPrompt(a.depthContract):text(a.depthContract));
    add(tag+'缺項',a.unavailable);add(tag+'採用來源',a.sources.map(s=>s.id+'='+s.url).join(';'));
   }
   const kinds=[data.method,...entries.map(e=>e.method)];
@@ -146,5 +147,5 @@ var JY_REC_BRIEF = {
   let body=out.join('\n\n');const definitions=[],counts=sharedFragments;sharedFragments=null;const lineCounts=new Map();for(const line of body.split('\n'))if(line.length>100)lineCounts.set(line,(lineCounts.get(line)||0)+1);for(const [line,count]of lineCounts)counts.set(line,Math.max(counts.get(line)||0,count));for(const [fragment,count]of [...counts].filter(([,c])=>c>1).sort((a,b)=>b[0].length-a[0].length)){if(!body.includes(fragment)&&!definitions.some(p=>p.value.includes(fragment)))continue;const id='同項'+(definitions.length+1),ref='〔'+id+'〕';body=body.split(fragment).join(ref);for(const p of definitions)p.value=p.value.split(fragment).join(ref);definitions.push({id,value:fragment});}return (definitions.length?body+'\n【共用完整內容：參照可巢狀展開，資料未截斷】\n'+definitions.map(p=>p.id+'='+p.value).join('\n'):body)+'\n【資料結束】\n\n'+ending;
 
  }
- root.JYPromptBrief=Object.freeze({version:'20261004brief11',render,text,encodeSpecialPointVargas});
+ root.JYPromptBrief=Object.freeze({version:'20261004brief12',render,text,encodeSpecialPointVargas});
 })(typeof window==='undefined'?globalThis:window);
