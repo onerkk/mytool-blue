@@ -20,7 +20,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261004prompt14',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261004prompt15',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
@@ -94,8 +94,8 @@ var JY_REC_PACKET = {
     }else if(kind==='ziwei'){
       add('本命十二宮与指定四化', {...pick(c,['birthInput','birthLunar','calculationPolicy','palaces','mingIdx','shenIdx','wuxingJu','mingZhu','shenZhu','sihua','selfHua','laiYin','currentAge','notes']),northern:north(c.northern)});
       add('格局條件核對',c.patternAssessment?{...pick(c.patternAssessment,['version','source','policy']),patterns:checkLedger(c.patternAssessment.patterns),catalog:checkLedger(c.patternAssessment.catalog)}:null);
-      const layer=p=>p?{...pick(p,['layer','year','month','ageStart','ageEnd','branch','gan','palaceName','isCurrent','context','policy','hua','flowStars']),palaces:arr(p.palaces).map(x=>pick(x,['name','periodPalace','branch','natalPalace','transformations','opposedJi','flowStars'])),northern:{profile:p.northern?.profile,flightAndPathBasis:'同一本命宮干及星曜地支；沿本命northern有向圖按本層branch→periodPalace映射讀取',transitions:arr(p.northern?.transitions).map(transitionFacts),sourceAudit:p.northern?.sourceAudit}}:null;
-      add('運限疊宮', {decades:arr(c.daXian).map(layer),decade:layer(a.layers.decade),annual:layer(a.layers.annual),months:a.layers.months.map(layer),daily:layer(a.layers.daily),hourly:layer(a.layers.hourly)});
+      const layer=p=>p?{...pick(p,['layer','year','month','gz','mingBranch','ageStart','ageEnd','branch','gan','palaceName','isCurrent','context','policy','hua','flowStars','segments']),palaces:arr(p.palaces).map(x=>pick(x,['name','periodPalace','branch','natalPalace','transformations','opposedJi','flowStars'])),northern:{profile:p.northern?.profile,flightAndPathBasis:'同一本命宮干及星曜地支；沿本命northern有向圖按本層branch→periodPalace映射讀取',transitions:arr(p.northern?.transitions).map(transitionFacts),sourceAudit:p.northern?.sourceAudit}}:null;
+      add('運限疊宮', {decades:arr(c.daXian).map(layer),decade:layer(a.layers.decade),annual:layer(a.layers.annual),months:a.layers.months.map(layer),daily:layer(a.layers.daily),hourly:layer(a.layers.hourly),childhood:layer(a.layers.childhood)});
       if(c.getLiuNianZw){const birthYear=c.lunar?.year||c.birthLunar?.year,years=[...new Set(range.all?arr(c.daXian).flatMap(d=>Array.from({length:d.ageEnd-d.ageStart+1},(_,i)=>birthYear+d.ageStart+i-1)):range.years||Array.from({length:range.to-range.from+1},(_,i)=>range.from+i))];add('明示年度流年',years.filter(y=>y!==a.layers.annual?.year&&y>=1900&&y<=2300).map(y=>{const p=c.getLiuNianZw(y);return {...pick(p,['year','context','policy','hua','flowStars']),palaces:arr(p.palaces).map(x=>pick(x,['name','branch','gan']))};}));add('流年輸出範圍',{range,requestedYears:years,missingYears:years.filter(y=>y<1900||y>2300),ageBasis:'依本次有效農曆出生年計虛歲；大限年齡1對應該出生農曆年。',missingPolicy:'超過本引擎1900–2300範圍的年度不生成流年。'});}
     }else if(kind==='vedic'){
       const selected=vargaScope(q,options.topic),included=k=>!selected||selected.has(Number(k));

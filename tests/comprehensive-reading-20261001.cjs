@@ -16,7 +16,7 @@ const b=ai.indexOf('const ZW_BRIGHTNESS'),e=ai.indexOf('\n};',b)+3;
 const deps=bz.slice(bz.indexOf('const TG='),bz.indexOf('// ── 地支六沖'))+
  ai.slice(ai.indexOf('function getStarBright('),ai.indexOf('// ═══ 宮位吉凶綜合分析函數',ai.indexOf('function getStarBright(')))+
  ai.slice(ai.indexOf('const SIHUA_TABLE'),ai.indexOf('// ── Tag engines'))+ai.slice(b,e);
-const engine=env.exec(read('JS/vendor/lunar.js')+'\nvar Solar=window.Solar,Lunar=window.Lunar;\n'+deps+'\n'+zw.slice(0,zw.indexOf('// ── renderZiwei'))+'\n'+read('JS/relationship-core.js')+'\nreturn {computeZiwei:computeZiwei,getStarBright:getStarBright};');
+const engine=env.exec(read('JS/vendor/lunar.js')+'\nvar Solar=window.Solar,Lunar=window.Lunar;\n'+read('JS/solar-location.js')+'\n'+deps+'\n'+zw.slice(0,zw.indexOf('// ── renderZiwei'))+'\n'+read('JS/relationship-core.js')+'\nreturn {computeZiwei:computeZiwei,getStarBright:getStarBright};');
 env.exec(read('JS/ziwei-prompt-root.js'));
 new Function('window','globalThis','document','console','getStarBright','module',read('JS/ziwei-standalone.js')).call(r,r,r,r.document,r.console,engine.getStarBright,undefined);
 const Q=r.JY_READING_QUALITY,W=r.JYReadingWorkflow,referenceDate='2026-09-30T18:34:12.889Z';

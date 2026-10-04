@@ -54,7 +54,7 @@ test('Leap month day 15/16 follows explicit fixLeap, lunar New Year follows Taip
  assert.equal(early.calculationPolicy.referenceLunarYear,2025);assert.equal(late.calculationPolicy.referenceLunarYear,2026);assert.equal(late.currentAge,early.currentAge+1);
 });
 test('Conflicting policies and mismatched birth minutes stop calculation',()=>{
- for(const opts of [{dayDivide:'current',dayBoundaryMode:'ZI_HOUR_23'},{fixLeap:false,leapMonthPolicy:'SPLIT_AT_15'},{minute:60},{civilTime:'15:55'},{civilTime:'14:56'},{dayDivide:'other'},{trueSolarTime:true},{yearDivide:'exact'}])assert.equal(cast(1983,8,25,14,55,opts),null);
+ for(const opts of [{dayDivide:'current',dayBoundaryMode:'ZI_HOUR_23'},{fixLeap:false,leapMonthPolicy:'SPLIT_AT_15'},{minute:60},{civilTime:'15:55'},{civilTime:'14:56'},{dayDivide:'other'},{trueSolarTime:true},{yearDivide:'unsupported'}])assert.equal(cast(1983,8,25,14,55,opts),null);
 });
 test('AI facts contain no heuristic scores/levels/themes; geometry and flight origins remain exact',()=>{
  const facts=A.calculatedFacts;

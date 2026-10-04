@@ -1,0 +1,43 @@
+{
+  "testedAt": "2026-10-04T07:52:19.105Z",
+  "assertions": 22630,
+  "independentReferenceCharts": 160,
+  "results": [
+    {
+      "name": "160 independent iztro 2.6.1 reference charts: both genders, eight configurations, all natal positions and 48 decorative entries",
+      "status": "passed"
+    },
+    {
+      "name": "Li-chun switches only at the actual clock boundary, independently for natal and horoscope years",
+      "status": "passed"
+    },
+    {
+      "name": "Foreign civil clocks resolve the same Li-chun instant; invalid and nonexistent timezone clocks are rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Birthday ages, minor limits and decades switch together; year-boundary method remains distinct",
+      "status": "passed"
+    },
+    {
+      "name": "Exact month stem changes at Jie while the Doujun palace follows the lunar calendar",
+      "status": "passed"
+    },
+    {
+      "name": "Leap-month exact segments retain lunar changes; day rollover and birthday policy are explicit",
+      "status": "passed"
+    },
+    {
+      "name": "Mixed school compatibility preserves each source table and partitions Li-chun, lunar New Year and birthdays",
+      "status": "passed"
+    },
+    {
+      "name": "Configuration is isolated per chart; alternate four-transformations and read-time mismatch work with new algorithms",
+      "status": "passed"
+    },
+    {
+      "name": "Supplemental month markers and exact intervals retain every overlay, transformation and flow star",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "testedAt": "2026-10-04T07:52:13.004Z",
+  "results": [
+    {
+      "width": 390,
+      "status": "passed",
+      "realInputControls": true,
+      "configAppliedToChart": true,
+      "actualJsonDownload": true,
+      "completePromptCopy": true,
+      "exactMonthSegments": true,
+      "editPreservesConfiguration": true,
+      "pageErrors": 0
+    },
+    {
+      "width": 1280,
+      "status": "passed",
+      "realInputControls": true,
+      "configAppliedToChart": true,
+      "actualJsonDownload": true,
+      "completePromptCopy": true,
+      "exactMonthSegments": true,
+      "editPreservesConfiguration": true,
+      "pageErrors": 0
+    }
+  ]
+}

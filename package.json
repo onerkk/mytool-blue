@@ -94,7 +94,9 @@
     "test:r11": "node tests/engine-and-reference-r11-20261004.cjs",
     "test:r12": "node tests/depth-contract-r12-20261004.cjs",
     "test:r13": "node tests/engine-core-completion-r13-20261004.cjs",
-    "test:r14": "node tests/engine-evidence-r14-20261004.cjs"
+    "test:r14": "node tests/engine-evidence-r14-20261004.cjs",
+    "test:r15": "node tests/ziwei-config-r15-20261004.cjs",
+    "test:r15:browser": "node tests/ziwei-config-browser-r15-20261004.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",

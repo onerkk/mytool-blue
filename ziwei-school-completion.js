@@ -1,7 +1,7 @@
-/* iztro supports options that this local engine may not implement.
+/* iztro options are applied by computeZiwei, including the local boundary rules.
  * Applied chart policy is authoritative; read-time options cannot relabel a chart. */
 (function(root){'use strict';
-  const VERSION='20261004ziwei-school14',SOURCE='https://docs.iztro.com/zh_TW/posts/config-n-plugin';
+  const VERSION='20261004ziwei-school15',SOURCE='https://docs.iztro.com/zh_TW/posts/config-n-plugin';
   const OPT={yearDivide:['normal','exact'],horoscopeDivide:['normal','exact'],ageDivide:['normal','birthday'],dayDivide:['forward','current'],algorithm:['default','zhongzhou']};
   const D={yearDivide:'normal',horoscopeDivide:'normal',ageDivide:'normal',dayDivide:'forward',algorithm:'default'};
   const A=x=>Array.isArray(x)?x:[],clone=x=>x==null?null:JSON.parse(JSON.stringify(x));
@@ -43,10 +43,12 @@
     return {version:VERSION,status:missing.length?'insufficient-data':warnings.length?'calculated-with-policy-warning':'calculated',
       config,requestedConfig:requested,policyMismatches:mismatches,missing,activeFourTransformationProfile:active,
       profileDifferences:tableDiff(),officialOptions:{...OPT,defaults:D},
-      localSupportedOptions:{yearDivide:['normal'],horoscopeDivide:['normal'],ageDivide:['normal'],dayDivide:['current','forward'],algorithm:['default']},
+      localSupportedOptions:clone(OPT),
       chartBoundaryFacts:{birthInput:clone(c.birthInput),birthLunar:clone(c.birthLunar),referenceLunarYear:c.calculationPolicy?.referenceLunarYear??null},
       warnings,source:SOURCE,policy:'本盤已套用政策與上游官方能力分開；解讀時的要求不會改變星曜位置或已算四化。',
-      unavailable:['中州安星、立春年界、農曆生日小限不是本地引擎已實作選項；官方可配置不等於本地已支援。','沒有可靠公開公式的河洛／欽天師承細則不偽造。']};
+      boundaryRules:{year:c.calculationPolicy.yearBoundary,flowYear:c.calculationPolicy.flowStarYearBoundary,month:c.calculationPolicy.monthGzBoundary,age:c.calculationPolicy.ageMethod,birthday:c.calculationPolicy.birthdayBoundary,void:c.calculationPolicy.voidMethod},
+      unavailable:['沒有可靠公開公式的河洛／欽天師承細則不偽造。']};
   }
-  root.JYZiweiSchoolCompletion=Object.freeze({version:VERSION,compute,normalized,source:SOURCE});
+  function forReading(value,options={}){if(!value||!options.policyAlreadyListed)return value;return {...value,chartBoundaryFacts:{reference:'本方前文 birthInput、birthLunar 與 calculationPolicy 保留完整原始出生及參考日期；此處不重貼相同資料。'}};}
+  root.JYZiweiSchoolCompletion=Object.freeze({version:VERSION,compute,normalized,forReading,source:SOURCE});
 })(typeof window==='undefined'?globalThis:window);

@@ -1,7 +1,7 @@
 {
-  "release": "20261004native14",
-  "claim": "列出已驗證的實作範圍與未覆蓋的流派；特殊格局命中不能推定現實事件",
-  "sourceReview": "docs/engine-source-review-20261004-r11.md",
+  "release": "20261004native15",
+  "claim": "15個引擎依所列具名公開規格驗算；已確認缺項已實作，保留互斥流派與原典未量化條件，不宣稱所有私人師承或絕對零錯誤。",
+  "sourceReview": "docs/engine-audit-20261004-r15.md",
   "methods": [
     {
       "method": "tarot",
@@ -212,13 +212,15 @@
         "楚天雲闊2018四D–E及五A–B兩轉象條件",
         "十二宮、14主星、48宮干飛化與12流月結構完整性查核",
         "排除／否定人物範圍與跨子題代名詞一致；人物歧義保留候選；年齡原問與同次牌序不擅改",
-        "R14：排盤已套用政策為準；解讀要求不同配置時列不一致，不改標籤冒充重排"
+        "R14：排盤已套用政策為準；解讀要求不同配置時列不一致，不改標籤冒充重排",
+        "R15：中州安星、立春精確年界、節氣月干支完整分段、農曆生日歲數與小限、童限；160組官方盤對照及雙尺寸實際入口驗證",
+        "海外民用時間依固定偏移或IANA時區解析實際出生瞬間，再轉UTC+8核對立春；保留本地民用農曆與時辰",
+        "夏令時間重疊時刻具名earlier/later，拒絕不存在的跳時時間；精確出生前不建立歲數"
       ],
       "limits": [
         "其他未選四化表及本文以外北派河洛口訣；沒有宣稱全部門派秘訣均已實作",
         "原文二C與後文宮職歧異保留；運層重標宮職不是重配運干宮干；同象不等於已發生的事件",
-        "星曜結構不能保證事件結果",
-        "R14：本地尚未實作中州安星、立春年界與生日小限；上游配置能力不等於本地支援"
+        "星曜結構不能保證事件結果"
       ]
     },
     {
@@ -386,9 +388,9 @@
     }
   ],
   "integrationVerification": "docs/astro-bridge-verification-20260922.json",
-  "latestAudit": "docs/full-audit-20260923.md",
-  "sourceReviewLatest": "docs/engine-audit-20261004-r14.md",
-  "promptDeliveryVerification": "docs/engine-integrity-validation-20261004-r11.json",
+  "latestAudit": "docs/engine-audit-20261004-r15.md",
+  "sourceReviewLatest": "docs/engine-audit-20261004-r15.md",
+  "promptDeliveryVerification": "docs/engine-validation-20261004-r15.json",
   "moonOrbEntryVerification": "docs/western-moon-orb-validation-20261003.json",
   "recommendationVerification": "docs/recommendation-validation-20261004-r10.json",
   "ritualVerification": "docs/ritual-browser-validation-20261003-r8-390.json",
@@ -408,7 +410,7 @@
     "docs/validation-20261004-r11-browser-1280.json"
   ],
   "referenceVerification": "docs/engine-and-reference-validation-20261004-r11.json",
-  "evidenceRoutingVerification": "docs/engine-validation-20261004-r14.json",
+  "evidenceRoutingVerification": "docs/engine-validation-20261004-r15.json",
   "allSchoolsComplete": false,
   "promptPolicyR14": {
     "dataOnly": "只採本次提供的問題、備註及實算資料，不使用帳號記憶、舊對話或自行重排",
@@ -416,5 +418,9 @@
     "coverage": "物件存在不代表已算完整；未知時刻、缺項、未完成輪次與未套用政策明示",
     "references": "縮減重複矩陣，完整patterns與JSON保留；補充匯出參照前文共用判讀約定",
     "allSchoolsComplete": false
-  }
+  },
+  "validation": "docs/engine-validation-20261004-r15.json",
+  "allEnginesAudited": true,
+  "declaredProfilesComplete": true,
+  "completionScope": "本專案15個引擎所選公開規格的確認缺項及資料鏈；不將沒有公式或輸入的私人師承細則冒充已算。"
 }

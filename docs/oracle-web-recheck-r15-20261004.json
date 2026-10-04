@@ -1,0 +1,367 @@
+{
+  "reviewedAt": "2026-10-04",
+  "scope": "重新開啟全部60首既選廟方版本，逐行比對四句籤詩；5號保留香山官網校正版，事項及故事歷史不以本次四句覆核冒稱重新考證。",
+  "normalization": "Unicode NFKC and punctuation/whitespace ignored; every poem line must match selected official page.",
+  "results": [
+    {
+      "n": 1,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs01/",
+      "status": "verified",
+      "ref": "turn18view0"
+    },
+    {
+      "n": 2,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs02/",
+      "status": "verified",
+      "ref": "turn17view1"
+    },
+    {
+      "n": 3,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs03/",
+      "status": "verified",
+      "ref": "turn17view2"
+    },
+    {
+      "n": 4,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs04/",
+      "status": "verified",
+      "ref": "turn19view0"
+    },
+    {
+      "n": 5,
+      "url": "https://www.xswt.org.tw/?act=jieqianyuandi&ad_id=202503280055780&cmd=detail",
+      "status": "verified",
+      "ref": "turn19view1"
+    },
+    {
+      "n": 6,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs06/",
+      "status": "verified",
+      "ref": "turn20view0"
+    },
+    {
+      "n": 7,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs07/",
+      "status": "verified",
+      "ref": "turn20view1"
+    },
+    {
+      "n": 8,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs08/",
+      "status": "verified",
+      "ref": "turn21view0"
+    },
+    {
+      "n": 9,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs09/",
+      "status": "verified",
+      "ref": "turn21view1"
+    },
+    {
+      "n": 10,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs10/",
+      "status": "verified",
+      "ref": "turn22view0"
+    },
+    {
+      "n": 11,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs11/",
+      "status": "verified",
+      "ref": "turn22view1"
+    },
+    {
+      "n": 12,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs12/",
+      "status": "verified",
+      "ref": "turn23view0"
+    },
+    {
+      "n": 13,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs13/",
+      "status": "verified",
+      "ref": "turn23view1"
+    },
+    {
+      "n": 14,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs14/",
+      "status": "verified",
+      "ref": "turn24view0"
+    },
+    {
+      "n": 15,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs15/",
+      "status": "verified",
+      "ref": "turn24view1"
+    },
+    {
+      "n": 16,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs16/",
+      "status": "verified",
+      "ref": "turn25view0"
+    },
+    {
+      "n": 17,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs17/",
+      "status": "verified",
+      "ref": "turn25view1"
+    },
+    {
+      "n": 18,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs18/",
+      "status": "verified",
+      "ref": "turn26view0"
+    },
+    {
+      "n": 19,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs19/",
+      "status": "verified",
+      "ref": "turn26view1"
+    },
+    {
+      "n": 20,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs20/",
+      "status": "verified",
+      "ref": "turn27view0"
+    },
+    {
+      "n": 21,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs21/",
+      "status": "verified",
+      "ref": "turn27view1"
+    },
+    {
+      "n": 22,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs22/",
+      "status": "verified",
+      "ref": "turn28view0"
+    },
+    {
+      "n": 23,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs23/",
+      "status": "verified",
+      "ref": "turn28view1"
+    },
+    {
+      "n": 24,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs24/",
+      "status": "verified",
+      "ref": "turn29view0"
+    },
+    {
+      "n": 25,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs25/",
+      "status": "verified",
+      "ref": "turn29view1"
+    },
+    {
+      "n": 26,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs26/",
+      "status": "verified",
+      "ref": "turn30view0"
+    },
+    {
+      "n": 27,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs27/",
+      "status": "verified",
+      "ref": "turn30view1"
+    },
+    {
+      "n": 28,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs28/",
+      "status": "verified",
+      "ref": "turn31view0"
+    },
+    {
+      "n": 29,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs29/",
+      "status": "verified",
+      "ref": "turn31view1"
+    },
+    {
+      "n": 30,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs30/",
+      "status": "verified",
+      "ref": "turn32view0"
+    },
+    {
+      "n": 31,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs31/",
+      "status": "verified",
+      "ref": "turn33view0"
+    },
+    {
+      "n": 32,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs32/",
+      "status": "verified",
+      "ref": "turn33view1"
+    },
+    {
+      "n": 33,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs33/",
+      "status": "verified",
+      "ref": "turn34view0"
+    },
+    {
+      "n": 34,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs34/",
+      "status": "verified",
+      "ref": "turn34view1"
+    },
+    {
+      "n": 35,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs35/",
+      "status": "verified",
+      "ref": "turn35view0"
+    },
+    {
+      "n": 36,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs36/",
+      "status": "verified",
+      "ref": "turn35view1"
+    },
+    {
+      "n": 37,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs37/",
+      "status": "verified",
+      "ref": "turn36view0"
+    },
+    {
+      "n": 38,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs38/",
+      "status": "verified",
+      "ref": "turn36view1"
+    },
+    {
+      "n": 39,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs39/",
+      "status": "verified",
+      "ref": "turn37view0"
+    },
+    {
+      "n": 40,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs40/",
+      "status": "verified",
+      "ref": "turn37view1"
+    },
+    {
+      "n": 41,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs41/",
+      "status": "verified",
+      "ref": "turn38view0"
+    },
+    {
+      "n": 42,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs42/",
+      "status": "verified",
+      "ref": "turn38view1"
+    },
+    {
+      "n": 43,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs43/",
+      "status": "verified",
+      "ref": "turn39view0"
+    },
+    {
+      "n": 44,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs44/",
+      "status": "verified",
+      "ref": "turn39view1"
+    },
+    {
+      "n": 45,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs45/",
+      "status": "verified",
+      "ref": "turn40view0"
+    },
+    {
+      "n": 46,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs46/",
+      "status": "verified",
+      "ref": "turn40view1"
+    },
+    {
+      "n": 47,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs47/",
+      "status": "verified",
+      "ref": "turn41view0"
+    },
+    {
+      "n": 48,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs48/",
+      "status": "verified",
+      "ref": "turn41view1"
+    },
+    {
+      "n": 49,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs49/",
+      "status": "verified",
+      "ref": "turn42view0"
+    },
+    {
+      "n": 50,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs50/",
+      "status": "verified",
+      "ref": "turn42view1"
+    },
+    {
+      "n": 51,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs51/",
+      "status": "verified",
+      "ref": "turn43view0"
+    },
+    {
+      "n": 52,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs52/",
+      "status": "verified",
+      "ref": "turn43view1"
+    },
+    {
+      "n": 53,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs53/",
+      "status": "verified",
+      "ref": "turn44view0"
+    },
+    {
+      "n": 54,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs54/",
+      "status": "verified",
+      "ref": "turn44view1"
+    },
+    {
+      "n": 55,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs55/",
+      "status": "verified",
+      "ref": "turn45view0"
+    },
+    {
+      "n": 56,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs56/",
+      "status": "verified",
+      "ref": "turn45view1"
+    },
+    {
+      "n": 57,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs57/",
+      "status": "verified",
+      "ref": "turn46view0"
+    },
+    {
+      "n": 58,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs58/",
+      "status": "verified",
+      "ref": "turn46view1"
+    },
+    {
+      "n": 59,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs59/",
+      "status": "verified",
+      "ref": "turn47view0"
+    },
+    {
+      "n": 60,
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs60/",
+      "status": "verified",
+      "ref": "turn49view0"
+    }
+  ]
+}
