@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-03T23:02:23.411Z",
-  "version": "20261004native10",
+  "testedAt": "2026-10-04T01:59:20.049Z",
+  "version": "20261004native11",
   "total": 45,
   "passed": 45,
   "failed": 0,
@@ -208,7 +208,7 @@
     {
       "method": "vedic",
       "status": "verified",
-      "checks": 69,
+      "checks": 98,
       "missing": []
     },
     {
@@ -286,7 +286,7 @@
       "method": "qiongtong-source-clause-coverage",
       "entries": 120,
       "uniqueParagraphIds": 490,
-      "contextOnlyOccurrences": 916
+      "contextOnlyOccurrences": 908
     },
     {
       "method": "moon-voc-general-window-independence",
@@ -320,9 +320,9 @@
     },
     {
       "method": "vedic",
-      "characters": 105602,
-      "utf8Bytes": 130066,
-      "parts": 16,
+      "characters": 115276,
+      "utf8Bytes": 140434,
+      "parts": 17,
       "attachmentRequired": false
     },
     {

@@ -1,0 +1,52 @@
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Home animation failure cannot prevent opening or finishing the shuffle
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Phase initialization failure falls back to the illustrated ritual, never to a completed draw
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure after mounting rolls back its lock; the same visible button retries the same question and deck
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure before a dialog attaches releases the lock and leaves body scrolling intact
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A mixed-version caller throwing after play is cancelled without invoking return-to-input
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Deck preparation failure retries locally without changing question, spread or session epoch
+✓ All seven rituals complete once despite scene disposal and home-resume failures
+✓ Mid-gesture GPU errors leave user-led completion and cancellation available
+✓ Actual home scene clears a failed renderer before suspension, hover or remount can affect a ritual
+✗ Real Three.js resources are still released when renderer.dispose throws
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'three' imported from /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/shuffle-recovery-20260911.cjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:859:18)
+    at defaultResolve (node:internal/modules/esm/resolve:992:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+    at #resolve (node:internal/modules/esm/loader:683:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+    at node:internal/modules/esm/loader:632:32
+shuffle-recovery: 9 groups passed (fault injection, not phone-specific error reproduction).

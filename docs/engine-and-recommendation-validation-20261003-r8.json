@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T23:02:25.905Z",
+  "testedAt": "2026-10-04T01:46:24.588Z",
   "passed": 12,
   "results": [
     {
@@ -68,9 +68,9 @@
       "parts": 2
     },
     "vedic": {
-      "characters": 105602,
-      "bytes": 130066,
-      "parts": 16
+      "characters": 134641,
+      "bytes": 166989,
+      "parts": 20
     },
     "liuren": {
       "characters": 46842,

@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T23:02:26.116Z",
+  "testedAt": "2026-10-04T01:46:24.723Z",
   "passed": 9,
   "scope": "Simulated browser lifecycle events against actual ritual module; this is not a device rendering test",
   "results": [

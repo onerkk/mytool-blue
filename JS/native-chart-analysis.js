@@ -1,7 +1,7 @@
 /* Native rule calculations consume the actual chart. No question selects a chart. */
 (function(root){
   'use strict';
-  const VERSION='20261004native10',arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x)),mod=(n,m)=>((n%m)+m)%m;
+  const VERSION='20261004native11',arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x)),mod=(n,m)=>((n%m)+m)%m;
   const GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥'),GE=['木','木','火','火','土','土','金','金','水','水'],ZE=['水','土','木','木','土','火','火','土','金','金','土','水'],ELS=['木','火','土','金','水'];
   const HIDDEN={子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','戊','庚'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
   const KEYS=['year','month','day','hour'],LABELS=['年柱','月柱','日柱','時柱'],GENERAL_ELEMENT=['土','火','火','木','土','木','土','金','土','水','金','水'];
@@ -132,7 +132,23 @@
   function analyze(kind,c,options){check(analyzers[kind],'沒有此原生分析接口');const a=analyzers[kind](c,options);if(root.JYEngineComputationAudit)a.computationAudit=root.JYEngineComputationAudit.ensure(kind,c,a,options);else a.computationAudit={status:'unverified',checks:[],missing:[{id:'audit-module',reason:'計算查核元件未載入'}],scope:'缺少獨立計算查核，不宣稱已通過'};return a;}
   function denseRows(value){if(!value||typeof value!=='object')return value;if(Array.isArray(value)){if(value.length>=2&&value.every(v=>v&&typeof v==='object'&&!Array.isArray(v))){const columns=Object.keys(value[0]);if(value.every(v=>Object.keys(v).join('\0')===columns.join('\0')))return {$table:columns,rows:value.map(v=>columns.map(k=>denseRows(v[k])))};}return value.map(denseRows);}return Object.fromEntries(Object.entries(value).filter(([,v])=>v!==undefined&&typeof v!=='function').map(([k,v])=>[k,denseRows(v)]));}
   function seasonalSupplement(value){if(!value)return value;const v=copy(value);if(v.classicalClauses?.rootContext)v.classicalClauses.rootContext='十干實際根氣見同段functionalAssessment；條文rootPremise仍保留';return v;}
-  function compact(value){const seen=new Map();function walk(x,p){if(typeof x==='string'&&x.length>=80){const key='string:'+x;if(seen.has(key))return {$ref:seen.get(key)};seen.set(key,p);return x;}if(x==null||typeof x!=='object')return x;const key='object:'+JSON.stringify(x);if(key.length>150){if(seen.has(key))return {$ref:seen.get(key)};seen.set(key,p);}if(Array.isArray(x))return x.map((v,i)=>walk(v,p+'/'+i));return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,walk(v,p+'/'+k.replace(/~/g,'~0').replace(/\//g,'~1'))]));}return walk(value,'#');}
+  function compact(value){
+    const seen=new Map();
+    function reference(key,serialized,p){
+      if(seen.has(key)){const ref={$ref:seen.get(key)};if(JSON.stringify(ref).length<serialized.length)return ref;}
+      else seen.set(key,p);
+      return null;
+    }
+    function walk(x,p){
+      if(typeof x==='string'&&x.length>=32)return reference('string:'+x,JSON.stringify(x),p)||x;
+      if(x==null||typeof x!=='object')return x;
+      const serialized=JSON.stringify(x);
+      if(serialized.length>64){const ref=reference('object:'+serialized,serialized,p);if(ref)return ref;}
+      if(Array.isArray(x))return x.map((v,i)=>walk(v,p+'/'+i));
+      return Object.fromEntries(Object.entries(x).map(([k,v])=>[k,walk(v,p+'/'+k.replace(/~/g,'~0').replace(/\//g,'~1'))]));
+    }
+    return walk(value,'#');
+  }
   function compactLayer(p){return p?{northern:p.northern,layer:p.layer,year:p.year,month:p.month,context:p.context,policy:p.policy,hua:p.hua,palaces:p.palaces.map(x=>({periodPalace:x.periodPalace,branch:x.branch,natalPalace:x.natalPalace,transformations:x.transformations,opposedJi:x.opposedJi,flowStars:x.flowStars}))}:null;}
   function prompt(kind,c,question,options){const a=analyze(kind,c,options);if(kind==='bazi'&&a.annualSegments&&root.BaziSuiteCore){const ref=new Date(c.calculationPolicy.referenceInstant).getUTCFullYear(),s=root.BaziSuiteCore.promptScope(question,ref),n=a.annualSegments.length;if(s.requestedDecades){const allowed=new Set(arr(c.dayun).map((d,i)=>({d,i})).filter(x=>x.d.gz!=='小運').slice(0,s.requestedDecades).map(x=>x.i));a.annualSegments=a.annualSegments.filter(y=>allowed.has(y.decadeIndex));}if(s.mode!=='all')a.annualSegments=a.annualSegments.filter(y=>y.year>=s.start&&y.year<=s.end);a.coverage.computedAnnualSegments=n;a.coverage.annualSegments=a.annualSegments.length;a.exportScope=copy(s);}let payload=a;if(options?.supplement){const meta={schema:a.schema,version:a.version,method:a.method,coverage:a.coverage,computationAudit:root.JYEngineComputationAudit?.summary(a.computationAudit)||a.computationAudit,sources:a.sources.map(s=>({id:s.id,url:s.url})),unavailable:a.unavailable,copyPolicy:'補充前文已列的排盤事實；完整實算物件可從結果頁下載JSON，未要求的年度不塞入本題提示詞'};payload=kind==='bazi'&&!a.coverage.provisional?{...meta,seasonalCommander:a.seasonalCommander,seasonal:options.seasonalAlreadyListed?{reference:'同份提示詞的調候實盤條件完整資料；$table與$ref可還原，不重貼同一盤同一份證據。'}:seasonalSupplement(a.seasonal),functionalAssessment:root.JYBaziFunctional?.toText(a.functionalAssessment,v=>JSON.stringify(denseRows(v))),classicalAssessment:a.classicalAssessment,stemPairs:a.stemPairs,topicPlacements:a.items.slice(4).map(p=>({topic:p.label,placements:p.evidence[0].actualPlacements})),annualSegments:a.annualSegments,exportScope:a.exportScope}:kind==='ziwei'&&!a.coverage.provisional?{...meta,northern:a.northern,patternAssessment:a.patternAssessment,palaceRelations:a.items.map(p=>({palace:p.label,opposite:p.evidence[0].opposite.branch,trines:p.evidence[0].trines.map(x=>x.branch),borrowed:p.evidence[0].borrowed,flightsOut:p.evidence[0].flightsOut,selfHua:p.evidence[0].selfHua})),layers:Object.fromEntries(Object.entries(a.layers).map(([k,v])=>[k,Array.isArray(v)?v.map(compactLayer):compactLayer(v)])),factsAlreadyListed:'本命十二宮及全部本命星組已在前文列明；本段各運宮以branch、natalPalace指回原盤，不重貼相同本命星组。完整JSON保留全部原盤及疊盤。'}:kind==='compat'?{...meta,system:a.system,factsAlreadyListed:'原局、跨柱、雙向十神／飛化及同期運限已在前文具名資料段列出；這裡只補來源與範圍，不重貼同一事實'}:a;}return '【引擎原生作用資料】\n'+JSON.stringify(compact(options?.supplement?denseRows(payload):payload))+'\n'+(options?.supplement?'$table列名與rows每行依序還原為完整物件；':'')+'$ref 指向本段 JSON 中首次完整值（物件或文字），必須解析參照。'+(options?.supplement?'本段補充資料須與前述原局、模型及歲運資料合讀。':'沒有刪除本段計算事實。')+'未計算項目不得補造。';}
   function render(kind,c,options){const a=analyze(kind,c,options);return root.JYNativeAnalysisView.render(kind,c,a);}

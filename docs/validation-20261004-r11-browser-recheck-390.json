@@ -1,0 +1,25 @@
+{
+  "testedAt": "2026-10-04T01:58:58.812Z",
+  "release": "20261004native11",
+  "mode": "browser-recheck",
+  "completed": 2,
+  "total": 2,
+  "passed": 2,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/question-reference-browser-r11-20261004.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.3,
+      "log": "docs/qa-r11-browser-recheck-390/02.log"
+    },
+    {
+      "command": "node tests/native-entry-browser-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 27.177,
+      "log": "docs/qa-r11-browser-recheck-390/01.log"
+    }
+  ]
+}

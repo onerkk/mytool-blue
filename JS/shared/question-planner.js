@@ -7,7 +7,7 @@ function analyzeReadingQuestion(value) {
   var raw=String(value||'').trim(), q=raw;
   try { q=q.normalize('NFKC'); } catch (_) {}
   var conversions={
-    '选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','机会':'機會','金额':'金額','奖金':'獎金','收入':'收入','概率':'機率','几率':'機率','几岁':'幾歲','时间':'時間','为什么':'為什麼','怎么':'怎麼','如何':'如何','谁':'誰','哪个':'哪個','哪一个':'哪一個','多少钱':'多少錢','几张':'幾張','会不会':'會不會','有没有':'有沒有','能不能':'能不能','可不可以':'可不可以','是否':'是否'
+    '选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','机会':'機會','金额':'金額','奖金':'獎金','收入':'收入','概率':'機率','几率':'機率','几岁':'幾歲','时间':'時間','为什么':'為什麼','怎么':'怎麼','如何':'如何','谁':'誰','哪个':'哪個','哪一个':'哪一個','多少钱':'多少錢','几张':'幾張','会不会':'會不會','有没有':'有沒有','能不能':'能不能','可不可以':'可不可以','是否':'是否','现任':'現任','年底前':'年底前','会':'會','出现':'出現','体':'體','吗':'嗎','岁':'歲','龄':'齡','纪':'紀','轻':'輕','对方':'對方','对象':'對象','认识':'認識'
   };
   Object.keys(conversions).forEach(function(k){q=q.split(k).join(conversions[k]);});
   // Metalinguistic correction is not event content:「不是在問X，而是Y」means Y is the active query.
@@ -207,6 +207,25 @@ function analyzeReadingQuestion(value) {
     var found=[];
     SUBJECT_WORDS.slice().sort(function(a,b){return b.length-a.length;}).forEach(function(w){if(s.indexOf(w)>=0)found.push(w);});
     return unique(found).filter(function(w){return !found.some(function(v){return v!==w && v.length>w.length && v.indexOf(w)>=0;});});
+  }
+  // A relational exclusion is a constraint on the new participant, not a
+  // positive mention of the excluded person. Retain its surface and scope.
+  function participantReference(s){
+    var t=String(s||'').replace(/\s/g,''), excluded=[], spans=[], match;
+    var re=/(?:非|不是|並非|不屬於|不包含|排除|除了)(現任(?:女友|男友|伴侶|對象|妻子|丈夫)?)/g;
+    while((match=re.exec(t))){excluded.push({surface:match[0],entity:match[1],relation:'excluded_from_queried_participant'});spans.push([match.index,match.index+match[0].length]);}
+    var person=t.match(/(?:新|未來|另一(?:個|位|名)?|別的|其他)(?:女性|女生|男性|男生|對象|桃花|伴侶)|(?:女性|女生|男性|男生)(?:桃花)?|(?:肉體)?桃花/);
+    var existential=/(?:出現|遇到|遇見|認識(?!的)|有|來到)/.test(t);
+    var directExcluded=/^(?:非|不是|並非)現任/.test(t)&&!/(?:現任會|現任是否)/.test(t);
+    var introduced=[];
+    if(person&&(existential||directExcluded)){
+      var label=person[0],gender=/女性|女生/.test(label)?'female':/男性|男生/.test(label)?'male':'unspecified';
+      if(excluded.length)label='非現任'+(gender==='female'?'女性':gender==='male'?'男性':'對象');
+      var collective=t.match(/(?:兩|二|三|四|五|多|數|幾)位(?:非現任)?(?:女性|女生|男性|男生|對象|桃花)/);
+      if(collective)label=collective[0];
+      introduced.push({surface:person[0],entity:label,gender:gender,bindingStatus:'conditional_unbound',existence:'queried_not_verified'});
+    }
+    return {introduced:introduced,excluded:excluded,scope:'current_clause',policy:'人物排除限制不證明新人物或事件已存在'};
   }
   function extractCoordinatedActors(s){
     var text=String(s||'').replace(/[？?。；;！!]/g,'').trim();
@@ -508,7 +527,12 @@ function analyzeReadingQuestion(value) {
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), reference=participantReference(s), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    if(reference.introduced.length){
+      entities=entities.filter(function(e){return !reference.excluded.some(function(x){return x.entity.indexOf(e)>=0;})&&!/^(?:女性|女生|男性|男生)$/.test(e);});
+      entities=unique(entities.concat(reference.introduced.map(function(x){return x.entity;})));
+      if(!subject||/^(?:除了|排除|非現任|不是現任)/.test(subject))subject=reference.introduced[0].entity;
+    }
     // A topic noun such as「公司體檢」is not automatically the grammatical actor of an item-list question.
     // An item-list question is asked by the querent; a topic noun like「公司體檢」
     // is the subject matter, not an actor. Retain an explicit person as subject.
@@ -524,7 +548,7 @@ function analyzeReadingQuestion(value) {
       yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),truthGate:!!(enumeration&&enumeration.truthGate),enumerationRequest:enumeration,
       temporal:temporal,
       discourse:{continuation:CONTINUATION.some(function(w){return s.indexOf(w)===0;}),conditional:/^(?:如果|若|假如)|(?:如果|若|假如).*(?:就|才|再)/.test(s)},
-      entities:entities,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],
+      entities:entities,entityReference:reference,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],coreferenceSourceIndex:null,
       evaluatorRef:evalFrame&&evalFrame.evaluatorRef||null,targetRef:evalFrame&&evalFrame.targetRef||null,targetSource:evalFrame&&evalFrame.targetRef?'surface':'none',facetRef:null,relationRef:evalFrame&&evalFrame.relation||null,evaluation:evalFrame,
       semanticFrame:evalFrame?'evaluation':null,
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
@@ -576,10 +600,12 @@ function analyzeReadingQuestion(value) {
     return frame;
   }
 
-  function pronounAtStart(text){var m=String(text||'').match(/^(他|她|對方|這個人|那個人)/);return m?m[1]:null;}
+  function pronounAtStart(text){var m=String(text||'').match(/^(他|她|對方|這個人|那個人|該名女性|該名男性|該女性|該男性|該對象|這位女性|那位女性)/);return m?m[1]:null;}
   function isPluralCollective(ref){return /(?:[兩二三四五六七八九十幾多][位個名]|多位|數位|一群|們|雙方|兩人|二人)/.test(String(ref||''));}
   function actorCandidatesFromFrame(frame){
     if(!frame)return [];
+    if(frame.entityReference&&frame.entityReference.introduced.length)return frame.entityReference.introduced.map(function(x){return x.entity;});
+    if(frame.subjectSource==='coreference')return [frame.subjectRef];
     var pool=[];
     var ref=String(frame.subjectRef||'').trim();
     if(ref){
@@ -587,7 +613,7 @@ function analyzeReadingQuestion(value) {
       if(parts.length>1)pool=pool.concat(parts); else if(!/^(?:我|我們|你|你們)$/.test(ref))pool.push(ref);
     }
     (frame.entities||[]).forEach(function(e){if(!/^(?:我|我們|你|你們|他|她|他們|她們)$/.test(e))pool.push(e);});
-    return unique(pool);
+    return unique(pool).filter(function(e){return !pool.some(function(v){return v!==e&&v.length>e.length&&v.indexOf(e)>=0;});});
   }
   function resolvePronounFromContext(pron, priorFrames){
     for(var k=priorFrames.length-1;k>=0;k--){
@@ -596,12 +622,12 @@ function analyzeReadingQuestion(value) {
       // A singular pronoun cannot uniquely resolve a quantified/plural collective whose members were not individually named.
       if(base.length===1 && isPluralCollective(base[0]))return {status:'ambiguous',candidates:[base[0]],sourceIndex:k,reason:'plural_collective'};
       var gendered=base;
-      if(pron==='她'){
+      if(pron==='她'||/女性$/.test(pron)){
         var knownFemale=base.filter(function(e){return /(?:女|妻|老婆|媽媽|母|姊|姐|妹|閨蜜|阿姨|姑|婆)/.test(e);});
         var knownMale=base.filter(function(e){return /(?:男|夫|老公|爸爸|父|哥|弟|叔|伯|舅)/.test(e);});
         var unknown=base.filter(function(e){return knownFemale.indexOf(e)<0&&knownMale.indexOf(e)<0;});
         gendered=knownFemale.length?knownFemale:unknown;
-      } else if(pron==='他'){
+      } else if(pron==='他'||/男性$/.test(pron)){
         var km=base.filter(function(e){return /(?:男|夫|老公|爸爸|父|哥|弟|叔|伯|舅)/.test(e);});
         var kf=base.filter(function(e){return /(?:女|妻|老婆|媽媽|母|姊|姐|妹|閨蜜|阿姨|姑|婆)/.test(e);});
         var un=base.filter(function(e){return km.indexOf(e)<0&&kf.indexOf(e)<0;});
@@ -670,9 +696,9 @@ function analyzeReadingQuestion(value) {
     if(pron&&prior.length){
       var coref=resolvePronounFromContext(pron,prior);
       if(coref.status==='resolved'){
-        cur.subjectRef=coref.value;cur.subjectSource='coreference';cur.coreferenceCandidates=coref.candidates.slice();
+        cur.subjectRef=coref.value;cur.subjectSource='coreference';cur.coreferenceCandidates=coref.candidates.slice();cur.coreferenceSourceIndex=coref.sourceIndex;
       } else if(coref.status==='ambiguous'){
-        cur.subjectRef=pron;cur.subjectSource='surface_pronoun_ambiguous_context';cur.coreferenceCandidates=coref.candidates.slice();
+        cur.subjectRef=pron;cur.subjectSource='surface_pronoun_ambiguous_context';cur.coreferenceCandidates=coref.candidates.slice();cur.coreferenceSourceIndex=coref.sourceIndex;
       } else {
         // A pronoun may be deictic to a person known to the user but not named in the current text.
         cur.subjectRef=pron;cur.subjectSource='surface_pronoun_external';cur.coreferenceCandidates=[];
@@ -828,7 +854,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.2.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.3.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -840,7 +866,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.2.0',status:coverageStatus,
+    version:'4.3.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -849,7 +875,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.3.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };

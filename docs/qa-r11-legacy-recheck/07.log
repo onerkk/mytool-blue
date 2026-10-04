@@ -1,0 +1,17 @@
+✓ Mobile completion action stays reachable while the story dialog scrolls
+✓ tarot: director keeps the scene user-led and settles once after visible shots
+✓ lenormand: director keeps the scene user-led and settles once after visible shots
+✓ bazi: director keeps the scene user-led and settles once after visible shots
+✓ compat: director keeps the scene user-led and settles once after visible shots
+✓ ziwei: director keeps the scene user-led and settles once after visible shots
+✓ meihua: director keeps the scene user-led and settles once after visible shots
+✓ oracle: director keeps the scene user-led and settles once after visible shots
+✓ ootk: director keeps the scene user-led and settles once after visible shots
+✓ Skip and cancellation dispose a live director, including stale callbacks
+✓ Reduced motion can be selected during a shot without completing the reading
+✓ All-reveal keeps actual faces, reversal and order and never invents a new draw
+✓ Failed film playback remains decorative and cannot block the scene
+✓ Late media success after cancellation cannot attach a stale film
+✓ Eight new 3D sets have finite transforms and release every geometry, material and timer
+✓ Opening of the Key starts in manual chapter mode and cancellation releases the scene
+story-immersion: 16 groups passed; simulated DOM and scene structure, not physical-device or generated-film validation.

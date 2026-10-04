@@ -1,0 +1,11 @@
+PASS 1983 reference: actual minute, natal palaces, transformations and 2026–2029 positions
+PASS 1994 late Zi: current is June 20, explicit local 23-hour policy advances to June 21
+PASS Minute boundaries remain traceable: 14:59 / 15:01, 22:59 / 23:01, midnight
+PASS Leap month day 15/16 follows explicit fixLeap, lunar New Year follows Taipei midnight
+PASS Conflicting policies and mismatched birth minutes stop calculation
+PASS AI facts contain no heuristic scores/levels/themes; geometry and flight origins remain exact
+PASS Cross-chart projections follow the receiving chart; natal state is never overwritten
+PASS Both participants use the same annual windows; each decade is selected for the target year
+PASS Unknown time never creates a noon Ziwei chart, false overlays, or projected transformations
+PASS All eight scenarios retain role focus, complete prompts and one material recommendation ending
+Relationship policy / integration: 10 groups passed.

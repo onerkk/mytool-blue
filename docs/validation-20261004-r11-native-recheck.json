@@ -1,0 +1,18 @@
+{
+  "testedAt": "2026-10-04T02:04:44.374Z",
+  "release": "20261004native11",
+  "mode": "native-recheck",
+  "completed": 1,
+  "total": 1,
+  "passed": 1,
+  "failed": 0,
+  "results": [
+    {
+      "command": "npm run test:native",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 391.137,
+      "log": "docs/qa-r11-native-recheck/01.log"
+    }
+  ]
+}

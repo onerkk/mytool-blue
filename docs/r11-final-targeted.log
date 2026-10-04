@@ -1,0 +1,19 @@
+PASS reported non-current person and exact-age query agree across both semantic graphs
+PASS negated relationship, exclusion preface and simplified variants preserve queried person
+PASS explicit current partner and subsequent topic switch bind to the latest actual participant
+PASS multiple named women and plural unknown women keep ambiguity instead of assigning age to one
+PASS relative-age comparison retains its own operator, comparator and original question
+PASS all fifteen methods export the same binding and preserve age precision plus same-cast repair rules
+PASS a saved old incorrect reference is detected and corrected as annotation while every actual card stays unchanged
+PASS standalone Lenormand branches and labels no longer name the excluded partner
+PASS PVR5 printed Examples7/8/9 and the conflicting introductory Bhava definition all calculate independently
+PASS PVR5 Exercise8 uses the preceding sunrise across midnight and seconds without resetting at midnight
+PASS Qiongtong Gui-Wu explicit two Ren and one Geng exposed counts are computed, not mere presence
+PASS Qiongtong Gui-You separated Bing/Xin exposure differs from adjacent exposure with the same stems
+PASS Qiongtong Ren-Zi Ding in the hour stem is not satisfied by Ding in the year stem
+PASS native repeated policies use shorter references and restore exactly, including escaped pointer keys
+PASS independent decoder exactly restores all twenty special-point matrices without omitted cells or fields
+PASS actual astronomical timed upagraha profiles and all twenty special-point vargas are present
+PASS special-point corruption is rejected and unknown birth time cannot manufacture timed variants
+PASS fifteen complete-text prompts retain actual chart records, bindings, all chunks and shop footer
+R11 18/18 groups passed

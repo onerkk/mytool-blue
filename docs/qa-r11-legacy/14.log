@@ -1,0 +1,11 @@
+✓ Fourteen card types and the public render/download APIs exist
+✓ Rendering preserves source data and produces 2160 × 2700
+✓ RWS inverse rotates the actual image; Book T does not inherit an inverse
+✓ Every tarot card survives the 3–54 card layouts
+✓ Lenormand 3/5 stay on one line; comparison has distinct A/shared/B rows
+✓ Lenormand nine-square and 4×8+4 preserve row order and independent tail
+✓ Missing chart/poem data cannot display a fabricated personal result
+✓ All 60 oracle poems retain their exact four columns, right to left
+✓ Long user text is visibly shortened; prompt/result data remains untouched
+✓ Oracle buttons use the unified engine; original question/spread callers remain connected
+share-card-regression: 10 groups passed. Canvas contracts only; real-browser/mobile sharing is a separate gate.

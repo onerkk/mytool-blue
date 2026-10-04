@@ -1,0 +1,60 @@
+{
+  "testedAt": "2026-10-04T01:46:55.731Z",
+  "release": "20261004native11",
+  "mode": "core",
+  "completed": 7,
+  "total": 7,
+  "passed": 6,
+  "failed": 1,
+  "results": [
+    {
+      "command": "npm run test:r11",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 18.767,
+      "log": "docs/qa-r11-core/01.log"
+    },
+    {
+      "command": "npm run test:r10",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 27.323,
+      "log": "docs/qa-r11-core/02.log"
+    },
+    {
+      "command": "npm run test:r9",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 21.729,
+      "log": "docs/qa-r11-core/03.log"
+    },
+    {
+      "command": "npm run test:completion",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 24.969,
+      "log": "docs/qa-r11-core/04.log"
+    },
+    {
+      "command": "npm run test:r8",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 20.683,
+      "log": "docs/qa-r11-core/06.log"
+    },
+    {
+      "command": "npm run test:prompt-budget",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 43.469,
+      "log": "docs/qa-r11-core/05.log"
+    },
+    {
+      "command": "npm run test:native",
+      "status": "failed",
+      "exitCode": 1,
+      "seconds": 30.997,
+      "log": "docs/qa-r11-core/07.log"
+    }
+  ]
+}

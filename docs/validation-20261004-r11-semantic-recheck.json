@@ -1,0 +1,95 @@
+{
+  "testedAt": "2026-10-04T02:01:59.106Z",
+  "release": "20261004native11",
+  "mode": "semantic-recheck",
+  "completed": 12,
+  "total": 12,
+  "passed": 12,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/tarot-native-structure-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.284,
+      "log": "docs/qa-r11-semantic-recheck/01.log"
+    },
+    {
+      "command": "node tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.13,
+      "log": "docs/qa-r11-semantic-recheck/03.log"
+    },
+    {
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.418,
+      "log": "docs/qa-r11-semantic-recheck/02.log"
+    },
+    {
+      "command": "node scripts/build-question-planner.cjs --check",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.056,
+      "log": "docs/qa-r11-semantic-recheck/05.log"
+    },
+    {
+      "command": "node tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.291,
+      "log": "docs/qa-r11-semantic-recheck/04.log"
+    },
+    {
+      "command": "node tests/question-routing-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.709,
+      "log": "docs/qa-r11-semantic-recheck/06.log"
+    },
+    {
+      "command": "node tests/reading-workflow-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.464,
+      "log": "docs/qa-r11-semantic-recheck/08.log"
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.258,
+      "log": "docs/qa-r11-semantic-recheck/09.log"
+    },
+    {
+      "command": "node tests/causal-question-regression-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.168,
+      "log": "docs/qa-r11-semantic-recheck/10.log"
+    },
+    {
+      "command": "node tests/semantic-review-followup-20260928.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.121,
+      "log": "docs/qa-r11-semantic-recheck/11.log"
+    },
+    {
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.323,
+      "log": "docs/qa-r11-semantic-recheck/07.log"
+    },
+    {
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 6.657,
+      "log": "docs/qa-r11-semantic-recheck/12.log"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "testedAt": "2026-10-04T02:01:21.812Z",
+  "release": "20261004native11",
+  "mode": "browser-visual",
+  "width": 1280,
+  "completed": 2,
+  "total": 2,
+  "passed": 2,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/question-reference-browser-r11-20261004.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 3.832,
+      "log": "docs/qa-r11-browser-visual-1280/02.log"
+    },
+    {
+      "command": "node tests/ritual-navigation-browser-r8-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 12.951,
+      "log": "docs/qa-r11-browser-visual-1280/01.log"
+    }
+  ]
+}

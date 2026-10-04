@@ -1,6 +1,6 @@
 {
-  "testedAt": "2026-10-03T23:02:53.019Z",
-  "version": "20261004native10",
+  "testedAt": "2026-10-04T01:45:52.196Z",
+  "version": "20261004native11",
   "passed": 32,
   "results": [
     {
@@ -156,9 +156,9 @@
     },
     {
       "method": "vedic",
-      "characters": 105602,
-      "utf8Bytes": 130066,
-      "parts": 16,
+      "characters": 134641,
+      "utf8Bytes": 166989,
+      "parts": 20,
       "requiresAttachment": false
     },
     {

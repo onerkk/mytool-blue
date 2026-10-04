@@ -1,0 +1,48 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:native
+> node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs && node tests/vedic-bhava-strength-20261003.cjs && node tests/liuren-shensha-20261003.cjs && node tests/vedic-panchanga-av-20261003.cjs
+
+PASS 15 methods consume real records without mutating charts; complete JSON and HTML preserve scope
+PASS Independent ten-god and directional five-element tables
+PASS Bazi annual segments retain both sides of a luck transition and independently reconstruct all links
+PASS Unknown Bazi export has only three pillars and excludes temporary-hour strength/luck claims
+PASS Ziwei twelve actual trines/oppositions, 14 major stars, 48 flights and 12 monthly overlays
+PASS Western active return changes only at the actual solar-return instant
+PASS Ziwei daily/hourly locations: year/month/leap/day boundaries, twelve hours and four real transformations
+PASS PVR published avastha inputs use the state-only interface; sign-only D9 dignity avoids fictitious precision
+PASS Published Raman Standard Horoscope: Sun Saptavargaja 90 and Sthana 198.0
+PASS Vedic six-strength totals, endpoint/boundary values, independent tropical angles and unknown-time contract
+PASS Published dignity tables and two consistent examples; discrepant Cancer answer is recorded
+PASS Requested first two Bazi decades export only those actually calculated decades
+PASS Two unknown Ziwei birth clocks do not fabricate compatibility overlays
+PASS All 20 varga house owners/occupants and three exact active dasha intervals
+PASS Unknown Vedic and Western clocks never introduce varga houses, active dasha or solar return
+PASS Liuren twelve generals and inner/outer battle retain element direction and emptiness
+PASS 4096 line states: Yijing geometry and Liuyao changing line facts remain exact
+PASS 384 Meihua charts preserve original body; pure Qian/Kun use changed nuclear chart
+PASS Name comparison includes original, every candidate and all pair calculations
+PASS 1931 original cycle examples remain auditable in actual five-grid output
+PASS Compatibility preserves directed ten gods and native cross-pillar data
+PASS Personality axis outcomes are independently reproduced from exported numeric inputs
+PASS 156 RWS orientations retain actual card identity, direction, meaning and unknown-direction gap
+PASS Lenormand independent 3x3, 8x4+4, 9x4 geometry; choices and branches never cross
+PASS OOTK incomplete/abandoned rounds retain records without being counted completed
+PASS OOTK not-started state keeps zero operations and explicitly withholds divination
+FAIL Combined prompt with native modules keeps all four systems/people in a practical scoped export
+AssertionError [ERR_ASSERTION]: 150121
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/native-analysis-20261003.cjs:120:2
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/native-analysis-20261003.cjs:4:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/native-analysis-20261003.cjs:118:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+PASS Oracle lines retain exact poem, source and literal condition positions
+PASS Prompt integration includes calculated native structures; source chart stays unchanged
+PASS All compact JSON pointers resolve to present complete evidence without a cycle
+PASS User input is escaped in native HTML and no capability becomes a fabricated total
+{"passed":30,"total":31}

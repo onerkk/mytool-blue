@@ -1,0 +1,38 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r9
+> node tests/engine-functional-r9-20261003.cjs
+
+PASS actual four-branch roots use every hidden stem, with exact and element roots distinct
+PASS grave roots retain literal storage without requiring a clash to open them
+PASS a clash is actual evidence and does not erase a root
+PASS yin longevity analogies never fabricate hidden wood in Wu or fire in You
+PASS invalid stems and malformed pillars do not certify complete calculations
+PASS unknown birth time excludes all full-chart functional judgments
+PASS intervening controller blocks an actual five-stem pair
+PASS a distant year-hour pair is retained as partial without a manufactured percentage
+PASS day-self combinations do not remove the day masters own spouse or officer
+PASS an adjacent rival can preempt a more distant day-self pair
+PASS contested adjacent pairs are distinguished from separated partners
+PASS six printed pure-mixed examples reproduce their role mechanisms
+PASS Jia-Chen Ren is retained as a printed exception and never inserted into hidden stems
+PASS the four source ordered-rescue cases use actual year-month-hour positions
+PASS reverse cases with an adverse hour are distinctly recorded
+PASS nine position fixtures distinguish seven printed layouts and two reconstructions
+PASS BPHS literal-loss and opposite-polarity variants compute separate natures
+PASS equal-count raw-bala party sums and strongest-member variants may disagree
+PASS equal strength is mixed while missing node raw-bala remains undetermined
+PASS four actual entry instants have 196 phala rows and 28 independently computed BPHS strength rows
+PASS all nine category points and complementary half-phala arithmetic are exact
+PASS Mercury joined to any malefic uses BPHS literal nature with commentary separate
+PASS occupants take priority over aspectors and lord fallback
+PASS source Sun-first-house, exalted-malefic and sole-node exceptions are computed
+PASS own house lord support is local and the natural-only alternative is preserved
+PASS shared birth anchors select only Lagna for every BPHS entry
+PASS a requested non-current month recomputes its actual entry and BPHS wheels
+PASS Bazi compatibility keeps separate A and B functional facts and hides unknown-hour judgments
+PASS name with real matching birth keeps the functional chart and rejects an unknown hour
+PASS lossless dense rows and JSON references expand to unchanged actual data
+PASS all 120 Qiongtong source entries retain context and any literal root predicates use actual branches
+PASS all fifteen complete plain-text prompts keep full-copy chunks, facts and the exact store footer
+R9 32 groups passed

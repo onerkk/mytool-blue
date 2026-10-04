@@ -1,0 +1,47 @@
+{
+  "testedAt": "2026-10-04T01:48:00.570Z",
+  "release": "20261004native11",
+  "mode": "browser",
+  "width": 1280,
+  "completed": 5,
+  "total": 5,
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/native-entry-browser-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 25.412,
+      "log": "docs/qa-r11-browser-1280/01.log"
+    },
+    {
+      "command": "node tests/native-other-entry-browser-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 47.883,
+      "log": "docs/qa-r11-browser-1280/02.log"
+    },
+    {
+      "command": "node tests/native-profile-entry-browser-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.345,
+      "log": "docs/qa-r11-browser-1280/03.log"
+    },
+    {
+      "command": "node tests/ritual-navigation-browser-r8-20261003.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 11.376,
+      "log": "docs/qa-r11-browser-1280/04.log"
+    },
+    {
+      "command": "node tests/question-reference-browser-r11-20261004.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.172,
+      "log": "docs/qa-r11-browser-1280/05.log"
+    }
+  ]
+}

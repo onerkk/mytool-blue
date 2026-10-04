@@ -1,0 +1,110 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:native
+> node tests/native-analysis-20261003.cjs && node tests/vedic-strength-20261003.cjs && node tests/liuren-classes-20261003.cjs && node tests/name-original-20261003.cjs && node tests/engine-supplements-20261003.cjs && node tests/oracle-register-20261003.cjs && node tests/vedic-bhava-strength-20261003.cjs && node tests/liuren-shensha-20261003.cjs && node tests/vedic-panchanga-av-20261003.cjs
+
+PASS 15 methods consume real records without mutating charts; complete JSON and HTML preserve scope
+PASS Independent ten-god and directional five-element tables
+PASS Bazi annual segments retain both sides of a luck transition and independently reconstruct all links
+PASS Unknown Bazi export has only three pillars and excludes temporary-hour strength/luck claims
+PASS Ziwei twelve actual trines/oppositions, 14 major stars, 48 flights and 12 monthly overlays
+PASS Western active return changes only at the actual solar-return instant
+PASS Ziwei daily/hourly locations: year/month/leap/day boundaries, twelve hours and four real transformations
+PASS PVR published avastha inputs use the state-only interface; sign-only D9 dignity avoids fictitious precision
+PASS Published Raman Standard Horoscope: Sun Saptavargaja 90 and Sthana 198.0
+PASS Vedic six-strength totals, endpoint/boundary values, independent tropical angles and unknown-time contract
+PASS Published dignity tables and two consistent examples; discrepant Cancer answer is recorded
+PASS Requested first two Bazi decades export only those actually calculated decades
+PASS Two unknown Ziwei birth clocks do not fabricate compatibility overlays
+PASS All 20 varga house owners/occupants and three exact active dasha intervals
+PASS Unknown Vedic and Western clocks never introduce varga houses, active dasha or solar return
+PASS Liuren twelve generals and inner/outer battle retain element direction and emptiness
+PASS 4096 line states: Yijing geometry and Liuyao changing line facts remain exact
+PASS 384 Meihua charts preserve original body; pure Qian/Kun use changed nuclear chart
+PASS Name comparison includes original, every candidate and all pair calculations
+PASS 1931 original cycle examples remain auditable in actual five-grid output
+PASS Compatibility preserves directed ten gods and native cross-pillar data
+PASS Personality axis outcomes are independently reproduced from exported numeric inputs
+PASS 156 RWS orientations retain actual card identity, direction, meaning and unknown-direction gap
+PASS Lenormand independent 3x3, 8x4+4, 9x4 geometry; choices and branches never cross
+PASS OOTK incomplete/abandoned rounds retain records without being counted completed
+PASS OOTK not-started state keeps zero operations and explicitly withholds divination
+PASS Combined prompt with native modules keeps all four systems/people in a practical scoped export
+PASS Oracle lines retain exact poem, source and literal condition positions
+PASS Prompt integration includes calculated native structures; source chart stays unchanged
+PASS All compact JSON pointers resolve to present complete evidence without a cycle
+PASS User input is escaped in native HTML and no capability becomes a fabricated total
+{"passed":31,"total":31}
+PASS Raman printed Example 48: five Cheshta values, independent given mean/true/seeghra inputs
+PASS Raman printed Example 55: all seven signed Drik strengths, Mercury combust
+PASS Raman Examples 20-22: 1918 Ahargana and year/month/day lords independently recorded
+PASS Mean-motion epoch and printed motions reproduce continuous rates without coercing table errors
+PASS Directed ordinary and special aspect breakpoints retain selected Raman/Santanam profiles
+PASS Temporal endpoint values: apparent midnight/noon, lunar phase and north/south Ayana
+PASS Twelve Sripathi centres/sandhis cover the circle once; boundaries are half-open
+PASS Full seven-ledger arithmetic, minimum ratios and explicit luminary/variant rules
+PASS Planetary war: five-graha eligibility, one-degree exclusion, conservation and circular proximity
+PASS Before-sunrise day/Hora retains preceding date; on-sunrise switches by real event
+PASS Unknown time and polar absence withhold complete totals and never publish fictitious rankings
+PASS Prompt, native activation and full JSON all consume the same calculated strength ledger
+{"passed":12,"total":12}
+PASS Published 課經 charts independently establish their named class and actual transmissions
+PASS Original 行年 examples, 60-year cycle and all ages 1–150 keep valid 干支
+PASS Published two-person 德孕 and 旺孕 require their actual separate inputs
+PASS Ancient lunar-mansion table repeats each of six specified mansions and preserves real calendar limits
+PASS 四立、四離 and 分至 are computed from solar-term civil dates, including timezone crossings
+PASS All 720 symbolic charts × 2 noble modes × 12 month contexts execute all 64 rule families without unknown math
+PASS Missing inputs remain tri-valued, prompt/native export keeps calculated rule evidence
+{"passed":7,"total":7}
+PASS All 81 independently numbered source rows, printed pages and canvas IDs are preserved in offline bundle
+PASS Every source row is bundled; actual five-grid inputs preserve 2–81 and the 81→1 alias
+PASS Original conditional meanings are not replaced by modern favourable-number labels
+{"passed":3,"total":3}
+PASS 24 independent Swiss ARMC geometries, including explicitly rejected polar Placidus
+PASS 32 independently timed progressed charts, two angle policies and all four house systems
+[computeZiwei] 排盤失敗: 未支援的流曜設定。 Error: 未支援的流曜設定。
+    at Object.computeZiwei (ziwei:282:88)
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-supplements-20261003.cjs:22:297
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-supplements-20261003.cjs:6:27)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/engine-supplements-20261003.cjs:13:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+PASS Five Ziwei time layers use their own stem/branch; all sixty annual ganzhi match author position tables
+PASS All twelve primary commander schedules and exact fractional-day boundaries
+PASS Eight primary pattern matrices retain 63 clauses, real roots and three-state qualitative decisions
+PASS Exact 劫財 and complete combinations are distinct from 比肩 and incomplete arches
+PASS Supplemental real prompt and JSON retain eight-pattern commander and progressed houses
+PASS All sixty actual primary poems, five explicit absent fields and 300 original story titles
+PASS Wrong edition, same-number foreign poem, fake source and missing register never get a reading
+PASS Corrupt mixed paragraphs do not become advice; incompatible source conditions stay distinct
+PASS All sixty native result/export records retain unique interpretation, 29 category slots and edition evidence
+PASS Actual sixty-lot prompt entry carries source audits and reviewed structural conditions
+PASS Raman IX Example 59: twelve printed direction/aspect components and independent lord strengths
+PASS Four sign groups, Sagittarius/Capricorn 15-degree boundaries and all twelve direction distances
+PASS Residential ratios: both half widths, unequal quadrant geometry and every sandhi
+PASS Runtime twelve-house sums, seven aspects per house, nine residents and distinct whole-sign lords
+PASS Mercury always full benefic for house aspects even while planetary Drik sees combustion
+PASS Unknown clock/polar incomplete lord totals keep unavailable separate from zero
+PASS Native panel, real prompt data and immutable JSON retain exactly the same computed house ledger
+{"passed":7,"total":7}
+PASS Published 1998-11-30 chart independently matches 辛巳日寅將午時 and winter 天目 on branch upper
+PASS All twelve monthly tables use independent primary endpoints and preserve stem/direction distinctions
+PASS Sixty annual ganzhi match independent twelve-god sequence, general and stem tables
+PASS All daily stems/branches, real xun stems, multi-branch officers and Yin-day tile opposition
+PASS All 290 registry rules execute over 720 day/rotation charts and twelve actual month indices
+PASS Missing year/month input, fixed-ganzhi establishment and unresolved source text never become false facts
+PASS Real native prompt, participant upper hits and JSON stay source-aware and do not mutate registry
+{"passed":7,"total":7}
+PASS PVR printed Examples 40, 41, 43: complete Mercury reduction and Rasi77/Graha75/Sodhya152
+PASS PVR Example42 all five occupation cases; independent classical equal and zero exceptions
+PASS All20 actual divisional charts retain raw337, 7 BAV totals, 8-source PAV and reductions for all5 lord pairs
+PASS PVR angular Examples2–3 and all60 Karana half-tithis, full/new Moon and27 Yoga names
+PASS 8 independent native Swiss sidereal cases /64 real Sun-Moon crossings, 1900–2100, both ayanamsas
+PASS Each angular crossing switches exactly once across the computed one-second bracket; no midnight weekday switch
+PASS Unknown clock and polar solar absence withhold Vaara/complete claim while retaining calculable angular data
+PASS Same entire AV/Pinda/Panchanga ledgers are exposed by native panel, full prompt and downloaded JSON
+{"passed":8,"total":8,"maximumSeconds":6.995502471923828}

@@ -1,0 +1,81 @@
+{
+  "testedAt": "2026-10-04T01:49:18.642Z",
+  "release": "20261004native11",
+  "mode": "legacy-recheck",
+  "completed": 10,
+  "total": 10,
+  "passed": 10,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/mobile-ritual-actions-20260928.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.119,
+      "log": "docs/qa-r11-legacy-recheck/02.log"
+    },
+    {
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.396,
+      "log": "docs/qa-r11-legacy-recheck/01.log"
+    },
+    {
+      "command": "node tests/cinematic-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.373,
+      "log": "docs/qa-r11-legacy-recheck/03.log"
+    },
+    {
+      "command": "node tests/shuffle-recovery-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.3,
+      "log": "docs/qa-r11-legacy-recheck/04.log"
+    },
+    {
+      "command": "node tests/flow-interaction-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.605,
+      "log": "docs/qa-r11-legacy-recheck/05.log"
+    },
+    {
+      "command": "node tests/story-immersion-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.632,
+      "log": "docs/qa-r11-legacy-recheck/07.log"
+    },
+    {
+      "command": "node tests/realtime-free-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.143,
+      "log": "docs/qa-r11-legacy-recheck/08.log"
+    },
+    {
+      "command": "node tests/reading-depth-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.551,
+      "log": "docs/qa-r11-legacy-recheck/06.log"
+    },
+    {
+      "command": "node tests/vedic-palace-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.116,
+      "log": "docs/qa-r11-legacy-recheck/10.log"
+    },
+    {
+      "command": "node tests/deck-routing-scenes-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.753,
+      "log": "docs/qa-r11-legacy-recheck/09.log"
+    }
+  ]
+}

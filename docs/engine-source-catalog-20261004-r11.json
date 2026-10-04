@@ -1,0 +1,596 @@
+[
+  {
+    "id": "zipingmonthly",
+    "title": "子平真詮45 建祿月劫",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3758.html",
+    "scope": "月令真實祿位、陽刃及本氣月劫分列；非比劫月不由次藏氣比劫透出冒充建祿月劫",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "第45章建祿月劫正文"
+  },
+  {
+    "id": "bphssudarsana",
+    "title": "BPHS3/28/74 三輪作用與七盤Phala",
+    "type": "原典英譯",
+    "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
+    "scope": "D1三輪、49七分盤分類、BPHS原始等數比強、本宮主例外；主文、極性與英譯註補四起始盤逐宮並算；名義2日/12ghatika細分算術不相容另列",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "英譯3.11、28.7–10、74.7–28指定段落"
+  },
+  {
+    "id": "zipingcombine",
+    "title": "子平真詮5 合而不合",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3718.html",
+    "scope": "隔制、遠合、本身合、先合及爭合位置實算；不自動合去成化",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "zipingroots",
+    "title": "子平真詮6 得時不旺失時不弱",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3719.html",
+    "scope": "十干四支同干／同五行根、重輕與陰長生類比分列",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "zipingpurity",
+    "title": "子平真詮11 用神純雜",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3724.html",
+    "scope": "六具名月令互用結構；甲辰壬例保留文本歧異",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "zipingorder",
+    "title": "子平真詮20 生克先後",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3733.html",
+    "scope": "四種先後、七明示位置例及兩個重建例；不偽造歷史生辰",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "sudarsana",
+    "title": "PVR第31章／BPHS第74章三重運期",
+    "type": "作者原典教材／原典英譯",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "20分盤上升月日三參照、12月及144段、各次起始盤位和宮主相位、原生BAV核對；原例歧異及BPHS適用條件分列",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "tajaka",
+    "title": "PVR27–30與Balabhadra《Hayanaratna》2.4–5",
+    "type": "作者原典教材／原典學術英譯",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "年度及当期月／60小時盤、Harsha／Pancha／Dwadasa、歳月主、36Sahams、16Yoga與3年度Dasha；三友敵版本與印例差異並列",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "pvr20",
+    "title": "PVR第6章20分盤",
+    "type": "作者原典教材",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "D5／D6／D8／D11補入全部原生分盤作用；Example15的D8末句與推導不符採公式",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "horarylight",
+    "title": "GraemeTobyn2007傳光／集光與空間禁止",
+    "type": "作者技術研究",
+    "url": "https://www.skyscript.co.uk/tobyn2.html",
+    "scope": "最後分離及首次成相三傳光、集光接納、空間近度與同距合相優先；未解的同距非合相保留",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "vedictransit",
+    "title": "P.V.R. Narasimha Rao：Ch25–26行運",
+    "type": "作者技術原文",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "Vedha與兩父子例外、入座時Murthi、27Tara及11特殊宿、PAV Kakshya、原BAV乘消減Pinda、20分盤雙向啟動",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "xiaoyun",
+    "title": "萬民英《三命通會》卷二·論小運",
+    "type": "原典校錄",
+    "url": "https://www.laoziliao.net/gu/jie/info/13068",
+    "scope": "醉醒子時柱起法與古法男丙寅／女壬申固定起式分列；立春歲界為本站曆法政策",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "ziping",
+    "title": "沈孝瞻《子平真詮》",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3721.html",
+    "scope": "月令、用神與位置先後；不是全部古籍格局已完成",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "zipingrescue",
+    "title": "《子平真詮》論用神成敗救應",
+    "type": "原典校錄",
+    "url": "https://www.donglishuzhai.net/chapter/3722.html",
+    "scope": "八格成敗帶忌救應條件矩陣；權輕權重與有效制化另審",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "第9章八格成敗救應正文"
+  },
+  {
+    "id": "renyuan",
+    "title": "《三命通會》卷二論人元司事",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/三命通會/卷二",
+    "scope": "正文5/5/20、7/23、7/5/18表；同章異表、墓氣與藏干不混換",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "ziwei",
+    "title": "iztro 作者運限文件",
+    "type": "作者文件／原始碼",
+    "url": "https://iztro.com/zh_TW/posts/horoscope",
+    "scope": "十二宮與流運定位；不同流派的四化、閏月、換日政策分開",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "astronomy",
+    "title": "Don Cross：Astronomy Engine",
+    "type": "作者原始碼",
+    "url": "https://github.com/cosinekitty/astronomy",
+    "scope": "地心視位置與獨立星曆比較",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "swiss",
+    "title": "Swiss Ephemeris Programmer Manual",
+    "type": "資料發布者文件",
+    "url": "https://www.astro.com/swisseph/swephprg.htm",
+    "scope": "獨立星曆、宫位數值覆核；沒有納入 Swiss 程式庫",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "dignity",
+    "title": "Deborah Houlding：Essential Dignity Tables",
+    "type": "作者方法與原表",
+    "url": "https://www.skyscript.co.uk/essential_dignities.html",
+    "scope": "七曜五項尊貴；Ptolemaic、Egyptian界表分開，作者例題獨立驗算",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "ruler",
+    "title": "Deborah Houlding：House Ruler",
+    "type": "作者方法說明",
+    "url": "https://www.skyscript.co.uk/glossary/house-ruler/",
+    "scope": "傳統七曜宮主、落宮與相位",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "return",
+    "title": "Skyscript：Returns",
+    "type": "作者方法說明",
+    "url": "https://www.skyscript.co.uk/glossary/R",
+    "scope": "太陽回到本命黃經，已開始年度與未開始年度分開",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "pvr",
+    "title": "P. V. R. Narasimha Rao：Vedic Astrology, An Integrated Approach",
+    "type": "作者教材",
+    "url": "https://vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "第1章五支曆角度與日出日界、第12章八分PAV/BAV/SAV、20分盤、兩階段消減與Pinda；Parashari分盤相位運期及15.4行星狀態；不是515頁全部規則都實作的宣稱",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "brihatav",
+    "title": "Varahamihira《Brihat Jataka》英譯第IX章",
+    "type": "原典英譯原圖",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf",
+    "scope": "p162共主座一有曜一無曜等值清無曜座；本版Trikona仍採PVR，不混入本英譯兩零清第三座",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "progression",
+    "title": "Astrodienst 次限宮位說明",
+    "type": "計算法發布者",
+    "url": "https://www.astro.com/faq/fq_fh_owtype_e.htm",
+    "scope": "Naibod均日弧加出生RAMC及ARMC361實際次限恆星時分列；重算角點與12宮",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "zwflow",
+    "title": "iztro v2.6.1作者流曜程式",
+    "type": "作者技術原文",
+    "url": "https://github.com/SylarLong/iztro/blob/v2.6.1/src/star/horoscopeStar.ts",
+    "scope": "五層魁鉞昌曲祿羊陀馬鸞喜獨立安星；流年另加年解，位置表依同版location.ts；舊七八十星政策保留",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liuren",
+    "title": "《六壬大全》畢法賦",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh/六壬大全_(四庫全書本)/卷09",
+    "scope": "三傳遞生互克、旬空與各方向條件",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "四庫卷九畢法遞生互克段"
+  },
+  {
+    "id": "battle",
+    "title": "《六壬大全》卷十殃咎課",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/10",
+    "scope": "神克將內戰、將克神外戰",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "liurenguide1",
+    "title": "《六壬指南注解》神煞賦前篇",
+    "type": "原典校錄",
+    "url": "https://shuyuan.zhiming.life/read/六壬指南注解/30",
+    "scope": "歲神、月神方圖及正二至臘月表；具名異表與錯字另稽核",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liurenguide2",
+    "title": "《六壬指南注解》神煞賦中篇",
+    "type": "原典校錄",
+    "url": "https://shuyuan.zhiming.life/read/六壬指南注解/31",
+    "scope": "月神順逆四组三合與十二位、旬神及干支神的實際定位",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liurenguide3",
+    "title": "《六壬指南注解》神煞賦後篇及庄氏辨訛",
+    "type": "原典校錄",
+    "url": "https://shuyuan.zhiming.life/read/六壬指南注解/32",
+    "scope": "日干支神、官鬼及天目等辨訛；定位與四課三傳年命上神實際命中分列",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liurenzuizhi",
+    "title": "《六壬大全》卷五出軍凶日",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/5",
+    "scope": "罪至正午至十二巳完整月序；第十月辰，具名另表解決《指南》轉錄胡字",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liuyao",
+    "title": "《增刪卜易》元神忌神",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/增刪卜易/10",
+    "scope": "用神、元忌仇、月日動變與生克有效條件",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "第10章酉月辛亥兌之解算例及元忌神"
+  },
+  {
+    "id": "yijing",
+    "title": "王弼、孔穎達《周易正義》",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/周易正義/06旅",
+    "scope": "當位、中、應、乘承；不直接換算吉凶票數",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "yizhu",
+    "title": "朱熹《易學啟蒙》",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/易學啟蒙",
+    "scope": "考變占與0至6動爻擇辭",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "meihua",
+    "title": "《梅花易數》卷一至卷三",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/梅花易數/卷一",
+    "scope": "卦數、體用、互變與純乾坤例外；外應未提供不編造",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "卷一印本觀梅、牡丹與六字算例"
+  },
+  {
+    "id": "waite",
+    "title": "A. E. Waite：The Pictorial Key to the Tarot",
+    "type": "作者原典",
+    "url": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+    "scope": "既有RWS關鍵詞為現代摘要，不是原著逐字翻譯",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "Part3取得正文；舊站頁取讀失敗後改用原著校錄"
+  },
+  {
+    "id": "bookt",
+    "title": "Liber LXXVIII／Book T",
+    "type": "原典",
+    "url": "https://sacred-texts.com/oto/lib78.htm",
+    "scope": "五輪操作與元素尊貴；不用RWS逆位覆蓋",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "五輪操作及計數規則原文段落"
+  },
+  {
+    "id": "mathers",
+    "title": "S. L. MacGregor Mathers：The Tarot (1888)",
+    "type": "作者原典",
+    "url": "https://sacred-texts.com/tarot/mathers/mtar04.htm",
+    "scope": "原稿操作口徑與後來Book T分開",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "lenormand",
+    "title": "James R. Eads：Green Glyphs Lenormand / Grand Tableau",
+    "type": "作者與出版者方法",
+    "url": "https://prismavisions.com/pages/lenormand-the-grand-tableau",
+    "scope": "4×9布局；本站8×4＋4政策另列，幾何依本次布局實算",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "作者GrandTableau4x9、宮位及騎士步"
+  },
+  {
+    "id": "oraclefull",
+    "title": "東海龍門天聖宮六十甲子籤",
+    "type": "廟方逐首全文",
+    "url": "https://donghaimazu.com/post/fortune-sticks/fs01/",
+    "scope": "60首詩、29事項欄、配籤名稱與逐首摘要；第5首詩採香山財神廟原文校勘，解說採正確fs05-2，來源混段與缺欄明列",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "第1首詩與29事項欄"
+  },
+  {
+    "id": "oracle",
+    "title": "北港朝天宮靈籤程序",
+    "type": "廟方資料",
+    "url": "https://www.matsu.org.tw/?act=menuinfo&ml_id=20240116003",
+    "scope": "程序參考；每首詩使用自己的sourceUrl與版本",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "unihan",
+    "title": "Unicode UAX #38：Unihan Database",
+    "type": "資料發布者規格",
+    "url": "https://www.unicode.org/reports/tr38/",
+    "scope": "字庫字段；現代筆畫不冒稱康熙姓名筆畫",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "UAX38資料性質與字庫字段；不是康熙姓名筆畫"
+  },
+  {
+    "id": "moe",
+    "title": "教育部異體字字典",
+    "type": "字典發布者",
+    "url": "https://dict.variants.moe.edu.tw/",
+    "scope": "字形、字義、讀音覆核",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "bphs",
+    "title": "BPHS 第27章",
+    "type": "原典英譯文本",
+    "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
+    "scope": "Santanam英譯六力公式；與Raman月相、動力、照射等差異明列",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "raman",
+    "title": "B. V. Raman《Graha and Bhava Balas》",
+    "type": "作者教材文本",
+    "url": "https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996",
+    "scope": "七曜六力全部分項；第IX章十二Bhava方向／宮主／照射、九曜宮界比例及例59；第十二宮印表總分與分項不符，保留計算與印誤稽核",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "kumazaki1931",
+    "title": "熊崎健翁《熊崎式姓名學大奧義 地之卷》1931",
+    "type": "國會圖書館原圖",
+    "url": "https://dl.ndl.go.jp/pid/1104862/1/7",
+    "scope": "正文4–5頁核對超81循環；不是81條斷語全表已核對",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "kumazaki1935",
+    "title": "熊崎健翁《運に乗る法》1935",
+    "type": "國會圖書館原圖",
+    "url": "https://dl.ndl.go.jp/pid/1094933/1/25",
+    "scope": "正文46–54頁81數全表與循環逐頁覆核；保留正負條件，現代簡表與編輯練習分開",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "liurenclasses7",
+    "title": "《六壬大全》課經卷七",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/7",
+    "scope": "九宗門與三光三陽三奇六儀時泰龍德",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "liurenclasses8",
+    "title": "《六壬大全》課經卷八",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/8",
+    "scope": "官爵至閉口；行年丙寅順壬申逆及德孕旺孕算例",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "liurenclasses9",
+    "title": "《六壬大全》課經卷九",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/9",
+    "scope": "遊子至災厄；古法月宿、四立四離、迍福逐條条件",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "liurenclasses10",
+    "title": "《六壬大全》課經卷十",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/zh-hant/六壬大全/10",
+    "scope": "殃咎至物類；間傳24型及無祿絕嗣、雜狀物類分族",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "namebook",
+    "title": "熊崎健翁《姓名の神秘》國會圖書館書目",
+    "type": "原著書目",
+    "url": "https://ndlsearch.ndl.go.jp/books/R100000039-I2971289",
+    "scope": "書目核對不等於取得全文或逐條覆核81數",
+    "checkedAt": "2026-10-02"
+  },
+  {
+    "id": "qiongtong",
+    "title": "《窮通寶鑑》十干十二月",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/wiki/窮通寶鑑",
+    "scope": "120入口615段引用、490不同來源段落；每段每句與或若分支保留，背景及未量化前提不冒稱全文語義判定",
+    "checkedAt": "2026-10-04",
+    "lastReviewedRelease": "20261004native11",
+    "r11ReviewScope": "癸五月二壬一庚同透、癸八月丙辛隔位、壬十一月丁出時干；只補可觀察數量與位置，不宣稱全句質性已解"
+  },
+  {
+    "id": "sihuaiztro",
+    "title": "iztro2.6.1十干四化表",
+    "type": "作者發布表",
+    "url": "https://iztro.com/zh_TW/learn/mutagen",
+    "scope": "10×4；壬科左輔，實際作用於生年、五層運限及宮干飛化",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "十干四化表及六層說明"
+  },
+  {
+    "id": "sihuaquanshu",
+    "title": "星格所引《紫微斗數全書》四化表",
+    "type": "發布者引原文",
+    "url": "https://xingge.tw/zh-hant/learn/c4-birth-year",
+    "scope": "具名10×4壬科天府版本；不是本次取得古籍原圖的宣稱",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "zwheluo",
+    "title": "楚天雲闊2018北派河洛自化體系實例",
+    "type": "作者具名技術原文",
+    "url": "https://fengshui-magazine.com.hk/No.251-May18/A208.htm",
+    "scope": "18星、48圖路、六對宮、祿忌4+1／權科2+3，四D–E與五A–B兩轉象規則；二C與後文宮職歧異保留",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "phala",
+    "title": "Mantreswara《Phaladeepika》7.26–30",
+    "type": "原典梵文與英譯",
+    "url": "https://www.siva.sh/phaladeepika/7/26-30",
+    "scope": "7曜4項Neechabhanga條件；力量門檻與互居角宮版本具名",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "pvradvanced",
+    "title": "PVR教材第4、5、9–11、15、17–24章",
+    "type": "作者原典教材",
+    "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+    "scope": "17補充Dasha、20盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對",
+    "checkedAt": "2026-10-04",
+    "lastReviewedRelease": "20261004native11",
+    "r11ReviewScope": "第4.3註9、第5.2-5.4與Examples7-9／Exercise8：BL矛盾雙模型、六時刻副星起點口徑及20分盤點位"
+  },
+  {
+    "id": "earth18",
+    "title": "《選擇紀要》上編引神樞經",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/wiki/選擇紀要/上編",
+    "scope": "四立前十八日UTC實際邊界，與整月土旺分開",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "liuyaotarget",
+    "title": "《增刪卜易》第8章用神",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/w/index.php?title=增刪卜易/8&oldid=2100700",
+    "scope": "女婿醫藥父母文契與妹夫世；姑姨重義保留候選",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "yijingwings",
+    "title": "《周易》64卦彖象文言逐卦頁",
+    "type": "原典校錄",
+    "url": "https://zh.wikisource.org/wiki/周易/乾",
+    "scope": "64彖、64大象、384小象、2用象與乾坤文言；各卦來源修訂與雜湊列於資料集",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "乾卦彖象、用九及文言指定段"
+  },
+  {
+    "id": "sancaicdi",
+    "title": "CDI公開三才表五頁",
+    "type": "資料發布者原表",
+    "url": "http://www.cdi.org.tw/name/n-3-wood.html",
+    "scope": "木火土金水各25，金頁採gold；125項不是熊崎原文",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "sancai356",
+    "title": "靈昭道苑公開三才表",
+    "type": "資料發布者原表",
+    "url": "https://www.356.com.tw/teaching/?parent_id=1274",
+    "scope": "完整125項與CDI版本分開，不把網站同版重複計票",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "sancaistudy",
+    "title": "陶宏麟2018姓名筆劃數吉凶與運勢",
+    "type": "作者研究原文",
+    "url": "https://econ.ntu.edu.tw/ter/new/data/new/TER47-3/TER473-4.pdf",
+    "scope": "表4分類總數獨立核對；研究4來源共識23與本次2網站共25不可混稱",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "horaryorbs",
+    "title": "Deborah Houlding行星光圈表",
+    "type": "作者技術原文",
+    "url": "https://www.skyscript.co.uk/aspectorbs.html",
+    "scope": "兩具名行星光圈取半；傳統相位和現代容許度分開",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "horaryvoid",
+    "title": "Deborah Houlding月亮空亡的定義",
+    "type": "作者技術原文",
+    "url": "https://www.skyscript.co.uk/voc.html",
+    "scope": "完整月亮入座至出座UTC時窗；五個具名操作化模型分列，保留光圈及精確版本；不是全歷史空亡定義的唯一復刻",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "作者五種歷史VOC定義比較"
+  },
+  {
+    "id": "horaryreception",
+    "title": "Skyscript Reception",
+    "type": "作者技術原文",
+    "url": "https://www.skyscript.co.uk/glossary/reception/",
+    "scope": "主星接納來客方向，實際尊貴位置与古典相位條件",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "horarymoonentry",
+    "title": "Deborah Houlding：When the Moon Translates Light or becomes Void",
+    "type": "作者技術原文",
+    "url": "https://www.skyscript.co.uk/moon2.html",
+    "scope": "Schoner具名解讀的換座前進入相位光圈；全座區間不受一般卜卦1日視窗截斷，與精確及全座合相模型分列；历史語义另列",
+    "checkedAt": "2026-10-03",
+    "lastReviewedRelease": "20261004native10",
+    "r10ReviewScope": "作者光圈及換座前成相解讀"
+  },
+  {
+    "id": "horarydenials1",
+    "title": "Graeme Tobyn：Perfection and its denial I (2007)",
+    "type": "作者技術研究原文",
+    "url": "https://www.skyscript.co.uk/tobyn2.html",
+    "scope": "轉逆、換座、Lilly時間序禁止及三類截光形式核對；空間等距版本不混算",
+    "checkedAt": "2026-10-03"
+  },
+  {
+    "id": "horarydenials2",
+    "title": "Graeme Tobyn：Perfection and its denial II (2007)",
+    "type": "作者技術研究原文",
+    "url": "https://www.skyscript.co.uk/tobyn3.html",
+    "scope": "嚴格中介輕重、駐留逆行B→A時序，返光燃燒／逆行與雙逆follower例外；近駐留質性及現實角色待判",
+    "checkedAt": "2026-10-03"
+  }
+]

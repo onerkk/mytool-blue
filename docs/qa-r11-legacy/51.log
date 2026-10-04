@@ -1,0 +1,13 @@
+PASS 21:00 Changhua uses Bing-Xu Bazi and civil Hai Ziwei; hidden Ding is never declared exposed
+PASS Minutes around the true-solar 21:00 boundary change only the intended chart
+PASS The same LiChun instant has different local solar readings but identical canonical windows
+PASS The 2029 decade transition retains both contiguous UTC segments inside one annual window
+PASS A different civil timezone still resolves the same worldwide annual boundary
+PASS Before LiChun the Bazi year stays previous year; Ziwei waits for lunar New Year
+PASS 23:00 and midnight policies retain the distinct day-pillar date in the audit
+PASS Unknown hour exports only verified three pillars, no surrogate Ziwei chart or precise birth instant
+PASS Wrong pillars, hidden stems, ten gods and birth summaries are rejected before prompting
+PASS Mixing people, timezones or reference instants is rejected
+PASS All production entry points use this release; mirrors match; history cannot silently reuse old prompts
+PASS Actual form submission keeps UI, copied prompt and JSON on the same verified facts
+Time ownership regression: 12 groups passed.

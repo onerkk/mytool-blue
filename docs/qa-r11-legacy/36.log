@@ -1,0 +1,21 @@
+[Lenormand] 靜月之光 雷諾曼牌 v23.0 loaded — discourse + proposition-coreference semantic graph engine
+PASS Both independent readers use the identical embedded parser
+PASS 40 new questions: continuation, hypotheses, choices, missing operands and three options stay distinct
+PASS Actual Lenormand prompt preserves options, all seven card ids and branch geometry
+PASS Real Key engine retains five operations and valid stopping states without retrying for a match
+PASS Skip before entrance and in each of five operations exports the same immutable calculation exactly once
+PASS A skipped abandoned reading cannot acquire fabricated later operations
+PASS Native picker paints 78 identical opaque backs while keeping only one image per card after reinitialization
+FAIL Craft geometry
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'three' imported from /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/deck-routing-scenes-20260912.cjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:301:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:859:18)
+    at defaultResolve (node:internal/modules/esm/resolve:992:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+    at #resolve (node:internal/modules/esm/loader:683:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+    at node:internal/modules/esm/loader:632:32
+Craft: 7 groups passed; 40 new routing cases. No physical-phone or GPU pixel claim.

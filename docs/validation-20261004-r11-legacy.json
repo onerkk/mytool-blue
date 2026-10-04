@@ -1,0 +1,628 @@
+{
+  "testedAt": "2026-10-04T01:49:18.642Z",
+  "release": "20261004native11",
+  "mode": "legacy",
+  "completed": 78,
+  "total": 78,
+  "passed": 78,
+  "failed": 0,
+  "results": [
+    {
+      "command": "node tests/tarot-native-structure-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.275,
+      "log": "docs/qa-r11-legacy/03.log"
+    },
+    {
+      "command": "node tests/tarot-v102-method-data-prompt.test.js",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.396,
+      "log": "docs/qa-r11-legacy-recheck/01.log",
+      "firstAttempt": {
+        "command": "node tests/tarot-v102-method-data-prompt.test.js",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.401,
+        "log": "docs/qa-r11-legacy/02.log"
+      }
+    },
+    {
+      "command": "node tests/lenormand-v19-engine-rootfix-20260925.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.188,
+      "log": "docs/qa-r11-legacy/04.log"
+    },
+    {
+      "command": "node tests/ziwei-root-spec-v1.test.js",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.078,
+      "log": "docs/qa-r11-legacy/06.log"
+    },
+    {
+      "command": "node tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.251,
+      "log": "docs/qa-r11-legacy/05.log"
+    },
+    {
+      "command": "node tests/counter-proxy.test.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.579,
+      "log": "docs/qa-r11-legacy/07.log"
+    },
+    {
+      "command": "node tests/api-failure-regression.mjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.157,
+      "log": "docs/qa-r11-legacy/09.log"
+    },
+    {
+      "command": "node tests/picker-and-data-regression.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.983,
+      "log": "docs/qa-r11-legacy/08.log"
+    },
+    {
+      "command": "node tests/display-lifecycle-regression.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "log": "docs/qa-r11-legacy/11.log"
+    },
+    {
+      "command": "node tests/prompt-accuracy-20260811.test.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.086,
+      "log": "docs/qa-r11-legacy/01.log"
+    },
+    {
+      "command": "node tests/interaction-hotfix-20260906.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.868,
+      "log": "docs/qa-r11-legacy/10.log"
+    },
+    {
+      "command": "node tests/share-card-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.19,
+      "log": "docs/qa-r11-legacy/14.log"
+    },
+    {
+      "command": "node tests/share-card-preview-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.171,
+      "log": "docs/qa-r11-legacy/15.log"
+    },
+    {
+      "command": "node tests/astrology-share-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.668,
+      "log": "docs/qa-r11-legacy/16.log"
+    },
+    {
+      "command": "node tests/atelier-ui-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.308,
+      "log": "docs/qa-r11-legacy/17.log"
+    },
+    {
+      "command": "node tests/divination-professional-20260910.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.355,
+      "log": "docs/qa-r11-legacy/13.log"
+    },
+    {
+      "command": "node tests/ootk-scroll-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.153,
+      "log": "docs/qa-r11-legacy/19.log"
+    },
+    {
+      "command": "node tests/mobile-ritual-actions-20260928.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.119,
+      "log": "docs/qa-r11-legacy-recheck/02.log",
+      "firstAttempt": {
+        "command": "node tests/mobile-ritual-actions-20260928.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.077,
+        "log": "docs/qa-r11-legacy/20.log"
+      }
+    },
+    {
+      "command": "node tests/cinematic-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.373,
+      "log": "docs/qa-r11-legacy-recheck/03.log",
+      "firstAttempt": {
+        "command": "node tests/cinematic-20260911.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.165,
+        "log": "docs/qa-r11-legacy/21.log"
+      }
+    },
+    {
+      "command": "node tests/shuffle-recovery-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.3,
+      "log": "docs/qa-r11-legacy-recheck/04.log",
+      "firstAttempt": {
+        "command": "node tests/shuffle-recovery-20260911.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.259,
+        "log": "docs/qa-r11-legacy/22.log"
+      }
+    },
+    {
+      "command": "node tests/flow-interaction-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.605,
+      "log": "docs/qa-r11-legacy-recheck/05.log",
+      "firstAttempt": {
+        "command": "node tests/flow-interaction-20260911.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.554,
+        "log": "docs/qa-r11-legacy/23.log"
+      }
+    },
+    {
+      "command": "node tests/divination-audit-20260908.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 6.018,
+      "log": "docs/qa-r11-legacy/12.log"
+    },
+    {
+      "command": "node tests/flow-polish-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.937,
+      "log": "docs/qa-r11-legacy/25.log"
+    },
+    {
+      "command": "node tests/reading-depth-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.551,
+      "log": "docs/qa-r11-legacy-recheck/06.log",
+      "firstAttempt": {
+        "command": "node tests/reading-depth-20260912.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 1.875,
+        "log": "docs/qa-r11-legacy/24.log"
+      }
+    },
+    {
+      "command": "node tests/accuracy-engine-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.07,
+      "log": "docs/qa-r11-legacy/27.log"
+    },
+    {
+      "command": "node tests/engine-fixes-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.402,
+      "log": "docs/qa-r11-legacy/26.log"
+    },
+    {
+      "command": "node tests/ritual-lifecycle-20260911.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 10.355,
+      "log": "docs/qa-r11-legacy/18.log"
+    },
+    {
+      "command": "node tests/bazi-suite-regression.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 4.573,
+      "log": "docs/qa-r11-legacy/29.log"
+    },
+    {
+      "command": "node tests/immersive-experience-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.854,
+      "log": "docs/qa-r11-legacy/31.log"
+    },
+    {
+      "command": "node tests/plain-reading-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 5.463,
+      "log": "docs/qa-r11-legacy/32.log"
+    },
+    {
+      "command": "node tests/story-immersion-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.632,
+      "log": "docs/qa-r11-legacy-recheck/07.log",
+      "firstAttempt": {
+        "command": "node tests/story-immersion-20260912.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.064,
+        "log": "docs/qa-r11-legacy/33.log"
+      }
+    },
+    {
+      "command": "node tests/realtime-free-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.143,
+      "log": "docs/qa-r11-legacy-recheck/08.log",
+      "firstAttempt": {
+        "command": "node tests/realtime-free-20260912.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.069,
+        "log": "docs/qa-r11-legacy/34.log"
+      }
+    },
+    {
+      "command": "node tests/oracle-result-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.208,
+      "log": "docs/qa-r11-legacy/35.log"
+    },
+    {
+      "command": "node tests/deck-routing-scenes-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.753,
+      "log": "docs/qa-r11-legacy-recheck/09.log",
+      "firstAttempt": {
+        "command": "node tests/deck-routing-scenes-20260912.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 1.724,
+        "log": "docs/qa-r11-legacy/36.log"
+      }
+    },
+    {
+      "command": "node tests/method-engine-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.508,
+      "log": "docs/qa-r11-legacy/37.log"
+    },
+    {
+      "command": "node tests/export-accuracy-prompts-20260912.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 12.63,
+      "log": "docs/qa-r11-legacy/30.log"
+    },
+    {
+      "command": "node tests/bazi-huaqi-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.083,
+      "log": "docs/qa-r11-legacy/39.log"
+    },
+    {
+      "command": "node tests/method-prompts-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 5.768,
+      "log": "docs/qa-r11-legacy/38.log"
+    },
+    {
+      "command": "node tests/engine-output-consistency-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 3.008,
+      "log": "docs/qa-r11-legacy/41.log"
+    },
+    {
+      "command": "node tests/core-engine-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 5.304,
+      "log": "docs/qa-r11-legacy/40.log"
+    },
+    {
+      "command": "node tests/vedic-engine-20260913.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.321,
+      "log": "docs/qa-r11-legacy/42.log"
+    },
+    {
+      "command": "node tests/vedic-palace-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.116,
+      "log": "docs/qa-r11-legacy-recheck/10.log",
+      "firstAttempt": {
+        "command": "node tests/vedic-palace-20260914.cjs",
+        "status": "failed",
+        "exitCode": 1,
+        "seconds": 0.088,
+        "log": "docs/qa-r11-legacy/44.log"
+      }
+    },
+    {
+      "command": "node tests/vedic-design-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.552,
+      "log": "docs/qa-r11-legacy/43.log"
+    },
+    {
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.218,
+      "log": "docs/qa-r11-legacy/46.log"
+    },
+    {
+      "command": "node tests/bazi-regression.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 26.822,
+      "log": "docs/qa-r11-legacy/28.log"
+    },
+    {
+      "command": "node tests/western-engine-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 3.18,
+      "log": "docs/qa-r11-legacy/45.log"
+    },
+    {
+      "command": "node tests/ootk-source-fidelity-20260925.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.227,
+      "log": "docs/qa-r11-legacy/49.log"
+    },
+    {
+      "command": "node tests/ootk-flow-20260915.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.808,
+      "log": "docs/qa-r11-legacy/48.log"
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 7.762,
+      "log": "docs/qa-r11-legacy/47.log"
+    },
+    {
+      "command": "node scripts/build-question-planner.cjs --check",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.062,
+      "log": "docs/qa-r11-legacy/52.log"
+    },
+    {
+      "command": "node tests/question-routing-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.783,
+      "log": "docs/qa-r11-legacy/53.log"
+    },
+    {
+      "command": "node scripts/build-yijing-data.cjs --check",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.06,
+      "log": "docs/qa-r11-legacy/54.log"
+    },
+    {
+      "command": "node tests/gua-engine-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.439,
+      "log": "docs/qa-r11-legacy/55.log"
+    },
+    {
+      "command": "node tests/yarrow-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.1,
+      "log": "docs/qa-r11-legacy/56.log"
+    },
+    {
+      "command": "node tests/relationship-20260917.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 8.132,
+      "log": "docs/qa-r11-legacy/50.log"
+    },
+    {
+      "command": "node tests/special-rules-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.589,
+      "log": "docs/qa-r11-legacy/57.log"
+    },
+    {
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.69,
+      "log": "docs/qa-r11-legacy/59.log"
+    },
+    {
+      "command": "node tests/birth-audit-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.138,
+      "log": "docs/qa-r11-legacy/60.log"
+    },
+    {
+      "command": "node tests/astro-rules-audit-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.863,
+      "log": "docs/qa-r11-legacy/61.log"
+    },
+    {
+      "command": "node tests/card-audit-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.488,
+      "log": "docs/qa-r11-legacy/62.log"
+    },
+    {
+      "command": "node tests/card-audit-mathers-third-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.143,
+      "log": "docs/qa-r11-legacy/63.log"
+    },
+    {
+      "command": "node tests/card-audit-legacy-meanings-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.064,
+      "log": "docs/qa-r11-legacy/64.log"
+    },
+    {
+      "command": "node tests/prompt-only-audit-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.223,
+      "log": "docs/qa-r11-legacy/65.log"
+    },
+    {
+      "command": "node tests/prompt-only-shop-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.143,
+      "log": "docs/qa-r11-legacy/66.log"
+    },
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "log": "docs/qa-r11-legacy/67.log"
+    },
+    {
+      "command": "node tests/traffic-tap-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.101,
+      "log": "docs/qa-r11-legacy/68.log"
+    },
+    {
+      "command": "node tests/admin-updater-20260923.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.105,
+      "log": "docs/qa-r11-legacy/69.log"
+    },
+    {
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 2.506,
+      "log": "docs/qa-r11-legacy/70.log"
+    },
+    {
+      "command": "node tests/reading-workflow-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.444,
+      "log": "docs/qa-r11-legacy/71.log"
+    },
+    {
+      "command": "node tests/astro-bridge-20260922.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 10.042,
+      "log": "docs/qa-r11-legacy/58.log"
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.396,
+      "log": "docs/qa-r11-legacy/73.log"
+    },
+    {
+      "command": "node tests/causal-question-regression-20260927.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.245,
+      "log": "docs/qa-r11-legacy/74.log"
+    },
+    {
+      "command": "node tests/semantic-review-followup-20260928.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.163,
+      "log": "docs/qa-r11-legacy/75.log"
+    },
+    {
+      "command": "node tests/time-ownership-20260920.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 19.241,
+      "log": "docs/qa-r11-legacy/51.log"
+    },
+    {
+      "command": "node tests/name-engine-20261001.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.905,
+      "log": "docs/qa-r11-legacy/76.log"
+    },
+    {
+      "command": "node tests/liuren-engine-20261001.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 0.212,
+      "log": "docs/qa-r11-legacy/78.log"
+    },
+    {
+      "command": "node tests/name-comparison-rootfix-20261002.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 1.194,
+      "log": "docs/qa-r11-legacy/77.log"
+    },
+    {
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "status": "passed",
+      "exitCode": 0,
+      "seconds": 7.185,
+      "log": "docs/qa-r11-legacy/72.log"
+    }
+  ],
+  "verificationMethod": "68 original commands passed initially. Nine failed because this restored QA environment lacked three/postcss; after installing QA-only dependencies those commands passed. One stale Foundation version assertion was updated to the actual new version and passed. Initial and retry receipts/logs are retained."
+}

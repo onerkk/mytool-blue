@@ -1,0 +1,14 @@
+✓ Counter rejects false zero, unsafe integers and inconsistent totals
+✓ Counter reset requires POST and the configured admin token
+✓ Legacy empty reset response is followed by read-only verification
+✓ Browser counter read falls back after blocked requests and static HTML responses
+✓ Browser counter never retries an uncertain write or fabricates zero
+✓ AI endpoint rejects fake origins, invalid input and empty admin configuration
+✓ Malformed or incomplete AI outputs are failures and do not consume quota
+✓ Valid AI answer preserves methods and consumes one quota entry
+✓ Native astrology reaches the model once, preserving every structured fact
+✓ Dedicated casts, geometry and stopped operations survive the real API adapter
+✓ All dedicated divination engines arrive once while unique supplementary facts survive
+✓ Monthly tarot contract exposes its actual path and all eleven transitions once
+✓ API asks for a personal material choice before the shop invitation, independent of stock
+api-failure-regression: 13 groups passed (mocked upstream; no live mutations)

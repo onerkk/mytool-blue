@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T23:02:52.488Z",
+  "testedAt": "2026-10-04T01:58:58.880Z",
   "scope": "Actual Bazi, Ziwei, Vedic, Western and Liuren input/submit/result/prompt/export flows; Name flow separately validated at two widths",
   "results": [
     {
@@ -32,10 +32,10 @@
       "width": 1280,
       "nativeDownload": true,
       "prompt": true,
-      "parts": 16,
+      "parts": 17,
       "completeTextCopy": true,
       "requiresAttachment": false,
-      "promptCharacters": 105635,
+      "promptCharacters": 115303,
       "numberedCopy": true
     },
     {

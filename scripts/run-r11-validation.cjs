@@ -1,0 +1,20 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),mode=process.argv[2]||'core',parallel=mode==='legacy'?3:mode==='browser'?1:2;
+let commands;
+if(mode==='browser-visual')commands=['node tests/ritual-navigation-browser-r8-20261003.cjs','node tests/question-reference-browser-r11-20261004.cjs'];
+else if(mode==='browser-recheck')commands=['node tests/native-entry-browser-20261003.cjs','node tests/question-reference-browser-r11-20261004.cjs'];
+else if(mode==='native-recheck')commands=['npm run test:native'];
+else if(mode==='semantic-recheck')commands=JSON.parse(fs.readFileSync(path.join(root,'docs/validation-20261004-r11-legacy.json'),'utf8')).results.filter(x=>/question|semantic|causal|lenormand|tarot|reading-workflow|reading-grounding/.test(x.command)).map(x=>x.command);
+else if(mode==='legacy-recheck')commands=JSON.parse(fs.readFileSync(path.join(root,'docs/validation-20261004-r11-legacy-initial.json'),'utf8')).results.filter(x=>x.status==='failed').map(x=>x.command);
+else if(mode==='legacy')commands=JSON.parse(fs.readFileSync(path.join(root,'docs/legacy-regression-validation-20261003-r10.json'),'utf8')).results.map(x=>x.command);
+else if(mode==='browser')commands=['node tests/native-entry-browser-20261003.cjs','node tests/native-other-entry-browser-20261003.cjs','node tests/native-profile-entry-browser-20261003.cjs','node tests/ritual-navigation-browser-r8-20261003.cjs','node tests/question-reference-browser-r11-20261004.cjs'];
+else commands=['npm run test:r11','npm run test:r10','npm run test:r9','npm run test:completion','npm run test:prompt-budget','npm run test:r8','npm run test:native'];
+const width=Number(process.env.JY_ENTRY_WIDTH||390),suffix=mode.startsWith('browser')?'-'+width:'',dir=path.join(root,'docs','qa-r11-'+mode+suffix);fs.mkdirSync(dir,{recursive:true});
+let next=0,results=[];
+async function worker(){while(next<commands.length){const index=next++,command=commands[index],parts=command.split(/\s+/),started=Date.now(),log=path.join(dir,String(index+1).padStart(2,'0')+'.log'),output=fs.createWriteStream(log);
+ const result=await new Promise(resolve=>{const child=spawn(parts[0]==='node'?process.execPath:parts[0],parts.slice(1),{cwd:root,env:process.env});child.stdout.pipe(output,{end:false});child.stderr.pipe(output,{end:false});child.on('error',e=>resolve({exitCode:-1,error:e.message}));child.on('close',code=>resolve({exitCode:code}));});output.end();
+ const row={command,status:result.exitCode===0?'passed':'failed',...result,seconds:(Date.now()-started)/1000,log:path.relative(root,log)};results.push(row);console.log(row.status.toUpperCase()+' '+command+' '+row.seconds+'s');
+ fs.writeFileSync(path.join(root,'docs/validation-20261004-r11-'+mode+suffix+'.json'),JSON.stringify({testedAt:new Date().toISOString(),release:'20261004native11',mode,width:mode.startsWith('browser')?width:undefined,completed:results.length,total:commands.length,passed:results.filter(x=>x.status==='passed').length,failed:results.filter(x=>x.status==='failed').length,results},null,2));
+}}
+Promise.all(Array.from({length:parallel},worker)).then(()=>{if(results.some(x=>x.status!=='passed'))process.exitCode=1;});

@@ -1,0 +1,72 @@
+{
+  "testedAt": "2026-10-04T02:01:11.975Z",
+  "width": 390,
+  "browser": "Chrome for Testing141.0.7390.37",
+  "results": [
+    {
+      "method": "lenormand",
+      "width": 390,
+      "status": "passed",
+      "cards": [
+        {
+          "id": 1,
+          "position": "第1路・年底前會出現非現任的肉體桃花嗎・1"
+        },
+        {
+          "id": 26,
+          "position": "第1路・年底前會出現非現任的肉體桃花嗎・2"
+        },
+        {
+          "id": 13,
+          "position": "第1路・年底前會出現非現任的肉體桃花嗎・3"
+        },
+        {
+          "id": 4,
+          "position": "第2路・她幾歲・1"
+        },
+        {
+          "id": 24,
+          "position": "第2路・她幾歲・2"
+        },
+        {
+          "id": 15,
+          "position": "第2路・她幾歲・3"
+        }
+      ],
+      "originalQuestion": "年底前會出現非現任的肉體桃花嗎？她幾歲？",
+      "exactAgeQueryPreserved": true,
+      "sameDrawOnRepeatCopy": true,
+      "completeTextCopy": true,
+      "attachmentRequired": false
+    },
+    {
+      "method": "shared-question-parser",
+      "width": 390,
+      "status": "passed",
+      "guards": {
+        "current": {
+          "entityId": "PERSON_01",
+          "surface": "現任女友",
+          "status": "explicit_reference",
+          "candidates": [
+            "現任女友"
+          ],
+          "excluded": [],
+          "sourceClause": 0
+        },
+        "ambiguous": {
+          "entityId": "PERSON_01",
+          "surface": "她",
+          "status": "ambiguous",
+          "candidates": [
+            "女友",
+            "女同事"
+          ],
+          "excluded": [],
+          "sourceClause": 0
+        }
+      }
+    }
+  ],
+  "scope": "Actual browser UI, production random draw and clipboard text; counter API stub only, no remote AI response or real Android certification."
+}

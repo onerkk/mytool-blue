@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
 
-  var VERSION = '104.1.0';
+  var VERSION = '104.2.0';
   var SCHEMA = 'jy.tarot.foundation/6';
 
   function text(v) { return v == null ? '' : String(v).trim(); }
@@ -32,6 +32,8 @@
       '为什么':'為什麼','为何':'為何','什么时候':'什麼時候','关系':'關係','选择':'選擇','还是':'還是','整体':'整體','发展':'發展','事业':'事業','财运':'財運','结果':'結果','复合':'復合','对象':'對象','对方':'對方','问题':'問題','建议':'建議','阻碍':'阻礙','未来':'未來','现在':'現在','过去':'過去','职业':'職業','离职':'離職','创业':'創業','全年':'全年','运势':'運勢','营业额':'營業額','营收':'營收','利润':'利潤','这月':'這月','这个月':'這個月','下个月':'下個月','本月':'本月'
     };
     Object.keys(map).forEach(function(k){q=q.split(k).join(map[k]);});
+    var personMap={'现任':'現任','会':'會','出现':'出現','肉体':'肉體','吗':'嗎','几岁':'幾歲','年龄':'年齡','年纪':'年紀','年轻':'年輕','年长':'年長'};
+    Object.keys(personMap).forEach(function(k){q=q.split(k).join(personMap[k]);});
     return q.replace(/\r?\n+/g,'；').replace(/[\u3000\t]+/g,' ').replace(/\s+/g,' ').trim();
   }
   function dateParts(value) {
@@ -561,7 +563,7 @@
   function splitEntityMetric(v){var m=text(v).match(/^(.+?)(?:的)?(營業額|營收|收入|薪水|獲利|利潤|成本|價格|金額|數量|人數|成績|表現|速度|高度|重量|價值|程度)$/);return m?{entity:text(m[1]),metric:m[2]}:{entity:text(v),metric:''};}
 
   function scaleLabel(v){return v==='suitability'?'適合度':(v==='model_resolve_same_scale'?'同一可比較尺度':text(v));}
-  function queryOperatorLabel(v){var map={truth_or_realization:'是否成立',enumeration_guidance:'依原句列出需了解或注意的項目',choice:'選擇較適合者',recommendation:'依條件提出候選建議',evaluation:'依指定標準評估對象',willingness_and_event:'分辨意願、行動安排與事件發生',qualitative_description:'描述狀態與走向',cause_explanation:'說明原因／形成機制',relative_timing:'判斷相對時序',relative_timing_to_threshold:'判斷達到門檻的相對時序',location_guidance:'判斷位置線索',action_guidance:'提出可介入方向',exact_attribute:'詢問精確人物屬性'};return map[v]||text(v);}
+  function queryOperatorLabel(v){var map={truth_or_realization:'是否成立',enumeration_guidance:'依原句列出需了解或注意的項目',choice:'選擇較適合者',recommendation:'依條件提出候選建議',evaluation:'依指定標準評估對象',willingness_and_event:'分辨意願、行動安排與事件發生',qualitative_description:'描述狀態與走向',cause_explanation:'說明原因／形成機制',relative_timing:'判斷相對時序',relative_timing_to_threshold:'判斷達到門檻的相對時序',location_guidance:'判斷位置線索',action_guidance:'提出可介入方向',exact_attribute:'詢問精確人物屬性'};return map[v]||(v==='relative_attribute'?'相對人物屬性':text(v));}
 
   // v99：先把多子題切成獨立查詢事件，避免把「會不會發生？她幾歲？」整串塞進同一 target。
   function splitQuestionClauses(q){
@@ -581,10 +583,13 @@
     return out.map(function(surface,index){return {id:'Q'+pad(index+1,2),surface:surface,index:index};});
   }
 
-  function attributeRequest(clause){
+  function attributeRequest(clause,frame){
     var c=text(clause).replace(/\s/g,'');
     var subject='';
-    var sm=c.match(/^(他|她|它|對方|這個人|那個人|其)/);if(sm){subject=sm[1];c=c.slice(sm[1].length).replace(/^的/,'');}
+    var sm=c.match(/^(他|她|它|對方|這個人|那個人|該名女性|該名男性|該女性|該男性|該對象|這位女性|那位女性|其)/);if(sm){subject=sm[1];c=c.slice(sm[1].length).replace(/^的/,'');}
+    if(!subject&&frame&&frame.subjectRef&&c.indexOf(frame.subjectRef)===0){subject=frame.subjectRef;c=c.slice(subject.length).replace(/^的/,'');}
+    var relative=c.match(/^(?:相對於|比)(我|本人|他|她|現任|前任)(?:的)?(?:年齡|年紀)?(?:較|更)?(年輕|年長|同齡|大|小)/);
+    if(relative)return {dimensionId:'relative_age',label:'相對年齡',attributeRole:'relative_age',subjectSurface:subject,source:text(clause),matched:relative[0],comparison:{reference:relative[1],relation:relative[2]},queryOperator:'relative_attribute'};
     var defs=[
       {id:'exact_age',re:/^(?:幾歲|多大(?:年紀)?|年齡(?:是多少|多大|如何)?)/,label:'實際年齡',role:'age'},
       {id:'identity',re:/^(?:是誰|誰|姓名|名字|身分(?:是什麼)?|什麼人)/,label:'人物身分',role:'identity'},
@@ -742,7 +747,7 @@ function analyzeReadingQuestion(value) {
   var raw=String(value||'').trim(), q=raw;
   try { q=q.normalize('NFKC'); } catch (_) {}
   var conversions={
-    '选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','机会':'機會','金额':'金額','奖金':'獎金','收入':'收入','概率':'機率','几率':'機率','几岁':'幾歲','时间':'時間','为什么':'為什麼','怎么':'怎麼','如何':'如何','谁':'誰','哪个':'哪個','哪一个':'哪一個','多少钱':'多少錢','几张':'幾張','会不会':'會不會','有没有':'有沒有','能不能':'能不能','可不可以':'可不可以','是否':'是否'
+    '选择':'選擇','还是':'還是','问题':'問題','关系':'關係','结婚':'結婚','同事们':'同事們','各自':'各自','未来':'未來','建议':'建議','事业':'事業','财运':'財運','机会':'機會','金额':'金額','奖金':'獎金','收入':'收入','概率':'機率','几率':'機率','几岁':'幾歲','时间':'時間','为什么':'為什麼','怎么':'怎麼','如何':'如何','谁':'誰','哪个':'哪個','哪一个':'哪一個','多少钱':'多少錢','几张':'幾張','会不会':'會不會','有没有':'有沒有','能不能':'能不能','可不可以':'可不可以','是否':'是否','现任':'現任','年底前':'年底前','会':'會','出现':'出現','体':'體','吗':'嗎','岁':'歲','龄':'齡','纪':'紀','轻':'輕','对方':'對方','对象':'對象','认识':'認識'
   };
   Object.keys(conversions).forEach(function(k){q=q.split(k).join(conversions[k]);});
   // Metalinguistic correction is not event content:「不是在問X，而是Y」means Y is the active query.
@@ -942,6 +947,25 @@ function analyzeReadingQuestion(value) {
     var found=[];
     SUBJECT_WORDS.slice().sort(function(a,b){return b.length-a.length;}).forEach(function(w){if(s.indexOf(w)>=0)found.push(w);});
     return unique(found).filter(function(w){return !found.some(function(v){return v!==w && v.length>w.length && v.indexOf(w)>=0;});});
+  }
+  // A relational exclusion is a constraint on the new participant, not a
+  // positive mention of the excluded person. Retain its surface and scope.
+  function participantReference(s){
+    var t=String(s||'').replace(/\s/g,''), excluded=[], spans=[], match;
+    var re=/(?:非|不是|並非|不屬於|不包含|排除|除了)(現任(?:女友|男友|伴侶|對象|妻子|丈夫)?)/g;
+    while((match=re.exec(t))){excluded.push({surface:match[0],entity:match[1],relation:'excluded_from_queried_participant'});spans.push([match.index,match.index+match[0].length]);}
+    var person=t.match(/(?:新|未來|另一(?:個|位|名)?|別的|其他)(?:女性|女生|男性|男生|對象|桃花|伴侶)|(?:女性|女生|男性|男生)(?:桃花)?|(?:肉體)?桃花/);
+    var existential=/(?:出現|遇到|遇見|認識(?!的)|有|來到)/.test(t);
+    var directExcluded=/^(?:非|不是|並非)現任/.test(t)&&!/(?:現任會|現任是否)/.test(t);
+    var introduced=[];
+    if(person&&(existential||directExcluded)){
+      var label=person[0],gender=/女性|女生/.test(label)?'female':/男性|男生/.test(label)?'male':'unspecified';
+      if(excluded.length)label='非現任'+(gender==='female'?'女性':gender==='male'?'男性':'對象');
+      var collective=t.match(/(?:兩|二|三|四|五|多|數|幾)位(?:非現任)?(?:女性|女生|男性|男生|對象|桃花)/);
+      if(collective)label=collective[0];
+      introduced.push({surface:person[0],entity:label,gender:gender,bindingStatus:'conditional_unbound',existence:'queried_not_verified'});
+    }
+    return {introduced:introduced,excluded:excluded,scope:'current_clause',policy:'人物排除限制不證明新人物或事件已存在'};
   }
   function extractCoordinatedActors(s){
     var text=String(s||'').replace(/[？?。；;！!]/g,'').trim();
@@ -1243,7 +1267,12 @@ function analyzeReadingQuestion(value) {
     if(ill.causalHypothesis&&dims.indexOf('reason')<0)dims.push('reason');
     var subjectSurface=s;
     if(propPron){var cm=s.match(/(?:因為|由於)(.+)$/);if(cm)subjectSurface=cm[1].trim();}
-    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    var enumeration=openEnumeration(s), subject=extractSubject(subjectSurface), reference=participantReference(s), domains=domainIds(s), evalFrame=ill.causalHypothesis?null:evaluationFrame(s,subject), temporal=horizonProfile(s), causalSituation=extractCausalSituation(s), lexical=lexicalInterpretation(s);
+    if(reference.introduced.length){
+      entities=entities.filter(function(e){return !reference.excluded.some(function(x){return x.entity.indexOf(e)>=0;})&&!/^(?:女性|女生|男性|男生)$/.test(e);});
+      entities=unique(entities.concat(reference.introduced.map(function(x){return x.entity;})));
+      if(!subject||/^(?:除了|排除|非現任|不是現任)/.test(subject))subject=reference.introduced[0].entity;
+    }
     // A topic noun such as「公司體檢」is not automatically the grammatical actor of an item-list question.
     // An item-list question is asked by the querent; a topic noun like「公司體檢」
     // is the subject matter, not an actor. Retain an explicit person as subject.
@@ -1259,7 +1288,7 @@ function analyzeReadingQuestion(value) {
       yesNo:ill.type==='question'&&detectYesNo(unit.raw||s),truthGate:!!(enumeration&&enumeration.truthGate),enumerationRequest:enumeration,
       temporal:temporal,
       discourse:{continuation:CONTINUATION.some(function(w){return s.indexOf(w)===0;}),conditional:/^(?:如果|若|假如)|(?:如果|若|假如).*(?:就|才|再)/.test(s)},
-      entities:entities,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],
+      entities:entities,entityReference:reference,explicitSubjects:subject?[subject]:[],subjectRef:subject,subjectSource:subject?'explicit':'none',coreferenceCandidates:[],coreferenceSourceIndex:null,
       evaluatorRef:evalFrame&&evalFrame.evaluatorRef||null,targetRef:evalFrame&&evalFrame.targetRef||null,targetSource:evalFrame&&evalFrame.targetRef?'surface':'none',facetRef:null,relationRef:evalFrame&&evalFrame.relation||null,evaluation:evalFrame,
       semanticFrame:evalFrame?'evaluation':null,
       predicateClass:inferPredicateClass(s,dims),predicate:stripSurfaceOperators(s),predicateHead:(predicateHead(s)||{}).term||null,objectRef:null,
@@ -1311,10 +1340,12 @@ function analyzeReadingQuestion(value) {
     return frame;
   }
 
-  function pronounAtStart(text){var m=String(text||'').match(/^(他|她|對方|這個人|那個人)/);return m?m[1]:null;}
+  function pronounAtStart(text){var m=String(text||'').match(/^(他|她|對方|這個人|那個人|該名女性|該名男性|該女性|該男性|該對象|這位女性|那位女性)/);return m?m[1]:null;}
   function isPluralCollective(ref){return /(?:[兩二三四五六七八九十幾多][位個名]|多位|數位|一群|們|雙方|兩人|二人)/.test(String(ref||''));}
   function actorCandidatesFromFrame(frame){
     if(!frame)return [];
+    if(frame.entityReference&&frame.entityReference.introduced.length)return frame.entityReference.introduced.map(function(x){return x.entity;});
+    if(frame.subjectSource==='coreference')return [frame.subjectRef];
     var pool=[];
     var ref=String(frame.subjectRef||'').trim();
     if(ref){
@@ -1322,7 +1353,7 @@ function analyzeReadingQuestion(value) {
       if(parts.length>1)pool=pool.concat(parts); else if(!/^(?:我|我們|你|你們)$/.test(ref))pool.push(ref);
     }
     (frame.entities||[]).forEach(function(e){if(!/^(?:我|我們|你|你們|他|她|他們|她們)$/.test(e))pool.push(e);});
-    return unique(pool);
+    return unique(pool).filter(function(e){return !pool.some(function(v){return v!==e&&v.length>e.length&&v.indexOf(e)>=0;});});
   }
   function resolvePronounFromContext(pron, priorFrames){
     for(var k=priorFrames.length-1;k>=0;k--){
@@ -1331,12 +1362,12 @@ function analyzeReadingQuestion(value) {
       // A singular pronoun cannot uniquely resolve a quantified/plural collective whose members were not individually named.
       if(base.length===1 && isPluralCollective(base[0]))return {status:'ambiguous',candidates:[base[0]],sourceIndex:k,reason:'plural_collective'};
       var gendered=base;
-      if(pron==='她'){
+      if(pron==='她'||/女性$/.test(pron)){
         var knownFemale=base.filter(function(e){return /(?:女|妻|老婆|媽媽|母|姊|姐|妹|閨蜜|阿姨|姑|婆)/.test(e);});
         var knownMale=base.filter(function(e){return /(?:男|夫|老公|爸爸|父|哥|弟|叔|伯|舅)/.test(e);});
         var unknown=base.filter(function(e){return knownFemale.indexOf(e)<0&&knownMale.indexOf(e)<0;});
         gendered=knownFemale.length?knownFemale:unknown;
-      } else if(pron==='他'){
+      } else if(pron==='他'||/男性$/.test(pron)){
         var km=base.filter(function(e){return /(?:男|夫|老公|爸爸|父|哥|弟|叔|伯|舅)/.test(e);});
         var kf=base.filter(function(e){return /(?:女|妻|老婆|媽媽|母|姊|姐|妹|閨蜜|阿姨|姑|婆)/.test(e);});
         var un=base.filter(function(e){return km.indexOf(e)<0&&kf.indexOf(e)<0;});
@@ -1405,9 +1436,9 @@ function analyzeReadingQuestion(value) {
     if(pron&&prior.length){
       var coref=resolvePronounFromContext(pron,prior);
       if(coref.status==='resolved'){
-        cur.subjectRef=coref.value;cur.subjectSource='coreference';cur.coreferenceCandidates=coref.candidates.slice();
+        cur.subjectRef=coref.value;cur.subjectSource='coreference';cur.coreferenceCandidates=coref.candidates.slice();cur.coreferenceSourceIndex=coref.sourceIndex;
       } else if(coref.status==='ambiguous'){
-        cur.subjectRef=pron;cur.subjectSource='surface_pronoun_ambiguous_context';cur.coreferenceCandidates=coref.candidates.slice();
+        cur.subjectRef=pron;cur.subjectSource='surface_pronoun_ambiguous_context';cur.coreferenceCandidates=coref.candidates.slice();cur.coreferenceSourceIndex=coref.sourceIndex;
       } else {
         // A pronoun may be deictic to a person known to the user but not named in the current text.
         cur.subjectRef=pron;cur.subjectSource='surface_pronoun_external';cur.coreferenceCandidates=[];
@@ -1563,7 +1594,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.2.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.3.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -1575,7 +1606,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.2.0',status:coverageStatus,
+    version:'4.3.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -1584,7 +1615,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.2.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.3.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };
@@ -1723,7 +1754,7 @@ function recommendReadingSystem(question) {
       var cs=detectScopes(analysisSurface,options.referenceDate,options.timezone),cd=detectDomains(analysisSurface),ci=detectIntent(analysisSurface,cs,cd);
       ci._q=analysisSurface;
       var languageFrame=(readingQuestion.clauses||[]).find(function(f){return normalize(f.text)===normalize(analysisSurface);})||(readingQuestion.clauses||[])[clauses.indexOf(clause)];
-      return {clause:clause,analysisSurface:analysisSurface,scopes:cs,domains:cd,intent:ci,relation:detectRelation(analysisSurface,cs),attribute:attributeRequest(analysisSurface),languageFrame:languageFrame||null};
+      return {clause:clause,analysisSurface:analysisSurface,scopes:cs,domains:cd,intent:ci,relation:detectRelation(analysisSurface,cs),attribute:attributeRequest(analysisSurface,languageFrame),languageFrame:languageFrame||null};
     });
     var inheritedScopeNotes=[];
     clauseMeta.forEach(function(meta,index){
@@ -1761,19 +1792,37 @@ function recommendReadingSystem(question) {
       rootEntityId='UNBOUND_ENTITY_01';
       entities.push({id:rootEntityId,type:'unbound_person',source:'原問句中的未知人物／新對象',bindingStatus:'conditional_unbound'});
     }
+    var personIds=Object.create(null);
+    clauseMeta.forEach(function(meta,index){var intro=(meta.languageFrame&&meta.languageFrame.entityReference&&meta.languageFrame.entityReference.introduced)||[];intro.forEach(function(p){
+      if(personIds[p.entity])return;
+      var id=index===0&&rootEntityId?rootEntityId:'PERSON_'+pad(Object.keys(personIds).length+1,2);
+      var entity=entities.find(function(e){return e.id===id;});
+      if(!entity){entity={id:id,type:'unbound_person'};entities.push(entity);}
+      Object.assign(entity,{surface:p.entity,source:p.surface,bindingStatus:p.bindingStatus,existence:p.existence,introducedEventId:index===0?'QUERY_EVENT':'QUERY_EVENT_'+pad(index+1,2),exclusions:clone(meta.languageFrame.entityReference.excluded)});
+      personIds[p.entity]=id;
+    });});
+    function referenceEntity(lang,surface){
+      var label=lang.subjectRef||surface||'未明示人物',ambiguous=lang.subjectSource==='surface_pronoun_ambiguous_context';
+      if(!ambiguous&&personIds[label])return personIds[label];
+      // An unresolved external pronoun can inherit the first queried unknown
+      // person. Explicit current partners and ambiguous candidate sets cannot.
+      if(!ambiguous&&rootEntityId&&/^(?:他|她|對方|這個人|那個人)$/.test(label)&&lang.coreferenceSourceIndex==null)return rootEntityId;
+      var id='PERSON_'+pad(Object.keys(personIds).length+1,2);
+      if(!ambiguous&&personIds[label])return personIds[label];
+      entities.push({id:id,type:ambiguous?'ambiguous_person_reference':'query_explicit_actor',surface:label,source:surface||label,bindingStatus:ambiguous?'ambiguous':/surface_pronoun_external/.test(lang.subjectSource||'')?'external_deictic':'explicit_reference',candidates:clone(lang.coreferenceCandidates||[])});personIds[label]=id;return id;
+    }
     clauseMeta.forEach(function(meta,index){
       var clause=meta.clause.surface,analysisClause=meta.analysisSurface||clause,eventId=index===0?'QUERY_EVENT':'QUERY_EVENT_'+pad(index+1,2),lang=meta.languageFrame||{},roles={actor:actor,eventActor:'',target:'',subject:'',metric:'',metricCadence:'',threshold:'',leftOperand:'',rightOperand:'',attribute:'',comparator:'',queryOperator:'',willingness:false,actionSequence:[],participants:[],optionSetState:'',requestedItems:'',attentionFocus:'',truthGate:false,lexicalInterpretation:null};
       var eventType='qualitative_state_query',predicate='describe_state',modality=(analysisClause.match(/(?:一定|必然|應該|可能|會不會|能不能|可不可以|是否|有沒有|可以|能夠|能否|可否|要不要|應不應該|會|能)/)||[])[0]||'open';
       atom('actor',actor==='QUERENT'?'問卜者本人':text(explicitThird&&explicitThird[1]),'actor',actor==='QUERENT'?(implicitActor?'語境預設問卜者':(q.indexOf('本人')>=0?'本人':'我')):text(explicitThird&&explicitThird[1]),eventId,implicitActor);
       var rel=meta.relation;
       if(meta.attribute){
-        var subjectId=rootEntityId||'UNBOUND_ENTITY_01';
-        if(!rootEntityId){rootEntityId=subjectId;entities.push({id:subjectId,type:'unbound_person',source:meta.attribute.subjectSurface||'附屬人物指稱',bindingStatus:'conditional_unbound'});}
-        eventType='person_attribute_query';predicate='query_person_attribute';roles.subject=subjectId;roles.attribute=meta.attribute.attributeRole;roles.queryOperator='exact_attribute';
+        var subjectId=referenceEntity(lang,meta.attribute.subjectSurface),personEntity=entities.find(function(e){return e.id===subjectId;});
+        eventType='person_attribute_query';predicate='query_person_attribute';roles.subject=subjectId;roles.attribute=meta.attribute.attributeRole;roles.queryOperator=meta.attribute.queryOperator||'exact_attribute';roles.personBinding={entityId:subjectId,surface:personEntity.surface||personEntity.source,status:personEntity.bindingStatus,candidates:clone(personEntity.candidates||[]),excluded:clone(personEntity.exclusions||[]),sourceClause:lang.coreferenceSourceIndex};roles.attributeComparison=meta.attribute.comparison||null;
         atom('entity_reference',meta.attribute.subjectSurface||'該人物','subject',meta.attribute.source,eventId,false);
         atom('requested_attribute',meta.attribute.label,'attribute',meta.attribute.matched,eventId,false);
-        atom('query_operator',queryOperatorLabel('exact_attribute'),'queryOperator',clause,eventId,false);
-        if(index>0)graphRelations.push({id:'QR'+pad(graphRelations.length+1,2),type:'conditional_coreference',fromEventId:eventId,toEventId:'QUERY_EVENT',entityId:subjectId,source:meta.attribute.subjectSurface||'附屬人物指稱',rule:'只有主要事件建立並完成實體共指後，附屬人物屬性問題才有可回答對象；未量測屬性仍須明示未量測。'});
+        atom('query_operator',queryOperatorLabel(roles.queryOperator),'queryOperator',clause,eventId,false);
+        if(index>0&&personEntity.introducedEventId)graphRelations.push({id:'QR'+pad(graphRelations.length+1,2),type:'conditional_coreference',fromEventId:eventId,toEventId:personEntity.introducedEventId,entityId:subjectId,source:meta.attribute.subjectSurface||'附屬人物指稱',rule:'人物存在仍屬原題待判前提；共指保持同一人物，未量測屬性明示未量測，不另造人物或重新抽牌。'});
       }else if(rel&&rel.type==='fixed_numeric_threshold'){
         var asksWhen=!!meta.intent.timing;eventType=asksWhen?'threshold_attainment_timing':'fixed_threshold_event';predicate=asksWhen?'identify_threshold_attainment_time':'cross_fixed_threshold';var sid='SUBJECT_'+pad(index+1,2);entities.push({id:sid,type:'query_subject',surface:rel.subject,owner:'QUERENT',source:rel.subject});roles.subject=sid;roles.metric=rel.metric;roles.metricCadence=rel.metricPeriod||'';roles.threshold='THRESHOLD_'+pad(index+1,2);roles.comparator=rel.operator;roles.queryOperator=asksWhen?'relative_timing_to_threshold':'truth_or_realization';
         atom('subject',rel.subject,'subject',rel.subject,eventId);atom('measured_attribute',rel.metric,'metric',rel.metric,eventId);if(roles.metricCadence)atom('measurement_cadence',roles.metricCadence,'metricCadence',roles.metricCadence,eventId);atom('comparator',rel.operatorText,'comparator',rel.operatorText,eventId);atom('threshold_value',rel.thresholdSurface+'〔'+rel.thresholdValue+'〕','threshold',rel.thresholdSurface,eventId);atom('query_operator',queryOperatorLabel(roles.queryOperator),'queryOperator',clause,eventId);
@@ -1870,7 +1919,11 @@ function recommendReadingSystem(question) {
       if(lang.evaluation&&lang.evaluation.kind==='partner_fit'){eventType='partner_fit_evaluation';predicate='evaluate_relationship_fit';roles.evaluator=lang.evaluation.evaluatorRef||'問卜者本人';roles.evaluatedTarget=lang.evaluation.targetRef||'';roles.criterion=lang.evaluation.criterion||'伴侶適配';clauseReq=uniq(clauseReq.concat(['evaluation_outcome','relationship_context']));}
       if(lang.openChoiceSet){eventType='recommendation_with_unprovided_options';predicate='identify_candidate_options_and_selection_criteria';roles.recommendationTarget=lang.openChoiceSet.object||'';roles.optionSetState='unspecified';roles.selectionAction=(lang.actionSequence||[]).slice();clauseReq=uniq(clauseReq.concat(['option_set','decision_criteria','action_guidance']));}
       if(lang.enumerationRequest||meta.intent.enumeration){roles.queryOperator='enumeration_guidance';roles.requestedItems=(lang.enumerationRequest||meta.intent.enumerationRequest||{}).requestedItems||roles.requestedItems;roles.attentionFocus=(lang.enumerationRequest||meta.intent.enumerationRequest||{}).attentionFocus||roles.attentionFocus;roles.truthGate=!!((lang.enumerationRequest||meta.intent.enumerationRequest||{}).truthGate||meta.intent.truthGate);clauseReq=uniq(clauseReq.concat(['enumeration']).concat(/注意|留意|關注|檢查/.test(roles.attentionFocus)?['attention_focus']:[]).concat(roles.truthGate?['realization']:[]).concat(meta.scopes.some(function(sc){return sc.bounded;})?['bounded_outcome']:[]));}
-      events.push({id:eventId,type:eventType,surface:clause,analysisSurface:analysisClause,predicate:predicate,roles:roles,languageFrame:clone(lang),causalSituation:clone(lang.causalSituation||null),modality:modality,timeScope:meta.scopes.map(function(s){return s.surface;}),resolvedTimeScopes:clone(meta.scopes),relationIds:rel?[rel.id]:[],shape:lang.openChoiceSet?'open_choice':lang.enumerationRequest||meta.intent.enumeration?buildShape(meta.intent,rel,meta.scopes,meta.domains):lang.evaluation&&lang.evaluation.kind==='partner_fit'?'relationship_evaluation':buildShape(meta.intent,rel,meta.scopes,meta.domains),requiredObservables:clauseReq,dependsOn:index>0&&meta.attribute?['QUERY_EVENT']:[]});
+      roles.entityReference=clone(lang.entityReference||null);
+      (roles.entityReference&&roles.entityReference.excluded||[]).forEach(function(p){atom('participant_exclusion',p.entity,'excludedParticipant',p.surface,eventId,false);});
+      var boundEntity=roles.subject&&entities.find(function(e){return e.id===roles.subject;});
+      var attributeDependencies=meta.attribute&&boundEntity&&boundEntity.introducedEventId?[boundEntity.introducedEventId]:[];
+      events.push({id:eventId,type:eventType,surface:clause,analysisSurface:analysisClause,predicate:predicate,roles:roles,languageFrame:clone(lang),causalSituation:clone(lang.causalSituation||null),modality:modality,timeScope:meta.scopes.map(function(s){return s.surface;}),resolvedTimeScopes:clone(meta.scopes),relationIds:rel?[rel.id]:[],shape:lang.openChoiceSet?'open_choice':lang.enumerationRequest||meta.intent.enumeration?buildShape(meta.intent,rel,meta.scopes,meta.domains):lang.evaluation&&lang.evaluation.kind==='partner_fit'?'relationship_evaluation':buildShape(meta.intent,rel,meta.scopes,meta.domains),requiredObservables:clauseReq,dependsOn:attributeDependencies});
     });
     var reqObs=requiredObservables(intent,relation,scopes,domains,shape),unsupported=unsupportedDimensionsFor(q);
     if(events.some(function(event){return !!event.causalSituation;}))reqObs=uniq(reqObs.concat(['reported_event','causal_layers']));
@@ -1891,7 +1944,7 @@ function recommendReadingSystem(question) {
         var timingMeta=clauseMeta[events.indexOf(event)],timingLang=timingMeta&&timingMeta.languageFrame||{},timingActor=timingLang.subjectRef||'未明示行動者',timingActions=(timingLang.actionSequence||[]).join('→')||'原句明示行動',timingPeople=(timingLang.participants||[]).filter(function(p){return p.role!=='grammatical_subject';}).map(function(p){return p.surface;}).join('、');
         return timingActor+'的'+timingActions+(timingLang.recurrenceCue?'（原句含「'+timingLang.recurrenceCue+'」）':'')+(timingPeople?'；參與者：'+timingPeople:'')+'之'+(event.roles.timingTarget==='willingness_onset'?'意願形成時間':'事件發生時間');
       }
-      if(event.type==='person_attribute_query'){var attrLabel={age:'實際年齡',identity:'人物身分',occupation:'職業',appearance:'外貌／身體特徵',astrological_identity:'星座／生肖',location:'具體地點'}[event.roles.attribute]||'人物屬性';return (event.roles.subject==='UNBOUND_ENTITY_01'?'該人物':'該對象')+'的'+attrLabel+'為何？';}
+      if(event.type==='person_attribute_query'){var attrLabel={age:'實際年齡',relative_age:'相對年齡',identity:'人物身分',occupation:'職業',appearance:'外貌／身體特徵',astrological_identity:'星座／生肖',location:'具體地點'}[event.roles.attribute]||'人物屬性';return (event.roles.subject==='UNBOUND_ENTITY_01'?'該人物':'該對象')+'的'+attrLabel+'為何？';}
       var sourceMeta=clauseMeta[events.indexOf(event)],rel=sourceMeta&&sourceMeta.relation,ss=(sourceMeta&&sourceMeta.scopes||[]).map(function(x){return x.surface;}).join('');
       if(rel&&rel.type==='fixed_numeric_threshold')return ss+'我的'+rel.subject+rel.metric+(event.modality==='open'?'是否能':event.modality)+rel.operatorText+rel.thresholdSurface+'？';
       if(rel&&rel.type==='alternative_comparison')return ss+rel.left+'與'+rel.right+'何者較適合？';
@@ -1921,7 +1974,7 @@ function recommendReadingSystem(question) {
     if(/犯罪|暴力|威脅|跟蹤|自殺|自傷|人身安全|失蹤/.test(q))riskDomains.push('personal_safety');
     riskDomains=uniq(riskDomains);
     var features=Object.assign({},intent,{domains:domains,domainCount:domains.length,relationType:relation?relation.type:null,hasRelation:!!relation,hasThreshold:!!(relation&&relation.type==='fixed_numeric_threshold'),shape:shape,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains,highRisk:riskDomains.length>0,referenceDate:dateParts(options.referenceDate).iso,questionLength:q.length,subquestionCount:clauses.length,compoundQuestion:clauses.length>1});
-    return {originalQuestion:text(question),normalizedQuestion:q,readingQuestion:analyzeReadingQuestion(text(question)),requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
+    return {originalQuestion:text(question),normalizedQuestion:q,readingQuestion:readingQuestion,requestedDimensions:dims,explicitScopes:scopes,relations:relations,knownCounterpart:intent.knownDyad,queryGraph:graph,features:features,requiredObservables:reqObs,unsupportedDimensions:unsupported,riskDomains:riskDomains};
   }
 
   function spreadDirectives(q) {

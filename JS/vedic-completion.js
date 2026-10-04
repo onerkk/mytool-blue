@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  const VERSION='20261003-completion1',DAY=86400000,EPS=1e-9;
+  const VERSION='20261004-completion2',DAY=86400000,EPS=1e-9;
   const K=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'],SEVEN=K.slice(0,7);
   const L=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
   const EX={Sun:0,Moon:1,Mars:9,Mercury:5,Jupiter:3,Venus:11,Saturn:6,Rahu:2,Ketu:8};
@@ -143,6 +143,12 @@
     const rows=rank.map(row=>{const indices=rank.flatMap((q,j)=>Math.abs(q.advancement-row.advancement)<EPS?[j]:[]);return {...row,role:indices.length===1?roles[indices[0]]:null,possibleRoles:indices.map(j=>roles[j]),possibleRanks:indices.map(j=>j+1),tied:indices.length>1};}),ak=rows.filter(r=>r.possibleRoles.includes('AK'));
     return {profile:'eight-karakas-Rahu-reversed-no-Ketu',rank:rows,karakamsa:chart.input.unknownTime||ak.length!==1?null:chart.vargas[9].planets[ak[0].planet].sign,karakamsaCandidates:chart.input.unknownTime?[]:ak.map(r=>({planet:r.planet,sign:chart.vargas[9].planets[r.planet].sign})),note:'七與八Karaka並存；八Karaka增加父親PiK。同度組列出所有角色及Karakamsa候選，不暗用列序裁決。'};
   }
+  function specialLagnaVariants(sunAtRise,elapsedMinutes){
+    if(!Number.isFinite(sunAtRise)||!Number.isFinite(elapsedMinutes)||elapsedMinutes<0)throw Error('特殊上升須有效日出黃經與非負經過分鐘');
+    const E=root.JYVedic;
+    const point=(rate,profile)=>({...E.placement(sunAtRise+elapsedMinutes*rate),profile,elapsedMinutes,degreesPerMinute:rate,sunAtRise,status:'calculated'});
+    return {BhavaDefinition:point(0.25,'PVR5.2-intro-definition'),BhavaPrintedProcedure:point(1,'PVR5.2-procedure-and-Example7'),Hora:point(0.5,'PVR5.3'),Ghati:point(1.25,'PVR5.4')};
+  }
   function specialPoints(chart){
     const sun=chart.planets.Sun.longitude,dh=norm(sun+400/3),vy=norm(-dh),pa=norm(vy+180),ind=norm(-pa),upagrahas={Dhuma:dh,Vyatipaata:vy,Parivesha:pa,Indrachaapa:ind,Upaketu:norm(ind+50/3)};
     const clock=chart.strength?.clock,segment=clock?.segment,previousRise=clock?.previousRise,confirmed=!chart.input.unknownTime,E=root.JYVedic;
@@ -151,9 +157,18 @@
     if(!confirmed||!previousRise||!segment){result.status='partial';result.missing=['confirmed-birth-clock-and-actual-sunrise/sunset'];return result;}
     const rise=Date.parse(previousRise),elapsedMinutes=(Date.parse(chart.input.utc)-rise)/60000,sunAtRise=E.astronomy(new Date(rise),chart.input.latitude,chart.input.longitude,chart.input.ayanamsa).planets.Sun.sidereal;
     for(const [name,rate] of [['BhavaLagna',0.25],['HoraLagna',0.5],['GhatiLagna',1.25]])result.specialLagnas[name]={...E.placement(sunAtRise+elapsedMinutes*rate),elapsedMinutes,degreesPerMinute:rate,sunAtRise,sunriseUTC:previousRise,status:'calculated'};
+    const lagnaVariants=specialLagnaVariants(sunAtRise,elapsedMinutes);
+    result.specialLagnaVariants={...lagnaVariants,sunriseUTC:previousRise,selectedBhavaProfile:'BhavaDefinition',policy:'PVR5.2引言與印例數字矛盾：兩者分算，不用另一口徑覆蓋所選定義。'};
     const weekOrder=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'],dayIndex=weekOrder.indexOf(clock.dayLord),first=segment.daytime?dayIndex:mod(dayIndex+4,7),eight=weekOrder.concat(null),firstIndex=eight.indexOf(weekOrder[first]),start=Date.parse(segment.start),part=(Date.parse(segment.end)-start)/8;
     result.dayNightParts=Array.from({length:8},(_,i)=>({part:i+1,lord:eight[mod(firstIndex+i,8)],start:iso(start+i*part),endExclusive:iso(start+(i+1)*part)}));
     for(const [name,lord,offset] of [['Kaala','Sun',0.5],['Mrityu','Mars',0.5],['Arthaprahaara','Mercury',0.5],['Yamaghantaka','Jupiter',0.5],['Gulika','Saturn',0.5],['Maandi','Saturn',0]]){const i=result.dayNightParts.findIndex(p=>p.lord===lord),time=start+(i+offset)*part,longitude=E.astronomy(new Date(time),chart.input.latitude,chart.input.longitude,chart.input.ayanamsa).ascendant;result.upagrahas[name]={...E.placement(longitude),ruler:lord,part:i+1,fraction:offset,utc:iso(time),status:'calculated'};}
+    result.upagrahaVariants={PVR_PART_MIDPOINT:{source:'PVR4.3-main-text',points:Object.fromEntries(['Kaala','Mrityu','Arthaprahaara','Yamaghantaka','Gulika','Maandi'].map(k=>[k,{...result.upagrahas[k]}]))},PVR_PART_BEGINNING_FOOTNOTE:{source:'PVR4.3-footnote9',points:{},policy:'註9另列起點口徑，Maandi仍在土星段起點；不混成同一算法或第二次驗證。'}};
+    for(const [name,lord]of [['Kaala','Sun'],['Mrityu','Mars'],['Arthaprahaara','Mercury'],['Yamaghantaka','Jupiter'],['Gulika','Saturn'],['Maandi','Saturn']]){
+      const i=result.dayNightParts.findIndex(p=>p.lord===lord),time=start+i*part,longitude=E.astronomy(new Date(time),chart.input.latitude,chart.input.longitude,chart.input.ayanamsa).ascendant;
+      result.upagrahaVariants.PVR_PART_BEGINNING_FOOTNOTE.points[name]={...E.placement(longitude),ruler:lord,part:i+1,fraction:0,utc:iso(time),status:'calculated'};
+    }
+    const vargaPoints=points=>Object.fromEntries(Object.keys(chart.vargas||{}).map(d=>[d,Object.fromEntries(Object.entries(points).filter(([,p])=>Number.isFinite(p.longitude)).map(([k,p])=>{const v=E.varga(p.longitude,+d),lagna=chart.vargas[d].lagna;return [k,{...v,house:lagna?mod(v.sign-lagna.sign,12)+1:null}];}))]));
+    result.specialPointVargas={specialLagnas:vargaPoints(result.specialLagnas),lagnaVariants:vargaPoints(lagnaVariants),upagrahas:vargaPoints(result.upagrahas),upagrahaVariants:Object.fromEntries(Object.entries(result.upagrahaVariants).map(([k,v])=>[k,vargaPoints(v.points)])),policy:'每個點按各D分盤同一取法計算；細分點對出生精度敏感，沒有提供誤差就不宣告穩定。'};
     result.status='calculated';return result;
   }
   function additionalYogas(chart){
@@ -230,5 +245,5 @@
       vargas:Object.fromEntries(Object.entries(advanced.vargas).map(([k,v])=>[k,{division:v.division,arudhas:{bhava:v.arudhas.bhava.map(a=>({house:a.house,name:a.name,sign:a.sign,origin:a.origin,destination:a.destination,steps:a.steps,exception:a.exception,lord:a.lordSelection.winner,status:a.lordSelection.status,decisive:a.lordSelection.decisive})),graha:v.arudhas.graha.map(a=>({planet:a.planet,sign:a.sign,ownedSign:a.ownedSignSelection.winner,status:a.ownedSignSelection.status,decisive:a.ownedSignSelection.decisive}))},coLords:v.coLords,argala:{profile:v.argala.profile,signs:v.argala.signs.map(s=>({sign:s.sign,direction:s.direction,channelTupleColumns:['argalaHouse','obstructionHouse','contributors','blockers','vipareeta','countDecision','quarterCounterpairs'],thirdMalefics:s.thirdMalefics,channels:s.channels.filter(c=>c.contributors.length||c.blockers.length).map(c=>[c.argalaHouse,c.obstructionHouse,c.contributors,c.blockers,c.vipareeta,c.countDecision,c.quarterCounterpairs])})),houses:v.argala.houses,planets:v.argala.planets},narayana:dasha(v.narayana)}])),
       exportPolicy:'Every computed major-period boundary, all currently active antardasas, all16 arudha/Argala/colord results, every Yoga status and all special points are present. All historical/future minor-period intervals and every unsuccessful rule predicate remain in full chart JSON/data(); they are not omitted algorithms.'};
   }
-  root.JYVedicCompletion=Object.freeze({version:VERSION,compute,promptSnapshot,rasiAspect,coLord,strongerRasi,rawLength,arudhaSign,arudhas,argala,planetaryDasha,ashtottari,yogini,conditionalNakshatraDasas,kalachakra,narayanaOrder,antardasaSeed,rasiDasha,specialPoints,additionalYogas,charaKarakas,projectedPlanets});
+  root.JYVedicCompletion=Object.freeze({version:VERSION,compute,promptSnapshot,rasiAspect,coLord,strongerRasi,rawLength,arudhaSign,arudhas,argala,planetaryDasha,ashtottari,yogini,conditionalNakshatraDasas,kalachakra,narayanaOrder,antardasaSeed,rasiDasha,specialPoints,specialLagnaVariants,additionalYogas,charaKarakas,projectedPlanets});
 })(typeof globalThis!=='undefined'?globalThis:this);

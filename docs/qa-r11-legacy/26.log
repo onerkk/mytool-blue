@@ -1,0 +1,10 @@
+PASS iztro 2.5.8: 160 independent frozen charts, both sexes, leap policies and date boundaries
+PASS Li-Chun annual boundary uses actual UTC instants, including explicit offsets
+PASS Calendar rejects invalid dates, NaN fields and unsupported policies
+PASS Month pillar and elapsed Jie days share one ephemeris, including simplified term names
+PASS Infancy before first Yun is represented; leap-day decades clamp to February end
+PASS Explicit chart-wall reference resolves back to the matching actual instant
+PASS 不得地 is weaker than 平, while 得地 is stronger
+PASS Neutral palace input gives neutral annual/monthly model output, not an offset of 50 or 100
+PASS Ziwei exported current year follows saved lunar year before Lunar New Year
+Engine fix groups passed: 9; independent comparisons: 18560

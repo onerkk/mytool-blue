@@ -1,0 +1,18 @@
+✗ foundation upgraded to method-data schema 
+  AssertionError [ERR_ASSERTION]: '104.2.0' == '104.1.0'
+    at /workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/tarot-v102-method-data-prompt.test.js:21:62
+    at test (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/tarot-v102-method-data-prompt.test.js:11:28)
+    at Object.<anonymous> (/workspace/scratch/bc1d9705bf5c/project/mytool-blue-master/tests/tarot-v102-method-data-prompt.test.js:21:1)
+    at Module._compile (node:internal/modules/cjs/loader:1872:14)
+    at Object..js (node:internal/modules/cjs/loader:2003:10)
+    at Module.load (node:internal/modules/cjs/loader:1594:32)
+    at Module._load (node:internal/modules/cjs/loader:1396:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+✓ export prompt no longer exposes query graph, ROOT-SPEC, capability gate or claim ledger
+✓ prompt invites the AI to use its own tarot knowledge while keeping method data
+✓ five-card network is rendered as named relations, never a fake 2→1→3→4→5 chain
+✓ Mathers methods remain ordered sequence methods
+✓ prompt preserves Book T, true adjacency and a concise recommendation ending
+✓ changed JS syntax is valid

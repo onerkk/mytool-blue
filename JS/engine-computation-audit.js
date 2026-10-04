@@ -2,7 +2,7 @@
  * A valid record is not a claim that all schools or predictions are complete.
  * Invalid records stop export; unknown inputs and unfinished procedures stay partial. */
 (function(root){'use strict';
- const VERSION='20261004audit1',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
+ const VERSION='20261004audit2',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
  const H={子:'癸',丑:'己癸辛',寅:'甲丙戊',卯:'乙',辰:'戊乙癸',巳:'丙戊庚',午:'丁己',未:'己丁乙',申:'庚壬戊',酉:'辛',戌:'戊辛丁',亥:'壬甲'};
  const PV=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'],PW=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
  const methods=['bazi','ziwei','astro','vedic','liuren','liuyao','yijing','meihua','name','compat','personality','tarot','lenormand','ootk','oracle'];
@@ -36,6 +36,20 @@
    if(c.input?.unknownTime){check('unknown-no-houses',!c.lagna&&A(c.houses).length===0,null);partial('birth-hour','出生時刻未知，分盤上升、六力與確定運期不可定盤');}
    else {check('twelve-houses',A(c.houses).length===12,A(c.houses).length);if(c.lagna)for(const k of PV)check('vedic-house-'+k,c.planets[k].house===mod(c.planets[k].sign-c.lagna.sign,12)+1,c.planets[k].house);if(c.strength){check('seven-shadbala-planets',A(c.strength.planets).length===7,c.strength.planets.length);for(const p of c.strength.planets){const parts=['sthana','dig','kala','cheshta','naisargika','drik'].map(k=>p[k]?.virupas);if(parts.every(Number.isFinite))check('shadbala-sum-'+p.planet,Number.isFinite(p.totalVirupas)&&Math.abs(parts.reduce((n,z)=>n+z,0)-p.totalVirupas)<1e-5,p.totalVirupas);else partial('strength-'+p.planet,'天文或力度所需資料未齊，不能用零補值');}}
     if(c.sudarsana?.status==='calculated')check('twenty-sudarsana-vargas',Object.keys(c.sudarsana.vargas).length===20,Object.keys(c.sudarsana.vargas).length);
+    const special=c.advanced?.specialPoints;
+    if(special?.status==='calculated'){
+      const rates={BhavaDefinition:.25,BhavaPrintedProcedure:1,Hora:.5,Ghati:1.25};
+      for(const [k,rate]of Object.entries(rates)){
+        const p=special.specialLagnaVariants?.[k];
+        check('special-lagna-'+k,!!p&&degree(p.longitude)&&Math.abs(p.longitude-mod(p.sunAtRise+p.elapsedMinutes*rate,360))<1e-7,p&&[p.longitude,p.sunAtRise,p.elapsedMinutes,rate]);
+      }
+      for(const [model,v]of Object.entries(special.upagrahaVariants||{}))for(const [k,p]of Object.entries(v.points||{})){
+        const part=special.dayNightParts?.[p.part-1],offset=model==='PVR_PART_BEGINNING_FOOTNOTE'||k==='Maandi'?0:.5;
+        check('upagraha-clock-'+model+'-'+k,!!part&&Math.abs(Date.parse(p.utc)-Date.parse(part.start)-(Date.parse(part.endExclusive)-Date.parse(part.start))*offset)<2&&p.fraction===offset,[p.utc,p.part,p.fraction]);
+        check('upagraha-position-'+model+'-'+k,degree(p.longitude)&&p.sign===Math.floor(p.longitude/30),[p.longitude,p.sign]);
+      }
+      check('special-point-varga-coverage',Object.keys(special.specialPointVargas?.specialLagnas||{}).length===20,Object.keys(special.specialPointVargas?.specialLagnas||{}).length);
+    }
    }
   }else if(kind==='liuren'){
    check('twelve-earth-positions',sameSet(A(c.plate).map(p=>p.earth),B),null);check('twelve-sky-positions',sameSet(A(c.plate).map(p=>p.sky),B),null);check('twelve-generals',new Set(A(c.plate).map(p=>p.generalIndex)).size===12,null);check('four-courses',A(c.courses).length===4,c.courses?.length);check('three-transmissions',A(c.transmissions).length===3,c.transmissions?.length);

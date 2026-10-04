@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-03T23:03:41.332Z",
+  "testedAt": "2026-10-04T01:47:38.190Z",
   "scope": "Actual controls and production local calculations; no remote AI or injected chart results. Oracle receives fixed raw uint32 words through the production RNG fallback; all other random draws use browser entropy.",
   "results": [
     {
@@ -29,7 +29,7 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 5971,
+      "promptCharacters": 5791,
       "parts": 1,
       "completeTextCopy": true,
       "requiresAttachment": false,
@@ -40,7 +40,7 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 24763,
+      "promptCharacters": 25083,
       "parts": 4,
       "completeTextCopy": true,
       "requiresAttachment": false,
@@ -95,7 +95,7 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 12324,
+      "promptCharacters": 12638,
       "parts": 2,
       "completeTextCopy": true,
       "requiresAttachment": false,
@@ -106,7 +106,7 @@
       "status": "passed",
       "width": 390,
       "nativeDownload": true,
-      "promptCharacters": 46380,
+      "promptCharacters": 48487,
       "parts": 7,
       "completeTextCopy": true,
       "requiresAttachment": false,

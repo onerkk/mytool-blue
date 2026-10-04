@@ -1,0 +1,5 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:completion
+> node scripts/build-completion-data.cjs --check && node tests/vedic-completion-20261003.cjs && node tests/liuren-completion-20261003.cjs && node tests/chinese-completion-20261003.cjs && node tests/bazi-qiongtong-20261003.cjs && node tests/western-completion-20261003.cjs
+
