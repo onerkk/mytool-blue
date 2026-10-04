@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261004depth13';
+  const VERSION='20261004depth14';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -27,12 +27,34 @@
     lenormand:{profile:'36牌幾何關係／Grand Tableau',required:[['牌列與幾何','methodData']],order:['主題牌與人物牌','相鄰牌句','鏡像／騎士步（合法時）','宮位與大牌陣鏈','整合問題'],conflicts:['不同布局規則按實際布局使用'],forbidden:['不得由心、戒指等圖像直接證實事件']},
     oracle:{profile:'廟方版本籤詩＋實際求籤程序',required:[['籤文與程序','methodData']],order:['程序有效性','原詩','本廟事項欄','故事只作版本脈絡','對原題給條件式解讀'],conflicts:['不同廟版本不混算'],forbidden:['不得由籤號換算精確日期']}
   };
+  function evidenceState(method,chart,analysis,path){
+    if(method==='vedic'&&chart?.input?.unknownTime&&['items','activation','strength','bhavaStrength','applicability'].includes(path))
+      return {available:false,status:'withheld',reason:'出生時刻未確認，不能確定宮位、六力或現行運期'};
+    if(method==='ziwei'&&analysis?.coverage?.provisional&&path==='items')
+      return {available:false,status:'withheld',reason:'未知時辰，十二宮尚未定盤'};
+    const av=valueAt(analysis,path),cv=valueAt(chart,path),v=present(av)?av:cv;
+    if(!present(v)){
+      if(method==='astro'&&path==='traditionProfile'&&chart?.input?.chartPurpose!=='horary')return {available:true,status:'not-applicable',reason:'本次不是卜卦盤'};
+      return {available:false,status:'missing',reason:'沒有可讀取的實算資料'};
+    }
+    const status=typeof v==='object'?v.status:null;
+    if(status==='not-horary')return {available:true,status:'not-applicable',reason:'本次不是卜卦盤'};
+    if(v.complete===false||/^(insufficient|unknown|undefined|unavailable|unverified|not-computed|module-not-loaded|missing)/.test(status||''))
+      return {available:false,status:'partial',reason:[status,...A(v.missing)].filter(Boolean).join('；')||'計算尚未完成'};
+    if(method==='ziwei'&&path==='schoolCompletion'&&A(v.policyMismatches).length)
+      return {available:false,status:'policy-mismatch',reason:'要求的流派配置未套用到本盤，須重排'};
+    if(method==='ootk'&&path==='methodData'&&A(v.completed).length!==5&&Object.hasOwn(v,'completed'))
+      return {available:false,status:'partial',reason:'只可解讀實際完成且有效的輪次，不能宣稱五輪完成'};
+    return {available:true,status:'calculated',reason:null};
+  }
   function build(method,chart,analysis){
     const p=P[method]||{profile:'具名方法',required:[['原生資料','items']],order:common.synthesis,conflicts:[],forbidden:[]};
-    const evidence=p.required.map(([label,path])=>({label,path,available:has(analysis,path)||has(chart,path)}));
+    const evidence=p.required.map(([label,path])=>({label,path,...evidenceState(method,chart,analysis,path)}));
     const missing=evidence.filter(x=>!x.available).map(x=>x.label);
     return {
       version:VERSION,method,profile:p.profile,
+      status:missing.length?'partial-reading':'ready-for-scoped-reading',
+      allSchoolsComplete:false,
       evidence,
       readingOrder:p.order,
       synthesisOrder:common.synthesis,
@@ -40,12 +62,12 @@
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
       missingRequiredEvidence:missing,
-      unresolved:A(analysis?.unavailable),
+      unresolved:[...A(analysis?.unavailable),...evidence.filter(x=>!x.available).map(x=>x.label+'：'+x.reason)],
       sourcePolicy:'來源必須綁定具名規則或profile；同源重複不當獨立驗證；原典互相矛盾時並列，不自行創造唯一版本。',
       outputPolicy:'每個主結論至少指出一條實算支持；若存在可改判的反證，同段交代。時間結論必須引用已算區間或明示只能給象徵時序。'
     };
   }
-  function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.available?'✓':'缺'}${x.label}`).join('、');return [
+  function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
@@ -53,8 +75,10 @@
     c.contradictionChecks.length?`流派／反證規則：${c.contradictionChecks.join('；')}。`:'',
     `禁止捷徑：${c.forbiddenShortcuts.join('；')}。`,
     `置信規則：${c.confidencePolicy}`,
+    '完整性界線：通過只代表本次具名方法的已實算範圍可讀，不代表全部歷史流派已實作或事件已被證實。',
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''
   ].filter(Boolean).join('\n');}
-  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt});
+  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
+  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary});
 })(typeof window==='undefined'?globalThis:window);

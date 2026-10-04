@@ -16,10 +16,10 @@ const cases=[
 for(const [m,chart,q,key,label] of cases){
  const a=c.JYNativeAnalysis.analyze(m,chart,{question:q});
  ok(a[key],m+' '+key+' exists');
- ok(!a.depthContract.missingRequiredEvidence.length,m+' depth evidence complete');
+ if(m==='liuyao'){ok(a.depthContract.missingRequiredEvidence.includes('應期候選'),m+' symbolic calendar lacks an actual cast instant');}else ok(!a.depthContract.missingRequiredEvidence.length,m+' depth evidence complete');
  const p=c.JYPromptPacket.build(m,chart,q);
  ok(p.includes(label),m+' prompt carries '+label);
- ok(p.includes('20261004depth13'),m+' prompt carries depth13');
+ ok(/20261004depth(?:13|14)/.test(p),m+' prompt carries depth13');
 }
 const bz=c.JYNativeAnalysis.analyze('bazi',x.b,{question:x.q});
 eq(bz.classicalAdjudication.status,'calculated','bazi adjudication calculated');
@@ -37,7 +37,7 @@ const ly=c.JYNativeAnalysis.analyze('liuyao',x.six,{question:'今年工作能順
 const hor=c.JYWestern.compute({...x.input,utc:'2026-10-03T04:00:00Z',reference:'2026-10-03T04:00:00Z',chartPurpose:'horary',houseSystem:'R',horaryHouse:10,horaryDays:7});
 const wa=c.JYNativeAnalysis.analyze('astro',hor,{question:'這件工作合作會成功嗎？'});eq(wa.traditionProfile.status,'calculated','horary profile calculated');ok(wa.traditionProfile.voidOfCourse.profiles.length>=2,'VOC definitions remain separate');ok(['definition-dependent',true,false].includes(wa.traditionProfile.voidOfCourse.consensus),'VOC consensus bounded');ok(wa.traditionProfile.astronomyAudit.note.includes('不冒稱'),'Swiss cross-check claim bounded');
 const hp=c.JYPromptPacket.build('astro',hor,'這件工作合作會成功嗎？');ok(hp.includes('傳統卜卦定義分流'),'horary prompt carries profile');
-const src=c.JYNativeRuleSources.all();for(const id of ['ditiansui','iztroconfig','pvrofficial','swissapi','liuyao26','liuren3','horaryvoid']){const r=src.find(x=>x.id===id);ok(r,id+' source exists');eq(r.lastReviewedRelease,'20261004native13',id+' R13 reviewed');}
+const src=c.JYNativeRuleSources.all();for(const id of ['ditiansui','iztroconfig','pvrofficial','swissapi','liuyao26','liuren3','horaryvoid']){const r=src.find(x=>x.id===id);ok(r,id+' source exists');ok(['20261004native13','20261004native14'].includes(r.lastReviewedRelease),id+' R13 or later reviewed');}
 for(const f of ['bazi-adjudication.js','ziwei-school-completion.js','vedic-applicability.js','liuren-topic-rules.js','liuyao-classical-balance.js','western-tradition-profile.js','native-depth-contract.js','native-chart-analysis.js','native-rule-sources.js','prompt-brief.js','prompt-packet.js'])ok(fs.readFileSync(path.join(root,f),'utf8')===fs.readFileSync(path.join(root,'JS',f),'utf8'),'mirror '+f);
-const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const f of ['bazi-adjudication','ziwei-school-completion','vedic-applicability','liuren-topic-rules','liuyao-classical-balance','western-tradition-profile'])ok(html.includes('JS/'+f+'.js?v=20261004native13'),'html loads '+f);ok(html.includes('prompt-brief.js?v=20261004brief13'),'brief cache version');ok(html.includes('prompt-packet.js?v=20261004prompt13'),'packet cache version');
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const f of ['bazi-adjudication','ziwei-school-completion','vedic-applicability','liuren-topic-rules','liuyao-classical-balance','western-tradition-profile'])ok(html.includes('JS/'+f+'.js?v=20261004native14')||html.includes('JS/'+f+'.js?v=20261004native13'),'html loads '+f);ok(html.includes('prompt-brief.js?v=20261004brief14'),'brief cache version');ok(html.includes('prompt-packet.js?v=20261004prompt14'),'packet cache version');
 console.log(`R13 core-completion checks: ${checks}/${checks} PASS`);

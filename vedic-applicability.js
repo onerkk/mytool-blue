@@ -1,15 +1,89 @@
-/* R13 吠陀運法適用性與 Yoga 啟動層：不讓多運法/多Yoga投票。
- * 基於引擎已實算 PVR/BPHS 分盤、Dasha、Shadbala、Jaimini 資料。 */
+/* PVR ch.17: alternative applicability rules are separate models.
+ * A calculated timeline is not proof that a conditional dasha applies.
+ * Yoga structure, strength and PRIMARY timing remain separate dimensions. */
 (function(root){'use strict';
- const VERSION='20261004vedic-applicability13',SOURCE='https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf';
- const A=x=>Array.isArray(x)?x:[],clone=x=>x==null?null:JSON.parse(JSON.stringify(x));
- function appStatus(d){if(!d)return 'not-computed';if(d.status&&/insufficient|not-applicable|unavailable/.test(d.status))return 'ineligible';if(d.applicability===true||d.applicability==='applicable'||d.applicability?.status==='applicable')return 'eligible';if(d.applicability===false||d.applicability==='not-applicable'||d.applicability?.status==='not-applicable')return 'ineligible';if(d.applicabilityAlternative===true)return 'eligible-alternative';if(d.status==='calculated'||A(d.periods).length||d.current)return 'computed-condition-unknown';return 'unknown';}
- function currentLords(d){const c=d?.current||d?.active||null;if(!c)return [];return ['maha','antar','pratyantar'].map(k=>c[k]?.lord||c[k]?.sign||c[k]).filter(x=>typeof x==='string');}
- function strengthMap(c){const out={};for(const p of A(c.strength?.planets||c.strength?.rows))out[p.planet||p.key||p.name]=p.relativeStrength??(Number.isFinite(p.totalVirupas)&&Number.isFinite(p.minimumVirupas)&&p.minimumVirupas>0?p.totalVirupas/p.minimumVirupas:null)??p.totalRupa??p.rupa??p.total??p.score??null;return out;}
- function yogaActivation(c){const ys=c.advanced?.yogas?.checks||c.advanced?.yogas?.matched||[],sm=strengthMap(c),vim=currentLords(c.dasha),extra=Object.values(c.advanced?.dashas||{}).flatMap(currentLords),active=new Set(vim.concat(extra));return A(ys).map(y=>{const planets=A(y.planets||y.keys||y.participants);const vals=planets.map(p=>sm[p]).filter(Number.isFinite);const timing=planets.some(p=>active.has(p));let status=y.established===false||y.status==='not-established'?'not-established':y.established===true||y.status==='structural'?'structural-only':'undetermined';if(status==='structural-only'&&vals.length&&Math.min(...vals)<1)status='weakened';if(status==='structural-only'&&timing)status='timing-supported';return {id:y.id,name:y.name,status,planets,strengthValues:vals,timingLords:[...active].filter(p=>planets.includes(p)),source:y.source||c.advanced?.yogas?.profile||null};});}
- function compute(c){if(!c||!c.dasha)return {version:VERSION,status:'insufficient-data',missing:['Vimshottari'],source:SOURCE};const systems={vimshottari:{system:'Vimshottari',status:'primary-general',currentLords:currentLords(c.dasha),reason:'本引擎基準運法；其他條件運只作具名條件成立時的第二模型'}};for(const [k,d] of Object.entries(c.advanced?.dashas||{}))systems[k]={system:d.system||k,status:appStatus(d),applicability:clone(d.applicability),applicabilityAlternative:clone(d.applicabilityAlternative),currentLords:currentLords(d),sourceAudit:clone(d.sourceAudit)};
-  const eligible=Object.entries(systems).filter(([k,v])=>k!=='vimshottari'&&/^eligible/.test(v.status)).map(([k])=>k),unknown=Object.entries(systems).filter(([k,v])=>['computed-condition-unknown','unknown'].includes(v.status)).map(([k])=>k);
-  const j=c.advanced?{eightKarakas:clone(c.advanced.eightKarakas),d1Arudha:clone(c.advanced.vargas?.['1']?.arudhas),d1Argala:clone(c.advanced.vargas?.['1']?.argala),narayana:clone(c.advanced.dashas?.narayana||c.advanced.vargas?.['1']?.narayana),policy:'Jaimini 的 Chara Karaka/Arudha/Argala/Narayana 只在同一 Jaimini 框架內合讀，不拿 Parashari Yoga 票數加總。'}:null;
-  return {version:VERSION,status:'calculated',dashaSelection:{primary:'vimshottari',eligibleSupporting:eligible,conditionUnknown:unknown,systems,policy:'條件運法先檢查 applicability；不成立者不得投票，未知者不得包裝成支持。'},yogaActivation:yogaActivation(c),jaimini:j,source:SOURCE,limits:['P.V.R. Narasimha Rao 教材與後續講義本身持續修訂；本版只對已實算運法做適用性路由，不宣稱列盡印度占星所有地方傳承。']};}
- root.JYVedicApplicability=Object.freeze({version:VERSION,compute,source:SOURCE});
+  const VERSION='20261004vedic-applicability14';
+  const SOURCE='https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf';
+  const A=x=>Array.isArray(x)?x:[],clone=x=>x==null?null:JSON.parse(JSON.stringify(x));
+  const finite=Number.isFinite;
+  const GENERAL=new Set(['yogini','kalachakra','narayana','lagnaKendradi','sudasa','drigdasa','niryaanaShoola','shoola']);
+  function currentLords(d){
+    return [...new Set(['maha','antar','pratyantar'].map(k=>d?.current?.[k]?.lord).filter(x=>typeof x==='string'))];
+  }
+  function applicability(d,key){
+    if(!d)return {status:'not-computed',profiles:[]};
+    if(/insufficient|unavailable|unresolved/.test(d.status||''))return {status:'ineligible',profiles:[],reason:d.status};
+    const test=(id,value)=>({id,value:value===true?true:value===false?false:null,
+      status:value===true?'eligible':value===false?'ineligible':'unknown'});
+    const v=d.applicability,profiles=[];
+    if(v&&typeof v==='object'){
+      // PVR17.2.3 offers three DIFFERENT views, not an AND/OR vote.
+      for(const [id,value] of Object.entries(v))if(typeof value==='boolean'||value==null)profiles.push(test(id,value));
+    }else if(typeof v==='boolean'||v==='applicable'||v==='not-applicable')profiles.push(test('default',v===true||v==='applicable'));
+    else if(v===null)profiles.push(test('default',null));
+    if(d.applicabilityAlternative!==undefined)profiles.push(test('alternative',d.applicabilityAlternative));
+    if(profiles.length)return {status:profiles.length===1?profiles[0].status:'profile-dependent',profiles,
+      reason:'每一具名適用條件獨立保留；不同版本不互相覆蓋。'};
+    return {status:GENERAL.has(key)?'comparison-only':'computed-condition-unknown',profiles:[],
+      reason:GENERAL.has(key)?'已計算的獨立運法；按該運法框架另讀，不改寫Vimshottari主判。':'引擎未提供適用條件，不能拿計算成功代替條件成立。'};
+  }
+  function strengthMap(c){
+    const out={};
+    for(const p of A(c.strength?.planets)){
+      if(p.complete===false||p.kala?.complete===false)continue;
+      const ratio=finite(p.relativeStrength)?p.relativeStrength:
+        finite(p.totalVirupas)&&finite(p.minimumVirupas)&&p.minimumVirupas>0?p.totalVirupas/p.minimumVirupas:null;
+      // Virupa/Rupa totals cannot be compared with the dimensionless minimum ratio 1.
+      if(finite(ratio)&&ratio>=0)out[p.planet]=ratio;
+    }
+    return out;
+  }
+  function yogaActivation(c,systems){
+    const sm=strengthMap(c),primary=new Set(currentLords(c.dasha));
+    const rows=[...A(c.yogas).map(y=>({y,layer:'primary'})),
+      ...A(c.advanced?.yogas?.checks||c.advanced?.yogas?.matched).map(y=>({y,layer:'additional'}))];
+    return rows.map(({y,layer},index)=>{
+      const planets=[...new Set(A(y.planets))],ratios=planets.map(planet=>({planet,ratio:sm[planet]??null}));
+      const structural=y.established===false||y.status==='not-established'?false:
+        y.established===true||y.status==='structural'?true:null;
+      const timingLords=planets.filter(p=>primary.has(p)),known=ratios.filter(p=>finite(p.ratio));
+      const weak=known.some(p=>p.ratio<1),complete=ratios.length>0&&known.length===ratios.length;
+      const supportingTiming=[];
+      for(const [key,sys] of Object.entries(systems)){
+        if(key==='vimshottari')continue;
+        for(const profile of sys.profiles.filter(p=>p.status==='eligible')){
+          const lords=sys.currentLords.filter(p=>planets.includes(p));
+          if(lords.length)supportingTiming.push({system:key,profile:profile.id,lords,
+            scope:'獨立條件運模型，不能使主運未啟動的Yoga變成主運已啟動。'});
+        }
+      }
+      const status=structural===false?'not-established':structural===null?'undetermined':
+        weak?'weakened':timingLords.length?'timing-supported':'structural-only';
+      return {id:y.id||y.name||'yoga-'+index,name:y.name||y.id,ruleLayer:layer,status,
+        structural,planets,strengthValues:known.map(p=>p.ratio),strengthByPlanet:ratios,
+        strengthComplete:complete,primaryTiming:timingLords.length>0,timingLords,
+        supportingTiming,source:y.source||c.advanced?.yogas?.profile||SOURCE,
+        policy:'結構、完整六力比例、主運觸及與獨立條件運旁證分列；同源同名規則不重複計票，運主觸及不是現實事件保證。'};
+    });
+  }
+  function compute(c){
+    if(!c||!c.dasha)return {version:VERSION,status:'insufficient-data',missing:['Vimshottari'],source:SOURCE};
+    const systems={vimshottari:{system:'Vimshottari',status:c.dasha.current?'primary-general':'no-current-period',
+      currentLords:currentLords(c.dasha),profiles:[],reason:'本引擎主運時間模型；當前區間不存在時不造運主。'}};
+    for(const [key,d] of Object.entries(c.advanced?.dashas||{}))systems[key]={system:d.system||key,
+      ...applicability(d,key),applicability:clone(d.applicability),applicabilityAlternative:clone(d.applicabilityAlternative),
+      currentLords:currentLords(d),sourceAudit:clone(d.sourceAudit)};
+    const eligible=Object.entries(systems).filter(([key,s])=>key!=='vimshottari'&&s.status==='eligible').map(([key])=>key);
+    const unknown=Object.entries(systems).filter(([,s])=>s.status==='computed-condition-unknown'||s.status==='unknown').map(([key])=>key);
+    const profileDependent=Object.entries(systems).filter(([,s])=>s.status==='profile-dependent').map(([key])=>key);
+    const j=c.advanced?{eightKarakas:clone(c.advanced.eightKarakas),d1Arudha:clone(c.advanced.vargas?.['1']?.arudhas),
+      d1Argala:clone(c.advanced.vargas?.['1']?.argala),narayana:clone(c.advanced.dashas?.narayana),
+      policy:'Jaimini的Chara Karaka/Arudha/Argala/Narayana只在同一框架合讀，不拿Parashari Yoga票數加總。'}:null;
+    return {version:VERSION,status:c.input?.unknownTime?'insufficient-data':'calculated',missing:c.input?.unknownTime?['confirmed-birth-time']:[],
+      dashaSelection:{primary:'vimshottari',eligibleSupporting:eligible,conditionUnknown:unknown,profileDependent,systems,
+        policy:'條件不成立或未知者不提供有效旁證；有多個版本者保留具名條件，不擅選版本。'},
+      yogaActivation:yogaActivation(c,systems),jaimini:j,source:SOURCE,
+      limits:['只對本引擎已實算運法及格局做路由與條件核對，未宣稱列盡印度占星各地方傳承。']};
+  }
+  root.JYVedicApplicability=Object.freeze({version:VERSION,compute,source:SOURCE});
 })(typeof window==='undefined'?globalThis:window);

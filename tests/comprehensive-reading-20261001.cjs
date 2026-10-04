@@ -23,8 +23,8 @@ const Q=r.JY_READING_QUALITY,W=r.JYReadingWorkflow,referenceDate='2026-09-30T18:
 const options={civilTime:'14:55',timezoneId:'Asia/Taipei',timezoneOffset:8,referenceDate};
 const chart=engine.computeZiwei(1983,8,25,14,'male',options);assert(chart,r._jyZiweiError);
 const before=JSON.stringify(chart);
-test('14 native methods and full/focused/period scope',()=>{
- assert.equal(Q.readingVersion,'9.1.0');assert.equal(Q.methodKinds().length,14);
+test('15 native methods and full/focused/period scope',()=>{
+ assert.equal(Q.readingVersion,'9.3.0');assert.equal(Q.methodKinds().length,15);
  for(const k of Q.methodKinds()){assert(Q.methodLines(k).some(x=>x.startsWith('【')&&x.includes('深入')),k+' native depth');assert(W.render({method:k,question:'完整分析命盤所有面向'}).includes('完整報告範圍'));}
  assert.equal(Q.reportScope('全面分析我的財運').fullChart,false);assert.equal(Q.reportScope('完整星盤').fullChart,true);
  assert.equal(Q.reportScope('前八個大限所有流年').requestedDecades,8);assert.equal(Q.reportScope('全部12個大限所有流年').allDecades,true);
@@ -39,7 +39,7 @@ test('Birth minute precision and native lunar chart stay intact',()=>{
 test('First eight decades cover every year from 1986 through 2065',()=>{
  const t=r.JYZiweiData.timeline(chart,{question:'完整分析十二宮，前八個大限的所有流年'});
  assert.equal(t.decades.length,8);assert.equal(t.annual.length,80);assert.equal(t.firstYear,1986);assert.equal(t.lastYear,2065);assert.deepEqual(t.missingYears,[]);
- t.annual.forEach((a,i)=>{assert.equal(a.year,1986+i);assert.equal(a.age,a.year-1983+1);assert.equal(a.decadeIndex,Math.floor(i/10)+1);assert.equal(a.hua.length,4);assert.equal(a.flowStars.length,7);assert.equal(a.palaces.length,12);for(const k of ['score','notes','focus','level'])assert(!Object.hasOwn(a,k));});
+ t.annual.forEach((a,i)=>{assert.equal(a.year,1986+i);assert.equal(a.age,a.year-1983+1);assert.equal(a.decadeIndex,Math.floor(i/10)+1);assert.equal(a.hua.length,4);assert.equal(a.flowStars.length,11);assert.deepEqual(a.flowStars.map(s=>s.star),['祿存','擎羊','陀羅','天魁','天鉞','天馬','文昌','文曲','紅鸞','天喜','年解']);assert(a.flowStars.every(s=>s.policy==='IZTRO_261'&&s.layer==='流年'));assert.equal(a.palaces.length,12);for(const k of ['score','notes','focus','level'])assert(!Object.hasOwn(a,k));});
  const y=t.annual.find(a=>a.year===2026);assert.equal(y.mingPalace,'交友');assert.equal(y.hua.find(h=>h.hua==='化忌').star,'廉貞');assert.equal(y.palaces.find(p=>p.name==='財帛').natalPalace,'父母');
 });
 test('120-year and 55-year reports are complete; focused questions remain short',()=>{
@@ -60,7 +60,7 @@ test('Empty-palace borrowing uses branches and never mutates the chart',()=>{
 });
 test('Full prompt retains every year, memory boundary, native depth and one final footer',()=>{
  const question='完整分析命盤十二宮，前八個大限的所有流年',prompt=r._ziweiBuildPrompt(chart,{bdate:'1983-08-25',btime:'14:55',gender:'male',question});
- for(let y=1986;y<=2065;y++)assert(new RegExp('^・'+y+'(?:（現行農曆年度）)?／','m').test(prompt),'year '+y);
+ for(let y=1986;y<=2065;y++)assert(new RegExp('^・'+y+'(?:（(?:現行|下一)農曆年度）)?／','m').test(prompt),'year '+y);
  for(const s of ['"annualCount":80','【紫微深入全盤與限流合參】','【全盤作答覆蓋】','象徵影響程度','不得引用、調用或暗中依賴帳號記憶','僅供研究或娛樂用途'])assert(prompt.includes(s),s);
  assert.equal(prompt.split(W.footer).length-1,1);assert(prompt.endsWith(W.footer));assert.equal(W.finish(prompt,{method:'ziwei',question}),prompt);
  const saved=r.JY_READING_QUALITY;r.JY_READING_QUALITY=Object.assign({},saved,{readingVersion:'8.3.0',lines:()=>['STALE_READING']});assert(!r._ziweiBuildPrompt(chart,{question}).includes('STALE_READING'));r.JY_READING_QUALITY=saved;
@@ -84,4 +84,4 @@ test('Joint Ziwei timelines retain the full interval and mark the not-yet-born p
  const first=Math.min(1983+chart.daXian[0].ageStart-1,1994+b.daXian[0].ageStart-1),last=Math.max(1983+chart.daXian[7].ageEnd-1,1994+b.daXian[7].ageEnd-1);
  assert.equal(pair.timeline.length,last-first+1);assert(pair.timeline.length>80);assert(pair.timeline.some(y=>y.year<1994&&y.b.available===false));assert(pair.timeline.every(y=>!y.b||y.b.available===false||y.b.nominalAge>=1));
 });
-console.log('Comprehensive reading: '+passed+' groups passed; 14 methods, native 80/120-year Ziwei exports, Bazi segments and joint timelines.');
+console.log('Comprehensive reading: '+passed+' groups passed; 15 methods, native 80/120-year Ziwei exports, Bazi segments and joint timelines.');

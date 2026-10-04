@@ -14,12 +14,12 @@ function same(actual,expected,label){assert.equal(JSON.stringify(actual),JSON.st
 let passed=0;function test(name,fn){fn();passed++;console.log('PASS '+name);}
 
 test('All active methods receive the full answer-first depth contract and native synthesis path',()=>{
-  assert.equal(quality.readingVersion,'9.1.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','personality']);
+  assert.equal(quality.readingVersion,'9.3.0');assert.deepEqual(methods,['tarot','ootk','lenormand','bazi','compat','ziwei','meihua','liuyao','yijing','oracle','astro','vedic','name','liuren','personality']);
   for(const method of methods){
     const lines=quality.lines(method).join('\n'),payload=quality.payloadGuide([method]);
     for(const phrase of ['第一句就回答原問題','深度判讀流程','證據完整度','最有力的反向依據','深度來自完整推理'])assert(lines.includes(phrase),method+' '+phrase);
     assert(!/(?:約|用)[0-9一二三四五六七八九十～至-]+(?:組|段|句)/.test(lines),method+' no fixed evidence or paragraph count');
-    assert(lines.includes('【'+({tarot:'塔羅',ootk:'開鑰之法',lenormand:'雷諾曼',bazi:'八字',compat:'合盤',ziwei:'紫微',meihua:'梅花',liuyao:'六爻',yijing:'易經',oracle:'靈籤',astro:'西洋占星',vedic:'印度占星',name:'姓名',personality:'人格'}[method])+'判讀主線】')||method==='ootk',method+' native synthesis');
+    assert(lines.includes('【'+({tarot:'塔羅',ootk:'開鑰之法',lenormand:'雷諾曼',bazi:'八字',compat:'合盤',ziwei:'紫微',meihua:'梅花',liuyao:'六爻',yijing:'易經',oracle:'靈籤',astro:'西洋占星',vedic:'印度占星',name:'姓名',liuren:'六壬',personality:'人格'}[method])+'判讀主線】')||method==='ootk',method+' native synthesis');
     assert(payload.methods[method].length>=4,method+' payload depth');
   }
   const liuyao=quality.lines('liuyao').join('\n');assert(liuyao.includes('額外參與者'));assert(liuyao.includes('性意願或同意'));

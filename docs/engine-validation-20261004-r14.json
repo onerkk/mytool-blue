@@ -1,0 +1,1192 @@
+{
+  "release": "20261004native14",
+  "testedAt": "2026-10-04T06:19:54.052733+00:00",
+  "scope": "Numerical and named traditional-rule/data/export agreement; not prediction validation or an all-schools completeness claim",
+  "allSchoolsComplete": false,
+  "methods": [
+    "bazi",
+    "ziwei",
+    "astro",
+    "vedic",
+    "liuren",
+    "liuyao",
+    "yijing",
+    "meihua",
+    "name",
+    "compat",
+    "personality",
+    "tarot",
+    "ootk",
+    "lenormand",
+    "oracle"
+  ],
+  "broadTests": {
+    "totalFiles": 103,
+    "passedFiles": 103,
+    "failedFiles": 0,
+    "firstPass": {
+      "passed": 93,
+      "failed": 9,
+      "timeout": 1
+    },
+    "finalResults": [
+      {
+        "file": "tests/accuracy-engine-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "ef68307e90cdb4983a7f090c82953ae75ced90c62cc89f5ce9fc06c5124ec506",
+        "resultTail": [
+          "PASS 八字命宮與紫微宮位口徑分開；ISO出生瞬間可核對",
+          "PASS 跨系統整合不修改八字分數、不以相同歲數誤配虛歲",
+          "Source arithmetic groups passed: 16"
+        ]
+      },
+      {
+        "file": "tests/admin-updater-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "ceea782dfcd8af2fa151905ae5362b9270203464bb549aac1db80d5cfdc5a9bc",
+        "resultTail": [
+          "admin updater: CSP, ZIP, API 422 details, token redaction, chained UTF-8 trees, SHA and fast-forward PASS"
+        ]
+      },
+      {
+        "file": "tests/api-failure-regression.mjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f97c9e4d5dd075c26cc31cd3c90d1951a6f79f5ee565888b7d62392cbc66dbc3",
+        "resultTail": [
+          "✓ Monthly tarot contract exposes its actual path and all eleven transitions once",
+          "✓ API asks for a personal material choice before the shop invitation, independent of stock",
+          "api-failure-regression: 13 groups passed (mocked upstream; no live mutations)"
+        ]
+      },
+      {
+        "file": "tests/astro-bridge-20260922.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "658204d3a1360c509ddfa246e6802486f7143e612e0966d3116b9a445fa5cae6",
+        "resultTail": [
+          "  \"passed\": 7,",
+          "  \"total\": 7",
+          "}"
+        ]
+      },
+      {
+        "file": "tests/astro-rules-audit-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "318ae67657946da307a5fbb004a3e9de34daecbe431d570c65815b4d72daf991",
+        "resultTail": [
+          "PASS astrology source backed chart patterns, time integrity, and prompt handoff"
+        ]
+      },
+      {
+        "file": "tests/astrology-share-20260914.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "30b729b4c7a533af08060e6065a472a87aa8271d22043d6befd8351bb5d032d6",
+        "resultTail": [
+          "PASS Both native snapshots survive rendering and privacy changes without recalculation",
+          "PASS Indian D1 contains every graha in its real sign, with no tropical substitution",
+          "PASS Western card embeds the exact native noninteractive wheel in all four house systems"
+        ]
+      },
+      {
+        "file": "tests/atelier-ui-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "bd950dfd957890abaaea378200b80140010b48dd5d4d60f6b0289c7c905b6ab1",
+        "resultTail": [
+          "✓ Tarot home and edit buttons have real handlers and preserve the question and chosen mode",
+          "✓ Returning from Ziwei restores the known or unknown birth time, date, gender and question",
+          "atelier-ui: 7 groups passed (simulated DOM; visual/device checks remain separate)."
+        ]
+      },
+      {
+        "file": "tests/bazi-huaqi-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "491d70310ddc61fe60257b54b311821c7e540ea106b98070f0855883e153f2d7",
+        "resultTail": [
+          "PASS Single, complete-suite and unknown-time exports preserve their actual scope",
+          "PASS Actual composite API adapter forwards both the month structure and the full assessment",
+          "Huaqi regression groups passed: 7"
+        ]
+      },
+      {
+        "file": "tests/bazi-qiongtong-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "841fd6d50fb0c838576ffcc45016c96c8be11e19b14ee35389116dd1360d4619",
+        "resultTail": [
+          "PASS 支局只列真實三支骨架，古文清濁強弱成化和風水前提保留未知",
+          "PASS 乙丑原数字本重複十一月標題，冬月通則与校勘待核都明列，不偽造十二月專段",
+          "PASS 既有八字原局實算、JSON與提示詞同步載入源句及條件，不改格局及旺衰計算"
+        ]
+      },
+      {
+        "file": "tests/bazi-regression.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e3ece74b99ba0a9001a78963fb375d0de18bc21520ab8f211b0135e0a8a9dc2b",
+        "resultTail": [
+          "✓ 首頁載入本地曆法引擎且版本路徑正確",
+          "",
+          "All 21 regression tests passed."
+        ]
+      },
+      {
+        "file": "tests/bazi-suite-regression.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "934a6d82001134d6ce4830268638ea64bc83b46b85105925c3d2aa97712f0466",
+        "resultTail": [
+          "✓ 單人合盤人格與工具共用同一套自訂出生資料元件",
+          "",
+          "All 21 Bazi suite regression tests passed."
+        ]
+      },
+      {
+        "file": "tests/birth-audit-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "31c4b16e1a0846571e2943f349b995f85264fc9f16c50f2934a6a609eb7a0d62",
+        "resultTail": [
+          "PASS birth audit: Ziwei geometry and Bazi month/interaction assertions"
+        ]
+      },
+      {
+        "file": "tests/card-audit-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "resultTail": []
+      },
+      {
+        "file": "tests/card-audit-legacy-meanings-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "aaa155ff76bb9758293d785f5eebb9f2242e098232769c0baa42c9d3b45b5897",
+        "resultTail": [
+          "card-audit-legacy-meanings: live card meanings, RWS payload, Mei Hua mirror and love/wealth/health counterexamples passed."
+        ]
+      },
+      {
+        "file": "tests/card-audit-mathers-third-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "3cf04d5b136717f6a3693eaa3b73574fcd7982224003a583444c60abe12b6160",
+        "resultTail": [
+          "card-audit-mathers-third: 78-card conservation, period ranges, 68 real UI slots, source ambiguity, routing and failures passed."
+        ]
+      },
+      {
+        "file": "tests/causal-question-regression-20260927.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "005c9be0ea543c677f5bc307f0e0849e954c4f9b2b537601000d9297fad28671",
+        "resultTail": [
+          "causal-question-regression: reported event, mechanism, impact, amount, sequence and all 15 engines passed"
+        ]
+      },
+      {
+        "file": "tests/chinese-completion-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "1e034dabea2c201a4fe6483f6cc00633db0a2c66a7834c2e174f9e60ab0e1383",
+        "resultTail": [
+          "PASS 紫微48實際飛化、48閉合路徑、18星、六對宮及祿忌權科數組全部保留",
+          "PASS 自訂四化必須完整有名有來源，兩張不同版本盤不污染彼此閉包",
+          "PASS 楚天雲闊2018具名部分盤例：癸酉貪狼忌轉巨門權、己巳武曲祿聯動辰戊天機忌"
+        ]
+      },
+      {
+        "file": "tests/chinese-engine-rules-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "66bfbf1a1ce23c17a3ae6c22469535ece5eb82ce94330aa0c3fcea4ddc956c6a",
+        "resultTail": [
+          "Chinese engines: hidden focus, calendar timing, Meihua season and 384 symbolic reading regressions passed."
+        ]
+      },
+      {
+        "file": "tests/cinematic-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "6358ffe8309dd11f2273a6e206681f559708247d42fabbcb9b2deb19eeb5e835",
+        "resultTail": [
+          "✓ All seven scenes release their Three.js geometries, textures, listeners and frame loop; late loads cannot resurrect them",
+          "✓ Changing Tarot to Opening of the Key updates the guide without touching the question",
+          "cinematic: 10 groups passed; WebGL pixels and physical-device rendering remain unverified."
+        ]
+      },
+      {
+        "file": "tests/comprehensive-reading-20261001.cjs",
+        "status": "passed",
+        "verificationPhase": "final targeted regression",
+        "logSHA256": "5d34c276eb38a70e22a24c270bd6f7852840ac6ead2840880abd37979a1f147d",
+        "resultTail": [
+          "PASS Bazi requests retain complete eight-cycle annual segments in pure-chart mode",
+          "PASS Joint Ziwei timelines retain the full interval and mark the not-yet-born party",
+          "Comprehensive reading: 10 groups passed; 15 methods, native 80/120-year Ziwei exports, Bazi segments and joint timelines."
+        ]
+      },
+      {
+        "file": "tests/core-engine-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "85578232290fa274d47b232ba8c33146dece81b665e5190ebf16bc8cc36dca8a",
+        "resultTail": [
+          "PASS All bounded random draws reject the uint32 tail, retain endpoints and reject invalid ranges",
+          "PASS Four digital block outcomes: two holy, one laugh, one dark; no physical probability claim",
+          "Core engine regression groups passed: 10"
+        ]
+      },
+      {
+        "file": "tests/counter-proxy.test.mjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "41e58df57ac845398a7859f808d6905803f468ae915463a4edae0f0aff21cc38",
+        "resultTail": [
+          "counter-proxy: all assertions passed"
+        ]
+      },
+      {
+        "file": "tests/deck-routing-scenes-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "76feb9f54b5559a900e6a0a5c0a61f234c9b27d37c7abe52e9d3b25557307e61",
+        "resultTail": [
+          "PASS Native picker paints 78 identical opaque backs while keeping only one image per card after reinitialization",
+          "PASS Batched relief geometry and three local textures build without remote resources",
+          "Craft: 8 groups passed; 40 new routing cases. No physical-phone or GPU pixel claim."
+        ]
+      },
+      {
+        "file": "tests/depth-contract-r12-20261004.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "f56e78c5d870ecc1a3c7a596e6567f26a11b9aff50a29dfee49fc598f31ab53b",
+        "resultTail": [
+          "R12 depth-contract checks: 211/211 PASS"
+        ]
+      },
+      {
+        "file": "tests/display-lifecycle-regression.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "b34daca185711e01ea8208f06dda5a45c09d812bf6b6ff339152c37ae9228798",
+        "resultTail": [
+          "✓ Full analysis module initializes in the real script order without eager optional-engine references",
+          "✓ Mobile styles make the picker opaque and contain no deferred image-paint rule",
+          "display-lifecycle: 7 groups passed (source/runtime contracts; device raster output requires browser/device validation)"
+        ]
+      },
+      {
+        "file": "tests/divination-audit-20260908.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "b63a5193ec73cd0f06d20b77e16d75b6a9112e84215a8ad4e61b329505af9ecc",
+        "resultTail": [
+          "✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export",
+          "✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export",
+          "divination-audit: 16 groups passed; offline runtime/data contracts only."
+        ]
+      },
+      {
+        "file": "tests/divination-professional-20260910.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f949c739815f0dd92f891d43dacb4d7f45f20ef4866f8cc837291af9c697f9fa",
+        "resultTail": [
+          "✓ Follow-up: original RWS reversals and branch positions survive alongside separate Book T supplements",
+          "✓ The local API preserves its JSON contract with system-specific depth and honest brand constraints",
+          "professional-regression: 14 groups passed; 56 routing cases plus real draw/export and geometry checks."
+        ]
+      },
+      {
+        "file": "tests/engine-and-recommendation-r8-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "d4f3577968bf5cd75b260c00ae358508b0dc43cc039cf9a663375fc3bb7356c7",
+        "resultTail": [
+          "PASS Missing or stale shared guide and missing brief renderer retain current recommendation through the packet fallback",
+          "PASS Answer review catches generic crystal-only ending and missing invitation; concrete handwritten example passes format checks",
+          "R8 12 groups passed"
+        ]
+      },
+      {
+        "file": "tests/engine-and-reference-r11-20261004.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "5626ff2efd98b6376f4a75822b88e219ee49dbf5f9a5081a64208f3888a4938b",
+        "resultTail": [
+          "PASS special-point corruption is rejected and unknown birth time cannot manufacture timed variants",
+          "PASS fifteen complete-text prompts retain actual chart records, bindings, all chunks and shop footer",
+          "R11 18/18 groups passed"
+        ]
+      },
+      {
+        "file": "tests/engine-core-completion-r13-20261004.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "46f69f9136386d6f694c9af450d14f2577be528794377b229f0ecb26842ec473",
+        "resultTail": [
+          "R13 core-completion checks: 75/75 PASS"
+        ]
+      },
+      {
+        "file": "tests/engine-evidence-r14-20261004.cjs",
+        "status": "passed",
+        "verificationPhase": "final targeted regression",
+        "logSHA256": "8b89be61309cff2e4e4b9bcd432b7ce62c7fc29c73b3414daa4c99f714725734",
+        "resultTail": [
+          "R14 evidence regressions: 407/407 PASS"
+        ]
+      },
+      {
+        "file": "tests/engine-fixes-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "4e34a440eaa060cc42b01804d493c4a465d07327d80259f899394327afacaa5f",
+        "resultTail": [
+          "PASS Neutral palace input gives neutral annual/monthly model output, not an offset of 50 or 100",
+          "PASS Ziwei exported current year follows saved lunar year before Lunar New Year",
+          "Engine fix groups passed: 9; independent comparisons: 18560"
+        ]
+      },
+      {
+        "file": "tests/engine-functional-r9-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "d4c2855259d9b8fae89b1c428fcb1aa7195cbdaae6705e2b1b01b93e5742bc62",
+        "resultTail": [
+          "PASS all 120 Qiongtong source entries retain context and any literal root predicates use actual branches",
+          "PASS all fifteen complete plain-text prompts keep full-copy chunks, facts and the exact store footer",
+          "R9 32 groups passed"
+        ]
+      },
+      {
+        "file": "tests/engine-integrity-r10-20261004.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "1c5354ded6005fd2b8c3d8f07eda14ba95992e1ca4969ff25ac48965b7993177",
+        "resultTail": [
+          "PASS all fifteen self-contained prompts and fallback exports preserve facts, chunks, audit and store footer",
+          "PASS absence of audit module is unverified and is never promoted to verified",
+          "R10 45/45 groups passed"
+        ]
+      },
+      {
+        "file": "tests/engine-missing-calculations-r7-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "c58c0bb7e6f34717e4fb64290ace3f2ac976dfc81426e5b4709ca10d73866935",
+        "resultTail": [
+          "PASS Vedha all7 profiles,27Tara,11 special anchors,9 actual ingress Murthi and all20 PAV Kakshya/Pinda are populated",
+          "PASS Unknown clock keeps all Tajaka charts absent and does not fabricate month/60h charts",
+          "PASS Complete copied prompt includes real new facts; month detail, full annual AD and matrices expand only when requested"
+        ]
+      },
+      {
+        "file": "tests/engine-output-consistency-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "636da216acfceb26ea65d0832b9da1132b8ba88cf28eeefb6a2fe59360ffa88e",
+        "resultTail": [
+          "PASS 27 tarot mode/spread combinations remain identical through the full composite adapter, including RWS reversals",
+          "PASS Invalid tarot draws and stopped Key cannot leave fabricated or stale composite cards",
+          "Output consistency: 9/9 groups passed."
+        ]
+      },
+      {
+        "file": "tests/engine-supplements-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "ceeaddc20f9fadd44db4f148a7e0eed5361238076fd5ce324fb561df79fe30aa",
+        "resultTail": [
+          "PASS Eight primary pattern matrices retain 63 clauses, real roots and three-state qualitative decisions",
+          "PASS Exact 劫財 and complete combinations are distinct from 比肩 and incomplete arches",
+          "PASS Supplemental real prompt and JSON retain eight-pattern commander and progressed houses"
+        ]
+      },
+      {
+        "file": "tests/export-accuracy-prompts-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "3b59f73df6ab47cd5e6466be75b9ac2665593c2ad9526a4dff8873591e7b6d64",
+        "resultTail": [
+          "divination-audit: 16 groups passed; offline runtime/data contracts only.",
+          "PASS OOTK source count: 18 initial landings; five-operation fixed-deck export",
+          "Exported 8 revised prompts to /workspace/scratch/3f80f4c779b3/source/mytool-blue-master/review/accuracy-prompts"
+        ]
+      },
+      {
+        "file": "tests/flow-interaction-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e000cb0704e74a28e0c2b868fc8d31e8b266757a79361578357e5c11eb80940b",
+        "resultTail": [
+          "✓ Changing a compatibility scenario retains the scroll position and both birth forms",
+          "✓ Updated styles parse; the intended gesture surfaces explicitly own touch-action",
+          "flow-interaction: 15 groups passed; rendered layout and physical touch remain separate checks."
+        ]
+      },
+      {
+        "file": "tests/flow-polish-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "65fb524a0793196d0551ed0778c3622f6af7e70adcbb64bb264f9ca1723af0c4",
+        "resultTail": [
+          "[牌陣] 自適應佈局 v2 + 完成判定已啟用",
+          "[OOTK v95] Golden Dawn Book T Opening of the Key 已載入",
+          "[OOTK-UI] Opening of the Key 前端 UI 已載入"
+        ]
+      },
+      {
+        "file": "tests/gua-engine-20260922.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "dbdc724dc0b8f7cbcbcc83579d2ad36c1c241980c04bb29a8a95158783659fef",
+        "resultTail": [
+          "✓ 用神語義引擎：先辨事件再取用，未知題不再默認世應",
+          "✓ 回歸案例：統一發票金額題以妻財為主、世只作承接，伏財飛克形成未解除門檻",
+          "gua-engine: 14 groups passed, including all 4096 casts."
+        ]
+      },
+      {
+        "file": "tests/horary-denials-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "fad81b700a9054c0b976fb702ceddb47734caa64c60111db84d41e4d97291c4a",
+        "resultTail": [
+          "PASS missing exact within window leaves untriggered future rules undetermined",
+          "PASS non-applying pair has no denial of a perfection that was not present",
+          "PASS actual Astronomy Engine horary exports all six checks with ephemeris evidence"
+        ]
+      },
+      {
+        "file": "tests/immersive-experience-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "fa00429913c0ff0b05b5baca03574a6f7a9ed8e9ac4526f85d259d824a578175",
+        "resultTail": [
+          "PASS All 384 Meihua combinations preserve actual 本互變 names, moving line and bottom-up order",
+          "PASS Camera choreography is finite at every phase and settles before the next explicit action",
+          "Immersive experience: 9 regression groups passed. Physical Android touch and new WebGL pixels require device QA."
+        ]
+      },
+      {
+        "file": "tests/interaction-hotfix-20260906.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "219dc25dfa3506f80634a9b6488ec599adcca16008900e13d7d9552ffb6cc02c",
+        "resultTail": [
+          "✓ Real OOTK confirmation runs the engine and exposes immediate skip/cancel controls",
+          "✓ Skipping the ritual hands off the same result and exports only actual OOTK operations",
+          "interaction-hotfix: 18 groups passed (offline DOM/runtime contracts; no browser layout or live AI assertion)"
+        ]
+      },
+      {
+        "file": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "cd2318e8315d19f649893395226249a7be07e0c06862efcf65027a5c630771cc",
+        "resultTail": [
+          "Lenormand v23 discourse-semantic suite: 407 checks PASS"
+        ]
+      },
+      {
+        "file": "tests/lenormand-v19-engine-rootfix-20260925.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f6b5718b4c0b158cba0c1c9b8b6a80d83596f75ffdbd734d3d488348a083c221",
+        "resultTail": [
+          "Lenormand legacy compatibility: 84 checks PASS"
+        ]
+      },
+      {
+        "file": "tests/liuren-classes-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e25e57f68e575c93f6b5abcfef3da283f625d96ffd66b8e6b97da9d76b6b13ea",
+        "resultTail": [
+          "PASS All 720 symbolic charts × 2 noble modes × 12 month contexts execute all 64 rule families without unknown math",
+          "PASS Missing inputs remain tri-valued, prompt/native export keeps calculated rule evidence",
+          "{\"passed\":7,\"total\":7}"
+        ]
+      },
+      {
+        "file": "tests/liuren-completion-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "38ca794e454aeb86375a64c7057465a00a41bc70f5ce3677c342f977779bd339",
+        "resultTail": [
+          "PASS 未明议题、多议题与过去窗口保持实际状态",
+          "PASS 同一计算结果进入原生JSON及提示词",
+          "PASS 無效／倒置日期拒絕；土旺十八日邊界所在日以實際時刻分段"
+        ]
+      },
+      {
+        "file": "tests/liuren-engine-20261001.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f3c975f4b98e71ef6ffa38e7d3728cb1abca8fbfc8d3300a11f67a7174a6b2ed",
+        "resultTail": [
+          "PASS invalid calendar, time, branch, parity and policy inputs fail without guessing",
+          "PASS homepage and mirrored entry files preserve name/six-lines and add independent six-ren assets",
+          "8 Da Liu Ren engine/integration groups completed."
+        ]
+      },
+      {
+        "file": "tests/liuren-shensha-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "088b4b0f12a15f1a31914811127f854f7e89efa7da03574d059a245141261ca7",
+        "resultTail": [
+          "PASS Missing year/month input, fixed-ganzhi establishment and unresolved source text never become false facts",
+          "PASS Real native prompt, participant upper hits and JSON stay source-aware and do not mutate registry",
+          "{\"passed\":7,\"total\":7}"
+        ]
+      },
+      {
+        "file": "tests/method-engine-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "84ea9aa471249a6b9e391243a903c74b8525bd34bcab84caf293370243c1f86e",
+        "resultTail": [
+          "PASS Actual composite adapter binds palace names to records, independent of serialization order",
+          "PASS Fifteen native methods reach the API system instructions without a tarot default",
+          "Method/engine regression groups passed: 6"
+        ]
+      },
+      {
+        "file": "tests/method-prompts-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "1a177bf7ac709fab65f055536f0eceaad7c88324ca042d26b75d13c3bbac46e7",
+        "resultTail": [
+          "✓ House-Key-Moon retains the exact question/order and asks for a reasoned answer without prescribing relationship status",
+          "✓ RWS and Book T actually send their native method guide and preserve the cast",
+          "✓ Completed Key exports its own procedural guide with full counting/pairing distinctions"
+        ]
+      },
+      {
+        "file": "tests/mobile-ritual-actions-20260928.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "9906bfcb3180e5baa31d73edb0526143900885f5edb6373c65bec02726c48b20",
+        "resultTail": [
+          "mobile-ritual-actions: shared viewport, scroll, safe-area dock, and every ritual entry point verified"
+        ]
+      },
+      {
+        "file": "tests/name-comparison-rootfix-20261002.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "23a80b2a99c829de38ec5e753ef7911ba83b0214a8c1ec62023f14a852531997",
+        "resultTail": [
+          "PASS Older incomplete comparison exports are rehydrated before prompt construction, without mutation",
+          "PASS Permutation leaves the same facts and every baseline comparison intact, without a built-in winner",
+          "Name comparison root fix: 11 groups."
+        ]
+      },
+      {
+        "file": "tests/name-engine-20261001.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "ed3311ee9f41f154ce6ba4a208c6cdd6113377f861cf17806dc2aff59b8f140f",
+        "resultTail": [
+          "PASS 字形參照只依明列字根，八字調候候選不冒稱唯一字五行",
+          "PASS Bad splits, non-Han input and invalid stroke values fail with specific errors",
+          "Name engine: 14 groups; native dictionary, 81/125 tables, 64 name hexagrams, birth boundaries and complete prompt."
+        ]
+      },
+      {
+        "file": "tests/name-original-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "1f6573e7ca5f86726f46d8b77045319f4bcfc82dbf032a3f54689082f309be56",
+        "resultTail": [
+          "PASS Every source row is bundled; actual five-grid inputs preserve 2–81 and the 81→1 alias",
+          "PASS Original conditional meanings are not replaced by modern favourable-number labels",
+          "{\"passed\":3,\"total\":3}"
+        ]
+      },
+      {
+        "file": "tests/native-analysis-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "final targeted regression",
+        "logSHA256": "1bd68c9493272e39c9b60c400e9f3b5a223aecf79d4c1cc65be3d67c125efffd",
+        "resultTail": [
+          "PASS All compact JSON pointers resolve to present complete evidence without a cycle",
+          "PASS User input is escaped in native HTML and no capability becomes a fabricated total",
+          "{\"passed\":31,\"total\":31}"
+        ]
+      },
+      {
+        "file": "tests/ootk-flow-20260915.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "dbdf46a01134446806611dee2aef5befc260ff039cc6f5f4c584254e994081ca",
+        "resultTail": [
+          "PASS Question keywords and preselected destinations never bias the original-manuscript shuffle",
+          "PASS Legacy validation is explicit, still stops, and cannot fabricate later data",
+          "PASS Payload and final prompt retain version-specific counts, the question, five operations and contextual recommendation"
+        ]
+      },
+      {
+        "file": "tests/ootk-scroll-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "133934d2493d3d56a69f8e5b41b2ffabed9d42967a4b981c9cf2ab25f1a0054d",
+        "resultTail": [
+          "[OOTK v95] Golden Dawn Book T Opening of the Key 已載入",
+          "[OOTK-UI] Opening of the Key 前端 UI 已載入",
+          "PASS Repeated launch failure retains selections and one close control, then unlocks on cancel"
+        ]
+      },
+      {
+        "file": "tests/ootk-source-fidelity-20260925.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "28ea450c9c71f165012a96f0766518ed262af6ddb434bc02faf34552a995bcca",
+        "resultTail": [
+          "PASS physical inversion flips court facing/count direction without changing card meaning",
+          "PASS Mathers counting still uses Ace=5 while the alternate Liber profile retains its own rule",
+          "ootk-source-fidelity-20260925: 6 groups passed."
+        ]
+      },
+      {
+        "file": "tests/oracle-register-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "fe1ce7eb68f377597dd5791d241bb1e1eb641d9741406bd7701318279e7d5e83",
+        "resultTail": [
+          "PASS Corrupt mixed paragraphs do not become advice; incompatible source conditions stay distinct",
+          "PASS All sixty native result/export records retain unique interpretation, 29 category slots and edition evidence",
+          "PASS Actual sixty-lot prompt entry carries source audits and reviewed structural conditions"
+        ]
+      },
+      {
+        "file": "tests/oracle-result-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e40aec7fe7bb08faf01e6b55f342aef773b7f9c1a4f7bfd6830d31e1a787ddfd",
+        "resultTail": [
+          "[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data",
+          "✓ Share and image export receive the same poem and question after switching reading direction",
+          "oracle-result: 7 groups passed (simulated DOM; no device-rendering claim)."
+        ]
+      },
+      {
+        "file": "tests/picker-and-data-regression.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "a7dd1a5f45b2cf8e8f6cfa2961d74d02348a32ecbc4aa4e4e3454280b7169ef8",
+        "resultTail": [
+          "✓ Unknown Ziwei time never exports an invented personal chart",
+          "✓ All three pickers load after the shared core and body ID rules override legacy overflow",
+          "picker-and-data-regression: 10 groups passed (DOM contract tests, not browser layout tests)"
+        ]
+      },
+      {
+        "file": "tests/plain-reading-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "a7c5a8d6dee7edcbac6a04328d7c5618a965c39d3a5be5c9e4186fc6fcb3fa2f",
+        "resultTail": [
+          "✓ Shared and standalone brand policies agree; no fixed gemstone or fabricated measurements are injected",
+          "✓ Legacy API entry points send needs-first policy and do not attach catalogue candidates",
+          "plain-reading: stock-independent exports and needs-first policy verified; no external-model claim."
+        ]
+      },
+      {
+        "file": "tests/prompt-accuracy-20260811.test.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "eb15e76c89bc117e3abc722a1acf862508adb393c10ad225f455b7361fc2435d",
+        "resultTail": [
+          "✓ 七維 API 以盤面為主並允許模型使用自身跨系統知識",
+          "",
+          "All 7 prompt-accuracy regression tests passed."
+        ]
+      },
+      {
+        "file": "tests/prompt-budget-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "final targeted regression",
+        "logSHA256": "b995d4aec71c9cbf74e9938bcec25fc1c2c70366b686fdefbfd2dc2df6b252cb",
+        "resultTail": [
+          "PASS composite finish expands every embedded packet and remains idempotent",
+          "PASS real builder APIs return complete self-contained text and preserve their full packet",
+          "PASS complete body has no attachment instructions and all native bodies contain valid display values"
+        ]
+      },
+      {
+        "file": "tests/prompt-only-audit-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e25aa436eec9dc2efcd98463eb341b678b5cb3fb8f4095f26e55ee8a123d5b49",
+        "resultTail": [
+          "PASS Stale native astrology is rejected when birth inputs change",
+          "PASS Mathers Third Method export reflects only the implemented 66-card arches and two separate surprises",
+          "PASS The legacy Opus and tarot entry points stay local even with admin flags"
+        ]
+      },
+      {
+        "file": "tests/prompt-only-shop-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "d3c2bc64303518b6abbd9c269317f9c70cf56e6f6bdd121cb535c7660ef2d570",
+        "resultTail": [
+          "PASS Product cards render price and inventory verification without promises",
+          "PASS Legacy stone panel is a neutral style sample without efficacy or old prices",
+          "PASS Sacrifice and clash labels never change name score or predict incidents"
+        ]
+      },
+      {
+        "file": "tests/question-model-regression-20260927.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "42368b44e03eef36174568b53f45984f04eca34d4e4577541ad9f7a01f62382d",
+        "resultTail": [
+          "question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 15 methods passed."
+        ]
+      },
+      {
+        "file": "tests/question-routing-20260922.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f981742ef4dec8fa427989eeda4a33fedd5cce359c086761ad07c8fcd575797b",
+        "resultTail": [
+          "PASS Real Lenormand input, manual layout and draw controllers keep preview and saved plan aligned",
+          "PASS Recommendation preview and switching preserve typed text without changing a completed Tarot draw",
+          "question-routing: 13 groups passed."
+        ]
+      },
+      {
+        "file": "tests/reader-voice-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "23dfecff89a06df889513d6201ad5dfcef07184aeb53613e0f5a58f6f084edff",
+        "resultTail": [
+          "reader voice: all 15 methods keep native depth, evidence-linked answers and a grounded bracelet close"
+        ]
+      },
+      {
+        "file": "tests/reading-depth-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "4e825cefe1dea7280be5db5fd95b7eabf2cc5d2f7d3ff2a634cae6ba01ad1e6f",
+        "resultTail": [
+          "✓ Each instrument follows a finite distinct motion without using divination randomness",
+          "✓ Quality rules are integrated before system exports; styles parse and current dependencies bypass old caches",
+          "reading-depth: 12/12 groups passed; no claim of physical-device or predictive accuracy."
+        ]
+      },
+      {
+        "file": "tests/reading-depth-regression-20260927.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "067b04728386c2fc25c73c707ff25f6784bb9b684b07b3a6df339f2861438714",
+        "resultTail": [
+          "PASS Every generated prompt fallback matches the current shared contract",
+          "PASS Embedded workflow copies stay synchronized and adapt output depth to question scope",
+          "reading depth regression: 3 groups passed across 15 methods and all prompt fallbacks."
+        ]
+      },
+      {
+        "file": "tests/reading-grounding-20260924.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "87d9588012a6bd1cd396764f745b15a2c1e5b9f672127fff87ea43696f132e77",
+        "resultTail": [
+          "PASS All fifteen methods use answer-led paragraphs, limits only when relevant and voluntary single-design close",
+          "PASS A stale shared guide cannot override the new embedded evidence and voice safeguards",
+          "reading-grounding: 8/8 groups passed; no external AI requests."
+        ]
+      },
+      {
+        "file": "tests/reading-workflow-20260924.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "resultTail": []
+      },
+      {
+        "file": "tests/reading-workflow-integration-20260924.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f883f7dcf0102eba3d7996bb4dc5a55072a7e1a351fe3eacb493d4b730f8e2af",
+        "resultTail": [
+          "✓ Native Western, Vedic, six-line and Yijing calculations are unchanged by the workflow",
+          "✓ Actual composite name and Ziwei exports retain natal evidence and do not call paid APIs",
+          "reading-workflow-integration: 5/5 groups; 15 native methods; no external-model answers evaluated."
+        ]
+      },
+      {
+        "file": "tests/realtime-free-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "38770468094301e620463cfbf1e678602cb73d4f8d7245f42aff9f7d7367c0f0",
+        "resultTail": [
+          "✓ Touch echoes fade out and reduced motion keeps every particle stationary",
+          "✓ Touch feedback does not advance the ritual prematurely and cancellation leaves no timer",
+          "realtime-free: 4 groups passed; geometry and interaction checks, not GPU pixel or phone validation."
+        ]
+      },
+      {
+        "file": "tests/recommendation-20260914.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "0c91b6760305a4a655a65a1a5e1503ba37b948774411293a6dde60401433699d",
+        "resultTail": [
+          "✓ Tarot, Key, Lenormand, oracle and Meihua use current snapshots when v4.1 is still loaded",
+          "✓ Selection guidance does not hard-code a stone and follows the actual question",
+          "recommendation-20260914: 11 groups passed; actual exports, no external-model compliance claim."
+        ]
+      },
+      {
+        "file": "tests/relationship-20260917.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "a0a8ab3407c37492b9b0f8705309d7e9122b8e01b55439ac76663d0ec0afc605",
+        "resultTail": [
+          "PASS Unknown time never creates a noon Ziwei chart, false overlays, or projected transformations",
+          "PASS All eight scenarios retain role focus, complete prompts and one material recommendation ending",
+          "Relationship policy / integration: 10 groups passed."
+        ]
+      },
+      {
+        "file": "tests/ritual-lifecycle-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "3bd2bbcd86b305444bd59cd7765d218d4ccee27cf4f76f7a67c6910f0932ebb0",
+        "resultTail": [
+          "[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data",
+          "✓ Oracle ceremony returns to its guide, advances to throwing only on completion and stops on close",
+          "ritual-lifecycle: 25 groups passed (simulated DOM; no device-rendering claim)."
+        ]
+      },
+      {
+        "file": "tests/ritual-resume-r8-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "efa14955018ebfef0b7c8c919a81794d3ea2c6ebb5d014e589b1d22f6ec30edb",
+        "resultTail": [
+          "R8 ritual resume: 9 methods passed"
+        ]
+      },
+      {
+        "file": "tests/semantic-review-followup-20260928.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "c907fb03f4af1abde1d6cad1ba718b1b33f971c8759875019027fd9c6d75dd8f",
+        "resultTail": [
+          "semantic, structure, and forecast-review regressions passed"
+        ]
+      },
+      {
+        "file": "tests/share-card-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "49a4c152196f05b29162f6f4c8f031aee0d9598347274f3fc7d571ef252429e0",
+        "resultTail": [
+          "✓ Long user text is visibly shortened; prompt/result data remains untouched",
+          "✓ Oracle buttons use the unified engine; original question/spread callers remain connected",
+          "share-card-regression: 10 groups passed. Canvas contracts only; real-browser/mobile sharing is a separate gate."
+        ]
+      },
+      {
+        "file": "tests/share-card-preview-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "ceb05b7172fad649bf8adf8823b23d7b1b9a6e8e678106956cff69b698aaeca5",
+        "resultTail": [
+          "✓ Closing during rendering or decoding releases resources and ignores late completion",
+          "✓ Cancelling native share does not start an unwanted download",
+          "share-card-preview: 10 integration groups passed (simulated DOM/image lifecycle)."
+        ]
+      },
+      {
+        "file": "tests/shuffle-recovery-20260911.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "469cf448d1e101cddc18e17819e24fd835b777eddd690a5f507df969556bb49a",
+        "resultTail": [
+          "✓ Actual home scene clears a failed renderer before suspension, hover or remount can affect a ritual",
+          "✓ Real Three.js resources are still released when renderer.dispose throws",
+          "shuffle-recovery: 10 groups passed (fault injection, not phone-specific error reproduction)."
+        ]
+      },
+      {
+        "file": "tests/special-rules-20260922.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "2a80cf343fda98497bfacd847573896bf9c790b6ff67f548acee61164d414a75",
+        "resultTail": [
+          "PASS Tarot: export blocks duplicate draws, missing positions and mixed traditions",
+          "PASS Coverage register accounts for every active reading method and names its limits",
+          "Special-rule regression groups: 18/18"
+        ]
+      },
+      {
+        "file": "tests/story-immersion-20260912.cjs",
+        "status": "passed",
+        "verificationPhase": "targeted rerun",
+        "logSHA256": "708d522aa5127204e3be7f56b355f922f49c67fe7c337acdfc410658746d0670",
+        "resultTail": [
+          "✓ Eight new 3D sets have finite transforms and release every geometry, material and timer",
+          "✓ Opening of the Key starts in manual chapter mode and cancellation releases the scene",
+          "story-immersion: 16 groups passed; simulated DOM and scene structure, not physical-device or generated-film validation."
+        ]
+      },
+      {
+        "file": "tests/tarot-native-structure-20260927.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "e762a72998bd8aab3bd16afe5ba881ef6f27a76b6c492065249e46ac274952c1",
+        "resultTail": [
+          "tarot-native-structure: all 24 selectable methods, native monthly geometry, independent branches, and invalid-route failures passed."
+        ]
+      },
+      {
+        "file": "tests/tarot-v102-method-data-prompt.test.js",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "7e8784af2c49d1e6db7f0d00bbd67a349ca99e472e78ab28e29f8ab915a31912",
+        "resultTail": [
+          "✓ changed JS syntax is valid",
+          "",
+          "7 tests passed."
+        ]
+      },
+      {
+        "file": "tests/time-ownership-20260920.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "9e7f25344ea736984da22577736cb1b3de01475c9d28f51380041359d86b0f5f",
+        "resultTail": [
+          "PASS All production entry points use this release; mirrors match; history cannot silently reuse old prompts",
+          "PASS Actual form submission keeps UI, copied prompt and JSON on the same verified facts",
+          "Time ownership regression: 12 groups passed."
+        ]
+      },
+      {
+        "file": "tests/traffic-tap-20260923.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "db61b481923a4cb77c81dc5f78299a0a2e51f255cb0b3dbb22230fe170101b6d",
+        "resultTail": [
+          "traffic tap: hidden entry works, visits count once, and upstream failures are identified without duplicate reads"
+        ]
+      },
+      {
+        "file": "tests/vedic-bhava-strength-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "6554783317dcb75af120a6047efe6caf3da3eb246f0abaa36ef3bac3e153735c",
+        "resultTail": [
+          "PASS Unknown clock/polar incomplete lord totals keep unavailable separate from zero",
+          "PASS Native panel, real prompt data and immutable JSON retain exactly the same computed house ledger",
+          "{\"passed\":7,\"total\":7}"
+        ]
+      },
+      {
+        "file": "tests/vedic-completion-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "db93dd9ae9ca09824dad7d7a2ab649727cfa36ce232152a89ffe6e3d6c57d4af",
+        "resultTail": [
+          "PASS Full native data and prompt preserve17 timelines,all20 Jaimini calculations without mutating chart",
+          "PASS Exact highest-degree ties preserve bothAK candidates and withhold unique Karakamsa",
+          "PASS Lossless PAV bitmasks and JSONPointer dedup reconstruct all20 original contribution tables"
+        ]
+      },
+      {
+        "file": "tests/vedic-design-20260914.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "c2595ac9187ae46a584ebdcdbc50c2e7ea60f672cb079a7ef13a2ec3ec03ac4d",
+        "resultTail": [
+          "PASS Unknown time omits lagna, house destinations and determinate dasha timing in scene and prompt",
+          "PASS All eight prompt topics consume actual condition checks, solar state and date sensitivity",
+          "{\"scope\":\"Numerical and explicitly selected traditional method agreement, not predictive accuracy\",\"passed\":13,\"total\":13,\"maxSpeedErrorDegreesPerDay\":{\"Sun\":0.00004490035033177797,\"Moon\":0.00029784092155793473,\"Mars\":0.00008204099857656022,\"Mercury\":0.000443075976477747,\"Jupiter\":0.000013916058803770115,\"Venus\":0.0001601935519490727,\"Saturn\":0.00007547916948669187,\"Rahu\":1.924549089399319e-7},\"results\":[{\"name\":\"Civil date validation: leap centuries, every month end, allowed range, no normalization\",\"status\":\"passed\"},{\"name\":\"All 1,440 civil minutes survive the local editor without AM/PM or UTC reinterpretation\",\"status\":\"passed\"},{\"name\":\"Six documented combustion thresholds, retrograde exceptions, wrap and boundary behavior\",\"status\":\"passed\"},{\"name\":\"Moon phase and Mercury association change natural quality independently of dignity\",\"status\":\"passed\"},{\"name\":\"Gaja Kesari: quadrant alone cannot pass the full selected definition\",\"status\":\"passed\"},{\"name\":\"Gaja Kesari rejects combustion, debility and compound enemy placement; friend systems stay distinct\",\"status\":\"passed\"},{\"name\":\"167 Swiss reference charts independently check the local ten-minute velocity derivative\",\"status\":\"passed\"},{\"name\":\"The user example retains its native positions and exposes the missing benefic support\",\"status\":\"passed\"},{\"name\":\"Birth-time uncertainty propagates into dasha dates, compared with independent endpoint calculations\",\"status\":\"passed\"},{\"name\":\"All nine selected antardashas subdivide themselves, including the first pre-birth parent\",\"status\":\"passed\"},{\"name\":\"3D scene uses nine native longitudes and twelve North Indian house destinations; no chart mutation\",\"status\":\"passed\"},{\"name\":\"Unknown time omits lagna, house destinations and determinate dasha timing in scene and prompt\",\"status\":\"passed\"},{\"name\":\"All eight prompt topics consume actual condition checks, solar state and date sensitivity\",\"status\":\"passed\"}]}"
+        ]
+      },
+      {
+        "file": "tests/vedic-engine-20260913.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "fe8d6efbd6d9eca952e9b1bd35eb6dcdd73517d45c4bd0054dc4ebfebd5c2941",
+        "resultTail": [
+          "PASS Immutable chart: 20 vargas, whole signs, all nine grahas and 36 actual monthly transit samples",
+          "PASS All seven BAV totals, SAV 337, and each prastara contribution independently reconstructed",
+          "PASS Directed drishti and arudha exceptions are geometric, not interchangeable"
+        ]
+      },
+      {
+        "file": "tests/vedic-palace-20260914.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "58210e37610000e57b95e79d247b2ad3c064abe417331d24acf10096020121e7",
+        "resultTail": [
+          "PASS The browser bundle exposes the native-data model without requiring a WebGL context at load",
+          "PASS Palace materials and cache are wired into the delivered entry page",
+          "{\"passed\":6,\"checks\":[\"Mobile and desktop camera cross the threshold before the instrument reveal\",\"Camera never jumps at a chapter boundary, and always keeps a finite target\",\"Twelve physical houses rise after the orbit chapter and settle before the open action\",\"Touch inspection is bounded; the final twelve-house board stays visible from both sides\",\"The browser bundle exposes the native-data model without requiring a WebGL context at load\",\"Palace materials and cache are wired into the delivered entry page\"]}"
+        ]
+      },
+      {
+        "file": "tests/vedic-panchanga-av-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "final targeted regression",
+        "logSHA256": "9f4d0ddfe369bd173e0a72abcd32495ebadc3dd9cca68ac5eda7f15044d409da",
+        "resultTail": [
+          "PASS Unknown clock and polar solar absence withhold Vaara/complete claim while retaining calculable angular data",
+          "PASS Same entire AV/Pinda/Panchanga ledgers are exposed by native panel, full prompt and downloaded JSON",
+          "{\"passed\":8,\"total\":8,\"maximumSeconds\":6.995502471923828}"
+        ]
+      },
+      {
+        "file": "tests/vedic-strength-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "f970ce67f12a425c6842b4ef6538da736a004f95c3ad026a6079102e2f266f53",
+        "resultTail": [
+          "PASS Unknown time and polar absence withhold complete totals and never publish fictitious rankings",
+          "PASS Prompt, native activation and full JSON all consume the same calculated strength ledger",
+          "{\"passed\":12,\"total\":12}"
+        ]
+      },
+      {
+        "file": "tests/western-completion-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "87e69be77dfc3471f5972f0901268294f01af64c219b114d426b8c0d96c3080b",
+        "resultTail": [
+          "PASS 古典入相與換座前精確相位空亡分開，傳光集光及阻止候選不冒充實際結局",
+          "PASS 新增卜卦與迁居全部事實傳入原生JSON和提示詞",
+          "PASS 午後問事／事件盤接受同日中午觀察日，不計算負齡本命運限；本命仍拒絕觀察日早於出生"
+        ]
+      },
+      {
+        "file": "tests/western-engine-20260914.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "c94e9bc2eda8a0812ace92fd5a5115070013f8c0497b46d6b02e386389727415",
+        "resultTail": [
+          "    \"returnMinutes\": 0.29524305013020835",
+          "  }",
+          "}"
+        ]
+      },
+      {
+        "file": "tests/western-moon-orb-20261003.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "cfe3bfe963567a1dde3c670564ba92af8bead310fc8cc2a77313b831bb70318b",
+        "resultTail": [
+          "PASS linear fixture: contact after ingress cannot be included in this sign",
+          "PASS linear fixture: zodiac wrap does not corrupt Moon ingress or intervals",
+          "PASS actual Astronomy Engine horary integrates full future orb-entry calculation with distinct exact convention"
+        ]
+      },
+      {
+        "file": "tests/yarrow-20260922.cjs",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "7925985a184fb9279c312679229ad93571e0f9b77da8bc07f435ac7933486407",
+        "resultTail": [
+          "✓ 64 餘數路徑：老陰／少陽／少陰／老陽 = 1:5:7:3",
+          "✓ 所有合法切點：分二、掛一、四揲、歸餘皆守恆",
+          "✓ 破損紀錄與無安全亂數均拒絕；六爻仍走獨立三錢引擎"
+        ]
+      },
+      {
+        "file": "tests/ziwei-root-spec-v1.test.js",
+        "status": "passed",
+        "verificationPhase": "broad regression",
+        "logSHA256": "7e3fed8c0bf15f04a50b74ebdf3b3c840e5106b4d518cc27ebcf5433b2372ac4",
+        "resultTail": [
+          "ziwei-root-spec-v4: all assertions passed"
+        ]
+      }
+    ]
+  },
+  "r14Regression": {
+    "assertions": 407,
+    "passed": 407,
+    "file": "tests/engine-evidence-r14-20261004.cjs",
+    "adverseCases": [
+      "ineligible and unknown dasha",
+      "three-valued alternative profiles",
+      "strength-unit mismatch",
+      "hidden-line state versus flying-line change",
+      "annualBranch versus natalBranch",
+      "one-sided versus double void",
+      "negated transformation status",
+      "unapplied Ziwei policy",
+      "partial evidence object",
+      "missing cast instant",
+      "lossless table and reference restoration",
+      "older helper compatibility",
+      "15 actual prompt interfaces and chart immutability"
+    ]
+  },
+  "nativeAnalysis": {
+    "groups": 31,
+    "passed": 31
+  },
+  "comprehensiveReading": {
+    "groups": 10,
+    "passed": 10,
+    "ziweiAnnualRows": [
+      80,
+      120
+    ],
+    "methods": 15
+  },
+  "panchanga": {
+    "groups": 8,
+    "passed": 8,
+    "independentCrossings": 64,
+    "maximumErrorSeconds": 6.995502471923828,
+    "existingToleranceSeconds": 10,
+    "firstRunTimeoutSeconds": 210,
+    "rerun": "completed without an assertion failure"
+  },
+  "promptBudget": {
+    "existingLegacyCombinedLimit": 150000,
+    "measuredLegacyCombinedCharacters": 149960,
+    "limitRaised": false,
+    "classicalPatternsLossless": true,
+    "fullPacketPreserved": true
+  },
+  "mirrors": {
+    "pairs": 11,
+    "identical": true
+  },
+  "syntax": {
+    "checkedFiles": 24,
+    "status": "passed"
+  },
+  "generatedContentChecks": {
+    "recommendationAndReadingGuides": "passed",
+    "completionData": "passed"
+  },
+  "browserTesting": {
+    "runThisRelease": false,
+    "note": "No new physical-device/GPU/browser end-to-end claim; one stale browser AV-count expectation corrected to the separately verified 20 charts"
+  },
+  "dependencyHandling": "Missing dev dependencies supplied only in temporary QA workspace; node_modules and dependency locks excluded from delta",
+  "deployment": "not performed",
+  "entryCacheVersions": {
+    "changedNativeModules": "20261004native14",
+    "depth": "20261004depth14",
+    "brief": "20261004brief14",
+    "packet": "20261004prompt14",
+    "status": "passed"
+  }
+}
