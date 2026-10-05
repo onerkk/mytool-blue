@@ -72,7 +72,14 @@ try{
       const payload={question:'請依本次原始盤面解讀',...cast},before=JSON.stringify(payload);
       assert.equal((await ai({request:air({payload}),env})).status,200);assert.equal(JSON.stringify(payload),before);
       const message=sent.messages[0].content;
-      for(const key of ['tarotData','ootkData','rawReadings'])if(cast[key])assert(message.includes(JSON.stringify(cast[key])),key+' was omitted or rewritten');
+      for(const key of ['tarotData','rawReadings'])if(cast[key])assert(message.includes(JSON.stringify(cast[key])),key+' was omitted or rewritten');
+      if(cast.ootkData){
+        const block=label=>JSON.parse(message.split('【'+label+'】\n')[1].split('\n')[0]);
+        const context=block('本次程序版本、代表牌與發牌前綁定'),op=block('op1程序停止紀錄（不解讀無效牌面）');
+        assert.deepEqual(context.procedureStatus,cast.ootkData.procedureStatus);assert.deepEqual(context.divinationValidity,cast.ootkData.divinationValidity);
+        for(const [key,value]of Object.entries(cast.ootkData.operations.op1))assert.deepEqual(op[key],value,'stopped OOTK lost '+key);
+        assert(!message.includes('op1完整計數故事'));assert(message.includes('procedure-only'));
+      }
       if(cast.readingGuide)assert(!message.includes(JSON.stringify(cast.readingGuide)),'client style must not duplicate the server contract');
       assert.equal(sent.max_tokens,8192);assert(sent.system.includes('先回答，再解釋'));assert(sent.system.includes('計數跳轉不當成元素相鄰'));
     }

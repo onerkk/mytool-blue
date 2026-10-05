@@ -24,7 +24,7 @@
       if(ready())return;
       return new Promise((resolve,reject)=>{
         if(typeof root._jyLazyScript!=='function')return reject(Error('星曆載入元件尚未就緒，請重新整理'));
-        root._jyLazyScript(file+'?v='+VERSION,ok=>ok&&ready()?resolve():reject(Error('星曆載入未完成，請重試')));
+        root._jyLazyScript(file+'?v='+(file.endsWith('-prompt.js')?'20261005ootk16':VERSION),ok=>ok&&ready()?resolve():reject(Error('星曆載入未完成，請重試')));
       });
     }),Promise.resolve()).catch(e=>{pending=null;throw e;});
     return pending;

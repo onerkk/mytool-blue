@@ -20,7 +20,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261004prompt15',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261005prompt16',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
@@ -37,7 +37,7 @@ var JY_REC_PACKET = {
     compat:'合盤：A、B原局各自成立再看雙向十神／跨柱作用及紫微疊宫飛化；來源方四化表各自使用。逐議題說一致、矛盾、可協商條件；合或相生不能證實感情、心意或成功率。',
     personality:'人格：這是八字映射模型，逐軸核已列計算證據與相反條件，作為自我反思，不冒稱心理測驗效度或臨床診斷。未知時辰不得補完整人格。',
     tarot:'塔羅：按實際方法、牌位、正逆位與議題綁定看全陣關係；多牌組按程序分組，不套單一時間線。RWS、Book T和Mathers分開；缺失或版本未明的操作不得冒稱原法完成。',
-    ootk:'OOTK：依五次操作實際完成／放棄紀錄、指示牌方向綁定、計數及配對判讀，不能把五輪硬配五個月。未確認主線、無效或未完成輪次不能生成有效事件占斷。',
+    ootk:'OOTK：逐一閱讀每個完成且有效操作，第一輪當下背景、第二輪發展方式、第三輪深化與限制、第四輪完整36張環牌倒數故事、第五輪結果收斂。每輪新增具體方向性判斷、支持與反證及對前輪的修正；追蹤代表牌五輪狀態。mainLineValidation未定只降低該輪主線權重，不使程序有效資料作廢。依OOTK成稿契約輸出全部必要段落，不能因第三方心意無法證實而停止推論；無效或未完成輪次只述狀態。Book T朝向不套RWS逆位，同源別名不重複加權，五輪不能硬配五個月。',
     lenormand:'雷諾曼：沿原題主題牌、人物歸屬、線段、鏡像及合法鄰接／騎士步完成主判；大牌陣核宮位與主題鏈，8×4與尾排分開，選項線不跨接。牌不證明心意、疾病或必然事件。',
     oracle:'籤詩：核抽籤與筊杯程序，再依本籤原詩、實際版本分類、故事標題及本次議題判讀。來源空欄保持空，異廟版本不混算，故事不當成使用者經歷。'
   };
@@ -146,7 +146,8 @@ var JY_REC_PACKET = {
     const attachmentPrompt='【AI命理分析｜附檔模式】\n'+JSON.stringify({schema:'jy.native-analysis/1',method,packetId:id,file:attachmentName})+'\n請讀取隨訊息上傳的 '+attachmentName+'，其中包含本次原問題、完整閱讀範圍、引擎實算盤面、逐項作用及支持與反證。依檔案內的解讀要求完整回答；沒有附檔、無法讀取或缺欄時，明確說明具體缺項，不能自行猜盤或使用過往記憶。不要把檔案內容縮成泛泛運勢。先直接回答原題，再說明依據、牽制、成立條件、時間和可行行動。'+(chars(question)<=1000?'\n原問題：'+JSON.stringify(question):'\n原問題全文已逐字保留於附檔。');
     const result={attachmentName,attachmentPrompt,schema:'jy.prompt-packet/1',version:VERSION,id,method,question,limits:{characters:LIMIT,utf8Bytes:BYTES},parts,contentChunks:chunks,totalCharacters:chars(body),totalBytes:utf8(body),body};
     records.set(body,result);
-    try{if(root.localStorage){const key='jy-prompt-packets-v1',old=JSON.parse(root.localStorage.getItem(key)||'[]').filter(r=>r.id!==id&&r.version===VERSION),saved=[{id,version:VERSION,body,method,question},...old].slice(0,8);while(saved.length>1&&utf8(JSON.stringify(saved))>2000000)saved.pop();if(utf8(JSON.stringify(saved))<=2000000)root.localStorage.setItem(key,JSON.stringify(saved));}}catch(_){}
+    result.storage={status:'memory-only',reason:'持久快取不可用；本次完整資料仍保留於記憶體。'};
+    try{if(root.localStorage){const key='jy-prompt-packets-v1',old=JSON.parse(root.localStorage.getItem(key)||'[]').filter(r=>r.id!==id&&r.version===VERSION),saved=[{id,version:VERSION,body,method,question},...old].slice(0,8);while(saved.length>1&&utf8(JSON.stringify(saved))>2000000)saved.pop();if(utf8(JSON.stringify(saved))<=2000000){root.localStorage.setItem(key,JSON.stringify(saved));result.storage={status:'persisted',reason:null};}else result.storage={status:'memory-only',reason:'完整資料超過本機快取上限；未截斷，請保留完整複製或下載。'};}}catch(_){result.storage={status:'memory-only',reason:'瀏覽器拒絕快取；完整複製與下載仍可使用。'};}
     if(records.size>40)records.delete(records.keys().next().value);return result;
   }
   function recommendationEnding(kinds,footer){
@@ -167,7 +168,14 @@ var JY_REC_PACKET = {
     const data={schema:'jy.native-analysis/1',method,question:q,notes:options.notes===undefined?null:String(options.notes),referenceAudits,sections};
     const encoded=root.JYPromptBrief?null:root.JYNativeAnalysis.compact(dense(data));
     const endingKinds=[method,...entries.map(e=>e.method)];
-    const body=root.JYPromptBrief?root.JYPromptBrief.render(calculated,data,METHODS,root.JYReadingWorkflow?.footer):['【原問題｜逐字保留】\n'+JSON.stringify(q)+'\n'+JSON.stringify({schema:'jy.native-analysis/1',method}),'【解讀要求】\n'+instructions(method,options,q)+'\n若實算資料含 depthContract，必須依其判讀順序、反證規則、禁止捷徑與缺項界線執行；不得略過。','$ref 是下方實算閱讀資料JSON根#起算的JSON Pointer，先還原$ref再還原$table。','【同盤人物注記查核】\n'+JSON.stringify(referenceAudits),'【實算閱讀資料】\n'+JSON.stringify(encoded),recommendationEnding(endingKinds)].join('\n\n');
+    const hasOOTK=calculated.some(e=>e.method==='ootk');
+    const body=root.JYPromptBrief?root.JYPromptBrief.render(calculated,data,METHODS,root.JYReadingWorkflow?.footer):hasOOTK?[
+      '【原問題｜逐字保留】\n'+JSON.stringify(q)+'\n'+JSON.stringify({schema:'jy.native-analysis/1',method}),
+      '【解讀要求】\n'+instructions(method,options,q),
+      ...calculated.map(e=>e.method==='ootk'?root.JYNativeCards.ootkToPrompt(e.analysis.methodData)+'\n'+root.JYNativeDepthContract.toPrompt(e.analysis.depthContract):'【'+e.method+'實算資料】\n'+JSON.stringify(e.analysis)),
+      '【本次計算查核】\n'+JSON.stringify(calculated.map(e=>({method:e.method,audit:root.JYEngineComputationAudit?.summary(e.analysis.computationAudit)||e.analysis.computationAudit||{status:'unverified',reason:'計算查核模組未載入，不能宣稱已驗證。'}}))),
+      '【資料結束】',recommendationEnding(endingKinds)
+    ].join('\n\n'):['【原問題｜逐字保留】\n'+JSON.stringify(q)+'\n'+JSON.stringify({schema:'jy.native-analysis/1',method}),'【解讀要求】\n'+instructions(method,options,q)+'\n若實算資料含 depthContract，必須依其判讀順序、反證規則、禁止捷徑與缺項界線執行；不得略過。','$ref 是下方實算閱讀資料JSON根#起算的JSON Pointer，先還原$ref再還原$table。','【同盤人物注記查核】\n'+JSON.stringify(referenceAudits),'【實算閱讀資料】\n'+JSON.stringify(encoded),recommendationEnding(endingKinds)].join('\n\n');
     const p=packet(body,method,q);p.readingData=data;entries.forEach(e=>byChart.set(e.chart,p.body));return p.body;
   }
   function build(method,chart,question,options={}){return buildMany([{method,chart}],question,options);}

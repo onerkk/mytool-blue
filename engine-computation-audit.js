@@ -2,7 +2,7 @@
  * A valid record is not a claim that all schools or predictions are complete.
  * Invalid records stop export; unknown inputs and unfinished procedures stay partial. */
 (function(root){'use strict';
- const VERSION='20261004audit2',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
+ const VERSION='20261005audit3',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
  const H={子:'癸',丑:'己癸辛',寅:'甲丙戊',卯:'乙',辰:'戊乙癸',巳:'丙戊庚',午:'丁己',未:'己丁乙',申:'庚壬戊',酉:'辛',戌:'戊辛丁',亥:'壬甲'};
  const PV=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'],PW=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
  const methods=['bazi','ziwei','astro','vedic','liuren','liuyao','yijing','meihua','name','compat','personality','tarot','lenormand','ootk','oracle'];
@@ -76,6 +76,7 @@
    const d=c.lenormandData||c,rows=A(d.cards||d.drawn),counts={two:2,three:3,five:5,seven:7,choice:7,nine:9,grand:36,grand_nines:36},s=d.spreadType||d.spread;check('known-layout',s==='branches'||Number.isInteger(counts[s]),s);check('layout-count',s==='branches'?rows.length>0&&rows.length%3===0:rows.length===counts[s],[s,rows.length]);
   }else if(kind==='ootk'){
    const d=a.methodData,valid=A(d.completed);check('known-operation-keys',A(d.operations).every(p=>/^op[1-5]$/.test(p.operation)),A(d.operations).map(p=>p.operation));if(valid.length!==5)partial('operations','本次已完成 '+valid.length+'／5 輪；未做或放棄的輪次不補造');
+   if(d.integrity){check('ootk-reading-data-consistent',!d.integrity.errors.length,d.integrity.errors);d.integrity.missing.forEach((reason,i)=>partial('ootk-reading-field-'+i,reason));}
   }else if(kind==='oracle'){
    check('source-edition-matched',a.coverage.editionMatched===true,a.coverage.editionMatched);check('twenty-nine-categories',A(a.methodData.categories).length===29,A(a.methodData.categories).length);
   }

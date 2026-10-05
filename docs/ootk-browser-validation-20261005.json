@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "viewport": "390x844",
+      "kind": "skip",
+      "computations": 1,
+      "operations": 5,
+      "unchangedCast": true,
+      "promptCharacters": 114592,
+      "errors": [],
+      "missing": []
+    },
+    {
+      "viewport": "360x844",
+      "kind": "automatic",
+      "computations": 1,
+      "operations": 5,
+      "unchangedCast": true,
+      "promptCharacters": 103421,
+      "errors": [],
+      "missing": []
+    }
+  ],
+  "externalAI": false,
+  "automaticTimers": "20x presentation only"
+}

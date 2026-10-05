@@ -18,7 +18,7 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '102.0.0';
+  var VERSION = '102.1.0';
   var SCHEMA = 'jy.tarot.semantic-contract/8';
 
   function clone(value) {
@@ -1275,6 +1275,8 @@
     var stopStage = 0;
     var stopReason = '';
     var sequenceGap = false;
+    var validStageCount = 0;
+    var reader = typeof globalThis !== 'undefined' ? globalThis.JYNativeCards : null;
 
     function addNode(cardName, position, stage, raw) {
       var index = nodes.length;
@@ -1288,7 +1290,7 @@
         cardName: stripDirection(cardName || ('操作牌' + (index + 1))),
         direction: '',
         semanticCandidates: splitCandidates(raw && (raw.semanticCandidates || raw.title || raw.keywords)),
-        sourceGloss: text(raw && (raw.sourceGloss || raw.baseMeaning || raw.meaning || raw.title)),
+        sourceGloss: text(raw && (raw.coreMeaning || raw.sourceGloss || raw.baseMeaning || raw.meaning || raw.title)),
         stage: stage,
         raw: clone(raw || {})
       };
@@ -1320,13 +1322,15 @@
         break;
       }
       var op = operations['op' + stage] || operations[stage] || {};
+      var readingLayer=reader && reader.ootkLayerEvidence ? reader.ootkLayerEvidence('op'+stage,op,data) : null;
       var stageDeps = [];
       var pathIndices = [];
       var countingPath = stage === 4 && Array.isArray(op.ringCountingPath) && op.ringCountingPath.length
         ? op.ringCountingPath
         : (op.countingPath || []);
       countingPath.forEach(function (entry, index) {
-        pathIndices.push(addNode(entry.cardName || entry.name || entry.title, '第' + stage + '次操作計數路徑 #' + (index + 1), stage, entry));
+        var actual=(op.activeCards||[]).find(function(c){return c.id===entry.cardId;});
+        pathIndices.push(addNode(entry.cardName || entry.name || entry.title, '第' + stage + '次操作計數路徑 #' + (index + 1), stage, Object.assign({},actual||{},entry)));
       });
       if (pathIndices.length) {
         stageDeps.push(factory.add('operation_counting_path', '第' + stage + '次操作完整計數路徑', pathIndices, {
@@ -1383,14 +1387,14 @@
         }));
       }
 
-      if (stage === 1 && op.mainLineValidation) {
-        stageDeps.push(factory.add('operation_human_confirmation', '第一次操作主要線索確認', [], {
+      if (op.mainLineValidation) {
+        stageDeps.push(factory.add('operation_human_confirmation', '第'+stage+'次操作主要線索確認', [], {
           topology: 'human_confirmation_gate',
           stage: stage,
           claimPolicy: 'direct_procedure_fact',
-          eventBinding: 'QUERY_EVENT_STAGE_1',
+          eventBinding: 'QUERY_EVENT_STAGE_'+stage,
           metadata: { mainLineValidation: clone(op.mainLineValidation) },
-          eventJoin: 'confirmation_limits_overall_validity'
+          eventJoin: 'confirmation_limits_stage_mainline_weight_only'
         }));
       }
 
@@ -1415,16 +1419,16 @@
       }
 
       if (stage === 4) {
-        var declaredRingSize = Number(op.ringSize);
-        var ringSizeValid = !declaredRingSize || declaredRingSize === 36;
+        var declaredRingSize = op.ringSize == null ? null : Number(op.ringSize);
+        var ringSizeValid = declaredRingSize == null ? null : declaredRingSize === 36;
         stageDeps.push(factory.add('op4_ring_structure', '第四次操作：代表牌後方三十六張之環', [], {
           topology: 'ring_of_thirty_six',
           stage: stage,
           claimPolicy: 'direct_procedure_fact',
           eventBinding: 'QUERY_EVENT_STAGE_4',
           metadata: {
-            ringSize: 36,
-            declaredRingSize: declaredRingSize || null,
+            ringSize: declaredRingSize,
+            declaredRingSize: declaredRingSize,
             ringSizeValid: ringSizeValid,
             orderPolicy: 'the_thirty_six_cards_following_the_significator',
             pairingPolicy: '1_with_36_2_with_35_and_so_on',
@@ -1442,10 +1446,10 @@
         eventBinding: 'QUERY_EVENT_STAGE_' + stage,
         metadata: {
           present: true,
-          valid: op.valid !== false && !op.abandoned && !op.stop && (stage !== 4 || ringSizeValid),
+          valid: op.valid !== false && !op.abandoned && !op.stop && (stage !== 4 || ringSizeValid !== false),
           retry: !!op.retry || Number(op.attempt || 1) > 1,
           stop: stageStopped,
-          reason: text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && !ringSizeValid ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || (stageStopped ? procedureStatus.reason : ''))
+          reason: text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && ringSizeValid === false ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || (stageStopped ? procedureStatus.reason : ''))
         },
         eventJoin: 'validity_gate_controls_stage_weight'
       });
@@ -1461,14 +1465,16 @@
         eventJoin: 'claims_only_from_same_operation_dependsOn',
         entityJoin: 'significator_and_query_entities_only',
         synthesisJoin: 'same_operation_claims_only_no_cross_operation_card_sentence',
+        metadata:{readingLayer:clone(readingLayer),allowedInference:'方向性推論可由有效輪次收斂；不可證實心意只限制事實宣稱，不阻止判讀。'},
         forbidden: ['不能直接把不同操作中的牌拼成新牌句']
       });
       summaryIds.push(summary);
+      if(op.valid===true&&!stageStopped&&(stage!==4||ringSizeValid===true))validStageCount++;
 
-      if (stageStopped || (stage === 4 && !ringSizeValid)) {
+      if (stageStopped || (stage === 4 && ringSizeValid === false)) {
         stopped = true;
         stopStage = stage;
-        stopReason = text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && !ringSizeValid ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || procedureStatus.reason);
+        stopReason = text(op.validityReason || op.stopReason || op.abandonReason || op.reason || (stage === 4 && ringSizeValid === false ? '第四次操作必須使用代表牌後方三十六張之環；輸入的環張數不符。' : '') || procedureStatus.reason);
       }
     }
 
@@ -1512,6 +1518,9 @@
         normalizedReason: text(procedureStatus.reason || stopReason || '')
       }),
       completedStageCount: summaryIds.length,
+      recordedStageCount: summaryIds.length,
+      completedValidStageCount: validStageCount,
+      readingContractVersion:reader && reader.ootkReadingVersion || null,
       stopped: !!(procedureStatus.abandoned || stopped),
       stopStage: stopStage || null,
       nodes: nodes,
@@ -1626,7 +1635,7 @@
     var unmeasuredDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'not_measured'; }).map(function (row) { return row.dimensionId; });
     var missingDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'missing_required_channel'; }).map(function (row) { return row.dimensionId; });
     var procedureStopped = spreadId === 'ootk' && !!evidenceGraph.stopped;
-    var procedureComplete = spreadId !== 'ootk' || evidenceGraph.completedStageCount === 5;
+    var procedureComplete = spreadId !== 'ootk' || (!procedureStopped && evidenceGraph.completedValidStageCount === 5);
     var gateStatus = !compilerValid || procedureStopped
       ? 'blocked_or_partial'
       : (missingDimensions.length || unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
@@ -1636,7 +1645,7 @@
       methodCoverageComplete: !!method.coverageComplete,
       procedureStopped: procedureStopped,
       procedureComplete: procedureComplete,
-      completedProcedureStages: spreadId === 'ootk' ? evidenceGraph.completedStageCount : null,
+      completedProcedureStages: spreadId === 'ootk' ? evidenceGraph.completedValidStageCount : null,
       missingDimensions: uniq(missingDimensions),
       unmeasuredDimensions: uniq(unmeasuredDimensions),
       rule: '先完成本方法原生解讀。查詢圖無效或開鑰程序停止時才阻斷相應程序；方法缺少某個精確或專屬通道時，只限制該子題，不得停止整盤，也不得讓查詢圖取代牌陣讀法。未量測不等於否定。'

@@ -1,0 +1,120 @@
+{
+  "scope": "Actual seeded engine and deterministic transport/review regressions; mocked upstream API, no live model quality claim",
+  "version": "20261005ootk16",
+  "cases": [
+    {
+      "question": "她到底怎麼看我？",
+      "characters": 104533,
+      "utf8Bytes": 143291,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "主管現在怎麼評價我？",
+      "characters": 104696,
+      "utf8Bytes": 143486,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "我的副業接下來會怎麼發展？",
+      "characters": 104701,
+      "utf8Bytes": 143607,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "我該離職還是留下？",
+      "characters": 104959,
+      "utf8Bytes": 143849,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "這件事最後會成功嗎？",
+      "characters": 104773,
+      "utf8Bytes": 143737,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "對方為什麼最近對我變冷？",
+      "characters": 104726,
+      "utf8Bytes": 143728,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    },
+    {
+      "question": "目前這個專案最大的問題在哪？",
+      "characters": 104833,
+      "utf8Bytes": 143751,
+      "parts": 16,
+      "ringNodes": 9,
+      "ringPairs": 18,
+      "integrity": "complete"
+    }
+  ],
+  "results": [
+    {
+      "name": "A-G actual casts preserve every round, question, role, count, pair, dignity and exact optional chunks",
+      "status": "passed"
+    },
+    {
+      "name": "fourth-round 15+ count nodes, all 36 cards and 18 pairs survive materialization without clipping",
+      "status": "passed"
+    },
+    {
+      "name": "central inverted significator stays inverted in Op4 without inventing flanks or RWS meanings",
+      "status": "passed"
+    },
+    {
+      "name": "mainLineValidation pending is scoped background, confirmed restores priority, other rounds remain eligible",
+      "status": "passed"
+    },
+    {
+      "name": "Book T High Priestess + Netzach + Devil + Wands remain full result evidence, never a stop instruction",
+      "status": "passed"
+    },
+    {
+      "name": "invalid/card-loss states cannot masquerade as full casts; aliases and missing rounds are diagnosed",
+      "status": "passed"
+    },
+    {
+      "name": "semantic evidence graph shares scoped confirmation, Book T meaning and honest ring/completion states",
+      "status": "passed"
+    },
+    {
+      "name": "all active/fallback entry points share the same materialized OOTK content and scoped partial data",
+      "status": "passed"
+    },
+    {
+      "name": "localStorage rejection and >2MB records keep the entire in-memory prompt; no slicing",
+      "status": "passed"
+    },
+    {
+      "name": "answer review fails safety-only, missing layer, repeated prose, false calendar and Priestess stop",
+      "status": "passed"
+    },
+    {
+      "name": "browser script versions and mirror copies match the shared reading code",
+      "status": "passed"
+    },
+    {
+      "name": "A-G retained API preserves exact reader, system depth16, 16K output allowance, failed-answer gate and quota",
+      "status": "passed",
+      "mockedUpstream": true
+    }
+  ]
+}

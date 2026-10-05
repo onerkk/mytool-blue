@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.JY_OOTK_REVIEW,runtime=p
 (async()=>{
  assert(out,'Set JY_OOTK_REVIEW');fs.mkdirSync(out,{recursive:true});
  const pw=require(process.env.JY_PLAYWRIGHT_MODULE||process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/playwright');
- let launch={headless:true};
+ let launch={headless:true,...(process.env.JY_CHROMIUM?{executablePath:process.env.JY_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage']}: {})};
  if(runtime){const {default:chrome}=await import(runtime+'/runtime-deps/node_modules/@sparticuz/chromium/build/index.js');launch={...launch,executablePath:runtime+'/browser-bin/chromium',args:chrome.args,env:{...process.env,LD_LIBRARY_PATH:runtime+'/browser-bin',FONTCONFIG_PATH:'/etc/fonts'}};}
  let browser;const checks=[];
  try{
@@ -27,7 +27,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.JY_OOTK_REVIEW,runtime=p
    });
    await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>__copied.push(text)}});});
    await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-   await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.1.0'&&typeof startOOTK==='function');
+   await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.8.0'&&typeof startOOTK==='function'&&window.JYNativeCards?.ootkToPrompt);
    if(fontDir){const css=fs.readFileSync(path.join(fontDir,'400.css'),'utf8').replaceAll('url(./files/','url(https://jingyue.uk/__qa-fonts/files/');await page.addStyleTag({content:css+' body,button,select,p,h1,h2,h3,b,strong,small,span,label{font-family:"Noto Serif TC",serif!important}'});await page.evaluate(()=>document.fonts.ready);}
    const question='公司認識的異性會跟我交往嗎？我該怎麼自然表達自己的需要？';
    // Use the public entry and its real picker; the form is supplied as a fixed test input.
@@ -55,7 +55,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.JY_OOTK_REVIEW,runtime=p
    await page.locator('.ootk-record').waitFor({state:'visible',timeout:90000});
    assert.equal(await page.locator('.ootk-record-row').count(),5);assert.equal(await page.locator('[data-record-state="retained"]').count(),5);
    assert.equal(await page.evaluate(()=>__runs),1);assert.equal(await page.evaluate(()=>JSON.stringify(S.tarot.ootkResults)),before);
-   const prompt=await page.evaluate(()=>JY_buildExportPrompt('ootk'));assert(prompt.includes(question));assert(prompt.includes('Ace=5'));assert(prompt.includes('推薦須融入原問題最後的行動建議'));assert(!prompt.includes('本輪不能提供'));
+   const prompt=await page.evaluate(()=>JY_buildExportPrompt('ootk'));assert(prompt.includes(question));assert(prompt.includes('Ace=5'));assert(prompt.includes('【本題延伸手鍊建議】'));assert(prompt.includes('【OOTK成稿契約】'));assert(prompt.includes('【OOTK五輪資料結束與完整性核對】'));assert(!/〔同項\d+〕/.test(prompt));assert(!prompt.includes('本輪不能提供'));
    const resultBox=await page.locator('.ootk-record').boundingBox();assert(resultBox.width<=width);assert(resultBox.x>=0);
    await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:out+'/'+kind+'-result.png'});
    assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);

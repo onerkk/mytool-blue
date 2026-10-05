@@ -48,7 +48,8 @@
 // v118: 20261003native9 原典根氣、位置先後與BPHS七盤三輪實算；保留推薦與操作恢復。
 // v117: 20261003native8 三重運期、手鍊推薦與賣場結尾、儀式操作獨立於樣式與動畫、頁面快取返回保留原牌。
 // v120: 20261004native11 非現任人物與屬性共指、純文字契約、同盤舊注記核對、指定數量位置與特殊點異說實算。
-const CACHE_NAME = 'jy-main-v120';
+// v121: 20261005ootk16 五輪閱讀資料展開、代表牌追蹤及共用成稿契約。
+const CACHE_NAME = 'jy-main-v121';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

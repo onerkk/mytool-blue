@@ -93,8 +93,26 @@ for(const file of workflowTargets){
   const re=/\/\/ BEGIN GENERATED WORKFLOW\n[\s\S]*?\/\/ END GENERATED WORKFLOW\n/;
   persist(file,re.test(old)?old.replace(re,()=>block):block+old);
 }
-for(const file of mirrors)persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
-// This release only synchronizes local prompt builders. The legacy Worker is
-// intentionally outside the prompt-only build and is never called by the UI.
+// Standalone exports use the same OOTK reader and depth contract even when
+// their host does not load the normal analysis bundle. Never hand-maintain a
+// second OOTK prompt or let a cached older reader replace this release.
+const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
+  ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261005depth16",undefined,{numeric:true})<0']
+].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
+const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
+persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);
+for(const file of new Set(mirrors.concat(['native-depth-contract.js','prompt-brief.js','prompt-packet.js','engine-computation-audit.js','reading-workflow.js','tarot-semantic-engine.js','astro-bridge.js','western-standalone.js','vedic-standalone.js','name-standalone.js'].filter(f=>fs.existsSync(path.join(root,f))))))persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
+// Keep the retained API's OOTK adapter on the same data/read/review code. A
+// scoped runtime works both in Pages and in data-URL test module loaders.
+const ootkRuntimeFiles=['native-card-analysis','native-depth-contract','reading-workflow'];
+const ootkRuntime='// BEGIN GENERATED OOTK RUNTIME\nconst OOTK_RUNTIME = {};\n'+ootkRuntimeFiles.map(name=>
+  fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8')
+    .replace(/^  if\(typeof module[^\n]+\n/m,'')
+    .replace(/\}\)\(typeof window[^\n]+\);\s*$/, '})(OOTK_RUNTIME);')
+).join('\n')+'\n// END GENERATED OOTK RUNTIME\n';
+const apiPath='functions/api/ai.js',apiOld=fs.readFileSync(path.join(root,apiPath),'utf8');
+const runtimeRe=/\/\/ BEGIN GENERATED OOTK RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK RUNTIME\n/;
+persist(apiPath,runtimeRe.test(apiOld)?apiOld.replace(runtimeRe,()=>ootkRuntime):ootkRuntime+apiOld);
 if(failed)process.exitCode=1;
 else console.log('Reading v'+q.readingVersion+' / recommendation v'+q.version+': '+(process.argv.includes('--check')?'all generated copies match':updated+' files synchronized'));

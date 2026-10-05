@@ -37,7 +37,7 @@ test('21:00 Changhua uses Bing-Xu Bazi and civil Hai Ziwei; hidden Ding is never
  assert(f.hiddenOnlyStems.includes('丁'));assert(!f.exposedStems.some(x=>x.stem==='丁'));
  assert.deepEqual(Array.from(f.pillars.find(x=>x.key==='hour').hiddenStems,x=>x.stem),['戊','辛','丁']);
  const row=result.ziwei.birthTimeAudit.people[1];assert(row.differentHour);assert.equal(row.bazi.hourPillar,'丙戌');assert.equal(row.ziwei.hourBranch,'亥');
- assert(result.prompt.includes('時柱 丙戌'));assert(result.prompt.includes('藏干不可寫成透干'));assert(result.prompt.includes('時柱丙戌'));
+ assert(result.prompt.includes('時柱 丙戌'));assert.match(result.prompt,/藏干(?:不可寫成|不是)透干/);assert(result.prompt.includes('時柱丙戌'));
  assert(result.comp.branchRelations.some(r=>r.aBranch==='未'&&r.bBranch==='戌'||/未.*戌|戌.*未/.test(r.description)));
  assert(result.ziwei.focusPalaces.includes('夫妻'));
  const html=c.JYRelationshipUI.birthTimes(result.ziwei.birthTimeAudit);assert(html.includes('丙戌'));assert(html.includes('亥時（民用 21:00）'));assert(html.includes('20:57:30'));

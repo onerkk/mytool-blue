@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261005depth15';
+  const VERSION='20261005depth16';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -45,6 +45,8 @@
       return {available:false,status:'policy-mismatch',reason:'要求的流派配置未套用到本盤，須重排'};
     if(method==='ootk'&&path==='methodData'&&A(v.completed).length!==5&&Object.hasOwn(v,'completed'))
       return {available:false,status:'partial',reason:'只可解讀實際完成且有效的輪次，不能宣稱五輪完成'};
+    if(method==='ootk'&&path==='methodData'&&v.integrity?.status!=='complete')
+      return {available:false,status:'partial',reason:A(v.integrity?.missing).join('；')||'本次五輪閱讀必要欄位未齊全'};
     return {available:true,status:'calculated',reason:null};
   }
   function build(method,chart,analysis){
@@ -55,7 +57,9 @@
       fiveLayerRequirement:'每一個完成且有效的操作都要對原題新增一個具體判斷，至少交代本輪支持、反證／限制、承接或轉折；不能把五輪只濃縮成「未知」或一句總結。',
       synthesisRequirement:'五輪完成時，成稿必須明確給出最可能方向、次可能方向、最強反證、會推翻主判的條件與信心來源。方向性推論可以成立，但要和已證實事實分開。',
       attributionBoundary:'問第三方內心時，缺少角色綁定只限制「訊號屬於誰」的確定度；仍要說明關係場／互動場最支持什麼方向。不得把吸引、戒備、溝通、行動、承諾等不同層次全部退回成無法回答。',
-      pendingValidationBoundary:'第一輪 mainLineValidation 未確認時，第一輪只作次級背景；後續完成輪次仍是有效證據，照常形成第二至第五層判斷。'
+      pendingValidationBoundary:'某輪 mainLineValidation 未確認時，該輪只作背景與輔證，不單獨支撐最終主判；其他完成且有效輪次照常閱讀，不能將主線未定當成程序無效。',
+      requiredSections:A(analysis?.methodData?.outputContract?.requiredSections),
+      methodRules:analysis?.methodData?.layerContract?.rules||null
     }:null;
     return {
       version:VERSION,method,profile:p.profile,
@@ -76,13 +80,14 @@
   }
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
+    `閱讀範圍狀態：${c.status}。`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `合成順序：${c.synthesisOrder.join(' → ')}。`,
     c.contradictionChecks.length?`流派／反證規則：${c.contradictionChecks.join('；')}。`:'',
     `禁止捷徑：${c.forbiddenShortcuts.join('；')}。`,
     `置信規則：${c.confidencePolicy}`,
-    c.methodOutputPolicy?`本法輸出契約：${Object.values(c.methodOutputPolicy).join('；')}`:'',
+    c.methodOutputPolicy?`本法輸出契約：${[c.methodOutputPolicy.fiveLayerRequirement,c.methodOutputPolicy.synthesisRequirement,c.methodOutputPolicy.attributionBoundary,c.methodOutputPolicy.pendingValidationBoundary].join('；')}\n必要成稿段落：${A(c.methodOutputPolicy.requiredSections).join(' → ')}`:'',
     '完整性界線：通過只代表本次具名方法的已實算範圍可讀，不代表全部歷史流派已實作或事件已被證實。',
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''

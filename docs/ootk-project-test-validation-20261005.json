@@ -1,0 +1,298 @@
+{
+  "scope": "Each exact npm test component executed in declared order with separate log capture",
+  "results": [
+    {
+      "script": "test:prompts",
+      "exitCode": 0,
+      "seconds": 2.53
+    },
+    {
+      "script": "test:tarot",
+      "exitCode": 0,
+      "seconds": 1.02
+    },
+    {
+      "script": "test:lenormand",
+      "exitCode": 0,
+      "seconds": 0.75
+    },
+    {
+      "script": "test:ziwei",
+      "exitCode": 0,
+      "seconds": 0.3
+    },
+    {
+      "script": "test:counter",
+      "exitCode": 0,
+      "seconds": 0.78
+    },
+    {
+      "script": "test:picker-data",
+      "exitCode": 0,
+      "seconds": 1.64
+    },
+    {
+      "script": "test:api-failures",
+      "exitCode": 0,
+      "seconds": 0.37
+    },
+    {
+      "script": "test:interactions",
+      "exitCode": 0,
+      "seconds": 1.54
+    },
+    {
+      "script": "test:display",
+      "exitCode": 0,
+      "seconds": 0.38
+    },
+    {
+      "script": "test:audit",
+      "exitCode": 0,
+      "seconds": 8.79
+    },
+    {
+      "script": "test:professional",
+      "exitCode": 0,
+      "seconds": 4.97
+    },
+    {
+      "script": "test:cards",
+      "exitCode": 0,
+      "seconds": 3.07
+    },
+    {
+      "script": "test:ui",
+      "exitCode": 0,
+      "seconds": 0.47
+    },
+    {
+      "script": "test:ritual",
+      "exitCode": 0,
+      "seconds": 13.46
+    },
+    {
+      "script": "test:cinematic",
+      "exitCode": 0,
+      "seconds": 1.26
+    },
+    {
+      "script": "test:flow",
+      "exitCode": 0,
+      "seconds": 1.1
+    },
+    {
+      "script": "test:depth",
+      "exitCode": 0,
+      "seconds": 2.53
+    },
+    {
+      "script": "test:flow-polish",
+      "exitCode": 0,
+      "seconds": 1.69
+    },
+    {
+      "script": "test:accuracy",
+      "exitCode": 0,
+      "seconds": 59.99
+    },
+    {
+      "script": "test:immersive",
+      "exitCode": 0,
+      "seconds": 1.08
+    },
+    {
+      "script": "test:plain",
+      "exitCode": 0,
+      "seconds": 8.24
+    },
+    {
+      "script": "test:story",
+      "exitCode": 0,
+      "seconds": 1.09
+    },
+    {
+      "script": "test:free",
+      "exitCode": 0,
+      "seconds": 0.41
+    },
+    {
+      "script": "test:oracle-result",
+      "exitCode": 0,
+      "seconds": 0.42
+    },
+    {
+      "script": "test:craft",
+      "exitCode": 0,
+      "seconds": 2.93
+    },
+    {
+      "script": "test:methods",
+      "exitCode": 0,
+      "seconds": 8.64
+    },
+    {
+      "script": "test:huaqi",
+      "exitCode": 0,
+      "seconds": 1.82
+    },
+    {
+      "script": "test:core-engines",
+      "exitCode": 0,
+      "seconds": 4.87
+    },
+    {
+      "script": "test:output-consistency",
+      "exitCode": 0,
+      "seconds": 4.22
+    },
+    {
+      "script": "test:vedic",
+      "exitCode": 0,
+      "seconds": 2.17
+    },
+    {
+      "script": "test:vedic-design",
+      "exitCode": 0,
+      "seconds": 2.14
+    },
+    {
+      "script": "test:vedic-palace",
+      "exitCode": 0,
+      "seconds": 0.32
+    },
+    {
+      "script": "test:western",
+      "exitCode": 0,
+      "seconds": 4.47
+    },
+    {
+      "script": "test:recommendations",
+      "exitCode": 0,
+      "seconds": 10.92
+    },
+    {
+      "script": "test:ootk",
+      "exitCode": 0,
+      "seconds": 8.66
+    },
+    {
+      "script": "test:relationship",
+      "exitCode": 0,
+      "seconds": 7.93
+    },
+    {
+      "script": "test:time-ownership",
+      "exitCode": 0,
+      "seconds": 28.74
+    },
+    {
+      "script": "test:question-routing",
+      "exitCode": 0,
+      "seconds": 1.35
+    },
+    {
+      "script": "test:gua",
+      "exitCode": 0,
+      "seconds": 2.53
+    },
+    {
+      "script": "test:yarrow",
+      "exitCode": 0,
+      "seconds": 0.35
+    },
+    {
+      "script": "test:special-rules",
+      "exitCode": 0,
+      "seconds": 11.13
+    },
+    {
+      "script": "test:astro-bridge",
+      "exitCode": 0,
+      "seconds": 9.34
+    },
+    {
+      "script": "test:latest-audit",
+      "exitCode": 0,
+      "seconds": 5.68
+    },
+    {
+      "script": "test:reading-grounding",
+      "exitCode": 0,
+      "seconds": 4.38
+    },
+    {
+      "script": "test:reading-workflow",
+      "exitCode": 0,
+      "seconds": 11.34
+    },
+    {
+      "script": "test:question-model-regression",
+      "exitCode": 0,
+      "seconds": 0.54
+    },
+    {
+      "script": "test:causal-question",
+      "exitCode": 0,
+      "seconds": 0.42
+    },
+    {
+      "script": "test:semantic-review-followup",
+      "exitCode": 0,
+      "seconds": 0.31
+    },
+    {
+      "script": "test:name",
+      "exitCode": 0,
+      "seconds": 3.84
+    },
+    {
+      "script": "test:liuren",
+      "exitCode": 0,
+      "seconds": 0.37
+    }
+  ],
+  "allPassed": true,
+  "expectedScripts": 50,
+  "resolvedPriorFailures": [
+    {
+      "script": "test:time-ownership",
+      "exitCode": 1,
+      "seconds": 27.63,
+      "resolution": "Original project says 藏干不是透干; regression now accepts this existing wording or 藏干不可寫成透干, with all calculation/data assertions retained."
+    }
+  ],
+  "additionalVerifiedChecks": [
+    {
+      "command": "npm run test:native",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:comprehensive",
+      "status": "passed"
+    },
+    {
+      "command": "npm run test:r10",
+      "status": "passed",
+      "assertions": "45/45"
+    },
+    {
+      "command": "npm run test:r12",
+      "status": "passed",
+      "assertions": "211/211"
+    },
+    {
+      "command": "npm run test:prompt-budget",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/sync-recommendation-guides.cjs --check",
+      "status": "passed"
+    },
+    {
+      "command": "node tests/ootk-browser-20260915.cjs (local Chromium, 2 mobile viewports)",
+      "status": "passed",
+      "externalAI": false
+    }
+  ]
+}

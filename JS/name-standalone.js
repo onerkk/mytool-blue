@@ -6,7 +6,7 @@
   var el=function(id){return room&&room.querySelector('#'+id);};
   function load(file,check){if(check&&check())return Promise.resolve();return new Promise(function(resolve,reject){if(typeof root._jyLazyScript!=='function'){reject(new Error('載入工具尚未完成，請稍後重試。'));return;}root._jyLazyScript(file,function(ok){if(ok&&(!check||check()))resolve();else reject(new Error('姓名學資料載入失敗，請重新整理或檢查網路後重試。'));});});}
   function prepare(){
-    if(!ready)ready=load('JS/name-data.js?v='+REV,function(){return !!root.JYNameData;}).then(function(){return load('JS/name-sancai.js?v='+REV,function(){return !!root.JYNameSancai;});}).then(function(){return load('JS/name-engine.js?v='+REV,function(){return !!root.JYNameEngine&&root.JYNameEngine.version==='20261003-name4';});}).then(function(){return load('JS/name-prompt.js?v='+REV,function(){return !!root.JYNamePrompt&&root.JYNamePrompt.version==='20261003-name4';});}).catch(function(error){ready=null;throw error;});
+    if(!ready)ready=load('JS/name-data.js?v='+REV,function(){return !!root.JYNameData;}).then(function(){return load('JS/name-sancai.js?v='+REV,function(){return !!root.JYNameSancai;});}).then(function(){return load('JS/name-engine.js?v='+REV,function(){return !!root.JYNameEngine&&root.JYNameEngine.version==='20261003-name4';});}).then(function(){return load('JS/name-prompt.js?v=20261005ootk16',function(){return !!root.JYNamePrompt&&root.JYNamePrompt.version==='20261003-name4';});}).catch(function(error){ready=null;throw error;});
     return ready;
   }
   function stageName(){return state.result?(state.result.names?state.result.names[state.active].name:state.result.name):(state.input.surname+state.input.given)||'名字';}
