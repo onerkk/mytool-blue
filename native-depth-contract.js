@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261004depth14';
+  const VERSION='20261005depth15';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -23,7 +23,7 @@
     compat:{profile:'雙方原局先成立，再做有方向的互動作用',required:[['雙方資料','items'],['時間同步','timeline']],order:['A原局','B原局','A→B作用','B→A作用','共同運期窗口','支持與牽制分開'],conflicts:['相生、合、桃花等不能證明心意或關係成立'],forbidden:['不得把B的喜忌當A的喜忌']},
     personality:{profile:'本站五軸命理映射模型',required:[['五軸或部分軸','items']],order:['逐軸看兩端證據','找最穩定模式','列相反條件','轉成可觀察行為'],conflicts:['不是心理計量量表'],forbidden:['不得作臨床診斷']},
     tarot:{profile:'實際牌陣＋指定體系',required:[['全部牌與牌位','methodData']],order:['先按牌陣位置讀','再讀牌間關係與重複牌階／元素','核心牌與反證牌同時保留','最後合成原題各子題'],conflicts:['RWS、Book T、Mathers不可互相覆蓋'],forbidden:['不得單張牌硬定時間、年齡或他人心意']},
-    ootk:{profile:'Golden Dawn／Book T 開鑰程序',required:[['實際五輪程序','methodData']],order:['先確認代表牌與程序是否有效','只讀完成輪次','按計數與配對','元素尊貴最後整合'],conflicts:['未完成輪次不能補成完成'],forbidden:['不得硬把五輪對應五個月份']},
+    ootk:{profile:'Golden Dawn／Book T 開鑰程序・五輪逐層推論',required:[['實際五輪程序','methodData']],order:['先確認代表牌與程序是否有效','只讀完成且有效輪次','每輪先用落域→合法計數→配對→元素尊貴形成一個直接回答原題的新判斷','逐輪說明本輪如何承接、修正或推翻前一輪','五輪完成後合成最可能方向、次可能方向、最強反證、改判條件與信心來源','最後才給行動與時間邊界'],conflicts:['未完成輪次不能補成完成','第一輪主線未確認時只降低第一輪主判權重，不得抹除後續有效輪次','第三方沒有明確角色綁定時，不能把象徵宣稱為已證實心意；但仍須保留五輪收斂得到的方向性推論，將無法歸屬者標為關係場／互動場訊號'],forbidden:['不得硬把五輪對應五個月份','不得因「無法證實他人心意」就停止解讀或把全部有效訊號寫成未知','不得只說有情感／衝突／吸引議題而不交代較支持的方向、程度與反證','不得用單一輪、單一牌或吉凶張數取代五輪跨層整合']},
     lenormand:{profile:'36牌幾何關係／Grand Tableau',required:[['牌列與幾何','methodData']],order:['主題牌與人物牌','相鄰牌句','鏡像／騎士步（合法時）','宮位與大牌陣鏈','整合問題'],conflicts:['不同布局規則按實際布局使用'],forbidden:['不得由心、戒指等圖像直接證實事件']},
     oracle:{profile:'廟方版本籤詩＋實際求籤程序',required:[['籤文與程序','methodData']],order:['程序有效性','原詩','本廟事項欄','故事只作版本脈絡','對原題給條件式解讀'],conflicts:['不同廟版本不混算'],forbidden:['不得由籤號換算精確日期']}
   };
@@ -51,6 +51,12 @@
     const p=P[method]||{profile:'具名方法',required:[['原生資料','items']],order:common.synthesis,conflicts:[],forbidden:[]};
     const evidence=p.required.map(([label,path])=>({label,path,...evidenceState(method,chart,analysis,path)}));
     const missing=evidence.filter(x=>!x.available).map(x=>x.label);
+    const methodOutputPolicy=method==='ootk'?{
+      fiveLayerRequirement:'每一個完成且有效的操作都要對原題新增一個具體判斷，至少交代本輪支持、反證／限制、承接或轉折；不能把五輪只濃縮成「未知」或一句總結。',
+      synthesisRequirement:'五輪完成時，成稿必須明確給出最可能方向、次可能方向、最強反證、會推翻主判的條件與信心來源。方向性推論可以成立，但要和已證實事實分開。',
+      attributionBoundary:'問第三方內心時，缺少角色綁定只限制「訊號屬於誰」的確定度；仍要說明關係場／互動場最支持什麼方向。不得把吸引、戒備、溝通、行動、承諾等不同層次全部退回成無法回答。',
+      pendingValidationBoundary:'第一輪 mainLineValidation 未確認時，第一輪只作次級背景；後續完成輪次仍是有效證據，照常形成第二至第五層判斷。'
+    }:null;
     return {
       version:VERSION,method,profile:p.profile,
       status:missing.length?'partial-reading':'ready-for-scoped-reading',
@@ -61,10 +67,11 @@
       contradictionChecks:p.conflicts,
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
+      methodOutputPolicy,
       missingRequiredEvidence:missing,
       unresolved:[...A(analysis?.unavailable),...evidence.filter(x=>!x.available).map(x=>x.label+'：'+x.reason)],
       sourcePolicy:'來源必須綁定具名規則或profile；同源重複不當獨立驗證；原典互相矛盾時並列，不自行創造唯一版本。',
-      outputPolicy:'每個主結論至少指出一條實算支持；若存在可改判的反證，同段交代。時間結論必須引用已算區間或明示只能給象徵時序。'
+      outputPolicy:'每個主結論至少指出一條實算支持；若存在可改判的反證，同段交代。時間結論必須引用已算區間或明示只能給象徵時序。'+(method==='ootk'?' OOTK 不得把方法邊界誤寫成沒有答案：界線限制的是事實宣稱，不是盤面方向性推論。':'')
     };
   }
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
@@ -75,6 +82,7 @@
     c.contradictionChecks.length?`流派／反證規則：${c.contradictionChecks.join('；')}。`:'',
     `禁止捷徑：${c.forbiddenShortcuts.join('；')}。`,
     `置信規則：${c.confidencePolicy}`,
+    c.methodOutputPolicy?`本法輸出契約：${Object.values(c.methodOutputPolicy).join('；')}`:'',
     '完整性界線：通過只代表本次具名方法的已實算範圍可讀，不代表全部歷史流派已實作或事件已被證實。',
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''

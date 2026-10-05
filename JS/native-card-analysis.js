@@ -36,7 +36,52 @@
     const adjacent=[],segments=[];paths.forEach((p,branch)=>{for(let i=0;i<p.length-1;i++){const key=p[i]+'/'+p[i+1];if(!adjacent.some(x=>x.key===key))adjacent.push({key,from:p[i],to:p[i+1]});for(let j=i+2;j<=p.length;j++)segments.push({path:branch+1,positions:p.slice(i,j),cards:p.slice(i,j).map(k=>records[k-1].name)});}});
     return {records,paths,adjacent,segments,mirror,knights,neighbors,commonContext:spread==='choice'?4:null,methodData:copy(d.methodData||d.nativeMethodData),geometry:copy(d.geometry),policy:'本布局實算全部合法連續片段、鏡像、鄰接與騎士步；8×4主盤與尾排分開，不跨接選項分線。'};
   }
-  function ootk(raw){const d=raw.ootkData||raw,ops=d.operations||{},operations=Object.keys(ops).map(operation=>({operation,valid:ops[operation].valid,abandoned:!!ops[operation].abandoned,data:copy(ops[operation])}));return {status:operations.length?'recorded':'not-started',operations,completed:operations.filter(x=>x.valid===true&&!x.abandoned).map(x=>x.operation),notCompleted:operations.filter(x=>x.valid!==true||x.abandoned).map(x=>x.operation),policy:'未完成、無效與放棄的輪次不冒稱已完成；不代做使用者尚未操作的輪次。'};}
+  const OOTK_LAYER_SPEC={
+    op1:{index:1,stage:'當下基底',questionRole:'以代表牌落域、第一次合法計數、配對與尊貴建立原題當下最先成立的基底；回答現在最主要的狀態、印象或條件，不把待確認主線冒充已確認。'},
+    op2:{index:2,stage:'互動與發展機制',questionRole:'讀問題如何在第二次操作的實際宮位／領域中展開，交代互動、訊息、行動或環境力量如何推進、加速、受阻或轉向。'},
+    op3:{index:3,stage:'結構條件與進一步發展',questionRole:'讀第三次操作揭出的更深層結構、規範、角色條件或持續門檻；說清前一輪的力量能否被承接，以及哪個條件會改變走向。'},
+    op4:{index:4,stage:'累積張力與倒數整合',questionRole:'用三十六牌環的合法計數、配對與元素尊貴讀多股力量如何互相強化、消耗、牽制或形成轉折；指出真正的核心張力與可介入處。'},
+    op5:{index:5,stage:'最終落點與態度',questionRole:'讀第五次操作的生命樹落點、合法計數、配對與尊貴，形成五輪收束後最支持的方向、態度或結果條件；它是傾向而不是事件保證。'}
+  };
+  function ootkLayerEvidence(key,op){
+    const spec=OOTK_LAYER_SPEC[key]||{index:null,stage:key,questionRole:'依本次原生操作回答原題。'};
+    const valid=op&&op.valid===true&&!op.abandoned;
+    let domain=null;
+    if(key==='op1')domain={kind:'pile',value:op.activePile||null,meaning:op.domainMeaning||null,mainLineValidation:op.mainLineValidation||null};
+    else if(key==='op2')domain={kind:'house',value:op.activeHouse||null,meaning:op.domainMeaning||null};
+    else if(key==='op3')domain={kind:'sign',value:op.activeSign||null,signTrump:op.signTrump||null,expectationNote:op.expectationNote||null};
+    else if(key==='op4')domain={kind:'ring',ringSize:op.ringSize||null,methodNote:op.methodNote||null};
+    else if(key==='op5')domain={kind:'sephirah',value:op.activeSephirah||null,label:op.sephirahZh||null,meaning:op.sephirahMeaning||null,methodNote:op.methodNote||null};
+    const counts={
+      activeCards:arr(op&&op.activeCards).length,
+      keyCards:arr(op&&op.keyCards).length,
+      countingSteps:arr(op&&(op.ringCountingPath||op.countingPath)).length,
+      pairs:arr(op&&(op.ringPairing||op.pairs)).length,
+      dignities:arr(op&&op.dignities).length,
+      structuralObservations:arr(op&&op.bookTMajorities&&op.bookTMajorities.observations).length
+    };
+    const mainValidation=op&&op.mainLineValidation,mainValidationStatus=mainValidation&&typeof mainValidation==='object'?mainValidation.status:mainValidation;
+    const pendingMain=key==='op1'&&mainValidation&&![true,'confirmed','accepted','verified'].includes(mainValidationStatus);
+    return {operation:key,index:spec.index,stage:spec.stage,questionRole:spec.questionRole,valid:!!valid,readingStatus:!valid?'not-readable':pendingMain?'context-mainline-pending':'eligible',domain,counts,
+      requiredContribution:['本輪針對原題新增的一個具體判斷','本輪最強支持鏈','本輪最強反證或限制','本輪如何承接、修正或推翻前一輪','本輪可判到哪一層及不能越界的部分']};
+  }
+  function ootk(raw){
+    const d=raw.ootkData||raw,ops=d.operations||{},keys=['op1','op2','op3','op4','op5'];
+    const operations=keys.filter(k=>ops[k]).map(operation=>({operation,valid:ops[operation].valid,abandoned:!!ops[operation].abandoned,data:copy(ops[operation])}));
+    const completed=operations.filter(x=>x.valid===true&&!x.abandoned).map(x=>x.operation),notCompleted=operations.filter(x=>x.valid!==true||x.abandoned).map(x=>x.operation);
+    const layerEvidence=keys.filter(k=>ops[k]).map(k=>ootkLayerEvidence(k,ops[k]));
+    return {status:operations.length?'recorded':'not-started',operations,completed,notCompleted,layerEvidence,
+      layerContract:{
+        version:'ootk-five-layer-20261005',
+        perLayerRule:'每一個完成且有效的操作都必須對原問題新增可辨識的判斷；不得只列牌義、程序或把五輪壓成一句總結。',
+        synthesisRule:'五輪完成時，先逐輪成判，再合成最可能方向、次可能方向、最強反證、會推翻主判的條件與信心來源；不得以吉凶張數或單一輪次投票。',
+        unresolvedRule:'未知只限制其所屬層次的角色歸屬或確定度，不得把其他已可判斷的層次一起寫成未知；「無法證實」不能成為停止解讀的理由。',
+        thirdPartyMindRule:'若原題問第三方看法、好感、意願或心意而沒有明確第三方代表牌綁定，不能宣稱已證實其內心；仍須依五輪收斂提出方向性模型，將可歸屬者標為「較支持的推論」，無法歸屬者標為關係場／互動場訊號，並交代反證與信心。',
+        firstOperationRule:'第一次操作主線未確認時只降低第一輪作為主判核心的權重；後續已完成且有效的輪次仍須照常解讀，不可因此把整盤降成無答案。',
+        noCalendarMapping:'五輪是操作層次，不是五個月份，也不是固定五個現實事件。'
+      },
+      policy:'未完成、無效與放棄的輪次不冒稱已完成；不代做使用者尚未操作的輪次。完成輪次必須逐層產生資訊，再跨層整合；未知只降低對應層次的歸屬與信心，不抹除其餘有效訊號。'};
+  }
   function oracle(p){
     if(!p||!Number.isInteger(p.n)||!p.g||typeof p.p!=='string'||!p.sourceUrl)throw Error('籤詩原文、版本或出處缺漏。');
     const r=root.JYOracleRegister&&root.JYOracleRegister.get(p.n),normalize=s=>s.replace(/[\s，。；]/g,'');

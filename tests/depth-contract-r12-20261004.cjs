@@ -5,7 +5,7 @@ const ok=(v,msg)=>{assert.ok(v,msg);checks++;};
 function load(file,ctx){vm.runInContext(fs.readFileSync(path.join(root,file),'utf8'),ctx,{filename:file});}
 const ctx=vm.createContext({console,globalThis:null});ctx.globalThis=ctx;ctx.window=ctx;
 load('native-depth-contract.js',ctx);
-const C=ctx.JYNativeDepthContract;ok(C,'contract exported');ok(/^20261004depth(?:12|13|14)$/.test(C.version),'contract version/backward compatible');
+const C=ctx.JYNativeDepthContract;ok(C,'contract exported');ok(/^(?:20261004depth(?:12|13|14)|20261005depth15)$/.test(C.version),'contract version/backward compatible');
 const methods=['bazi','ziwei','vedic','astro','liuren','liuyao','yijing','meihua','name','compat','personality','tarot','ootk','lenormand','oracle'];
 ok(Object.keys(C.profiles).length===15,'15 profiles');
 function put(o,p,v){const ks=p.split('.');let x=o;for(let i=0;i<ks.length-1;i++)x=x[ks[i]]??={};x[ks.at(-1)]=v;}
@@ -29,9 +29,9 @@ const env=fixtures.environment();
 const examples=fixtures.examples(env.ctx);
 env.load('prompt-brief');env.load('prompt-packet');
 const bz=env.ctx.JYNativeAnalysis.analyze('bazi',examples.b);
-ok(bz.depthContract&&/^20261004depth(?:12|13|14)$/.test(bz.depthContract.version),'actual bazi analysis carries depth contract');
+ok(bz.depthContract&&/^(?:20261004depth(?:12|13|14)|20261005depth15)$/.test(bz.depthContract.version),'actual bazi analysis carries depth contract');
 const bp=env.ctx.JYPromptPacket.build('bazi',examples.b,'我未來事業與財運如何？');
-ok(/深度判讀契約 20261004depth(?:12|13|14)/.test(bp),'actual bazi prompt carries depth contract');
+ok(/深度判讀契約 (?:20261004depth(?:12|13|14)|20261005depth15)/.test(bp),'actual bazi prompt carries depth contract');
 ok(bp.includes('禁止捷徑'),'actual prompt carries forbidden shortcuts');
 const vd=env.ctx.JYNativeAnalysis.analyze('vedic',examples.v);
 ok(vd.depthContract&&vd.depthContract.profile.includes('Parashari'),'actual vedic analysis carries profile');
