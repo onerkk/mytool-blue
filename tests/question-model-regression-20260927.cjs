@@ -114,8 +114,8 @@ for(const method of methods){
   assert(prompt.includes('"actionObject":"肉體桃花"'),`${method} receives the object of encounter`);
 }
 const indexHtml=require('node:fs').readFileSync(require('node:path').join(__dirname,'..','index.html'),'utf8');
-for(const [asset,version]of Object.entries({'reading-workflow.js':'20261005ootk16','tarot-foundation.js':'20261004native11','lenormand.js':'20261005ootk16'}))assert(indexHtml.includes(`JS/${asset}?v=${version}`),`${asset} cache token is updated`);
-assert.match(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8'),/^const CACHE_NAME = 'jy-main-v121';$/m,'active service worker cache version is refreshed');
+for(const [asset,version]of Object.entries({'reading-workflow.js':'20261010prompt17','tarot-foundation.js':'20261004native11','lenormand.js':'20261010prompt17'}))assert(indexHtml.includes(`JS/${asset}?v=${version}`),`${asset} cache token is updated`);
+assert.match(require('node:fs').readFileSync(require('node:path').join(__dirname,'..','sw.js'),'utf8'),/^const CACHE_NAME = 'jy-main-v122';$/m,'active service worker cache version is refreshed');
 
 const choice=workflow.plan({method:'bazi',question:'我該選哪個商品上架？'}).questionModel.events[0];
 assert.equal(choice.type,'recommendation_with_unprovided_options');

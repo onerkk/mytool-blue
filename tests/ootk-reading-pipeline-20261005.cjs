@@ -109,8 +109,8 @@ test('answer review fails safety-only, missing layer, repeated prose, false cale
  assert.equal(F.reviewOOTK({sourcePrompt:source,answer:sampleAnswer()}).length,0);assert(F.repairPrompt({method:'ootk',question:QUESTIONS[0],answer:'未知',sourcePrompt:source}).includes(source));
 });
 test('browser script versions and mirror copies match the shared reading code',()=>{
- const html=read('index.html');for(const [name,version]of Object.entries({'native-card-analysis':'20261005ootk16','native-depth-contract':'20261005depth16','prompt-brief':'20261005brief16','prompt-packet':'20261005prompt16','reading-workflow':'20261005ootk16'}))assert(html.includes('JS/'+name+'.js?v='+version));
- for(const name of ['native-card-analysis','native-depth-contract','prompt-brief','prompt-packet','reading-workflow','ai-analysis','prompt-export'])if(fs.existsSync(path.join(ROOT,name+'.js')))assert.equal(read(name+'.js'),read('JS/'+name+'.js'),name+' mirror');assert(read('reading-review.html').includes('20261005ootk16'));assert.equal(read('sw.js'),read('JS/sw.js'));
+ const html=read('index.html');for(const [name,version]of Object.entries({'native-card-analysis':'20261005ootk16','native-depth-contract':'20261005depth16','prompt-brief':'20261010prompt17','prompt-packet':'20261010prompt17','reading-workflow':'20261010prompt17'}))assert(html.includes('JS/'+name+'.js?v='+version));
+ for(const name of ['native-card-analysis','native-depth-contract','prompt-brief','prompt-packet','reading-workflow','ai-analysis','prompt-export'])if(fs.existsSync(path.join(ROOT,name+'.js')))assert.equal(read(name+'.js'),read('JS/'+name+'.js'),name+' mirror');assert(read('reading-review.html').includes('20261010prompt17'));assert.equal(read('sw.js'),read('JS/sw.js'));
 });
 (async()=>{
  const originalFetch=globalThis.fetch;let calls=0,writes=0,sent;

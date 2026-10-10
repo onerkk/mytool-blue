@@ -86,6 +86,9 @@ for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]
 }
 // Keep the pure local planner available in standalone and mixed-cache entries.
 // Embed the exact same factory, with CommonJS export removed in these hosts.
+const workflowFile='JS/reading-workflow.js',workflowOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
+const methodGuides='  // BEGIN GENERATED WORKFLOW METHOD GUIDES\n  var METHOD_GUIDES = '+JSON.stringify(Object.fromEntries(q.methodKinds().map(k=>[k,q.methodLines(k)])),null,2)+';\n  // END GENERATED WORKFLOW METHOD GUIDES\n';
+persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides));
 const workflowSource=fs.readFileSync(path.join(root,'JS/reading-workflow.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
 for(const file of workflowTargets){
   const old=fs.readFileSync(path.join(root,file),'utf8');

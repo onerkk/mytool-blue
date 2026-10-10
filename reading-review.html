@@ -12,7 +12,7 @@
   </style>
   <link rel="stylesheet" href="CSS/forecast-review.css?v=20260928review1">
   <script src="JS/forecast-review.js?v=20260928review1" defer></script>
-  <script src="JS/reading-workflow.js?v=20261005ootk16" defer></script>
+  <script src="JS/reading-workflow.js?v=20261010prompt17" defer></script>
   <script src="JS/reading-review-ui.js?v=20260924root2" defer></script>
 </head>
 <body><main>
@@ -20,7 +20,7 @@
   <label for="method">使用的方法</label><select id="method"></select>
   <label for="question">原本的問題</label><textarea id="question" placeholder="保留原本的對象、條件與時間"></textarea>
   <label for="answer">AI 給你的完整答案</label><textarea id="answer" rows="10" placeholder="直接貼上原答案"></textarea>
-  <details><summary>準備重新解讀：加入原始提示詞</summary><label for="source">網站產生的提示詞與完整盤面</label><textarea id="source" rows="8" placeholder="重新解讀需要本次盤面，不能只靠上一份答案"></textarea></details>
+  <details><summary>核對盤面或重新解讀：加入原始提示詞</summary><label for="source">網站產生的提示詞與完整盤面</label><textarea id="source" rows="8" placeholder="請貼入本次完整提示詞，供核對答案引用的日主、宮星與年度範圍"></textarea></details>
   <div class="actions"><button id="check" type="button">看看哪些地方要重問</button><button id="clear" class="secondary" type="button">清除本頁內容</button></div>
   <div id="status" class="status" role="status" aria-live="polite"></div>
   <section id="result" class="card hidden" aria-labelledby="result-title"><h2 id="result-title"></h2><ul id="issues"></ul><p id="scope"></p><button id="repair-button" class="secondary" type="button">產生重新解讀的提示詞</button></section>

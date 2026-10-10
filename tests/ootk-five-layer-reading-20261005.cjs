@@ -42,7 +42,7 @@ assert.equal(quality.readingVersion,'9.4.0');
 const q=quality.lines('ootk').join('\n');
 for(const phrase of ['五次操作不是五個月份，而是五層閱讀','每一個完成且有效的操作都必須對原問題新增','不能證實』不等於『不能判方向','最可能方向、次可能方向、最強反證'])assert(q.includes(phrase),phrase);
 
-assert.equal(workflow.version,'1.7.0');
+assert.equal(workflow.version,'1.8.0');
 const rendered=workflow.render({method:'ootk',question:'公司異性女工程師到底怎看我'});
 for(const phrase of ['每一有效輪次都先對原題新增一個具體判斷','第三方角色歸屬不足時降低確定度','最可能方向、次可能方向'])assert(rendered.includes(phrase),phrase);
 

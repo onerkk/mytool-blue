@@ -126,7 +126,7 @@ for(const [method,chart]of Object.entries(x.charts)){
  const prompt=c.JYPromptPacket.build(method,chart,q,{notes:'只採本次資料'});
  ok(prompt.includes('不使用帳號記憶'),method+' memory isolation survives actual brief path');
  ok(prompt.includes('最強反證')&&prompt.includes('本次具名方法'),method+' scoped synthesis instruction');
- ok(/2026100[45]depth(?:14|15)/.test(prompt),method+' depth contract is delivered');
+ ok(/2026100[45]depth(?:14|15|16)/.test(prompt),method+' depth contract is delivered');
  ok(prompt.includes('shopee.tw/a50h95648d'),method+' relevant shop ending remains');
  eq(JSON.stringify(chart),before,method+' analysis/export do not mutate the chart');
 }
