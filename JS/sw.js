@@ -50,7 +50,8 @@
 // v120: 20261004native11 非現任人物與屬性共指、純文字契約、同盤舊注記核對、指定數量位置與特殊點異說實算。
 // v121: 20261005ootk16 五輪閱讀資料展開、代表牌追蹤及共用成稿契約。
 // v122: 20261010prompt17 各方法完整判讀指令、題目範圍及原盤核對。
-const CACHE_NAME = 'jy-main-v122';
+// v123：塔羅78張與雷諾曼36張明亮牌面；新版圖片URL獨立，避免舊牌圖快取。
+const CACHE_NAME = 'jy-main-v123';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
