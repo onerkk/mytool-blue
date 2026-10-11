@@ -3286,7 +3286,7 @@ function _startDeck3D(topCount,botCount){
       var back=card.querySelector('.tdc-back');
       if(back&&!back.querySelector('.tdc-back-art')){
         var art=document.createElement('img');art.className='tdc-back-art';
-        art.setAttribute('src','assets/ui/tarot-back-moon-gold.jpg');
+        art.setAttribute('src','assets/cards/bright-20261011/tarot/back.webp');
         art.setAttribute('alt','');art.setAttribute('aria-hidden','true');art.setAttribute('draggable','false');
         back.appendChild(art);
       }

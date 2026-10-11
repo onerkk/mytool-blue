@@ -20723,7 +20723,7 @@ function _storeShareData(mode, r) {
 // ── 分享圖背景預載 ──
 var _shareBgCache = {};
 (function _preloadShareBgs() {
-  var bgs = { tarot: '/assets/share/moon-atelier-20260911.webp', ootk: '/assets/share/moon-atelier-20260911.webp', full: '/assets/share/moon-atelier-20260911.webp' };
+  var bgs = { tarot: '/assets/share/moon-atelier-bright-20261011.webp', ootk: '/assets/share/moon-atelier-bright-20261011.webp', full: '/assets/share/moon-atelier-bright-20261011.webp' };
   Object.keys(bgs).forEach(function(k) {
     var img = new Image();
     img.onload = function() { _shareBgCache[k] = img; };

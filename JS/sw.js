@@ -51,7 +51,8 @@
 // v121: 20261005ootk16 五輪閱讀資料展開、代表牌追蹤及共用成稿契約。
 // v122: 20261010prompt17 各方法完整判讀指令、題目範圍及原盤核對。
 // v123：塔羅78張與雷諾曼36張明亮牌面；新版圖片URL獨立，避免舊牌圖快取。
-const CACHE_NAME = 'jy-main-v123';
+// v124：明亮塔羅／雷諾曼牌背；首頁、抽牌、3D、分析與分享圖同步。
+const CACHE_NAME = 'jy-main-v124';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

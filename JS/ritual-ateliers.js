@@ -21,9 +21,10 @@
     for(var i=0;i<list.length;i++){var el=root.document.getElementById(list[i]);if(el&&el.value)return el.value;}
     return '';
   }
-  function fan(){
+  function cardBack(kind){return 'assets/cards/bright-20261011/'+(kind==='lenormand'?'lenormand':'tarot')+'/back.webp';}
+  function fan(kind){
     var h='<div class="jr-fan" aria-hidden="true">';
-    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span>';
+    for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="'+cardBack(kind)+'" alt="" draggable="false"></span>';
     return h+'</div>';
   }
   function timeSeal(label,i){
@@ -64,11 +65,11 @@
     dialog.setAttribute('data-motion',reduced?'still':'full');dialog.setAttribute('aria-labelledby','jr-title');dialog.setAttribute('aria-describedby','jr-note');
     var interaction='';
     if(mode==='cards'){
-      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="assets/ui/tarot-back-moon-gold.jpg" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
+      interaction='<div class="jr-reveal-row">'+cards.map(function(c,i){return '<button type="button" class="jr-reveal" data-card-index="'+i+'" aria-label="揭開第 '+(i+1)+' 張牌" aria-pressed="false"><span class="jr-flip"><span class="jr-back"><img src="'+cardBack(kind)+'" alt="" draggable="false"></span><span class="jr-front"></span></span><span class="jr-card-label">'+String(i+1).padStart(2,'0')+' · 輕觸揭牌</span></button>';}).join('')+'</div>';
     }else if(mode==='seals'){
       interaction='<div class="jr-seals">'+cfg.seals.map(function(label,i){return kind==='bazi'?timeSeal(label,i):kind==='compat'&&root.JYRelationshipUI?root.JYRelationshipUI.seal(label,i):'<button type="button" class="jr-seal" data-seal-index="'+i+'" aria-pressed="false" aria-label="點亮'+label+'座標"><span>'+label+'</span><small>'+String(i+1).padStart(2,'0')+'</small></button>';}).join('')+'</div>';
     }else{
-      interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(kind==='tarot'||kind==='ootk'?fan():'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
+      interaction='<button type="button" class="jr-touch" aria-label="'+esc(gestureCopy[kind]||cfg.guide)+'">'+(physicalCards?fan(kind):'<span class="jr-art at-art" data-art="'+kind+'" aria-hidden="true"></span>')+'<span class="jr-touch-label">'+esc(gestureCopy[kind]||'按住，讓光靠近')+'</span><span class="jr-touch-track"><i></i></span></button>';
     }
     var constellation='';
     if(kind==='ziwei')constellation='<div class="jr-stars" aria-hidden="true">'+['命宮','兄弟','夫妻','子女','財帛','疾厄','遷移','交友','官祿','田宅','福德','父母'].map(function(x,i){return '<span style="--i:'+i+';--angle:'+(i*30)+'deg">'+x+'</span>';}).join('')+'</div>';

@@ -50,7 +50,7 @@
 .jr-dialog.is-holding .jr-art{filter:drop-shadow(0 0 35px var(--jr-glow)) brightness(calc(1 + var(--hold)*.4))}.jr-dialog[data-phase="2"] .jr-art{animation:jr-art-awaken 1.9s ease both}.jr-dialog[data-phase="3"] .jr-art{filter:drop-shadow(0 0 25px var(--jr-glow))}.jr-dialog[data-phase="2"] .jr-touch-label,.jr-dialog[data-phase="3"] .jr-touch-label{opacity:0}
 /* The deck gathers under pressure, splits, and unfolds into a fan in physical space. */
 .jr-fan{position:absolute;inset:0;transform-style:preserve-3d}
-.jr-card{position:absolute;left:calc(50% - 47px);top:16px;width:94px;height:146px;border:1px solid #f2d29bbd;border-radius:7px;background:#111f31;box-shadow:1px 1px 0 #dbbd84,3px 4px 0 #19222b,5px 6px 0 #c7a67488,0 15px 20px #000b;transform-origin:50% 120%;transform:translateX(calc(var(--offset)*18px)) rotate(calc(var(--offset)*10deg)) rotateY(-10deg);transition:transform .9s cubic-bezier(.2,.7,.2,1);overflow:hidden}
+.jr-card{position:absolute;left:calc(50% - 47px);top:16px;width:94px;height:146px;border:1px solid #f2d29bbd;border-radius:7px;background:#fff6df;box-shadow:1px 1px 0 #dbbd84,3px 4px 0 #19222b,5px 6px 0 #c7a67488,0 15px 20px #000b;transform-origin:50% 120%;transform:translateX(calc(var(--offset)*18px)) rotate(calc(var(--offset)*10deg)) rotateY(-10deg);transition:transform .9s cubic-bezier(.2,.7,.2,1);overflow:hidden}
 .jr-card img{display:block;width:100%;height:100%;object-fit:cover}.jr-card::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 35%,#ffe8b84f 49%,transparent 62%);transform:translateX(-170%);animation:jr-card-shine 8s ease-in-out infinite;animation-delay:calc(var(--i)*.12s)}
 .jr-dialog.is-holding .jr-card{transform:translateX(calc(var(--offset)*2px)) translateY(calc(var(--i)*-1.5px)) rotate(calc(var(--offset)*1.7deg)) rotateY(32deg) rotateX(8deg)}
 .jr-dialog[data-phase="2"] .jr-card{animation:jr-shuffle-flight 1.9s cubic-bezier(.2,.65,.25,1) both;animation-delay:calc(var(--i)*25ms)}
@@ -61,7 +61,7 @@
 .jr-reveal:nth-child(1){transform:rotate(-6deg) translateY(8px)}.jr-reveal:nth-child(3){transform:rotate(6deg) translateY(8px)}
 .jr-reveal:hover:not(:disabled){transform:translateY(-9px)}.jr-reveal[aria-pressed=true]{transform:rotate(0deg) translateY(-6px)}
 .jr-flip{position:relative;display:block;width:100%;aspect-ratio:2/3;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.3,.7,.2,1);box-shadow:0 20px 25px #0009;border-radius:7px}
-.jr-back,.jr-front{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;border:1px solid #dabf84;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:#071620}
+.jr-back,.jr-front{display:flex;align-items:center;justify-content:center;position:absolute;inset:0;border:1px solid #dabf84;border-radius:7px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;background:#fff6df}
 .jr-back{transform:rotateY(0deg)}.jr-front{transform:rotateY(180deg);font-size:1rem;padding:0}.jr-back img,.jr-front img{width:100%;height:100%;object-fit:cover;display:block}.jr-front img.is-reversed{transform:rotate(180deg)}
 .jr-reveal[aria-pressed=true] .jr-flip{transform:rotateY(180deg)}
 .jr-card-label{display:block;font-size:.7rem;line-height:1.7;margin:12px -5px 0;text-shadow:0 2px 8px #000;letter-spacing:1px}

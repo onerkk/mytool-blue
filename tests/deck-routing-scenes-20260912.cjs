@@ -107,8 +107,8 @@ test('Native picker paints 78 identical opaque backs while keeping only one imag
  vm.runInContext('var _deck3dCleanup=null,_deck3dRAF=null,_deck3dTopOff=0,_deck3dBotOff=0,_deck3dDragging=false;window.JYTarotDeckBrowse={};window._deckIsShuffled=true;'+actual('JS/tarot.js','_startDeck3D'),e.ctx);
  for(let i=0;i<3;i++)e.ctx._startDeck3D(39,39);
  assert.equal(stage.querySelectorAll('.tdc-back-art').length,78);assert.equal(stage.querySelectorAll('.tdc-face img').length,0);
- for(const img of stage.querySelectorAll('.tdc-back-art')){assert.equal(img.getAttribute('src'),'assets/ui/tarot-back-moon-gold.jpg');assert.equal(img.getAttribute('draggable'),'false');}
- const css=read('CSS/living-cards.css');assert(css.includes('transform-style:flat!important'));assert(css.includes('backface-visibility:visible!important'));assert(css.includes('background-color:#0d1720!important'));e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
+ for(const img of stage.querySelectorAll('.tdc-back-art')){assert.equal(img.getAttribute('src'),'assets/cards/bright-20261011/tarot/back.webp');assert.equal(img.getAttribute('draggable'),'false');}
+ const css=read('CSS/living-cards.css');assert(css.includes('transform-style:flat!important'));assert(css.includes('backface-visibility:visible!important'));assert(css.includes('background-color:#fff6df!important'));e.ctx._deck3dCleanup();assert.equal(e.clock.timers.size,0);
 });
 (async()=>{
  try{

@@ -443,7 +443,7 @@ body.jy-atelier{
 .jy-atelier #step-2 #t-deck{height:340px!important;max-width:100%;border:1px solid #d5bc854d;border-radius:20px;background:radial-gradient(ellipse at 50% 30%,#65758b3b,transparent 70%),linear-gradient(150deg,#172538,#090f19);box-shadow:inset 0 1px 0 #fff2,inset 0 -25px 40px #03081099,0 8px 22px #0004;overflow:hidden}
 .jy-atelier #step-2 #t-deck .tarot-stage-bg{display:none!important}
 .jy-atelier #step-2 #t-deck .tdc-face{display:none!important}
-.jy-atelier #step-2 #t-deck .tdc-back{transform:none!important;background-image:url('../assets/ui/tarot-back-moon-gold.jpg');border-color:#d8b978!important}
+.jy-atelier #step-2 #t-deck .tdc-back{transform:none!important;background-image:url('../assets/cards/bright-20261011/tarot/back.webp');border-color:#d8b978!important}
 .jy-atelier #step-2 #t-deck .tarot-deck-card{cursor:pointer}
 .jy-atelier .at-last-card{display:flex;align-items:center;gap:16px;min-height:60px;margin:12px 0 20px;padding:12px 14px;border-left:2px solid #d5bd88;background:#1b293955;border-radius:0 12px 12px 0;color:#bbc9da;font-size:.875rem;line-height:1.8;box-sizing:border-box}
 .jy-atelier .at-last-card>div:last-child{min-width:0;flex:1}.jy-atelier .at-last-card small{display:block;color:#a8b9ce;font-size:.75rem;margin-bottom:3px}.jy-atelier .at-last-card strong{display:block;color:#f2ddba;font-size:1rem;font-weight:500}.jy-atelier .at-last-card p{font-size:.875rem;line-height:1.75;margin:4px 0 0;color:#b7c6d6}
@@ -488,3 +488,21 @@ body.jy-atelier{
 .jy-atelier .at-art[data-art=name]{background-image:url('../assets/name/name-scroll.svg');background-size:contain;background-position:center}
 .jy-atelier .at-art[data-art=liuren]{background-image:url('../assets/liuren/liuren-astrolabe.svg');background-size:contain;background-position:center}
 @media(min-width:1001px){.jy-atelier .at-name-card,.jy-atelier .at-liuren-card{grid-column:span 2}.jy-atelier .at-name-card .at-art,.jy-atelier .at-liuren-card .at-art{width:190px}.jy-atelier .at-name-card .at-tool-desc,.jy-atelier .at-liuren-card .at-tool-desc{max-width:30em}}
+
+/* Bright card backs: the same artwork used by the physical drawing scenes. */
+.jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand]){
+ --at-card-back:url('../assets/cards/bright-20261011/tarot/back.webp');position:relative;isolation:isolate;
+ background-image:var(--at-card-back);background-size:42% 63%;background-position:50% 44%;
+ background-repeat:no-repeat;
+}
+.jy-atelier .at-art[data-art=lenormand]{--at-card-back:url('../assets/cards/bright-20261011/lenormand/back.webp')}
+.jy-atelier .at-art[data-art=vedic]{background-image:url('../assets/ui/vedic-astrolabe.svg');background-size:contain;background-position:center}
+.jy-atelier [data-atelier-mode=ootk] .at-input-head .at-art{background-position:50% 44%}
+.jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::before,
+.jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::after{
+ content:'';position:absolute;top:17%;left:29%;width:42%;height:63%;z-index:-1;
+ border:1px solid #d8b978;border-radius:5px;background:var(--at-card-back) center/cover no-repeat;
+ box-shadow:0 4px 10px #0005;transform-origin:50% 88%;
+}
+.jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::before{transform:rotate(-20deg) translateX(-14%)}
+.jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::after{transform:rotate(20deg) translateX(14%)}

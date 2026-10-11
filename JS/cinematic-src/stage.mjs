@@ -111,9 +111,9 @@ export function mountStage(host,kind,options={}){
  if(kind==='tarot'||kind==='lenormand'||kind==='ootk'){
   if(options.mode!=='cards'){
    const back=keep(new T.MeshStandardMaterial({color:'#d9cead',roughness:.58,metalness:.1}));
-   const geom=keep(new T.BoxGeometry(.66,1.07,.014));
-   for(let i=0;i<15;i++){const g=new T.Group();objects.add(g);const body=new T.Mesh(geom,gold);g.add(body);const face=new T.Mesh(keep(new T.PlaneGeometry(.636,1.045)),back);face.position.z=.008;g.add(face);deck.push(g);}
-   loadTexture('assets/ui/tarot-back-moon-gold.jpg',texture=>{back.map=texture;back.color.set('#ffffff');back.needsUpdate=true;});
+   const geom=keep(new T.BoxGeometry(.66,.99,.014));
+   for(let i=0;i<15;i++){const g=new T.Group();objects.add(g);const body=new T.Mesh(geom,gold);g.add(body);const face=new T.Mesh(keep(new T.PlaneGeometry(.636,.966)),back);face.position.z=.008;g.add(face);deck.push(g);}
+   loadTexture('assets/cards/bright-20261011/'+(kind==='lenormand'?'lenormand':'tarot')+'/back.webp',texture=>{back.map=texture;back.color.set('#ffffff');back.needsUpdate=true;});
   }
  }else if(kind==='vedic'){
   // Nine symbolic graha jewels on a crafted instrument, not physical orbits.

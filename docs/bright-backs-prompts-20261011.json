@@ -1,0 +1,39 @@
+{
+  "provider": "OpenAI ImageGen",
+  "date": "2026-10-11",
+  "assets": [
+    {
+      "key": "tarot-back",
+      "asset": "assets/cards/bright-20261011/tarot/back.webp",
+      "sha256": "09477ad16ca01a66ceac243409228aeb100fa0df547193918db72061d7459a4f",
+      "reference_assets": [
+        "assets/ui/tarot-back-moon-gold.jpg",
+        "assets/cards/bright-20261011/tarot/00.webp"
+      ],
+      "prompt": "Redesign the card BACK artwork shown in Image 1 so it belongs to the bright Tarot deck shown in Image 2. Image 1 is the edit target, Image 2 is the style reference only. Return ONE flat, full, edge-to-edge portrait card-back illustration in a 2:3 aspect ratio, ideally 1024 by 1536 pixels. Match the face's luminous ivory paper, delicate antique-gold botanical filigree border, bright sky-blue washes, sage foliage, white daisies and a few lavender blossoms, rendered in the same finely detailed watercolor and gouache style. Replace the dark navy background with luminous pale ivory and softly washed pale blue. The center is an elegant circular full-moon pearl surrounded by a gold eight-point star rosette and a delicate botanical mandala, all centered and balanced. Surrounding gold scrollwork and flowers repeat in a 180-degree rotationally symmetric pattern: the top and bottom are equivalent, the left and right are equivalent, with no visual upright or reversed orientation. Keep the main design clearly readable at thumbnail size. Use an ornate border visually related to the reference face but without its title panels. No people, no landscapes, no card ranks, no numbers, no writing, no title, no logo, no watermark, no dark corners, no mockup, no hands, no stacked cards. Opaque background. Fill the complete rectangle with the finished card-back art.",
+      "generated_png": "exec-ae2054b1-54b9-4148-a303-dcb05d12f4e1.png"
+    },
+    {
+      "key": "lenormand-back",
+      "asset": "assets/cards/bright-20261011/lenormand/back.webp",
+      "sha256": "36ef95217b72493bf68d7385da8ceb04f12c38597a68e6dc6378c9238fe45170",
+      "reference_assets": [
+        "assets/ui/tarot-back-moon-gold.jpg",
+        "assets/cards/bright-20261011/lenormand/01.webp"
+      ],
+      "prompt": "Redesign the card BACK artwork shown in Image 1 for the bright Lenormand deck shown in Image 2. Image 1 is the edit target, Image 2 is the style reference only. Return ONE flat, full, edge-to-edge portrait card-back illustration in a 2:3 aspect ratio, ideally 1024 by 1536 pixels. Match the face's luminous warm ivory, fine gold botanical border, sunny light, watercolor and gouache brushwork, clear pale sky-blue, sage foliage, white meadow flowers, peach and lavender accents. Replace the black or dark navy with bright ivory and airy pale sage-blue watercolor. The center is an elegant gold botanical compass rosette with a softly glowing pearl and an eight-petal flower wreath; the decoration should feel like a sunlit meadow in miniature, while remaining abstract card-back ornament. Use delicate gold stems and tiny flowers in an ornamental frame related to the reference Lenormand border. Make the pattern 180-degree rotationally symmetric, with equivalent top and bottom, so there is no visual upright or reversed orientation. Harmonize it with the Tarot back through the same ivory/gold palette, while giving this deck its own airy botanical character. Keep the center clearly readable at thumbnail size. No people, no landscapes, no animals, no card ranks, no numbers, no writing, no title, no logo, no watermark, no dark corners, no mockup, no hands, no stacked cards. Opaque background. Fill the entire rectangle with the finished back art.",
+      "generated_png": "exec-941cb438-823f-49df-87db-d1c1c14069c8.png"
+    },
+    {
+      "key": "bright-deck-hero",
+      "asset": "assets/share/moon-atelier-bright-20261011.webp",
+      "sha256": "62fa77cb2dd80ace1eed70d06035a34c45e11e6d3c4aa897972f0a7e3c24e23d",
+      "reference_assets": [
+        "assets/share/moon-atelier-20260911.webp",
+        "exec-ae2054b1-54b9-4148-a303-dcb05d12f4e1.png"
+      ],
+      "prompt": "Edit image 1 only: preserve its landscape 3:2 composition, 3D golden crescent moon, delicate gold orbit frame, dark atmospheric blue stage, black-and-gold pedestal, perspective, lighting, and the exact positions and angles of its three floating cards. Replace ALL THREE visible dark navy card backs with the bright card-back design in image 2: luminous ivory paper, pale sky-blue watercolor, sage leaves, white daisies, soft lavender flowers, ornate thin gold border, and the full pale moon in the center. Closely transfer the specific artwork in image 2 onto all three cards as a real physical paper texture, following perspective on each card, with soft reflected golden lighting. The visible cards must read clearly as cream and pastel blue instead of navy. Keep other scene objects and the navy background intact so this remains the same branded hero illustration, with bright decks matching the new card faces. No added words, lettering, numbers, logos or extra objects. Deliver polished wide 1536x1024 image, opaque background.",
+      "generated_png": "exec-5dd8894f-ce07-49fb-ab5a-c80ce747df28.png"
+    }
+  ]
+}

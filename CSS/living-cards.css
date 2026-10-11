@@ -1,12 +1,12 @@
-/* Moon-gold living deck. Only inner artwork moves; native scrolling stays fixed. */
+/* Bright watercolor living deck. Only inner artwork moves; native scrolling stays fixed. */
 .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tarot-deck-card-inner{
  border-radius:9px;isolation:auto;
  transform:none!important;transform-style:flat!important;backface-visibility:visible!important;
  box-shadow:1px 1px #f5db9e,2px 3px #836332,3px 5px #161a29,0 10px 17px #0009,0 0 15px #d6b46513;
 }
 .jy-atelier #step-2 #t-deck[data-deck-mode=native] .tdc-back{
- background-image:url('../assets/ui/tarot-back-moon-gold.jpg')!important;
- background-color:#0d1720!important;transform:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;
+ background-image:url('../assets/cards/bright-20261011/tarot/back.webp')!important;
+ background-color:#fff6df!important;transform:none!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;
  border-color:#d4b56caa!important;border-radius:8px;
  box-shadow:inset 0 0 0 1px #f6de9c22,0 0 8px #e7c27813;
 }
