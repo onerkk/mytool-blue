@@ -1,0 +1,312 @@
+{
+  "release": "20261014practice21",
+  "status": "passed",
+  "research": {
+    "namedAuthors": 7,
+    "documentsRead": 8,
+    "index": "docs/practitioner-research-20261014.md",
+    "scope": "Authored public pages, video transcript and publisher sample; not independent proof of case history or predictive efficacy."
+  },
+  "actualPromptExports": {
+    "release": "20261014practice21",
+    "status": "passed",
+    "methods": [
+      {
+        "method": "bazi",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 40000,
+        "chartUnchanged": true
+      },
+      {
+        "method": "ziwei",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 49596,
+        "chartUnchanged": true
+      },
+      {
+        "method": "astro",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 19488,
+        "chartUnchanged": true
+      },
+      {
+        "method": "vedic",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 172931,
+        "chartUnchanged": true
+      },
+      {
+        "method": "liuren",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 53579,
+        "chartUnchanged": true
+      },
+      {
+        "method": "liuyao",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 15442,
+        "chartUnchanged": true
+      },
+      {
+        "method": "yijing",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 14750,
+        "chartUnchanged": true
+      },
+      {
+        "method": "meihua",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 11965,
+        "chartUnchanged": true
+      },
+      {
+        "method": "name",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 19607,
+        "chartUnchanged": true
+      },
+      {
+        "method": "compat",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 23947,
+        "chartUnchanged": true
+      },
+      {
+        "method": "personality",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 8842,
+        "chartUnchanged": true
+      },
+      {
+        "method": "tarot",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 8089,
+        "chartUnchanged": true
+      },
+      {
+        "method": "lenormand",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 10340,
+        "chartUnchanged": true
+      },
+      {
+        "method": "ootk",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 17082,
+        "chartUnchanged": true
+      },
+      {
+        "method": "oracle",
+        "status": "passed",
+        "isolatedExamples": 1,
+        "characters": 11869,
+        "chartUnchanged": true
+      }
+    ],
+    "fiveCardSnapshot": {
+      "question": "今年會發生非現任的肉體關係嗎？",
+      "ids": [
+        76,
+        48,
+        71,
+        22,
+        77
+      ],
+      "positions": [
+        "目前事件狀態",
+        "促成事件成立的力量",
+        "阻礙事件成立的力量",
+        "可介入的方向",
+        "截至2026年的事件成立傾向"
+      ],
+      "directions": [
+        "逆位",
+        "正位",
+        "逆位",
+        "正位",
+        "正位"
+      ],
+      "factsUnchanged": true,
+      "exampleCardsExcludedFromFacts": true
+    },
+    "staleGuide": "passed",
+    "bareLiuren": "passed",
+    "fullAnnualAndOOTKCoverage": "passed",
+    "apiStyle": "passed",
+    "scope": "Actual local exporters and recorded card data; no live external-model response or prediction accuracy claim."
+  },
+  "productionClipboard": {
+    "browser": "153.0.8010.0",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": "passed",
+    "copiedCharacters": 16222,
+    "voice": true,
+    "narrativePolicy": true,
+    "isolatedExample": true,
+    "proactiveFindings": true,
+    "compoundQuestion": true,
+    "cardCount": 7,
+    "errors": [],
+    "missing": [],
+    "scope": "Actual production index and clipboard/export click in headless Chromium; no external AI response requested."
+  },
+  "checks": [
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-depth-regression-20260927.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-workflow-integration-20260924.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/prompt-integrity-20261010.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-integrity-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-grounding-20260924.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/direct-reading-20260922.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/comprehensive-reading-20261001.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/counsel-voice-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/ootk-five-layer-reading-20261005.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/practitioner-narrative-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/mobile-ritual-actions-20260928.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/ootk-reading-pipeline-20261005.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/depth-contract-r12-20261004.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/engine-core-completion-r13-20261004.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/engine-evidence-r14-20261004.cjs",
+      "exitCode": 0
+    }
+  ],
+  "generatedCopies": "passed: scripts/sync-recommendation-guides.cjs --check",
+  "scope": "Prompt delivery, original data, fallback behavior and composition instructions. No live external-model response or prediction accuracy claim.",
+  "syntaxChecks": {
+    "status": "passed",
+    "checkedFiles": [
+      "sw.js",
+      "prompt-export.js",
+      "lenormand.js",
+      "bazi-prompt-root.js",
+      "ai-analysis.js",
+      "native-depth-contract.js",
+      "prompt-packet.js",
+      "bazi-suite-core.js",
+      "ziwei-prompt-root.js",
+      "meihua-standalone.js",
+      "prompt-brief.js",
+      "oracle.js",
+      "tests/comprehensive-reading-20261001.cjs",
+      "tests/question-model-regression-20260927.cjs",
+      "tests/ootk-reading-pipeline-20261005.cjs",
+      "tests/practitioner-narrative-20261014.cjs",
+      "tests/engine-core-completion-r13-20261004.cjs",
+      "tests/engine-evidence-r14-20261004.cjs",
+      "tests/depth-contract-r12-20261004.cjs",
+      "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "tests/counsel-voice-20261014.cjs",
+      "tests/ootk-browser-20260915.cjs",
+      "tests/reader-voice-20260923.cjs",
+      "tests/reading-integrity-20261014.cjs",
+      "tests/reading-depth-regression-20260927.cjs",
+      "tests/mobile-ritual-actions-20260928.cjs",
+      "tests/ootk-five-layer-reading-20261005.cjs",
+      "scripts/sync-recommendation-guides.cjs",
+      "workers/ai-proxy.js",
+      "JS/gua-prompt.js",
+      "JS/reading-quality.js",
+      "JS/sw.js",
+      "JS/prompt-export.js",
+      "JS/lenormand.js",
+      "JS/bazi-prompt-root.js",
+      "JS/ai-analysis.js",
+      "JS/western-prompt.js",
+      "JS/ziwei-standalone.js",
+      "JS/native-depth-contract.js",
+      "JS/reading-workflow.js",
+      "JS/vedic-prompt.js",
+      "JS/relationship-core.js",
+      "JS/prompt-packet.js",
+      "JS/name-prompt.js",
+      "JS/bazi-suite-core.js",
+      "JS/ziwei-prompt-root.js",
+      "JS/meihua-standalone.js",
+      "JS/prompt-brief.js",
+      "JS/liuren-prompt.js",
+      "JS/oracle.js",
+      "functions/api/ai.js"
+    ],
+    "removedFiles": [],
+    "historicalReportsPreserved": true
+  }
+}

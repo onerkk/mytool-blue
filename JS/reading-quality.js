@@ -1,4 +1,4 @@
-/* Reading contract v11.0: answer-first output backed by complete, method-native evidence review. Never changes a cast. */
+/* Reading contract v12.0: practitioner-informed composition with native evidence and isolated examples. Never changes a cast. */
 (function(root){
   'use strict';
   var RECOMMENDATION_TEXT='【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
@@ -27,7 +27,7 @@
     var guides=selected.map(function(k){k=k==='western'?'astro':k;if(used[k]||!RECOMMENDATION_METHODS[k])return '';used[k]=true;return RECOMMENDATION_METHODS[k];}).filter(Boolean);
     return [RECOMMENDATION_TEXT,guides.length?'【本法選材提醒】\n'+guides.join('\n'):''].filter(Boolean).join('\n');
   }
-  var READING_VERSION='11.0.0';
+  var READING_VERSION='12.0.0';
   var PLAIN_TEXT=[
   "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話。第一句就回答原問題，給出有依據的方向、真正卡點與關鍵條件，再深入解釋當事人為何會遇到這種拉扯、機會或阻力。語氣自然、穩重、坦白，不假裝真人資歷，也不以安慰取代判斷。",
   "【解惑的成稿方式】用連貫段落說清事情，依原問題命名必要的小標；不要照表輸出「結論、最強支持、最強反證、分層判讀、推翻條件」等固定報告欄位。以下核對流程是判讀依據，不是正文目錄；有據的理由、矛盾及限制要融進對話。使用者指定表格、列舉、逐年或逐輪時保留所需覆蓋。",
@@ -47,7 +47,17 @@
   "【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。",
   "【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。"
 ].join('\n');
-  var FINAL_VOICE='【成稿檢查】以自然、深入的解惑方式回答全部子題，術語緊接白話與具體作用。把重要支持、牽制與可改變條件融進段落，不照核對表列固定欄位；使用者未問但有據的重要發現也須提醒，說清關聯、範圍與可採做法。保留未知，不把假設寫成經歷，也不重複同一結論。';
+  var NARRATIVE_POLICY=[
+    '【解惑鋪陳｜正文優先規則】先說你對原問句較支持的判斷及最關鍵的限制，再圍繞當事人真正要決定的事深入展開。以實際盤面說明：為什麼會有這股力量、它如何受到另一股力量牽制、最後較支持怎樣的結果。這是內容承接，不是固定段落名稱。',
+    '【整體解說，不按資料順序朗讀】正常問事不以「現況：某牌／助力：某牌／阻礙：某牌／建議：某牌／結果：某牌」逐張成稿，也不逐宮、逐星、逐十神寫百科。把互相作用的位置放進同一段，讓每段解開一個疑問。必要小標以當事人的議題命名；只有明示教學、逐牌、逐宮、逐年或逐輪要求才依其順序完整覆蓋。',
+    '【主判必須收斂】同一位置有兩種相反讀法時，用全局、實際角色、阻礙與時間比較，指出較支持哪個及理由。真的不能分辨就說是哪條關鍵資料或作用未決，保留未知；不得只列「讀法一／讀法二」就結束，也不以「有機會、看你主不主動」代替事件判斷。若有機會，說清機會的依據及尚未成立的環節。',
+    '【目前走向與條件推演分開】先判維持目前條件的走向，再解釋建議如何處理實際阻礙，以及哪些改變只屬有條件的推演。建議位不當作已發生的結果；不能先用建議推定機會已存在，再用那個機會證明結果。當事人能調整的投入與對方、環境的決定分開，不把未發生全歸咎於使用者。',
+    '【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生，不能退換成一般桃花、好感或交往；「親密接觸」保留原句，不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子要明示為待核對的情境。',
+    '【重要提醒自然接上】有重要且有據的額外發現，順著已說清的矛盾、資源或轉折深入提醒，說明它為何值得注意及如何應對，不強制另開「主動提醒（有據的幾點）」欄位。安全、同意及實務提醒可以必要時說明，但須與盤面判讀分清；不以通用提醒湊成新的盤面發現。',
+    '【數字與成稿核對】本份資料未列問事日期時，不擅算「距年底剩幾天／幾週」。成稿檢查每個重要主張是否回到原題、每個關鍵位置是否參與整體解釋、相反讀法是否已收斂、所稱背景是否本次提供。解說可深入，不能靠重複術語、責任提醒或同一結論加長。',
+    '【示範隔離】下列成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面，也不是新增或先前個案。只學習如何承接理由，示例的牌曜、人物、情境、時間與結論全部禁止移入本題；本次答案依本次實際資料獨立判讀。'
+  ].join('\n');
+  var FINAL_VOICE='【成稿檢查】先答清原句，再以自然、深入的解惑段落串起實際作用、最重要牽制與可改變條件，術語緊接白話。不要逐張／逐宮交作業；相反讀法須比較並收斂，真未決就指出具體缺口。逐年／逐輪等明示覆蓋保持完整。主動提醒重要且有據的發現，不把通用提醒當新證據；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。';
   // Native methods are analysis references, not a mandatory response outline.
   var METHODS={
   "tarot": [
@@ -56,7 +66,8 @@
     "全盤先形成主線，再找最能回答子題的牌位關係。結果與原因、阻礙、建議合讀；建議說明如何介入，不等於事情已發生。",
     "牌的本義由位置和組合限定；花色、元素與重複圖像只作背景，同一牌在多個關係出現不增加獨立證據。",
     "正文以關鍵組合承接答案，點出涉及的牌名、實際方向及位置即可；全盤檢視不等於每張都要各寫一段。",
-    "把阻礙牌如何限制結果、建議牌如何改變條件連起來。若問題問能否發生事件，情緒牌只能支持感受層面，還須找行動與結果位置；不能用『有好感』替代『會主動交往』。有利牌與不利牌先判在說哪個層面，不以張數相抵。"
+    "把阻礙牌如何限制結果、建議牌如何改變條件連起來。若問題問能否發生事件，情緒牌只能支持感受層面，還須找行動與結果位置；不能用『有好感』替代『會主動交往』。有利牌與不利牌先判在說哪個層面，不以張數相抵。",
+    "問性關係、成交或錄取等具體事件，先核結果位支持的是實際成立、維持現狀還是只提供資源，再與阻礙及助力合讀。權杖王牌在建議位不證明性關係會發生；未出現惡魔、戀人等特定牌也不能當作不發生的證據。不能從金幣牌補造工作、輪班、收入或人物身分。"
   ],
   "ootk": [
     "【開鑰之法：依實際版本與完成紀錄】Mathers 原稿五次操作與 Liber LXXVIII 驗題版分開；Ace 計數、配對、第四輪起點及停止條件依本次版本，不互套。",
@@ -339,11 +350,30 @@
   "personality": "已算功能通路中重要的長處、壓力模式和情境差異，即使未問也指出，提供可核對的行為與練習；模型不能替本人診斷或捏造經歷。"
 };
   function voiceProactive(){return "【重要發現主動提醒】完整檢視本次有效盤面。即使使用者沒問，重要且有實際依據的機會、牽制、轉折或反覆模式，也應主動說清它與當事人的關聯、影響範圍、可觀察跡象及應對；按重要性完整交代，不硬限項數。短期卦牌只提醒本次事情及連帶條件，本命盤才可談相應人生面向。沒有重要發現不湊項，不由單一凶名預告災難。";}
-  function methodLines(kind){kind=kind==='western'?'astro':kind;return (METHODS[kind]||[]).concat(SYNTHESIS[kind]||[],DEPTH[kind]||[],CLAIM_BOUNDARIES[kind]?[CLAIM_BOUNDARIES[kind]]:[],PROACTIVE_METHODS[kind]?['【本法重要發現與解惑方式】'+PROACTIVE_METHODS[kind]]:[],[FINAL_VOICE]);}
+  // These original hypothetical examples teach composition. They are never chart facts.
+  var NARRATIVE_EXAMPLES={
+    tarot:{setup:'假設問合作能否落實；現況金幣三正位、阻礙寶劍二正位、建議正義正位、結果戰車正位。',text:'這次合作較支持能往前推，但決策懸著會拖住進度。金幣三在現況位，讓合作有共同做事的基礎；寶劍二卻把這份基礎卡在尚未決定的事情上，所以戰車的推進力還要看方向是否一致。正義放在建議位，對準的是先說清權責與標準，而不是替你保證對方會答應。若雙方能確認分工，這條路徑就比較能落實；若關鍵決定仍被擱置，就要降低對目前結果的期待。'},
+    ootk:{setup:'假設五輪均有效：前兩輪支持交流，第三輪出現承接阻點，第四輪完整環故事延續同一阻點，第五輪偏向保留；人物歸屬未確認。',text:'這五輪較支持交流仍在，但進一步落實受阻。第一、二輪帶出的互動，到了第三輪沒有順利接成行動；第四輪的完整環故事又讓同一阻力持續，第五輪因此收在保留，而不能只拿前兩輪的吸引判成立。這裡也值得留意：後面三輪在修正前面的期待。人物尚未綁定，所以這是互動場的方向，不能說某個人已決定拒絕；若承接條件實際改善，才有理由重看結果。'},
+    lenormand:{setup:'假設短線為信、山、鑰匙；原題問一項申請是否能推進，沒有確切應期資料。',text:'這項申請較像先遇到阻點，再找得到處理方向。信帶出的消息被山隔住，鑰匙接在後面，讓整句重點落在找到辦法突破，而不是收到訊息就等於申請通過。值得你留意的是，關鍵在消息之後要處理什麼：若實際通知要求補件，就確認缺項和期限；若沒有這類通知，也不要把補件當成已發生的事。牌句能說這段推進方式，不能替你定出未算的通過日期。'},
+    bazi:{setup:'假設原局已核實有財的機會，但承接通路受阻；已算當期運勢增加負荷，沒有實算後續轉機。',text:'目前較需要先顧承接能力，再談把機會做大。原局裡的財並非毫無作用，但把資源接成成果的通路受到牽制，當期運势又增加負荷，所以機會與壓力會一起來。這不等於你賺不了錢；它提醒的是這個階段的投入和回收是否相稱。若現實中有新合作，就先核工時、成本與回款，不因看見財便一口氣接下來。未來哪時鬆動仍要有後續歲運資料，不能憑安慰給年份。'},
+    compat:{setup:'假設A、B原局與同時段運期均已算：A偏向推進、B需要較慢的協調，支持與牽制均有定位。',text:'這段互動較支持有互補，但步調差異需要處理。A這邊的推進力量能讓事情開始，B的結構卻需要更多整理空間；兩者接得好是分工，接不好則可能一方催、一方退。這種相處情境仍待你們核對，不能說它已經發生。若確實有這個循環，可以先約定決策期限與各自負責的部分；若實際互動一直順暢，就應降低對這條牽制的解讀，不能硬套。'},
+    ziwei:{setup:'假設切題宮組有支持，已核四化牽動另帶負荷；本命與當期運限均有資料。',text:'這段時間較支持有發展空間，但成果和承擔會一起增加。切題宮組的支持讓你有可用資源，四化牽動卻把壓力帶到另一個已定位的領域，所以不能只看到有利就忽略代價。本命說的是反覆面對的模式，當期運限才指出這次哪一環被帶動。還有一件事值得注意：若現實中已有額外責任，就要確認資源能不能跟上；未出現時只當核對方向，不把它寫成你正在承受的事。'},
+    meihua:{setup:'假設本卦用生體、互卦有牽制、變卦顯示條件轉向；本次未算日曆應期。',text:'這件事較像起初有助力，中途要處理一個轉折。用生體讓開始的條件有利，但互卦的牽制說明，助力不會一路原樣維持；變卦又讓後面的條件轉向，所以眼前順利仍要看中間怎樣承接。你能介入的是已定位的那一環，不能只等吉象自動成事。若現實開始出現對應的變化，就先核它是否真與卦中的阻點相符，再調整做法；目前資料只支持過程，不支持確切日期。'},
+    liuyao:{setup:'假設取用已確認、用神有生扶，同時有有效動爻牽制；是否解除須看明列條件。',text:'這件事較支持具備條件，但目前那道牽制還不能略過。用神得到生扶，是事情能承接的理由；有效動爻卻對它形成限制，所以助力與阻點在說同一個結果，不能相抵後只剩一句吉凶。若已列的解除條件成立，才有理由往落實看；條件未到，就應保留阻滯的主判。值得你注意的是能處理哪一項現實配合，不能把一個六親名稱直接說成某個人正在阻擋。'},
+    yijing:{setup:'假設主讀辭強調守住條件，參讀辭提醒調整後才可前進；本次主次取辭已明列。',text:'這一卦較支持先把條件整好，再往前走。主讀的提醒落在眼前應守住什麼，參讀則補上改變局面的方向，因此暫停和進取並不矛盾：要看中間那個條件有沒有處理好。你現在可做的是把原題中的準備與限制逐項確認，而不是把守當成永遠不能動。若條件仍未齊，就保留眼前的克制；若已改善，參讀的進取才有實際落腳處。'},
+    oracle:{setup:'假設完整籤詩的主意為待時，但同時要求準備；沒有確切月份依據。',text:'這支籤較支持先準備，暫時不急著定案。詩裡的等待與後面的轉折放在一起看，提醒的不是什麼都不做，而是讓準備能接住時機；只挑後半段好話，就會漏掉前面的條件。若現實中還有未確認事項，就先把它釐清。另要留意，籤詩的典故是理解處境的參照，不代表你已經歷相同故事；詩意也不能替這件事排出沒有依據的月份。'},
+    astro:{setup:'假設本命有兩股需求拉扯，已算行運觸動其中一端；本次沒有對方資料。',text:'這個階段較需要調整兩種需求之間的安排。你本命的兩股力量都有效，行運卻讓其中一端更迫切，因此會出現想改變、又仍需要原有支持的張力。這是星盤提供的理解，不代表你已做出某個決定。若現實確有拉扯，就把當前能調整的安排與暫時無法改變的條件分開；也別把這個階段的需求當成終身性格。沒有對方資料，不能從你的相位替對方回答心意。'},
+    vedic:{setup:'假設D1與切題分盤有可承接結構，已算運期觸發一端，但仍有明列限制。',text:'這段運期較支持有發揮空間，但需要把那項承接條件顧好。D1提供基礎，切題分盤讓這份基礎在原題裡有落點，運期又把其中一端帶動；限制也仍在，所以不能看見一個Yoga就說結果必然發生。另值得留意的是當期機會伴隨的負荷，若現實有對應安排，就先檢查能不能承擔。未算的後續運期保持未知，不借別的分盤或流派替它補上答案。'},
+    name:{setup:'假設兩候選名的筆畫來源一致，但A有多音字、B辨識清楚；數理評價存在差異。',text:'若你的優先是日常使用方便，這兩個名字較支持選辨識清楚的B。A的多音字可能讓自我介紹多一道確認，這個使用成本比單看數理吉凶更具體；B在這點上較省力。數理差異仍可列作傳統象義，但不足以保證改名後的事業或感情。你也可以先找幾位不熟悉名字的人試讀，確認誤讀是否真的常見，再決定這項差異對你重不重要。'},
+    liuren:{setup:'假設初傳得支持、中傳有已核牽制、末傳落點受到同一條件限制；沒有候選應期日。',text:'這件事較支持能起頭，但中間能否接住會決定後面的結果。初傳的支持提供開始的條件，中傳卻帶出已核的牽制，末傳因此不能脫離它單獨判好。三傳合起來，提醒的是開始有動靜與最後落實之間仍隔著一環。若現實有相應配合，就先核它能否處理這個阻點；不能靠一個課名認定某人做了什麼。沒有實算候選日，目前只說成立條件，不給發生日。'},
+    personality:{setup:'假設已算通路支持資訊整理，但快速切換情境有較高負荷；無心理疾病診斷資料。',text:'這份結果較支持你在整理資訊時容易發揮，但快速切換可能增加負荷。兩者合起來看，重點是安排合適的工作方式，不是用一個人格名稱限制自己。若你實際有這種差異，可以試著把相近任務集中，再觀察效率和感受；若沒有，就不要硬把模型當成你的經歷。另值得留意的是優勢需要怎樣的環境才能持續，而不是把負荷說成疾病或缺陷。'}
+  };
+  function narrativeExample(kind){kind=kind==='western'?'astro':kind;var v=NARRATIVE_EXAMPLES[kind];return v?{schema:'jy.voice-example/1',status:'illustrative_only',method:kind,setup:v.setup,text:v.text}:null;}
+  function methodLines(kind){kind=kind==='western'?'astro':kind;var ex=narrativeExample(kind);return (METHODS[kind]||[]).concat(SYNTHESIS[kind]||[],DEPTH[kind]||[],CLAIM_BOUNDARIES[kind]?[CLAIM_BOUNDARIES[kind]]:[],PROACTIVE_METHODS[kind]?['【本法重要發現與解惑方式】'+PROACTIVE_METHODS[kind]]:[],ex?['【原創成稿示範｜只學鋪陳，不是本次資料】'+JSON.stringify(ex)]:[],[FINAL_VOICE]);}
   function payloadGuide(kinds){
     var selected={};
     (kinds||[]).forEach(function(kind){if(METHODS[kind])selected[kind]=methodLines(kind);});
-    return {version:READING_VERSION,answerStyle:PLAIN_TEXT+'\n'+TRUTH_POLICY,methods:selected,
+    return {version:READING_VERSION,answerStyle:PLAIN_TEXT+'\n'+NARRATIVE_POLICY+'\n'+TRUTH_POLICY,methods:selected,
       synthesis:'先以實際提供資料的各系統各自完成主判、正反證與成立條件，再比較它們回答的是同一命題、不同層面或不同時間。選最能直接回答本題的主線，說明共識與衝突各來自哪組依據，形成主次清楚的綜合結論；系統數量與同源訊號不作多數投票。複雜題不可只列各法結論，須解釋關鍵證據如何支持、限制或改變答案。',
       reportPolicy:'全盤完整覆蓋本法有效結構與各面向；指定逐年題每年列運期、議題、象徵順阻與影響程度、依據、條件及行動，不省略年度或造精確事件。',
       dataPolicy:'原始盤面、個案背景與衍生模型分開；本方法資料包提供閱讀上下文，沒有相應盤面時不啟用該系統；只用本次資料，不引用帳號記憶、其他對話或先前生成結論。'};
@@ -374,7 +404,8 @@
   }
   function recommendationPolicy(kinds){return {mode:'needs_first',version:'5.0.0',requiredForValidReading:true,exceptExplicitSafetyNeeds:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
   function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n'+SHOP_FOOTER;}
-  function lines(kind){return [PLAIN_TEXT,TRUTH_POLICY,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'5.0.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},proactivePolicy:function(){return voiceProactive();},truthPolicy:function(){return TRUTH_POLICY;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  // Preserve the legacy [0]=voice, [1]=truth slots used by standalone hosts.
+  function lines(kind){return [PLAIN_TEXT,TRUTH_POLICY,NARRATIVE_POLICY,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
+  root.JY_READING_QUALITY=Object.freeze({version:'5.1.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},narrativePolicy:function(){return NARRATIVE_POLICY;},narrativeExample:narrativeExample,proactivePolicy:function(){return voiceProactive();},truthPolicy:function(){return TRUTH_POLICY;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

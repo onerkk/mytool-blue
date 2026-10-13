@@ -39,7 +39,7 @@ const readingTargets=[
   ['JS/western-prompt.js','JY_READING_WESTERN',q.lines('astro').join('\n')],
   ['JS/relationship-core.js','JY_READING_RELATIONSHIP',q.lines('compat').concat(q.methodLines('bazi'),q.methodLines('ziwei')).join('\n')],
   ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().flatMap(k=>q.methodLines(k)).join('\n')],
-  ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()+'\n'+q.truthPolicy()]
+  ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()+'\n'+q.narrativePolicy()+'\n'+q.truthPolicy()]
 ];
 const mirrors=['native-rule-sources.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
@@ -92,7 +92,7 @@ const workflowFile='JS/reading-workflow.js',workflowOld=fs.readFileSync(path.joi
 const methodGuides='  // BEGIN GENERATED WORKFLOW METHOD GUIDES\n  var METHOD_GUIDES = '+JSON.stringify(Object.fromEntries(q.methodKinds().map(k=>[k,q.methodLines(k)])),null,2)+';\n  // END GENERATED WORKFLOW METHOD GUIDES\n';
 persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides));
 const voiceOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
-const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
+const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText()+'\n'+q.narrativePolicy())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
 persist(workflowFile,voiceOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW VOICE GUIDE\n[\s\S]*?  \/\/ END GENERATED WORKFLOW VOICE GUIDE\n/,()=>voiceBlock));
 const workflowSource=fs.readFileSync(path.join(root,'JS/reading-workflow.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
 for(const file of workflowTargets){
@@ -101,12 +101,19 @@ for(const file of workflowTargets){
   const re=/\/\/ BEGIN GENERATED WORKFLOW\n[\s\S]*?\/\/ END GENERATED WORKFLOW\n/;
   persist(file,re.test(old)?old.replace(re,()=>block):block+old);
 }
+// Retain the same requested time scope when the shared guide is unavailable.
+const scopeFile='JS/bazi-suite-core.js',scopeOld=fs.readFileSync(path.join(root,scopeFile),'utf8');
+const scopeBlock='// BEGIN GENERATED TIME SCOPE\nvar JY_SCOPE_BAZI = (function(){\n'+
+  'function numeral(value){var s=String(value||" ").trim().replace(/兩/g,"二");if(/^\\d+$/.test(s))return Number(s);var digits={零:0,一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9};if(s==="十")return 10;if(s.indexOf("十")>=0){var a=s.split("十");return (a[0]?digits[a[0]]:1)*10+(a[1]?digits[a[1]]:0);}return digits[s];}\n'+
+  'var reportScope='+q.reportScope.toString()+';\nreturn '+q.timeScope.toString()+';\n})();\n// END GENERATED TIME SCOPE\n';
+const scopeRe=/\/\/ BEGIN GENERATED TIME SCOPE\n[\s\S]*?\/\/ END GENERATED TIME SCOPE\n/;
+persist(scopeFile,scopeRe.test(scopeOld)?scopeOld.replace(scopeRe,()=>scopeBlock):scopeBlock+scopeOld);
 // Standalone exports use the same OOTK reader and depth contract even when
 // their host does not load the normal analysis bundle. Never hand-maintain a
 // second OOTK prompt or let a cached older reader replace this release.
 const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
   ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
-  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth20",undefined,{numeric:true})<0']
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth21",undefined,{numeric:true})<0']
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);
@@ -122,5 +129,8 @@ const ootkRuntime='// BEGIN GENERATED OOTK RUNTIME\nconst OOTK_RUNTIME = {};\n'+
 const apiPath='functions/api/ai.js',apiOld=fs.readFileSync(path.join(root,apiPath),'utf8');
 const runtimeRe=/\/\/ BEGIN GENERATED OOTK RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK RUNTIME\n/;
 persist(apiPath,runtimeRe.test(apiOld)?apiOld.replace(runtimeRe,()=>ootkRuntime):ootkRuntime+apiOld);
+// The independently deployed Worker must send the exact same server prompt.
+const workerSource='// GENERATED by scripts/sync-recommendation-guides.cjs; edit functions/api/ai.js instead.\n'+fs.readFileSync(path.join(root,apiPath),'utf8').trimEnd()+'\n\nexport default { fetch(request, env) { return onRequest({ request, env }); } };\n';
+persist('workers/ai-proxy.js',workerSource);
 if(failed)process.exitCode=1;
 else console.log('Reading v'+q.readingVersion+' / recommendation v'+q.version+': '+(process.argv.includes('--check')?'all generated copies match':updated+' files synchronized'));

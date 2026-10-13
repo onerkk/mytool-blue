@@ -7,7 +7,7 @@ const expected = [
   'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'liuren', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '11.0.0');
+assert.equal(quality.readingVersion, '12.0.0');
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();
@@ -33,7 +33,7 @@ for (const kind of expected) {
   assert(quality.methodLines(kind).length >= 2, `${kind} retains method-specific interpretation depth`);
   assert(quality.lines(kind).join('\n').includes('證據完整度'), `${kind} carries the evidence audit into the actual method prompt`);
   const payload = quality.payloadGuide([kind]);
-  assert.equal(payload.answerStyle, answerStyle+'\n'+quality.truthPolicy(), `${kind} API payload uses the same answer style`);
+  assert.equal(payload.answerStyle, answerStyle+'\n'+quality.narrativePolicy()+'\n'+quality.truthPolicy(), `${kind} API payload uses the same complete answer style`);
   assert(payload.methods[kind].length >= 2, `${kind} API payload retains its method guide`);
   const recommendation = quality.recommendationText(kind);
   assert(recommendation.includes('【本題延伸手鍊建議】'), `${kind} includes the bracelet recommendation`);
