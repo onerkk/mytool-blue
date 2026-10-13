@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:semantic-review-followup
+> node tests/semantic-review-followup-20260928.cjs
+
+semantic, structure, and forecast-review regressions passed

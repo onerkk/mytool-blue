@@ -1,0 +1,104 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:cinematic
+> node tests/cinematic-20260911.cjs && npm run test:shuffle-recovery
+
+✓ All nine experiences have an actor and complete local transparent atlas
+✓ 3D deck moves through stack, split, interleave and fan without calling reading randomness
+✓ Touch gestures drive the scene; no card draw or completion happens before explicit exit
+✓ Wrong gesture direction does not instantly complete; pointer cancellation resets progress
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:40)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:8
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+[JYRitual scene] Error: WebGL2 unavailable
+    at Object.mount (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:48)
+    at Object.play (ritual-ateliers:332:88)
+    at /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:52:139
+    at async test (/workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:7:34)
+    at async /workspace/scratch/69d127f9cd42/work/mytool-blue-master/tests/cinematic-20260911.cjs:50:2
+✓ A renderer failure never blocks any ritual, and cancellation invalidates pending phase callbacks
+✓ Four-pillar and relationship inputs retain original nodes/values; validation can reveal any earlier field
+✓ Lenormand four sections become three steps; a rerender resumes spread selection
+✓ No WebGL context: real Three.js mount returns usable fallback and removes allocated DOM
+✓ All seven scenes release their Three.js geometries, textures, listeners and frame loop; late loads cannot resurrect them
+✓ Changing Tarot to Opening of the Key updates the guide without touching the question
+cinematic: 10 groups passed; WebGL pixels and physical-device rendering remain unverified.
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:shuffle-recovery
+> node tests/shuffle-recovery-20260911.cjs
+
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Home animation failure cannot prevent opening or finishing the shuffle
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Phase initialization failure falls back to the illustrated ritual, never to a completed draw
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure after mounting rolls back its lock; the same visible button retries the same question and deck
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Failure before a dialog attaches releases the lock and leaves body scrolling intact
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ A mixed-version caller throwing after play is cancelled without invoking return-to-input
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+✓ Deck preparation failure retries locally without changing question, spread or session epoch
+✓ All seven rituals complete once despite scene disposal and home-resume failures
+✓ Mid-gesture GPU errors leave user-led completion and cancellation available
+✓ Actual home scene clears a failed renderer before suspension, hover or remount can affect a ritual
+✓ Real Three.js resources are still released when renderer.dispose throws
+shuffle-recovery: 10 groups passed (fault injection, not phone-specific error reproduction).

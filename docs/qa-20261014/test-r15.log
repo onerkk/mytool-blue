@@ -1,0 +1,15 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r15
+> node tests/ziwei-config-r15-20261004.cjs
+
+PASS 160 independent iztro 2.6.1 reference charts: both genders, eight configurations, all natal positions and 48 decorative entries
+PASS Li-chun switches only at the actual clock boundary, independently for natal and horoscope years
+PASS Foreign civil clocks resolve the same Li-chun instant; invalid and nonexistent timezone clocks are rejected
+PASS Birthday ages, minor limits and decades switch together; year-boundary method remains distinct
+PASS Exact month stem changes at Jie while the Doujun palace follows the lunar calendar
+PASS Leap-month exact segments retain lunar changes; day rollover and birthday policy are explicit
+PASS Mixed school compatibility preserves each source table and partitions Li-chun, lunar New Year and birthdays
+PASS Configuration is isolated per chart; alternate four-transformations and read-time mismatch work with new algorithms
+PASS Supplemental month markers and exact intervals retain every overlay, transformation and flow star
+R15 Ziwei assertions 22630 PASS

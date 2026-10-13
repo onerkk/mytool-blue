@@ -1,7 +1,7 @@
-/* Reading contract v8.2: answer-first output backed by complete, method-native evidence review. Never changes a cast. */
+/* Reading contract v10.0: answer-first output backed by complete, method-native evidence review. Never changes a cast. */
 (function(root){
   'use strict';
-  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】有效解讀完成後須接上本段。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
+  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
   var RECOMMENDATION_METHODS={
     bazi:'八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。',
     compat:'合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。',
@@ -27,7 +27,7 @@
     var guides=selected.map(function(k){k=k==='western'?'astro':k;if(used[k]||!RECOMMENDATION_METHODS[k])return '';used[k]=true;return RECOMMENDATION_METHODS[k];}).filter(Boolean);
     return [RECOMMENDATION_TEXT,guides.length?'【本法選材提醒】\n'+guides.join('\n'):''].filter(Boolean).join('\n');
   }
-  var READING_VERSION='9.4.0';
+  var READING_VERSION='10.0.0';
   var PLAIN_TEXT=[
   "【白話優先】【像命理師當面解惑】使用繁體中文直接對提問者說話，先回答，再解釋。第一句就回答原問題，交代較支持的方向、程度、真正卡點與最關鍵條件；接著用本次資料解釋，不先暖場、講方法或重述盤面。",
   "【深度判讀流程】先讀完全部有效盤面與本法規則，再形成判斷；不可看到一個吉象或凶象就停。依原問句拆出對象／角色、所問行動或結果、條件及時間，使用本法真正成立的指示、位置、連線、旺衰、動變或週期，追出「哪些條件支持結果、力量如何傳到結果、在哪一環被牽制、牽制能否解除」。需要哪些欄位依本法而定，不為所有術數硬套同一套名詞。",
@@ -40,6 +40,11 @@
   "把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚；背景、當期觸發、條件走向分層。象徵不證明病情、他人心念或事件；醫療、法律、財務行動另依現實資料與專業依據。沒有資料支持的機率、確切事件或精確日期不可自造。",
   "答案要落到現實：方法題給可直接採取的第一步，結構題指出關鍵循環，決策題用相同標準，時間題只給本方法支持的精度；具體指出什麼行為／條件會支持、削弱或改變判斷，並收尾給可執行做法或觀察指標，以及可觀察的驗證訊號或檢查點。若自行設定追蹤期限，須明說那是實務檢查點，不是術數推得的日期。",
   "命理判斷是依本次方法和資料形成的象徵性推論，不能保證客觀準確；信心描述證據的集中度與限制，不換算成事件機率。主觀滿意回饋只代表使用感受，不能單獨驗證預測。"
+].join('\n');
+  var TRUTH_POLICY=[
+  "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。",
+  "【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。",
+  "【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。"
 ].join('\n');
   var FINAL_VOICE='【成稿檢查】後續各段各增加一個新的判斷、證據關係或做法；交代最重要的反證及其限制範圍。不要逐項抄規則、把假設寫成經歷，或用不同措辭重複同一結論。';
   // Native methods are analysis references, not a mandatory response outline.
@@ -298,11 +303,28 @@
   METHODS["liuyao"].push("增刪第8章取用保留明列人物角色與作者案語；妹夫世、姑姨父母／兄弟的重義不可静默改成單一角色。應期月日以實際交節與00／23日界分段，不把交節當整日、也不把用神未定冒稱有唯一应期。");
   METHODS["yijing"].push("原朱子主讀不被互綜錯或納甲覆蓋；易傳使用本次64卦逐卦彖、大象、小象、用象與乾坤文言原文。互綜錯各有明列卦形與京房納甲，無月日六神資料不得自行补配。");
   METHODS["name"].push("三才按本次CDI或靈昭125表；兩具名現代版本與未核實旧表保留來源差異，不冒稱熊崎原著。分類原詞与归一等级分開，不把同版多網站當獨立印證；兩網站25共吉不是四來源研究的23共識。");
-  function methodLines(kind){kind=kind==='western'?'astro':kind;return (METHODS[kind]||[]).concat(SYNTHESIS[kind]||[],DEPTH[kind]||[]);}
+  var CLAIM_BOUNDARIES={
+    bazi:'【八字術語界線】身弱、財多身弱只描述此模型中的作用負荷；需合原局有效印比、食傷生財、官印制化、成敗救應及歲運才判本题順阻。不能只憑這個標籤斷不能工作、不能有錢或婚姻必敗；印比扶身也不一律有利，特殊從勢與調候仍須分層。',
+    ziwei:'【紫微術語界線】煞、忌、陷及夫妻宮組合不是終身判決。按所選四化表與實算宮組、來源及運限核對承接與反證；不能由一宮或單顆星保證貧富、離婚、孤獨或疾病。',
+    astro:'【西占術語界線】失勢、落陷、刑沖及宮位強弱是技術分類，不是人的缺陷或無法改善。按本次本命或卜卦用途分層核尊貴、接納、成相與受阻，不把一個不利相位擴成全部人生。',
+    vedic:'【印度占星術語界線】六力、宮力、AV和Yoga各回答不同問題；強不必吉、弱不等於無能。核功能宮主、定位星、分盤、有效運法與救解條件，不能只因Neecha或某個Yoga保證終身成敗。',
+    liuren:'【六壬術語界線】課名、天將、空墓絕與神煞只在本次問事角色及四課三傳作用中判讀。核有效生扶、制約、空亡解除及分類占法前提，不把一課凶名延伸成終身災難。',
+    liuyao:'【六爻術語界線】空、破、墓、絕與退神都要核實際用神和月日動變；解除候選不是保證事件發生日。不得把單爻凶象或無取用對象誤写成當事人一生無望。',
+    yijing:'【易經術語界線】吉凶悔吝對應本次主讀爻時與行為條件；爻辭不是當事人的終身判決。變卦呈現條件變化，不保證事情已發生或必然轉好。',
+    meihua:'【梅花術語界線】體用生克只指本次起卦事情；用克體不等於命差，變卦生體不保證未來成功。固定原體並合旺衰、本互變和本題範圍，不擴成终身財運或婚姻評等。',
+    name:'【姓名術語界線】81數、三才吉凶與異表是傳統分類，筆畫可重算不代表命運已驗證。凶數不能定人格、收入、婚姻或壽命；改名也不能保證現實結果。',
+    compat:'【合盤術語界線】雙向支持與衝突是待對照現實的相處假設；盤合不保證同意，盤沖不保證分手。保留各方完整原局與同期窗口，再提出雙方能選擇的調整條件。',
+    personality:'【人格術語界線】本站五軸映射不是經驗證心理量表；分數和類型不能定智力、人格好壞、診斷或終身能力。轉成可觀察而能被反例修正的行為假設。',
+    tarot:'【塔羅術語界線】死神、塔、寶劍等名稱不能直接斷死亡、災難或人生失敗。保留本次牌位、方向、組合和反證，結果牌仍是條件性象徵，不能保證事件。',
+    ootk:'【開鑰術語界線】五輪完成只證明程序與資料範圍，不證明客觀事件必然。五輪同源訊號仍是同一盤的多層解讀；保留有效主線與反證，不把跨輪一致寫成命運確證。',
+    lenormand:'【雷諾曼術語界線】棺材、鐮刀、十字架等圖像由本題牌句與幾何限定，不直接證明死亡、厄運或終身負擔。宮位與騎士步是同一牌面的不同關係，不是獨立事件證據。',
+    oracle:'【靈籤術語界線】上上或下下是本版本的傳統分級，不是人生價值或客觀事件機率。按原詩與實際程序作本題條件性解讀；吉籤不保證成功，凶籤不代表人生無望。'
+  };
+  function methodLines(kind){kind=kind==='western'?'astro':kind;return (METHODS[kind]||[]).concat(SYNTHESIS[kind]||[],DEPTH[kind]||[],CLAIM_BOUNDARIES[kind]?[CLAIM_BOUNDARIES[kind]]:[]);}
   function payloadGuide(kinds){
     var selected={};
     (kinds||[]).forEach(function(kind){if(METHODS[kind])selected[kind]=methodLines(kind);});
-    return {version:READING_VERSION,answerStyle:PLAIN_TEXT,methods:selected,
+    return {version:READING_VERSION,answerStyle:PLAIN_TEXT+'\n'+TRUTH_POLICY,methods:selected,
       synthesis:'先以實際提供資料的各系統各自完成主判、正反證與成立條件，再比較它們回答的是同一命題、不同層面或不同時間。選最能直接回答本題的主線，說明共識與衝突各來自哪組依據，形成主次清楚的綜合結論；系統數量與同源訊號不作多數投票。複雜題不可只列各法結論，須解釋關鍵證據如何支持、限制或改變答案。',
       reportPolicy:'全盤完整覆蓋本法有效結構與各面向；指定逐年題每年列運期、議題、象徵順阻與影響程度、依據、條件及行動，不省略年度或造精確事件。',
       dataPolicy:'原始盤面、個案背景與衍生模型分開；本方法資料包提供閱讀上下文，沒有相應盤面時不啟用該系統；只用本次資料，不引用帳號記憶、其他對話或先前生成結論。'};
@@ -331,9 +353,9 @@
     if(!q.trim()||/未來|何時|什麼時候|幾年|時機|長期走向|近年|整體運勢/.test(q))return {mode:'range',start:y,end:y+3};
     return {mode:'current',start:y,end:y};
   }
-  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.8.0',requiredForValidReading:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
+  function recommendationPolicy(kinds){return {mode:'needs_first',version:'4.9.0',requiredForValidReading:true,exceptExplicitSafetyNeeds:true,stage:'after_reading',mayAlterReading:false,outputOrder:['answer','evidence_and_action','personal_material_and_reason','invitation','shop_link','blessing'],outputRule:FINAL_VOICE+'\n'+recommendationText(kinds)+'\n最後兩行：\n'+SHOP_FOOTER};}
   function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n'+SHOP_FOOTER;}
-  function lines(kind){return [PLAIN_TEXT,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'4.8.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  function lines(kind){return [PLAIN_TEXT,TRUTH_POLICY,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
+  root.JY_READING_QUALITY=Object.freeze({version:'4.9.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},truthPolicy:function(){return TRUTH_POLICY;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

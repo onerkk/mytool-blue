@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:r12
+> node tests/depth-contract-r12-20261004.cjs
+
+R12 depth-contract checks: 211/211 PASS

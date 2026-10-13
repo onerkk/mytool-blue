@@ -2,7 +2,10 @@
  * A valid record is not a claim that all schools or predictions are complete.
  * Invalid records stop export; unknown inputs and unfinished procedures stay partial. */
 (function(root){'use strict';
- const VERSION='20261005audit3',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
+ const VERSION='20261014audit4',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
+ const E=['木','火','土','金','水'],TG=[['比肩','劫財'],['食神','傷官'],['偏財','正財'],['七殺','正官'],['偏印','正印']];
+ const validGZ=gz=>typeof gz==='string'&&gz.length===2&&G.includes(gz[0])&&B.includes(gz[1])&&mod(G.indexOf(gz[0])-B.indexOf(gz[1]),2)===0;
+ function god(dm,stem){const d=G.indexOf(dm),s=G.indexOf(stem);return d<0||s<0?null:TG[mod(Math.floor(s/2)-Math.floor(d/2),5)][mod(d-s,2)];}
  const H={子:'癸',丑:'己癸辛',寅:'甲丙戊',卯:'乙',辰:'戊乙癸',巳:'丙戊庚',午:'丁己',未:'己丁乙',申:'庚壬戊',酉:'辛',戌:'戊辛丁',亥:'壬甲'};
  const PV=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn','Rahu','Ketu'],PW=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
  const methods=['bazi','ziwei','astro','vedic','liuren','liuyao','yijing','meihua','name','compat','personality','tarot','lenormand','ootk','oracle'];
@@ -14,10 +17,20 @@
   function six(){const values=A(c.values),positions=A(c.lines).map(l=>l.position);check('six-values',values.length===6&&values.every(v=>[6,7,8,9].includes(v)),values);check('six-line-positions',sameSet(positions,[1,2,3,4,5,6]),positions);if(values.length!==6)return;const old=values.map(v=>v%2),changed=values.map(v=>v===6?1:v===9?0:v%2),moving=values.flatMap((v,i)=>v===6||v===9?[i+1]:[]);check('original-lines',eq(A(c.original?.lines).map(Number),old),old);check('changed-lines',eq(A(c.changed?.lines).map(Number),changed),changed);check('moving-positions',eq(A(c.movingPositions),moving),moving);for(const [side,bits]of [['original',old],['changed',changed]])check(side+'-binary-code',c[side]?.code===bits.reduce((n,v,i)=>n+v*2**i,0),c[side]?.code);}
   if(kind==='bazi'){
    const unknown=!!(options.unknown||c.birthTimeUnknown),keys=unknown?K.slice(0,3):K;
-   for(const k of keys){const p=c.pillars?.[k];check(k+'-ganzhi',G.includes(p?.gan)&&B.includes(p?.zhi),p&&p.gan+p.zhi);}
+   for(const k of keys){const p=c.pillars?.[k];check(k+'-ganzhi',validGZ(p&&p.gan+p.zhi),p&&p.gan+p.zhi);}
    check('day-master-consistency',c.dm===c.pillars?.day?.gan,c.dm);
    check('native-pillar-count',a.pillars?.length===keys.length,a.pillars?.length);
-   for(const p of A(a.pillars))check(p.pillar+'-hidden-stems',eq(A(p.hidden).map(h=>h.stem),Array.from(H[p.zhi]||'')),p.zhi);
+   for(const p of A(a.pillars)){
+    check(p.pillar+'-hidden-stems',eq(A(p.hidden).map(h=>h.stem),Array.from(H[p.zhi]||'')),p.zhi);
+    check(p.pillar+'-ten-god',p.god===god(c.dm,p.gan),[p.god,god(c.dm,p.gan)]);
+    for(const h of A(p.hidden))check(p.pillar+'-hidden-ten-god-'+h.stem,h.god===god(c.dm,h.stem),[h.god,god(c.dm,h.stem)]);
+   }
+   for(const y of A(a.annualSegments)){
+    const id='annual-'+y.year+'-'+y.decadeIndex;
+    check(id+'-ganzhi',validGZ(y.annual),y.annual);
+    check(id+'-ten-god',y.god===god(c.dm,y.annual?.[0]),[y.god,god(c.dm,y.annual?.[0])]);
+    if(y.dayun!=='起運前')check(id+'-decade-ganzhi',validGZ(y.dayun),y.dayun);
+   }
    if(unknown)partial('birth-hour','出生時辰未知；只有三柱可確認，完整旺衰與交運不作定盤');
    else {if(!c.classicalAssessment)partial('classical','成敗救應元件未計算');if(!c.functionalAssessment)partial('functional','根氣與位置作用元件未計算');if(!c.seasonalAssessment)partial('seasonal','調候作用元件未計算');
     for(const y of A(a.annualSegments))check('annual-window-'+y.year+'-'+y.decadeIndex,Number.isFinite(Date.parse(y.window?.start))&&Date.parse(y.window?.endExclusive)>Date.parse(y.window?.start),y.window);
@@ -55,7 +68,21 @@
    check('twelve-earth-positions',sameSet(A(c.plate).map(p=>p.earth),B),null);check('twelve-sky-positions',sameSet(A(c.plate).map(p=>p.sky),B),null);check('twelve-generals',new Set(A(c.plate).map(p=>p.generalIndex)).size===12,null);check('four-courses',A(c.courses).length===4,c.courses?.length);check('three-transmissions',A(c.transmissions).length===3,c.transmissions?.length);
    for(const p of A(c.plate))check('rotation-'+p.earth,mod(B.indexOf(p.sky)-B.indexOf(p.earth),12)===mod(c.rotation,12),[p.earth,p.sky,c.rotation]);
    if(!c.classAnalysis)partial('classes','六十四課族元件未計算');if(!c.shensha)partial('shensha','所選神煞元件未計算');
-  }else if(kind==='liuyao'||kind==='yijing')six();
+  }else if(kind==='liuyao'||kind==='yijing'){
+   six();
+   if(kind==='liuyao'){
+    const p=c.original?.palace,base=E.indexOf(p?.element);
+    check('shi-ying-opposed',Number.isInteger(p?.shi)&&p.shi>=1&&p.shi<=6&&p.ying===mod(p.shi+2,6)+1,p&&[p.shi,p.ying]);
+    for(const l of A(c.lines)){
+     const expected=l.position===p?.shi?'世':l.position===p?.ying?'應':'';
+     check('line-'+l.position+'-role',l.role===expected,[l.role,expected]);
+     for(const [scope,z]of [['original',l],['changed',l.changed],['hidden',l.hidden]])if(z){
+      const el=E.indexOf(z.element),r=base<0||el<0?null:['兄弟','子孫','妻財','官鬼','父母'][mod(el-base,5)];
+      check('line-'+l.position+'-'+scope+'-kinship',!!r&&z.relative===r,[z.relative,r]);
+     }
+    }
+   }
+  }
   else if(kind==='meihua'){
    check('moving-line-range',Number.isInteger(c.dong)&&c.dong>=1&&c.dong<=6,c.dong);check('two-trigram-lines',A(c.up?.li).length===3&&A(c.lo?.li).length===3&&c.up.li.concat(c.lo.li).every(v=>v===0||v===1),null);
    if(c.dong>=1&&c.dong<=6){const body=c.dong<=3?c.up:c.lo,use=c.dong<=3?c.lo:c.up;check('unchanged-body',c.tiG?.n===body?.n,[c.tiG?.n,body?.n]);check('moving-use',c.yoG?.n===use?.n,[c.yoG?.n,use?.n]);}

@@ -37,9 +37,9 @@ const readingTargets=[
   ['JS/western-prompt.js','JY_READING_WESTERN',q.lines('astro').join('\n')],
   ['JS/relationship-core.js','JY_READING_RELATIONSHIP',q.lines('compat').concat(q.methodLines('bazi'),q.methodLines('ziwei')).join('\n')],
   ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().flatMap(k=>q.methodLines(k)).join('\n')],
-  ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()]
+  ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()+'\n'+q.truthPolicy()]
 ];
-const mirrors=['ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
+const mirrors=['native-rule-sources.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
 function persist(file,next){
   const full=path.join(root,file),old=fs.existsSync(full)?fs.readFileSync(full,'utf8'):null;
@@ -101,7 +101,7 @@ for(const file of workflowTargets){
 // second OOTK prompt or let a cached older reader replace this release.
 const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
   ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
-  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261005depth16",undefined,{numeric:true})<0']
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth18",undefined,{numeric:true})<0']
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);

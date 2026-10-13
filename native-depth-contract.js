@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261005depth16';
+  const VERSION='20261014depth18';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -8,7 +8,8 @@
   const common={
     synthesis:['先回答原題','再交代最強支持鏈','再交代最強反證／牽制','說明成立條件與會推翻結論的條件','時間題只使用已實算運期／候選時窗','最後才給行動建議'],
     forbidden:['不得把同源規則重複計票','不得把缺資料補成事實','不得把象徵直接當已發生事件','不得以單一吉凶指標蓋過完整作用網','不得把不同流派互相矛盾的表硬平均成唯一答案'],
-    confidence:'結論強度只能來自本題有效證據的收斂程度；有關鍵缺項或流派衝突時降低確定度並明示。'
+    confidence:'本題內部解讀把握度只能描述有效證據的收斂與限制；有關鍵缺項或流派衝突時降低確定度。它不是現實事件機率，也不是經驗證的預測準確率。',
+    truthBoundary:{calculationValidation:'reproducible-within-selected-profile',predictionValidation:'not-performed',claimLevels:['排盤或抽取的可重算事實','具名傳統規則及本站模型','待現實核對的個案推論'],rule:'計算核對不等於事件預測已驗證；模型強弱或凶吉不構成終身判決，沒有已算救應不得捏造转機。'}
   };
   const P={
     bazi:{profile:'子平月令／根氣／成敗救應＋窮通條件分層',required:[['四柱與藏干','pillars'],['月令人元司事','seasonalCommander'],['根氣與旺衰','strength'],['子平功能判讀','functionalAssessment'],['古典條件矩陣','classicalAssessment'],['古法質性裁決','classicalAdjudication'],['大運流年實算','annualSegments']],order:['月令與司令','日主根氣及全局旺衰','透藏十神及生克路徑','格局成敗救應','調候與古典條件','大運→流年→必要時小運'],conflicts:['調候、扶抑、格局不是三套票數；若結論不同要解釋哪一層在本題優先','合局只在成化條件成立時視為轉化，否則保留合絆／牽制'],forbidden:['不得以五行缺什麼直接判喜用','不得把古訣字面命中直接斷成事件']},
@@ -65,6 +66,7 @@
       version:VERSION,method,profile:p.profile,
       status:missing.length?'partial-reading':'ready-for-scoped-reading',
       allSchoolsComplete:false,
+      truthBoundary:{...common.truthBoundary,claimLevels:[...common.truthBoundary.claimLevels]},
       evidence,
       readingOrder:p.order,
       synthesisOrder:common.synthesis,
@@ -81,6 +83,7 @@
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
     `閱讀範圍狀態：${c.status}。`,
+    `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `合成順序：${c.synthesisOrder.join(' → ')}。`,
@@ -92,6 +95,6 @@
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''
   ].filter(Boolean).join('\n');}
-  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
+  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
   root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary});
 })(typeof window==='undefined'?globalThis:window);

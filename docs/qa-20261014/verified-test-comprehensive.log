@@ -1,0 +1,22 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:comprehensive
+> node scripts/sync-recommendation-guides.cjs --check && node tests/reading-depth-regression-20260927.cjs && node tests/ziwei-root-spec-v1.test.js && node tests/comprehensive-reading-20261001.cjs
+
+Reading v10.0.0 / recommendation v4.9.0: all generated copies match
+PASS All active methods receive the full answer-first depth contract and native synthesis path
+PASS Every generated prompt fallback matches the current shared contract
+PASS Embedded workflow copies stay synchronized and adapt output depth to question scope
+reading depth regression: 3 groups passed across 15 methods and all prompt fallbacks.
+ziwei-root-spec-v4: all assertions passed
+PASS 15 native methods and full/focused/period scope
+PASS Birth minute precision and native lunar chart stay intact
+PASS First eight decades cover every year from 1986 through 2065
+PASS 120-year and 55-year reports are complete; focused questions remain short
+PASS Missing years, prebirth years and monthly failures remain explicit
+PASS Empty-palace borrowing uses branches and never mutates the chart
+PASS Full prompt retains every year, memory boundary, native depth and one final footer
+PASS Coverage review requires a separate row for each supplied year
+PASS Bazi requests retain complete eight-cycle annual segments in pure-chart mode
+PASS Joint Ziwei timelines retain the full interval and mark the not-yet-born party
+Comprehensive reading: 10 groups passed; 15 methods, native 80/120-year Ziwei exports, Bazi segments and joint timelines.

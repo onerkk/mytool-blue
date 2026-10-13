@@ -1,0 +1,692 @@
+{
+  "schema": "jy.engine-validation/1",
+  "release": "20261014integrity18",
+  "sourceArchive": {
+    "name": "mytool-blue-master(20261013-164212).zip",
+    "bytes": 218541277,
+    "sha256": "bab326421abca2f50580c5a27491aa79f41e5d6fac09508843b9f1a9fc11c46c"
+  },
+  "scope": {
+    "methods": 15,
+    "mainCommands": 53,
+    "additionalCommands": 13,
+    "predictionAccuracyValidated": false,
+    "externalAIAnswersEvaluated": false,
+    "browserVisualsVerified": false
+  },
+  "upstreamAuthorTests": {
+    "source": "https://github.com/6tail/lunar-javascript/blob/master/__tests__/EightChar.test.js",
+    "bundleVersion": "1.7.7",
+    "passed": 30,
+    "total": 30,
+    "results": [
+      {
+        "name": "test1",
+        "passed": true
+      },
+      {
+        "name": "test2",
+        "passed": true
+      },
+      {
+        "name": "test2a",
+        "passed": true
+      },
+      {
+        "name": "test3",
+        "passed": true
+      },
+      {
+        "name": "test4",
+        "passed": true
+      },
+      {
+        "name": "test5",
+        "passed": true
+      },
+      {
+        "name": "地支藏干",
+        "passed": true
+      },
+      {
+        "name": "天干十神",
+        "passed": true
+      },
+      {
+        "name": "地支十神",
+        "passed": true
+      },
+      {
+        "name": "地势",
+        "passed": true
+      },
+      {
+        "name": "纳音",
+        "passed": true
+      },
+      {
+        "name": "胎元",
+        "passed": true
+      },
+      {
+        "name": "命宫",
+        "passed": true
+      },
+      {
+        "name": "身宫",
+        "passed": true
+      },
+      {
+        "name": "身宫1",
+        "passed": true
+      },
+      {
+        "name": "身宫2",
+        "passed": true
+      },
+      {
+        "name": "身宫3",
+        "passed": true
+      },
+      {
+        "name": "test11",
+        "passed": true
+      },
+      {
+        "name": "test12",
+        "passed": true
+      },
+      {
+        "name": "流月",
+        "passed": true
+      },
+      {
+        "name": "test19",
+        "passed": true
+      },
+      {
+        "name": "test20",
+        "passed": true
+      },
+      {
+        "name": "test21",
+        "passed": true
+      },
+      {
+        "name": "test23",
+        "passed": true
+      },
+      {
+        "name": "test24",
+        "passed": true
+      },
+      {
+        "name": "test25",
+        "passed": true
+      },
+      {
+        "name": "test26",
+        "passed": true
+      },
+      {
+        "name": "test27",
+        "passed": true
+      },
+      {
+        "name": "test28",
+        "passed": true
+      },
+      {
+        "name": "test29",
+        "passed": true
+      }
+    ]
+  },
+  "freshSwiss": {
+    "status": "passed",
+    "assertions": 1140,
+    "maximumDifferenceDegrees": 0.005661537515152304,
+    "swissVersion": "2.10.03",
+    "scope": "15 dates 1900–2100; two sidereal profiles; five houses, four latitudes, three dates. Event predictions are not validated."
+  },
+  "commands": [
+    {
+      "command": "npm run test:prompts",
+      "exitCode": 0,
+      "seconds": 1.63,
+      "logFile": "qa-20261014/final-test-prompts.log",
+      "logSHA256": "2f278ae2de47ab35467244fcd58a3bcfc1a8a25bfdbb26ea6bd4b67d63f14771",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:tarot",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "logFile": "qa-20261014/final-test-tarot.log",
+      "logSHA256": "883b8c8522c4521dc47a611f2b21d064e0f23ca849dba7835e08e42c7b6278fe",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:lenormand",
+      "exitCode": 0,
+      "seconds": 0.62,
+      "logFile": "qa-20261014/release-test-lenormand.log",
+      "logSHA256": "ea264c43d3067ab5f96785dfc72d5e2e48c2ec9e166bd51c63a4b27f8b85f84c",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:ziwei",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:counter",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:picker-data",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:api-failures",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:interactions",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:display",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:audit",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:professional",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:cards",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:ui",
+      "exitCode": 0,
+      "seconds": null,
+      "logFile": "qa-20261014/npm-test.log",
+      "logSHA256": "c02b2d21e733c86f83d191fb9f1f3cc5b90ba3184c4aaaf86a116755008f4270",
+      "verification": "continued to following chained command"
+    },
+    {
+      "command": "npm run test:ritual",
+      "exitCode": 0,
+      "seconds": 10.0,
+      "logFile": "qa-20261014/main-test-ritual.log",
+      "logSHA256": "c7fb8112c3b1f63cbe061e60c64d3d594e64373637b8b0cfe1c326bbd0ae5a9b",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:cinematic",
+      "exitCode": 0,
+      "seconds": 0.87,
+      "logFile": "qa-20261014/final-test-cinematic.log",
+      "logSHA256": "4bc49528b26c9853a9e0d4efe792d7c85da2228e8b43bb01aba82c1fb5e42469",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:flow",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "logFile": "qa-20261014/main-test-flow.log",
+      "logSHA256": "70ed88b0112ecdfb5da1ead53104735ebfb6af95ea406e9331d1e79f74116530",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:depth",
+      "exitCode": 0,
+      "seconds": 2.22,
+      "logFile": "qa-20261014/main-test-depth.log",
+      "logSHA256": "17f2758bc416c28ee031884d662decd34d945358cbe751e144e51084a026f895",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:flow-polish",
+      "exitCode": 0,
+      "seconds": 1.17,
+      "logFile": "qa-20261014/main-test-flow-polish.log",
+      "logSHA256": "1bd43d7732316cf1a92a73ad5f7632cce6b4610b3427750ee63675ae9945db1d",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:accuracy",
+      "exitCode": 0,
+      "seconds": 49.13,
+      "logFile": "qa-20261014/main-test-accuracy.log",
+      "logSHA256": "f1a2491a4b4523f85e58ec185c1b7adcd82f3f546b88e2c2511584e652300588",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:immersive",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "logFile": "qa-20261014/main-test-immersive.log",
+      "logSHA256": "2b8ff99970bd4fba798690bdb8c36cc9c44f0e339a81d625b419655ec55908b3",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:plain",
+      "exitCode": 0,
+      "seconds": 6.89,
+      "logFile": "qa-20261014/main-test-plain.log",
+      "logSHA256": "e11f21de40f688b3ea7aeaf4abb8c8940a58ee7e020442ab2aaa1f3c343f1068",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:story",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "logFile": "qa-20261014/final-test-story.log",
+      "logSHA256": "5fbe6b8e1bdddcfb995ba323b65cab4547c0df63e0f41fd49d664f80a2f538f5",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:free",
+      "exitCode": 0,
+      "seconds": 0.26,
+      "logFile": "qa-20261014/final-test-free.log",
+      "logSHA256": "7b70229525ce3c3de5a62c42acf3e9b485ee0ca25c2159c4efba89b9ea08a7e6",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:oracle-result",
+      "exitCode": 0,
+      "seconds": 0.37,
+      "logFile": "qa-20261014/main-test-oracle-result.log",
+      "logSHA256": "116f301d70d56c5b11ed5cd42cd20f321402078a349979f6ae71128927358ba0",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:craft",
+      "exitCode": 0,
+      "seconds": 1.93,
+      "logFile": "qa-20261014/final-test-craft.log",
+      "logSHA256": "872e58feff80827ce1ecc7bb52932ac590ded50a0d046091cd40ae0ea981d3ec",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:methods",
+      "exitCode": 0,
+      "seconds": 7.39,
+      "logFile": "qa-20261014/main-test-methods.log",
+      "logSHA256": "b9f832b8be52a6e3df04636c48b1b231fac8413ec6e6eca74ccbdab110a334ed",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:huaqi",
+      "exitCode": 0,
+      "seconds": 1.67,
+      "logFile": "qa-20261014/main-test-huaqi.log",
+      "logSHA256": "d90ba9f762d9a7f600302137ff93a7a74ca1979d4303d5aa3a76b524fb74d54e",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:core-engines",
+      "exitCode": 0,
+      "seconds": 3.93,
+      "logFile": "qa-20261014/main-test-core-engines.log",
+      "logSHA256": "7b1d653798706a79e9ddf73b8d6c7523f2aabf0bbbb08e587cfe7eb24b506ed8",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:output-consistency",
+      "exitCode": 0,
+      "seconds": 3.32,
+      "logFile": "qa-20261014/final-test-output-consistency.log",
+      "logSHA256": "cc589371163608a6cbc6471a5f20fb508625525cdc010e2972782b9005f5c396",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:vedic",
+      "exitCode": 0,
+      "seconds": 1.67,
+      "logFile": "qa-20261014/main-test-vedic.log",
+      "logSHA256": "edf38ac9ae6bfbda44c937eb04ec73ac88e126ff8b2557dc8d05cecaf2b487d4",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:vedic-design",
+      "exitCode": 0,
+      "seconds": 1.72,
+      "logFile": "qa-20261014/main-test-vedic-design.log",
+      "logSHA256": "83e45a8439bbd7976b88d75b1532164a1e823e1d50ff9bc53e7e02fb20efb508",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:vedic-palace",
+      "exitCode": 0,
+      "seconds": 0.26,
+      "logFile": "qa-20261014/main-test-vedic-palace.log",
+      "logSHA256": "939a7697b3836002a6bdf4d4ff78c3cf8971e72e6fa79dae826c81f53d11dfb0",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:western",
+      "exitCode": 0,
+      "seconds": 3.48,
+      "logFile": "qa-20261014/main-test-western.log",
+      "logSHA256": "c435a289812f992199a4c3ecd4d67bcf6d7c6067e738fce84df0b037654c0afe",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:recommendations",
+      "exitCode": 0,
+      "seconds": 8.99,
+      "logFile": "qa-20261014/main-test-recommendations.log",
+      "logSHA256": "9aaa9eaba61cb675f85b215415ff9918ba3908d746fd4b3498b6695b1d083204",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:ootk",
+      "exitCode": 0,
+      "seconds": 6.9,
+      "logFile": "qa-20261014/verified-test-ootk.log",
+      "logSHA256": "bcf7b9cb8be36d232d2febaf38f45fd6cf7cc1b55c8acc4027ab440635b4c3d1",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:relationship",
+      "exitCode": 0,
+      "seconds": 5.83,
+      "logFile": "qa-20261014/main-test-relationship.log",
+      "logSHA256": "b11a962f1c65f0eed77612d7361221f539cbd335f9fae38ca47b9393c0cdff42",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:time-ownership",
+      "exitCode": 0,
+      "seconds": 20.83,
+      "logFile": "qa-20261014/main-test-time-ownership.log",
+      "logSHA256": "d38178a7b6602ee96f57e1086d8f207eb852b1d58bca2d99420ffb5c07d52fe0",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:question-routing",
+      "exitCode": 0,
+      "seconds": 0.92,
+      "logFile": "qa-20261014/main-test-question-routing.log",
+      "logSHA256": "0496a4894df5f858c4b5baefc2b67a12d1c3906477a71ed708fb72ad1d57d1f8",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:gua",
+      "exitCode": 0,
+      "seconds": 1.82,
+      "logFile": "qa-20261014/main-test-gua.log",
+      "logSHA256": "8c0952b6b79cec35b69fdabf6338ba04b6093a5753dba84d65a00bb3aa242930",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:yarrow",
+      "exitCode": 0,
+      "seconds": 0.22,
+      "logFile": "qa-20261014/main-test-yarrow.log",
+      "logSHA256": "dae048f656637e53ffe936e157181d0d5c8998aaf376e1b138527cb50d6d6051",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:special-rules",
+      "exitCode": 0,
+      "seconds": 8.34,
+      "logFile": "qa-20261014/main-test-special-rules.log",
+      "logSHA256": "122fefa1779179c90d1eccb7a67c8168f42a671239319ce0254051cf1f9cee25",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:astro-bridge",
+      "exitCode": 0,
+      "seconds": 7.24,
+      "logFile": "qa-20261014/main-test-astro-bridge.log",
+      "logSHA256": "fff1d32df57feeeba47a482bd1daec0859b967cdd49390d0b9b937173c84082d",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:latest-audit",
+      "exitCode": 0,
+      "seconds": 6.29,
+      "logFile": "qa-20261014/verified-test-latest-audit.log",
+      "logSHA256": "299208c41f99cca5c2c9aec9b21e18c92d597b4a6122fb72309061f745bf931c",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:reading-grounding",
+      "exitCode": 0,
+      "seconds": 3.12,
+      "logFile": "qa-20261014/final-test-reading-grounding.log",
+      "logSHA256": "cc29dcefb7c5d6dd10dd4fc91a75e59a6419f51caa27bdff0cfe4f3652a53cb7",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:reading-workflow",
+      "exitCode": 0,
+      "seconds": 13.32,
+      "logFile": "qa-20261014/verified-test-reading-workflow.log",
+      "logSHA256": "acfdfd93bd6fdd50263573dba94834f5f501a3e1c62e69402da6dc752d49245d",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:question-model-regression",
+      "exitCode": 0,
+      "seconds": 0.57,
+      "logFile": "qa-20261014/verified-test-question-model-regression.log",
+      "logSHA256": "92f2712e044f0ed60ac3652c83b276d751048b29592bdc2364197cd1ea2bceda",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:causal-question",
+      "exitCode": 0,
+      "seconds": 0.31,
+      "logFile": "qa-20261014/main-test-causal-question.log",
+      "logSHA256": "fd94abde68248576ee53c4445477c8603f9b128ed955392e8d5e82721297f768",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:semantic-review-followup",
+      "exitCode": 0,
+      "seconds": 0.26,
+      "logFile": "qa-20261014/main-test-semantic-review-followup.log",
+      "logSHA256": "beea937bbc1d52a1876ea3b36c83a3aca7ead3fef8283802187c75bced081a45",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:name",
+      "exitCode": 0,
+      "seconds": 2.78,
+      "logFile": "qa-20261014/main-test-name.log",
+      "logSHA256": "e760a774691dae3b6d2c4aefb2e177fa0fdfcb25019a0e1361fa4aec130f14a1",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:liuren",
+      "exitCode": 0,
+      "seconds": 0.27,
+      "logFile": "qa-20261014/main-test-liuren.log",
+      "logSHA256": "235bc5ec7d6190dcabdd85c4f84dc03be7409442fa01a7cd6fe88fc0e14985c5",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:prompt-integrity",
+      "exitCode": 0,
+      "seconds": 23.67,
+      "logFile": "qa-20261014/verified-test-prompt-integrity.log",
+      "logSHA256": "a62720d8f8610da54e62d7178e66d46cc7f19d0606e0d1300c6716006509e985",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:reading-integrity",
+      "exitCode": 0,
+      "seconds": 24.11,
+      "logFile": "qa-20261014/verified-test-reading-integrity.log",
+      "logSHA256": "00b979632a8691934cb03d6c2ec60d6ebb2bdf15708789550c5d02028c5df6ec",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:astronomy-independent",
+      "exitCode": 0,
+      "seconds": 1.77,
+      "logFile": "qa-20261014/verified-test-astronomy-independent.log",
+      "logSHA256": "f5601416aaa4b5c82dd089d6e326048099fb9c394dee0aa67f56fcadad253151",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:native",
+      "exitCode": 0,
+      "seconds": 496.08,
+      "logFile": "qa-20261014/native-complete-final.log",
+      "logSHA256": "a87fdd7382f3a509fdf8473ad92e00bc4123ba8ed956258e7d8a8c27a88489a4",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:completion",
+      "exitCode": 0,
+      "seconds": 32.4,
+      "logFile": "qa-20261014/test-completion.log",
+      "logSHA256": "b94165a53db7c733cb583391aea7e039ab5147cd280d6af9b47432b655bb601f",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:prompt-budget",
+      "exitCode": 0,
+      "seconds": 44.84,
+      "logFile": "qa-20261014/final-test-prompt-budget.log",
+      "logSHA256": "8d1ac80944f80b24a76ae601ce46835d9d96cef4a7399e60da21093ae5a089f1",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r7",
+      "exitCode": 0,
+      "seconds": 18.23,
+      "logFile": "qa-20261014/test-r7.log",
+      "logSHA256": "b7d4714c30220c01e8df63f329e72c87863cc5f7cb17aa52e461b6c26337d4e2",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r8",
+      "exitCode": 0,
+      "seconds": 20.68,
+      "logFile": "qa-20261014/test-r8.log",
+      "logSHA256": "226fd1373ef4c947abb205cb93119f65e1817035db89fdaca538a37384363a36",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r9",
+      "exitCode": 0,
+      "seconds": 22.14,
+      "logFile": "qa-20261014/test-r9.log",
+      "logSHA256": "ac34b0a1eaeb18bbe5ee8db2105ecf539e8fa3fab54e59dfcb3f63d8666d8a30",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r10",
+      "exitCode": 0,
+      "seconds": 26.87,
+      "logFile": "qa-20261014/test-r10.log",
+      "logSHA256": "b5130aa837967eda1418b6358c9aa43bb97c74048a9cd80dee91c8bfd1601a1c",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r11",
+      "exitCode": 0,
+      "seconds": 21.14,
+      "logFile": "qa-20261014/test-r11.log",
+      "logSHA256": "884feaf648034322e640f5ac9ea549ac22ab5df58980b01e798e21d8bad03312",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r12",
+      "exitCode": 0,
+      "seconds": 18.97,
+      "logFile": "qa-20261014/release-test-r12.log",
+      "logSHA256": "6122a92703903314b2608ce7d4f3b91073ffcc0cff2349adf551cd0ba046b63c",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r13",
+      "exitCode": 0,
+      "seconds": 22.4,
+      "logFile": "qa-20261014/release-test-r13.log",
+      "logSHA256": "8b47d973d414575cf0e20dbd98540daa568eaab26dfdda1b9f2b1e8c9f98206e",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r14",
+      "exitCode": 0,
+      "seconds": 19.58,
+      "logFile": "qa-20261014/final-test-r14.log",
+      "logSHA256": "96fccce062c894faa80fe2cdc7daba4e46c6e5011607c4e83f75b1a11ed531e3",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:r15",
+      "exitCode": 0,
+      "seconds": 5.58,
+      "logFile": "qa-20261014/test-r15.log",
+      "logSHA256": "5c5f10570f819b7b94038a50d2a6af08f963d2ac7b3d2a115c1863ec2997111c",
+      "verification": "process exit status observed"
+    },
+    {
+      "command": "npm run test:comprehensive",
+      "exitCode": 0,
+      "seconds": 1.37,
+      "logFile": "qa-20261014/verified-test-comprehensive.log",
+      "logSHA256": "014f9d511643a708019ef3155dba6c83cec1022af5059ac54469135ef6cc95cb",
+      "verification": "process exit status observed"
+    }
+  ],
+  "recoveredIssues": [
+    "initial native group timeout120s; full rerun passed in496.08s",
+    "missing postcss/three QA dependencies installed separately",
+    "version assertions updated for current source, style, cache and review markers; algorithm assertions retained",
+    "initial Swiss build required a local compiler; rebuilt successfully with GCC"
+  ],
+  "limits": [
+    "checks are selected arithmetic/structure and finite text rules, not all possible historical schools or real-world predictive validity",
+    "source reading scopes are listed in engine-audit-20261014.md; failed retrievals are not described as full reads"
+  ]
+}

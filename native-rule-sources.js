@@ -99,6 +99,26 @@
   records.forEach(r=>{if(r13Reviewed[r.id]){r.checkedAt='2026-10-04';r.lastReviewedRelease='20261004native13';r.r13ReviewScope=r13Reviewed[r.id];}});
   const r14Reviewed={"iztroconfig": "2026-10-04官方配置表；上游可選項與本地實作能力分開，已排盤政策不能被解讀選項覆蓋", "pvrofficial": "PVR17.2.3三套Ashtottari適用性與15.3六力用途；主運與條件運及Yoga原生／補充表分層", "pvr": "PVR第11、15、17章格局、六力及條件運的作用框架；本次未逐頁覆核全部515頁", "swiss": "官方宮制代碼與極區宮位錯誤處理規格；既有167份獨立參照由測試另行重跑", "liuyao26": "旬空原典條件與本地逐爻有效性；伏神的月日作用須取伏神本身資料", "liuren3": "卷三行人行年與空亡財物條件；提供annualBranch即應讀取，天地上下雙空須兩端皆成立", "horarydenials2": "作者受阻形式與質性前提；原生id/profile/conditions/qualitativeRemaining及有限時窗完整傳遞", "waite": "Part3原典牌位與正逆位；不以另外體系覆蓋RWS", "bookt": "Liber78原典計數、配對與實際操作有效性", "lenormand": "出版者GrandTableau方法；4乘9與本站8乘4加4幾何獨立", "oracle": "北港朝天宮官方求籤與三聖筊程序；來源明示為程序參考", "oraclefull": "東海龍門天聖宮官方第一籤頁；本次沒有重新逐首爬取60首", "unihan": "UnicodeUAX38現行規格；現代kTotalStrokes不得冒稱康熙姓名筆畫", "zipingrescue": "子平真詮成敗救應原文；選格原生formation/failure/taboo/rescue完整保留", "renyuan": "三命通會卷二曆法、人元與歲運原典入口；計算另由既有邊界測試覆核", "meihua": "梅花易數卷一本互變與卦數規則入口；原體不得隨變卦更換"};
   records.forEach(r=>{if(r14Reviewed[r.id]){r.checkedAt='2026-10-04';r.lastReviewedRelease='20261004native14';r.r14ReviewScope=r14Reviewed[r.id];}});
-  const methods={bazi:['zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','zipingrescue','renyuan','qiongtong','xiaoyun','ditiansui'],ziwei:['ziwei','zwflow','sihuaiztro','sihuaquanshu','zwheluo','iztroconfig'],astro:['horarylight','astronomy','swiss','swissapi','ruler','return','dignity','progression','horaryorbs','horaryvoid','horaryvocglossary','horaryreception','horarymoonentry','horarydenials1','horarydenials2'],vedic:['bphssudarsana','sudarsana','tajaka','pvr20','vedictransit','astronomy','swiss','swissapi','pvr','pvrofficial','bphs','raman','brihatav','pvradvanced','phala'],liuren:['liuren','liuren3','battle','liurenclasses7','liurenclasses8','liurenclasses9','liurenclasses10','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi','earth18','astronomy'],liuyao:['liuyao','liuyaotarget','liuyao26','renyuan'],yijing:['yijing','yizhu','yijingwings'],meihua:['meihua'],name:['unihan','moe','namebook','kumazaki1931','kumazaki1935','sancaicdi','sancai356','sancaistudy'],compat:['zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','qiongtong','ziwei','sihuaiztro','sihuaquanshu'],personality:['ziping'],tarot:['waite','bookt','mathers'],ootk:['bookt','mathers'],lenormand:['lenormand'],oracle:['oracle','oraclefull']};
+  const r18Reviewed={
+    zipingrescue:'第9章成敗帶忌救應原文；不由身弱或單一成敗條文下终身判決',
+    iztroconfig:'現行2.6.2配置與實例隔離文件；本地2.6.1參照及具名政策仍保留，未冒稱已升級套件',
+    ziwei:'官方運限接口與流曜範圍；本命及限流來源分層',
+    astronomy:'作者README的地心位置、精度範圍與独立驗證說明；本地仍固定2.1.19',
+    swissapi:'官方Programming Interface的UT/TT、UTC及極區宮制失敗／退回規格；不是本輪重算全部星曆資料',
+    pvrofficial:'作者教材第15.2–15.3章：不同力量參數不可互換，六力與AV用途分開；不是515頁全文重讀',
+    liuyao26:'旬空章原文与生扶、動空、月破前提；見空不能一律作廢',
+    meihua:'卷一卦數、體用、互卦與年月日時起例；不將本次體用擴成終身原局',
+    yijingwings:'乾卦卦爻辭、彖象、用九及文言；不是本輪重讀全部64卦',
+    yizhu:'《御纂周易折中》所錄考變占第四0至6動爻及三爻二十組合主貞悔；替代無法取讀的原URL',
+    waite:'Part3作者原文與組合条件；不以單牌名稱確證人生事件',
+    bookt:'Liber78原文的五次操作段與既有方法分流；完成程序不等於現實預測驗證',
+    lenormand:'出版者GrandTableau4×9、宮位與騎士步原文；同盤幾何不是独立事件證據',
+    oracle:'北港朝天宮官方線上求籤程序與三聖筊',
+    oraclefull:'東海龍門天聖宮第一籤詩與事項欄；沒有冒稱本輪重爬全部60首',
+    unihan:'現行UAX38筆畫字段與來源性質；現代筆畫不能冒稱康熙姓名數理'
+  };
+  records.forEach(r=>{if(r18Reviewed[r.id]){r.checkedAt='2026-10-14';r.lastReviewedRelease='20261014integrity18';r.r18ReviewScope=r18Reviewed[r.id];}if(r.id==='yizhu'){r.previousURL=r.url;r.url='https://www.eee-learning.com/book/4716';}if(r.id==='swissapi')r.reviewURL='https://www.astro.com/swisseph/swephprg.htm';});
+  records.push({id:'lunartests18',title:'6tail lunar-javascript 作者EightChar測試',type:'作者原始碼及獨立數例',url:'https://github.com/6tail/lunar-javascript/blob/master/__tests__/EightChar.test.js',scope:'本輪取得作者30組測試並以專案固定1.7.7套件重跑；涵蓋四柱、晚子流派、藏干、十神與其他固定數例，不代表事件預測效度',checkedAt:'2026-10-14',lastReviewedRelease:'20261014integrity18'});
+  const methods={bazi:['lunartests18','zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','zipingrescue','renyuan','qiongtong','xiaoyun','ditiansui'],ziwei:['ziwei','zwflow','sihuaiztro','sihuaquanshu','zwheluo','iztroconfig'],astro:['horarylight','astronomy','swiss','swissapi','ruler','return','dignity','progression','horaryorbs','horaryvoid','horaryvocglossary','horaryreception','horarymoonentry','horarydenials1','horarydenials2'],vedic:['bphssudarsana','sudarsana','tajaka','pvr20','vedictransit','astronomy','swiss','swissapi','pvr','pvrofficial','bphs','raman','brihatav','pvradvanced','phala'],liuren:['liuren','liuren3','battle','liurenclasses7','liurenclasses8','liurenclasses9','liurenclasses10','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi','earth18','astronomy'],liuyao:['liuyao','liuyaotarget','liuyao26','renyuan'],yijing:['yijing','yizhu','yijingwings'],meihua:['meihua'],name:['unihan','moe','namebook','kumazaki1931','kumazaki1935','sancaicdi','sancai356','sancaistudy'],compat:['zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','qiongtong','ziwei','sihuaiztro','sihuaquanshu'],personality:['ziping'],tarot:['waite','bookt','mathers'],ootk:['bookt','mathers'],lenormand:['lenormand'],oracle:['oracle','oraclefull']};
   root.JYNativeRuleSources=Object.freeze({all:()=>records.map(x=>({...x})),forMethod:k=>records.filter(x=>(methods[k]||[]).includes(x.id)).map(x=>({...x}))});
 })(typeof window==='undefined'?globalThis:window);

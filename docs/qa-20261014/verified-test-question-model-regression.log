@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:question-model-regression
+> node tests/question-model-regression-20260927.cjs
+
+question model regression: semantic roles, measurements, comparisons, intimate-action layers, year-bound encounters and all 15 methods passed.

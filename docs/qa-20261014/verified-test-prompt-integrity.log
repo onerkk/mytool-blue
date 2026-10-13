@@ -1,0 +1,17 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:prompt-integrity
+> node scripts/sync-recommendation-guides.cjs --check && node tests/prompt-integrity-20261010.cjs
+
+Reading v10.0.0 / recommendation v4.9.0: all generated copies match
+PASS all fifteen methods deliver their full guide, original question and actual fact snapshot
+PASS method depth is independent of question type and does not force a full report
+PASS available twelve decades do not override the requested first eight, preserving eighty distinct years
+PASS single topic, exact years and first Bazi decades keep their own scope
+PASS answer review catches source identity errors and keeps hypothetical, borrowed and timing layers separate
+PASS year review identifies omitted annual rows, without certifying predictions
+PASS birthday age uses actual reference context and a whole year preserves both decade candidates
+PASS without the brief renderer, composite and JSON fallback retain full per-method guides
+PASS legacy finish adds the full shared workflow once and preserves literal facts and footer
+PASS large legacy references restore every original byte and malformed review sources are reported
+{"passed":10,"methods":15,"questionTypes":6,"scopeYears":80,"claim":"prompt and deterministic fact integrity only"}

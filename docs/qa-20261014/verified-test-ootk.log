@@ -1,0 +1,34 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:ootk
+> node tests/ootk-flow-20260915.cjs && node tests/ootk-source-fidelity-20260925.cjs && node tests/ootk-five-layer-reading-20261005.cjs && node tests/ootk-reading-pipeline-20261005.cjs
+
+PASS Default original-manuscript profile completes 512 casts across every court and conflicting expectations
+PASS Ace=5, inclusive counting, first-ring-card start, opposite-end pairing and packet inversion match the manuscript
+PASS Question keywords and preselected destinations never bias the original-manuscript shuffle
+PASS Legacy validation is explicit, still stops, and cannot fabricate later data
+PASS Payload and final prompt retain version-specific counts, the question, five operations and contextual recommendation
+PASS Full automatic playback and skipping before/every stage export the same cast once, with no pending callbacks
+PASS A thrown animation callback and a lost callback recover to complete data; cancellation never exports
+ootk-flow-20260915: 7 groups passed.
+PASS majority means unique preponderance/plurality, not an impossible >50% threshold
+PASS fourth operation majority/set observation includes the central significator
+PASS horseshoe end cards wrap to the opposite end for elemental dignity
+PASS first-operation opening cards are judged against their YHVH pile elements
+PASS physical inversion flips court facing/count direction without changing card meaning
+PASS Mathers counting still uses Ace=5 while the alternate Liber profile retains its own rule
+ootk-source-fidelity-20260925: 6 groups passed.
+ootk-five-layer-reading-20261005: engine, depth contract and prompt convergence passed.
+PASS A-G actual casts preserve every round, question, role, count, pair, dignity and exact optional chunks
+PASS fourth-round 15+ count nodes, all 36 cards and 18 pairs survive materialization without clipping
+PASS central inverted significator stays inverted in Op4 without inventing flanks or RWS meanings
+PASS mainLineValidation pending is scoped background, confirmed restores priority, other rounds remain eligible
+PASS Book T High Priestess + Netzach + Devil + Wands remain full result evidence, never a stop instruction
+PASS invalid/card-loss states cannot masquerade as full casts; aliases and missing rounds are diagnosed
+PASS semantic evidence graph shares scoped confirmation, Book T meaning and honest ring/completion states
+PASS all active/fallback entry points share the same materialized OOTK content and scoped partial data
+PASS localStorage rejection and >2MB records keep the entire in-memory prompt; no slicing
+PASS answer review fails safety-only, missing layer, repeated prose, false calendar and Priestess stop
+PASS browser script versions and mirror copies match the shared reading code
+PASS retained API A-G adapter and failure gates
+ootk-reading-pipeline-20261005: 12 groups passed; 7 actual question cases, no live AI calls.

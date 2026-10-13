@@ -1,0 +1,97 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:accuracy
+> node tests/engine-fixes-20260912.cjs && node tests/accuracy-engine-20260912.cjs && node tests/bazi-regression.cjs && node tests/bazi-suite-regression.cjs && node tests/export-accuracy-prompts-20260912.cjs
+
+PASS iztro 2.5.8: 160 independent frozen charts, both sexes, leap policies and date boundaries
+PASS Li-Chun annual boundary uses actual UTC instants, including explicit offsets
+PASS Calendar rejects invalid dates, NaN fields and unsupported policies
+PASS Month pillar and elapsed Jie days share one ephemeris, including simplified term names
+PASS Infancy before first Yun is represented; leap-day decades clamp to February end
+PASS Explicit chart-wall reference resolves back to the matching actual instant
+PASS 不得地 is weaker than 平, while 得地 is stronger
+PASS Neutral palace input gives neutral annual/monthly model output, not an offset of 50 or 100
+PASS Ziwei exported current year follows saved lunar year before Lunar New Year
+Engine fix groups passed: 9; independent comparisons: 18560
+PASS 紫微定位：五種局 × 三十日，150格固定安星表
+PASS 命身宮：144個月時组合；十四主星不重複、宮位完整
+PASS 五行局：六十甲子納音表，非法干支拒算
+PASS 年系星逐支查表；命主命宮取值；來因宮排除子丑重複干
+PASS 月、日、時系星：解神、天巫、陰煞、天貴、恩光、封誥與天壽
+PASS 曆法：2023閏二月、2025閏六月、2026農曆新年；兩種閏月政策
+PASS 晚子時可分早晚；月底子初換日與正月初一虛歲
+PASS 斗君：2008正月子時生，2026正月命宮午；四月未時生則戌
+PASS 八字：節氣依同一UTC瞬間，時區及真太陽時不改年、月柱
+PASS 八字：日柱基準、23點兩種政策、節氣引擎缺失與不存在日期
+PASS 合盤：100種有方向的十神，不把A看B反寫成B看A
+PASS 起運：分鐘距離按三日一年折算，正逆取節、不偽稱秒級準確
+PASS 香港天文台三年逐月月首：36個獨立日期（含閏月）
+PASS 二十顆星 × 十二宮廟旺表；未知星不虛填平
+PASS 八字命宮與紫微宮位口徑分開；ISO出生瞬間可核對
+PASS 跨系統整合不修改八字分數、不以相同歲數誤配虛歲
+Source arithmetic groups passed: 16
+✓ 台南出生時間真太陽時精確到秒
+✓ 本命四柱不變且起運按分鐘折算法完整保留餘數
+✓ 大運採精確半開區間，命盤牆鐘交界前後不重疊
+✓ 真實 UTC 瞬間先轉台北真太陽牆鐘，再判精確換運點
+✓ 原局作用由核心唯一列出申亥害與亥未拱木，沒有重複
+✓ 天干五合與六合不自動判定成化或灌入分數
+✓ 有根透印的乙庚合採普通格局，保留合化判別且不覆蓋扶抑喜忌
+✓ 調候與扶抑分離，不因火極少便自動加入核心用神
+✓ 23時換日政策可選，午夜派與子初派輸出各自一致
+✓ 流年以立春為界，不以公曆元旦換干支
+✓ IANA 時區能處理紐約夏令時間，固定偏移備援不偽裝成 DST
+✓ DST 重疊與缺口明確標記，秒數不在轉換中遺失
+✓ 流月沖合只列觸發，不以沖喜沖忌自動改分
+✓ 提示詞分離排盤事實與流派模型，包含精確運界及限制
+✓ 未知時辰提示詞明確降級時柱與精確起運可信度
+✓ 固定 UTC 偏移排盤在提示詞明示歷史時區限制
+✓ 精確曆法庫缺席時停止，不輸出預設五歲起運
+✓ 1994 戊寅案例：相月不可誤寫失令，根氣必須精確到3/4柱
+✓ 1994 戊寅案例：寅午戌三合由引擎裁決為成勢受午子沖，不再只丟待審
+✓ 1994 戊寅案例：月刃格與午月本氣正印分欄，不再輸出月刃格格神正印
+✓ 首頁載入本地曆法引擎且版本路徑正確
+
+All 21 regression tests passed.
+✓ 公開情境功能完整列出八種且角色不同
+✓ 單盤提供六種分析入口
+✓ 雙向十神映射不可互換
+✓ 合盤同時輸出日主、日柱、跨盤、五行互補與歲運同步
+✓ 合盤提示詞依角色情境切換並含兩張完整資料
+✓ 六合五合與三合三會只列候選不宣告成化
+✓ 六種單盤提示詞各自載入正確分析範圍
+✓ 五軸人格固定產生32個唯一類型且相同命盤可重現
+✓ 人格提示詞禁止心理診斷與貼死標籤
+✓ 城市時區表公開給完整套件，海外可用IANA/DST
+✓ 首頁保留原版UI為預設並另接完整套件
+✓ 核心與UI JavaScript語法可由Node解析
+✓ 四柱反查可找回已知公曆候選並明示必須真太陽時複核
+✓ 四柱反查拒絕格式錯誤與過大年份範圍
+✓ 公開排盤政策含真太陽時、子初換日、立春與半開大運區間
+✓ 完整UI含曆法工具、真太陽時與四柱反查入口
+✓ 排盤顯示可重算的生肖與八字重量，並將稱骨降為末位輔助
+✓ 未知時辰合盤會排除時柱跨盤訊號並把精確歲運降級
+✓ 單盤、合盤與人格都能生成圖片分享卡，並保留十個AI入口
+✓ 完整套件的日期時間地點全部使用站內自訂UI，不再觸發手機原生日曆
+✓ 單人合盤人格與工具共用同一套自訂出生資料元件
+
+All 21 Bazi suite regression tests passed.
+✓ 14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export
+✓ Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for
+✓ Mathers 21: King/Queen excluded, top card first, seventh next, complete symmetric pairs
+✓ The actual mode selector controls Mathers orientations and keeps the fifteen-card procedure fixed
+✓ Partial, duplicate, invalid and mixed-mode draws fail without a usable export or silent second builder call
+✓ Canonical Mathers failure cannot silently become an ordinary top-N draw
+✓ Stopped OOTK keeps its question, boundary, validation and cast time without exporting invalid card interpretations
+✓ All 64 hexagrams × 6 moving lines preserve Ti/Yong, one-line change, mutual hexagram and prompt data
+✓ Original Guan-Mei example: upper Dui, lower Li, first line → Ge to Xian with Dui as Ti
+✓ Numeric and character casting reject truncation and incomplete strokes; raw calculation provenance survives
+✓ Season uses saved cast instant, recognizes simplified Jie names, and identifies unavailable-calendar fallback honestly
+✓ Six Bazi lenses and eight compatibility scenarios export actual model details, directional roles and uncertainty
+✓ Bazi annual list starts with ongoing Li-Chun year in January, then advances at Li-Chun
+✓ Ziwei serialization locates Ming by palace identity, independent of array rotation
+✓ Every Lenormand layout preserves all card facts; incomplete/duplicate/unknown cards cannot export
+✓ All 60 oracle poems preserve original text, numbering and edition boundaries; invalid lot clears prior export
+divination-audit: 16 groups passed; offline runtime/data contracts only.
+PASS OOTK source count: 18 initial landings; five-operation fixed-deck export
+Exported 8 revised prompts to /workspace/scratch/69d127f9cd42/work/mytool-blue-master/review/accuracy-prompts
