@@ -1,0 +1,335 @@
+{
+  "release": "20261014counsel20",
+  "base": "Project after the previous mytool-blue-ui-cards-20261014 changed-files update",
+  "application": "Overlay mytool-blue-master/ contents onto the same project paths.",
+  "changedFiles": 54,
+  "removedFiles": [],
+  "files": [
+    {
+      "path": "JS/ai-analysis.js",
+      "bytes": 1583079,
+      "beforeSha256": "37b9dbd6ea5c6d76ed927fc7079a0833255a5b7e178abb68794ed1629478e73b",
+      "sha256": "32483b12f4323fa07de45cec553f9e40002cb1f3c0afc2e9b7679f27db7d5fd6"
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "bytes": 45150,
+      "beforeSha256": "b3dd09441eebee75061474a907d50d513f6537780e5bb87bdba27017fde55103",
+      "sha256": "19ab2b9ff7ae27d0f9146c8c446f5c7871d80cf1ce52e4170cada171f70f7292"
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "bytes": 209050,
+      "beforeSha256": "28990abf117a2f91f912831c94d072b8008444617145725ab023f72b5712ae79",
+      "sha256": "6cef03a52e6fd72c5ee0837e8b6ea1bad34c40387d90a8dbb35af08487dc9dda"
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "bytes": 178148,
+      "beforeSha256": "e418fc082c10390c53d0e724c908cdd468564aed8e3f8cc0f8e4b5d563af327e",
+      "sha256": "5ffe67fa6ff8016dbbfc8c5adeeff3cc0c3d174589401067e89215a426e9dfdc"
+    },
+    {
+      "path": "JS/lenormand.js",
+      "bytes": 383335,
+      "beforeSha256": "121434e29ec839e8cf7184200016ea7b57f02963c9bda0cafe9398a0ce238598",
+      "sha256": "fa69e2c66ef2c0596174e71eb2bbf0dc9e82725281613b8aaa6d58f360cfef71"
+    },
+    {
+      "path": "JS/liuren-prompt.js",
+      "bytes": 164883,
+      "beforeSha256": "2a8d1453f582fe4cd24f280bfec04a8e68954adf6803136a64a282de58a52621",
+      "sha256": "623711c34980999d168e2079529419e1ed70305608139fcf954f979a2407f62b"
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "bytes": 219345,
+      "beforeSha256": "2cd627f3b1de89c65e3757aa50a14f95ea35392f398f7ed2f1dabdec0b71ec38",
+      "sha256": "e06d3f3ad5a5b37575bf8516c1e0dd94869474bccc6945646631b0b41d2e1678"
+    },
+    {
+      "path": "JS/name-prompt.js",
+      "bytes": 169246,
+      "beforeSha256": "20b0613a6c7a58b3bfdf23b9d5123e7853f05c09d2664c295441d6401725af48",
+      "sha256": "b126657797f38fab654e2b6a11120c21dcb54f9d93018dae14c9239763fb9285"
+    },
+    {
+      "path": "JS/native-depth-contract.js",
+      "bytes": 17013,
+      "beforeSha256": "c4538b3be67f82d73330471b95d975f6f6d253bca74a955f92972175836ed81d",
+      "sha256": "b1583cecd14e4b54d8e9f1fce66f0443db29535be025d048403474a115f5e7cf"
+    },
+    {
+      "path": "JS/oracle.js",
+      "bytes": 287243,
+      "beforeSha256": "3a4b8684f8c183551e28aa6a7d55b7d12c79a143e06d789a9db0688fa46da4e1",
+      "sha256": "8a3af46ee7eabdf8863dc7816d0c591f9defb942398d3149a4b5808f64335ea5"
+    },
+    {
+      "path": "JS/prompt-brief.js",
+      "bytes": 77965,
+      "beforeSha256": "3a318d1f2ab897a3047897f04de14ff2986206a2ffa3c7efb7d9b2e3b7438491",
+      "sha256": "a3bf3530d2036ccd77bbc471087c96297010a992c1101859d0f295d9fec72eb1"
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "bytes": 315496,
+      "beforeSha256": "2b4199e41ebe0e05f941599c07e30311e42aa9ec3ee386fd42632a8cd5080579",
+      "sha256": "c463b70aa0814639cb9abfbbbd8dd7031ad0980af2fe0507f392bf1b2124d052"
+    },
+    {
+      "path": "JS/prompt-packet.js",
+      "bytes": 75815,
+      "beforeSha256": "803f097c20d736f0cc9b98f8e1f06d1e50c26e33060cc1473158b0ac42f27c07",
+      "sha256": "6658df4849844248048c33c9e3c5be7d1821a834ff37f406fecbc0be568436aa"
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "bytes": 67198,
+      "beforeSha256": "78cf756b1d329c1447b2d3e461294735f119dc00ac5234d3d8b2f9dd16a26a01",
+      "sha256": "4e85b18072a1bb56103c6d2922e50491af31e8e2579afd2ae43f5c84e81755f5"
+    },
+    {
+      "path": "JS/reading-workflow.js",
+      "bytes": 145138,
+      "beforeSha256": "bb415e3dcbf3f606c1d7c8235b62a9bf148953d484fd3a9b37461e8e980ff2aa",
+      "sha256": "8f820fa9ee8ea4c763ddca4f6b12644825a314b29b6035462951a4a07c685747"
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "bytes": 194616,
+      "beforeSha256": "5d7d52cb5406ba223dee99898cb03659d51a1b54147103e30b59ee2bcc180338",
+      "sha256": "75e2f4d8d9de81ac93a8fd6a2c664d1ffbba02b34f378e422ca7a6800f10ab04"
+    },
+    {
+      "path": "JS/sw.js",
+      "bytes": 8090,
+      "beforeSha256": "567ac71935da020dce77e4e0aa0721c5f91a67766ab57c1f6ae0fdbc329f03ef",
+      "sha256": "3ee13b420ae658e060e48141d7c6c9c20f44693ba01cec56ad2a852496d0f2fb"
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "bytes": 181308,
+      "beforeSha256": "94f9ced14f3b3abaf8742def5c583749ada7c4f43ba40fd7fd96c02a43bbf655",
+      "sha256": "13389a0ecd8739a10a3407a5c245fc937bc1d6b61d0a5e565a1f424720dc2107"
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "bytes": 168900,
+      "beforeSha256": "18e7fea35fc92aacc6d687f38db7be16b06e998cba7dceed1a84dda63a013b90",
+      "sha256": "614c0b8c611fa25ab8522fdc5215b69b18fbe63e113167f7572d3eaef9d2b833"
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "bytes": 22385,
+      "beforeSha256": "af20877f21289e86d8b66bd7aab1a3895ef0ceb4ef328119b7f2cee25ccd0461",
+      "sha256": "ce2720fdc572a56ee00e2fc10603431c824f25374c1aeaeb51112039b73c4712"
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "bytes": 245974,
+      "beforeSha256": "10f25f583f0e405966d44a53c6c06b2226bdd45624f99a14354d4d85118a51a0",
+      "sha256": "52bf7ed5d809b57731e229b7f6937196a10bde3a0c94483706d51e1b86203a97"
+    },
+    {
+      "path": "UPDATE-20261014-COUNSEL-PROMPTS.md",
+      "bytes": 2765,
+      "beforeSha256": null,
+      "sha256": "5cbab5b39439c1493e41f45916015ec917ff989c127ebc486d601584491f0025"
+    },
+    {
+      "path": "ai-analysis.js",
+      "bytes": 1583079,
+      "beforeSha256": "37b9dbd6ea5c6d76ed927fc7079a0833255a5b7e178abb68794ed1629478e73b",
+      "sha256": "32483b12f4323fa07de45cec553f9e40002cb1f3c0afc2e9b7679f27db7d5fd6"
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "bytes": 45150,
+      "beforeSha256": "b3dd09441eebee75061474a907d50d513f6537780e5bb87bdba27017fde55103",
+      "sha256": "19ab2b9ff7ae27d0f9146c8c446f5c7871d80cf1ce52e4170cada171f70f7292"
+    },
+    {
+      "path": "bazi-suite-core.js",
+      "bytes": 209050,
+      "beforeSha256": "28990abf117a2f91f912831c94d072b8008444617145725ab023f72b5712ae79",
+      "sha256": "6cef03a52e6fd72c5ee0837e8b6ea1bad34c40387d90a8dbb35af08487dc9dda"
+    },
+    {
+      "path": "docs/counsel-prompts-validation-20261014.json",
+      "bytes": 7192,
+      "beforeSha256": null,
+      "sha256": "83f5d3bef4fe99a5041e855a1a0238ee9aa422a2883d1fc71b6d418ea3747bba"
+    },
+    {
+      "path": "functions/api/ai.js",
+      "bytes": 277730,
+      "beforeSha256": "e613faa142c786d963e0c569b287eb0107fcad6e459a6e32c7804140e01af9e4",
+      "sha256": "e1e5fb7bc133afaf26fba1a4ed21b6b411dd9c54f756c5ada7141bab09bab480"
+    },
+    {
+      "path": "index.html",
+      "bytes": 152471,
+      "beforeSha256": "e083fc66adb37315212c63edee77793a803606a3fdf52caead30e52bbe4518ab",
+      "sha256": "678d696745141d225d553fc23ecfeee33871bac0c6ae49afdd7a61dd146d2a6a"
+    },
+    {
+      "path": "lenormand.js",
+      "bytes": 383335,
+      "beforeSha256": "121434e29ec839e8cf7184200016ea7b57f02963c9bda0cafe9398a0ce238598",
+      "sha256": "fa69e2c66ef2c0596174e71eb2bbf0dc9e82725281613b8aaa6d58f360cfef71"
+    },
+    {
+      "path": "meihua-standalone.js",
+      "bytes": 219345,
+      "beforeSha256": "2cd627f3b1de89c65e3757aa50a14f95ea35392f398f7ed2f1dabdec0b71ec38",
+      "sha256": "e06d3f3ad5a5b37575bf8516c1e0dd94869474bccc6945646631b0b41d2e1678"
+    },
+    {
+      "path": "native-depth-contract.js",
+      "bytes": 17013,
+      "beforeSha256": "c4538b3be67f82d73330471b95d975f6f6d253bca74a955f92972175836ed81d",
+      "sha256": "b1583cecd14e4b54d8e9f1fce66f0443db29535be025d048403474a115f5e7cf"
+    },
+    {
+      "path": "oracle.js",
+      "bytes": 287243,
+      "beforeSha256": "3a4b8684f8c183551e28aa6a7d55b7d12c79a143e06d789a9db0688fa46da4e1",
+      "sha256": "8a3af46ee7eabdf8863dc7816d0c591f9defb942398d3149a4b5808f64335ea5"
+    },
+    {
+      "path": "package.json",
+      "bytes": 11065,
+      "beforeSha256": "00a18fb91ef7436c8afd275ec0209f8d35d1e4e0c54034a50d3820c9d42fe1cc",
+      "sha256": "2a121da2eee69a776d504a41c794e10f11d53137f04bd66612914f02a1d4a05b"
+    },
+    {
+      "path": "prompt-brief.js",
+      "bytes": 77965,
+      "beforeSha256": "3a318d1f2ab897a3047897f04de14ff2986206a2ffa3c7efb7d9b2e3b7438491",
+      "sha256": "a3bf3530d2036ccd77bbc471087c96297010a992c1101859d0f295d9fec72eb1"
+    },
+    {
+      "path": "prompt-export.js",
+      "bytes": 315496,
+      "beforeSha256": "2b4199e41ebe0e05f941599c07e30311e42aa9ec3ee386fd42632a8cd5080579",
+      "sha256": "c463b70aa0814639cb9abfbbbd8dd7031ad0980af2fe0507f392bf1b2124d052"
+    },
+    {
+      "path": "prompt-packet.js",
+      "bytes": 75815,
+      "beforeSha256": "803f097c20d736f0cc9b98f8e1f06d1e50c26e33060cc1473158b0ac42f27c07",
+      "sha256": "6658df4849844248048c33c9e3c5be7d1821a834ff37f406fecbc0be568436aa"
+    },
+    {
+      "path": "reading-review.html",
+      "bytes": 4833,
+      "beforeSha256": "c09fee25c8111ad7a4b7f17d09531839e54b41429cbd5f21d80a0944b162705f",
+      "sha256": "a00a57a32e9e67945a3c8e2221c03724789e33659eafb85c0349c5f304cc69fe"
+    },
+    {
+      "path": "scripts/sync-recommendation-guides.cjs",
+      "bytes": 11441,
+      "beforeSha256": "03c712245648ccfb7338c389def33ed4f32afb2d1536dd48af940bcfdc8dc828",
+      "sha256": "45ad00ad7564cf830b2930c6ea64b2171e96fb8b4118768910567f1b422eadf6"
+    },
+    {
+      "path": "sw.js",
+      "bytes": 8090,
+      "beforeSha256": "567ac71935da020dce77e4e0aa0721c5f91a67766ab57c1f6ae0fdbc329f03ef",
+      "sha256": "3ee13b420ae658e060e48141d7c6c9c20f44693ba01cec56ad2a852496d0f2fb"
+    },
+    {
+      "path": "tests/comprehensive-reading-20261001.cjs",
+      "bytes": 10598,
+      "beforeSha256": "0f295db6c89e89510498961c3b8bfde0188df098382ce73223f2ef7f0cd8b500",
+      "sha256": "63a1779ba00774eb85ae1a7e9b79d66fe43c312ce692cbab09b522ab7574da99"
+    },
+    {
+      "path": "tests/counsel-voice-20261014.cjs",
+      "bytes": 4767,
+      "beforeSha256": null,
+      "sha256": "672813fee97c9bbd065f036c8035d2b8dabc786ef5adbca789c6c6364b4c5dec"
+    },
+    {
+      "path": "tests/depth-contract-r12-20261004.cjs",
+      "bytes": 5088,
+      "beforeSha256": "354f3d5bbc1e356c108531aeb51f49b2d954b443e32d1f7a3f1bb45a170e3da7",
+      "sha256": "3e936da1937be85cc1379f1f30d66158b60f0bfa7e2600cf02ee4716ac7ced4f"
+    },
+    {
+      "path": "tests/engine-core-completion-r13-20261004.cjs",
+      "bytes": 5274,
+      "beforeSha256": "626bf371736206dbf22ba0114b9c8b56706fa32eca9a8cf36b1dcf1fa92db115",
+      "sha256": "9981de1ba0f566b11374140d8cb37ab4aca3a6cb8f3f7089c32972e33e0ef247"
+    },
+    {
+      "path": "tests/engine-evidence-r14-20261004.cjs",
+      "bytes": 13437,
+      "beforeSha256": "8cf95f511a60f672a3a594f8ea9fe19282d0b0304b08bf49412ed3c4deb19597",
+      "sha256": "a3166f7e12f1d9cc9f3e733f5aeb3eb2bc3ac2c55c96e8d179559c73610e3581"
+    },
+    {
+      "path": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "bytes": 14432,
+      "beforeSha256": "d0b1d05555986ba5513968cc16f344823c45292b119c5b446f9f8a4a82b594d9",
+      "sha256": "514e67e9660169683ac16c057190e44ee3e1a2a3083a393474b1665bac8c2ede"
+    },
+    {
+      "path": "tests/mobile-ritual-actions-20260928.cjs",
+      "bytes": 5529,
+      "beforeSha256": "9efd5b547a08a4c3e3636828316f66cf8a607838a05dc81472720a9a43ae36e1",
+      "sha256": "3cadbe7b86b8650d1a8d7e59074bb76609a1ef836a1e28c3a24238773c18c499"
+    },
+    {
+      "path": "tests/ootk-browser-20260915.cjs",
+      "bytes": 6603,
+      "beforeSha256": "0269a772b63c4aa1dddc23d569ae4cf96c865c559369d667fc27e77de960c605",
+      "sha256": "63181681693985082492f4427c15a3a1768d3809f75879a18ff714d8c72c37ee"
+    },
+    {
+      "path": "tests/ootk-five-layer-reading-20261005.cjs",
+      "bytes": 3665,
+      "beforeSha256": "2e6c53e2796f95e13c74745bef7aee6f6e80fab6f7a64ed8972a0c8217b9d946",
+      "sha256": "b2de50a48516702e52cda47ba8bca67620e0c22b1f1826ffd2702f6b7e760cdb"
+    },
+    {
+      "path": "tests/ootk-reading-pipeline-20261005.cjs",
+      "bytes": 23371,
+      "beforeSha256": "d279b9c5cc76f4c224278cff81f32a7b1c5225dee71562de91e3589772f16bc6",
+      "sha256": "6d4c24bc45036e1949212070d4431b0265e23ddd593c0758dbd39736073ab299"
+    },
+    {
+      "path": "tests/question-model-regression-20260927.cjs",
+      "bytes": 11196,
+      "beforeSha256": "da2685539cec2cac314a86a0bd9f38ec4139428dc624bf338450c423d3d63bb4",
+      "sha256": "a72a3bd0ac15c8e505bd2087b8497092ecf75adeeb61b2962f5d495e1b7418cf"
+    },
+    {
+      "path": "tests/reader-voice-20260923.cjs",
+      "bytes": 3398,
+      "beforeSha256": "abd8ad6a36b6ca81da821a43c6ef4c4ca83c5c055604f6e792daad558e587e13",
+      "sha256": "7265dcde3a330659ddfdc248cebcc20e752f05090e15f3d7f2448eb4f844a604"
+    },
+    {
+      "path": "tests/reading-depth-regression-20260927.cjs",
+      "bytes": 5158,
+      "beforeSha256": "9fea647f4327742e755c9adb236eee5fcb0e6dfaae988283b7c56e0fa9a33b01",
+      "sha256": "b1da3d0d4664b22e16cf8fdf12b8985f286696de02fd23be71a4309315175a9d"
+    },
+    {
+      "path": "tests/reading-integrity-20261014.cjs",
+      "bytes": 7344,
+      "beforeSha256": "3c3213febf5fdcb5a7b61c2b70c5c209ae3ab0d450dad4488ca5cc2d7bd260cc",
+      "sha256": "c3c563f4a4e564b4842391666405a48c417081e3a40a8bb2672bc8ae9de0490e"
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "bytes": 22385,
+      "beforeSha256": "af20877f21289e86d8b66bd7aab1a3895ef0ceb4ef328119b7f2cee25ccd0461",
+      "sha256": "ce2720fdc572a56ee00e2fc10603431c824f25374c1aeaeb51112039b73c4712"
+    }
+  ],
+  "validation": "docs/counsel-prompts-validation-20261014.json",
+  "notes": "Prompt voice and grounded important reminders; original chart data and intentional shop closing retained."
+}

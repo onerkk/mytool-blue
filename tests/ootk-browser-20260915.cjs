@@ -27,7 +27,7 @@ const root=path.resolve(__dirname,'..'),out=process.env.JY_OOTK_REVIEW,runtime=p
    });
    await page.addInitScript(()=>{window.__copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>__copied.push(text)}});});
    await page.goto('https://jingyue.uk/',{waitUntil:'load'});
-   await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='4.9.0'&&typeof startOOTK==='function'&&window.JYNativeCards?.ootkToPrompt);
+   await page.waitForFunction(()=>window.JY_READING_QUALITY?.version==='5.0.0'&&typeof startOOTK==='function'&&window.JYNativeCards?.ootkToPrompt);
    if(fontDir){const css=fs.readFileSync(path.join(fontDir,'400.css'),'utf8').replaceAll('url(./files/','url(https://jingyue.uk/__qa-fonts/files/');await page.addStyleTag({content:css+' body,button,select,p,h1,h2,h3,b,strong,small,span,label{font-family:"Noto Serif TC",serif!important}'});await page.evaluate(()=>document.fonts.ready);}
    const question='公司認識的異性會跟我交往嗎？我該怎麼自然表達自己的需要？';
    // Use the public entry and its real picker; the form is supplied as a fixed test input.

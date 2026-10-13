@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261014depth18';
+  const VERSION='20261014depth20';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -83,14 +83,15 @@
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
     `閱讀範圍狀態：${c.status}。`,
+    '成稿方式：以命理師自然解惑的口吻深入說明；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
-    `合成順序：${c.synthesisOrder.join(' → ')}。`,
+    `內部合成核對（不作正文欄位）：${c.synthesisOrder.join(' → ')}。`,
     c.contradictionChecks.length?`流派／反證規則：${c.contradictionChecks.join('；')}。`:'',
     `禁止捷徑：${c.forbiddenShortcuts.join('；')}。`,
     `置信規則：${c.confidencePolicy}`,
-    c.methodOutputPolicy?`本法輸出契約：${[c.methodOutputPolicy.fiveLayerRequirement,c.methodOutputPolicy.synthesisRequirement,c.methodOutputPolicy.attributionBoundary,c.methodOutputPolicy.pendingValidationBoundary].join('；')}\n必要成稿段落：${A(c.methodOutputPolicy.requiredSections).join(' → ')}`:'',
+    c.methodOutputPolicy?`本法輸出契約：${[c.methodOutputPolicy.fiveLayerRequirement,c.methodOutputPolicy.synthesisRequirement,c.methodOutputPolicy.attributionBoundary,c.methodOutputPolicy.pendingValidationBoundary].join('；')}\n必要內容覆蓋（可自然組織，不是固定標題）：${A(c.methodOutputPolicy.requiredSections).join(' → ')}`:'',
     '完整性界線：通過只代表本次具名方法的已實算範圍可讀，不代表全部歷史流派已實作或事件已被證實。',
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''

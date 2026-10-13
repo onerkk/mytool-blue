@@ -4,10 +4,11 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const q=require(path.join(root,'JS/reading-quality.js'));
-const workflowTargets=['JS/gua-prompt.js','JS/bazi-suite-core.js','JS/ziwei-standalone.js','JS/meihua-standalone.js','JS/lenormand.js','JS/oracle.js','JS/prompt-export.js','JS/vedic-prompt.js','JS/western-prompt.js','JS/relationship-core.js','JS/ai-analysis.js','JS/name-prompt.js'];
+const workflowTargets=['JS/gua-prompt.js','JS/bazi-suite-core.js','JS/ziwei-standalone.js','JS/meihua-standalone.js','JS/lenormand.js','JS/oracle.js','JS/prompt-export.js','JS/vedic-prompt.js','JS/western-prompt.js','JS/relationship-core.js','JS/ai-analysis.js','JS/name-prompt.js','JS/liuren-prompt.js'];
 const textMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationText(k)]));
 const endingMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationEnding(k)]));
 const targets=[
+  ['JS/liuren-prompt.js','JY_REC_LIUREN',q.recommendationEnding('liuren')],
   ['JS/prompt-packet.js','JY_REC_PACKET',endingMap(q.methodKinds())],
   ['JS/prompt-brief.js','JY_REC_BRIEF',endingMap(q.methodKinds())],
   ['JS/name-prompt.js','JY_REC_NAME',q.recommendationEnding('name')],
@@ -24,6 +25,7 @@ const targets=[
   ['functions/api/ai.js','SYSTEM_RECOMMENDATION',q.recommendationText()]
 ];
 const readingTargets=[
+  ['JS/liuren-prompt.js','JY_READING_LIUREN',q.lines('liuren')],
   ['JS/name-prompt.js','JY_READING_NAME',q.lines('name')],
   ['JS/gua-prompt.js','JY_READING_GUA',{liuyao:q.lines('liuyao'),yijing:q.lines('yijing')}],
   ['JS/bazi-prompt-root.js','JY_READING_BAZI',{bazi:q.lines('bazi'),compat:q.lines('compat'),personality:q.methodLines('personality')}],
@@ -89,6 +91,9 @@ for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]
 const workflowFile='JS/reading-workflow.js',workflowOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
 const methodGuides='  // BEGIN GENERATED WORKFLOW METHOD GUIDES\n  var METHOD_GUIDES = '+JSON.stringify(Object.fromEntries(q.methodKinds().map(k=>[k,q.methodLines(k)])),null,2)+';\n  // END GENERATED WORKFLOW METHOD GUIDES\n';
 persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides));
+const voiceOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
+const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
+persist(workflowFile,voiceOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW VOICE GUIDE\n[\s\S]*?  \/\/ END GENERATED WORKFLOW VOICE GUIDE\n/,()=>voiceBlock));
 const workflowSource=fs.readFileSync(path.join(root,'JS/reading-workflow.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
 for(const file of workflowTargets){
   const old=fs.readFileSync(path.join(root,file),'utf8');
@@ -101,7 +106,7 @@ for(const file of workflowTargets){
 // second OOTK prompt or let a cached older reader replace this release.
 const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
   ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
-  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth18",undefined,{numeric:true})<0']
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth20",undefined,{numeric:true})<0']
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);

@@ -30,7 +30,7 @@ test('A-G actual casts preserve every round, question, role, count, pair, dignit
  let previous;
  for(const question of QUESTIONS){
   const payload=e.cast(39,question),before=JSON.stringify(payload),castBefore=JSON.stringify(c._ootkResults),text=c.JY_buildExportPrompt('ootk',payload),packet=unpack(text),native=c.JYNativeAnalysis.analyze('ootk',payload);
-  assert.equal(native.methodData.integrity.status,'complete');assert.equal(native.depthContract.version,'20261014depth18');assert.equal(native.depthContract.status,'ready-for-scoped-reading');
+  assert.equal(native.methodData.integrity.status,'complete');assert.equal(native.depthContract.version,'20261014depth20');assert.equal(native.depthContract.status,'ready-for-scoped-reading');
   assert.equal(JSON.stringify(payload),before);assert.equal(JSON.stringify(c._ootkResults),castBefore);assert(text.includes(JSON.stringify(question)));assert(!/〔同項\d+〕|\$ref|\$table|\[object Object\]|undefined|NaN/.test(text));
   assert(text.includes('【OOTK五輪資料結束與完整性核對】'));assert(text.indexOf('【OOTK五輪資料結束與完整性核對】')<text.lastIndexOf('【資料結束】'));
   const contract=block(text,'OOTK成稿契約');assert.deepEqual(contract.expectedLayers,['op1','op2','op3','op4','op5']);assert.equal(contract.requiredSections.length,11);
@@ -109,8 +109,8 @@ test('answer review fails safety-only, missing layer, repeated prose, false cale
  assert.equal(F.reviewOOTK({sourcePrompt:source,answer:sampleAnswer()}).length,0);assert(F.repairPrompt({method:'ootk',question:QUESTIONS[0],answer:'未知',sourcePrompt:source}).includes(source));
 });
 test('browser script versions and mirror copies match the shared reading code',()=>{
- const html=read('index.html');for(const [name,version]of Object.entries({'native-card-analysis':'20261005ootk16','native-depth-contract':'20261014depth18','prompt-brief':'20261014prompt18','prompt-packet':'20261014prompt18','reading-workflow':'20261014integrity18'}))assert(html.includes('JS/'+name+'.js?v='+version));
- for(const name of ['native-card-analysis','native-depth-contract','prompt-brief','prompt-packet','reading-workflow','ai-analysis','prompt-export'])if(fs.existsSync(path.join(ROOT,name+'.js')))assert.equal(read(name+'.js'),read('JS/'+name+'.js'),name+' mirror');assert(read('reading-review.html').includes('20261014integrity18'));assert.equal(read('sw.js'),read('JS/sw.js'));
+ const html=read('index.html');for(const [name,version]of Object.entries({'native-card-analysis':'20261005ootk16','native-depth-contract':'20261014counsel20','prompt-brief':'20261014counsel20','prompt-packet':'20261014counsel20','reading-workflow':'20261014counsel20'}))assert(html.includes('JS/'+name+'.js?v='+version));
+ for(const name of ['native-card-analysis','native-depth-contract','prompt-brief','prompt-packet','reading-workflow','ai-analysis','prompt-export'])if(fs.existsSync(path.join(ROOT,name+'.js')))assert.equal(read(name+'.js'),read('JS/'+name+'.js'),name+' mirror');assert(read('reading-review.html').includes('20261014counsel20'));assert.equal(read('sw.js'),read('JS/sw.js'));
 });
 (async()=>{
  const originalFetch=globalThis.fetch;let calls=0,writes=0,sent;
@@ -120,7 +120,7 @@ test('browser script versions and mirror copies match the shared reading code',(
   const request=payload=>new Request('https://jingyue.uk/api/ai',{method:'POST',headers:{Origin:'https://jingyue.uk','Content-Type':'application/json'},body:JSON.stringify({payload})});
   for(const question of QUESTIONS){
    const payload=plain(e.cast(39,question)),before=JSON.stringify(payload);globalThis.fetch=async(url,init)=>{calls++;sent=JSON.parse(init.body);return Response.json({content:[{type:'text',text:JSON.stringify({answer:sampleAnswer(),action:null,timing:null})}]});};
-   const resp=await api({request:request(payload),env});assert.equal(resp.status,200,JSON.stringify(await resp.clone().json()));assert.equal(JSON.stringify(payload),before);assert(sent.system.includes('20261014depth18'));assert(sent.messages[0].content.includes(c.JYNativeCards.ootkToPrompt(c.JYNativeCards.ootk(payload))));assert.equal(sent.max_tokens,16384);
+   const resp=await api({request:request(payload),env});assert.equal(resp.status,200,JSON.stringify(await resp.clone().json()));assert.equal(JSON.stringify(payload),before);assert(sent.system.includes('20261014depth20'));assert(sent.messages[0].content.includes(c.JYNativeCards.ootkToPrompt(c.JYNativeCards.ootk(payload))));assert.equal(sent.max_tokens,16384);
   }
   const adapterPayload=plain(e.cast(39)),reader=c.JYNativeCards.ootkToPrompt(c.JYNativeCards.ootk(adapterPayload));
   for(const extra of [{ootkData:JSON.stringify(adapterPayload.ootkData)},{dims:{ootk:JSON.stringify(adapterPayload.ootkData)}},{rawReadings:{ootk:JSON.stringify(adapterPayload.ootkData)}},{ootkData:adapterPayload.ootkData,dims:{ootk:JSON.stringify(adapterPayload.ootkData)},rawReadings:{ootk:JSON.stringify(adapterPayload.ootkData)}}]){

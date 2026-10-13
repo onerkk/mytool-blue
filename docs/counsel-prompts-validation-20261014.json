@@ -1,0 +1,272 @@
+{
+  "release": "20261014counsel20",
+  "readingVersion": "11.0.0",
+  "workflowVersion": "2.0.0",
+  "recommendationVersion": "5.0.0",
+  "status": "passed",
+  "actualPromptExports": {
+    "version": "20261014counsel20",
+    "actualMethods": 15,
+    "results": [
+      {
+        "method": "bazi",
+        "status": "passed",
+        "characters": 38687,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "ziwei",
+        "status": "passed",
+        "characters": 48288,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "astro",
+        "status": "passed",
+        "characters": 18186,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "vedic",
+        "status": "passed",
+        "characters": 171632,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "liuren",
+        "status": "passed",
+        "characters": 52274,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "liuyao",
+        "status": "passed",
+        "characters": 14138,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "yijing",
+        "status": "passed",
+        "characters": 13458,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "meihua",
+        "status": "passed",
+        "characters": 10659,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "name",
+        "status": "passed",
+        "characters": 18313,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "compat",
+        "status": "passed",
+        "characters": 22640,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "personality",
+        "status": "passed",
+        "characters": 7537,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "tarot",
+        "status": "passed",
+        "characters": 6660,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "lenormand",
+        "status": "passed",
+        "characters": 9033,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "ootk",
+        "status": "passed",
+        "characters": 15754,
+        "originalDataUnchanged": true
+      },
+      {
+        "method": "oracle",
+        "status": "passed",
+        "characters": 10580,
+        "originalDataUnchanged": true
+      }
+    ],
+    "fallbackWithoutSharedGuide": "passed",
+    "compoundQuestion": "passed",
+    "hypotheticalNegativeControl": "passed",
+    "fullAndAnnualCoverage": "passed",
+    "scope": "Actual local builders and unchanged chart fixtures. External AI prose compliance and prediction accuracy are not certified."
+  },
+  "productionPageClipboard": {
+    "browser": "153.0.8010.0",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "status": "passed",
+    "copiedCharacters": 14706,
+    "voice": true,
+    "proactiveFindings": true,
+    "compoundQuestion": true,
+    "cardCount": 7,
+    "errors": [],
+    "missing": [],
+    "scope": "Actual production index and clipboard/export click in headless Chromium; no external AI response requested."
+  },
+  "passedChecks": [
+    {
+      "command": "npm run test:recommendations",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:reading-integrity",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:prompt-integrity",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:reading-workflow",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:reading-grounding",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:question-model-regression",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:causal-question",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:semantic-review-followup",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:plain",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:depth",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:lenormand",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:tarot",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:ootk",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:liuren",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-depth-regression-20260927.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/comprehensive-reading-20261001.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/counsel-voice-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-integrity-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/prompt-integrity-20261010.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "exitCode": 0
+    }
+  ],
+  "notes": [
+    "使用真實本機建構器及測試盤面；原始盤面與牌序未改寫。",
+    "包含共用品質模組缺席、六壬獨立入口、舊版推薦結尾及條件式建議題的檢查。",
+    "複合結果核對屬提示詞原文輔助，沒有更換語義引擎或牌陣分支。",
+    "未呼叫外部 AI；不認證 AI 成稿品質、事件機率或命理預測準確率。"
+  ],
+  "syntaxChecks": {
+    "status": "passed",
+    "checkedFiles": [
+      "ai-analysis.js",
+      "meihua-standalone.js",
+      "bazi-prompt-root.js",
+      "prompt-export.js",
+      "native-depth-contract.js",
+      "oracle.js",
+      "prompt-packet.js",
+      "bazi-suite-core.js",
+      "lenormand.js",
+      "ziwei-prompt-root.js",
+      "sw.js",
+      "prompt-brief.js",
+      "scripts/sync-recommendation-guides.cjs",
+      "JS/ai-analysis.js",
+      "JS/relationship-core.js",
+      "JS/reading-workflow.js",
+      "JS/meihua-standalone.js",
+      "JS/ziwei-standalone.js",
+      "JS/bazi-prompt-root.js",
+      "JS/prompt-export.js",
+      "JS/reading-quality.js",
+      "JS/native-depth-contract.js",
+      "JS/name-prompt.js",
+      "JS/oracle.js",
+      "JS/prompt-packet.js",
+      "JS/bazi-suite-core.js",
+      "JS/vedic-prompt.js",
+      "JS/lenormand.js",
+      "JS/ziwei-prompt-root.js",
+      "JS/sw.js",
+      "JS/liuren-prompt.js",
+      "JS/gua-prompt.js",
+      "JS/western-prompt.js",
+      "JS/prompt-brief.js",
+      "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "tests/depth-contract-r12-20261004.cjs",
+      "tests/reading-depth-regression-20260927.cjs",
+      "tests/counsel-voice-20261014.cjs",
+      "tests/comprehensive-reading-20261001.cjs",
+      "tests/ootk-reading-pipeline-20261005.cjs",
+      "tests/ootk-five-layer-reading-20261005.cjs",
+      "tests/ootk-browser-20260915.cjs",
+      "tests/reader-voice-20260923.cjs",
+      "tests/engine-core-completion-r13-20261004.cjs",
+      "tests/question-model-regression-20260927.cjs",
+      "tests/mobile-ritual-actions-20260928.cjs",
+      "tests/reading-integrity-20261014.cjs",
+      "tests/engine-evidence-r14-20261004.cjs",
+      "functions/api/ai.js"
+    ],
+    "removedFiles": []
+  },
+  "generatedCopies": "passed: scripts/sync-recommendation-guides.cjs --check"
+}
