@@ -2881,39 +2881,41 @@ function _render() {
   } else {
     // Results
     var sp = _lnReadingPlan||SPREADS[_lnResolved];
-    h += '<div class="ln-section"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
+    h += '<div class="ln-section ln-spread-section" tabindex="-1"><div class="ln-section-title">✦ ' + sp.name + '（' + sp.count + ' 張）</div>';
     if (_lnAutoPick) h += '<div class="ln-auto-note">✦ 自動判斷：' + _lnAutoPick.why + '</div>';
     if (_lnSignif) h += '<div class="ln-auto-note">✦ ' + ((_lnSignif===28||_lnSignif===29)?'本人定位牌':'議題定位牌') + '：' + _lnSignif + '.' + ((CARDS[_lnSignif-1]||{}).name||'') + (_lnResolved==='nine' ? '（已置中央・現代焦點九宮格）' : /^grand/.test(_lnResolved) ? '（於36張中定位讀取）' : '（本牌陣不置入）') + '</div>';
     if(_lnResolved==='grand_nines'){
-      h+='<p class="at-result-note">四排各九張，橫向滑動查看完整盤面。</p><div class="at-chart-scroll" tabindex="0" role="region" aria-label="四排九張大牌陣"><div style="display:grid;grid-template-columns:repeat(9,72px);gap:8px;width:max-content">';
+      h+='<p class="at-result-note">四排各九張，先看完整盤面，再點選單張查看。</p><div class="at-chart-scroll ln-board-frame" tabindex="0" role="region" aria-label="四排九張大牌陣"><div class="ln-spread-board" data-spread="grand_nines" style="--ln-cols:9">';
     }else if(_lnResolved==='seven'){
-      h+='<div class="at-chart-scroll" tabindex="0" role="region" aria-label="七張線"><div style="display:flex;gap:8px;width:max-content">';
+      h+='<div class="at-chart-scroll ln-board-frame" tabindex="0" role="region" aria-label="七張線"><div class="ln-spread-board" data-spread="seven" style="--ln-cols:7">';
     }else if(_lnResolved==='branches'){
-      h+='<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">';
+      h+='<div class="ln-spread-board" data-spread="branches" style="--ln-cols:3;--ln-rows:'+Math.ceil(sp.count/3)+'">';
     }else if (_lnResolved === 'grand') {
-      h += '<p class="at-result-note">依 8 × 4 ＋底部 4 張排列。橫向滑動可查看完整牌陣，牌位編號對應解讀提示詞。</p><div class="at-chart-scroll" tabindex="0" role="region" aria-label="可橫向捲動的大牌陣"><div class="ln-grand-layout">';
+      h += '<p class="at-result-note">依 8 × 4 ＋底部 4 張排列。牌位編號對應解讀提示詞；點選單張查看。</p><div class="at-chart-scroll ln-board-frame" tabindex="0" role="region" aria-label="八張四排加底部四張大牌陣"><div class="ln-grand-layout ln-spread-board" data-spread="grand" style="--ln-cols:8">';
     } else if (_lnResolved === 'nine') {
-      h += '<div class="ln-grid-3x3">';
+      h += '<div class="ln-grid-3x3 ln-spread-board" data-spread="nine" style="--ln-cols:3">';
     } else if (_lnResolved === 'choice') {
-      h += '<div class="ln-choice-layout" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:start">';
+      h += '<div class="ln-choice-layout ln-spread-board" data-spread="choice" style="--ln-cols:3">';
     } else if (_lnResolved === 'five') {
       // v3.11：固定 3+2 幾何網格。不可再交給 flex 依螢幕寬度自行換行，否則會出現 4+1 或底排偏斜。
-      h += '<div class="ln-five-layout" role="group" aria-label="五張線：上排三張，下排兩張">';
+      h += '<div class="ln-five-layout ln-spread-board" data-spread="five" style="--ln-cols:6" role="group" aria-label="五張線：上排三張，下排兩張">';
     } else {
-      h += '<div class="ln-cards-row">';
+      h += '<div class="ln-cards-row ln-spread-board" data-spread="'+_lnResolved+'" style="--ln-cols:'+Math.min(3,sp.count)+'">';
     }
     for (var j=0;j<_lnDrawn.length;j++) {
       var c = _lnDrawn[j];
       var imgSrc = IMG_MAP[c.id] || '';
       var _choicePos = ''; if (_lnResolved === 'choice') { if (j === 3) _choicePos='grid-column:2;grid-row:2;'; else if (j >= 4) _choicePos='grid-column:'+(j-3)+';grid-row:3;'; }
-      h += '<div class="ln-card" style="'+_choicePos+'animation-delay:'+j*0.05+'s">' + (c._presetSig ? '<div style="font-size:.6rem;color:#e8d28a;letter-spacing:.12em;margin-bottom:2px">★ 指示牌</div>' : '');
-      h += '<div class="at-card-position">' + _lnEscapeHTML(sp.positions ? sp.positions[j] : ('牌位 ' + (j+1))) + '</div>';
-      if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'">';
+      var cardLabel=(sp.positions ? sp.positions[j] : ('牌位 ' + (j+1)))+'：'+c.id+'. '+c.name;
+      h += '<button type="button" class="ln-card" data-card-index="'+j+'" aria-label="'+_lnEscapeHTML(cardLabel+'，點選放大')+'" aria-haspopup="dialog" onclick="_lnViewCard('+j+')" style="'+_choicePos+'animation-delay:'+j*0.05+'s">' + (c._presetSig ? '<span class="ln-preset-label">★ 指示牌</span>' : '');
+      h += '<div class="at-card-position" data-slot="'+(j+1)+'">' + _lnEscapeHTML(sp.positions ? sp.positions[j] : ('牌位 ' + (j+1))) + '</div>';
+      if (imgSrc) h += '<img class="ln-card-img" src="'+imgSrc+'" alt="'+c.name+'" width="1024" height="1536" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="ln-card-image-error" hidden>牌圖暫時無法載入</span>';
       h += '<div class="ln-card-name">' + c.id + '. ' + c.name + '</div>';
-      h += '<div class="ln-card-en">' + c.en + '</div></div>';
+      h += '<div class="ln-card-en">' + c.en + '</div></button>';
     }
     h += '</div>';
     if (/^(grand|grand_nines|seven)$/.test(_lnResolved)) h += '</div>';
+    h += '<p class="ln-board-note">完整牌序已保留，點選任一張可放大查看。</p>';
     h += '</div>';
 
     // AI card
@@ -2958,6 +2960,7 @@ function _lnUpdateSpreadPreview() {
 
 // ════ Public API ════
 window._lenormandOpen = function() {
+  window._lnCloseCardView();
   _lnPhase = 'input';
   _lnQuestion = '';
   _lnSpread = 'auto';
@@ -2991,12 +2994,43 @@ window._lenormandShare = function() {
 };
 
 window._lenormandClose = function() {
+    window._lnCloseCardView();
     if(window.JYRitual)window.JYRitual.cancel('lenormand');
   var w = _getWrap();
   w.style.display = 'none';
 
     if (window.JY_ATELIER) window.JY_ATELIER.restoreEntrance();
   };
+
+// Keep the full spread on screen; inspect one card without rebuilding or redrawing it.
+var _lnCardView=null;
+window._lnCloseCardView=function(){
+  if(_lnCardView){if(_lnCardView.open)_lnCardView.close();else _lnCardView.remove();}
+};
+window._lnViewCard=function(index){
+  if(_lnPhase!=='result'||!_lnDrawn[index])return;
+  if(_lnCardView){_lnCardView._showCard(index);return;}
+  var dialog=document.createElement('dialog'),previous=document.activeElement,wrap=_getWrap(),overflow=wrap.style.overflowY,viewScroll=wrap.scrollTop;
+  dialog.id='ln-card-view';dialog.setAttribute('aria-labelledby','ln-card-view-title');
+  dialog.innerHTML='<div class="ln-card-view-shell"><header><h2 id="ln-card-view-title">牌面細節</h2><button type="button" data-ln-card-close aria-label="關閉牌面細節">✕ 關閉</button></header><figure class="ln-card-view-figure"></figure><nav aria-label="依牌序查看"><button type="button" data-ln-card-prev>← 上一張</button><span class="ln-card-view-count" role="status"></span><button type="button" data-ln-card-next>下一張 →</button></nav></div>';
+  var current=index;
+  function showCard(i){
+    var c=_lnDrawn[i];if(!c)return;current=i;
+    var sp=_lnReadingPlan||SPREADS[_lnResolved],position=sp.positions?sp.positions[i]:'牌位 '+(i+1);
+    dialog.querySelector('.ln-card-view-figure').innerHTML='<img class="ln-card-view-image" src="'+IMG_MAP[c.id]+'" alt="'+_lnEscapeHTML(c.name)+'" width="1024" height="1536" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><p class="ln-card-view-error" hidden>牌圖暫時無法載入，牌名與牌位仍保留。</p><figcaption><span>'+_lnEscapeHTML(position)+'</span><strong>'+c.id+'. '+_lnEscapeHTML(c.name)+'</strong><span>'+_lnEscapeHTML(c.en)+'</span></figcaption>';
+    dialog.querySelector('.ln-card-view-count').textContent=(i+1)+' / '+_lnDrawn.length;
+    dialog.querySelector('[data-ln-card-prev]').disabled=i===0;
+    dialog.querySelector('[data-ln-card-next]').disabled=i===_lnDrawn.length-1;
+  }
+  dialog._showCard=showCard;
+  dialog.querySelector('[data-ln-card-close]').onclick=function(){dialog.close();};
+  dialog.querySelector('[data-ln-card-prev]').onclick=function(){showCard(current-1);};
+  dialog.querySelector('[data-ln-card-next]').onclick=function(){showCard(current+1);};
+  dialog.addEventListener('keydown',function(event){if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();showCard(current+(event.key==='ArrowLeft'?-1:1));}});
+  dialog.onclick=function(event){if(event.target===dialog)dialog.close();};
+  dialog.addEventListener('close',function(){wrap.style.overflowY=overflow;wrap.scrollTop=viewScroll;dialog.remove();if(_lnCardView===dialog)_lnCardView=null;if(previous&&previous.isConnected)previous.focus({preventScroll:true});},{once:true});
+  document.body.appendChild(dialog);_lnCardView=dialog;showCard(index);wrap.style.overflowY='hidden';dialog.showModal();dialog.querySelector('[data-ln-card-close]').focus();
+};
 
 window._lnSetSpread = function(id) {
   if(id!=='auto'&&!SPREADS[id])return;
@@ -3042,9 +3076,11 @@ window._lnDoDraw = function() {
   _lastPrompt = buildPrompt(_lnQuestion, _lnDrawn, _lnResolved, _lnSigGender, _lnGender,_lnReadingPlan);
   function reveal(){
     _lnPhase = 'result'; _render(); _getWrap().scrollTop = 0;
+    var spread=_getWrap().querySelector('.ln-spread-section');
+    if(spread&&typeof spread.scrollIntoView==='function'){spread.scrollIntoView({block:'start'});spread.focus({preventScroll:true});}
   }
   if(window.JYRitual)window.JYRitual.play('lenormand',{
-    question:_lnQuestion, spreadName:sp.name+'（'+sp.count+' 張）',
+    question:_lnQuestion, spreadId:_lnResolved, spreadName:sp.name+'（'+sp.count+' 張）',
     cards:_lnDrawn.map(function(c){return {id:c.id,name:c.name,image:IMG_MAP[c.id]||''};}),
     onComplete:reveal,
     onCancel:function(){_lnDrawn=[];_lastPrompt='';}
@@ -3188,6 +3224,7 @@ window._lnPrimeAICopy = function(ev, link) {
   }
 };
 window._lnReset = function() {
+  window._lnCloseCardView();
   _lnReadingPlan=null;
   if(window.JYRitual)window.JYRitual.cancel('lenormand');
   _lnDrawn=[];_lastPrompt='';

@@ -99,7 +99,8 @@
     "test:r15": "node tests/ziwei-config-r15-20261004.cjs",
     "test:r15:browser": "node tests/ziwei-config-browser-r15-20261004.cjs",
     "test:reading-integrity": "node tests/reading-integrity-20261014.cjs",
-    "test:astronomy-independent": "node tests/astronomy-independent-20261014.cjs"
+    "test:astronomy-independent": "node tests/astronomy-independent-20261014.cjs",
+    "test:cards-layout:browser": "node tests/card-spread-browser-20261014.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",

@@ -1,0 +1,134 @@
+/* A spread is an overview, independent of the artwork's intrinsic 1024px width. */
+#ln-screen .ln-spread-section { min-width: 0; }
+#ln-screen .ln-spread-section .ln-section-title { font-size: clamp(16px, 3vw, 21px) !important; line-height: 1.6; letter-spacing: .03em; }
+#ln-screen .ln-board-frame { width: 100%; min-width: 0; overflow: visible; padding: 0; }
+#ln-screen .ln-spread-section .ln-spread-board {
+  display: grid !important;
+  grid-template-columns: repeat(var(--ln-cols, 3), minmax(0, 1fr)) !important;
+  align-items: start;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: min(800px, max(160px, calc(((100dvh - 120px) / var(--ln-rows, 1) - 48px) * .6667 * var(--ln-visible-cols, 3)))) !important;
+  gap: clamp(3px, 1vw, 10px) !important;
+  margin: 12px auto !important;
+  padding: 0;
+}
+#ln-screen .ln-spread-board .ln-card {
+  appearance: none;
+  display: block;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100%;
+  margin: 0;
+  padding: clamp(2px, .5vw, 6px) !important;
+  border-radius: 7px !important;
+  font-family: inherit;
+  text-align: center;
+  cursor: pointer;
+  overflow: hidden;
+}
+#ln-screen .ln-spread-board .ln-card:focus-visible { outline: 2px solid #f5db9d; outline-offset: 2px; }
+#ln-screen .ln-spread-board .ln-card-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto !important;
+  aspect-ratio: 2 / 3;
+  object-fit: contain !important;
+  border-radius: 4px;
+}
+#ln-screen .ln-spread-board .at-card-position,
+#ln-screen .ln-spread-board .ln-card-name,
+#ln-screen .ln-spread-board .ln-card-en {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap !important;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+#ln-screen .ln-spread-board .at-card-position { font-size: clamp(9px, 1.6vw, 12px); margin-bottom: 4px; }
+#ln-screen .ln-spread-board .ln-card-name { font-size: clamp(10px, 1.8vw, 14px) !important; margin-top: 4px !important; }
+#ln-screen .ln-spread-board .ln-card-en { font-size: 11px !important; }
+#ln-screen .ln-preset-label { display: block; font-size: 10px; color: #e8d28a; }
+#ln-screen .ln-card-image-error { display: grid; place-items: center; aspect-ratio: 2 / 3; font-size: 10px; color: #ddd0ae; }
+#ln-screen .ln-board-note { margin: 12px 0 0; font-size: 12px; line-height: 1.7; color: #becbd6; }
+#ln-screen .ln-spread-board[data-spread="grand"] .ln-card-en,
+#ln-screen .ln-spread-board[data-spread="grand_nines"] .ln-card-en { display: none; }
+#ln-screen .ln-spread-board[data-spread="two"] { --ln-visible-cols: 2; }
+#ln-screen .ln-spread-board[data-spread="five"] { --ln-rows: 2; }
+#ln-screen .ln-spread-board[data-spread="choice"],
+#ln-screen .ln-spread-board[data-spread="nine"] { --ln-rows: 3; }
+#ln-screen .ln-spread-board[data-spread="seven"] { --ln-visible-cols: 7; }
+#ln-screen .ln-spread-board[data-spread="grand"] { --ln-rows: 5; --ln-visible-cols: 8; }
+#ln-screen .ln-spread-board[data-spread="grand_nines"] { --ln-rows: 4; --ln-visible-cols: 9; }
+#ln-screen .ln-spread-board[data-spread="grand"] .ln-card:nth-child(33) { grid-column: 3; }
+#ln-screen .ln-spread-board[data-spread="grand"] .ln-card:nth-child(34) { grid-column: 4; }
+#ln-screen .ln-spread-board[data-spread="grand"] .ln-card:nth-child(35) { grid-column: 5; }
+#ln-screen .ln-spread-board[data-spread="grand"] .ln-card:nth-child(36) { grid-column: 6; }
+/* Explicitly retain the five-card 3 + 2 arrangement, even without the atelier theme. */
+#ln-screen .ln-spread-board[data-spread="five"] .ln-card:nth-child(1) { grid-column: 1 / 3; grid-row: 1; }
+#ln-screen .ln-spread-board[data-spread="five"] .ln-card:nth-child(2) { grid-column: 3 / 5; grid-row: 1; }
+#ln-screen .ln-spread-board[data-spread="five"] .ln-card:nth-child(3) { grid-column: 5 / 7; grid-row: 1; }
+#ln-screen .ln-spread-board[data-spread="five"] .ln-card:nth-child(4) { grid-column: 2 / 4; grid-row: 2; }
+#ln-screen .ln-spread-board[data-spread="five"] .ln-card:nth-child(5) { grid-column: 4 / 6; grid-row: 2; }
+@media (max-width: 600px) {
+  #ln-screen .ln-spread-section { padding: 14px 10px !important; }
+  #ln-screen .ln-spread-board[data-spread="seven"] .ln-card-en,
+  #ln-screen .ln-spread-board[data-spread^="grand"] .ln-card-name { display: none; }
+  #ln-screen .ln-spread-board[data-spread^="grand"] .at-card-position { font-size: 0; line-height: 14px; text-align: center; }
+  #ln-screen .ln-spread-board[data-spread^="grand"] .at-card-position::before { content: attr(data-slot); font-size: 9px; }
+}
+
+/* Native modal gives keyboard focus and touch users a contained, full card face. */
+#ln-card-view {
+  box-sizing: border-box;
+  width: min(94vw, 480px);
+  max-width: 94vw;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  margin: auto;
+  padding: 12px;
+  border: 1px solid #d5bc86;
+  border-radius: 16px;
+  background: #101c2a;
+  color: #efe0c2;
+  font-family: var(--f-body, sans-serif);
+  overflow-y: auto;
+}
+#ln-card-view::backdrop { background: rgba(2, 6, 12, .86); }
+#ln-card-view * { box-sizing: border-box; }
+#ln-card-view header, #ln-card-view nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#ln-card-view h2 { margin: 0; font-size: 16px; }
+#ln-card-view button {
+  appearance: none;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid #a69069;
+  border-radius: 10px;
+  background: #223449;
+  color: #f2dfbb;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+#ln-card-view button:disabled { opacity: .45; cursor: default; }
+#ln-card-view button:focus-visible { outline: 2px solid #ffdfa5; outline-offset: 2px; }
+#ln-card-view .ln-card-view-figure { margin: 10px 0; text-align: center; }
+#ln-card-view .ln-card-view-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: max(120px, calc(100dvh - 240px));
+  aspect-ratio: 2 / 3;
+  object-fit: contain;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+#ln-card-view figcaption { display: grid; gap: 2px; margin-top: 8px; font-size: 12px; line-height: 1.5; }
+#ln-card-view figcaption strong { font-size: 17px; }
+#ln-card-view .ln-card-view-count { white-space: nowrap; font-size: 13px; }
+#ln-screen [hidden], #ln-card-view [hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { #ln-screen .ln-spread-board .ln-card { animation: none !important; } }

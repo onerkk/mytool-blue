@@ -1,0 +1,92 @@
+{
+  "release": "20261014cards19",
+  "base": "Project after the previously delivered engine and prompt corrections",
+  "files": [
+    {
+      "path": "CSS/card-spread-20261014.css",
+      "change": "added",
+      "sha256": "ecf290eb0b2d19332871bdaa81c833ea0af4d0a59fe50e8226bc6f4f6431b5c2",
+      "previousSha256": null
+    },
+    {
+      "path": "CSS/mobile-ritual-actions-20260928.css",
+      "change": "modified",
+      "sha256": "39915954d85b7051fb0618c7f6eca827fa4541ec984bf881efaa04bdea1fb8f6",
+      "previousSha256": "0dd0f7f8b2146928811f397bc409a3ee75c87f5a20da912f624e9d2fccd41261"
+    },
+    {
+      "path": "JS/lenormand.js",
+      "change": "modified",
+      "sha256": "121434e29ec839e8cf7184200016ea7b57f02963c9bda0cafe9398a0ce238598",
+      "previousSha256": "aea14421d949df9bcd8f275b194f4989cb276ce9b4bc8321743c77687ba4fefa"
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "change": "modified",
+      "sha256": "748579d5d09d3d3c10103e35c9daf2f6cc379a30dc858815cb1c6234ff2592e5",
+      "previousSha256": "69f13287cf7a8278947ddbc0a0d721a8556db645ec7ea6424d71e343b36e273e"
+    },
+    {
+      "path": "JS/sw.js",
+      "change": "modified",
+      "sha256": "567ac71935da020dce77e4e0aa0721c5f91a67766ab57c1f6ae0fdbc329f03ef",
+      "previousSha256": "13398b689a5e7bfc8076198ed62cceb6104721199830e21733f5f23ed0eab1f1"
+    },
+    {
+      "path": "docs/card-display-fix-20261014.md",
+      "change": "added",
+      "sha256": "8af7b94b6d63b0c96414fd45c716f4088fb4809983fc6f4e46c42f81abbb3b43",
+      "previousSha256": null
+    },
+    {
+      "path": "docs/card-display-validation-20261014.json",
+      "change": "added",
+      "sha256": "e12fae62f95885d57221af1c645a161b31d82c76cd8e57bcd8b7314d10ee431e",
+      "previousSha256": null
+    },
+    {
+      "path": "index.html",
+      "change": "modified",
+      "sha256": "e083fc66adb37315212c63edee77793a803606a3fdf52caead30e52bbe4518ab",
+      "previousSha256": "5a7e9958e0990587a0695da2e2d6eecb039f5b4ecffb9dc1d11a82e5cd64c057"
+    },
+    {
+      "path": "lenormand.js",
+      "change": "modified",
+      "sha256": "121434e29ec839e8cf7184200016ea7b57f02963c9bda0cafe9398a0ce238598",
+      "previousSha256": "aea14421d949df9bcd8f275b194f4989cb276ce9b4bc8321743c77687ba4fefa"
+    },
+    {
+      "path": "package.json",
+      "change": "modified",
+      "sha256": "00a18fb91ef7436c8afd275ec0209f8d35d1e4e0c54034a50d3820c9d42fe1cc",
+      "previousSha256": "dac01755d99c9723cdf4e7800d6f24d41b0b6a53c80ba909546910b4b7a93319"
+    },
+    {
+      "path": "sw.js",
+      "change": "modified",
+      "sha256": "567ac71935da020dce77e4e0aa0721c5f91a67766ab57c1f6ae0fdbc329f03ef",
+      "previousSha256": "13398b689a5e7bfc8076198ed62cceb6104721199830e21733f5f23ed0eab1f1"
+    },
+    {
+      "path": "tests/card-spread-browser-20261014.cjs",
+      "change": "added",
+      "sha256": "41f601c6e54f4f95f08d45433280c2a7f8afd51847db20a04d5012b3f91ea8b5",
+      "previousSha256": null
+    },
+    {
+      "path": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "change": "modified",
+      "sha256": "d0b1d05555986ba5513968cc16f344823c45292b119c5b446f9f8a4a82b594d9",
+      "previousSha256": "85967282fdfb72e42c0aaa34d6061e75e8a7e53f97f5ac47804e3fe86b553c9c"
+    },
+    {
+      "path": "tests/mobile-ritual-actions-20260928.cjs",
+      "change": "modified",
+      "sha256": "9efd5b547a08a4c3e3636828316f66cf8a607838a05dc81472720a9a43ae36e1",
+      "previousSha256": "669d5a4e5aaa1e03b47eabef2562dcf23648aa469dae87b676d9df61aeb11402"
+    }
+  ],
+  "deletedFiles": [],
+  "serviceWorker": "jy-main-v126"
+}

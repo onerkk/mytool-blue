@@ -52,7 +52,9 @@
 // v122: 20261010prompt17 各方法完整判讀指令、題目範圍及原盤核對。
 // v123：塔羅78張與雷諾曼36張明亮牌面；新版圖片URL獨立，避免舊牌圖快取。
 // v124：明亮塔羅／雷諾曼牌背；首頁、抽牌、3D、分析與分享圖同步。
-const CACHE_NAME = 'jy-main-v125';
+// v125：命理引擎與提示詞真實性、使用者處境及原盤核對。
+// v126：手機完整牌陣縮圖、穩定揭牌正面與牌面細節檢視。
+const CACHE_NAME = 'jy-main-v126';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

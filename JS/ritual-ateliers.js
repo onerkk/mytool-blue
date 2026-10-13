@@ -175,14 +175,21 @@
     }
     function setCopy(title,note){dialog.querySelector('#jr-title').textContent=title;dialog.querySelector('#jr-note').textContent=note;}
     function showCardPage(){
-      dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.hidden=Math.floor(i/3)!==cardPage;btn.disabled=phase!==1||btn.getAttribute('aria-pressed')==='true'||btn.hidden;});
-      hint.textContent='第 '+(cardPage*3+1)+'–'+Math.min(cardPage*3+3,cards.length)+' 張 · 共 '+cards.length+' 張 · 可切換自動翻牌。';
+      var overview=kind==='lenormand'&&lit===cards.length;
+      dialog.setAttribute('data-card-overview',String(overview));
+      if(overview){
+        var layout=String(options.spreadId||''),cols=layout==='grand_nines'?9:layout==='grand'?8:layout==='seven'?7:layout==='five'?6:Math.min(3,cards.length);
+        dialog.setAttribute('data-card-layout',layout);dialog.style.setProperty('--jr-card-cols',String(cols));
+      }
+      dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.hidden=!overview&&Math.floor(i/3)!==cardPage;btn.disabled=phase!==1||btn.getAttribute('aria-pressed')==='true'||btn.hidden;});
+      hint.textContent=overview?'本次 '+cards.length+' 張牌已全部揭開，完整牌序如下方牌陣。':'第 '+(cardPage*3+1)+'–'+Math.min(cardPage*3+3,cards.length)+' 張 · 共 '+cards.length+' 張 · 可切換自動翻牌。';
     }
     function updatePhase(value){
       if(settled)return;phase=value;dialog.setAttribute('data-phase',String(value));
       dialog.querySelector('.jr-response').hidden=value===0;
       if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'逐張輕觸，或選擇自動翻牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
       if(value>=2)showProgress(1,value===2?'已接住你的心念':'準備好了，由你決定何時繼續');
+      if(value>=2&&mode==='cards'&&kind==='lenormand'&&lit===cards.length)showCardPage();
       stageCall('setPhase',value);
       if(story)try{story.setPhase(value,function(){if(phase===2)updatePhase(3);});}catch(error){warn('story transition',error);try{story.dispose();}catch(e){}story=null;}
       var revealControls=dialog.querySelector('.jr-reveal-controls');if(revealControls)revealControls.hidden=value!==1;
@@ -278,11 +285,19 @@
       var c=cards[i],front=btn.querySelector('.jr-front');
       if(!all)contact(null,btn);
       // Faces are inserted only after a deliberate manual/auto/all reveal action.
-      if(c.image){var img=doc.createElement('img');img.src=c.image;img.alt=c.name;img.className=c.isUp?'':'is-reversed';front.appendChild(img);img.onerror=function(){img.remove();front.textContent=c.name;};}else front.textContent=c.name;
+      // A real front stays visible after the turn. Never leave an empty 3D plane
+      // while an image decodes, or if the asset request fails.
+      var status=doc.createElement('span');status.className='jr-front-status';status.textContent=c.name;front.appendChild(status);
+      if(c.image){
+        var img=doc.createElement('img');img.alt=c.name;img.className=c.isUp?'':'is-reversed';
+        img.onload=function(){if(settled)return;btn.classList.add('is-face-ready');btn.setAttribute('data-image-state','loaded');};
+        img.onerror=function(){if(settled)return;img.remove();btn.setAttribute('data-image-state','error');status.textContent=c.name+' · 牌圖暫時無法載入';};
+        btn.setAttribute('data-image-state','loading');front.appendChild(img);img.src=c.image;
+      }else btn.setAttribute('data-image-state','unavailable');
       btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;
       if(!all)bell();stageCall('setLit',lit);stageCall('setPower',lit/cards.length);
       showProgress(lit/cards.length,'已揭開 '+lit+' / '+cards.length+' 張牌');hint.textContent='已揭開 '+lit+' / '+cards.length+' 張';
-      if(lit===cards.length){pauseReveal();schedule(awaken,reduced?0:900);}
+      if(lit===cards.length){pauseReveal();showCardPage();schedule(awaken,reduced?0:900);}
       else if(!autoReveal&&!all){
         var remaining=Array.prototype.find.call(dialog.querySelectorAll('.jr-reveal'),function(x){return !x.disabled&&!x.hidden;});
         if(remaining)focus(remaining);else{next.disabled=false;next.textContent='下一組牌 →';focus(next);}
