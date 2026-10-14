@@ -2,7 +2,7 @@
  * A valid record is not a claim that all schools or predictions are complete.
  * Invalid records stop export; unknown inputs and unfinished procedures stay partial. */
 (function(root){'use strict';
- const VERSION='20261014audit4',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
+ const VERSION='20261014audit5',G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),K=['year','month','day','hour'],A=x=>Array.isArray(x)?x:[],mod=(v,n)=>(v%n+n)%n;
  const E=['木','火','土','金','水'],TG=[['比肩','劫財'],['食神','傷官'],['偏財','正財'],['七殺','正官'],['偏印','正印']];
  const validGZ=gz=>typeof gz==='string'&&gz.length===2&&G.includes(gz[0])&&B.includes(gz[1])&&mod(G.indexOf(gz[0])-B.indexOf(gz[1]),2)===0;
  function god(dm,stem){const d=G.indexOf(dm),s=G.indexOf(stem);return d<0||s<0?null:TG[mod(Math.floor(s/2)-Math.floor(d/2),5)][mod(d-s,2)];}
@@ -25,6 +25,24 @@
     check(p.pillar+'-ten-god',p.god===god(c.dm,p.gan),[p.god,god(c.dm,p.gan)]);
     for(const h of A(p.hidden))check(p.pillar+'-hidden-ten-god-'+h.stem,h.god===god(c.dm,h.stem),[h.god,god(c.dm,h.stem)]);
    }
+   if(a.children){
+    const d=a.children,gender=/^(male|男|男性|男命)$/i.test(String(c.gender||''))?'male':/^(female|女|女性|女命)$/i.test(String(c.gender||''))?'female':'unprovided';
+    check('children-input-gender',d.inputGender===gender,[d.inputGender,gender]);
+    check('children-hour-scope',d.hourKnown===(!unknown&&validGZ(c.pillars?.hour?.gan+c.pillars?.hour?.zhi)),d.hourKnown);
+    check('children-conditional-branches',eq(A(d.branches).map(x=>x.gender),gender==='unprovided'?['male','female']:[gender]),A(d.branches).map(x=>x.gender));
+    const starts={甲:11,丙:2,戊:2,庚:5,壬:8},stages=['長生','沐浴','冠帶','臨官','帝旺','衰','病','死','墓','絕','胎','養'];
+    for(const b of A(d.branches)){
+     const target=E[mod(Math.floor(G.indexOf(c.dm)/2)+(b.gender==='male'?3:1),5)],yang=G[E.indexOf(target)*2];
+     check('children-'+b.gender+'-target',b.targetElement===target&&b.targetYang===yang,[b.targetElement,b.targetYang]);
+     const expectedIds=keys.flatMap(k=>{const p=c.pillars[k],visible=k!=='day'&&E[Math.floor(G.indexOf(p.gan)/2)]===target?[k+'-stem']:[];return visible.concat(Array.from(H[p.zhi]||'').filter(s=>E[Math.floor(G.indexOf(s)/2)]===target).map(s=>k+'-hidden-'+s));});
+     check('children-'+b.gender+'-complete-placements',eq(A(b.placements).map(x=>x.id),expectedIds),[A(b.placements).map(x=>x.id),expectedIds]);
+     for(const hit of A(b.placements))check('children-placement-'+b.gender+'-'+hit.id,keys.includes(hit.pillar)&&E[Math.floor(G.indexOf(hit.stem)/2)]===target&&hit.god===god(c.dm,hit.stem)&&(hit.visible?c.pillars[hit.pillar].gan===hit.stem:(H[c.pillars[hit.pillar].zhi]||'').includes(hit.stem)),hit);
+     check('children-'+b.gender+'-stage',b.count?.stage===(d.hourKnown?stages[mod(B.indexOf(c.pillars.hour.zhi)-starts[yang],12)]:null),b.count?.stage);
+     check('children-'+b.gender+'-no-invented-total',b.count?.finalBiologicalTotal===null,b.count?.finalBiologicalTotal);
+     if(!d.hourKnown)check('children-'+b.gender+'-no-provisional-count',!A(b.count?.tables).length&&!A(b.luck).length&&!A(b.annuals).length,null);
+    }
+    for(const pair of A(d.actualBranchPairs)){const actual=c.pillars[pair.from]?.zhi+c.pillars[pair.to]?.zhi,rev=actual.split('').reverse().join('');check('children-pair-'+pair.from+'-'+pair.to,pair.branches===actual&&pair.harm===['子未','丑午','寅巳','卯辰','申亥','酉戌'].some(x=>x===actual||x===rev),pair);}
+   }else if(/子女|子嗣|親生|生育|備孕|懷孕|生孩子|生小孩/.test(options.question||''))partial('children-topic','子女議題實算元件未載入；其他有效原局資料仍可讀');
    for(const y of A(a.annualSegments)){
     const id='annual-'+y.year+'-'+y.decadeIndex;
     check(id+'-ganzhi',validGZ(y.annual),y.annual);

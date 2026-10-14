@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261014depth22';
+  const VERSION='20261014depth24';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -50,7 +50,7 @@
       return {available:false,status:'partial',reason:A(v.integrity?.missing).join('；')||'本次五輪閱讀必要欄位未齊全'};
     return {available:true,status:'calculated',reason:null};
   }
-  function build(method,chart,analysis){
+  function build(method,chart,analysis,options={}){
     const p=P[method]||{profile:'具名方法',required:[['原生資料','items']],order:common.synthesis,conflicts:[],forbidden:[]};
     const evidence=p.required.map(([label,path])=>({label,path,...evidenceState(method,chart,analysis,path)}));
     const missing=evidence.filter(x=>!x.available).map(x=>x.label);
@@ -74,6 +74,8 @@
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
       methodOutputPolicy,
+      readingScope:root.JYReadingWorkflow?.readingScope?.(options.question||analysis?.children?.question||'',method)||null,
+      precisionPolicy:'精確數值或心意未量測只限制該項，仍須完成切題的象徵方向、相反條件與做法。具名數量規則可作已核前提的傳統假定，不當事實；沒有相關資料不能造線索。',
       missingRequiredEvidence:missing,
       unresolved:[...A(analysis?.unavailable),...evidence.filter(x=>!x.available).map(x=>x.label+'：'+x.reason)],
       sourcePolicy:'來源必須綁定具名規則或profile；同源重複不當獨立驗證；原典互相矛盾時並列，不自行創造唯一版本。',
@@ -85,6 +87,7 @@
     `閱讀範圍狀態：${c.status}。`,
     '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
+    `精度與可讀內容：${c.precisionPolicy||'缺項只限制受影響部分；有效資料照常閱讀。'}`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `內部合成核對（不作正文欄位）：${c.synthesisOrder.join(' → ')}。`,

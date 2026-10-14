@@ -1,0 +1,90 @@
+{
+  "release": "20261014scope24",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "source-only example preserves distinct unknown-gender branches",
+      "status": "passed"
+    },
+    {
+      "name": "known input selects its rule without averaging male/female",
+      "status": "passed"
+    },
+    {
+      "name": "unknown hour removes count and luck built from provisional hour",
+      "status": "passed"
+    },
+    {
+      "name": "absent natal target still inspects genuine supplied luck",
+      "status": "passed"
+    },
+    {
+      "name": "historical quantity variants and different units remain separate",
+      "status": "passed"
+    },
+    {
+      "name": "fifteen real exports scope precision while preserving topic and facts",
+      "status": "passed"
+    },
+    {
+      "name": "real Bazi export includes input gender, child evidence, rules and source",
+      "status": "passed"
+    },
+    {
+      "name": "missing gender/hour do not erase valid structure in full export",
+      "status": "passed"
+    },
+    {
+      "name": "independent calculation audit rejects altered child roles and stage",
+      "status": "passed"
+    },
+    {
+      "name": "standalone prompt and stale shared guide keep the new scope and rule pack",
+      "status": "passed"
+    },
+    {
+      "name": "review catches refusal that omits already available child evidence",
+      "status": "passed"
+    },
+    {
+      "name": "API and worker share the same new guidance",
+      "status": "passed"
+    }
+  ],
+  "limits": "Verifies native calculations, exported evidence and authoring instructions; not external AI compliance, medical fertility or prediction accuracy.",
+  "regressions": {
+    "plainLanguage": {
+      "status": "passed",
+      "methods": 15
+    },
+    "readingIntegrity": {
+      "status": "passed",
+      "groups": 14
+    },
+    "questionModel": {
+      "status": "passed",
+      "methods": 15
+    },
+    "bazi": {
+      "status": "passed",
+      "cases": 21
+    },
+    "semanticReview": {
+      "status": "passed"
+    },
+    "promptIntegrity": {
+      "status": "passed",
+      "groups": 10,
+      "methods": 15,
+      "questionTypes": 6,
+      "scopeYears": 80
+    },
+    "generatedCopies": {
+      "status": "passed"
+    },
+    "legacySourcePairs": {
+      "status": "passed",
+      "pairs": 7
+    }
+  }
+}

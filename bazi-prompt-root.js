@@ -1,9 +1,83 @@
+// BEGIN GENERATED BAZI CHILDREN RUNTIME
+/* Children: sourced structural evidence and provisional historical count rules.
+ * No re-casting, gender inference, fertility diagnosis or empirical probability. */
+(function(root){
+  'use strict';
+  const VERSION='20261014children24',G=[...'甲乙丙丁戊己庚辛壬癸'],B=[...'子丑寅卯辰巳午未申酉戌亥'],E=[...'木火土金水'];
+  const K=['year','month','day','hour'],H={子:['癸'],丑:['己','癸','辛'],寅:['甲','丙','戊'],卯:['乙'],辰:['戊','乙','癸'],巳:['丙','戊','庚'],午:['丁','己'],未:['己','丁','乙'],申:['庚','壬','戊'],酉:['辛'],戌:['戊','辛','丁'],亥:['壬','甲']};
+  const STAGES=['長生','沐浴','冠帶','臨官','帝旺','衰','病','死','墓','絕','胎','養'],START={甲:11,丙:2,戊:2,庚:5,壬:8};
+  const SOURCES=[
+    {id:'children-sanmings',title:'《三命通會》卷七·論六親',url:'https://zh.wikisource.org/zh-hant/三命通會/卷七',scope:'男取克干、女取干生；時位、全局生扶制約及運勢；取法不是事件驗證'},
+    {id:'children-yuanhai',title:'《淵海子平》論子息',url:'https://zh.wikisource.org/zh-hant/淵海子平#論子息',scope:'中和與太過不及限制、原局未見仍查行運；數量及女命男女角色的版本歧異保留'},
+    {id:'children-ziping-xu',title:'沈孝瞻原著／徐樂吾《子平真詮評註》論妻子',url:'https://ncc.com.tw/fate/paleo/bg/bg_034.htm',scope:'陽干順行長生假定數；再參時干喜忌與成敗救應，原註反對拘執數量口訣'}
+  ];
+  const arr=v=>Array.isArray(v)?v:[],mod=n=>(n%12+12)%12,el=s=>E[Math.floor(G.indexOf(s)/2)];
+  function god(dm,s){const a=G.indexOf(dm),b=G.indexOf(s),n=(Math.floor(b/2)-Math.floor(a/2)+5)%5;return [['比肩','劫財'],['食神','傷官'],['偏財','正財'],['七殺','正官'],['偏印','正印']][n][(a-b+10)%2];}
+  function gender(v){return /^(male|男|男性|男命)$/i.test(String(v||''))?'male':/^(female|女|女性|女命)$/i.test(String(v||''))?'female':null;}
+  function childQuestion(q){return /子女|子嗣|親生|生育|備孕|懷孕|生孩子|生小孩|(?:孩子|小孩).{0,10}(?:幾|多少|生|緣|有|健康|相處)/.test(String(q||''));}
+  function links(a,b){const pair=(xs)=>xs.some(x=>x===a+b||x===b+a);return {clash:pair(['子午','丑未','寅申','卯酉','辰戌','巳亥']),harm:pair(['子未','丑午','寅巳','卯辰','申亥','酉戌']),combine:pair(['子丑','寅亥','卯戌','辰酉','巳申','午未']),destruction:pair(['子酉','丑辰','寅亥','卯午','巳申','未戌'])};}
+  function validPillar(p){return G.includes(p?.gan)&&B.includes(p?.zhi);}
+  function stage(stem,branch){if(!(stem in START)||!B.includes(branch))return null;return STAGES[mod(B.indexOf(branch)-START[stem])];}
+  function placements(c,dm,keys){return keys.flatMap(k=>{
+    const p=c.pillars[k],row=(s,visible,qi)=>({id:k+(visible?'-stem':'-hidden-'+s),pillar:k,branch:p.zhi,stem:s,element:el(s),god:god(dm,s),visible,qi});
+    return (k==='day'?[]:[row(p.gan,true,null)]).concat(H[p.zhi].map((s,i)=>row(s,false,i===0?'main':'residual')));
+  });}
+  // Original poems mix sons, births and historical survival wording. Preserve
+  // those units; never silently rename their number as total biological children.
+  function countEntry(profile,s){
+    const base={長生:4,沐浴:2,冠帶:3,臨官:3,帝旺:5,衰:2,病:1,死:0,墓:null,絕:1,胎:null,養:3};
+    if(profile==='yuanhai'&&s==='長生')base.長生=7;
+    return {stage:s,rawNumber:base[s]??null,historicalRetainedNumber:s==='養'?(profile==='yuanhai'?2:1):null,
+      quantityKind:'historical-son-count-or-mixed-birth-survival',modernBiologicalTotal:null,
+      adjustments:s==='長生'?['中旬與司令退氣條件另核，不自動減半']:[],
+      ruleSourceId:profile==='yuanhai'?'children-yuanhai':'children-ziping-xu'};
+  }
+  function compute(c,options={}){
+    const p=c?.pillars||{},dm=c?.dm||p.day?.gan,unknown=!!(options.unknown||c?.birthTimeUnknown),keys=K.filter(k=>k!=='hour'||!unknown).filter(k=>validPillar(p[k]));
+    if(!G.includes(dm)||!keys.includes('day'))return {schema:'jy.bazi-children/1',version:VERSION,status:'missing-day-master',requested:childQuestion(options.question),evidence:[],limits:['缺可確認日柱；不能套子女取法'],sources:SOURCES};
+    const rows=placements(c,dm,keys),inputGender=gender(c.gender),hourKnown=!unknown&&keys.includes('hour'),di=Math.floor(G.indexOf(dm)/2),variants=inputGender?[inputGender]:['male','female'];
+    const hourRelations=hourKnown?keys.filter(k=>k!=='hour').map(k=>({from:k,to:'hour',branches:p[k].zhi+p.hour.zhi,...links(p[k].zhi,p.hour.zhi)})):[];
+    const allRelations=[];for(let i=0;i<keys.length;i++)for(let j=i+1;j<keys.length;j++)allRelations.push({from:keys[i],to:keys[j],branches:p[keys[i]].zhi+p[keys[j]].zhi,...links(p[keys[i]].zhi,p[keys[j]].zhi)});
+    const branches=variants.map(g=>{
+      const targetElement=E[(di+(g==='male'?3:1))%5],targetYang=G[E.indexOf(targetElement)*2],hits=rows.filter(x=>x.element===targetElement),roots=hits.filter(x=>!x.visible),visible=hits.filter(x=>x.visible),monthMain=el(H[p.month?.zhi]?.[0]);
+      const condition=g==='male'?'本次明示男命取法：官殺合看':'本次明示女命取法：食傷合看';
+      const supportElement=E[(E.indexOf(targetElement)+4)%5],controllerElement=E[(E.indexOf(targetElement)+3)%5],supporters=rows.filter(x=>x.element===supportElement),controllers=rows.filter(x=>x.element===controllerElement);
+      const constraints=controllers.flatMap(a=>hits.map(b=>({from:a.id,to:b.id,stems:a.stem+b.stem,samePillar:a.pillar===b.pillar,distance:Math.abs(K.indexOf(a.pillar)-K.indexOf(b.pillar)),status:'structural-control-candidate',effective:null,needs:['實際季節力量','位置與透藏','全局制化及救應']})));
+      const countStage=hourKnown?stage(targetYang,p.hour.zhi):null;
+      const tables=g==='male'&&countStage?['ziping-xu','yuanhai'].map(profile=>({profile,...countEntry(profile,countStage)})):[];
+      const count={status:g==='female'?'no-registered-female-count-formula':!hourKnown?'hour-unconfirmed':'provisional-traditional-estimate',targetYang,stage:countStage,tables,
+        agreement:tables.length?tables.every(x=>x.rawNumber===tables[0].rawNumber&&x.historicalRetainedNumber===tables[0].historicalRetainedNumber):null,agreementIsNotIndependentEvidence:true,
+        unresolved:['全局輕重與喜忌修正未量化','古訣的男孩／生養數不等於今生全部親生子女人數'],finalBiologicalTotal:null,
+        readingRule:g==='male'?'初查數可作具名古法的象徵假定，需合全盤後才談偏多偏少；不能當已定人數，也不能直接合併男女人數。初查零不單獨斷無子或生殖能力，仍追其他位置與已算運勢。':'女命先讀實際食傷、時位與運勢；本包未註冊女命數量公式，不借用男命口訣硬給人數。'};
+      const luck=(hourKnown?arr(c.dayun):[]).filter(d=>typeof d.gz==='string'&&G.includes(d.gz[0])&&B.includes(d.gz[1])).map(d=>({gz:d.gz,isCurrent:!!d.isCurrent,window:d.window||null,ageStart:d.ageStart,ageEnd:d.ageEnd,
+        targetStem:el(d.gz[0])===targetElement,targetHidden:H[d.gz[1]].filter(s=>el(s)===targetElement),controllerStem:el(d.gz[0])===controllerElement,supportStem:el(d.gz[0])===supportElement,
+        hourRelations:hourKnown?links(d.gz[1],p.hour.zhi):null,role:'stage-background-not-birth-promise'}));
+      const annuals=(hourKnown?arr(c.dayun):[]).flatMap(d=>arr(d.liuNian).map(y=>({year:y.year,gz:y.gz,dayun:d.gz,window:y.window||null,targetStem:el(y.gz?.[0])===targetElement,targetHidden:H[y.gz?.[1]]?.filter(s=>el(s)===targetElement)||[],hourRelations:hourKnown?links(y.gz?.[1],p.hour.zhi):null,role:'symbolic-activation-not-conception-or-delivery-date'})));
+      return {gender:g,status:inputGender?'selected-input':'conditional-not-selected',ruleSourceIds:['children-sanmings','children-yuanhai'],condition,targetElement,targetYang,
+        placements:hits,visibleCount:visible.length,rootCount:roots.length,monthlyMain:monthMain,monthlyMainMatches:monthMain===targetElement,
+        supporters,controllers,controlCandidates:constraints,actualMechanisms:arr(c.specialRuleAssessment?.rules).filter(x=>/食|梟|官|殺/.test(String(x.name||''))).map(x=>({id:x.id,name:x.name,status:x.status,conditions:x.conditions||null})),
+        evidenceDirection:hits.length?(visible.length&&roots.length?'visible-and-rooted-child-symbols':'child-symbols-present'):luck.some(x=>x.targetStem||x.targetHidden.length)?'absent-natal-check-luck':'no-natal-child-symbols-found',
+        evidenceMeaning:'方向只描述本次子女象徵的出現與位置；不是生殖能力、必生孩子或已有人數。',count,luck,annuals,
+        synthesisChecks:['子女訊號與時位合讀，核相反作用是否有效','自身中和不能直接換成只生一至兩人','不按訊號出現個數當孩子人數','時位有支持不能單獨斷子女必孝順、供養或晚年依靠','原局未見不得斷終身無子，已算運勢仍須追完']};
+    });
+    return {schema:'jy.bazi-children/1',version:VERSION,status:keys.length===4?'structural-analysis-complete':'partial-structural-analysis',requested:childQuestion(options.question),question:String(options.question||''),
+      query:{lifetime:/今生|此生|一生|終身/.test(options.question||''),biologicalOnly:/親生/.test(options.question||''),countRequested:/幾個|幾名|幾位|多少|數量|人數/.test(options.question||''),additional:/再生|再有|還會有|還有幾/.test(options.question||'')},
+      inputGender:inputGender||'unprovided',genderSource:inputGender?'chart.gender-explicit-input':'not-inferred-from-luck-direction',hourKnown,
+      hour:hourKnown?{...p.hour,relations:hourRelations}:null,actualBranchPairs:allRelations,branches,
+      countCapability:{precision:'not-finalized',symbolic:'registered-rule-hypotheses-and-qualitative-synthesis',scope:'只限制精確終身總數，不停止子女主題分析'},
+      sourceVariants:['《淵海》長生數七與《真詮評註》數四不同，養位留二與留一不同；不能當独立票數','《淵海》六親段與論子息段的女命男女角色相反；本包合看食傷，不預測胎兒性別'],
+      limits:[...(!inputGender?['性別未明列：兩條件支線不得平均成相同數字']:[]),...(!hourKnown?['時位未確認：不套其數量、作用或精確交運']:[]),'缺少已生子女與生育規劃，不能把總數寫成還能再生幾人','傳統數量是象徵假定，不是已驗證事件或医学檢查'],sources:SOURCES,predictionValidated:false};
+  }
+  function forReading(v,years){if(!v)return null;return {...v,branches:arr(v.branches).map(b=>({...b,annuals:arr(b.annuals).filter(y=>!years||years.includes(y.year))}))};}
+  root.JYBaziChildren=Object.freeze({version:VERSION,compute,forReading,stage,countEntry,childQuestion,sources:SOURCES});
+})(typeof window==='undefined'?globalThis:window);
+// END GENERATED BAZI CHILDREN RUNTIME
 // BEGIN GENERATED READING JY_READING_BAZI
 var JY_READING_BAZI = {
   "bazi": [
     "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。",
     "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。\n【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。\n【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。",
-    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。",
+    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【八字：原局作用與歲運】核四柱、月令、藏透、根氣及曆法政策；月令取格後審成敗救應，身的承受力與格局成立分開。食神制殺、殺印相生等須有實際力量、位置和通路，不由名稱並存判成立。",
     "格局、扶抑、調候各解不同問題，取用以目前阻斷全局的因素定先後；通關須連接交戰兩端。五行百分比不是缺什麼補什麼，候選用神不是已定處方。",
@@ -18,6 +92,7 @@ var JY_READING_BAZI = {
     "學業、事業、財務、婚戀、家庭與生活負荷各自連回本局功能通路。財星只是資源議題，能否取得與留住須合日主承受、食傷輸出、官印制化及歲運。",
     "大運與流年逐段判新增干支如何引動原局、喜用能否承接及忌勢有無救應。交運年保留前後區間；逐年列運期、主題、偏利／偏阻／混合、象徵影響程度、盤面依據、條件與檢查點，不因相同年干重複套話。",
     "【八字術語界線】身弱、財多身弱只描述此模型中的作用負荷；需合原局有效印比、食傷生財、官印制化、成敗救應及歲運才判本题順阻。不能只憑這個標籤斷不能工作、不能有錢或婚姻必敗；印比扶身也不一律有利，特殊從勢與調候仍須分層。",
+    "【議題線索與精度分開】子女題核本次明列性別與採用取法、子女角色實際透藏根氣、時位及真正作用、已算運歲。若有 children 議題資料須合讀各支線與數量規則。古訣初查數可作具名象徵假定，不能自動當今生全部親生子女總數；自行中和、符號個數或一個不利配對都不能硬斷少子、無子。原局未見仍追已算運勢；時位有印也不能單憑它保證晚年受子女供養。",
     "【本法重要發現與解惑方式】讀原局反覆模式、成敗救應及實算當期歲運；重大資源、工作負荷、關係需求或轉折，即使未問也解釋其作用和應對，不將標籤斷成終身命運。",
     "【原創成稿示範｜只學鋪陳，不是本次資料】{\"schema\":\"jy.voice-example/1\",\"status\":\"illustrative_only\",\"method\":\"bazi\",\"setup\":\"假設原局已核實有財的機會，但承接通路受阻；已算當期運勢增加負荷，沒有實算後續轉機。\",\"text\":\"這段時間先別急著把事情做大。不是沒有收入機會，而是機會增加時，你要付出的時間、精力和成本也可能一起增加，最後未必留下相稱的成果。若現實中有新合作，就先看忙得過來嗎、錢何時收得到，而不是只看能接多少。這也不代表你一輩子賺不了錢；我們談的是眼前這段時間。後面何時比較輕鬆，仍需要相應資料，不能隨口給年份。\"}",
     "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。"
@@ -25,7 +100,7 @@ var JY_READING_BAZI = {
   "compat": [
     "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。",
     "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。\n【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。\n【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。",
-    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。",
+    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【合盤：雙方原局與互動】各自核A、B原局、需要與承受力，再看A對B及B對A的作用；兩盤不合成八柱原局，對方某五行不是本人的補劑。",
     "婚戀、合夥、親子、主管部屬按原問題角色取象；先讀最影響本題的支持、衝突與調節通道。吸引、投入、承諾與長期維持分層判斷。",
@@ -38,6 +113,7 @@ var JY_READING_BAZI = {
     "找最有力的互補如何被對方承接，以及最強反證限制意願、行動還是持續；同源合沖不重複加權。具體相處循環在沒有紀錄時只作待核對假設，轉成可試行的雙方協議。",
     "時機比較各自實算歲運的共同窗口，辨一方有機會而另一方未能承接的情況。資料單方、未知時辰或沒有互動背景的部分明示限制，不把未知視為必然不合。",
     "【合盤術語界線】雙向支持與衝突是待對照現實的相處假設；盤合不保證同意，盤沖不保證分手。保留各方完整原局與同期窗口，再提出雙方能選擇的調整條件。",
+    "【議題線索與精度分開】子女與生育規劃題先看兩人各自具名方法的相關結構，再看共同階段、需求與實際可協調條件；不能合併兩盤子女符號當人數，也不能推定伴侶生育意願。有一方缺時辰只限受影響部分，仍完成其他有效關係分析。",
     "【本法重要發現與解惑方式】雙方重要的互補、消耗、界線及時間不同步即使未問也提醒，說清哪一方的已算結構提供依據；具體相處循環保持待本人核對，不猜對方秘密。",
     "【原創成稿示範｜只學鋪陳，不是本次資料】{\"schema\":\"jy.voice-example/1\",\"status\":\"illustrative_only\",\"method\":\"compat\",\"setup\":\"假設A、B原局與同時段運期均已算：A偏向推進、B需要較慢的協調，支持與牽制均有定位。\",\"text\":\"你們有互相幫忙的可能，但做事速度不一樣，可能成為反覆出現的問題。一方想趕快往前，另一方需要多一點整理時間；處理得好可以分工，處理不好就可能變成一方催、一方退。這是不是你們正在發生的情況，仍要由你們核對。若確實如此，可以先說好何時做決定、各自負責什麼；若相處一直順暢，就別硬把這個可能的問題套在你們身上。\"}",
     "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。"
@@ -51,6 +127,7 @@ var JY_READING_BAZI = {
     "工作、親密關係及陌生環境的表現可不同，說明觸發條件、慣常反應及可練習替代做法，連到本人可核對的行為。",
     "提出可試練習和觀察指標，由本人經驗決定哪些解釋適用，不由人格卡預測職業成敗、他人評價或補造人生年表。",
     "【人格術語界線】本站五軸映射不是經驗證心理量表；分數和類型不能定智力、人格好壞、診斷或終身能力。轉成可觀察而能被反例修正的行為假設。",
+    "【議題線索與精度分開】人格模型可解與本題有關的照顧方式、決策與壓力模式，不測生殖能力或孩子人數。若 modelInputs 只有特徵摘要，不反推不存在的完整命盤；另有原盤才依該具名方法讀子女方向。仍交代本模型能幫助理解的部分與下一步，不以空泛無法回答結案。",
     "【本法重要發現與解惑方式】已算功能通路中重要的長處、壓力模式和情境差異，即使未問也指出，提供可核對的行為與練習；模型不能替本人診斷或捏造經歷。",
     "【原創成稿示範｜只學鋪陳，不是本次資料】{\"schema\":\"jy.voice-example/1\",\"status\":\"illustrative_only\",\"method\":\"personality\",\"setup\":\"假設已算通路支持資訊整理，但快速切換情境有較高負荷；無心理疾病診斷資料。\",\"text\":\"這份結果比較看好你整理資訊的能力，但太快切換事情，可能讓你更累。重點不是用一個名稱把自己定型，而是找到能讓自己做得好的安排。若你實際也有這種差異，可以試著把相近任務集中，再看效率和感受有沒有改善；若沒有，就別硬套。也提醒你，容易疲累不等於有病或有缺陷，這份資料不能代替診斷。\"}",
     "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。"
@@ -73,7 +150,7 @@ var JY_REC_BAZI = {
 (function (root) {
   'use strict';
 
-  var VERSION = '6.0.0';
+  var VERSION = '6.1.0';
   var SHOP_LINK = '[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)';
   var FINAL_WISH = '願你諸事順遂。';
 
@@ -195,6 +272,7 @@ var JY_REC_BAZI = {
       '性格與能力：分析思考、行動、資源運用、壓力反應，以及不同情境下的表現差異。',
       '事業與學業：分析適合的工作／學習模式、權責、自主性、輸出方式、優勢與容易卡住之處。',
       '財務：分辨賺錢機會、收入、現金流、累積能力、負債與風險承受，不把「財星被引動」直接當作獲利保證。',
+      '子女與生育：合讀本次性別取法、子女實際位置與力量、時位、全局支持與限制及已算歲運。具名數量假定須合整張盤修正；精確總數未定不停止議題解讀，不能把自身中和直接換成只生一至兩人。',
       '感情與家庭：分析命主的需求、互動模式、承諾、界線及運勢節奏；涉及特定他人時，將命盤傾向和對方的實際行為分開。',
       '健康：可從傳統五行與寒暖燥濕談生活調整方向，但不取代醫療診斷。',
       '流年與時機：先說明大運背景，再找流年觸發、助力、阻力及現實上可驗證的窗口。',
@@ -214,8 +292,8 @@ var JY_REC_BAZI = {
     if(mode==='chart')return ['【排盤呈現】以資料校核為主，指出可確認與仍需確認的欄位；未另問人生議題時，不輸出人生預測。'];
     var lines = [];
     var readingKind=mode==='compatibility'?'compat':'bazi';
-    lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("13.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
-    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.methodLines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("13.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
+    lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.lines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("14.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.lines(readingKind):JY_READING_BAZI[readingKind]);
+    if(mode==='personality')lines=lines.concat(root.JY_READING_QUALITY&&typeof root.JY_READING_QUALITY.methodLines==="function"&&String(root.JY_READING_QUALITY.readingVersion||"0").localeCompare("14.0.0",undefined,{numeric:true})>=0?root.JY_READING_QUALITY.methodLines('personality'):JY_READING_BAZI.personality);
     lines.push('參考脈絡：《子平真詮·論用神》https://www.donglishuzhai.net/chapter/3721.html；香港天文台曆法與視太陽時 https://www.hko.gov.hk/tc/gts/time/basicterms-apparentsolartime.htm。前者是傳統判法，後者只支持時間概念；列出書目不表示本次已即時查網。');
     if (mode === 'compatibility') {
       lines.push('6. 合盤請清楚區分 A 方、B 方與共同關係層，說明吸引、支持、摩擦、溝通、時間節奏與長期相處條件。');

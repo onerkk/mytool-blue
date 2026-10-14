@@ -41,7 +41,7 @@ const readingTargets=[
   ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().flatMap(k=>q.methodLines(k)).join('\n')],
   ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()+'\n'+q.narrativePolicy()+'\n'+q.truthPolicy()]
 ];
-const mirrors=['native-rule-sources.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
+const mirrors=['native-rule-sources.js','native-chart-analysis.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','ziwei-standalone.js','relationship-core.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
 function persist(file,next){
   const full=path.join(root,file),old=fs.existsSync(full)?fs.readFileSync(full,'utf8'):null;
@@ -82,6 +82,8 @@ for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]
   // handled pre-v6 callers, so a cached v6 guide could override v7 fallbacks).
   next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.readingVersion\|\|"0"\)\.localeCompare\("[^"]+",undefined,\{numeric:true\}\)>=0/g,
     (_,ref)=>'String('+ref+'.readingVersion||"0").localeCompare('+JSON.stringify(q.readingVersion)+',undefined,{numeric:true})>=0');
+  next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.readingVersion\|\|'0'\)\.localeCompare\('[^']+',undefined,\{numeric:true\}\)>=0/g,
+    (_,ref)=>'String('+ref+'.readingVersion||"0").localeCompare('+JSON.stringify(q.readingVersion)+',undefined,{numeric:true})>=0');
   next=next.replace(/String\(((?:window|root)\.JY_READING_QUALITY)\.version\|\|"0"\)\.localeCompare\("[^"]+",undefined,\{numeric:true\}\)>=0/g,
     (_,ref)=>'String('+ref+'.version||"0").localeCompare('+JSON.stringify(q.version)+',undefined,{numeric:true})>=0');
   persist(file,next);
@@ -90,7 +92,7 @@ for(const file of new Set(readingTargets.map(t=>t[0]).concat(targets.map(t=>t[0]
 // Embed the exact same factory, with CommonJS export removed in these hosts.
 const workflowFile='JS/reading-workflow.js',workflowOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
 const methodGuides='  // BEGIN GENERATED WORKFLOW METHOD GUIDES\n  var METHOD_GUIDES = '+JSON.stringify(Object.fromEntries(q.methodKinds().map(k=>[k,q.methodLines(k)])),null,2)+';\n  // END GENERATED WORKFLOW METHOD GUIDES\n';
-persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides));
+persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides).replace(/String\(quality\.readingVersion\|\|'0'\)\.localeCompare\('[^']+',undefined,\{numeric:true\}\)>=0/g,()=>"String(quality.readingVersion||'0').localeCompare('"+q.readingVersion+"',undefined,{numeric:true})>=0"));
 const voiceOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
 const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText()+'\n'+q.narrativePolicy())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
 persist(workflowFile,voiceOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW VOICE GUIDE\n[\s\S]*?  \/\/ END GENERATED WORKFLOW VOICE GUIDE\n/,()=>voiceBlock));
@@ -117,6 +119,13 @@ const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);
+// The standalone Bazi prompt must carry the same children rule pack as the
+// normal page. A missing central packet cannot remove topic-level evidence.
+const childHost='JS/bazi-prompt-root.js',childOld=fs.readFileSync(path.join(root,childHost),'utf8');
+const childRuntime='// BEGIN GENERATED BAZI CHILDREN RUNTIME\n'+fs.readFileSync(path.join(root,'JS/bazi-child-analysis.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'').trimEnd()+'\n// END GENERATED BAZI CHILDREN RUNTIME\n';
+const childRe=/\/\/ BEGIN GENERATED BAZI CHILDREN RUNTIME\n[\s\S]*?\/\/ END GENERATED BAZI CHILDREN RUNTIME\n/;
+persist(childHost,childRe.test(childOld)?childOld.replace(childRe,()=>childRuntime):childRuntime+childOld);
+persist('bazi-child-analysis.js',fs.readFileSync(path.join(root,'JS/bazi-child-analysis.js'),'utf8'));
 for(const file of new Set(mirrors.concat(['native-depth-contract.js','prompt-brief.js','prompt-packet.js','engine-computation-audit.js','reading-workflow.js','tarot-semantic-engine.js','astro-bridge.js','western-standalone.js','vedic-standalone.js','name-standalone.js'].filter(f=>fs.existsSync(path.join(root,f))))))persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
 // Keep the retained API's OOTK adapter on the same data/read/review code. A
 // scoped runtime works both in Pages and in data-URL test module loaders.

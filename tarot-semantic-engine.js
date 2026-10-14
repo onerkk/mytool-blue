@@ -1563,12 +1563,12 @@
       var status = queryConstraint ? 'query_constraint' : (intrinsicallyUnmeasured ? 'not_measured' : (canAnswer ? 'direct_or_qualitative_channel' : 'missing_required_channel'));
       var reason;
       if (queryConstraint) reason = '這是原句提供的範圍／模態約束，不是由牌面推算。';
-      else if (intrinsicallyUnmeasured) reason = '本方法不推算實際精確數值、差額、機率、身分或日期；使用者明示的門檻仍保留為查詢條件。';
+      else if (intrinsicallyUnmeasured) reason = '本方法未直接測量這項精度；只限制該數字、身分或日期，仍须依本次牌陣解讀切題的方向、條件與做法。使用者明示的門檻保留為查詢條件，不能把未量測當成不成立。';
       else if (canAnswer && observable === 'threshold_outcome') reason = '方法具有綁定原問句尺度、比較子、門檻與截止範圍的結果通道，可定性裁決是否跨越；不得反推實際營業額或差額。';
       else if (canAnswer && observable === 'comparison_outcome') reason = '方法提供兩個獨立且同尺度的分支結果通道，先各自成句再比較。';
       else if (canAnswer) reason = '方法註冊表明示提供此觀測通道，可依合法證據圖定性裁決。';
       else reason = '原問句需要此觀測通道，但所選方法未提供；自動路由時必須改選，使用者強制指定時只能明示限制。';
-      return {dimensionId:dimension.id,dimension:dimension.label,source:dimension.source,observableId:observable,methodCapability:canAnswer?'provided':'not_provided',precheckStatus:status,canAnswer:canAnswer,reason:reason};
+      return {dimensionId:dimension.id,dimension:dimension.label,source:dimension.source,observableId:observable,methodCapability:canAnswer?'provided':'not_provided',precheckStatus:status,canAnswer:canAnswer,precisionOnly:intrinsicallyUnmeasured,haltsWholeReading:false,qualitativeReadingRequired:intrinsicallyUnmeasured,reason:reason};
     });
   }
 

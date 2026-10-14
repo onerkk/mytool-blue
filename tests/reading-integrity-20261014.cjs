@@ -90,6 +90,6 @@ test('old exported task instructions receive current rules without losing facts 
   const updated=c.JYPromptPacket.finish(old,{method:'bazi',question:q});
   assert(updated.includes('【共用判讀版本】'+W.version));assert(updated.includes('【本次版本補充作答規則｜覆蓋舊版作答要求】'));
   assert(updated.includes('乙酉'));assert.equal(c.JYPromptPacket.finish(updated,{method:'bazi',question:q}),updated);
-  assert.equal(c.JYPromptPacket.get(updated).version,'20261014prompt22');
+  assert.equal(c.JYPromptPacket.get(updated).version,'20261014prompt24');
 });
 console.log('Reading integrity '+passed+' groups PASS');
