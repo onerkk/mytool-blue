@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261014depth21';
+  const VERSION='20261014depth22';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -77,13 +77,13 @@
       missingRequiredEvidence:missing,
       unresolved:[...A(analysis?.unavailable),...evidence.filter(x=>!x.available).map(x=>x.label+'：'+x.reason)],
       sourcePolicy:'來源必須綁定具名規則或profile；同源重複不當獨立驗證；原典互相矛盾時並列，不自行創造唯一版本。',
-      outputPolicy:'每個主結論至少指出一條實算支持；若存在可改判的反證，同段交代。時間結論必須引用已算區間或明示只能給象徵時序。'+(method==='ootk'?' OOTK 不得把方法邊界誤寫成沒有答案：界線限制的是事實宣稱，不是盤面方向性推論。':'')
+      outputPolicy:'每個重要判斷在內部核對實算依據，正文用日常用語說原因、尚未確認的部分和可能影響，不要求列出術語或盤位。時間依據保持已算範圍；只有原題明示技術需求才另作說明。'+(method==='ootk'?' OOTK 不得把方法邊界誤寫成沒有答案：界線限制的是事實宣稱，不是盤面方向性推論。':'')
     };
   }
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
     `閱讀範圍狀態：${c.status}。`,
-    '成稿方式：先答原句，再以命理師自然解惑的口吻深入串起各位置的作用；正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
+    '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,

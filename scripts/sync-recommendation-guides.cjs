@@ -113,7 +113,7 @@ persist(scopeFile,scopeRe.test(scopeOld)?scopeOld.replace(scopeRe,()=>scopeBlock
 // second OOTK prompt or let a cached older reader replace this release.
 const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
   ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
-  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth21",undefined,{numeric:true})<0']
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth22",undefined,{numeric:true})<0']
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);

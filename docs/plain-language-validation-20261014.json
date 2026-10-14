@@ -1,0 +1,254 @@
+{
+  "release": "20261014plain22",
+  "status": "passed",
+  "actualExportsAndExamples": {
+    "release": "20261014plain22",
+    "status": "passed",
+    "methods": [
+      {
+        "method": "bazi",
+        "status": "passed",
+        "sampleCharacters": 150,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 39932
+      },
+      {
+        "method": "ziwei",
+        "status": "passed",
+        "sampleCharacters": 142,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 49518
+      },
+      {
+        "method": "astro",
+        "status": "passed",
+        "sampleCharacters": 154,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 19427
+      },
+      {
+        "method": "vedic",
+        "status": "passed",
+        "sampleCharacters": 152,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 172872
+      },
+      {
+        "method": "liuren",
+        "status": "passed",
+        "sampleCharacters": 156,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 53523
+      },
+      {
+        "method": "liuyao",
+        "status": "passed",
+        "sampleCharacters": 136,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 15365
+      },
+      {
+        "method": "yijing",
+        "status": "passed",
+        "sampleCharacters": 129,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 14678
+      },
+      {
+        "method": "meihua",
+        "status": "passed",
+        "sampleCharacters": 149,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 11896
+      },
+      {
+        "method": "name",
+        "status": "passed",
+        "sampleCharacters": 135,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 19538
+      },
+      {
+        "method": "compat",
+        "status": "passed",
+        "sampleCharacters": 151,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 23889
+      },
+      {
+        "method": "personality",
+        "status": "passed",
+        "sampleCharacters": 137,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 8771
+      },
+      {
+        "method": "tarot",
+        "status": "passed",
+        "sampleCharacters": 142,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 8032
+      },
+      {
+        "method": "lenormand",
+        "status": "passed",
+        "sampleCharacters": 130,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 10256
+      },
+      {
+        "method": "ootk",
+        "status": "passed",
+        "sampleCharacters": 144,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 17009
+      },
+      {
+        "method": "oracle",
+        "status": "passed",
+        "sampleCharacters": 129,
+        "sampleJargonMatches": 0,
+        "originalDataUnchanged": true,
+        "promptCharacters": 11795
+      }
+    ],
+    "fallback": "passed",
+    "mixedCachedGuide": "passed",
+    "fullAnnualAndOOTKCoverage": "passed",
+    "apiAndWorker": "passed",
+    "scope": "Actual local prompt exports, original data and original sample prose. External AI prose compliance and prediction accuracy not certified."
+  },
+  "checks": [
+    {
+      "command": "node tests/plain-language-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reader-voice-20260923.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/recommendation-20260914.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-depth-regression-20260927.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/reading-integrity-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/prompt-integrity-20261010.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/direct-reading-20260922.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/comprehensive-reading-20261001.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/chinese-engine-rules-20260923.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/counsel-voice-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/practitioner-narrative-20261014.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/question-model-regression-20260927.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/ootk-five-layer-reading-20261005.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tests/engine-core-completion-r13-20261004.cjs",
+      "exitCode": 0
+    }
+  ],
+  "generatedCopies": "passed: scripts/sync-recommendation-guides.cjs --check",
+  "scope": "Prompt requirements, original sample prose, unchanged calculation data and delivery paths. No external AI response or prediction accuracy certification.",
+  "syntaxChecks": {
+    "status": "passed",
+    "checkedFiles": [
+      "meihua-standalone.js",
+      "native-depth-contract.js",
+      "sw.js",
+      "prompt-brief.js",
+      "ziwei-prompt-root.js",
+      "prompt-export.js",
+      "ai-analysis.js",
+      "bazi-prompt-root.js",
+      "bazi-suite-core.js",
+      "prompt-packet.js",
+      "lenormand.js",
+      "oracle.js",
+      "scripts/sync-recommendation-guides.cjs",
+      "tests/comprehensive-reading-20261001.cjs",
+      "tests/plain-language-20261014.cjs",
+      "tests/depth-contract-r12-20261004.cjs",
+      "tests/ootk-reading-pipeline-20261005.cjs",
+      "tests/engine-evidence-r14-20261004.cjs",
+      "tests/counsel-voice-20261014.cjs",
+      "tests/reading-depth-regression-20260927.cjs",
+      "tests/reader-voice-20260923.cjs",
+      "tests/engine-core-completion-r13-20261004.cjs",
+      "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "tests/question-model-regression-20260927.cjs",
+      "tests/mobile-ritual-actions-20260928.cjs",
+      "tests/ootk-five-layer-reading-20261005.cjs",
+      "tests/reading-integrity-20261014.cjs",
+      "tests/ootk-browser-20260915.cjs",
+      "tests/practitioner-narrative-20261014.cjs",
+      "JS/ziwei-standalone.js",
+      "JS/meihua-standalone.js",
+      "JS/relationship-core.js",
+      "JS/native-depth-contract.js",
+      "JS/sw.js",
+      "JS/prompt-brief.js",
+      "JS/ziwei-prompt-root.js",
+      "JS/prompt-export.js",
+      "JS/reading-quality.js",
+      "JS/ai-analysis.js",
+      "JS/bazi-prompt-root.js",
+      "JS/bazi-suite-core.js",
+      "JS/liuren-prompt.js",
+      "JS/reading-workflow.js",
+      "JS/prompt-packet.js",
+      "JS/vedic-prompt.js",
+      "JS/name-prompt.js",
+      "JS/lenormand.js",
+      "JS/western-prompt.js",
+      "JS/oracle.js",
+      "JS/gua-prompt.js",
+      "workers/ai-proxy.js",
+      "functions/api/ai.js"
+    ],
+    "removedFiles": [],
+    "historicalReportsPreserved": true
+  }
+}

@@ -7,7 +7,7 @@ const {ctx:c,load}=environment();
 const fixture=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket,results=[];
 const root=path.resolve(__dirname,'..');
 const q='今年公司女性工程師會愛上我並跟我有親密接觸嗎？';
-assert.equal(Q.readingVersion,'12.0.0');assert.equal(W.version,'2.1.0');
+assert.equal(Q.readingVersion,'13.0.0');assert.equal(W.version,'2.2.0');
 for(const [method,chart]of Object.entries(fixture.charts)){
  const before=JSON.stringify(chart),text=P.build(method,chart,q),record=P.get(text);
  assert(text.includes('命理師當面解惑')||text.includes('像命理師當面解惑'),method+' natural counseling voice');
@@ -44,7 +44,7 @@ const scope=W.reportScope('今年感情怎麼發展？','bazi');assert.equal(sco
 const broad=W.render({method:'ziwei',question:'完整分析十二宮與所有大限逐年流年'});
 assert(broad.includes('【全盤作答覆蓋】')&&broad.includes('【逐年／逐期作答覆蓋】'),'explicit full and annual requests keep complete coverage');
 const qualityPath=path.join(root,'JS/reading-quality.js');
-assert(fs.readFileSync(qualityPath,'utf8').includes("var READING_VERSION='12.0.0'"));
-const report={version:'20261014practice21',actualMethods:15,results,fallbackWithoutSharedGuide:'passed',compoundQuestion:'passed',hypotheticalNegativeControl:'passed',fullAndAnnualCoverage:'passed',scope:'Actual local builders and unchanged chart fixtures. External AI prose compliance and prediction accuracy are not certified.'};
+assert(fs.readFileSync(qualityPath,'utf8').includes("var READING_VERSION='13.0.0'"));
+const report={version:'20261014plain22',actualMethods:15,results,fallbackWithoutSharedGuide:'passed',compoundQuestion:'passed',hypotheticalNegativeControl:'passed',fullAndAnnualCoverage:'passed',scope:'Actual local builders and unchanged chart fixtures. External AI prose compliance and prediction accuracy are not certified.'};
 if(process.env.JY_COUNSEL_REPORT)fs.writeFileSync(process.env.JY_COUNSEL_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Counsel voice: all 15 real method exports, fallback, compound question and full/annual coverage passed.');
