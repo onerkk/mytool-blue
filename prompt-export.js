@@ -221,10 +221,10 @@ if(!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkRead
 })(typeof window==='undefined'?globalThis:window);
 
 }
-if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth22",undefined,{numeric:true})<0){
+if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth25",undefined,{numeric:true})<0){
 (function(root){
   'use strict';
-  const VERSION='20261014depth24';
+  const VERSION='20261014depth25';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -274,6 +274,23 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
       return {available:false,status:'partial',reason:A(v.integrity?.missing).join('；')||'本次五輪閱讀必要欄位未齊全'};
     return {available:true,status:'calculated',reason:null};
   }
+  function requestCoverage(method,analysis,options,evidence){
+    const plan=root.JYReadingWorkflow?.plan?.({method,question:options.question||analysis?.children?.question||'',notes:options.notes,referenceDate:options.referenceDate,timezone:options.timezone});
+    const validOperations=method==='ootk'?A(analysis?.methodData?.layerEvidence).filter(x=>x.valid).map(x=>x.operation):null;
+    const units=A(analysis?.items).map((x,i)=>({id:method+'-unit-'+i,label:x.label||x.id||String(i),basis:'本方法逐項作用與原生資料',nativePath:'items.'+i,evidenceCount:A(x.evidence).length,eligible:!['not-started','unknown-time','partial'].includes(x.id)&&(method!=='ootk'||validOperations.includes(x.evidence?.[0]?.operation)),role:'candidate-evidence-not-an-event-verdict'})).filter(x=>x.eligible);
+    const available=evidence.filter(x=>x.available&&x.status!=='not-applicable'&&(method!=='ootk'||validOperations.length>0)).map(x=>({label:x.label,path:x.path}));
+    const missing=evidence.filter(x=>!x.available).map(x=>({label:x.label,path:x.path,status:x.status,reason:x.reason,haltsOtherEvidence:false}));
+    const limitations=A(analysis?.unavailable).map(message=>({message,kind:/證實|準確率|保證|未發生事件|人物心意/.test(message)?'event-not-verified':/未實作|未有可靠|師承|異派|其他.*流派/.test(message)?'outside-registered-rules':'missing-or-limited-layer',haltsOtherEvidence:false}));
+    const specialization=analysis?.topicRules;
+    return {schema:'jy.request-coverage/1',method,sourceQuestion:plan?.question||String(options.question||''),
+      requirements:plan?.requestRequirements||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
+      usableNativeEvidence:available.length>0||units.some(x=>x.evidenceCount>0),
+      specializedClassification:{available:!!specialization,topics:A(specialization?.topics),fallback:'專用分類缺少或未命中，只限制該分類；仍用實際原生骨架與本法一般判讀回答原句。'},
+      taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依本題相關作用筛選候選，並完成支持與限制比較；此列不預先判事件。'})),
+      interpretationRule:'逐題從有效原生資料選取實際相關作用；讀者可依具名傳統判法推讀，但不能冒稱新的讀法已由引擎實算。分類清單與語義標籤不是可問問題白名單。',
+      timeRule:'本次實算時窗只限制可報的時點；不限期或更長的原問句，不能因窗口外未算就判窗口外永不發生。',
+      outputRule:'正文先答當事人原問題，再深入講清理由、重要發現與做法；不展示這份技術清單，不用無法確定代替仍可讀的內容。'};
+  }
   function build(method,chart,analysis,options={}){
     const p=P[method]||{profile:'具名方法',required:[['原生資料','items']],order:common.synthesis,conflicts:[],forbidden:[]};
     const evidence=p.required.map(([label,path])=>({label,path,...evidenceState(method,chart,analysis,path)}));
@@ -298,6 +315,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
       methodOutputPolicy,
+      requestCoverage:requestCoverage(method,analysis,options,evidence),
       readingScope:root.JYReadingWorkflow?.readingScope?.(options.question||analysis?.children?.question||'',method)||null,
       precisionPolicy:'精確數值或心意未量測只限制該項，仍須完成切題的象徵方向、相反條件與做法。具名數量規則可作已核前提的傳統假定，不當事實；沒有相關資料不能造線索。',
       missingRequiredEvidence:missing,
@@ -312,6 +330,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `精度與可讀內容：${c.precisionPolicy||'缺項只限制受影響部分；有效資料照常閱讀。'}`,
+    c.requestCoverage?'本題逐項解讀覆蓋（內部資料，不是成稿欄位）：'+JSON.stringify(c.requestCoverage):'',
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `內部合成核對（不作正文欄位）：${c.synthesisOrder.join(' → ')}。`,
@@ -323,8 +342,8 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''
   ].filter(Boolean).join('\n');}
-  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
-  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary});
+  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,requestCoverage:c.requestCoverage,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
+  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary,requestCoverage});
 })(typeof window==='undefined'?globalThis:window);
 
 }
@@ -334,7 +353,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='2.3.0';
+  var VERSION='2.4.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -651,7 +670,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
 };
   // END GENERATED WORKFLOW METHOD GUIDES
   // BEGIN GENERATED WORKFLOW VOICE GUIDE
-  var AUTHOR_VOICE = "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。\n【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。";
+  var AUTHOR_VOICE = "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。\n【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。\n【所有原題都依同一完整解讀流程】以下不是只給子女、感情或任何已列分類的補丁。先理解原句真正要知道什麼、有哪些人物與條件，再讀本次方法的完整有效骨架，選出能回答它的實際作用。題目不在分類表、語義模型未辨識或專用標籤未產生，都不能直接跳成無法解讀；以原句為準，完成本法一般判讀。\n【計算、推讀與現實分開】已算日期、位置、牌序與作用是本次資料；依本法可靠一般判法解釋這些資料，是具名傳統推讀。引擎未替某種問題自動貼標籤，不代表讀者不能合讀原生資料；新增推讀不得冒稱引擎已自動計算，也不能捏造缺少的前提或未算運期。真實事件、他人意願、疾病與精確數量仍須與象徵推估分開。\n【逐子題完整，不用限制代替答案】對原句每個真正提出的事件、比較、原因、時間、數量或做法，先給有效資料較支持的回答，再深入說為何如此、哪股力量會改變走向及可以怎麼處理。限定精度或缺一份資料，只限制對應部分；多方法有一份不能讀時，其他有效資料仍完成。證据不足以分辨的子題，交代已檢查哪些相關作用、還缺哪一環與可核對的一步。\n【有線索要追到結果，不把象徵等同答案】找到象徵之後，要比較它與其他有效作用是否支持同一人物、事件及時間，說清如何影響本題；單一名字、數值、牌圖或吉凶不直接當事件。相反讀法比較後要收斂，無法收斂才指出實際分歧。不把無候選日期、未見一個符號或缺他人資料當成整件事一定不成立，也不為了每題有答案而硬造線索。\n【重要提醒要讓一般人聽懂】完成原題後，主動解釋全局中會改變當事人選擇的重要資源、阻力、反覆模式或轉折，包含未被直接問到但有據的部分。直接講生活中的影響、可觀察的跡象與可採做法；一般正文不講術語，不把通用提醒充當新的盤面發現。";
   // END GENERATED WORKFLOW VOICE GUIDE
   var FULL_AREAS = {
   "liuren": "完整讀十二天地盤、四課、九宗門取傳、三傳的遞生互克、十二天將、六親旬空遁干、月令內外戰。64課族逐條成立／否／缺資料分開，290神煞只採實際課傳年命命中。同源別名不加票，雙人年命依明示輸入，應期沒有候選日實算不造日期；各子題交代最強支持、牽制、改判條件及可採行動。",
@@ -684,9 +703,16 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     if(typeof module==='object'&&module.exports){try{return require('./tarot-foundation.js');}catch(_e){}}
     return null;
   }
+  function directQuestionModel(question,reason){
+    return {schema:'jy.question_model/1',status:'original-question-reading-required',sourceQuestion:String(question||''),queryIntent:{shape:'open_original_request',dimensions:[],domains:[],explicitTime:[],operatorFocus:''},events:[{id:'ORIGINAL_REQUEST',source:String(question||''),type:'original_request',predicate:'interpret_original_question',grammaticalSubject:null,eventActor:null,target:null,personBinding:null,requiredObservables:[],participants:[],conditions:[],actionSequence:[]}],unresolved:{language:[String(reason||'語義模型未完整辨識，依原句閱讀有效資料')],ambiguities:[],assumptions:[],unsupportedDimensions:[],decisionKind:'none',notes:[]},validation:null};
+  }
   function semanticModel(question,options){
-    var F=compiler();if(!F)return {schema:'jy.question_model/1',status:'unavailable',sourceQuestion:question,events:[]};
-    var compiled=F.compileQuestion(question,{referenceDate:options&&options.referenceDate,timezone:options&&options.timezone}),graph=compiled.queryGraph||{},rq=compiled.readingQuestion||{},language=rq.clauses||[],events=graph.events||[];
+    var F=compiler();if(!F)return directQuestionModel(question,'語義元件未載入；不限制依原句解讀');
+    var compiled;
+    try{compiled=F.compileQuestion(question,{referenceDate:options&&options.referenceDate,timezone:options&&options.timezone});}
+    catch(_e){return directQuestionModel(question,'語義解析失敗；保留原句，不能把它改成另一個題目或停止有效盤面解讀');}
+    if(!compiled||typeof compiled!=='object')return directQuestionModel(question,'語義結果缺漏；依原句閱讀');
+    var graph=compiled.queryGraph||{},rq=compiled.readingQuestion||{},language=rq.clauses||[],events=graph.events||[];
     var entities=Object.create(null);(graph.entities||[]).forEach(function(e){entities[e.id]=e.surface||e.source||e.id;});
     return {
       schema:'jy.question_model/1',status:graph.compilerStatus||'partial',sourceQuestion:String(question||''),
@@ -737,6 +763,17 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     if(text.trimEnd().endsWith(FOOTER))text=text.trimEnd().slice(0,-FOOTER.length).trimEnd();
     return text.endsWith(SAFETY_ENDING)?text:text+'\n\n'+SAFETY_ENDING;
   }
+  function requestRequirements(question,tasks,model,scope){
+    var q=String(question||''),events=model&&model.events||[],sourceTasks=tasks&&tasks.length?tasks:[{id:1,question:q,goal:'general'}];
+    return {schema:'jy.request-requirements/1',version:VERSION,sourceQuestion:q,
+      routing:'question-first-no-topic-whitelist',questionModelStatus:model&&model.status||'original-question-reading-required',
+      tasks:sourceTasks.map(function(t){var related=events.filter(function(e){return String(e.source||'').replace(/[？?。；;]+$/,'').trim()===t.question;});return {id:'Q'+t.id,source:t.question,goal:t.goal||'general',eventIds:related.map(function(e){return e.id;}),explicitResults:Array.from(new Set(related.flatMap(function(e){return (e.actionSequence||[]).concat(e.requestedItems?[e.requestedItems]:[]);}))),requiredObservables:Array.from(new Set(related.flatMap(function(e){return e.requiredObservables||[];}))),answerRequired:true};}),
+      precisionLimits:scope&&scope.precisionLimits||[],
+      obligations:['逐一回答原句真正提出的問題，未被分類的部分按原句理解','讀完本法仍有效的骨架、相關角色與實際作用，專用分類未命中不停止一般判讀','有據時收斂較支持的方向、程度與條件，不能只給可能有可能沒有','比較會改變答案的支持與限制，分清現況走向和採取建議後的推演','辨認重要且切題的連帶發現，以白話解釋影響與做法','只有具體受影響的精度、資料或程序受限；其餘回答照常完成'],
+      inferenceBoundary:'可依本法可靠的一般判法解釋已列原始資料；這屬具名傳統判讀或讀者推導，不冒稱是引擎已自動裁決。不補生日、人物心意、未抽牌、未排運期或未提供背景。',
+      unresolvedTaskRule:'若某子題仍不能成判，指出已檢查的實際資料、真正卡在哪一環，以及補什麼或觀察什麼能改變判斷；不以整題無法作答收尾。沒有切題證據時不編造象徵。',
+      outputRule:'這是內部覆蓋契約，不是正文欄位。正文對一般人自然解惑，不照清單交作業。'};
+  }
   function readingScope(question,methods,model){
     var q=String(question||''),ids=kinds(methods),limited=(model&&model.unresolved&&model.unresolved.unsupportedDimensions||[]).slice();
     if(/幾個|幾位|多少(?:人|個|位|次)|人數|數量/.test(q)&&!limited.includes('cardinality'))limited.push('cardinality');
@@ -767,9 +804,10 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     var broad=report.fullChart||report.annualRequested||report.requestedDecades||lifePurpose||/全盤|整體|完整分析|深入分析|深度分析|所有面向|年度運勢|今年運勢|長期走向|一生|終身/.test(q),
       complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||!!e.causalSituation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options'||e.queryOperator==='enumeration_guidance';});
     var healthExam=domains.indexOf('health')>=0&&/(?:體檢|健檢|健康檢查|檢查報告|篩檢)/.test(q);
+    var scope=readingScope(q,ids,model);
     return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
       depth:broad?'comprehensive':complex?'deep':'focused',reportScope:report,
-      questionModel:model,readingScope:readingScope(q,ids,model),
+      questionModel:model,readingScope:scope,requestRequirements:requestRequirements(q,tasks,model,scope),
       healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),healthExam:healthExam,
       bipolarMention:disease&&/躁鬱|双相|雙相|bipolar/i.test(q),lifePurpose:lifePurpose,careContext:careContext(q,options.notes),
       source:'原問句明示詞彙；只用來安排回答任務，不是排盤證據、診斷或對事件的判斷。'};
@@ -777,7 +815,8 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
   function chartReferenceAudit(options,chart){
     var p=plan(options),raw=chart&&(chart.tarotData||chart.lenormandData||chart),cards=raw&&(raw.cards||raw.drawn)||[],slots=raw&&raw.methodPlan&&raw.methodPlan.slots||[],F=compiler();
     if(!cards.length||!F)return null;
-    var compiled=F.compileQuestion(p.question),branches=compiled.readingQuestion.branches,issues=[];
+    var compiled;try{compiled=F.compileQuestion(p.question);}catch(_e){return {schema:'jy.cast-reference-audit/1',status:'original-question-review-required',issues:[],cardSequencePreserved:true,positionAndOrientationPreserved:true,policy:'語義核對未完成；依原句核人物，不改牌序、方向或原牌位。'};}
+    var branches=compiled?.readingQuestion?.branches||[],issues=[];
     cards.forEach(function(card,i){
       var b=card.binding||card.slotBinding||slots[i]&&slots[i].binding;if(!b)return;
       var branch=branches.find(function(x){return x.id===b.eventId;}),event=p.questionModel.events.find(function(x){return x.id===b.eventId;});
@@ -804,7 +843,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     if(k==='ziwei'&&specific?.technicalRulesLines)lines.push.apply(lines,specific.technicalRulesLines());
     if(k==='ziwei'&&specific?.domainRouterLines)lines.push.apply(lines,specific.domainRouterLines());
     if(k==='bazi'&&specific?.universalRulesLines)lines.push.apply(lines,specific.universalRulesLines());
-    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('14.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
+    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('15.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
     lines.push.apply(lines,guide?.length?guide:[METHODS[k].path,FULL_AREAS[k]]);
     return lines.join('\n');
   }
@@ -824,6 +863,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     var providedVoice=String(options?.providedGuide||'');
     lines.push(providedVoice?AUTHOR_VOICE.split('\n').filter(function(line){return !providedVoice.includes(line);}).join('\n'):AUTHOR_VOICE);
     lines.push('【本題可讀內容與精度界線】'+JSON.stringify(p.readingScope)+'\n先把仍有效的議題線索解讀完整，再把未確定部分說清；不得把一個未測量標籤變成整題拒答。');
+    lines.push('【任意原題的完整解讀任務】'+JSON.stringify(p.requestRequirements));
     var components=requestedComponents(p.question);
     if(components.length)lines.push('【原句複合結果核對】'+JSON.stringify(components)+'。原句同時問感受與行動，兩個結果須分別直接回答，再解釋是否能承接。不能由愛上推定接觸，也不能由接觸推定愛上；親密接觸不自動等於性交。此核對不改原句、牌序或角色，不建立未提供的現實事實。');
     lines.push('【結論強度】計算核對不等於事件預測已驗證。負向與正向判斷都要保留本題範圍、時間及條件；不可把身弱、煞忌、失勢或凶象變成终身失敗，也不可保證富貴或婚姻。核對實際已算救應與反證，未找到轉機就明說；多個AI同意不是獨立現實證據。');
@@ -1098,7 +1138,12 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     function issue(code,severity,message,excerpt){if(!issues.some(function(i){return i.code===code;}))issues.push({code:code,severity:severity,message:message,excerpt:excerpt||''});}
     if(!answer){issue('EMPTY_ANSWER','error','請貼上實際答案。');return {version:VERSION,status:'needs_revision',issues:issues,semanticVerification:'not_performed'};}
     var factVerification=reviewFacts(options,issue);
-    var childFacts=(readVerificationFacts(options).facts?.charts||[]).find(function(c){return c.method==='bazi'&&c.children;})?.children;
+    var nativeFacts=readVerificationFacts(options).facts?.charts||[];
+    var readableFacts=nativeFacts.some(function(c){return Object.keys(c.pillars||{}).length>=3||Object.keys(c.planets||{}).length>0||(c.cards||[]).length>0||(c.palaces||[]).length>0||(c.transmissions||[]).length>0||!!c.original||!!c.body||(c.names||[]).length>0||(c.completed||[]).length>0||(c.axes||[]).length>0||!!c.poem;});
+    var blanketRefusal=/(?:命理|本法|本方法|這份資料|這個問題|本題|整題|全部).{0,18}(?:不能解讀|無法解讀|無法回答|不能回答|無法作答|沒有辦法判讀)|(?:不能|無法).{0,8}(?:對這個問題|對本題).{0,8}(?:解讀|回答|判讀)/.test(answer);
+    var hasReading=/(?:較支持|比較可能|較可能|偏向|傾向|值得期待|有利|阻力|瓶頸|卡在|仍可看|可以觀察)/.test(answer);
+    if(readableFacts&&blanketRefusal&&!hasReading)issue('AVAILABLE_EVIDENCE_AS_WHOLE_REFUSAL','revision','本次仍有有效原生資料。先辨原句子題並完成切題的方向、原因和做法；若方法不適合某項，說明那一項的具體缺口，不能因分类未命中、精度未測量或另一盤失敗就整題拒讀。');
+    var childFacts=nativeFacts.find(function(c){return c.method==='bazi'&&c.children;})?.children;
     if(childFacts){
       if(answer.length<350&&/(?:不能|無法|算不出).{0,16}(?:人數|數字|幾個|推算)/.test(answer)&&!/(?:子女.{0,8}(?:訊號|緣|條件)|有利|阻力|較支持|偏向|比較可能)/.test(answer))issue('PRECISION_AS_WHOLE_REFUSAL','revision','本次有子女議題資料；不能只以精確人數未定結案，須解釋仍有效的方向、原因與下一步。');
       if(childFacts.inputGender==='unprovided'&&/(?:不論|不论|無論|无论).{0,20}(?:男|女|哪種|哪种).{0,60}(?:一到兩|一至兩|1[–—~-]2)/.test(answer))issue('UNRESOLVED_GENDER_COUNT','review','男女支線不能未比較有效取法就平均成同一個人數；請核對每條支線的實際數量依據。');
@@ -1176,7 +1221,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
       '【原始提示詞與盤面】',String(options.sourcePrompt),render(options),careContext(options.question,options.notes).commercialRequired?FOOTER:SAFETY_ENDING].join('\n\n');
   }
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
-  api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;
+  api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;
   root.JYReadingWorkflow=Object.freeze(api);
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
@@ -1185,7 +1230,7 @@ var JY_READING_EXPORT = {
   "tarot": [
     "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。",
     "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。\n【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。\n【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。",
-    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。",
+    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。\n【所有原題都依同一完整解讀流程】以下不是只給子女、感情或任何已列分類的補丁。先理解原句真正要知道什麼、有哪些人物與條件，再讀本次方法的完整有效骨架，選出能回答它的實際作用。題目不在分類表、語義模型未辨識或專用標籤未產生，都不能直接跳成無法解讀；以原句為準，完成本法一般判讀。\n【計算、推讀與現實分開】已算日期、位置、牌序與作用是本次資料；依本法可靠一般判法解釋這些資料，是具名傳統推讀。引擎未替某種問題自動貼標籤，不代表讀者不能合讀原生資料；新增推讀不得冒稱引擎已自動計算，也不能捏造缺少的前提或未算運期。真實事件、他人意願、疾病與精確數量仍須與象徵推估分開。\n【逐子題完整，不用限制代替答案】對原句每個真正提出的事件、比較、原因、時間、數量或做法，先給有效資料較支持的回答，再深入說為何如此、哪股力量會改變走向及可以怎麼處理。限定精度或缺一份資料，只限制對應部分；多方法有一份不能讀時，其他有效資料仍完成。證据不足以分辨的子題，交代已檢查哪些相關作用、還缺哪一環與可核對的一步。\n【有線索要追到結果，不把象徵等同答案】找到象徵之後，要比較它與其他有效作用是否支持同一人物、事件及時間，說清如何影響本題；單一名字、數值、牌圖或吉凶不直接當事件。相反讀法比較後要收斂，無法收斂才指出實際分歧。不把無候選日期、未見一個符號或缺他人資料當成整件事一定不成立，也不為了每題有答案而硬造線索。\n【重要提醒要讓一般人聽懂】完成原題後，主動解釋全局中會改變當事人選擇的重要資源、阻力、反覆模式或轉折，包含未被直接問到但有據的部分。直接講生活中的影響、可觀察的跡象與可採做法；一般正文不講術語，不把通用提醒充當新的盤面發現。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【塔羅：牌位與組合】按本次原生牌陣判讀；獨立牌位、三牌組、連續牌列、分支、軸線與配對保留各自功能，不互換成固定時間線。",
     "RWS 使用實際正逆位及牌圖；Book T 使用本次對應與真正有序相鄰的元素尊貴，不混套固定逆位。逆位依位置和全局判受阻、內化、過度或鬆動，並非一律相反。",
@@ -1208,7 +1253,7 @@ var JY_READING_EXPORT = {
   "ootk": [
     "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。",
     "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。\n【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。\n【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。",
-    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。",
+    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。\n【所有原題都依同一完整解讀流程】以下不是只給子女、感情或任何已列分類的補丁。先理解原句真正要知道什麼、有哪些人物與條件，再讀本次方法的完整有效骨架，選出能回答它的實際作用。題目不在分類表、語義模型未辨識或專用標籤未產生，都不能直接跳成無法解讀；以原句為準，完成本法一般判讀。\n【計算、推讀與現實分開】已算日期、位置、牌序與作用是本次資料；依本法可靠一般判法解釋這些資料，是具名傳統推讀。引擎未替某種問題自動貼標籤，不代表讀者不能合讀原生資料；新增推讀不得冒稱引擎已自動計算，也不能捏造缺少的前提或未算運期。真實事件、他人意願、疾病與精確數量仍須與象徵推估分開。\n【逐子題完整，不用限制代替答案】對原句每個真正提出的事件、比較、原因、時間、數量或做法，先給有效資料較支持的回答，再深入說為何如此、哪股力量會改變走向及可以怎麼處理。限定精度或缺一份資料，只限制對應部分；多方法有一份不能讀時，其他有效資料仍完成。證据不足以分辨的子題，交代已檢查哪些相關作用、還缺哪一環與可核對的一步。\n【有線索要追到結果，不把象徵等同答案】找到象徵之後，要比較它與其他有效作用是否支持同一人物、事件及時間，說清如何影響本題；單一名字、數值、牌圖或吉凶不直接當事件。相反讀法比較後要收斂，無法收斂才指出實際分歧。不把無候選日期、未見一個符號或缺他人資料當成整件事一定不成立，也不為了每題有答案而硬造線索。\n【重要提醒要讓一般人聽懂】完成原題後，主動解釋全局中會改變當事人選擇的重要資源、阻力、反覆模式或轉折，包含未被直接問到但有據的部分。直接講生活中的影響、可觀察的跡象與可採做法；一般正文不講術語，不把通用提醒充當新的盤面發現。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【開鑰之法：依實際版本與完成紀錄】Mathers 原稿五次操作與 Liber LXXVIII 驗題版分開；Ace 計數、配對、第四輪起點及停止條件依本次版本，不互套。",
     "五次操作不是五個月份，而是五層閱讀。每一個完成且有效的操作都必須對原問題新增一個可辨識的判斷：先讀該輪代表牌落域，再讀合法計數故事、配對與元素尊貴，說明本輪最支持什麼、最強反證限制哪一層，以及它如何承接、修正或推翻上一輪。不得只列牌義或把五輪壓成一句總結。",
@@ -1233,7 +1278,7 @@ var JY_READING_EXPORT = {
   "meihua": [
     "【白話優先】【像命理師當面解惑】使用繁體中文，對完全沒有學過命理的人說話。第一句就回答原問題：事情比較可能怎麼發展、目前真正卡點在哪、最需要注意什麼。語氣自然、坦白，不假裝真人資歷，也不以安慰取代判斷。\n【日常用語優先】一般解惑正文不使用專門術語，不堆牌名、星名、干支或課名，也不要在括號裡補一串名詞。直接說它對這件事代表什麼。不能讓讀者先學命理才聽懂答案；只有原問題明確要求學原理、核盤或解釋術語時，才另用必要名詞並解釋。\n【解惑的成稿方式】用連貫段落回答當事人的疑問，小標也用生活中的問題命名。下面的排盤表與核對流程不是正文目錄。不要照表寫結論、支持、反證等欄位，也不要逐張、逐宮念資料。明示逐年、逐期、逐輪或逐項需求仍須完整回答。\n【深度判讀流程】先讀完本次全部有效資料，確認問的是誰、哪件事及什麼時間。完整核對之後，把原因和結果用日常語言連起來：為什麼有希望、為什麼又讓你保留、哪個問題處理了才可能改變。只提供整理後的理由，不展示隱藏思考過程。\n【證據完整度】內部核最有力的正向依據與最有力的反向依據，分辨是否同一人物、同一時間。同源訊號不重複加權。正文說清哪一點值得期待、哪一點仍缺理由，以及什麼實際變化會讓你調整判斷，不照抄技術欄位。\n【深度來自完整推理，不靠字數】深入說明事情為什麼容易這樣發展、不同需要為什麼拉扯、選擇可能帶來什麼代價及可以怎麼處理。不要只換成一句有機會或沒機會，也不要用簡短當理由漏答。未提供的經歷以若實際出現作核對，不能寫成已發生。\n【分清所問的事】好感不等於願意交往，願意交往也不代表已經採取行動。原句問哪些結果就逐一回答，不固定列五個階段。親密接觸不自動等於性交。任何親近都需要明確、無壓力且可撤回的同意；不能替對方宣布心意或決定。\n【重要發現主動提醒】即使沒被問到，重要且有實際依據的機會、問題、變化或反覆出現的情況，也要用白話說清對當事人的影響、可以觀察什麼及怎麼處理。不硬限項數、不湊項、不把一個不利名稱說成災難。短期資料不擴成人生判決。\n【篇幅由問題決定】複雜、矛盾或有重要發現時深入解說；簡單題直接回答。每段增加新的理解或做法，不重複同一結論，數量依本題需要。使用者要求列舉、表格或完整報告時保留相應內容。\n【資料界線】本次沒有提供的出生時間、工作、關係經歷、對方回應與未算內容保持未知，不用記憶補寫。把可核對的排盤／抽取事實、傳統方法的解釋、對個案的推論分清楚。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【時間與數字核對】日期、日數與單位核實後才使用；日數除以7換算週數，月份看實際日曆跨度。未列問事日期不擅算剩餘時間，沒有候選應期不等於事件不會發生。不捏造年份、機率或確切事件，計算通過不代表預測準確。\n【現實做法】給可執行做法或觀察指標，具體指出什麼行為／條件會支持、削弱或改變判斷。自行設定的追蹤期限明說是實務檢查點。醫療、法律、財務須依現實資料與專業意見，不由命理診斷疾病、指認犯罪或保證收益。",
     "【真實性分層】計算核對不等於事件預測已驗證：日期、位置、牌序和查表結果可以重算；旺衰、分數、格局及象義是具名模型；對現實收入、婚姻或未來的判斷仍是待核實推論。多個AI或同源引擎給相同答案，不是獨立的現實驗證。不得把內部一致度叫作客觀準確率。\n【避免判終身】不得由身弱、化忌、失勢、凶數或不利牌象推出『一生做什麼都不行、婚姻沒救、注定貧窮』，也不得保證必會富貴或幸福。古文富貴、孤貧、夭壽等字句只能作具名歷史判語介紹，不能直接指認當事人的壽命、人格或人生價值。身弱不是身體疾病，承載力分數不是賺錢能力或財富上限。\n【不利判斷與可改變條件】保留有依據的不利方向，不為安慰改成吉。每個重要不利判斷要說明本題範圍、時間與成立條件，核對本法已算救應、制化或相反路徑；沒有救應證據就明說未找到，不捏造轉機。把可由人改變的行動與不可確認的運勢分開；未來有利運期不代表現在只能熬，也不保證那年自動改善。現實做法若非命理實算，明示是實務建議，給可核對的第一步與改判指標。",
-    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。",
+    "【一般人看得懂｜正文優先規則】預設原問題只是問事，正文全部使用日常用語。技術方法、完整資料與下面示範的設定供你核對，不需要搬進答案。這條規則優先於其他要求引用牌名、宮位或專門名詞的句子；深入分析照常完成，讀者不用看術語才能明白。\n【整體解說，不按資料順序朗讀】先回答事情比較可能怎麼走，再圍繞當事人的疑問說原因與做法。不要逐牌、逐宮寫百科，也不要說完術語再附一份字典。「承接、牽制、落點、作用網、場域」等抽象說法也要改成這件事具體會遇到什麼。\n【主判必須收斂】有兩種相反讀法時，完整比較後說哪個較有理由。真的分不出，就具體說缺了什麼；不得只交出讀法一和讀法二。也不能以有機會、看你主不主動結案。若有希望，說清希望在哪裡、現在還沒確認什麼。\n【目前走向與條件推演分開】先回答照目前情況較可能怎樣，再說哪些做法可能改善。不把可以做的建議當成對方會答應，也不把結果未成全怪使用者不主動。資料提到的力量關係要核對方向，不能把誰影響誰說反。\n【原句事件與背景】明示「肉體關係／性關係」的成立題要回答性關係是否發生；親密接觸不自行擴成性交。語義標籤漏標時原句優先。排除現任只限定問事對象，不證明另一人存在。未列職業、輪班、同事、特定對象、過往傷害或他人意願均不可寫成背景事實；生活例子明示為待核對的情境。\n【重要提醒自然接上】重要且有據的額外發現順著相關問題說明，用生活中能理解的話講清影響和做法，不用神煞或課名嚇人。安全、同意及一般實務提醒必要時說明，但不把它們當成新算出的證據。\n【用語檢查】一般正文不得出現「干支、四課、三傳、初傳、中傳、末傳、旬空、空亡、妻財、官鬼、用神、格局、四化、廟旺、體用、動爻、元素尊貴、Yoga」等專門名詞；不逐字翻譯它們，改說本題中能期待什麼、尚未確認什麼及實際影響。也不強制寫牌名或星名。只有原問題明確要求技術解釋才解除這項限制，正文仍先用白話。\n【示範隔離】成稿示範由本專案原創，是假設資料的寫作示範，不是真人原文、不是本次盤面。只學白話表達，示例的牌曜、人物、情境、時間與結論全部禁止移入本題。本次答案依本次資料獨立判讀；示範的設定不是答案正文。\n【能讀的內容要讀完】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度，不等於整題沒有象徵線索。先完成本次有效資料能支持的方向、原因、重要變化與做法；不得只說不能確定就結束，也不得把所有未知當作不會發生。若沒有切題資料，指出缺哪個位置或程序及下一步需要什麼，不能用泛泛安慰補數。\n【數量題仍要解惑】幾個、多少、幾次先辨總數或新增量、親生或照顧關係、過去或未來及期限。若本次具名規則可作象徵推估，核其取法、成立条件、全局修正及單位，再給較支持的估計或偏多偏少，並簡短說明它是傳統推估；不得一律禁估。尚未收斂時先說實際支持什麼、真正分歧在哪，不能把一至兩個當通用答案，也不能數牌、星或符號就當人數。\n【讀到線索還要判斷】本次有效證據收斂時，要回答較支持成立或不成立、哪種發展或在哪段較值得把握。象徵存在不等於事件成立；比較支持與阻力後再定方向。缺一項資料只暫停受影響的判斷，其餘照常完成；不把計算通過當預測保證。\n【所有原題都依同一完整解讀流程】以下不是只給子女、感情或任何已列分類的補丁。先理解原句真正要知道什麼、有哪些人物與條件，再讀本次方法的完整有效骨架，選出能回答它的實際作用。題目不在分類表、語義模型未辨識或專用標籤未產生，都不能直接跳成無法解讀；以原句為準，完成本法一般判讀。\n【計算、推讀與現實分開】已算日期、位置、牌序與作用是本次資料；依本法可靠一般判法解釋這些資料，是具名傳統推讀。引擎未替某種問題自動貼標籤，不代表讀者不能合讀原生資料；新增推讀不得冒稱引擎已自動計算，也不能捏造缺少的前提或未算運期。真實事件、他人意願、疾病與精確數量仍須與象徵推估分開。\n【逐子題完整，不用限制代替答案】對原句每個真正提出的事件、比較、原因、時間、數量或做法，先給有效資料較支持的回答，再深入說為何如此、哪股力量會改變走向及可以怎麼處理。限定精度或缺一份資料，只限制對應部分；多方法有一份不能讀時，其他有效資料仍完成。證据不足以分辨的子題，交代已檢查哪些相關作用、還缺哪一環與可核對的一步。\n【有線索要追到結果，不把象徵等同答案】找到象徵之後，要比較它與其他有效作用是否支持同一人物、事件及時間，說清如何影響本題；單一名字、數值、牌圖或吉凶不直接當事件。相反讀法比較後要收斂，無法收斂才指出實際分歧。不把無候選日期、未見一個符號或缺他人資料當成整件事一定不成立，也不為了每題有答案而硬造線索。\n【重要提醒要讓一般人聽懂】完成原題後，主動解釋全局中會改變當事人選擇的重要資源、阻力、反覆模式或轉折，包含未被直接問到但有據的部分。直接講生活中的影響、可觀察的跡象與可採做法；一般正文不講術語，不把通用提醒充當新的盤面發現。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【梅花：體用與本互變】核起卦法、保存時間、上下卦及動爻；動爻所屬經卦為用，另一卦為體。互卦上下與變後用卦都對原體，原體不重新設立。",
     "用生體、體生用、體克用、用克體、比和，配起卦節令旺衰看助力、付出、掌握、約束與協力是否有力，不能只數吉凶。",
@@ -2092,7 +2137,7 @@ var JY_REC_EXPORT = {
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return globalThis.JYReadingWorkflow.finish([
       buildRootQuestionLock(question, tool),
-      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("14.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
+      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("15.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
       rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
       (isRootTarot?buildSpreadReadingGuide(tool, rawPayload):''),
       (tool==='tarot'?'方法參考：Waite 凱爾特十字 https://sacred-texts.com/tarot/pkt/pkt0307.htm；Mathers 1888 https://sacred-texts.com/tarot/mathers/mtar04.htm。現代布局與本次選用的牌義流派分開標示；書目不表示本次 AI 已即時查網。':''),

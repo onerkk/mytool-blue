@@ -1,0 +1,1307 @@
+{
+  "release": "20261014universal25",
+  "packageType": "cumulative-changed-files",
+  "base": "Original mytool-blue-master project, includes scope24 cumulative changes.",
+  "readingVersion": "15.0.0",
+  "workflowVersion": "2.4.0",
+  "serviceWorker": "jy-main-v132",
+  "methods": [
+    "tarot",
+    "ootk",
+    "lenormand",
+    "bazi",
+    "compat",
+    "ziwei",
+    "meihua",
+    "liuyao",
+    "yijing",
+    "oracle",
+    "astro",
+    "vedic",
+    "name",
+    "liuren",
+    "personality"
+  ],
+  "scope": "Question-independent reading coverage of valid original data, per-task limitations, parser fallback, multi-chart isolation and plain-language guidance. Does not guarantee all real-world facts can be inferred by every method.",
+  "sourceFileCount": 210,
+  "thisReleaseFileCount": 52,
+  "includesPreviousFixes": [
+    "complete mobile card spread",
+    "stable decoded card previews",
+    "plain-language counsel prompts",
+    "Bazi children rules and calculation audit"
+  ],
+  "validation": {
+    "nativeExports": 150,
+    "originalQuestionFallbackExports": 30,
+    "universalCheckGroups": 12,
+    "changedJavaScriptSyntaxChecks": 48
+  },
+  "limitations": [
+    "External AI response quality and empirical prediction accuracy were not validated.",
+    "No new physical-phone visual validation in this release.",
+    "Historical v92/v101 Tarot prose assertions are obsolete; see UPDATE-20261014-UNIVERSAL-READING.md."
+  ],
+  "files": [
+    {
+      "path": "CHANGED-FILES-20261014-SCOPE.json",
+      "bytes": 36293,
+      "sha256": "cfc8aabc9d7f90328d466e15b530cb918871c306335fcf1381f27350dedf45d0",
+      "thisRelease": false
+    },
+    {
+      "path": "CHANGED_FILES_20261014.json",
+      "bytes": 22885,
+      "sha256": "20d32bc5ca0ba51704ad5959e0802131c2fab9ded3938e8d93256b540452e665",
+      "thisRelease": false
+    },
+    {
+      "path": "CSS/card-spread-20261014.css",
+      "bytes": 6378,
+      "sha256": "ecf290eb0b2d19332871bdaa81c833ea0af4d0a59fe50e8226bc6f4f6431b5c2",
+      "thisRelease": false
+    },
+    {
+      "path": "CSS/mobile-ritual-actions-20260928.css",
+      "bytes": 10626,
+      "sha256": "87f197bba8eb902a0dc3e58c5b7a8ebf0a5027cfdd2cbdd0932e2fbe839697e2",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/ai-analysis.js",
+      "bytes": 1616036,
+      "sha256": "a8eff7c32e6d2c1ee6902989ce110756599d9d5eedf57ca33325e403d43dc6e3",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/bazi-child-analysis.js",
+      "bytes": 11053,
+      "sha256": "2c4c143f22cbf22b2d8ea0b18b5263928776f7e8e80d29a889e55188e7fced3a",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/bazi-prompt-root.js",
+      "bytes": 71754,
+      "sha256": "078848de2a7995772a51f4562b4e249bfa13c7f1c84c6a361f11da52a41b3e35",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/bazi-suite-core.js",
+      "bytes": 243738,
+      "sha256": "09637f51ca703c52199db7be7d13397b6cbc09cc3ba19e5ec2ef4559ff0315bc",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/cinematic-src/presence.mjs",
+      "bytes": 6676,
+      "sha256": "24439551c6d8934622942f89e71d62f18c005b06a1cace75bd97df11138fb26b",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/cinematic-src/scenery.mjs",
+      "bytes": 5664,
+      "sha256": "1573d3d6f5f27c61a4539acb7a0fece0b572a6d73ac2d3e7c019ea7973b0475e",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/cinematic-src/stage.mjs",
+      "bytes": 20983,
+      "sha256": "02af2299be0c1f54315ef9e8f8ff92777fb6bbd6b5ba6a3f263264b6f09f4597",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/cinematic-stage.js",
+      "bytes": 575824,
+      "sha256": "91476c063cd179c71f4eae869b500b2d547959270e752b80db273e8b4c2fbffc",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/engine-computation-audit.js",
+      "bytes": 18228,
+      "sha256": "dfcfb4a71a2c2f9c88ba0acf85e8cbfa2584ecdfbf205387a01a56efddb992e6",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/gua-prompt.js",
+      "bytes": 223763,
+      "sha256": "b41d4fe862c74cd34bfb9aa237e1840e9eab984edea43371b50b1c85a2a66f89",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/lenormand.js",
+      "bytes": 421939,
+      "sha256": "e532b79f0468c543f78a43812d712362b60a3b432ba8d0c9a9a24ccf3ef2af62",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/liuren-prompt.js",
+      "bytes": 203691,
+      "sha256": "e0c8d2c9432d74069b9befba382dbded4982b1de48c2daf66f514a074a18c2a4",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/meihua-standalone.js",
+      "bytes": 257997,
+      "sha256": "980124833043d20b3384385bf303083579bc79764a31d4ced1e9acb68c26e026",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/name-prompt.js",
+      "bytes": 208018,
+      "sha256": "042145192cae50fe1c92673a6783c5de28a145b30f18fd25a0445bac0a6c9301",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/native-chart-analysis.js",
+      "bytes": 45939,
+      "sha256": "61a5fa7619bea1e8abab5a56c68c5bb724f942bbf115768e81783fbf4c8ff681",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/native-depth-contract.js",
+      "bytes": 21030,
+      "sha256": "a5fa46ddbe57d23bf2fa4e325a0bb99fa8bde74669125765fc4cc973a9ec38b2",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/native-rule-sources.js",
+      "bytes": 27449,
+      "sha256": "265dd1277212b764c6c8531c51a3a56957feed2e235bd2ab4d86c1da6b3f5b50",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/oracle.js",
+      "bytes": 325847,
+      "sha256": "1d6e314c846971fc3d58d8cdd8752d966255c3907909d98be56ad4a6e9148563",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/prompt-brief.js",
+      "bytes": 81442,
+      "sha256": "efca32f6a1a20a631d83c8cab6b920e979c99aa3e6e13b4abd48a1244c903fcc",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/prompt-export.js",
+      "bytes": 372672,
+      "sha256": "32a05626cbc4f85f8204b45f263291b22ca587932904ed9c19f816d7c418f2b6",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/prompt-packet.js",
+      "bytes": 80370,
+      "sha256": "c7dfc1f3ac6a74174e6ac35c2407c2cac83ea57fd849e0cdf7dea170baafd556",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/reading-quality.js",
+      "bytes": 87282,
+      "sha256": "26d08e9d4b46b5b0f513c338b5deb8207cd039e26c3bf2b61e421a40b3ea6168",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/reading-workflow.js",
+      "bytes": 176974,
+      "sha256": "e772c67292b20fd89d6a897780b2b66fc08a927a3410b69d181765e1992b0857",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/relationship-core.js",
+      "bytes": 235703,
+      "sha256": "224124d57ea0a0d90a35ffd044064e17d6886b74cf59996a71540282b5a1adbb",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/ritual-ateliers.js",
+      "bytes": 43844,
+      "sha256": "69f73977e65869b2a51bd038e6710e5658836622692298411c1cc2d3fbc3ea47",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/ritual-story.js",
+      "bytes": 7725,
+      "sha256": "a78ba1d8f5b63517d061554c67579fee3cc17863850162ce0cde20ba956a7d74",
+      "thisRelease": false
+    },
+    {
+      "path": "JS/sw.js",
+      "bytes": 8405,
+      "sha256": "608208af9094dba39748d2e5fe2e4aefd50235e2f72083e5ff30c4095cdb5f65",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/tarot-semantic-engine.js",
+      "bytes": 123896,
+      "sha256": "f529300d1ecb7872787c78c0980ae4add45b68f0fa3861ea182e06290ce40d8e",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/vedic-prompt.js",
+      "bytes": 220105,
+      "sha256": "2f774b3d22556614913e2bc53188faccb3e3a1e3df029feb508b30e9f65d7f24",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/western-prompt.js",
+      "bytes": 207674,
+      "sha256": "596cd8aef8a99db5b1d628e6a864088d7df027110b098185c890bc77ecd9ef35",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/ziwei-prompt-root.js",
+      "bytes": 29227,
+      "sha256": "0c971d25fbd89267694bbd9ce52d033c0b2765246cc41e2313607e1f771804b9",
+      "thisRelease": true
+    },
+    {
+      "path": "JS/ziwei-standalone.js",
+      "bytes": 284565,
+      "sha256": "5ded88a2c74c4fc44281e13f7bd49bf464fe6efed3a150ac40e8d70600c931d0",
+      "thisRelease": true
+    },
+    {
+      "path": "PROMPT-20261014-UNIVERSAL-READING.txt",
+      "bytes": 86550,
+      "sha256": "519c73e329cf171ee34884d6fc1ca3068e6bd643beabf9482454c61aab85bb5b",
+      "thisRelease": true
+    },
+    {
+      "path": "UPDATE-20261014-SYMBOLIC-SCOPE.md",
+      "bytes": 4878,
+      "sha256": "f50ac2e216f9fb50baf0e57a26b1510b008bfcc831d81f0d728baeaf9b2097f0",
+      "thisRelease": false
+    },
+    {
+      "path": "UPDATE-20261014-UNIVERSAL-READING.md",
+      "bytes": 4420,
+      "sha256": "4cbd8d85fd7fc78123660a5078e26b6a8b8680ba64c93feb1eb6a5a6a8964c4a",
+      "thisRelease": true
+    },
+    {
+      "path": "UPDATE-20261014-VISUAL-STABILITY.md",
+      "bytes": 2451,
+      "sha256": "586883efb5468fe26d8c8c245b3a3cf0d79cce78534ad9d5fd72dbf44e86666f",
+      "thisRelease": false
+    },
+    {
+      "path": "ai-analysis.js",
+      "bytes": 1616036,
+      "sha256": "a8eff7c32e6d2c1ee6902989ce110756599d9d5eedf57ca33325e403d43dc6e3",
+      "thisRelease": true
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/01.webp",
+      "bytes": 90658,
+      "sha256": "69217105bd5f631dfa3b293c1540c973dc84efb46c62b0351b47470acaec692b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/02.webp",
+      "bytes": 79274,
+      "sha256": "082588ae995f08a0dd6d01dcdff405c8d315907519b4a883cabe445731ae7245",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/03.webp",
+      "bytes": 88558,
+      "sha256": "f35b407f48d92eba73d5ad082d3ebc7c116f8dbfda8e0cd42451c22556061679",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/04.webp",
+      "bytes": 103190,
+      "sha256": "a127d02c682b41c37434164f6e369b852702daf2c73483dafef1b12f2620ba6a",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/05.webp",
+      "bytes": 109002,
+      "sha256": "df51ccf098691e6279ed2a0b7ec70c1ec888171e202f23e0c16eef4687868d72",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/06.webp",
+      "bytes": 78266,
+      "sha256": "830d97c4c36def932b550daae0bd065ce08607d9c8979bdeb0ec93ad594debc1",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/07.webp",
+      "bytes": 101614,
+      "sha256": "3399a1756d05419c1241963a12cb3e4631ceb676716e97e3db06aca5bd829145",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/08.webp",
+      "bytes": 102286,
+      "sha256": "7d746d017c6856b49a1666f25f3b22c3a06b7ac824942aee03c3012ff1ac94ad",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/09.webp",
+      "bytes": 97092,
+      "sha256": "2cbfc7c2db151643deaa8f6c0c7b067f1c31b2493426139303cfeec611044bba",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/10.webp",
+      "bytes": 94928,
+      "sha256": "9ece9e461cb5221418ff0269826f1bfcc4f950917ff4fb54cb2693928065d68e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/11.webp",
+      "bytes": 94896,
+      "sha256": "b397606c7c622902760af1b48c42d5acfc8d77f4fcf6f8ac29a485c4044d4fc4",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/12.webp",
+      "bytes": 97940,
+      "sha256": "b4a912fe2dbdf5c7937c3c65203bd1309d07e336ce54c44019e19141cb528216",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/13.webp",
+      "bytes": 88768,
+      "sha256": "d5b6858d90b99803b8c8685103a9049ae8a3787a85512b46504298116717b4d4",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/14.webp",
+      "bytes": 105640,
+      "sha256": "4311331a52d6ad0d2473c0fcd986f119f113c704843076b8073f3b8f1618d496",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/15.webp",
+      "bytes": 100800,
+      "sha256": "653897eca3434d9ebab2cd827e7e2fe1d4d1ae0307845561f78ec8a20c93eda8",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/16.webp",
+      "bytes": 87670,
+      "sha256": "d6784c0ad939d7592bedbd3e4f569a7b539cb4e97efbeee6b17d6befbc6a07bf",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/17.webp",
+      "bytes": 95414,
+      "sha256": "f41f55e7c0c91189650258ee82e4c5e3f4fb1c2a9a9f331bdf5339a1e2270f5b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/18.webp",
+      "bytes": 100716,
+      "sha256": "6375a7dfcf0db71389c0344df7caaa4af7d180681bbcbcaab1d8980305c8b425",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/19.webp",
+      "bytes": 87900,
+      "sha256": "fe94091685f32b63a64afc8df1d2141b5d9f3ec53dc0e6d88ba685612f374022",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/20.webp",
+      "bytes": 109818,
+      "sha256": "9341b584ba2f6abb49c9f691591fc1f750c2e00edfe23d00d0b019695a608c7f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/21.webp",
+      "bytes": 91206,
+      "sha256": "5d8e5441c679b131e030e8fe71167986d72adf70f2aa8e81f22f44bef8f51c9e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/22.webp",
+      "bytes": 111426,
+      "sha256": "c97df11e6989389c73b4b8cc3f18f76015671cf72c0e4f9144b45ae389dc1f65",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/23.webp",
+      "bytes": 95954,
+      "sha256": "b4939066c3276ac5317eb42931bf887d14879c8f118260b02bb4f63f33a00e65",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/24.webp",
+      "bytes": 86294,
+      "sha256": "b1f3882b9a0552a29a12eb8b007f2fc8c32d227e3e89748f2c604fa9fdb0f06c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/25.webp",
+      "bytes": 73854,
+      "sha256": "bcc13caf939beab08ecef926f8ba6369650737cd9c88f38cf7a6fe9960ae8ee2",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/26.webp",
+      "bytes": 94118,
+      "sha256": "5fc05973849c07796a521aed2f68db294b4387de53e2791159f3fd0216c7cc31",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/27.webp",
+      "bytes": 77152,
+      "sha256": "b4b7b87556a08c262f00cb1116fd6cbd09787a9f0a71156d793be954274e673b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/28.webp",
+      "bytes": 85922,
+      "sha256": "840fbcbed9e0378352ad837b9dea53bfa0272c79716e2a8bd62460e0ca92df6c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/29.webp",
+      "bytes": 89122,
+      "sha256": "a12e57dccdf46c83535253793dcc59bf84ba48358a4c9a2badc0a30b01420341",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/30.webp",
+      "bytes": 87298,
+      "sha256": "bab0627420d80a3a5a1d877a0c48014e84aecab10bcfbf3ddacb76dd04d56e88",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/31.webp",
+      "bytes": 83222,
+      "sha256": "a1938c261c7795eedadc26c2a7d456f17e1a3992053462d93e55a2a2c50c2874",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/32.webp",
+      "bytes": 87504,
+      "sha256": "203d48b07ad511e5bb74bd2c515374f7bbf63c7b4898427ac65e3e526dc870e7",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/33.webp",
+      "bytes": 81154,
+      "sha256": "a1c464b2e53e5ab850701fd8b443d99fc5a13d64cab0c0ccdef3fc4122bb35d7",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/34.webp",
+      "bytes": 101876,
+      "sha256": "950a0659c9136bb1e4bd558639898bca7e8b833ed7945a6315a39f475036567d",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/35.webp",
+      "bytes": 87224,
+      "sha256": "2fdf89aa90168cb0e8ab61337a9c531070e43ab83e1cd79863072ad29c805f7b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/36.webp",
+      "bytes": 88742,
+      "sha256": "1816d671e406992a8e31156c55182dc9746ee3f107acc97756154f83204efb98",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/lenormand/back.webp",
+      "bytes": 101392,
+      "sha256": "18fd0b8fcce423abd97b14acefc2b5b0790e576e878a05c8b79a3ed57aaaa632",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/00.webp",
+      "bytes": 93252,
+      "sha256": "360e27c7982331f786d27603633913b77cb38c165ac4ebe4b9863ddcd6afc6af",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/01.webp",
+      "bytes": 108222,
+      "sha256": "e009bd09aae4ebe1d6d085e0dd037618d8939976b61454a140c1b02bfa8dd20f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/02.webp",
+      "bytes": 108786,
+      "sha256": "a9be624f8eb3016da9be18fc97e0714cd79e0852243ac14e9d0559208ad6eafa",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/03.webp",
+      "bytes": 115436,
+      "sha256": "37fb2f4bf9fbeb809b5debcd069bbd455c988ed8937827adf161148d3e81eaee",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/04.webp",
+      "bytes": 106954,
+      "sha256": "14b9d7ece5e061ad1658e5c9c076303ff358f659acac3392988dee3d13f4bd23",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/05.webp",
+      "bytes": 102914,
+      "sha256": "4fafd34168850b9a3ea7bb3ab4017d1961f5f1d9b67664e843adb66c301defde",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/06.webp",
+      "bytes": 111140,
+      "sha256": "25cbac45808e9e286d3baa033bd741cf18f1fdc73961e936d29e2e26d5b91dfb",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/07.webp",
+      "bytes": 106394,
+      "sha256": "ce1f44f1cf6ded68cbc28174269f57bde464720d54d886c0c3ec20f239ab8aff",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/08.webp",
+      "bytes": 104052,
+      "sha256": "d148b9ed475cf3d2ba2f7647ea5da8fd6190f139a227ce8b64c833114484e62b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/09.webp",
+      "bytes": 101130,
+      "sha256": "1c197a7a7dded50387ea42bfd043c192230be98dc364a9182a9adcfc13284540",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/10.webp",
+      "bytes": 98066,
+      "sha256": "1aeb7b0fc09cb1e01512b973da4bf0ab50fc2a44a75e848c88f032dd511a808e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/11.webp",
+      "bytes": 103238,
+      "sha256": "f67017a09cded7ddb35277a11aadee3ccef7f5af184f1f74261b40273a9c2958",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/12.webp",
+      "bytes": 107294,
+      "sha256": "883c5ba463d7b645bb6c6de88d81446b9d6dc72c1ca28b69c9664573eb5709bf",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/13.webp",
+      "bytes": 101170,
+      "sha256": "f14a6258a62ffaa5dfe40c1d0a7547e482588cefdd18b0d3caa3db6a489539d1",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/14.webp",
+      "bytes": 100696,
+      "sha256": "eacff0cb7c4bb37313c2ff45c9363395d6bf727d3706e42708153a2d99ca5eae",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/15.webp",
+      "bytes": 100620,
+      "sha256": "44e751dba153be28027dd669887214e29c5cabb4af76f0513397d60d7ab50180",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/16.webp",
+      "bytes": 97974,
+      "sha256": "68b281fe2b6b51c2040dc086376fa9053808d44fe3e3361f5145daa25e1021de",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/17.webp",
+      "bytes": 109180,
+      "sha256": "356305307fdf91a236151e6fa68aa8ccbae3077afe478a12344a50b82c79d573",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/18.webp",
+      "bytes": 114358,
+      "sha256": "6f2220ee3b1c918f29ccc3668837ac1c48f2d0c3498afc26eeb943a6ab2b0b0e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/19.webp",
+      "bytes": 102638,
+      "sha256": "a50e9e339e995485717e2acd1435a764014b9e9000d11b14d958f1c1e4beff12",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/20.webp",
+      "bytes": 92128,
+      "sha256": "26cb571ab10ea3fd58cb14161895a3ac5439549f3584f6580c74f5e35af4b4bb",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/21.webp",
+      "bytes": 100600,
+      "sha256": "5d6ed2251803ad2170082c60d47f072a6666f28d9da1abb8022a8daa08a9dd45",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/22.webp",
+      "bytes": 82626,
+      "sha256": "983f3d5062f49ecdfd98a4832272f2bde6adee3a6747891d4201e19be0764d2c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/23.webp",
+      "bytes": 96412,
+      "sha256": "7c6e6dc11f6a83ec9b22b95890c2a49f2571cf5a6141148ec8de60161e0c179b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/24.webp",
+      "bytes": 100638,
+      "sha256": "8ff4ba46aec73297d883fe6bb6c025f7c11e568f084c56a05d6413b04ef80864",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/25.webp",
+      "bytes": 110896,
+      "sha256": "1ed7da016af04367643b0678710930981861229d5dc4b87d5364c8e7ff8633bf",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/26.webp",
+      "bytes": 102432,
+      "sha256": "c8fe6b7c9f9a1f94ff9ad8cc2e0b5964e8fd5550d044e84d97cfc00f30e7bb2a",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/27.webp",
+      "bytes": 104730,
+      "sha256": "1b7649ae14ae5106356e64b738860dc7a2e87c7fb6ae749543f286851b48f0d4",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/28.webp",
+      "bytes": 96030,
+      "sha256": "2a83af2a1a99160b494b34803fc1d1bf3c77cd15c779ae0b5f497644e952745f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/29.webp",
+      "bytes": 90112,
+      "sha256": "b9e2bad933b622639fd48d0843aebdb695930f65a1edc3dca1231ae97afa55ac",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/30.webp",
+      "bytes": 100726,
+      "sha256": "99a9d935b3c9392983a7c6f796b3abea46ea5b04d5d72848c365351e6b0c1c1e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/31.webp",
+      "bytes": 107480,
+      "sha256": "c58d9c82c7e7787bcb053f8b86de9045197a23e9071794dae39118711c371596",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/32.webp",
+      "bytes": 104686,
+      "sha256": "ac0113e9b54fcdd92bda1b9c0281d02562d16ffba7d1e2bfe4963ab05235fe10",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/33.webp",
+      "bytes": 105500,
+      "sha256": "0bfb578e37bef7ada015d502d9dfa4705a5092a1879ef14df2ed7a1406f87034",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/34.webp",
+      "bytes": 104996,
+      "sha256": "ff20f57be961349d883b84247c933276da03933bfd36a853b6b56e64cb32f7bd",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/35.webp",
+      "bytes": 108266,
+      "sha256": "af712a94efbe0b4f2b2bd21c213747f8599040f84f1f04046635118a2247d088",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/36.webp",
+      "bytes": 95380,
+      "sha256": "971eea1be1d0e0c1b4a47b60c0c0b8b856e0253f857454c3273199765bcf8686",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/37.webp",
+      "bytes": 99266,
+      "sha256": "64cc2779b104723783e61358441d4a51c9b1ff32f6605240d1149584ebb69fab",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/38.webp",
+      "bytes": 105996,
+      "sha256": "08d79a356f7f5ce9443609bc23f55fa02e10bc1af943a57cf273442c08f2198e",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/39.webp",
+      "bytes": 108000,
+      "sha256": "e2892fad616692513054c54c257b9eae87b96361d72c0e26eccb1519ac491188",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/40.webp",
+      "bytes": 108370,
+      "sha256": "04be5d1202ff270587d6ecabc743d013d52dfaec27e6510f9b850f18e20fbf86",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/41.webp",
+      "bytes": 108450,
+      "sha256": "d727a9b167b591b053d3af034d3ed1ef3810e7ca59ef7c7c085dde5d9b155c0c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/42.webp",
+      "bytes": 96536,
+      "sha256": "71a05564592815f4423828fe40dea68e18e58192acff76205819a829d2754607",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/43.webp",
+      "bytes": 109592,
+      "sha256": "46c54969821c14fbb2aba3f0f43b8b45025002e4b89505d28155aefb7aba9239",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/44.webp",
+      "bytes": 102954,
+      "sha256": "8bb8a6c214edde4023088e2143fcefc03cbeda20e1b46cd4aa1b08f0c5585f28",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/45.webp",
+      "bytes": 102474,
+      "sha256": "8cb4d12076b5b5d89194353cb2146ef7662b6eac51870d70f66889b8e9420064",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/46.webp",
+      "bytes": 106148,
+      "sha256": "54e9550594eaca6302dbc9e0e1ad671b2966fc72fbc684c3ff09c407ab84959b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/47.webp",
+      "bytes": 109732,
+      "sha256": "115cf23879c19fd9461bfb1e8413238c7336860c470dcee2589ab35d7df3e1be",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/48.webp",
+      "bytes": 102912,
+      "sha256": "b352209dab80fe569165bb4571bbae1c565ea6ccee18ff91fe42f6e1bc54484c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/49.webp",
+      "bytes": 106954,
+      "sha256": "b7db7138ddb95ae5dbc5def56cc04a7a474c7ef3f547d132b77d8940810b5bad",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/50.webp",
+      "bytes": 81648,
+      "sha256": "5486997e2e3bd5f795f403aaa96a00edaa5fe3b42a992dc1601bd24d055f11a4",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/51.webp",
+      "bytes": 94944,
+      "sha256": "9b28b5ebdbd0c990c00e4057724868186e312c31713fc4c363a5ddd2079bc028",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/52.webp",
+      "bytes": 78948,
+      "sha256": "7d27c8ff3aeeb65bd3d5f42a598635386eacba547f0f0e7d4493e046527df66a",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/53.webp",
+      "bytes": 94052,
+      "sha256": "8163ff7908234bc74321ab501074d66dd942d55387f6e6c6d16b126d6ab5ca50",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/54.webp",
+      "bytes": 97088,
+      "sha256": "ceadf9ffad1ebfde2291b9a13254893c75d379688da01657ccb3b327cd331d39",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/55.webp",
+      "bytes": 92566,
+      "sha256": "f4b5d9029ebf21661ae90095e8d91a57a300c64c7fb45e232d83746cdc9ff36f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/56.webp",
+      "bytes": 106106,
+      "sha256": "9c536ee755178913d81eaf7d0b4a4588f96a55ba0d712688eb59b1976ef25551",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/57.webp",
+      "bytes": 95564,
+      "sha256": "b5d672db47d180382b2746f40a28c1635f38ce3368f25f191284acb4d2bd9e0a",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/58.webp",
+      "bytes": 84100,
+      "sha256": "8ed925342aa87600c806047204d4ed48bf87cf64afdb991dbcc06699a3364be0",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/59.webp",
+      "bytes": 100046,
+      "sha256": "c5ffa80f789673db4dd552c07426dfe955c89bc5d83ef0fd7966f1f854c95b7c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/60.webp",
+      "bytes": 94404,
+      "sha256": "593ecea53b30b0ec0b98ef3014cba289a2daa5b71328d3812516da271a10bfa9",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/61.webp",
+      "bytes": 106214,
+      "sha256": "4918b3fabbcd4ce63dc67e90a2c162a25652c7e66e0a78b8cfdf85fdcbc6dd37",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/62.webp",
+      "bytes": 101490,
+      "sha256": "c7c2f687a6f3c9fb024d622c4e529bb683136afa0d09d6a500d83c4515029d32",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/63.webp",
+      "bytes": 104480,
+      "sha256": "39816278feb3d4403f81916c9d21c9e578e114ab40f716b4480543af9a12eb86",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/64.webp",
+      "bytes": 99874,
+      "sha256": "0aa08f1b0d0938de5fa8af17befd438e6d544b22eed0c7413089fee2327d014f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/65.webp",
+      "bytes": 108300,
+      "sha256": "eed93a57ced748aec6e2bb7da8c32f32d4b3ae1e1037775a1a76be5ac6a23009",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/66.webp",
+      "bytes": 100216,
+      "sha256": "838ac491832f4a53acc627fc2cd2c542b5de43ff5350d6ed28df47731c1207a1",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/67.webp",
+      "bytes": 107238,
+      "sha256": "3461d64bd6ec9238f5a54a588165bacb827608b9738394959a5f6702b03cdb70",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/68.webp",
+      "bytes": 110948,
+      "sha256": "ac9b5babbe841207e8b1197e56ffff35c7874c5d56f26c726e7debe85db2af18",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/69.webp",
+      "bytes": 107462,
+      "sha256": "d5f4869f54dccb133e93eb0e3dfdf9a68d06e0c81a7b54d7f3450d5bf52bae76",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/70.webp",
+      "bytes": 108600,
+      "sha256": "9b2dccc9c9448348d3ebfa5d101e2db60ade999aab951ab0a8b51b7f233a622c",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/71.webp",
+      "bytes": 111160,
+      "sha256": "655be2c3fda176ef89521c2948fc7d11d3e41891f7208379c864671c534b4a6f",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/72.webp",
+      "bytes": 113202,
+      "sha256": "c06c5c25f42ead5d33ffac7fd2a795e679d155ad5a1be930576d7d986595f4a9",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/73.webp",
+      "bytes": 110352,
+      "sha256": "f174069b7c5cbae9137aeedb62051f5f61efc0b4813cd13f8795c1b8e8d7f44b",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/74.webp",
+      "bytes": 108978,
+      "sha256": "3ac8538852638f994070dc9305ba1fd1f0d83473ee8976160afa9c9b8814d08d",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/75.webp",
+      "bytes": 109750,
+      "sha256": "215551be42b22ba0e16e45a53aaa35ffd825fffa8e9bce4295e4305b6e3034cb",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/76.webp",
+      "bytes": 114740,
+      "sha256": "4c37ab7216d29be05e777d42435eb6d2b59315514ddb5446fbe1dcdf01f312b2",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/77.webp",
+      "bytes": 110946,
+      "sha256": "455d804236e51520060ec52e0a262633639747b29206808925c22880e3fb7e45",
+      "thisRelease": false
+    },
+    {
+      "path": "assets/cards/preview-20261014/tarot/back.webp",
+      "bytes": 103136,
+      "sha256": "8c7632096b2ade37186204db04aacff3c474cbb326911047961f445d060ce34f",
+      "thisRelease": false
+    },
+    {
+      "path": "bazi-child-analysis.js",
+      "bytes": 11053,
+      "sha256": "2c4c143f22cbf22b2d8ea0b18b5263928776f7e8e80d29a889e55188e7fced3a",
+      "thisRelease": false
+    },
+    {
+      "path": "bazi-prompt-root.js",
+      "bytes": 71754,
+      "sha256": "078848de2a7995772a51f4562b4e249bfa13c7f1c84c6a361f11da52a41b3e35",
+      "thisRelease": true
+    },
+    {
+      "path": "bazi-suite-core.js",
+      "bytes": 243738,
+      "sha256": "09637f51ca703c52199db7be7d13397b6cbc09cc3ba19e5ec2ef4559ff0315bc",
+      "thisRelease": true
+    },
+    {
+      "path": "docs/symbolic-scope-validation-20261014.json",
+      "bytes": 2319,
+      "sha256": "f4497fb4faa6c0625c33d8887d59573d49fcd2814fca549e4be6837ded9f8c00",
+      "thisRelease": false
+    },
+    {
+      "path": "docs/universal-reading-validation-20261014.json",
+      "bytes": 25495,
+      "sha256": "3d38d641bda657fdbfbe3952403d636370cfd833de3d27e8aa97d19056efb0e4",
+      "thisRelease": true
+    },
+    {
+      "path": "docs/visual-stability-validation-20261014.json",
+      "bytes": 15274,
+      "sha256": "03b0cbbdc747c5952721fa580aea690233ae4d2456cb503c9beba73f5b0bcd8e",
+      "thisRelease": false
+    },
+    {
+      "path": "engine-computation-audit.js",
+      "bytes": 18228,
+      "sha256": "dfcfb4a71a2c2f9c88ba0acf85e8cbfa2584ecdfbf205387a01a56efddb992e6",
+      "thisRelease": false
+    },
+    {
+      "path": "functions/api/ai.js",
+      "bytes": 336969,
+      "sha256": "bdfcc92240fb5d4efce74ac38bb4a2ab069ea0c851248d4b069f9925b745dd76",
+      "thisRelease": true
+    },
+    {
+      "path": "index.html",
+      "bytes": 152589,
+      "sha256": "d7b9d10f71a7da95937ff6fe5ab98cd7eaf615981bf3ad01f8ba714c82d9ce5f",
+      "thisRelease": true
+    },
+    {
+      "path": "lenormand.js",
+      "bytes": 421939,
+      "sha256": "e532b79f0468c543f78a43812d712362b60a3b432ba8d0c9a9a24ccf3ef2af62",
+      "thisRelease": true
+    },
+    {
+      "path": "meihua-standalone.js",
+      "bytes": 257997,
+      "sha256": "980124833043d20b3384385bf303083579bc79764a31d4ced1e9acb68c26e026",
+      "thisRelease": true
+    },
+    {
+      "path": "native-chart-analysis.js",
+      "bytes": 45939,
+      "sha256": "61a5fa7619bea1e8abab5a56c68c5bb724f942bbf115768e81783fbf4c8ff681",
+      "thisRelease": false
+    },
+    {
+      "path": "native-depth-contract.js",
+      "bytes": 21030,
+      "sha256": "a5fa46ddbe57d23bf2fa4e325a0bb99fa8bde74669125765fc4cc973a9ec38b2",
+      "thisRelease": true
+    },
+    {
+      "path": "native-rule-sources.js",
+      "bytes": 27449,
+      "sha256": "265dd1277212b764c6c8531c51a3a56957feed2e235bd2ab4d86c1da6b3f5b50",
+      "thisRelease": false
+    },
+    {
+      "path": "oracle.js",
+      "bytes": 325847,
+      "sha256": "1d6e314c846971fc3d58d8cdd8752d966255c3907909d98be56ad4a6e9148563",
+      "thisRelease": true
+    },
+    {
+      "path": "package.json",
+      "bytes": 11310,
+      "sha256": "0997de7cc452b78569af8838ce24e09794afcf1df2df6eacb93f5b62203c5433",
+      "thisRelease": false
+    },
+    {
+      "path": "prompt-brief.js",
+      "bytes": 81442,
+      "sha256": "efca32f6a1a20a631d83c8cab6b920e979c99aa3e6e13b4abd48a1244c903fcc",
+      "thisRelease": true
+    },
+    {
+      "path": "prompt-export.js",
+      "bytes": 372672,
+      "sha256": "32a05626cbc4f85f8204b45f263291b22ca587932904ed9c19f816d7c418f2b6",
+      "thisRelease": true
+    },
+    {
+      "path": "prompt-packet.js",
+      "bytes": 80370,
+      "sha256": "c7dfc1f3ac6a74174e6ac35c2407c2cac83ea57fd849e0cdf7dea170baafd556",
+      "thisRelease": true
+    },
+    {
+      "path": "reading-review.html",
+      "bytes": 4831,
+      "sha256": "81634af857fb7e4f9e13aea88afd2bb89e9e52d0cbc43ae9fc124ef44f26e0ab",
+      "thisRelease": false
+    },
+    {
+      "path": "relationship-core.js",
+      "bytes": 235703,
+      "sha256": "224124d57ea0a0d90a35ffd044064e17d6886b74cf59996a71540282b5a1adbb",
+      "thisRelease": true
+    },
+    {
+      "path": "scripts/astronomy-reference-20261014.py",
+      "bytes": 1763,
+      "sha256": "95f14427035e15ea6c5d0cb20bf7a78ddadb9a146fc97414fc6c5981d9b6cbf5",
+      "thisRelease": false
+    },
+    {
+      "path": "scripts/astronomy-sample-20261014.cjs",
+      "bytes": 1329,
+      "sha256": "10cebff331f70f348d11948772e68f93d680376e3c578c2c57791aae6caa0e69",
+      "thisRelease": false
+    },
+    {
+      "path": "scripts/build-card-previews.py",
+      "bytes": 1350,
+      "sha256": "6dc39fbf03d7583a88cf1a3379766f12525fc232e4611638d9cdc3710e510a8b",
+      "thisRelease": false
+    },
+    {
+      "path": "scripts/build-cinematic.mjs",
+      "bytes": 493,
+      "sha256": "02990994cf62871587373a0530412200ed2a6df751905c4fd3bbe543234e7aff",
+      "thisRelease": false
+    },
+    {
+      "path": "scripts/sync-recommendation-guides.cjs",
+      "bytes": 14175,
+      "sha256": "8ae9bcc9f58c7d400c742b2f035df23eb1d157bd2dbbf31e5f05e6cbe8afabaf",
+      "thisRelease": true
+    },
+    {
+      "path": "sw.js",
+      "bytes": 8405,
+      "sha256": "608208af9094dba39748d2e5fe2e4aefd50235e2f72083e5ff30c4095cdb5f65",
+      "thisRelease": true
+    },
+    {
+      "path": "tarot-semantic-engine.js",
+      "bytes": 123896,
+      "sha256": "f529300d1ecb7872787c78c0980ae4add45b68f0fa3861ea182e06290ce40d8e",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/astronomy-independent-20261014.cjs",
+      "bytes": 1514,
+      "sha256": "46e3baa88988d6622b2898f6f6509f76d3eda67c02bc0385fe114188c01ad1e1",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/card-spread-browser-20261014.cjs",
+      "bytes": 17161,
+      "sha256": "28dc2be67a2bb4778ef85a8d6606cbc4ce1001f1134a1e6cf7c8395c80db02e9",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/comprehensive-reading-20261001.cjs",
+      "bytes": 10598,
+      "sha256": "19f55c962ebae81645dcc07580c5c26785821dc527bace5e3ef001b8b8a8ec78",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/counsel-voice-20261014.cjs",
+      "bytes": 4769,
+      "sha256": "4eab622f7a72c195a4ad803c57ef243f5b3404c3c012ed1d6bf6d4aa5675a9e1",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/depth-contract-r12-20261004.cjs",
+      "bytes": 5138,
+      "sha256": "13552fc2fe8668be7ce00be7413ffd6da0911a911a1717e42d4b56c514379ef1",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/engine-core-completion-r13-20261004.cjs",
+      "bytes": 5336,
+      "sha256": "9dbbd3bf213455fa82d7461a55e143d6149e6d604fb5d69ab985d1f9bc1c4384",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/engine-evidence-r14-20261004.cjs",
+      "bytes": 13447,
+      "sha256": "4808f37a6bf6cd2e4c6c2bdf0c65fe89b04ca08ea0bca4526b5911cc261423e9",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/fixtures/astronomy-swiss-20261014.json",
+      "bytes": 45470,
+      "sha256": "32f171b093f33f6b0ee527054bf6208d934dbed53c8c03b3c0fd2debad6d362b",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+      "bytes": 14430,
+      "sha256": "297865beee74e4890c00f8e0ee670a3f77232b9397c403c986ab621a64d08ac3",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/mobile-ritual-actions-20260928.cjs",
+      "bytes": 5531,
+      "sha256": "4b9fce0969a25e7d2e02240558a582526ca0794306492efb314f8badb435db8c",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/ootk-browser-20260915.cjs",
+      "bytes": 6603,
+      "sha256": "c91848ae31568918e2e5f0575876dc51ed096bf1b0c24247c3e34a4c1377e866",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/ootk-five-layer-reading-20261005.cjs",
+      "bytes": 3665,
+      "sha256": "8d8537e9b988b8ccd5bfbbd868ad5295f515dac852a6dd785738b257e8204d19",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/ootk-reading-pipeline-20261005.cjs",
+      "bytes": 23361,
+      "sha256": "e55918c65e476fa02a082d5a0cc8496b4f174a277c4e538c9e33a623f34b41b8",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/plain-language-20261014.cjs",
+      "bytes": 4336,
+      "sha256": "93d14904087a49919909d978be88cbb97c4bab7a7a16a473b896b170ed2409b0",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/practitioner-narrative-20261014.cjs",
+      "bytes": 6221,
+      "sha256": "6102c523ee5e7f0b99d9410acd4c0042073fc06b8451398d7b88ce06d5cdf496",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/question-model-regression-20260927.cjs",
+      "bytes": 11200,
+      "sha256": "5bd0aa92ceb6eb3dcb1dc03e82341d566a7b88d8af31cdebf284856536a94679",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/reader-voice-20260923.cjs",
+      "bytes": 3444,
+      "sha256": "676036b2c1b9dd2a1b998c1ae66c1b2dc73ac85ef10af299ec0d73b8b7367693",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/reading-depth-regression-20260927.cjs",
+      "bytes": 5158,
+      "sha256": "9375f8e65e71fdd42a71b4bdf95fded657ee57b547f2133d70bf85a735fe22bf",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/reading-integrity-20261014.cjs",
+      "bytes": 7344,
+      "sha256": "8be0eda417ef6d9e07ce9b0c17f954d5c8ad0f558e791cb756d8a1690a37b65f",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/ritual-visibility-browser-20261014.cjs",
+      "bytes": 13003,
+      "sha256": "88cd953bb8c066ca197b0a797c7994854d94fdfcad7050aada795b29bd450193",
+      "thisRelease": false
+    },
+    {
+      "path": "tests/symbolic-scope-20261014.cjs",
+      "bytes": 8750,
+      "sha256": "c7c1c5d47ab402de28408e388943a857825e5d94399fe58f966f28dfbf7aac06",
+      "thisRelease": true
+    },
+    {
+      "path": "tests/universal-reading-20261014.cjs",
+      "bytes": 14214,
+      "sha256": "463ca9fc512f761ad1211efc55dffbc27ac3198b07ed6c3a61d3be70dc3908b8",
+      "thisRelease": true
+    },
+    {
+      "path": "workers/ai-proxy.js",
+      "bytes": 337140,
+      "sha256": "3c49e1325dbe9f660a435e3213868971b542747dcbc450456a3707e16efd5914",
+      "thisRelease": true
+    },
+    {
+      "path": "ziwei-prompt-root.js",
+      "bytes": 29227,
+      "sha256": "0c971d25fbd89267694bbd9ce52d033c0b2765246cc41e2313607e1f771804b9",
+      "thisRelease": true
+    },
+    {
+      "path": "ziwei-standalone.js",
+      "bytes": 284565,
+      "sha256": "5ded88a2c74c4fc44281e13f7bd49bf464fe6efed3a150ac40e8d70600c931d0",
+      "thisRelease": true
+    }
+  ]
+}

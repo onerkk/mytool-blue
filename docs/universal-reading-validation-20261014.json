@@ -1,0 +1,1162 @@
+{
+  "release": "20261014universal25",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "one current workflow, depth and authoring policy cover fifteen methods",
+      "status": "passed"
+    },
+    {
+      "name": "150 actual exports preserve any original request, native evidence and per-task duties",
+      "status": "passed"
+    },
+    {
+      "name": "compound tasks and annual reporting remain distinct from precision limits",
+      "status": "passed"
+    },
+    {
+      "name": "one failed record does not suppress a valid record or fabricate a joint reading",
+      "status": "passed"
+    },
+    {
+      "name": "multiple charts have unique labels and their own actual annual data",
+      "status": "passed"
+    },
+    {
+      "name": "unknown time, incomplete operations and no operations keep honest separate scopes",
+      "status": "passed"
+    },
+    {
+      "name": "semantic exceptions and empty output preserve original requests across all exporters",
+      "status": "passed"
+    },
+    {
+      "name": "tarot semantic fallback reads recorded positions and still rejects native corruption",
+      "status": "passed"
+    },
+    {
+      "name": "retained live API tarot builder continues valid recorded draws when parsing fails",
+      "status": "passed"
+    },
+    {
+      "name": "generic review rejects blanket refusal in multiple domains without forcing claims from no data",
+      "status": "passed"
+    },
+    {
+      "name": "standalone exports replace cached older guidance and keep the original request contract",
+      "status": "passed"
+    },
+    {
+      "name": "all generated public paths, API and worker carry the same universal policy",
+      "status": "passed"
+    }
+  ],
+  "exports": [
+    {
+      "domain": "career",
+      "method": "bazi",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "ziwei",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "astro",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "vedic",
+      "taskCount": 2,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "liuren",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "liuyao",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "yijing",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "meihua",
+      "taskCount": 2,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "name",
+      "taskCount": 2,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "compat",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "personality",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "tarot",
+      "taskCount": 2,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "lenormand",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "ootk",
+      "taskCount": 2,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "career",
+      "method": "oracle",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "bazi",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "ziwei",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "astro",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "vedic",
+      "taskCount": 2,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "liuren",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "liuyao",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "yijing",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "meihua",
+      "taskCount": 2,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "name",
+      "taskCount": 2,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "compat",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "personality",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "tarot",
+      "taskCount": 2,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "lenormand",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "ootk",
+      "taskCount": 2,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "financial_threshold",
+      "method": "oracle",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "relationship_action",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "family_quantity",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "relocation",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "study",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "family_care",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "recurring_pattern",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "bazi",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "ziwei",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "astro",
+      "taskCount": 1,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "vedic",
+      "taskCount": 1,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "liuren",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "liuyao",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "yijing",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "meihua",
+      "taskCount": 1,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "name",
+      "taskCount": 1,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "compat",
+      "taskCount": 1,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "personality",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "tarot",
+      "taskCount": 1,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "lenormand",
+      "taskCount": 1,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "ootk",
+      "taskCount": 1,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "unfamiliar_request",
+      "method": "oracle",
+      "taskCount": 1,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "bazi",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "ziwei",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "astro",
+      "taskCount": 2,
+      "nativeUnitCount": 12,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "vedic",
+      "taskCount": 2,
+      "nativeUnitCount": 23,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "liuren",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "liuyao",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "yijing",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "meihua",
+      "taskCount": 2,
+      "nativeUnitCount": 4,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "name",
+      "taskCount": 2,
+      "nativeUnitCount": 3,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "compat",
+      "taskCount": 2,
+      "nativeUnitCount": 6,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "personality",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "tarot",
+      "taskCount": 2,
+      "nativeUnitCount": 2,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "lenormand",
+      "taskCount": 2,
+      "nativeUnitCount": 9,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "ootk",
+      "taskCount": 2,
+      "nativeUnitCount": 1,
+      "status": "passed"
+    },
+    {
+      "domain": "compound_request",
+      "method": "oracle",
+      "taskCount": 2,
+      "nativeUnitCount": 5,
+      "status": "passed"
+    }
+  ],
+  "originalQuestionFallbackExports": 30,
+  "scope": "Actual native exporters and retained API payload builder, source integrity and per-task reading requirements. Does not certify an external AI answer or empirical prediction accuracy.",
+  "regressions": [
+    {
+      "suite": "plain-language-20261014",
+      "status": "passed"
+    },
+    {
+      "suite": "reading-integrity-20261014",
+      "status": "passed"
+    },
+    {
+      "suite": "question-model-regression-20260927",
+      "status": "passed"
+    },
+    {
+      "suite": "prompt-integrity-20261010",
+      "status": "passed"
+    },
+    {
+      "suite": "symbolic-scope-20261014",
+      "status": "passed"
+    },
+    {
+      "suite": "semantic-review-followup-20260928",
+      "status": "passed"
+    },
+    {
+      "suite": "reading-depth-regression-20260927",
+      "status": "passed"
+    },
+    {
+      "suite": "tarot-v102-method-data-prompt",
+      "status": "passed"
+    },
+    {
+      "suite": "sync-recommendation-guides --check",
+      "status": "passed"
+    }
+  ],
+  "syntax": {
+    "changedJavaScriptFiles": 48,
+    "status": "passed"
+  },
+  "legacyTests": [
+    {
+      "suite": "tarot-v92-stress",
+      "status": "historical-text-assertions-failed",
+      "reason": "Requires old ROOT-SPEC v92 prose, removed before this release."
+    },
+    {
+      "suite": "tarot-v101-native-methods",
+      "status": "historical-version-and-prose-assertions-failed",
+      "reason": "Requires v101 version IDs, removed method prompt headings and older sales wording; v102 method-data tests and native graph invariants remain current."
+    }
+  ]
+}

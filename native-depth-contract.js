@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261014depth24';
+  const VERSION='20261014depth25';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -50,6 +50,23 @@
       return {available:false,status:'partial',reason:A(v.integrity?.missing).join('；')||'本次五輪閱讀必要欄位未齊全'};
     return {available:true,status:'calculated',reason:null};
   }
+  function requestCoverage(method,analysis,options,evidence){
+    const plan=root.JYReadingWorkflow?.plan?.({method,question:options.question||analysis?.children?.question||'',notes:options.notes,referenceDate:options.referenceDate,timezone:options.timezone});
+    const validOperations=method==='ootk'?A(analysis?.methodData?.layerEvidence).filter(x=>x.valid).map(x=>x.operation):null;
+    const units=A(analysis?.items).map((x,i)=>({id:method+'-unit-'+i,label:x.label||x.id||String(i),basis:'本方法逐項作用與原生資料',nativePath:'items.'+i,evidenceCount:A(x.evidence).length,eligible:!['not-started','unknown-time','partial'].includes(x.id)&&(method!=='ootk'||validOperations.includes(x.evidence?.[0]?.operation)),role:'candidate-evidence-not-an-event-verdict'})).filter(x=>x.eligible);
+    const available=evidence.filter(x=>x.available&&x.status!=='not-applicable'&&(method!=='ootk'||validOperations.length>0)).map(x=>({label:x.label,path:x.path}));
+    const missing=evidence.filter(x=>!x.available).map(x=>({label:x.label,path:x.path,status:x.status,reason:x.reason,haltsOtherEvidence:false}));
+    const limitations=A(analysis?.unavailable).map(message=>({message,kind:/證實|準確率|保證|未發生事件|人物心意/.test(message)?'event-not-verified':/未實作|未有可靠|師承|異派|其他.*流派/.test(message)?'outside-registered-rules':'missing-or-limited-layer',haltsOtherEvidence:false}));
+    const specialization=analysis?.topicRules;
+    return {schema:'jy.request-coverage/1',method,sourceQuestion:plan?.question||String(options.question||''),
+      requirements:plan?.requestRequirements||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
+      usableNativeEvidence:available.length>0||units.some(x=>x.evidenceCount>0),
+      specializedClassification:{available:!!specialization,topics:A(specialization?.topics),fallback:'專用分類缺少或未命中，只限制該分類；仍用實際原生骨架與本法一般判讀回答原句。'},
+      taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依本題相關作用筛選候選，並完成支持與限制比較；此列不預先判事件。'})),
+      interpretationRule:'逐題從有效原生資料選取實際相關作用；讀者可依具名傳統判法推讀，但不能冒稱新的讀法已由引擎實算。分類清單與語義標籤不是可問問題白名單。',
+      timeRule:'本次實算時窗只限制可報的時點；不限期或更長的原問句，不能因窗口外未算就判窗口外永不發生。',
+      outputRule:'正文先答當事人原問題，再深入講清理由、重要發現與做法；不展示這份技術清單，不用無法確定代替仍可讀的內容。'};
+  }
   function build(method,chart,analysis,options={}){
     const p=P[method]||{profile:'具名方法',required:[['原生資料','items']],order:common.synthesis,conflicts:[],forbidden:[]};
     const evidence=p.required.map(([label,path])=>({label,path,...evidenceState(method,chart,analysis,path)}));
@@ -74,6 +91,7 @@
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
       methodOutputPolicy,
+      requestCoverage:requestCoverage(method,analysis,options,evidence),
       readingScope:root.JYReadingWorkflow?.readingScope?.(options.question||analysis?.children?.question||'',method)||null,
       precisionPolicy:'精確數值或心意未量測只限制該項，仍須完成切題的象徵方向、相反條件與做法。具名數量規則可作已核前提的傳統假定，不當事實；沒有相關資料不能造線索。',
       missingRequiredEvidence:missing,
@@ -88,6 +106,7 @@
     '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `精度與可讀內容：${c.precisionPolicy||'缺項只限制受影響部分；有效資料照常閱讀。'}`,
+    c.requestCoverage?'本題逐項解讀覆蓋（內部資料，不是成稿欄位）：'+JSON.stringify(c.requestCoverage):'',
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `內部合成核對（不作正文欄位）：${c.synthesisOrder.join(' → ')}。`,
@@ -99,6 +118,6 @@
     c.missingRequiredEvidence.length?`必要缺項：${c.missingRequiredEvidence.join('、')}；不得補造。`:'',
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''
   ].filter(Boolean).join('\n');}
-  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
-  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary});
+  function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,requestCoverage:c.requestCoverage,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
+  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary,requestCoverage});
 })(typeof window==='undefined'?globalThis:window);

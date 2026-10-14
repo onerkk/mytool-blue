@@ -18,7 +18,7 @@
       : (typeof require === 'function' ? require('./tarot-foundation.js') : null);
   } catch (_foundationErr) { Foundation = null; }
 
-  var VERSION = '102.1.0';
+  var VERSION = '102.2.0';
   var SCHEMA = 'jy.tarot.semantic-contract/8';
 
   function clone(value) {
@@ -748,14 +748,23 @@
 
   function compileQuestion(question, options) {
     if (Foundation && typeof Foundation.compileQuestion === 'function') {
-      return Foundation.compileQuestion(question, options || {});
+      try{var compiled=Foundation.compileQuestion(question, options || {});if(compiled&&typeof compiled==='object')return compiled;}catch(_e){}
     }
-    var q = text(question) || '（未提供明確問題）';
+    var q = String(question||'');
     return {
-      originalQuestion:q, normalizedQuestion:q, requestedDimensions:[{id:'event_or_state',label:'核心事件／狀態',source:q}],
-      explicitScopes:[], relations:[], knownCounterpart:false, features:{},
-      queryGraph:{schema:'typed_query_graph/3',events:[{id:'QUERY_EVENT',type:'qualitative_state_query',surface:q,predicate:'describe_state',roles:{actor:'QUERENT',target:'TARGET_STATE'}}],entities:[{id:'QUERENT',type:'querent',source:'問卜者'}],relations:[],constraints:[],requiredAtoms:[{id:'A01',kind:'actor',text:'問卜者本人',source:'語境預設問卜者',essential:true,eventId:'QUERY_EVENT',role:'actor',implicit:true},{id:'A02',kind:'state_target',text:q,source:q,essential:true,eventId:'QUERY_EVENT',role:'target'}],roundTripReconstruction:q,compilerStatus:'fallback_atomized',validation:{roundTripCompatible:true,everyDeletionChangesTruthConditions:true,noAddedPremise:true},atomizationRequirement:'每個會改變真值條件的語義角色必須獨立成為 essential atom。'}
+      originalQuestion:q, normalizedQuestion:text(q),nativeOnlyFallback:true,requestedDimensions:requestedDimensions(q,[],[]),
+      explicitScopes:[], relations:[], knownCounterpart:false, features:{},readingQuestion:{branches:[]},
+      queryGraph:{schema:'typed_query_graph/3',events:[{id:'QUERY_EVENT',type:'original_request',surface:q,predicate:'interpret_original_question',roles:{actor:null,target:null}}],entities:[],relations:[],constraints:[],requiredAtoms:[],compilerStatus:'original-question-only',validation:{status:'not_performed'},atomizationRequirement:'語義模型未完成；依原句核問事角色，不宣稱原子化已通過。'}
     };
+  }
+
+  function recordedMethodPlan(spreadId,cards){
+    var spec=METHOD_SPECS[spreadId];if(!spec)throw new Error('unregistered_tarot_method:'+text(spreadId));
+    var native=Foundation&&typeof Foundation.getMethod==='function'?Foundation.getMethod(spreadId):null;
+    var protocol=clone(native&&native.protocol||null),mode=protocol&&protocol.slotMode||'semantic_position';
+    var count=spec.expectedCardCount==null?(cards||[]).length:spec.expectedCardCount;
+    var slots=Array.from({length:count},function(_,i){var card=(cards||[])[i]||{},slot=native&&native.slots&&native.slots[i]||{},authority=spec.roles[i]||slot.authority||'structural';return Object.assign({},slot,{index:i,label:positionLabel(card,i),role:slot.role||authority,authority:authority,slotMode:mode,slotKind:mode,independentSemanticPosition:!['sequence_member','triad_member'].includes(mode),binding:clone(card.slotBinding||card.binding||{eventId:'QUERY_EVENT',entity:null}),source:'實際牌位與登錄方法；不重排、不改牌序、不假設人物'});});
+    return Object.assign({},native||{},{id:spreadId,label:spec.label,count:count,provides:clone(spec.provides||[]),requiredObservables:[],missingObservables:[],questionBindingStatus:'original-question-review-required',protocol:protocol,slots:slots,slotBindings:slots.map(function(s){return {index:s.index,authority:s.authority,role:s.role,label:s.label,slotKind:s.slotKind,independentSemanticPosition:s.independentSemanticPosition,binding:clone(s.binding)};})});
   }
 
   function resolveSemanticProfile(spreadId, options) {
@@ -1594,11 +1603,13 @@
     var data = input || {};
     if (text(data.spreadId) && !METHOD_SPECS[text(data.spreadId)]) throw new Error('unregistered_tarot_method:' + text(data.spreadId));
     var questionSpec = compileQuestion(data.question, { referenceDate: data.referenceDate || data.readingDate || null });
-    var route = Foundation && typeof Foundation.routeQuestion === 'function'
+    var compilerReady=questionSpec?.queryGraph?.compilerStatus==='validated_atomized';
+    var route = compilerReady && Foundation && typeof Foundation.routeQuestion === 'function'
       ? Foundation.routeQuestion(questionSpec, { referenceDate: data.referenceDate || data.readingDate || null })
       : null;
-    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : (route && route.spreadId) || 'three_card';
-    var methodPlan = data.methodPlan || (Foundation && typeof Foundation.instantiateMethod === 'function' ? Foundation.instantiateMethod(spreadId, questionSpec) : null);
+    var spreadId = METHOD_SPECS[data.spreadId] ? data.spreadId : (route && route.spreadId);
+    if(!spreadId)throw new Error('recorded_tarot_method_required');
+    var methodPlan = data.methodPlan || (compilerReady&&Foundation&&typeof Foundation.instantiateMethod==='function'?Foundation.instantiateMethod(spreadId,questionSpec):recordedMethodPlan(spreadId,data.cards||[]));
     if (methodPlan && text(methodPlan.id) && methodPlan.id !== spreadId) throw new Error('spread_method_plan_mismatch:' + spreadId + '!=' + text(methodPlan.id));
     var method = clone(METHOD_SPECS[spreadId]);
     if (methodPlan) {
@@ -1636,9 +1647,9 @@
     var missingDimensions = capabilityMatrix.filter(function (row) { return row.precheckStatus === 'missing_required_channel'; }).map(function (row) { return row.dimensionId; });
     var procedureStopped = spreadId === 'ootk' && !!evidenceGraph.stopped;
     var procedureComplete = spreadId !== 'ootk' || (!procedureStopped && evidenceGraph.completedValidStageCount === 5);
-    var gateStatus = !compilerValid || procedureStopped
+    var gateStatus = procedureStopped
       ? 'blocked_or_partial'
-      : (missingDimensions.length || unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
+      : (!compilerValid || missingDimensions.length || unmeasuredDimensions.length || !procedureComplete ? 'partial' : 'full');
     var answerabilityGate = {
       status: gateStatus,
       compilerValid: compilerValid,
@@ -1648,12 +1659,13 @@
       completedProcedureStages: spreadId === 'ootk' ? evidenceGraph.completedValidStageCount : null,
       missingDimensions: uniq(missingDimensions),
       unmeasuredDimensions: uniq(unmeasuredDimensions),
-      rule: '先完成本方法原生解讀。查詢圖無效或開鑰程序停止時才阻斷相應程序；方法缺少某個精確或專屬通道時，只限制該子題，不得停止整盤，也不得讓查詢圖取代牌陣讀法。未量測不等於否定。'
+      rule: '先完成本方法原生解讀。語義模型未完成只限制自動人物與事件標註，仍依原句閱讀有效原牌陣；程序停止只限制該程序。精確或專屬通道缺少只限制該子題，不停止整盤，不把未量測當否定。'
     };
 
     var contract = {
       schema: SCHEMA,
       engineVersion: VERSION,
+      readingMode:compilerValid?'typed-query-and-native':'native-original-question',
       question: questionSpec,
       route: route ? { spreadId: route.spreadId, selectedBy: route.selectedBy, reason: route.reason, coverage: clone(route.coverage || {}) } : null,
       methodPlan: clone(methodPlan || null),
@@ -1704,6 +1716,13 @@
         facts: '精確數字、身分、日期、金額、年齡與人物屬性都需要明示量測錨及實體綁定。'
       }
     };
+    if(!compilerValid){
+      contract.adjudication.executionPlan.passes[0]={id:'P1_QUERY',name:'OriginalQuestionReader',output:'originalRequestRequirements',gate:'original_question_preserved && no_invented_binding'};
+      contract.adjudication.executionPlan.passes[3]={id:'P4_ADJUDICATE',name:'Adjudicator',output:'originalTaskCoverageAndVerdicts',gate:'every_original_task_answered_or_concrete_gap_identified'};
+      contract.adjudication.program[0]='保留原問句逐一辨認真正所問結果；語義編譯未完成，不宣稱已驗證原子模型，不改抽牌與原牌位。';
+      contract.adjudication.program[3]='按原問句的真實子題建立 supported／conditional／contradicted／unmeasured 覆蓋，不能以不存在的查詢原子停止解讀。';
+      contract.adjudication.coverageRule='原句優先，逐一用原牌位及合法作用回答；缺模型只限制自動人物與事件綁定，仍可完成有據的整體方向與條件解讀，不補人物心意或未測量數值。';
+    }
     contract.validation = validateContract(contract);
     return contract;
   }
@@ -1716,10 +1735,12 @@
     var graph = contract && contract.evidenceGraph;
     var question = contract && contract.question;
     if (!method || !METHOD_SPECS[method.id]) errors.push('method_missing');
-    if (!question || !question.queryGraph || !question.queryGraph.requiredAtoms || !question.queryGraph.requiredAtoms.length) errors.push('typed_query_graph_missing');
-    if (!question || !question.queryGraph || !question.queryGraph.atomizationRequirement) errors.push('semantic_atomization_requirement_missing');
-    if (!question || !question.queryGraph || !question.queryGraph.validationRules || !question.queryGraph.validationRules.roundTrip) errors.push('query_round_trip_rule_missing');
-    if (question && question.queryGraph && question.queryGraph.compilerStatus !== 'validated_atomized') errors.push('query_graph_not_validated');
+    var nativeOriginal=contract?.readingMode==='native-original-question'&&typeof question?.originalQuestion==='string'&&question.originalQuestion.length>0&&question?.queryGraph?.compilerStatus!=='validated_atomized';
+    var semanticIssue=function(code){(nativeOriginal?warnings:errors).push(code);};
+    if (!question || !question.queryGraph || !question.queryGraph.requiredAtoms || !question.queryGraph.requiredAtoms.length) semanticIssue('typed_query_graph_missing');
+    if (!question || !question.queryGraph || !question.queryGraph.atomizationRequirement) semanticIssue('semantic_atomization_requirement_missing');
+    if (!question || !question.queryGraph || !question.queryGraph.validationRules || !question.queryGraph.validationRules.roundTrip) semanticIssue('query_round_trip_rule_missing');
+    if (question && question.queryGraph && question.queryGraph.compilerStatus !== 'validated_atomized') semanticIssue('query_graph_not_validated');
     if (!contract || !contract.answerabilityGate) errors.push('answerability_gate_missing');
     if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.evidenceUnits)) errors.push('evidence_graph_missing');
 
@@ -1824,7 +1845,7 @@
     lines.push('需求預檢：' + question.requestedDimensions.map(function (dimension) {
       return dimension.label + (dimension.source ? '〔' + dimension.source + '〕' : '');
     }).join('、'));
-    lines.push('已完成並通過驗證的型別化查詢圖（正文不得重新分類或改寫）：');
+    lines.push(contract.readingMode==='native-original-question'?'語義標註未完成：依逐字原句核對角色，閱讀有效原生牌陣；不能假稱查詢圖已驗證。':'已完成並通過驗證的型別化查詢圖（原句優先，模型只供核對）：');
     question.queryGraph.events.forEach(function (event) {
       lines.push('・' + event.id + '｜surface=' + event.surface + '｜actor=' + event.roles.actor + '｜predicate=' + event.predicate + '｜roles=' + JSON.stringify(event.roles));
     });
@@ -1953,6 +1974,7 @@
     METHOD_SPECS: METHOD_SPECS,
     ROLE_AUTHORITY: ROLE_AUTHORITY,
     compileQuestion: compileQuestion,
+    recordedMethodPlan: recordedMethodPlan,
     routeQuestion: routeQuestion,
     Foundation: Foundation,
     resolveSemanticProfile: resolveSemanticProfile,

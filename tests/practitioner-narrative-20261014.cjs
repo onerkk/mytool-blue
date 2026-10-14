@@ -5,7 +5,7 @@ const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const {ctx:c,load}=environment();['prompt-brief','prompt-packet'].forEach(load);
 const fixture=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket;
 const q='今年會發生非現任的肉體關係嗎？',results=[];
-assert.equal(Q.readingVersion,'14.0.0');assert.equal(W.version,'2.3.0');
+assert.equal(Q.readingVersion,'15.0.0');assert.equal(W.version,'2.4.0');
 for(const [method,chart]of Object.entries(fixture.charts)){
  const before=JSON.stringify(chart),text=P.build(method,chart,q),record=P.get(text);
  const illustrative=[...text.matchAll(/【原創成稿示範｜只學鋪陳，不是本次資料】([^\n]+)/g)].map(m=>JSON.parse(m[1]));
@@ -52,6 +52,6 @@ const block=api.match(/\/\/ BEGIN GENERATED READING SYSTEM_READING_STYLE\nvar SY
 assert(block,'server style block exists');const serverStyle=JSON.parse(block[1]);
 assert(serverStyle.includes(Q.narrativePolicy()),'API receives the same narrative and background boundary');
 assert(api.includes('相反讀法須比較並收斂')&&api.includes('不宣稱真人身分、資歷或諮詢經驗'));
-const report={release:'20261014scope24',status:'passed',methods:results,fiveCardSnapshot:{question:q,ids,positions,directions:Array.from(native.records,r=>r.direction),factsUnchanged:true,exampleCardsExcludedFromFacts:true},staleGuide:'passed',bareLiuren:'passed',fullAnnualAndOOTKCoverage:'passed',apiStyle:'passed',scope:'Actual local exporters and recorded card data; no live external-model response or prediction accuracy claim.'};
+const report={release:'20261014universal25',status:'passed',methods:results,fiveCardSnapshot:{question:q,ids,positions,directions:Array.from(native.records,r=>r.direction),factsUnchanged:true,exampleCardsExcludedFromFacts:true},staleGuide:'passed',bareLiuren:'passed',fullAnnualAndOOTKCoverage:'passed',apiStyle:'passed',scope:'Actual local exporters and recorded card data; no live external-model response or prediction accuracy claim.'};
 if(process.env.JY_PRACTITIONER_REPORT)fs.writeFileSync(process.env.JY_PRACTITIONER_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Practitioner narrative: 15 real exports, recorded five-card facts, isolated examples, fallback, API and coverage passed.');

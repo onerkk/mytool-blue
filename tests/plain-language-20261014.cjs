@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const {ctx:c,load}=environment();['prompt-brief','prompt-packet'].forEach(load);
 const f=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket;
-assert.equal(Q.readingVersion,'14.0.0');assert.equal(W.version,'2.3.0');
+assert.equal(Q.readingVersion,'15.0.0');assert.equal(W.version,'2.4.0');
 const jargon=/干支|四課|三傳|初傳|中傳|末傳|旬空|空亡|妻財|官鬼|用神|格局|四化|廟旺|體用|動爻|元素尊貴|Yoga|承接|牽制|落點|作用網|場域|金幣三|寶劍二|戰車|正義正位/;
 const results=[],question='公司異性女工程師未來會跟我交往嗎？';
 for(const [method,chart]of Object.entries(f.charts)){
@@ -38,6 +38,6 @@ assert(!mixed.includes('STALE_JARGON_GUIDE')&&!mixed.includes('STALE_JARGON_CLOS
 const api=fs.readFileSync(path.join(__dirname,'../functions/api/ai.js'),'utf8'),worker=fs.readFileSync(path.join(__dirname,'../workers/ai-proxy.js'),'utf8');
 assert(api.includes('answer、action、timing、honest_word 都不用專門術語'));
 assert(worker.includes(api.trimEnd()),'standalone Worker contains the same complete API source');
-const report={release:'20261014scope24',status:'passed',methods:results,fallback:'passed',mixedCachedGuide:'passed',fullAnnualAndOOTKCoverage:'passed',apiAndWorker:'passed',scope:'Actual local prompt exports, original data and original sample prose. External AI prose compliance and prediction accuracy not certified.'};
+const report={release:'20261014universal25',status:'passed',methods:results,fallback:'passed',mixedCachedGuide:'passed',fullAnnualAndOOTKCoverage:'passed',apiAndWorker:'passed',scope:'Actual local prompt exports, original data and original sample prose. External AI prose compliance and prediction accuracy not certified.'};
 if(process.env.JY_PLAIN_REPORT)fs.writeFileSync(process.env.JY_PLAIN_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Plain language: 15 real exports, jargon-free examples, original facts, fallback, API/Worker and coverage passed.');
