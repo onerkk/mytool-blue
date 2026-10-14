@@ -27,6 +27,10 @@
     var chapter=doc.createElement('p');chapter.textContent=cfg.chapter;
     heading.appendChild(place);heading.appendChild(chapter);shell.appendChild(heading);
     var caption=doc.createElement('p');caption.className='js-story-caption';caption.setAttribute('aria-live','polite');caption.hidden=true;shell.appendChild(caption);
+    if(dialog.getAttribute('data-mode')==='cards'){
+      // The title/caption has its own track, above both scenery and card faces.
+      [heading,caption].forEach(function(node){node.style.setProperty('grid-area','2 / 1','important');});
+    }
     // Preserve the real buttons and their handlers; the dialogue stays next to
     // its main action. Nothing is cloned and the page is never scrolled here.
     if(brief&&dialogue)dialogue.prepend(brief);
@@ -80,7 +84,10 @@
       invitation:cfg.invitation,
       setPhase:function(value,onReady){
         if(dead)return;stopClock();ready=null;phase=value;elapsed=0;beat=-1;
-        caption.hidden=value!==2;heading.hidden=value===2;
+        // Card overview is already the meaningful visual response. Changing
+        // caption heights between shots must not move the spread underneath it.
+        var cardMode=dialog.getAttribute('data-mode')==='cards';
+        caption.hidden=cardMode||value!==2;heading.hidden=!cardMode&&value===2;
         if(value===2){ready=onReady||null;playFilm('response');if(reduced){cue('settle',2);timer=root.setTimeout(complete,0);}else tick();}
         else {caption.textContent='';cue(value===0?'arrival':value===1?'listen':'settle',value);playFilm(value===0?'entrance':value===1?'waiting':'closing');}
       },

@@ -62,6 +62,7 @@ export function buildPresence({kind,rig,keep,accent,reduced}){
  const ribbon=keep(new T.MeshBasicMaterial({color:accent,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}));
  const echo=new T.Mesh(keep(new T.TorusGeometry(.2,.006,6,72)),ribbon);echo.name='touch-echo';group.add(echo);
  return {
+  setReduced(value){reduced=!!value;},
   contact(x,y,time){if(reduced)return;contactX=clamp(x,-1,1)*2.1;contactY=-clamp(y,-1,1)*2.25;contactAt=time;rippleAt=time;u.ripple.value.set(contactX,clamp(y,-1,1)*1.3,time,1);},
   update(state){
    const time=reduced?0:state.time,energy=state.phase>=2?.8:clamp(state.power||0);

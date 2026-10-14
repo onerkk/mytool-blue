@@ -72,7 +72,7 @@ export function buildScenery({kind,rig,keep,gold,accent,reduced,craft}){
   const altar=mesh(new T.BoxGeometry(3.4,.11,1.3),enamel);altar.position.set(0,-2.0,.35);
   for(const side of [-1,1]){const stem=mesh(new T.CylinderGeometry(.025,.025,.7,8),gold);stem.position.set(side*1.36,-1.6,.35);const flame=mesh(new T.OctahedronGeometry(.08),glow);flame.position.set(side*1.36,-1.19,.35);flame.scale.y=1.8;lights.push(flame);}
  }
- return {update(state){
+ return {setReduced(value){reduced=!!value;},update(state){
   const t=reduced?0:state.time,enter=reduced?1:ease(state.since/2.6),energy=state.phase>=2?1:state.power;
   gates.forEach(g=>{const opened=state.phase===0?enter:1;g.node.rotation.y=g.side*(.13+opened*1.30);if(kind==='ootk')g.node.visible=g.index>=(state.operation||0);});
   moving.forEach(item=>{const n=item.node;

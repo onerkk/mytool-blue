@@ -13,7 +13,9 @@ export function mountStage(host,kind,options={}){
  let dead=false,lost=false,paused=false,raf=0,last=0,phaseAt=0,elapsed=0,frames=0,cost=0;
  let renderer,observer,actorMaterial,actor,previousPose=0,targetPose=0,blendAt=0;
  const resources=new Set(),textures=new Set(),loaders=new Set(),animated=[],pointer={x:0,y:0},aim={x:0,y:0};
- const reduced=!!options.reduced,input=host.parentElement||host;
+ let reduced=!!options.reduced;
+ const input=host.parentElement||host;
+ let renderWidth=0,renderHeight=0;
  const keep=x=>(resources.add(x),x);
  const scene=new T.Scene();
  const camera=new T.PerspectiveCamera(39,1,.1,40);camera.position.set(0,.2,7.2);
@@ -177,7 +179,7 @@ export function mountStage(host,kind,options={}){
  const scenery=state.story?buildScenery({kind,rig,keep,gold,accent,reduced,craft}):null;
  const presence=state.story?buildPresence({kind,rig,keep,accent,reduced}):null;
 
- function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();renderOnce();}
+ function resize(){if(dead||lost)return;const rect=host.getBoundingClientRect();const width=Math.round(rect.width),height=Math.round(rect.height);if(!width||!height||width===renderWidth&&height===renderHeight)return;renderWidth=width;renderHeight=height;renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();renderOnce();}
  function follow(event){if(reduced)return;const r=host.getBoundingClientRect();aim.x=clamp((event.clientX-r.left)/r.width*2-1,-1,1);aim.y=clamp((event.clientY-r.top)/r.height*2-1,-1,1);}
  function leave(){aim.x=aim.y=0;}
  function visibility(){paused=document.hidden||covered;last=0;cancelAnimationFrame(raf);raf=0;if(!paused&&!dead&&!lost){renderOnce();if(!reduced)raf=requestAnimationFrame(tick);}}
@@ -220,13 +222,14 @@ export function mountStage(host,kind,options={}){
   const dt=last?Math.min((now-last)/1000,.08):1/30;last=now;elapsed+=dt;const begin=performance.now();transform(dt);
   try{renderer.render(scene,camera);}catch(error){contextLost({preventDefault(){}});return;}
   cost+=performance.now()-begin;frames++;
-  if(frames===45){if(cost/frames>19&&renderer.getPixelRatio()>1)renderer.setPixelRatio(1);frames=0;cost=0;}
+  if(frames===45){if(cost/frames>19&&renderer.getPixelRatio()>1){renderer.setPixelRatio(1);renderOnce();}frames=0;cost=0;}
  }
  observer=typeof ResizeObserver==='function'?new ResizeObserver(resize):null;observer?.observe(host);
  window.addEventListener('resize',resize);input.addEventListener('pointermove',follow,{passive:true});input.addEventListener('pointerleave',leave);
  document.addEventListener('visibilitychange',visibility);resize();renderOnce();if(!reduced)raf=requestAnimationFrame(tick);
  return {
   dispose,
+  setReduced(value){if(dead||lost)return;reduced=!!value;uniforms.motion.value=reduced?0:1;scenery?.setReduced(reduced);presence?.setReduced(reduced);visibility();},
   setPhase(phase){if(dead)return;state.phase=phase;phaseAt=elapsed;previousPose=targetPose;targetPose=actorPose(phase);uniforms.fromPose.value=previousPose;uniforms.toPose.value=targetPose;blendAt=elapsed;renderOnce();},
   setPower(value){state.power=clamp(value);if(reduced)renderOnce();},
   setLit(value){state.lit=Math.max(0,value);if(reduced)renderOnce();},

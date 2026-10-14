@@ -1,6 +1,8 @@
 /* Shared ritual viewport: independent scroll viewport + real, persistent action row.
    Keeping controls in a grid row avoids fixed-position containing-block and scene clipping bugs. */
 body.jy-atelier dialog.jr-dialog[open] {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   display: grid !important;
   grid-template-rows: minmax(0, 1fr) auto !important;
   height: 100vh !important;
@@ -173,8 +175,48 @@ body.jy-atelier dialog.jr-dialog .jr-reveal[aria-pressed="true"] .jr-back { visi
 body.jy-atelier dialog.jr-dialog .jr-reveal[aria-pressed="true"] .jr-front { visibility: visible; }
 body.jy-atelier dialog.jr-dialog .jr-reveal.is-face-ready .jr-front img { opacity: 1; }
 body.jy-atelier dialog.jr-dialog .jr-reveal.is-face-ready .jr-front-status { visibility: hidden; }
-body.jy-atelier dialog.jr-dialog[data-motion="full"] .jr-reveal.is-face-ready .jr-flip { animation: jr-face-arrive .35s ease-out; }
-@keyframes jr-face-arrive { from { transform: scaleX(.25); } to { transform: scaleX(1); } }
+/* Cards stay on one flat, decoded surface during reveal, scroll and settling.
+   Scene animation can continue without re-promoting every individual face. */
+body.jy-atelier dialog.jr-dialog[data-mode="cards"] :is(.jr-reveal-row, .jr-reveal, .jr-flip, .jr-back, .jr-front) {
+  perspective: none !important;
+  transform-style: flat !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+body.jy-atelier dialog.jr-dialog[data-mode="cards"][data-phase] .jr-world {
+  position: fixed;
+  inset: 0;
+}
+body.jy-atelier dialog.jr-dialog[data-mode="cards"][data-phase] .jr-world-image {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-position: center 44%;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+  filter: none !important;
+  opacity: .75;
+}
+body.jy-atelier dialog.jr-dialog[data-mode="cards"] .jr-mist { display: none; }
+body.jy-atelier dialog.jr-dialog[data-mode="cards"] .jr-card-label {
+  margin: 5px 0 0 !important;
+  font-size: 12px !important;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.jy-atelier dialog.jr-dialog[data-motion="still"] *,
+body.jy-atelier dialog.jr-dialog[data-motion="still"] *::before,
+body.jy-atelier dialog.jr-dialog[data-motion="still"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
 
 /* All revealed Lenormand cards share one compact overview, including the tail. */
 body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-playfield { height: auto !important; min-height: 0 !important; }
@@ -186,6 +228,8 @@ body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-reveal-row {
   perspective: none;
   padding: 4px 0 8px;
   transform: none;
+  max-width: min(100%, 620px, calc(max(24px, (100svh - 380px) / var(--jr-card-rows, 1) - 24px) * .666667 * var(--jr-visible-cols, 3)));
+  margin: 0 auto;
 }
 body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-reveal {
   width: 100%;
@@ -218,10 +262,6 @@ body.jy-atelier dialog.jr-dialog[data-card-layout="choice"] .jr-reveal:nth-child
 body.jy-atelier dialog.jr-dialog[data-card-layout="choice"] .jr-reveal:nth-child(6) { grid-column: 2; grid-row: 3; }
 body.jy-atelier dialog.jr-dialog[data-card-layout="choice"] .jr-reveal:nth-child(7) { grid-column: 3; grid-row: 3; }
 @media (max-width: 849px) {
-  body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-shell { grid-template-rows: auto 130px auto auto !important; }
-  body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-stage { grid-area: 2 / 1 !important; height: 130px !important; min-height: 130px !important; }
-  body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-playfield { grid-area: 3 / 1 !important; align-self: start !important; margin: 0 auto 12px !important; }
-  body.jy-atelier dialog.jr-dialog[data-card-overview="true"] .jr-dialogue { grid-area: 4 / 1 !important; }
   body.jy-atelier dialog.jr-dialog[data-card-layout^="grand"] .jr-card-label { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {

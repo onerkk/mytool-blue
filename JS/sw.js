@@ -55,7 +55,8 @@
 // v125：命理引擎與提示詞真實性、使用者處境及原盤核對。
 // v126：手機完整牌陣縮圖、穩定揭牌正面與牌面細節檢視。
 // v127：自然深入解惑、重要發現主動提醒及複合結果核對。
-const CACHE_NAME = 'jy-main-v129';
+// v130：牌區與說明分列、完整牌陣高度、解碼預覽、場景無空白切換。
+const CACHE_NAME = 'jy-main-v130';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

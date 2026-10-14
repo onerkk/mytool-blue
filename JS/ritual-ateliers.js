@@ -22,6 +22,7 @@
     return '';
   }
   function cardBack(kind){return 'assets/cards/bright-20261011/'+(kind==='lenormand'?'lenormand':'tarot')+'/back.webp';}
+  function previewImage(path){return /^assets\/cards\/bright-20261011\/(?:tarot|lenormand)\/(?:\d{2}|back)\.webp$/.test(path||'')?path.replace('/bright-20261011/','/preview-20261014/'):'';}
   function fan(kind){
     var h='<div class="jr-fan" aria-hidden="true">';
     for(var i=0;i<9;i++)h+='<span class="jr-card" style="--i:'+i+';--offset:'+(i-4)+'"><img src="'+cardBack(kind)+'" alt="" draggable="false"></span>';
@@ -97,6 +98,17 @@
     criticalStyle(dialog.querySelector('.jr-next'),{position:'static',display:'block','grid-row':'2',inset:'auto',width:'100%','max-width':'100%','min-height':'54px','box-sizing':'border-box',margin:'0',visibility:'visible',opacity:'1',transform:'none','white-space':'normal'});
     criticalStyle(dialog.querySelector('.jr-footer'),{'grid-row':'1',margin:'0',padding:'4px 8px'});
     criticalStyle(dialog.querySelector('.jr-dialogue'),{display:'block',visibility:'visible',opacity:'1',animation:'none',transform:'none',filter:'none','backdrop-filter':'none','-webkit-backdrop-filter':'none'});
+    // Cards occupy their own intrinsic-height track from the first reveal to
+    // the final overview. No scene/story theme may impose a fixed card height.
+    if(mode==='cards'){
+      criticalStyle(dialog.querySelector('.jr-shell'),{'grid-template-columns':'minmax(0, 1fr)','grid-template-rows':'auto auto clamp(64px, 10svh, 100px) auto auto','align-content':'start','min-height':'0'});
+      criticalStyle(dialog.querySelector('.jr-header'),{'grid-area':'1 / 1'});
+      criticalStyle(dialog.querySelector('.jr-stage'),{'grid-area':'3 / 1',height:'clamp(64px, 10svh, 100px)','min-height':'0','max-height':'100px',overflow:'hidden'});
+      criticalStyle(dialog.querySelector('.jr-playfield'),{'grid-area':'4 / 1',height:'auto','min-height':'0','max-height':'none','align-self':'start',margin:'8px auto 12px',transform:'none',perspective:'none',transition:'none',animation:'none'});
+      criticalStyle(dialog.querySelector('.jr-dialogue'),{'grid-area':'5 / 1','align-self':'start',margin:'0 auto',height:'auto','min-height':'0'});
+      dialog.querySelectorAll('.jr-reveal-row,.jr-reveal,.jr-flip,.jr-back,.jr-front').forEach(function(node){criticalStyle(node,{transform:'none',perspective:'none','transform-style':'flat',filter:'none',animation:'none',transition:'none'});});
+      dialog.querySelectorAll('.jr-front').forEach(function(node){criticalStyle(node,{visibility:'hidden',display:'grid','grid-template-columns':'minmax(0, 1fr)','grid-template-rows':'minmax(0, 1fr)'});});
+    }
     var resolve,finished=new Promise(function(r){resolve=r;});
     var handle={finished:finished,cancel:function(){finish(false,false);},skip:function(){finish(true,false);}};
     var entry={kind:kind,handle:handle};
@@ -175,11 +187,13 @@
     }
     function setCopy(title,note){dialog.querySelector('#jr-title').textContent=title;dialog.querySelector('#jr-note').textContent=note;}
     function showCardPage(){
-      var overview=kind==='lenormand'&&lit===cards.length;
+      var overview=lit===cards.length;
       dialog.setAttribute('data-card-overview',String(overview));
       if(overview){
-        var layout=String(options.spreadId||''),cols=layout==='grand_nines'?9:layout==='grand'?8:layout==='seven'?7:layout==='five'?6:Math.min(3,cards.length);
+        var layout=kind==='lenormand'?String(options.spreadId||''):'tarot',cols=layout==='grand_nines'?9:layout==='grand'?8:layout==='seven'?7:layout==='five'?6:layout==='tarot'&&cards.length>9?4:Math.min(3,cards.length);
+        var visibleCols=layout==='five'?3:cols,rows=layout==='five'?2:layout==='choice'?3:Math.ceil(cards.length/cols);
         dialog.setAttribute('data-card-layout',layout);dialog.style.setProperty('--jr-card-cols',String(cols));
+        dialog.style.setProperty('--jr-visible-cols',String(visibleCols));dialog.style.setProperty('--jr-card-rows',String(rows));
       }
       dialog.querySelectorAll('.jr-reveal').forEach(function(btn,i){btn.hidden=!overview&&Math.floor(i/3)!==cardPage;btn.disabled=phase!==1||btn.getAttribute('aria-pressed')==='true'||btn.hidden;});
       hint.textContent=overview?'本次 '+cards.length+' 張牌已全部揭開，完整牌序如下方牌陣。':'第 '+(cardPage*3+1)+'–'+Math.min(cardPage*3+3,cards.length)+' 張 · 共 '+cards.length+' 張 · 可切換自動翻牌。';
@@ -189,7 +203,7 @@
       dialog.querySelector('.jr-response').hidden=value===0;
       if(value===1)showProgress(lit/(mode==='cards'?cards.length:mode==='seals'?cfg.seals.length:1),mode==='cards'?'逐張輕觸，或選擇自動翻牌':mode==='seals'?'輕觸座標，點亮本次探索':'拖曳或按住，下方光帶會回應你');
       if(value>=2)showProgress(1,value===2?'已接住你的心念':'準備好了，由你決定何時繼續');
-      if(value>=2&&mode==='cards'&&kind==='lenormand'&&lit===cards.length)showCardPage();
+      if(value>=2&&mode==='cards'&&lit===cards.length)showCardPage();
       stageCall('setPhase',value);
       if(story)try{story.setPhase(value,function(){if(phase===2)updatePhase(3);});}catch(error){warn('story transition',error);try{story.dispose();}catch(e){}story=null;}
       var revealControls=dialog.querySelector('.jr-reveal-controls');if(revealControls)revealControls.hidden=value!==1;
@@ -288,12 +302,18 @@
       // A real front stays visible after the turn. Never leave an empty 3D plane
       // while an image decodes, or if the asset request fails.
       var status=doc.createElement('span');status.className='jr-front-status';status.textContent=c.name;front.appendChild(status);
+      criticalStyle(status,{position:'absolute',inset:'0',display:'grid','place-items':'center',padding:'6px','box-sizing':'border-box','font-size':'11px',color:'#253342','white-space':'normal','overflow-wrap':'anywhere'});
       if(c.image){
         var img=doc.createElement('img');img.alt=c.name;img.className=c.isUp?'':'is-reversed';
-        img.onload=function(){if(settled)return;btn.classList.add('is-face-ready');btn.setAttribute('data-image-state','loaded');};
-        img.onerror=function(){if(settled)return;img.remove();btn.setAttribute('data-image-state','error');status.textContent=c.name+' · 牌圖暫時無法載入';};
-        btn.setAttribute('data-image-state','loading');front.appendChild(img);img.src=c.image;
+        var preview=previewImage(c.image),retried=false;
+        function imageReady(){if(settled||!img.naturalWidth)return;criticalStyle(img,{opacity:'1'});criticalStyle(status,{display:'none',visibility:'hidden'});status.hidden=true;btn.classList.add('is-face-ready');btn.setAttribute('data-image-state','loaded');}
+        function imageFailed(){if(settled)return;if(preview&&!retried){retried=true;img.removeAttribute('srcset');img.src=c.image;return;}img.remove();btn.classList.remove('is-face-ready');status.hidden=false;criticalStyle(status,{display:'grid',visibility:'visible'});btn.setAttribute('data-image-state','error');status.textContent=c.name+' · 牌圖暫時無法載入';}
+        img.onload=function(){if(settled)return;if(typeof img.decode==='function')img.decode().then(imageReady,imageFailed);else imageReady();};
+        img.onerror=imageFailed;img.decoding='async';img.width=384;img.height=576;
+        criticalStyle(img,{display:'block',width:'100%',height:'100%','min-width':'0','min-height':'0','object-fit':'contain',opacity:'0'});
+        btn.setAttribute('data-image-state','loading');if(preview)img.setAttribute('srcset',preview+' 1x');front.appendChild(img);img.src=c.image;
       }else btn.setAttribute('data-image-state','unavailable');
+      criticalStyle(front,{visibility:'visible'});criticalStyle(btn.querySelector('.jr-back'),{visibility:'hidden'});
       btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','第 '+(i+1)+' 張：'+c.name+(kind==='tarot'?(c.isUp?'，正位':'，逆位'):''));btn.disabled=true;btn.querySelector('.jr-card-label').textContent=c.name;lit++;
       if(!all)bell();stageCall('setLit',lit);stageCall('setPower',lit/cards.length);
       showProgress(lit/cards.length,'已揭開 '+lit+' / '+cards.length+' 張牌');hint.textContent='已揭開 '+lit+' / '+cards.length+' 張';
@@ -330,8 +350,11 @@
       if(settled)return;stopHold();reduced=!reduced;dialog.setAttribute('data-motion',reduced?'still':'full');
       if(story)story.setReduced(reduced);
       this.textContent='動態：'+(reduced?'靜態':'完整');this.setAttribute('aria-pressed',String(reduced));
-      releaseStage();
-      if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
+      if(stage&&typeof stage.setReduced==='function')stageCall('setReduced',reduced);
+      else {
+        releaseStage();
+        if(root.JYCinema&&typeof root.JYCinema.mount==='function'){try{stage=root.JYCinema.mount(dialog.querySelector('.jr-stage'),kind,{mode:mode,reduced:reduced,story:!!root.JYStory,sealValues:options.sealValues||[]});stageCall('setPhase',phase);stageCall('setLit',lit);stageCall('setTurn',turn);stageCall('setPower',phase>=2?1:mode==='hold'?0:lit/(mode==='cards'?cards.length:cfg.seals.length));}catch(error){fallbackStage(error);}}
+      }
       if(reduced&&phase===2)updatePhase(3);
     };
     dialog.addEventListener('click',function(e){if(foley&&!e.target.closest('[data-foley-toggle]'))foley.unlock(soundKeys);},true);

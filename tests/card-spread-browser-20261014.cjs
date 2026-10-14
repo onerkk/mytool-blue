@@ -73,6 +73,10 @@ const question=id=>id==='choice'?'應該留在公司還是轉職？':/^grand|bra
      const ritual=await page.locator('.jr-reveal').evaluateAll(nodes=>nodes.map(b=>({rect:b.getBoundingClientRect().toJSON(),front:getComputedStyle(b.querySelector('.jr-front')).visibility,transform:getComputedStyle(b.querySelector('.jr-flip')).transform,ready:b.classList.contains('is-face-ready'),image:b.querySelector('img')?.getAttribute('src')})));
      assert(ritual.every(c=>c.front==='visible'&&c.transform==='none'&&c.ready),label+' stable decoded fronts: '+JSON.stringify(ritual.filter(c=>c.front!=='visible'||c.transform!=='none'||!c.ready)));
      assert(ritual.every(c=>c.rect.x>=-1&&c.rect.right<=viewport.width+1),label+' ritual cards fit width');geometry(ritual,id,label+' ritual');
+     const tracks=await page.locator('.jr-dialog').evaluate(d=>({field:d.querySelector('.jr-playfield').getBoundingClientRect().toJSON(),row:d.querySelector('.jr-reveal-row').getBoundingClientRect().toJSON(),sheet:d.querySelector('.jr-dialogue').getBoundingClientRect().toJSON(),heading:d.querySelector('.js-story-heading')?.getBoundingClientRect().toJSON()}));
+     assert(ritual.every(c=>c.rect.y>=tracks.field.top-1&&c.rect.bottom<=tracks.field.bottom+1),label+' every complete card is contained in its intrinsic-height track');
+     assert(Math.max(...ritual.map(c=>c.rect.bottom))<=tracks.sheet.top+1,label+' dialogue never covers the last row');
+     if(tracks.heading)assert(tracks.heading.bottom<=tracks.field.top+1,label+' story heading stays above cards');
      await controls(label+' all-reveal');
      if(screenshotDir&&id==='seven'&&viewport.width===390&&viewport.height===844)await page.screenshot({path:path.join(screenshotDir,'seven-ritual.png')});
      }

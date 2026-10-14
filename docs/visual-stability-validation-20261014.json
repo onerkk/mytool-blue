@@ -1,0 +1,666 @@
+{
+  "version": "20261014visual23",
+  "scope": "Browser emulation and software GPU; not physical Android/iOS certification.",
+  "browserLayout": {
+    "testedAt": "2026-10-14T05:15:02.016Z",
+    "browser": "153.0.8010.0",
+    "scope": "Real headless Chromium with software GPU, production HTML/CSS/JS and local card assets. One actual draw per spread resized through every viewport; separate full/still motion, slow/failed image and automatic/manual reveal cases. Viewport emulation, not a physical Android or iPhone certification.",
+    "cases": 78,
+    "viewports": [
+      {
+        "width": 320,
+        "height": 640
+      },
+      {
+        "width": 360,
+        "height": 740
+      },
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 412,
+        "height": 915
+      },
+      {
+        "width": 768,
+        "height": 1024
+      },
+      {
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "width": 390,
+        "height": 500
+      },
+      {
+        "width": 844,
+        "height": 390
+      }
+    ],
+    "results": [
+      {
+        "label": "two-320x640",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 243,
+        "cardWidth": 119.90625
+      },
+      {
+        "label": "two-360x740",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 283,
+        "cardWidth": 139.703125
+      },
+      {
+        "label": "two-390x844",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 305,
+        "cardWidth": 150.546875
+      },
+      {
+        "label": "two-412x915",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 327,
+        "cardWidth": 161.4375
+      },
+      {
+        "label": "two-768x1024",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 651,
+        "cardWidth": 321.65625
+      },
+      {
+        "label": "two-1280x900",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 800,
+        "cardWidth": 395
+      },
+      {
+        "label": "two-390x500",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 305,
+        "cardWidth": 150.546875
+      },
+      {
+        "label": "two-844x390",
+        "status": "passed",
+        "count": 2,
+        "boardWidth": 296,
+        "cardWidth": 143.78125
+      },
+      {
+        "label": "three-320x640",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 243,
+        "cardWidth": 78.875
+      },
+      {
+        "label": "three-360x740",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 283,
+        "cardWidth": 91.9375
+      },
+      {
+        "label": "three-390x844",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "three-412x915",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 327,
+        "cardWidth": 106.25
+      },
+      {
+        "label": "three-768x1024",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 651,
+        "cardWidth": 211.875
+      },
+      {
+        "label": "three-1280x900",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 800,
+        "cardWidth": 260
+      },
+      {
+        "label": "three-390x500",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "three-844x390",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 444,
+        "cardWidth": 142.375
+      },
+      {
+        "label": "five-320x640",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 243,
+        "cardWidth": 78.875
+      },
+      {
+        "label": "five-360x740",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 283,
+        "cardWidth": 91.9375
+      },
+      {
+        "label": "five-390x844",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "five-412x915",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 327,
+        "cardWidth": 106.25
+      },
+      {
+        "label": "five-768x1024",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 651,
+        "cardWidth": 211.875
+      },
+      {
+        "label": "five-1280x900",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 684,
+        "cardWidth": 221.34375
+      },
+      {
+        "label": "five-390x500",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 284,
+        "cardWidth": 92.0625
+      },
+      {
+        "label": "five-844x390",
+        "status": "passed",
+        "count": 5,
+        "boardWidth": 174,
+        "cardWidth": 52.375
+      },
+      {
+        "label": "seven-320x640",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 243,
+        "cardWidth": 31.96875
+      },
+      {
+        "label": "seven-360x740",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 283,
+        "cardWidth": 37.34375
+      },
+      {
+        "label": "seven-390x844",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 305,
+        "cardWidth": 40.234375
+      },
+      {
+        "label": "seven-412x915",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 327,
+        "cardWidth": 43.1875
+      },
+      {
+        "label": "seven-768x1024",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 651,
+        "cardWidth": 86.421875
+      },
+      {
+        "label": "seven-1280x900",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 800,
+        "cardWidth": 105.703125
+      },
+      {
+        "label": "seven-390x500",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 305,
+        "cardWidth": 40.234375
+      },
+      {
+        "label": "seven-844x390",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 727,
+        "cardWidth": 96.625
+      },
+      {
+        "label": "choice-320x640",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 243,
+        "cardWidth": 78.875
+      },
+      {
+        "label": "choice-360x740",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 283,
+        "cardWidth": 91.9375
+      },
+      {
+        "label": "choice-390x844",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "choice-412x915",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 327,
+        "cardWidth": 106.25
+      },
+      {
+        "label": "choice-768x1024",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 507,
+        "cardWidth": 163.78125
+      },
+      {
+        "label": "choice-1280x900",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 424,
+        "cardWidth": 134.671875
+      },
+      {
+        "label": "choice-390x500",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 160,
+        "cardWidth": 50.734375
+      },
+      {
+        "label": "choice-844x390",
+        "status": "passed",
+        "count": 7,
+        "boardWidth": 160,
+        "cardWidth": 47.703125
+      },
+      {
+        "label": "nine-320x640",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 243,
+        "cardWidth": 78.875
+      },
+      {
+        "label": "nine-360x740",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 283,
+        "cardWidth": 91.9375
+      },
+      {
+        "label": "nine-390x844",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "nine-412x915",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 327,
+        "cardWidth": 106.25
+      },
+      {
+        "label": "nine-768x1024",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 507,
+        "cardWidth": 163.78125
+      },
+      {
+        "label": "nine-1280x900",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 424,
+        "cardWidth": 134.671875
+      },
+      {
+        "label": "nine-390x500",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 160,
+        "cardWidth": 50.734375
+      },
+      {
+        "label": "nine-844x390",
+        "status": "passed",
+        "count": 9,
+        "boardWidth": 160,
+        "cardWidth": 47.703125
+      },
+      {
+        "label": "grand-320x640",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 243,
+        "cardWidth": 27.578125
+      },
+      {
+        "label": "grand-360x740",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 283,
+        "cardWidth": 32.21875
+      },
+      {
+        "label": "grand-390x844",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 305,
+        "cardWidth": 34.71875
+      },
+      {
+        "label": "grand-412x915",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 327,
+        "cardWidth": 37.265625
+      },
+      {
+        "label": "grand-768x1024",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 651,
+        "cardWidth": 74.65625
+      },
+      {
+        "label": "grand-1280x900",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 576,
+        "cardWidth": 63.25
+      },
+      {
+        "label": "grand-390x500",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 160,
+        "cardWidth": 16.59375
+      },
+      {
+        "label": "grand-844x390",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 160,
+        "cardWidth": 12.609375
+      },
+      {
+        "label": "grand_nines-320x640",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 243,
+        "cardWidth": 24.15625
+      },
+      {
+        "label": "grand_nines-360x740",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 283,
+        "cardWidth": 28.25
+      },
+      {
+        "label": "grand_nines-390x844",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 305,
+        "cardWidth": 30.421875
+      },
+      {
+        "label": "grand_nines-412x915",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 327,
+        "cardWidth": 32.671875
+      },
+      {
+        "label": "grand_nines-768x1024",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 651,
+        "cardWidth": 65.5
+      },
+      {
+        "label": "grand_nines-1280x900",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 800,
+        "cardWidth": 80
+      },
+      {
+        "label": "grand_nines-390x500",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 282,
+        "cardWidth": 27.875
+      },
+      {
+        "label": "grand_nines-844x390",
+        "status": "passed",
+        "count": 36,
+        "boardWidth": 160,
+        "cardWidth": 10.4375
+      },
+      {
+        "label": "branches-320x640",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 243,
+        "cardWidth": 78.875
+      },
+      {
+        "label": "branches-360x740",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 283,
+        "cardWidth": 91.9375
+      },
+      {
+        "label": "branches-390x844",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "branches-412x915",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 327,
+        "cardWidth": 106.25
+      },
+      {
+        "label": "branches-768x1024",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 651,
+        "cardWidth": 211.875
+      },
+      {
+        "label": "branches-1280x900",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 800,
+        "cardWidth": 260
+      },
+      {
+        "label": "branches-390x500",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 305,
+        "cardWidth": 99.0625
+      },
+      {
+        "label": "branches-844x390",
+        "status": "passed",
+        "count": 3,
+        "boardWidth": 444,
+        "cardWidth": 142.375
+      },
+      {
+        "label": "key-clover-ring-full-slow",
+        "status": "passed",
+        "state": "loaded",
+        "front": "visible",
+        "text": "鑰匙",
+        "transform": "none"
+      },
+      {
+        "label": "key-clover-ring-full-failed",
+        "status": "passed",
+        "state": "error",
+        "front": "visible",
+        "text": "鑰匙 · 牌圖暫時無法載入",
+        "transform": "none"
+      },
+      {
+        "label": "key-clover-ring-still-slow",
+        "status": "passed",
+        "state": "loaded",
+        "front": "visible",
+        "text": "鑰匙",
+        "transform": "none"
+      },
+      {
+        "label": "key-clover-ring-still-failed",
+        "status": "passed",
+        "state": "error",
+        "front": "visible",
+        "text": "鑰匙 · 牌圖暫時無法載入",
+        "transform": "none"
+      },
+      {
+        "label": "automatic-seven",
+        "status": "passed",
+        "count": 7
+      },
+      {
+        "label": "manual-seven",
+        "status": "passed",
+        "count": 7
+      }
+    ],
+    "errors": [],
+    "missing": []
+  },
+  "browserStability": {
+    "browser": "153.0.8010.0",
+    "scope": "Production HTML/CSS/JS and real local assets in headless Chromium, including mobile/touch/high-DPR emulation and software GPU. Not physical-device certification.",
+    "cases": 5,
+    "results": [
+      {
+        "label": "full-motion-stable-card-pixels",
+        "status": "passed",
+        "samples": 8,
+        "maxChannelDelta": 1,
+        "canvasRetained": true
+      },
+      {
+        "label": "failure/slow/style {\"slow\":true}",
+        "status": "passed",
+        "imageState": "loaded"
+      },
+      {
+        "label": "failure/slow/style {\"failedPreview\":true}",
+        "status": "passed",
+        "imageState": "loaded"
+      },
+      {
+        "label": "failure/slow/style {\"failedPreview\":true,\"failedFull\":true}",
+        "status": "passed",
+        "imageState": "error"
+      },
+      {
+        "label": "failure/slow/style {\"missingStyle\":true}",
+        "status": "passed",
+        "imageState": "loaded"
+      }
+    ],
+    "errors": []
+  },
+  "relatedChecks": [
+    {
+      "command": "npm run test:ritual",
+      "exitCode": 0,
+      "elapsedSeconds": 8.4
+    },
+    {
+      "command": "npm run test:story",
+      "exitCode": 0,
+      "elapsedSeconds": 0.695
+    },
+    {
+      "command": "npm run test:cinematic",
+      "exitCode": 0,
+      "elapsedSeconds": 0.805
+    },
+    {
+      "command": "npm run test:display",
+      "exitCode": 0,
+      "elapsedSeconds": 0.266
+    },
+    {
+      "command": "npm run test:plain-language",
+      "exitCode": 0,
+      "elapsedSeconds": 20.845
+    }
+  ],
+  "resumeCheck": "R8 ritual resume: 9 methods passed",
+  "artwork": {
+    "originalsUnchanged": true,
+    "previewsDecoded": 116,
+    "previewDimensions": [
+      384,
+      576
+    ]
+  },
+  "cacheVersion": "jy-main-v130"
+}
