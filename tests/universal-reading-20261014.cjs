@@ -7,7 +7,7 @@ console.log('Loading native calculations for all fifteen methods...');
 const {ctx:c,load}=environment();['tarot-foundation','golden-dawn-tarot','tarot-reading','tarot-semantic-engine','prompt-brief','prompt-packet'].forEach(load);
 const f=examples(c),W=c.JYReadingWorkflow,P=c.JYPromptPacket,Q=c.JY_READING_QUALITY;
 test('one current workflow, depth and authoring policy cover fifteen methods',()=>{
- assert.equal(W.version,'2.4.0');assert.equal(Q.readingVersion,'15.0.0');assert.equal(P.version,'20261014prompt25');assert.equal(c.JYNativeDepthContract.version,'20261014depth25');
+ assert.equal(W.version,'2.5.0');assert.equal(Q.readingVersion,'16.0.0');assert.equal(P.version,'20261015prompt26');assert.equal(c.JYNativeDepthContract.version,'20261015depth26');
  assert.equal(W.methods.length,15);assert.equal(Object.keys(c.JYNativeDepthContract.profiles).length,15);
 });
 const questions=[
@@ -135,9 +135,9 @@ test('all generated public paths, API and worker carry the same universal policy
  const api=fs.readFileSync(path.join(root,'functions/api/ai.js'),'utf8'),worker=fs.readFileSync(path.join(root,'workers/ai-proxy.js'),'utf8');
  assert(api.includes('所有原題都依同一完整解讀流程'));assert(worker.includes(api.trimEnd()));
  for(const name of ['reading-workflow','prompt-packet','prompt-brief','native-depth-contract','native-chart-analysis','tarot-semantic-engine','ai-analysis'])if(fs.existsSync(path.join(root,name+'.js')))assert.equal(fs.readFileSync(path.join(root,name+'.js'),'utf8'),fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8'),name+' mirror');
- const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert(sw.includes("CACHE_NAME = 'jy-main-v132'"));assert.equal(sw,fs.readFileSync(path.join(root,'JS/sw.js'),'utf8'));
- assert(fs.readFileSync(path.join(root,'index.html'),'utf8').includes('JS/reading-workflow.js?v=20261014universal25'));
+ const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert(sw.includes("CACHE_NAME = 'jy-main-v133'"));assert.equal(sw,fs.readFileSync(path.join(root,'JS/sw.js'),'utf8'));
+ assert(fs.readFileSync(path.join(root,'index.html'),'utf8').includes('JS/reading-workflow.js?v=20261015reader26'));
 });
-const report={release:'20261014universal25',status:'passed',checks,exports:exportCases,originalQuestionFallbackExports:30,scope:'Actual native exporters and retained API payload builder, source integrity and per-task reading requirements. Does not certify an external AI answer or empirical prediction accuracy.'};
+const report={release:'20261015reader26',status:'passed',checks,exports:exportCases,originalQuestionFallbackExports:30,scope:'Actual native exporters and retained API payload builder, source integrity and per-task reading requirements. Does not certify an external AI answer or empirical prediction accuracy.'};
 if(process.env.JY_UNIVERSAL_REPORT)fs.writeFileSync(process.env.JY_UNIVERSAL_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Universal25: '+checks.length+' checks and '+exportCases.length+' multi-domain native exports passed.');

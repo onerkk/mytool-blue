@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261014depth25';
+  const VERSION='20261015depth26';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -50,7 +50,46 @@
       return {available:false,status:'partial',reason:A(v.integrity?.missing).join('；')||'本次五輪閱讀必要欄位未齊全'};
     return {available:true,status:'calculated',reason:null};
   }
-  function requestCoverage(method,analysis,options,evidence){
+  const CASEWORK={
+    bazi:{paths:['pillars','seasonalCommander','roots','functionalAssessment','classicalAdjudication','annualSegments'],checks:['透藏資源能否經有效生剋通路送達，而非數財星','原局承擔、成敗救應與當期增減是否同向'],bounds:'不由五行分數換算收益；調候、扶抑與格局保留各自判斷層級'},
+    ziwei:{paths:['items','layers','northern','patternAssessment','schoolCompletion'],checks:['主題宮連同三方四正，逐一追到飛入、飛出與自化的實際兩端','本命、大限、流年分層比較同一事件，不以吉星數量裁決'],bounds:'未套用的流派或未知時辰不能由文字補成定盤'},
+    vedic:{paths:['items','vargas','activation','strength','bhavaStrength','ashtakavarga','applicability'],checks:['主題宮主的職責、落處、定位星與實際受照先成判','有效專題分盤與同一運主承接；分清收入增加、成本負擔及留存','逐期比較當期與後期的支持及阻力；交運不自動等於達標'],bounds:'專題分盤、力量與多運法各有用途，不投票也不從強度換算金額'},
+    astro:{paths:['items','essentialDignities','transits','progressions','returnAnalysis','horary'],checks:['先辨本命與卜卦用途，沿主題宮主、定位鏈與相位雙端解釋','本命能力、實算行運觸發、次限及返照各自有時間範圍'],bounds:'未算相位或年度不能由當日位置外推，候選入相不代表事件已成'},
+    liuren:{paths:['plate','courses','transmissions','ganZhi','edges','targets','topicRules','timing'],checks:['日干、日支、主題角色與三段傳遞的生克方向合讀','財物是否送達、是否伴隨消耗或受制，不能見財即判得財'],bounds:'缺年命只限制相關規則；未來候選日期不是已發生事件'},
+    liuyao:{paths:['items','targets','influences','transformations','classicalBalance','timing'],checks:['取用對應原問句；月、日、動與變的作用能否有效到達該爻','世應、伏飛、空破及可實現的解阻條件與最強反向作用比較'],bounds:'不得只看旺衰、空亡或吉凶爻數；無月日的爻不能假設有時令'},
+    meihua:{paths:['body','use','nuclear','originalLines','changedLines','castContext'],checks:['原體固定，本卦、互卦、變卦依既定方法承接','求財與交易按各自原典判，體克用不能因一般生克表一律寫壞'],bounds:'卦氣的傳統取時須交代換算及時令，不把數字直接指定公曆日'},
+    yijing:{paths:['reading','originalGeometry','changedGeometry','expositions','complementaryViews'],checks:['先確認實際動爻數及本次擇辭政策，再比較主讀與參讀的情境','把原文中的做法、前提與後果連到同一子題'],bounds:'互錯綜或爻位關係不能越過主讀原文，也不因卦名直接保證事件'},
+    tarot:{paths:['methodData'],checks:['實際牌陣的結果、限制、原因及行動各自保留功能','牌間關係形成同一事件的主判；相反牌先辨在講哪一層再取捨'],bounds:'不能把建議位當事件已發生，也不重排成另一種好解的牌陣'},
+    ootk:{paths:['methodData'],checks:['逐一確認實際版本、有效輪次、落域、合法計數、配對及尊貴','每輪新增或修正前輪判斷，最後合讀，不任選一輪當結果'],bounds:'明示停止或失敗的程序不能補造；未核實的主線不能冒稱已驗題'},
+    lenormand:{paths:['methodData'],checks:['完整牌句、主題牌與合法相鄰先成判','大牌陣再依實際幾何核宮位、鏡像與鏈結，保持讀取方向'],bounds:'九宮不能假用三十六宮資料；心或戒指單牌不是現實成立證據'},
+    oracle:{paths:['methodData'],checks:['本廟版本及實際求籤程序有效，才讀完整原詩與本廟事項','前後轉折的勸進、等待或調整前提合讀，不能只選一句好話'],bounds:'另一廟同號籤、未提供的典故版本或籤號數字都不能補成應期'},
+    name:{paths:['items','comparisons'],checks:['候選名字用同一筆畫口徑比較音、形、義與各派算式','分開字典原值、人工覆核及異表敏感度，保留改名的實際使用成本'],bounds:'姓名資料不計事件時序或月收益，這些子題須列能力缺口，不能造財運日期'},
+    compat:{paths:['items','timeline','projectionGroups'],checks:['先核雙方原局，再分A到B及B到A的實際作用','共同時段與各自承擔分開；不能由匹配替對方宣布意願'],bounds:'不交換雙方喜忌，不由相合保證交往、婚姻或合作收益'},
+    personality:{paths:['items','modelInputs','disclaimer'],checks:['逐軸追原輸入及相反條件，落到可觀察的決策與溝通行為'],bounds:'本站命理映射不是心理量表，不計事件日期、疾病或收入'}
+  };
+  function nativeBasis(method,chart,analysis,focus){
+    const spec=CASEWORK[method]||{paths:['items'],checks:[],bounds:'未有具名取法不補造'};
+    const paths=spec.paths.map(path=>({path,status:has(analysis,path)||has(chart,path)?'present':'missing',scope:'實際資料入口，不等於完成事件裁決'}));
+    const sources=root.JYNativeRuleSources?.forMethod?.(method)||[];
+    const out={schema:'jy.case-basis/1',method,sourceQuestion:focus?.sourceQuestion||'',focus,paths,comparisonChecks:spec.checks,methodBoundary:spec.bounds,
+      research:{status:'source-log-provided-runtime-lookup-not-performed',sourceLog:sources.map(s=>({id:s.id,url:s.reviewURL||s.url,lastCheckedAt:s.checkedAt,reviewScope:s.reader26ReviewScope||s.scope,verification:s.reader26VerificationLevel||'prior-scoped-review'})),runtimeBrowsingPerformed:false,
+        unimplementedOrUncertain:A(analysis?.unavailable).map(message=>({message,kind:/未實作|算法|流派|傳承|原典|版本|歧義/.test(message)?'technical-rule-or-implementation':/時刻|時辰|出生|未提供|未完成|程序/.test(message)?'input-or-procedure':'method-scope',resolved:false})),
+        rule:'先核既有來源的實際適用段落。不確定取法時由具瀏覽能力的解讀端真實查閱一手資料，記實際URL及核到的規則；未能查到保留未決，不冒稱本輪查過。未實作算法需補程式與對照後才算完成，只有文獻不算已實算。個人現況缺項不能靠網路或命理補造。'},
+      judgementStatus:'requires-source-based-synthesis',humanPractitionerPerformed:false,predictionValidated:false};
+    if(method==='vedic'&&!chart?.input?.unknownTime){
+      const houses=A(chart?.houses),ps=chart?.planets||{},wanted=focus?.houses?.length?focus.houses:houses.map(h=>h.house);
+      out.topicRoles=houses.filter(h=>wanted.includes(h.house)).map(h=>{
+        const p=ps[h.lord],incoming=A(chart?.aspects?.graha).filter(x=>A(x.toPlanets).includes(h.lord)),chain=A(chart?.dispositors).find(x=>x.planet===h.lord);
+        return {topicHouse:h.house,houseSign:h.sign,lord:h.lord,lordOwns:houses.filter(x=>x.lord===h.lord).map(x=>x.house),lordOccupies:p?.house??null,lordSign:p?.sign??null,dignity:p?.dignity||null,solar:p?.solar||null,retrograde:p?.retrograde??null,occupants:h.occupants||[],incomingAspects:incoming,dispositorChain:chain||null,sourcePaths:['houses.'+(h.house-1),'planets.'+h.lord,'aspects.graha','dispositors']};
+      });
+      const ds=focus?.divisions===null?Object.keys(chart?.vargas||{}).map(Number):(focus?.divisions||[1,9]);
+      out.divisionChecks=ds.map(d=>{const v=chart?.vargas?.[d];return {division:d,purpose:v?.purpose||null,available:!!v,lagna:v?.lagna||null,planets:v?.planets||null,sourcePath:'vargas.'+d,scope:'依本次提供的出生精度使用；未給誤差就不宣稱細分位置穩定'};});
+      out.currentPeriodChecks=A(analysis?.activation).map(a=>({layer:a.layer,lord:a.lord,start:a.start,endExclusive:a.endExclusive,owns:a.owns,occupies:a.occupies,conditions:a.conditions,dispositor:a.dispositor,vargaHouses:A(a.vargaHouses).filter(v=>ds.includes(v.division)),aspects:a.aspects}));
+      out.timingBoundary='當期資料可檢查當期作用；其他已列區間仍須按運主同尺度比較，不由交運日期自動判作收入目標日期。';
+    }
+    return out;
+  }
+  function requestCoverage(method,analysis,options,evidence,chart){
     const plan=root.JYReadingWorkflow?.plan?.({method,question:options.question||analysis?.children?.question||'',notes:options.notes,referenceDate:options.referenceDate,timezone:options.timezone});
     const validOperations=method==='ootk'?A(analysis?.methodData?.layerEvidence).filter(x=>x.valid).map(x=>x.operation):null;
     const units=A(analysis?.items).map((x,i)=>({id:method+'-unit-'+i,label:x.label||x.id||String(i),basis:'本方法逐項作用與原生資料',nativePath:'items.'+i,evidenceCount:A(x.evidence).length,eligible:!['not-started','unknown-time','partial'].includes(x.id)&&(method!=='ootk'||validOperations.includes(x.evidence?.[0]?.operation)),role:'candidate-evidence-not-an-event-verdict'})).filter(x=>x.eligible);
@@ -62,7 +101,8 @@
       requirements:plan?.requestRequirements||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
       usableNativeEvidence:available.length>0||units.some(x=>x.evidenceCount>0),
       specializedClassification:{available:!!specialization,topics:A(specialization?.topics),fallback:'專用分類缺少或未命中，只限制該分類；仍用實際原生骨架與本法一般判讀回答原句。'},
-      taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依本題相關作用筛選候選，並完成支持與限制比較；此列不預先判事件。'})),
+      caseBasis:nativeBasis(method,chart,analysis,root.JYReadingWorkflow?.nativeFocus?.({method,question:plan?.question||options.question||'',plan})),
+      taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,measurement:t.measurement||[],evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依實際角色、作用方向與時間形成支持及限制；候選清單未替讀者裁決事件。'})),
       interpretationRule:'逐題從有效原生資料選取實際相關作用；讀者可依具名傳統判法推讀，但不能冒稱新的讀法已由引擎實算。分類清單與語義標籤不是可問問題白名單。',
       timeRule:'本次實算時窗只限制可報的時點；不限期或更長的原問句，不能因窗口外未算就判窗口外永不發生。',
       outputRule:'正文先答當事人原問題，再深入講清理由、重要發現與做法；不展示這份技術清單，不用無法確定代替仍可讀的內容。'};
@@ -91,7 +131,7 @@
       forbiddenShortcuts:[...common.forbidden,...p.forbidden],
       confidencePolicy:common.confidence,
       methodOutputPolicy,
-      requestCoverage:requestCoverage(method,analysis,options,evidence),
+      requestCoverage:requestCoverage(method,analysis,options,evidence,chart),
       readingScope:root.JYReadingWorkflow?.readingScope?.(options.question||analysis?.children?.question||'',method)||null,
       precisionPolicy:'精確數值或心意未量測只限制該項，仍須完成切題的象徵方向、相反條件與做法。具名數量規則可作已核前提的傳統假定，不當事實；沒有相關資料不能造線索。',
       missingRequiredEvidence:missing,
@@ -106,7 +146,7 @@
     '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `精度與可讀內容：${c.precisionPolicy||'缺項只限制受影響部分；有效資料照常閱讀。'}`,
-    c.requestCoverage?'本題逐項解讀覆蓋（內部資料，不是成稿欄位）：'+JSON.stringify(c.requestCoverage):'',
+    c.requestCoverage?.caseBasis?'本題實際核對入口（不是成稿欄位）：'+JSON.stringify(promptBasis(c.requestCoverage.caseBasis)):'',
     `必核證據：${rows}。`,
     `判讀順序：${c.readingOrder.join(' → ')}。`,
     `內部合成核對（不作正文欄位）：${c.synthesisOrder.join(' → ')}。`,
@@ -119,5 +159,6 @@
     A(c.unresolved).length?`本引擎明列未決：${c.unresolved.join('；')}。`:''
   ].filter(Boolean).join('\n');}
   function summary(c){return c?{version:c.version,status:c.status,allSchoolsComplete:false,truthBoundary:c.truthBoundary||common.truthBoundary,requestCoverage:c.requestCoverage,missing:c.evidence.filter(x=>!x.available).map(({label,status,reason})=>({label,status,reason})),scope:'只指本次具名方法已實算範圍；判讀主線、支持與反證及禁則合讀前文。'}:null;}
-  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary,requestCoverage});
+  function promptBasis(b){return {...b,divisionChecks:A(b.divisionChecks).map(({planets,lagna,...rest})=>rest),currentPeriodChecks:A(b.currentPeriodChecks).map(({conditions,vargaHouses,aspects,...rest})=>rest)};}
+  root.JYNativeDepthContract=Object.freeze({version:VERSION,profiles:P,build,toPrompt,summary,requestCoverage,nativeBasis});
 })(typeof window==='undefined'?globalThis:window);

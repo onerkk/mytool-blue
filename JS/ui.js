@@ -5804,7 +5804,13 @@ showAuraResult = function(){
   var jyScriptLoads={};
   window._jyLazyScript = function(src, cb){
     var key;
-    try {key=new URL(src,location.href).pathname;}catch(e){if(cb)cb(false);return;}
+    try {
+      var asset=new URL(src,location.href);
+      // Every local lazy module uses this release, including hosts with older
+      // hard-coded call-site query strings. Keep external URLs untouched.
+      if(asset.origin===location.origin&&/\/JS\/[^?#]+\.js$/.test(asset.pathname)){asset.searchParams.set('v','20261015reader26');src=asset.href;}
+      key=asset.pathname;
+    }catch(e){if(cb)cb(false);return;}
     var entry=jyScriptLoads[key];
     if(entry){if(entry.loaded){if(cb)cb(true);}else if(cb)entry.callbacks.push(cb);return;}
     entry=jyScriptLoads[key]={loaded:false,callbacks:cb?[cb]:[]};

@@ -1,0 +1,10 @@
+PASS raw financial question preserves two original events, monthly net target, ambiguity and unknown currency
+PASS punctuation and fullwidth amounts do not lose event IDs or change original source spans
+PASS genuine comparisons and mixed timing/choice tasks keep their separate operators
+PASS separate thresholds have unique relations and preserve amount, cadence, currency and target basis
+PASS financial pressure selects money/work layers, health wording selects health layers, unknown topics remain readable
+PASS all fifteen actual exporters retain both tasks and provide method-specific source/decision checks without recasting
+PASS Vedic focused export includes actual D2/D10 detail and role directions from the source chart
+PASS source metadata distinguishes this release readings, bibliography-only evidence and unrechecked prior sources
+PASS an older cached depth module is replaced by the generated standalone export runtime
+Reader26: 9 substantive checks passed.

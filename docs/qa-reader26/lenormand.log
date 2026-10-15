@@ -1,0 +1,7 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:lenormand
+> node tests/lenormand-v19-engine-rootfix-20260925.cjs && node tests/lenormand-semantic-v23-discourse-20260926.cjs
+
+Lenormand legacy compatibility: 84 checks PASS
+Lenormand v23 discourse-semantic suite: 407 checks PASS

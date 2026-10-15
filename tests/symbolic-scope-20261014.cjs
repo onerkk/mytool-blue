@@ -34,7 +34,7 @@ test('historical quantity variants and different units remain separate',()=>{
 console.log('Loading full native runtime and all fifteen methods...');
 const {ctx:c,load}=environment();['prompt-brief','prompt-packet'].forEach(load);const f=examples(c),W=c.JYReadingWorkflow,P=c.JYPromptPacket,Q=c.JY_READING_QUALITY;
 test('fifteen real exports scope precision while preserving topic and facts',()=>{
- assert.equal(W.version,'2.4.0');assert.equal(Q.readingVersion,'15.0.0');let n=0;
+ assert.equal(W.version,'2.5.0');assert.equal(Q.readingVersion,'16.0.0');let n=0;
  for(const [method,chart]of Object.entries(f.charts)){
   const before=JSON.stringify(chart),prompt=P.build(method,chart,q),p=P.get(prompt),scope=W.plan({method,question:q}).readingScope;
   assert(prompt.includes('精確數字、姓名、日期或他人心意未被測量，只限制那一項精度'),method);
@@ -75,8 +75,8 @@ test('review catches refusal that omits already available child evidence',()=>{
 });
 test('API and worker share the same new guidance',()=>{
  const root=path.resolve(__dirname,'..'),api=fs.readFileSync(path.join(root,'functions/api/ai.js'),'utf8'),worker=fs.readFileSync(path.join(root,'workers/ai-proxy.js'),'utf8');
- assert(api.includes('能讀的內容要讀完'));assert(api.includes('數量題仍要解惑'));assert(worker.includes(api.trimEnd()));
+ assert(api.includes('缺項只限制對應部分'));assert(api.includes('數量題仍要解惑'));assert(worker.includes(api.trimEnd()));
 });
-const report={release:'20261014universal25',status:'passed',checks:reports,limits:'Verifies native calculations, exported evidence and authoring instructions; not external AI compliance, medical fertility or prediction accuracy.'};
+const report={release:'20261015reader26',status:'passed',checks:reports,limits:'Verifies native calculations, exported evidence and authoring instructions; not external AI compliance, medical fertility or prediction accuracy.'};
 if(process.env.JY_SCOPE_REPORT)fs.writeFileSync(process.env.JY_SCOPE_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Scope24: '+reports.length+' checks passed.');

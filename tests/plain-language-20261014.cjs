@@ -5,16 +5,16 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const {ctx:c,load}=environment();['prompt-brief','prompt-packet'].forEach(load);
 const f=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket;
-assert.equal(Q.readingVersion,'15.0.0');assert.equal(W.version,'2.4.0');
+assert.equal(Q.readingVersion,'16.0.0');assert.equal(W.version,'2.5.0');
 const jargon=/干支|四課|三傳|初傳|中傳|末傳|旬空|空亡|妻財|官鬼|用神|格局|四化|廟旺|體用|動爻|元素尊貴|Yoga|承接|牽制|落點|作用網|場域|金幣三|寶劍二|戰車|正義正位/;
 const results=[],question='公司異性女工程師未來會跟我交往嗎？';
 for(const [method,chart]of Object.entries(f.charts)){
  const before=JSON.stringify(chart),prompt=P.build(method,chart,question),record=P.get(prompt);
  assert(prompt.includes('對完全沒學過命理的人')||prompt.includes('對完全沒有學過命理的人'),method+' addresses novice readers');
- assert(prompt.includes('一般解惑正文不使用專門術語'),method+' ordinary answers use everyday words');
- assert(prompt.includes('只有原問題明確要求學原理、核盤或解釋術語時'),method+' explicit technical requests remain supported');
- assert(prompt.includes('深入分析照常完成'),method+' simplicity does not remove analysis depth');
- assert(prompt.includes('重要且有實際依據')&&prompt.includes('重要且有據'),method+' important findings retained');
+ assert(prompt.includes('正常問事不用牌名、星名、干支或專門術語'),method+' ordinary answers use everyday words');
+ assert(prompt.includes('只有原題要求學原理、核盤、逐牌或逐宮解說'),method+' explicit technical requests remain supported');
+ assert(prompt.includes('讓讀者知道為什麼這樣判、為什麼另一種解釋較弱'),method+' simplicity retains substantive comparison');
+ assert(prompt.includes('足以改變選擇的重要資源、成本或轉折'),method+' important findings retained');
  const ex=Q.narrativeExample(method);assert(ex&&ex.status==='illustrative_only');
  assert(!jargon.test(ex.text),method+' sample answer has no specialist or abstract process terms');
  assert(ex.text.length>100,method+' explanatory sample is substantive');
@@ -30,7 +30,7 @@ assert(broad.includes('【全盤作答覆蓋】')&&broad.includes('【逐年／�
 assert(W.render({method:'ootk',question}).includes('完整36張環牌故事'),'all effective OOTK content remains covered');
 c.JY_READING_QUALITY=undefined;c.JYPromptPacket=undefined;load('liuren-prompt');
 const fallback=c.JYLiurenPrompt.build(f.l);
-assert(fallback.includes('一般解惑正文不使用專門術語')&&fallback.includes('這項合作有開始談的可能'),'standalone Liuren has the new policy and everyday example');
+assert(fallback.includes('正常問事不用牌名、星名、干支或專門術語')&&fallback.includes('不得捏造查網')&&!fallback.includes('illustrative_only'),'standalone Liuren has source and plain-language boundaries without injected scenarios');
 c.JY_READING_QUALITY=Q;c.JYPromptPacket=P;
 const old={...Q,version:'5.1.0',readingVersion:'12.0.0',methodLines:()=>['STALE_JARGON_GUIDE'],recommendationEnding:()=> 'STALE_JARGON_CLOSE'};
 c.JY_READING_QUALITY=old;const mixed=P.build('liuren',f.l,question);
@@ -38,6 +38,6 @@ assert(!mixed.includes('STALE_JARGON_GUIDE')&&!mixed.includes('STALE_JARGON_CLOS
 const api=fs.readFileSync(path.join(__dirname,'../functions/api/ai.js'),'utf8'),worker=fs.readFileSync(path.join(__dirname,'../workers/ai-proxy.js'),'utf8');
 assert(api.includes('answer、action、timing、honest_word 都不用專門術語'));
 assert(worker.includes(api.trimEnd()),'standalone Worker contains the same complete API source');
-const report={release:'20261014universal25',status:'passed',methods:results,fallback:'passed',mixedCachedGuide:'passed',fullAnnualAndOOTKCoverage:'passed',apiAndWorker:'passed',scope:'Actual local prompt exports, original data and original sample prose. External AI prose compliance and prediction accuracy not certified.'};
+const report={release:'20261015reader26',status:'passed',methods:results,fallback:'passed',mixedCachedGuide:'passed',fullAnnualAndOOTKCoverage:'passed',apiAndWorker:'passed',scope:'Actual local prompt exports, original data and original sample prose. External AI prose compliance and prediction accuracy not certified.'};
 if(process.env.JY_PLAIN_REPORT)fs.writeFileSync(process.env.JY_PLAIN_REPORT,JSON.stringify(report,null,2)+'\n');
 console.log('Plain language: 15 real exports, jargon-free examples, original facts, fallback, API/Worker and coverage passed.');

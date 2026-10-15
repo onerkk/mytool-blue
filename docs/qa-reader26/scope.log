@@ -1,0 +1,14 @@
+PASS source-only example preserves distinct unknown-gender branches
+PASS known input selects its rule without averaging male/female
+PASS unknown hour removes count and luck built from provisional hour
+PASS absent natal target still inspects genuine supplied luck
+PASS historical quantity variants and different units remain separate
+Loading full native runtime and all fifteen methods...
+PASS fifteen real exports scope precision while preserving topic and facts
+PASS real Bazi export includes input gender, child evidence, rules and source
+PASS missing gender/hour do not erase valid structure in full export
+PASS independent calculation audit rejects altered child roles and stage
+PASS standalone prompt and stale shared guide keep the new scope and rule pack
+PASS review catches refusal that omits already available child evidence
+PASS API and worker share the same new guidance
+Scope24: 12 checks passed.

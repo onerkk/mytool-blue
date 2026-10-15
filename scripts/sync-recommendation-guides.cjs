@@ -94,7 +94,7 @@ const workflowFile='JS/reading-workflow.js',workflowOld=fs.readFileSync(path.joi
 const methodGuides='  // BEGIN GENERATED WORKFLOW METHOD GUIDES\n  var METHOD_GUIDES = '+JSON.stringify(Object.fromEntries(q.methodKinds().map(k=>[k,q.methodLines(k)])),null,2)+';\n  // END GENERATED WORKFLOW METHOD GUIDES\n';
 persist(workflowFile,workflowOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW METHOD GUIDES\n[\s\S]*?  \/\/ END GENERATED WORKFLOW METHOD GUIDES\n/,()=>methodGuides).replace(/String\(quality\.readingVersion\|\|'0'\)\.localeCompare\('[^']+',undefined,\{numeric:true\}\)>=0/g,()=>"String(quality.readingVersion||'0').localeCompare('"+q.readingVersion+"',undefined,{numeric:true})>=0"));
 const voiceOld=fs.readFileSync(path.join(root,workflowFile),'utf8');
-const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText()+'\n'+q.narrativePolicy())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
+const voiceBlock='  // BEGIN GENERATED WORKFLOW VOICE GUIDE\n  var AUTHOR_VOICE = '+JSON.stringify(q.plainText()+'\n'+q.narrativePolicy()+'\n'+q.truthPolicy())+';\n  // END GENERATED WORKFLOW VOICE GUIDE\n';
 persist(workflowFile,voiceOld.replace(/  \/\/ BEGIN GENERATED WORKFLOW VOICE GUIDE\n[\s\S]*?  \/\/ END GENERATED WORKFLOW VOICE GUIDE\n/,()=>voiceBlock));
 const workflowSource=fs.readFileSync(path.join(root,'JS/reading-workflow.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
 for(const file of workflowTargets){
@@ -115,7 +115,7 @@ persist(scopeFile,scopeRe.test(scopeOld)?scopeOld.replace(scopeRe,()=>scopeBlock
 // second OOTK prompt or let a cached older reader replace this release.
 const exportRuntime='// BEGIN GENERATED OOTK EXPORT RUNTIME\n(function(root){\n'+[
   ['native-card-analysis','!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkReadingVersion).localeCompare("20261005ootk16",undefined,{numeric:true})<0'],
-  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261014depth25",undefined,{numeric:true})<0']
+  ['native-depth-contract','!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare('+JSON.stringify(fs.readFileSync(path.join(root,'JS/native-depth-contract.js'),'utf8').match(/const VERSION='([^']+)'/)[1])+',undefined,{numeric:true})<0']
 ].map(([name,guard])=>'if('+guard+'){\n'+fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'')+'\n}').join('\n')+'\n})(typeof window!=="undefined"?window:globalThis);\n// END GENERATED OOTK EXPORT RUNTIME\n';
 const exportPath='JS/prompt-export.js',exportOld=fs.readFileSync(path.join(root,exportPath),'utf8'),exportRe=/\/\/ BEGIN GENERATED OOTK EXPORT RUNTIME\n[\s\S]*?\/\/ END GENERATED OOTK EXPORT RUNTIME\n/;
 persist(exportPath,exportRe.test(exportOld)?exportOld.replace(exportRe,()=>exportRuntime):exportRuntime+exportOld);

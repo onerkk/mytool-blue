@@ -123,5 +123,26 @@
   records.forEach(r=>{if(r18Reviewed[r.id]){r.checkedAt='2026-10-14';r.lastReviewedRelease='20261014integrity18';r.r18ReviewScope=r18Reviewed[r.id];}if(r.id==='yizhu'){r.previousURL=r.url;r.url='https://www.eee-learning.com/book/4716';}if(r.id==='swissapi')r.reviewURL='https://www.astro.com/swisseph/swephprg.htm';});
   records.push({id:'lunartests18',title:'6tail lunar-javascript 作者EightChar測試',type:'作者原始碼及獨立數例',url:'https://github.com/6tail/lunar-javascript/blob/master/__tests__/EightChar.test.js',scope:'本輪取得作者30組測試並以專案固定1.7.7套件重跑；涵蓋四柱、晚子流派、藏干、十神與其他固定數例，不代表事件預測效度',checkedAt:'2026-10-14',lastReviewedRelease:'20261014integrity18'});
   const methods={bazi:['children-sanmings','children-yuanhai','children-ziping-xu','lunartests18','zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','zipingrescue','renyuan','qiongtong','xiaoyun','ditiansui'],ziwei:['ziwei','zwflow','sihuaiztro','sihuaquanshu','zwheluo','iztroconfig'],astro:['horarylight','astronomy','swiss','swissapi','ruler','return','dignity','progression','horaryorbs','horaryvoid','horaryvocglossary','horaryreception','horarymoonentry','horarydenials1','horarydenials2'],vedic:['bphssudarsana','sudarsana','tajaka','pvr20','vedictransit','astronomy','swiss','swissapi','pvr','pvrofficial','bphs','raman','brihatav','pvradvanced','phala'],liuren:['liuren','liuren3','battle','liurenclasses7','liurenclasses8','liurenclasses9','liurenclasses10','liurenguide1','liurenguide2','liurenguide3','liurenzuizhi','earth18','astronomy'],liuyao:['liuyao','liuyaotarget','liuyao26','renyuan'],yijing:['yijing','yizhu','yijingwings'],meihua:['meihua'],name:['unihan','moe','namebook','kumazaki1931','kumazaki1935','sancaicdi','sancai356','sancaistudy'],compat:['zipingmonthly','zipingcombine','zipingroots','zipingpurity','zipingorder','ziping','qiongtong','ziwei','sihuaiztro','sihuaquanshu'],personality:['ziping'],tarot:['waite','bookt','mathers'],ootk:['bookt','mathers'],lenormand:['lenormand'],oracle:['oracle','oraclefull']};
+  const reader26Reviewed={
+    zipingrescue:{scope:'本輪讀第九章全文；成敗、帶忌及救應須配四柱與輕重，不是見財即富',url:'https://www.donglishuzhai.net/chapter/3722.html'},
+    ziwei:{scope:'作者運限物件、palace及surroundPalaces接口；資料在某一層存在不代表全部流派都完成',url:'https://iztro.com/zh_TW/posts/horoscope'},
+    waite:{scope:'Part III §8的明確提問、避免成見與牌位組合；本輪未逐項重考全部牌義',url:'https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3'},
+    bookt:{scope:'Liber78五次操作、計數配對與明示放棄程序；未確認與明示失敗不能混為一談',url:'https://sacred-texts.com/oto/lib78.htm'},
+    lenormand:{scope:'作者GrandTableau宮位作修飾及組合取法；原文健康例子不當醫療證據',url:'https://prismavisions.com/pages/lenormand-the-grand-tableau'},
+    liuyao:{scope:'元神忌神條件與有效生克；未將單一旺衰或旬空替代整體取用',url:'https://zh.wikisource.org/zh-hant/增刪卜易/10'},
+    liuren:{scope:'四庫卷九畢法原文入口及生克傳遞條件；不是混用金口訣案例',url:'https://zh.wikisource.org/zh/六壬大全_(四庫全書本)/卷09'},
+    pvr:{scope:'作者教材第6章分盤用途、第11章財富組合、第25章專題行運及第32章出生精度；補正財務／副業詳細輸出選擇，未稱本輪讀完515頁',url:'https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf'},
+    pvrofficial:{scope:'同一作者教材的用途與精度段；與pvr同源，不能當兩份獨立驗證',url:'https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf'},
+    horarylight:{scope:'Tobyn作者原文的成相及受阻條件；技術成相與事件已實現分開',url:'https://www.skyscript.co.uk/tobyn2.html'},
+    oraclefull:{scope:'廟方第一籤頁原詩與事項；沒有重新抓取全部六十籤',url:'https://donghaimazu.com/post/fortune-sticks/fs01/'},
+    namebook:{scope:'日本國會圖書館可確認作者、書名、1950年版313頁；本輪只讀書目，未取得內文，不視為算式核驗',url:'https://ndlsearch.ndl.go.jp/books/R100000039-I2971289',level:'bibliography-only'}
+  };
+  records.forEach(r=>{const v=reader26Reviewed[r.id];if(v){r.checkedAt='2026-10-15';r.lastReviewedRelease='20261015reader26';r.reader26ReviewScope=v.scope;r.reviewURL=v.url;r.reader26VerificationLevel=v.level||'specified-passage-read';}});
+  records.push(
+    {id:'meihuafinance26',title:'《梅花易數》卷二求財、交易與占卜總決',type:'原典校錄',url:'https://zh.wikisource.org/zh-hant/梅花易數/卷二',scope:'體克用於求財交易可取有財，原體固定並看互變時令；象徵不能直接換算實際月淨利',checkedAt:'2026-10-15',lastReviewedRelease:'20261015reader26',reader26VerificationLevel:'specified-passage-read'},
+    {id:'yizhucommentary26',title:'胡方平《易學啟蒙通釋》四庫卷下',type:'古典注本校錄',url:'https://zh.wikisource.org/wiki/易學啟蒙通釋_(四庫全書本)/卷下',scope:'考變占的主讀／參讀及三變主貞悔；與原典、注釋層級分開，保留所選擇辭政策',checkedAt:'2026-10-15',lastReviewedRelease:'20261015reader26',reader26VerificationLevel:'specified-passage-read'},
+    {id:'dignityprinciples26',title:'Deborah Houlding：Introducing Dignity',type:'作者方法說明',url:'https://www.skyscript.co.uk/dignities.html',scope:'能力、處境與相反作用須合讀；力量不自動等於有利事件',checkedAt:'2026-10-15',lastReviewedRelease:'20261015reader26',reader26VerificationLevel:'specified-passage-read'}
+  );
+  methods.meihua.push('meihuafinance26');methods.yijing.push('yizhucommentary26');methods.astro.push('dignityprinciples26');
   root.JYNativeRuleSources=Object.freeze({all:()=>records.map(x=>({...x})),forMethod:k=>records.filter(x=>(methods[k]||[]).includes(x.id)).map(x=>({...x}))});
 })(typeof window==='undefined'?globalThis:window);

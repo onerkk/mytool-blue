@@ -1,0 +1,3912 @@
+{
+  "bazi": {
+    "chartKeys": [
+      "_birthYear",
+      "_birthTimestamp",
+      "_referenceInstantTimestamp",
+      "_referenceTimestamp",
+      "_referenceBasis",
+      "pillars",
+      "structureFacts",
+      "fuyiAssessment",
+      "seasonalAssessment",
+      "sittingRoot",
+      "dm",
+      "dmEl",
+      "strong",
+      "strongLevel",
+      "strengthConflict",
+      "strengthConflictReason",
+      "isNeutral",
+      "structType",
+      "bearingCapacity",
+      "energyFlow",
+      "verification",
+      "weightedEC",
+      "capacity",
+      "proximityNotes",
+      "deLing",
+      "deXiang",
+      "deDi",
+      "deShi",
+      "dmMonthState",
+      "monthSupportClass",
+      "selfRatio",
+      "selfPts",
+      "ec",
+      "ep",
+      "fav",
+      "unfav",
+      "medicineGod",
+      "relayGod",
+      "gods",
+      "cs",
+      "shensha",
+      "nayin",
+      "nayinAll",
+      "tianYunEl",
+      "dayun",
+      "qiyun",
+      "cangGan",
+      "tiaohou",
+      "jqInfo",
+      "calendarBoundary",
+      "renyuan",
+      "kongwang",
+      "mingGong",
+      "taiYuan",
+      "taiXi",
+      "shenGong",
+      "chenggu",
+      "godBreakdown",
+      "zodiac",
+      "xingxiu",
+      "specialRuleAssessment",
+      "specialStructure",
+      "specialStructureCandidates",
+      "huaQiAssessments",
+      "strengthAssessment",
+      "gender",
+      "branchInteractions",
+      "branchInteractionAssessment",
+      "branchInteractionPolicy",
+      "branchInterpretationPolicy",
+      "calculationPolicy",
+      "classicalAssessment",
+      "functionalAssessment",
+      "xiaoyun",
+      "zhengGe",
+      "hiddenInteractions",
+      "hiddenInteractionPolicy",
+      "suiYunBingLin",
+      "extraShenSha",
+      "tenGodCombos",
+      "dmChangsheng",
+      "nayinRelation",
+      "tianGanHe",
+      "strengthPattern",
+      "guanShaMix",
+      "wuxingStance",
+      "tongGen",
+      "liuYue",
+      "liuNianGZ",
+      "liuNianPeriod",
+      "strengthNote"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "children",
+      "xiaoyun",
+      "hiddenQiPolicy",
+      "seasonalCommander",
+      "functionalAssessment",
+      "classicalAssessment",
+      "pillars",
+      "stemPairs",
+      "annualSegments",
+      "strength",
+      "monthPattern",
+      "seasonal",
+      "roots",
+      "specialRules",
+      "branchInteractions",
+      "hiddenInteractions",
+      "combinationConditions",
+      "bearingCapacity",
+      "energyFlow",
+      "classicalAdjudication",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "pillar-year",
+        "label": "年柱",
+        "evidenceKeys": [
+          "pillar",
+          "label",
+          "gan",
+          "zhi",
+          "god",
+          "element",
+          "hidden",
+          "lifeStage",
+          "nayin"
+        ]
+      },
+      {
+        "id": "pillar-month",
+        "label": "月柱",
+        "evidenceKeys": [
+          "pillar",
+          "label",
+          "gan",
+          "zhi",
+          "god",
+          "element",
+          "hidden",
+          "lifeStage",
+          "nayin"
+        ]
+      },
+      {
+        "id": "pillar-day",
+        "label": "日柱",
+        "evidenceKeys": [
+          "pillar",
+          "label",
+          "gan",
+          "zhi",
+          "god",
+          "element",
+          "hidden",
+          "lifeStage",
+          "nayin"
+        ]
+      },
+      {
+        "id": "pillar-hour",
+        "label": "時柱",
+        "evidenceKeys": [
+          "pillar",
+          "label",
+          "gan",
+          "zhi",
+          "god",
+          "element",
+          "hidden",
+          "lifeStage",
+          "nayin"
+        ]
+      },
+      {
+        "id": "resources",
+        "label": "財務與資源",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "career",
+        "label": "工作與責任",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "learning",
+        "label": "學習與支持",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "relationships",
+        "label": "伴侶与相處",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "collaboration",
+        "label": "合作與人際",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "expression",
+        "label": "表達與成果",
+        "evidenceKeys": [
+          "actualPlacements",
+          "adjacentGenerationPaths",
+          "mechanisms",
+          "strength",
+          "dayBranch"
+        ]
+      },
+      {
+        "id": "xiaoyun",
+        "label": "逐歲小運與起運前流年",
+        "evidenceKeys": [
+          "version",
+          "status",
+          "profile",
+          "direction",
+          "birthSolarYear",
+          "hourPillar",
+          "periods",
+          "current",
+          "source",
+          "alternativeProfile",
+          "policy"
+        ]
+      },
+      {
+        "id": "ziping-functional",
+        "label": "子平根氣、純雜與位置先後",
+        "evidenceKeys": [
+          "version",
+          "status",
+          "dayStem",
+          "monthBranch",
+          "selectedPattern",
+          "stems",
+          "rootContext",
+          "combinations",
+          "pureMixed",
+          "orderedMechanisms",
+          "positionLayouts",
+          "yinChangshengAnalogies",
+          "sourceAudit",
+          "policy",
+          "limits"
+        ]
+      }
+    ]
+  },
+  "ziwei": {
+    "chartKeys": [
+      "integrity",
+      "palaces",
+      "mingIdx",
+      "shenIdx",
+      "yGan",
+      "yZhi",
+      "wuxingJu",
+      "sihua",
+      "selfHua",
+      "laiYin",
+      "feiGongHua",
+      "lunar",
+      "mingZhu",
+      "shenZhu",
+      "mingGan",
+      "ziweiIdx",
+      "tianfuIdx",
+      "daXian",
+      "getLiuNianZw",
+      "getLiuYueZw",
+      "getLiuRiZw",
+      "getLiuShiZw",
+      "getXiaoXian",
+      "getAgeAtInstant",
+      "getXiaoXianAtInstant",
+      "getHoroscopeAtInstant",
+      "patterns",
+      "starComboNotes",
+      "engineVersion",
+      "birthInput",
+      "birthLunar",
+      "calculationPolicy",
+      "currentAge",
+      "orthodoxMode",
+      "notes",
+      "northern",
+      "patternAssessment",
+      "calculatedFacts",
+      "heuristics",
+      "candidateInterpretation"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "layers",
+      "northern",
+      "patternAssessment",
+      "schoolCompletion",
+      "currentMinor",
+      "activeMonth",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "palace-命宮",
+        "label": "命宮 · 乙丑",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-兄弟",
+        "label": "兄弟 · 甲子",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-夫妻",
+        "label": "夫妻 · 癸亥",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-子女",
+        "label": "子女 · 壬戌",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-財帛",
+        "label": "財帛 · 辛酉",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-疾厄",
+        "label": "疾厄 · 庚申",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-遷移",
+        "label": "遷移 · 己未",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-交友",
+        "label": "交友 · 戊午",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-官祿",
+        "label": "官祿 · 丁巳",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-田宅",
+        "label": "田宅 · 丙辰",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-福德",
+        "label": "福德 · 乙卯",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      },
+      {
+        "id": "palace-父母",
+        "label": "父母 · 甲寅",
+        "evidenceKeys": [
+          "own",
+          "opposite",
+          "trines",
+          "flanks",
+          "borrowed",
+          "flightsOut",
+          "flightsIn",
+          "selfHua"
+        ]
+      }
+    ]
+  },
+  "astro": {
+    "chartKeys": [
+      "version",
+      "input",
+      "policy",
+      "planets",
+      "houses",
+      "aspects",
+      "patterns",
+      "chartShapes",
+      "specialConditions",
+      "dispositors",
+      "sect",
+      "chartRuler",
+      "distribution",
+      "sensitivity",
+      "transits",
+      "progressions",
+      "solarReturn",
+      "activeSolarReturn",
+      "essentialDignities",
+      "relocated",
+      "horary"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "chartPurpose",
+      "horary",
+      "traditionProfile",
+      "relocated",
+      "essentialDignities",
+      "returnAnalysis",
+      "transits",
+      "progressions",
+      "patterns",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "house-1",
+        "label": "1宮 · 自我與行動",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-2",
+        "label": "2宮 · 收入與資源",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-3",
+        "label": "3宮 · 學習與交流",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-4",
+        "label": "4宮 · 家庭與根基",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-5",
+        "label": "5宮 · 戀愛與創作",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-6",
+        "label": "6宮 · 工作日常與照顧",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-7",
+        "label": "7宮 · 伴侶與合作",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-8",
+        "label": "8宮 · 共享資源與信任",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-9",
+        "label": "9宮 · 遠行與觀點",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-10",
+        "label": "10宮 · 職涯與社會角色",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-11",
+        "label": "11宮 · 朋友與願景",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      },
+      {
+        "id": "house-12",
+        "label": "12宮 · 獨處與內在整理",
+        "evidenceKeys": [
+          "cusp",
+          "lord",
+          "placement",
+          "occupants",
+          "aspects",
+          "dispositor"
+        ]
+      }
+    ]
+  },
+  "vedic": {
+    "chartKeys": [
+      "schema",
+      "input",
+      "policy",
+      "julianDay",
+      "lagna",
+      "planets",
+      "houses",
+      "vargas",
+      "aspects",
+      "relationships",
+      "dispositors",
+      "ashtakavarga",
+      "vargaAshtakavarga",
+      "arudhas",
+      "karakas",
+      "yogas",
+      "panchanga",
+      "dasha",
+      "transits",
+      "transitSnapshots",
+      "naturalNatures",
+      "specialRules",
+      "sensitivity",
+      "strength",
+      "bhavaStrength",
+      "advanced",
+      "transitRules",
+      "tajaka",
+      "sudarsana"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "states",
+      "vargas",
+      "activation",
+      "timeSensitivity",
+      "strength",
+      "bhavaStrength",
+      "ashtakavarga",
+      "vargaAshtakavarga",
+      "panchanga",
+      "applicability",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "house-1",
+        "label": "1宮 · 射手",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-2",
+        "label": "2宮 · 摩羯",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-3",
+        "label": "3宮 · 水瓶",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-4",
+        "label": "4宮 · 雙魚",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-5",
+        "label": "5宮 · 牡羊",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-6",
+        "label": "6宮 · 金牛",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-7",
+        "label": "7宮 · 雙子",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-8",
+        "label": "8宮 · 巨蟹",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-9",
+        "label": "9宮 · 獅子",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-10",
+        "label": "10宮 · 處女",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-11",
+        "label": "11宮 · 天秤",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "house-12",
+        "label": "12宮 · 天蠍",
+        "evidenceKeys": [
+          "house",
+          "lord",
+          "lordAspectedBy",
+          "dispositor",
+          "sav"
+        ]
+      },
+      {
+        "id": "shadbala",
+        "label": "七曜六力 · Raman/Sripathi six strengths",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "status",
+          "complete",
+          "school",
+          "unit",
+          "angles",
+          "bhavas",
+          "clock",
+          "nature",
+          "meanMotion",
+          "war",
+          "planets",
+          "ranking",
+          "totalVirupas",
+          "completedComponents",
+          "partialComponents",
+          "missing",
+          "policy",
+          "sourceAudit",
+          "sources"
+        ]
+      },
+      {
+        "id": "bhava-bala",
+        "label": "十二宮力量 · Raman/Sripathi",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "profile",
+          "unit",
+          "source",
+          "status",
+          "complete",
+          "houses",
+          "ranking",
+          "residential",
+          "missing",
+          "policy",
+          "sourceAudit"
+        ]
+      },
+      {
+        "id": "ashtakavarga",
+        "label": "八分法 · 原表、兩階段消減及Pinda",
+        "evidenceKeys": [
+          "bav",
+          "sav",
+          "prastara",
+          "total",
+          "reductions",
+          "occupied",
+          "referenceOrder",
+          "policy",
+          "sourceAudit",
+          "sources"
+        ]
+      },
+      {
+        "id": "panchanga",
+        "label": "出生五支曆 · 日月交界與日出換日",
+        "evidenceKeys": [
+          "schema",
+          "tithi",
+          "paksha",
+          "elongation",
+          "yoga",
+          "karana",
+          "nakshatra",
+          "limbs",
+          "complete",
+          "source",
+          "policy",
+          "missing"
+        ]
+      },
+      {
+        "id": "sudarsana",
+        "label": "Sudarsana三重年／月／細運",
+        "evidenceKeys": [
+          "status",
+          "profile",
+          "window",
+          "sourceAudit",
+          "divisions"
+        ]
+      },
+      {
+        "id": "sudarsana-bphs",
+        "label": "BPHS七分盤性質與三輪作用",
+        "evidenceKeys": [
+          "profile",
+          "entryCount",
+          "calculatedData"
+        ]
+      },
+      {
+        "id": "additional-dashas",
+        "label": "其他具名運期 · 適用條件與當期位置",
+        "evidenceKeys": [
+          "models"
+        ]
+      },
+      {
+        "id": "jaimini",
+        "label": "二十分盤 · Arudha、Argala與Narayana",
+        "evidenceKeys": [
+          "eightKarakas",
+          "specialPoints",
+          "vargaCoverage"
+        ]
+      },
+      {
+        "id": "additional-yogas",
+        "label": "額外格局與落陷取消",
+        "evidenceKeys": [
+          "profile",
+          "checks",
+          "matched",
+          "neechabhanga",
+          "strengthPolicy"
+        ]
+      },
+      {
+        "id": "tajaka",
+        "label": "年度／當期月／2.5°段原生盤面",
+        "evidenceKeys": [
+          "version",
+          "status",
+          "profile",
+          "source",
+          "return",
+          "nextReturn",
+          "completedYears",
+          "window",
+          "annual",
+          "muntha",
+          "ruleLedger",
+          "currentMonth",
+          "currentSixtyHour",
+          "harsha",
+          "sahams",
+          "months",
+          "sixtyHours",
+          "dashas",
+          "policy"
+        ]
+      },
+      {
+        "id": "transit-rule-ledger",
+        "label": "行運原典條件核算",
+        "evidenceKeys": [
+          "version",
+          "status",
+          "reference",
+          "vedha",
+          "taras",
+          "murthis",
+          "vargas",
+          "source",
+          "policy"
+        ]
+      }
+    ],
+    "sample": {
+      "houses": {
+        "house": 2,
+        "sign": 9,
+        "signName": "摩羯",
+        "lord": "Saturn",
+        "lordHouse": 11,
+        "occupants": [],
+        "aspectedBy": [
+          "Mars"
+        ],
+        "sav": 26
+      },
+      "varga": {
+        "division": 10,
+        "purpose": "工作與成就",
+        "lagna": {
+          "division": 10,
+          "sign": 0,
+          "signName": "牡羊",
+          "part": 5
+        },
+        "planets": {
+          "Sun": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 3,
+            "house": 7,
+            "vargottama": false
+          },
+          "Moon": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 9,
+            "house": 7,
+            "vargottama": false
+          },
+          "Mars": {
+            "division": 10,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 5,
+            "house": 4,
+            "vargottama": false
+          },
+          "Mercury": {
+            "division": 10,
+            "sign": 2,
+            "signName": "雙子",
+            "part": 2,
+            "house": 3,
+            "vargottama": false
+          },
+          "Jupiter": {
+            "division": 10,
+            "sign": 5,
+            "signName": "處女",
+            "part": 3,
+            "house": 6,
+            "vargottama": false
+          },
+          "Venus": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 3,
+            "house": 7,
+            "vargottama": false
+          },
+          "Saturn": {
+            "division": 10,
+            "sign": 8,
+            "signName": "射手",
+            "part": 3,
+            "house": 9,
+            "vargottama": false
+          },
+          "Rahu": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 10,
+            "house": 7,
+            "vargottama": false
+          },
+          "Ketu": {
+            "division": 10,
+            "sign": 0,
+            "signName": "牡羊",
+            "part": 10,
+            "house": 1,
+            "vargottama": false
+          }
+        }
+      },
+      "activation": [
+        {
+          "layer": "maha",
+          "lord": "Mercury",
+          "start": "2011-03-18T05:49:57.400Z",
+          "endExclusive": "2028-03-17T08:46:21.400Z",
+          "owns": [
+            7,
+            10
+          ],
+          "occupies": 10,
+          "conjoined": [],
+          "aspects": [
+            {
+              "from": "Mercury",
+              "step": 7,
+              "toSign": 11,
+              "toHouse": 4,
+              "toPlanets": []
+            }
+          ],
+          "dispositor": "Mercury",
+          "nakshatraLord": "Sun",
+          "conditions": {
+            "dignity": {
+              "status": "exalted",
+              "label": "擢升區",
+              "exaltedSign": true,
+              "debilitated": false,
+              "exaltationDistance": 10.638953720638028
+            },
+            "solar": {
+              "separationDegrees": 26.46777175750094,
+              "thresholdDegrees": 14,
+              "combust": false,
+              "nearBoundary": false,
+              "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+              "motionSensitive": false
+            }
+          },
+          "vargaHouses": [
+            {
+              "division": 1,
+              "placement": {
+                "planet": "Mercury",
+                "division": 1,
+                "sign": 5,
+                "signName": "處女",
+                "part": 1,
+                "house": 10,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 2,
+              "placement": {
+                "planet": "Mercury",
+                "division": 2,
+                "sign": 3,
+                "signName": "巨蟹",
+                "part": 1,
+                "house": 12,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 3,
+              "placement": {
+                "planet": "Mercury",
+                "division": 3,
+                "sign": 5,
+                "signName": "處女",
+                "part": 1,
+                "house": 6,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 4,
+              "placement": {
+                "planet": "Mercury",
+                "division": 4,
+                "sign": 5,
+                "signName": "處女",
+                "part": 1,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 5,
+              "placement": {
+                "planet": "Mercury",
+                "division": 5,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 1,
+                "house": 6,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 6,
+              "placement": {
+                "planet": "Mercury",
+                "division": 6,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 1,
+                "house": 5,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 7,
+              "placement": {
+                "planet": "Mercury",
+                "division": 7,
+                "sign": 0,
+                "signName": "牡羊",
+                "part": 2,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 8,
+              "placement": {
+                "planet": "Mercury",
+                "division": 8,
+                "sign": 5,
+                "signName": "處女",
+                "part": 2,
+                "house": 11,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 9,
+              "placement": {
+                "planet": "Mercury",
+                "division": 9,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 2,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 10,
+              "placement": {
+                "planet": "Mercury",
+                "division": 10,
+                "sign": 2,
+                "signName": "雙子",
+                "part": 2,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 11,
+              "placement": {
+                "planet": "Mercury",
+                "division": 11,
+                "sign": 8,
+                "signName": "射手",
+                "part": 2,
+                "house": 1,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 12,
+              "placement": {
+                "planet": "Mercury",
+                "division": 12,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 2,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 16,
+              "placement": {
+                "planet": "Mercury",
+                "division": 16,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 3,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 20,
+              "placement": {
+                "planet": "Mercury",
+                "division": 20,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 3,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 24,
+              "placement": {
+                "planet": "Mercury",
+                "division": 24,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 4,
+                "house": 6,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 27,
+              "placement": {
+                "planet": "Mercury",
+                "division": 27,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 4,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 30,
+              "placement": {
+                "planet": "Mercury",
+                "division": 30,
+                "sign": 1,
+                "signName": "金牛",
+                "part": null,
+                "house": 6,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 40,
+              "placement": {
+                "planet": "Mercury",
+                "division": 40,
+                "sign": 11,
+                "signName": "雙魚",
+                "part": 6,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "debilitated"
+              }
+            },
+            {
+              "division": 45,
+              "placement": {
+                "planet": "Mercury",
+                "division": 45,
+                "sign": 2,
+                "signName": "雙子",
+                "part": 7,
+                "house": 1,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 60,
+              "placement": {
+                "planet": "Mercury",
+                "division": 60,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 9,
+                "house": 6,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            }
+          ],
+          "strength": {
+            "planet": "Mercury",
+            "sthana": {
+              "complete": true,
+              "components": {
+                "uchcha": 56.453682093120655,
+                "saptavargaja": 136.875,
+                "ojayugma": 15,
+                "kendradi": 15,
+                "drekkana": 0
+              },
+              "saptavargajaDetails": {
+                "school": "raman",
+                "rows": [
+                  {
+                    "division": 1,
+                    "sign": 5,
+                    "owner": "Mercury",
+                    "compound": null,
+                    "condition": "own",
+                    "virupas": 30
+                  },
+                  {
+                    "division": 2,
+                    "sign": 3,
+                    "owner": "Moon",
+                    "compound": -2,
+                    "condition": "compound-relation",
+                    "virupas": 1.875
+                  },
+                  {
+                    "division": 3,
+                    "sign": 5,
+                    "owner": "Mercury",
+                    "compound": null,
+                    "condition": "own",
+                    "virupas": 30
+                  },
+                  {
+                    "division": 7,
+                    "sign": 0,
+                    "owner": "Mars",
+                    "compound": 1,
+                    "condition": "compound-relation",
+                    "virupas": 15
+                  },
+                  {
+                    "division": 9,
+                    "sign": 10,
+                    "owner": "Saturn",
+                    "compound": 1,
+                    "condition": "compound-relation",
+                    "virupas": 15
+                  },
+                  {
+                    "division": 12,
+                    "sign": 6,
+                    "owner": "Venus",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  },
+                  {
+                    "division": 30,
+                    "sign": 1,
+                    "owner": "Venus",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  }
+                ],
+                "virupas": 136.875
+              },
+              "bhava": 9,
+              "virupas": 223.32868209312065
+            },
+            "dig": {
+              "complete": true,
+              "weakDirection": "DSC",
+              "weakLongitude": 72.1914015647485,
+              "virupas": 27.389881571537824
+            },
+            "naisargika": {
+              "complete": true,
+              "virupas": 25.714285714285715
+            },
+            "kala": {
+              "complete": true,
+              "components": {
+                "nathonnatha": 60,
+                "paksha": 53.89842099919497,
+                "tribhaga": 0,
+                "abda": 0,
+                "masa": 0,
+                "vara": 0,
+                "hora": 0,
+                "ayana": 32.38747035374967,
+                "yuddha": 0
+              },
+              "ayanaDetails": {
+                "declination": -1.9099762829997393,
+                "referenceObliquity": 24,
+                "virupas": 32.38747035374967,
+                "beyondReference": false
+              },
+              "virupas": 146.28589135294465
+            },
+            "cheshta": {
+              "complete": true,
+              "included": true,
+              "meanLongitude": 127.6491756947944,
+              "trueLongitude": 154.36104627936197,
+              "seeghrochcha": 275.62494677718496,
+              "midpoint": 141.00511098707818,
+              "reducedKendra": 134.61983579010678,
+              "virupas": 44.87327859670226,
+              "method": "Raman/Kedarnath-Dutt1900-linear"
+            },
+            "drik": {
+              "planet": "Mercury",
+              "complete": true,
+              "incoming": [
+                {
+                  "from": "Sun",
+                  "to": "Mercury",
+                  "angle": 26.467771757500998,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Moon",
+                  "to": "Mercury",
+                  "angle": 188.16303475508585,
+                  "basic": 55.91848262245708,
+                  "special": 0,
+                  "virupas": 55.91848262245708,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -13.97962065561427
+                },
+                {
+                  "from": "Mars",
+                  "to": "Mercury",
+                  "angle": 50.53019604474491,
+                  "basic": 10.265098022372456,
+                  "special": 0,
+                  "virupas": 10.265098022372456,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -2.566274505593114
+                },
+                {
+                  "from": "Jupiter",
+                  "to": "Mercury",
+                  "angle": 295.8271049376664,
+                  "basic": 2.0864475311668116,
+                  "special": 0,
+                  "virupas": 2.0864475311668116,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0.5216118827917029
+                },
+                {
+                  "from": "Venus",
+                  "to": "Mercury",
+                  "angle": 26.621819380559884,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Saturn",
+                  "to": "Mercury",
+                  "angle": 327.9218104920876,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                }
+              ],
+              "virupas": -16.02428327841568
+            },
+            "totalVirupas": 451.5677360501754,
+            "totalRupas": 7.5261289341695905,
+            "minimumVirupas": 420,
+            "relativeStrength": 1.0751612763099414,
+            "meetsMinimum": true,
+            "ishtaKashta": {
+              "uchcha": 56.453682093120655,
+              "cheshta": 44.87327859670226,
+              "ishta": 50.3315189953002,
+              "kashta": 7.3242175681017185,
+              "method": "Raman138–139平方根法，與BPHS另一射線法分開"
+            }
+          }
+        },
+        {
+          "layer": "antar",
+          "lord": "Saturn",
+          "start": "2025-07-08T06:06:25.600Z",
+          "endExclusive": "2028-03-17T08:46:21.400Z",
+          "owns": [
+            2,
+            3
+          ],
+          "occupies": 11,
+          "conjoined": [],
+          "aspects": [
+            {
+              "from": "Mars",
+              "step": 4,
+              "toSign": 6,
+              "toHouse": 11,
+              "toPlanets": [
+                "Saturn"
+              ]
+            },
+            {
+              "from": "Saturn",
+              "step": 3,
+              "toSign": 8,
+              "toHouse": 1,
+              "toPlanets": []
+            },
+            {
+              "from": "Saturn",
+              "step": 7,
+              "toSign": 0,
+              "toHouse": 5,
+              "toPlanets": []
+            },
+            {
+              "from": "Saturn",
+              "step": 10,
+              "toSign": 3,
+              "toHouse": 8,
+              "toPlanets": [
+                "Mars"
+              ]
+            }
+          ],
+          "dispositor": "Venus",
+          "nakshatraLord": "Mars",
+          "conditions": {
+            "dignity": {
+              "status": "exalted",
+              "label": "擢升區",
+              "exaltedSign": true,
+              "debilitated": false,
+              "exaltationDistance": 13.560764212725644
+            },
+            "solar": {
+              "separationDegrees": 58.545961265413325,
+              "thresholdDegrees": 15,
+              "combust": false,
+              "nearBoundary": false,
+              "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+              "motionSensitive": false
+            }
+          },
+          "vargaHouses": [
+            {
+              "division": 1,
+              "placement": {
+                "planet": "Saturn",
+                "division": 1,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 1,
+                "house": 11,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 2,
+              "placement": {
+                "planet": "Saturn",
+                "division": 2,
+                "sign": 4,
+                "signName": "獅子",
+                "part": 1,
+                "house": 1,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 3,
+              "placement": {
+                "planet": "Saturn",
+                "division": 3,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 1,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 4,
+              "placement": {
+                "planet": "Saturn",
+                "division": 4,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 1,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            },
+            {
+              "division": 5,
+              "placement": {
+                "planet": "Saturn",
+                "division": 5,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 2,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 6,
+              "placement": {
+                "planet": "Saturn",
+                "division": 6,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 2,
+                "house": 12,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 7,
+              "placement": {
+                "planet": "Saturn",
+                "division": 7,
+                "sign": 7,
+                "signName": "天蠍",
+                "part": 2,
+                "house": 10,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 8,
+              "placement": {
+                "planet": "Saturn",
+                "division": 8,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 2,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 9,
+              "placement": {
+                "planet": "Saturn",
+                "division": 9,
+                "sign": 7,
+                "signName": "天蠍",
+                "part": 2,
+                "house": 5,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 10,
+              "placement": {
+                "planet": "Saturn",
+                "division": 10,
+                "sign": 8,
+                "signName": "射手",
+                "part": 3,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 11,
+              "placement": {
+                "planet": "Saturn",
+                "division": 11,
+                "sign": 8,
+                "signName": "射手",
+                "part": 3,
+                "house": 1,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 12,
+              "placement": {
+                "planet": "Saturn",
+                "division": 12,
+                "sign": 8,
+                "signName": "射手",
+                "part": 3,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 16,
+              "placement": {
+                "planet": "Saturn",
+                "division": 16,
+                "sign": 3,
+                "signName": "巨蟹",
+                "part": 4,
+                "house": 2,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 20,
+              "placement": {
+                "planet": "Saturn",
+                "division": 20,
+                "sign": 4,
+                "signName": "獅子",
+                "part": 5,
+                "house": 5,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 24,
+              "placement": {
+                "planet": "Saturn",
+                "division": 24,
+                "sign": 9,
+                "signName": "摩羯",
+                "part": 6,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 27,
+              "placement": {
+                "planet": "Saturn",
+                "division": 27,
+                "sign": 11,
+                "signName": "雙魚",
+                "part": 6,
+                "house": 2,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 30,
+              "placement": {
+                "planet": "Saturn",
+                "division": 30,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": null,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 40,
+              "placement": {
+                "planet": "Saturn",
+                "division": 40,
+                "sign": 8,
+                "signName": "射手",
+                "part": 9,
+                "house": 5,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 45,
+              "placement": {
+                "planet": "Saturn",
+                "division": 45,
+                "sign": 9,
+                "signName": "摩羯",
+                "part": 10,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 60,
+              "placement": {
+                "planet": "Saturn",
+                "division": 60,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 13,
+                "house": 11,
+                "vargottama": false,
+                "dignity": "exalted"
+              }
+            }
+          ],
+          "strength": {
+            "planet": "Saturn",
+            "sthana": {
+              "complete": true,
+              "components": {
+                "uchcha": 55.479745262424785,
+                "saptavargaja": 112.5,
+                "ojayugma": 15,
+                "kendradi": 60,
+                "drekkana": 0
+              },
+              "saptavargajaDetails": {
+                "school": "raman",
+                "rows": [
+                  {
+                    "division": 1,
+                    "sign": 6,
+                    "owner": "Venus",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  },
+                  {
+                    "division": 2,
+                    "sign": 4,
+                    "owner": "Sun",
+                    "compound": 0,
+                    "condition": "compound-relation",
+                    "virupas": 7.5
+                  },
+                  {
+                    "division": 3,
+                    "sign": 6,
+                    "owner": "Venus",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  },
+                  {
+                    "division": 7,
+                    "sign": 7,
+                    "owner": "Mars",
+                    "compound": 0,
+                    "condition": "compound-relation",
+                    "virupas": 7.5
+                  },
+                  {
+                    "division": 9,
+                    "sign": 7,
+                    "owner": "Mars",
+                    "compound": 0,
+                    "condition": "compound-relation",
+                    "virupas": 7.5
+                  },
+                  {
+                    "division": 12,
+                    "sign": 8,
+                    "owner": "Jupiter",
+                    "compound": 1,
+                    "condition": "compound-relation",
+                    "virupas": 15
+                  },
+                  {
+                    "division": 30,
+                    "sign": 10,
+                    "owner": "Saturn",
+                    "compound": null,
+                    "condition": "own",
+                    "virupas": 30
+                  }
+                ],
+                "virupas": 112.5
+              },
+              "bhava": 10,
+              "virupas": 242.97974526242479
+            },
+            "dig": {
+              "complete": true,
+              "weakDirection": "ASC",
+              "weakLongitude": 252.1914015647485,
+              "virupas": 21.91738859249138
+            },
+            "naisargika": {
+              "complete": true,
+              "virupas": 8.571428571428571
+            },
+            "kala": {
+              "complete": true,
+              "components": {
+                "nathonnatha": 14.499762017291992,
+                "paksha": 6.101579000805032,
+                "tribhaga": 60,
+                "abda": 0,
+                "masa": 0,
+                "vara": 0,
+                "hora": 0,
+                "ayana": 41.64951116327579,
+                "yuddha": 0
+              },
+              "ayanaDetails": {
+                "declination": -9.319608930620632,
+                "referenceObliquity": 24,
+                "virupas": 41.64951116327579,
+                "beyondReference": false
+              },
+              "virupas": 122.25085218137282
+            },
+            "cheshta": {
+              "complete": true,
+              "included": true,
+              "meanLongitude": 181.98828394455086,
+              "trueLongitude": 186.43923578727436,
+              "seeghrochcha": 127.6491756947944,
+              "midpoint": 184.2137598659126,
+              "reducedKendra": 56.56458417111821,
+              "virupas": 18.854861390372736,
+              "method": "Raman/Kedarnath-Dutt1900-linear"
+            },
+            "drik": {
+              "planet": "Saturn",
+              "complete": true,
+              "incoming": [
+                {
+                  "from": "Sun",
+                  "to": "Saturn",
+                  "angle": 58.54596126541338,
+                  "basic": 14.272980632706691,
+                  "special": 0,
+                  "virupas": 14.272980632706691,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -3.5682451581766728
+                },
+                {
+                  "from": "Moon",
+                  "to": "Saturn",
+                  "angle": 220.24122426299823,
+                  "basic": 39.879387868500885,
+                  "special": 0,
+                  "virupas": 39.879387868500885,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -9.969846967125221
+                },
+                {
+                  "from": "Mars",
+                  "to": "Saturn",
+                  "angle": 82.6083855526573,
+                  "basic": 37.608385552657296,
+                  "special": 0,
+                  "virupas": 37.608385552657296,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -9.402096388164324
+                },
+                {
+                  "from": "Mercury",
+                  "to": "Saturn",
+                  "angle": 32.078189507912384,
+                  "basic": 1.039094753956192,
+                  "special": 0,
+                  "virupas": 1.039094753956192,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0.259773688489048
+                },
+                {
+                  "from": "Jupiter",
+                  "to": "Saturn",
+                  "angle": 327.90529444557876,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Venus",
+                  "to": "Saturn",
+                  "angle": 58.70000888847227,
+                  "basic": 14.350004444236134,
+                  "special": 0,
+                  "virupas": 14.350004444236134,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 3.5875011110590336
+                }
+              ],
+              "virupas": -19.092913713918136
+            },
+            "totalVirupas": 395.48136228417206,
+            "totalRupas": 6.591356038069534,
+            "minimumVirupas": 300,
+            "relativeStrength": 1.318271207613907,
+            "meetsMinimum": true,
+            "ishtaKashta": {
+              "uchcha": 55.479745262424785,
+              "cheshta": 18.854861390372736,
+              "ishta": 32.34289577165607,
+              "kashta": 13.637687037337253,
+              "method": "Raman138–139平方根法，與BPHS另一射線法分開"
+            }
+          }
+        },
+        {
+          "layer": "pratyantar",
+          "lord": "Venus",
+          "start": "2026-06-25T12:51:44.095Z",
+          "endExclusive": "2026-12-06T09:18:23.395Z",
+          "owns": [
+            6,
+            11
+          ],
+          "occupies": 9,
+          "conjoined": [
+            "Sun"
+          ],
+          "aspects": [
+            {
+              "from": "Moon",
+              "step": 7,
+              "toSign": 4,
+              "toHouse": 9,
+              "toPlanets": [
+                "Sun",
+                "Venus"
+              ]
+            },
+            {
+              "from": "Venus",
+              "step": 7,
+              "toSign": 10,
+              "toHouse": 3,
+              "toPlanets": [
+                "Moon"
+              ]
+            }
+          ],
+          "dispositor": "Sun",
+          "nakshatraLord": "Ketu",
+          "conditions": {
+            "dignity": {
+              "status": "enemy",
+              "label": "敵星座",
+              "exaltedSign": false,
+              "debilitated": false,
+              "exaltationDistance": 130.7392268988021
+            },
+            "solar": {
+              "separationDegrees": 0.15404762305888653,
+              "thresholdDegrees": 8,
+              "combust": true,
+              "nearBoundary": false,
+              "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+              "motionSensitive": false
+            }
+          },
+          "vargaHouses": [
+            {
+              "division": 1,
+              "placement": {
+                "planet": "Venus",
+                "division": 1,
+                "sign": 4,
+                "signName": "獅子",
+                "part": 1,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 2,
+              "placement": {
+                "planet": "Venus",
+                "division": 2,
+                "sign": 4,
+                "signName": "獅子",
+                "part": 1,
+                "house": 1,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 3,
+              "placement": {
+                "planet": "Venus",
+                "division": 3,
+                "sign": 4,
+                "signName": "獅子",
+                "part": 1,
+                "house": 5,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 4,
+              "placement": {
+                "planet": "Venus",
+                "division": 4,
+                "sign": 7,
+                "signName": "天蠍",
+                "part": 2,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 5,
+              "placement": {
+                "planet": "Venus",
+                "division": 5,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 2,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 6,
+              "placement": {
+                "planet": "Venus",
+                "division": 6,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 2,
+                "house": 12,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 7,
+              "placement": {
+                "planet": "Venus",
+                "division": 7,
+                "sign": 5,
+                "signName": "處女",
+                "part": 2,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "debilitated"
+              }
+            },
+            {
+              "division": 8,
+              "placement": {
+                "planet": "Venus",
+                "division": 8,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 3,
+                "house": 4,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 9,
+              "placement": {
+                "planet": "Venus",
+                "division": 9,
+                "sign": 2,
+                "signName": "雙子",
+                "part": 3,
+                "house": 12,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 10,
+              "placement": {
+                "planet": "Venus",
+                "division": 10,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 3,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 11,
+              "placement": {
+                "planet": "Venus",
+                "division": 11,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 3,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 12,
+              "placement": {
+                "planet": "Venus",
+                "division": 12,
+                "sign": 7,
+                "signName": "天蠍",
+                "part": 4,
+                "house": 8,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 16,
+              "placement": {
+                "planet": "Venus",
+                "division": 16,
+                "sign": 8,
+                "signName": "射手",
+                "part": 5,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            },
+            {
+              "division": 20,
+              "placement": {
+                "planet": "Venus",
+                "division": 20,
+                "sign": 1,
+                "signName": "金牛",
+                "part": 6,
+                "house": 2,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 24,
+              "placement": {
+                "planet": "Venus",
+                "division": 24,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 7,
+                "house": 10,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 27,
+              "placement": {
+                "planet": "Venus",
+                "division": 27,
+                "sign": 6,
+                "signName": "天秤",
+                "part": 7,
+                "house": 9,
+                "vargottama": false,
+                "dignity": "own"
+              }
+            },
+            {
+              "division": 30,
+              "placement": {
+                "planet": "Venus",
+                "division": 30,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": null,
+                "house": 3,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 40,
+              "placement": {
+                "planet": "Venus",
+                "division": 40,
+                "sign": 10,
+                "signName": "水瓶",
+                "part": 11,
+                "house": 7,
+                "vargottama": false,
+                "dignity": "friend"
+              }
+            },
+            {
+              "division": 45,
+              "placement": {
+                "planet": "Venus",
+                "division": 45,
+                "sign": 3,
+                "signName": "巨蟹",
+                "part": 12,
+                "house": 2,
+                "vargottama": false,
+                "dignity": "enemy"
+              }
+            },
+            {
+              "division": 60,
+              "placement": {
+                "planet": "Venus",
+                "division": 60,
+                "sign": 7,
+                "signName": "天蠍",
+                "part": 16,
+                "house": 12,
+                "vargottama": false,
+                "dignity": "neutral"
+              }
+            }
+          ],
+          "strength": {
+            "planet": "Venus",
+            "sthana": {
+              "complete": true,
+              "components": {
+                "uchcha": 16.420257700399304,
+                "saptavargaja": 88.125,
+                "ojayugma": 0,
+                "kendradi": 15,
+                "drekkana": 0
+              },
+              "saptavargajaDetails": {
+                "school": "raman",
+                "rows": [
+                  {
+                    "division": 1,
+                    "sign": 4,
+                    "owner": "Sun",
+                    "compound": -2,
+                    "condition": "compound-relation",
+                    "virupas": 1.875
+                  },
+                  {
+                    "division": 2,
+                    "sign": 4,
+                    "owner": "Sun",
+                    "compound": -2,
+                    "condition": "compound-relation",
+                    "virupas": 1.875
+                  },
+                  {
+                    "division": 3,
+                    "sign": 4,
+                    "owner": "Sun",
+                    "compound": -2,
+                    "condition": "compound-relation",
+                    "virupas": 1.875
+                  },
+                  {
+                    "division": 7,
+                    "sign": 5,
+                    "owner": "Mercury",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  },
+                  {
+                    "division": 9,
+                    "sign": 2,
+                    "owner": "Mercury",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  },
+                  {
+                    "division": 12,
+                    "sign": 7,
+                    "owner": "Mars",
+                    "compound": 1,
+                    "condition": "compound-relation",
+                    "virupas": 15
+                  },
+                  {
+                    "division": 30,
+                    "sign": 10,
+                    "owner": "Saturn",
+                    "compound": 2,
+                    "condition": "compound-relation",
+                    "virupas": 22.5
+                  }
+                ],
+                "virupas": 88.125
+              },
+              "bhava": 9,
+              "virupas": 119.5452577003993
+            },
+            "dig": {
+              "complete": true,
+              "weakDirection": "MC",
+              "weakLongitude": 174.84435238260014,
+              "virupas": 15.70170849459934
+            },
+            "naisargika": {
+              "complete": true,
+              "virupas": 42.857142857142854
+            },
+            "kala": {
+              "complete": true,
+              "components": {
+                "nathonnatha": 45.50023798270801,
+                "paksha": 53.89842099919497,
+                "tribhaga": 0,
+                "abda": 0,
+                "masa": 0,
+                "vara": 0,
+                "hora": 0,
+                "ayana": 33.982554135854464,
+                "yuddha": 0
+              },
+              "ayanaDetails": {
+                "declination": 3.1860433086835744,
+                "referenceObliquity": 24,
+                "virupas": 33.982554135854464,
+                "beyondReference": false
+              },
+              "virupas": 133.38121311775743
+            },
+            "cheshta": {
+              "complete": true,
+              "included": true,
+              "meanLongitude": 127.6491756947944,
+              "trueLongitude": 127.73922689880209,
+              "seeghrochcha": 309.9431050646963,
+              "midpoint": 127.69420129679827,
+              "reducedKendra": 177.751096232102,
+              "virupas": 59.25036541070066,
+              "method": "Raman/Kedarnath-Dutt1900-linear"
+            },
+            "drik": {
+              "planet": "Venus",
+              "complete": true,
+              "incoming": [
+                {
+                  "from": "Sun",
+                  "to": "Venus",
+                  "angle": 359.8459523769411,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Moon",
+                  "to": "Venus",
+                  "angle": 161.54121537452596,
+                  "basic": 23.082430749051923,
+                  "special": 0,
+                  "virupas": 23.082430749051923,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": -5.770607687262981
+                },
+                {
+                  "from": "Mars",
+                  "to": "Venus",
+                  "angle": 23.908376664185027,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Mercury",
+                  "to": "Venus",
+                  "angle": 333.3781806194401,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                },
+                {
+                  "from": "Jupiter",
+                  "to": "Venus",
+                  "angle": 269.2052855571065,
+                  "basic": 15.397357221446754,
+                  "special": 30,
+                  "virupas": 45.397357221446754,
+                  "nature": "benefic",
+                  "weight": 0.25,
+                  "signedVirupas": 11.349339305361688
+                },
+                {
+                  "from": "Saturn",
+                  "to": "Venus",
+                  "angle": 301.29999111152773,
+                  "basic": 0,
+                  "special": 0,
+                  "virupas": 0,
+                  "nature": "malefic",
+                  "weight": 0.25,
+                  "signedVirupas": 0
+                }
+              ],
+              "virupas": 5.578731618098708
+            },
+            "totalVirupas": 376.31441919869826,
+            "totalRupas": 6.271906986644971,
+            "minimumVirupas": 330,
+            "relativeStrength": 1.1403467248445402,
+            "meetsMinimum": true,
+            "ishtaKashta": {
+              "uchcha": 16.420257700399304,
+              "cheshta": 59.25036541070066,
+              "ishta": 31.191445444008043,
+              "kashta": 5.715669883795972,
+              "method": "Raman138–139平方根法，與BPHS另一射線法分開"
+            }
+          }
+        }
+      ],
+      "dispositors": {
+        "planet": "Sun",
+        "chain": [
+          "Sun"
+        ],
+        "closesAt": "Sun",
+        "cycle": [
+          "Sun"
+        ],
+        "selfDispositor": true
+      }
+    }
+  },
+  "liuren": {
+    "chartKeys": [
+      "schema",
+      "version",
+      "day",
+      "monthGeneral",
+      "hourBranch",
+      "rotation",
+      "daytime",
+      "noble",
+      "xun",
+      "plate",
+      "courses",
+      "transmissions",
+      "method",
+      "auxiliary",
+      "calculationPolicy",
+      "participants",
+      "calendarContext",
+      "classAnalysis",
+      "shensha",
+      "clock",
+      "question",
+      "time",
+      "seasonal",
+      "timing"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "shensha",
+      "clock",
+      "seasonal",
+      "timing",
+      "plate",
+      "courses",
+      "transmissions",
+      "edges",
+      "ganZhi",
+      "targets",
+      "topicRules",
+      "classes",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "transmission-1",
+        "label": "初傳 · 卯太常",
+        "evidenceKeys": [
+          "branch",
+          "general",
+          "element",
+          "kinship",
+          "season",
+          "empty",
+          "hiddenStem",
+          "dayRelation",
+          "generalElement",
+          "generalRelation",
+          "groundRelation",
+          "innerBattle",
+          "outerBattle",
+          "dayLinks",
+          "monthlyBroken",
+          "battlePolicy"
+        ]
+      },
+      {
+        "id": "transmission-2",
+        "label": "中傳 · 申螣蛇",
+        "evidenceKeys": [
+          "branch",
+          "general",
+          "element",
+          "kinship",
+          "season",
+          "empty",
+          "hiddenStem",
+          "dayRelation",
+          "generalElement",
+          "generalRelation",
+          "groundRelation",
+          "innerBattle",
+          "outerBattle",
+          "dayLinks",
+          "monthlyBroken",
+          "battlePolicy"
+        ]
+      },
+      {
+        "id": "transmission-3",
+        "label": "末傳 · 丑天空",
+        "evidenceKeys": [
+          "branch",
+          "general",
+          "element",
+          "kinship",
+          "season",
+          "empty",
+          "hiddenStem",
+          "dayRelation",
+          "generalElement",
+          "generalRelation",
+          "groundRelation",
+          "innerBattle",
+          "outerBattle",
+          "dayLinks",
+          "monthlyBroken",
+          "battlePolicy"
+        ]
+      },
+      {
+        "id": "class-1",
+        "label": "元首課",
+        "evidenceKeys": [
+          "variant",
+          "conditions",
+          "details",
+          "source"
+        ]
+      },
+      {
+        "id": "class-21",
+        "label": "斫輪課",
+        "evidenceKeys": [
+          "variant",
+          "conditions",
+          "details",
+          "source"
+        ]
+      },
+      {
+        "id": "class-38",
+        "label": "孤寡課",
+        "evidenceKeys": [
+          "variant",
+          "conditions",
+          "details",
+          "source"
+        ]
+      },
+      {
+        "id": "class-56",
+        "label": "鬼墓課",
+        "evidenceKeys": [
+          "variant",
+          "conditions",
+          "details",
+          "source"
+        ]
+      },
+      {
+        "id": "class-64",
+        "label": "雜狀物類課",
+        "evidenceKeys": [
+          "variant",
+          "conditions",
+          "details",
+          "source"
+        ]
+      },
+      {
+        "id": "shensha",
+        "label": "神煞實際定位 · 289條",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "profile",
+          "complete",
+          "counts",
+          "checks",
+          "active",
+          "missing",
+          "sourceAudit",
+          "unresolvedSourceEntries",
+          "resolvedSourceEntries",
+          "policy",
+          "sources"
+        ]
+      }
+    ]
+  },
+  "liuyao": {
+    "chartKeys": [
+      "version",
+      "system",
+      "method",
+      "question",
+      "calendar",
+      "values",
+      "records",
+      "original",
+      "changed",
+      "hasChange",
+      "lines",
+      "movingPositions",
+      "structures",
+      "focus",
+      "policy",
+      "interpretation"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "targets",
+      "influences",
+      "combinations",
+      "transformations",
+      "independentChanges",
+      "timing",
+      "classicalBalance",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "line-1",
+        "label": "初爻 · 妻財寅 · 世",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      },
+      {
+        "id": "line-2",
+        "label": "二爻 · 父母辰",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      },
+      {
+        "id": "line-3",
+        "label": "三爻 · 官鬼午",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      },
+      {
+        "id": "line-4",
+        "label": "四爻 · 子孫亥 · 應",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      },
+      {
+        "id": "line-5",
+        "label": "五爻 · 兄弟酉",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      },
+      {
+        "id": "line-6",
+        "label": "上爻 · 父母未",
+        "evidenceKeys": [
+          "natal",
+          "assessment",
+          "targetsAndRole"
+        ]
+      }
+    ]
+  },
+  "yijing": {
+    "chartKeys": [
+      "version",
+      "system",
+      "method",
+      "question",
+      "calendar",
+      "values",
+      "records",
+      "original",
+      "changed",
+      "hasChange",
+      "movingPositions",
+      "lines",
+      "originalText",
+      "changedText",
+      "expositions",
+      "complementaryViews",
+      "reading",
+      "policy"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "originalGeometry",
+      "changedGeometry",
+      "reading",
+      "expositions",
+      "complementaryViews",
+      "geometryPolicy",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "line-1",
+        "label": "初六",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      },
+      {
+        "id": "line-2",
+        "label": "九二",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      },
+      {
+        "id": "line-3",
+        "label": "六三",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      },
+      {
+        "id": "line-4",
+        "label": "九四",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      },
+      {
+        "id": "line-5",
+        "label": "九五",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      },
+      {
+        "id": "line-6",
+        "label": "上六",
+        "evidenceKeys": [
+          "moving",
+          "original",
+          "changed",
+          "selected"
+        ]
+      }
+    ]
+  },
+  "meihua": {
+    "chartKeys": [
+      "up",
+      "lo",
+      "dong",
+      "ben",
+      "hu",
+      "nuclear",
+      "bian",
+      "tiG",
+      "yoG",
+      "ty",
+      "castContext",
+      "analysis",
+      "tags",
+      "summary",
+      "shortVerdict",
+      "decisionHint",
+      "timing",
+      "risk",
+      "strategy",
+      "yingQi"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "originalLines",
+      "changedLines",
+      "body",
+      "use",
+      "nuclear",
+      "castContext",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "stage-0",
+        "label": "本卦用 · 乾",
+        "evidenceKeys": [
+          "bodyElement",
+          "useElement",
+          "relation",
+          "bodySeason",
+          "useSeason",
+          "timestamp"
+        ]
+      },
+      {
+        "id": "stage-1",
+        "label": "互卦下 · 乾",
+        "evidenceKeys": [
+          "bodyElement",
+          "useElement",
+          "relation",
+          "bodySeason",
+          "useSeason",
+          "timestamp"
+        ]
+      },
+      {
+        "id": "stage-2",
+        "label": "互卦上 · 乾",
+        "evidenceKeys": [
+          "bodyElement",
+          "useElement",
+          "relation",
+          "bodySeason",
+          "useSeason",
+          "timestamp"
+        ]
+      },
+      {
+        "id": "stage-3",
+        "label": "變卦用 · 巽",
+        "evidenceKeys": [
+          "bodyElement",
+          "useElement",
+          "relation",
+          "bodySeason",
+          "useSeason",
+          "timestamp"
+        ]
+      }
+    ]
+  },
+  "name": {
+    "chartKeys": [
+      "schema",
+      "version",
+      "question",
+      "surname",
+      "purpose",
+      "policy",
+      "baseline",
+      "baselineResolution",
+      "candidateNames",
+      "names",
+      "comparison",
+      "criteria",
+      "decisionPolicy",
+      "questionModel"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "comparisons",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "name-0",
+        "label": "陳政軒",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "name",
+          "surname",
+          "given",
+          "purpose",
+          "question",
+          "inputPolicy",
+          "characters",
+          "birth",
+          "fiveGrids",
+          "strokeSensitivity",
+          "zodiac",
+          "phonetic",
+          "nameGua",
+          "bazi",
+          "shapeElementPolicy",
+          "methodBoundaries",
+          "sources",
+          "evidenceCoverage",
+          "coverage",
+          "comparisonRole"
+        ]
+      },
+      {
+        "id": "name-1",
+        "label": "陳弘林",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "name",
+          "surname",
+          "given",
+          "purpose",
+          "question",
+          "inputPolicy",
+          "characters",
+          "birth",
+          "fiveGrids",
+          "strokeSensitivity",
+          "zodiac",
+          "phonetic",
+          "nameGua",
+          "bazi",
+          "shapeElementPolicy",
+          "methodBoundaries",
+          "sources",
+          "evidenceCoverage",
+          "coverage",
+          "comparisonRole"
+        ]
+      },
+      {
+        "id": "name-2",
+        "label": "陳沐洪",
+        "evidenceKeys": [
+          "schema",
+          "version",
+          "name",
+          "surname",
+          "given",
+          "purpose",
+          "question",
+          "inputPolicy",
+          "characters",
+          "birth",
+          "fiveGrids",
+          "strokeSensitivity",
+          "zodiac",
+          "phonetic",
+          "nameGua",
+          "bazi",
+          "shapeElementPolicy",
+          "methodBoundaries",
+          "sources",
+          "evidenceCoverage",
+          "coverage",
+          "comparisonRole"
+        ]
+      }
+    ]
+  },
+  "compat": {
+    "chartKeys": [
+      "version",
+      "scenario",
+      "personA",
+      "personB",
+      "dayMasters",
+      "spousePalace",
+      "directionalTenGods",
+      "stemRelations",
+      "branchRelations",
+      "groupRelations",
+      "elementComplement",
+      "luckSynchronization",
+      "evidenceSummary",
+      "uncertainty",
+      "policy"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "system",
+      "timeline",
+      "projectionGroups",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "person-a",
+        "label": "A方",
+        "evidenceKeys": [
+          "name",
+          "gender",
+          "birthLine",
+          "trueSolarDateTime",
+          "pillars",
+          "pillarText",
+          "dayMaster",
+          "dayMasterElement",
+          "strength",
+          "elementWeights",
+          "favorable",
+          "unfavorable",
+          "stance",
+          "qiyun",
+          "currentLuck",
+          "interactions",
+          "stemCombinations",
+          "functionalAssessment",
+          "chineseZodiac",
+          "chenggu",
+          "auxiliary",
+          "unknownTime"
+        ]
+      },
+      {
+        "id": "person-b",
+        "label": "B方",
+        "evidenceKeys": [
+          "name",
+          "gender",
+          "birthLine",
+          "trueSolarDateTime",
+          "pillars",
+          "pillarText",
+          "dayMaster",
+          "dayMasterElement",
+          "strength",
+          "elementWeights",
+          "favorable",
+          "unfavorable",
+          "stance",
+          "qiyun",
+          "currentLuck",
+          "interactions",
+          "stemCombinations",
+          "functionalAssessment",
+          "chineseZodiac",
+          "chenggu",
+          "auxiliary",
+          "unknownTime"
+        ]
+      },
+      {
+        "id": "direction",
+        "label": "雙向日主十神",
+        "evidenceKeys": [
+          "aToB",
+          "bToA"
+        ]
+      },
+      {
+        "id": "stemRelations",
+        "label": "跨柱天干",
+        "evidenceKeys": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ]
+      },
+      {
+        "id": "branchRelations",
+        "label": "跨柱地支",
+        "evidenceKeys": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ]
+      },
+      {
+        "id": "groupRelations",
+        "label": "跨盤合局",
+        "evidenceKeys": [
+          "0"
+        ]
+      }
+    ]
+  },
+  "personality": {
+    "chartKeys": [
+      "system",
+      "version",
+      "independent",
+      "disclaimer",
+      "index",
+      "code",
+      "name",
+      "traits",
+      "axes",
+      "modelInputs",
+      "strengths",
+      "watch",
+      "chart",
+      "natalEvidence"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "code",
+      "modelInputs",
+      "disclaimer",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "axis-0",
+        "label": "內省／外放",
+        "evidenceKeys": [
+          "key",
+          "left",
+          "right",
+          "rightSelected",
+          "inputs",
+          "evidence"
+        ]
+      },
+      {
+        "id": "axis-1",
+        "label": "自主／秩序",
+        "evidenceKeys": [
+          "key",
+          "left",
+          "right",
+          "rightSelected",
+          "inputs",
+          "evidence"
+        ]
+      },
+      {
+        "id": "axis-2",
+        "label": "獨行／協作",
+        "evidenceKeys": [
+          "key",
+          "left",
+          "right",
+          "rightSelected",
+          "inputs",
+          "evidence"
+        ]
+      },
+      {
+        "id": "axis-3",
+        "label": "敏感／韌行",
+        "evidenceKeys": [
+          "key",
+          "left",
+          "right",
+          "rightSelected",
+          "inputs",
+          "evidence"
+        ]
+      },
+      {
+        "id": "axis-4",
+        "label": "穩態／變通",
+        "evidenceKeys": [
+          "key",
+          "left",
+          "right",
+          "rightSelected",
+          "inputs",
+          "evidence"
+        ]
+      }
+    ]
+  },
+  "tarot": {
+    "chartKeys": [
+      "sourceProfile",
+      "cards"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "methodData",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "tarot-0",
+        "label": "愚者",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "direction",
+          "keywords",
+          "binding",
+          "suit",
+          "rank",
+          "number"
+        ]
+      },
+      {
+        "id": "tarot-1",
+        "label": "權杖王牌",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "direction",
+          "keywords",
+          "binding",
+          "suit",
+          "rank",
+          "number"
+        ]
+      }
+    ]
+  },
+  "lenormand": {
+    "chartKeys": [
+      "spreadType",
+      "expectedCount",
+      "cards"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "methodData",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "lenormand-0",
+        "label": "牌1",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-1",
+        "label": "牌2",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-2",
+        "label": "牌3",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-3",
+        "label": "牌4",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-4",
+        "label": "牌5",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-5",
+        "label": "牌6",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-6",
+        "label": "牌7",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-7",
+        "label": "牌8",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      },
+      {
+        "id": "lenormand-8",
+        "label": "牌9",
+        "evidenceKeys": [
+          "index",
+          "id",
+          "name",
+          "position",
+          "meaning",
+          "guard"
+        ]
+      }
+    ]
+  },
+  "ootk": {
+    "chartKeys": [
+      "operations"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "methodData",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "ootk-0",
+        "label": "op1",
+        "evidenceKeys": [
+          "operation",
+          "valid",
+          "abandoned",
+          "data"
+        ]
+      },
+      {
+        "id": "ootk-1",
+        "label": "op2",
+        "evidenceKeys": [
+          "operation",
+          "valid",
+          "abandoned",
+          "data"
+        ]
+      },
+      {
+        "id": "ootk-2",
+        "label": "op3",
+        "evidenceKeys": [
+          "operation",
+          "valid",
+          "abandoned",
+          "data"
+        ]
+      }
+    ]
+  },
+  "oracle": {
+    "chartKeys": [
+      "n",
+      "g",
+      "p",
+      "sourceUrl",
+      "sourceNote"
+    ],
+    "analysisKeys": [
+      "schema",
+      "version",
+      "method",
+      "kind",
+      "items",
+      "coverage",
+      "sources",
+      "policy",
+      "unavailable",
+      "methodData",
+      "readingScope",
+      "computationAudit",
+      "depthContract"
+    ],
+    "items": [
+      {
+        "id": "oracle-0",
+        "label": "詩句1",
+        "evidenceKeys": [
+          "index",
+          "text",
+          "conditionWords"
+        ]
+      },
+      {
+        "id": "oracle-1",
+        "label": "詩句2",
+        "evidenceKeys": [
+          "index",
+          "text",
+          "conditionWords"
+        ]
+      },
+      {
+        "id": "oracle-2",
+        "label": "詩句3",
+        "evidenceKeys": [
+          "index",
+          "text",
+          "conditionWords"
+        ]
+      },
+      {
+        "id": "oracle-3",
+        "label": "詩句4",
+        "evidenceKeys": [
+          "index",
+          "text",
+          "conditionWords"
+        ]
+      },
+      {
+        "id": "lot-reading",
+        "label": "本籤版本解讀 · 維持",
+        "evidenceKeys": [
+          "direction",
+          "summary",
+          "premises",
+          "domainNotes"
+        ]
+      }
+    ]
+  }
+}

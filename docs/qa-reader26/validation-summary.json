@@ -1,0 +1,548 @@
+{
+  "release": "20261015reader26",
+  "status": "passed-with-stated-scope",
+  "questionContract": {
+    "release": "20261015reader26",
+    "checks": [
+      {
+        "name": "raw financial question preserves two original events, monthly net target, ambiguity and unknown currency",
+        "status": "passed"
+      },
+      {
+        "name": "punctuation and fullwidth amounts do not lose event IDs or change original source spans",
+        "status": "passed"
+      },
+      {
+        "name": "genuine comparisons and mixed timing/choice tasks keep their separate operators",
+        "status": "passed"
+      },
+      {
+        "name": "separate thresholds have unique relations and preserve amount, cadence, currency and target basis",
+        "status": "passed"
+      },
+      {
+        "name": "financial pressure selects money/work layers, health wording selects health layers, unknown topics remain readable",
+        "status": "passed"
+      },
+      {
+        "name": "all fifteen actual exporters retain both tasks and provide method-specific source/decision checks without recasting",
+        "status": "passed"
+      },
+      {
+        "name": "Vedic focused export includes actual D2/D10 detail and role directions from the source chart",
+        "status": "passed"
+      },
+      {
+        "name": "source metadata distinguishes this release readings, bibliography-only evidence and unrechecked prior sources",
+        "status": "passed"
+      },
+      {
+        "name": "an older cached depth module is replaced by the generated standalone export runtime",
+        "status": "passed"
+      }
+    ],
+    "methodCount": 15,
+    "status": "passed",
+    "limitations": [
+      "No external-model answer generated or human practitioner review performed",
+      "No claim of complete historical schools or validated forecast accuracy",
+      "Published passage checks and book metadata remain distinct"
+    ]
+  },
+  "browser": {
+    "release": "20261015reader26",
+    "cases": [
+      {
+        "name": "production mobile entry to actual Vedic export",
+        "status": "passed",
+        "version": "2.5.0",
+        "tasks": [
+          {
+            "id": "Q1",
+            "source": "我經濟壓力還是才會消失",
+            "sourceSpan": [
+              0,
+              11
+            ],
+            "goal": "timing",
+            "eventIds": [
+              "QUERY_EVENT"
+            ],
+            "explicitResults": [],
+            "requiredObservables": [
+              "state",
+              "temporal_sequence",
+              "obstacle"
+            ],
+            "measurement": [],
+            "answerRequired": true
+          },
+          {
+            "id": "Q2",
+            "source": "我副業何時才能每月營業額淨賺10萬",
+            "sourceSpan": [
+              12,
+              29
+            ],
+            "goal": "timing",
+            "eventIds": [
+              "QUERY_EVENT_02"
+            ],
+            "explicitResults": [
+              "淨賺"
+            ],
+            "requiredObservables": [
+              "state",
+              "threshold_outcome",
+              "temporal_sequence",
+              "trajectory",
+              "continuity"
+            ],
+            "measurement": [
+              {
+                "metric": "淨賺",
+                "kind": "amount",
+                "basis": "net_profit",
+                "threshold": {
+                  "surface": "10萬",
+                  "value": 100000,
+                  "operator": "gte"
+                },
+                "cadence": "monthly",
+                "recurrence": {
+                  "cadence": "monthly",
+                  "required": true,
+                  "consecutivePeriods": null,
+                  "oneOffIsInsufficient": true
+                },
+                "currency": null,
+                "ambiguity": {
+                  "type": "financial_metric_conflict",
+                  "surfaces": [
+                    "營業額／營收",
+                    "淨賺"
+                  ],
+                  "provisionalInterpretation": "net_profit",
+                  "basis": "原句明示淨賺；營業額與扣成本後利潤仍需分清",
+                  "userConfirmed": false
+                }
+              }
+            ],
+            "answerRequired": true
+          }
+        ],
+        "divisions": [
+          1,
+          2,
+          9,
+          10
+        ],
+        "unchanged": true,
+        "sourceQuestion": "我經濟壓力還是才會消失，我副業何時才能每月營業額淨賺10萬？",
+        "hasResearchBoundary": true,
+        "noInventedExamples": true,
+        "promptCharacters": 225278
+      },
+      {
+        "name": "reduced-motion runtime retains current contract",
+        "status": "passed",
+        "workflow": "2.5.0",
+        "reading": "16.0.0",
+        "focus": [
+          1,
+          2,
+          9
+        ],
+        "bodyWidth": 393,
+        "viewport": 393
+      }
+    ],
+    "pageErrors": [],
+    "missing": [],
+    "lazyRequests": [
+      {
+        "path": "/JS/vedic-engine.js",
+        "version": "20261015reader26"
+      },
+      {
+        "path": "/JS/western-prompt.js",
+        "version": "20261015reader26"
+      },
+      {
+        "path": "/JS/vedic-prompt.js",
+        "version": "20261015reader26"
+      }
+    ],
+    "status": "passed"
+  },
+  "syntax": {
+    "status": "passed",
+    "count": 55,
+    "results": [
+      {
+        "file": "JS/ai-analysis.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/bazi-prompt-root.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/bazi-suite-core.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/gua-prompt.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/lenormand.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/liuren-prompt.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/meihua-standalone.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/name-prompt.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/native-depth-contract.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/native-rule-sources.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/oracle.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/prompt-brief.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/prompt-export.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/prompt-packet.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/reading-quality.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/reading-workflow.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/relationship-core.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/shared/question-planner.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/sw.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/tarot-foundation.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/ui.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/vedic-prompt.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/western-prompt.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/ziwei-prompt-root.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "JS/ziwei-standalone.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "ai-analysis.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "bazi-prompt-root.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "bazi-suite-core.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "functions/api/ai.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "lenormand.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "meihua-standalone.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "native-depth-contract.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "native-rule-sources.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "oracle.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "prompt-brief.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "prompt-export.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "prompt-packet.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "relationship-core.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "scripts/sync-recommendation-guides.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "sw.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tarot-foundation.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/lenormand-semantic-v23-discourse-20260926.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/plain-language-20261014.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/practitioner-narrative-20261014.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/question-model-regression-20260927.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/reader-browser-20261015.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/reader-contract-20261015.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/reading-integrity-20261014.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/symbolic-scope-20261014.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/tarot-v102-method-data-prompt.test.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "tests/universal-reading-20261014.cjs",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "ui.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "workers/ai-proxy.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "ziwei-prompt-root.js",
+        "status": "passed",
+        "error": null
+      },
+      {
+        "file": "ziwei-standalone.js",
+        "status": "passed",
+        "error": null
+      }
+    ]
+  },
+  "regressions": {
+    "universal-reading": {
+      "nativeExports": 150,
+      "originalQuestionFallbackExports": 30,
+      "groups": 12
+    },
+    "reading-integrity": {
+      "groups": 14
+    },
+    "symbolic-scope": {
+      "groups": 12
+    },
+    "plain-language": {
+      "nativeExports": 15
+    },
+    "practitioner-narrative": {
+      "nativeExports": 15
+    },
+    "lenormand": {
+      "legacyChecks": 84,
+      "discourseChecks": 407
+    },
+    "tarot": {
+      "methodDataGroups": 7,
+      "nativeMethodRegistry": 24
+    },
+    "core-engines": {
+      "groups": 10
+    },
+    "output-consistency": {
+      "groups": 9
+    },
+    "astronomy-independent": {
+      "assertions": 1140,
+      "reference": "Swiss 2.10.03",
+      "maximumDifferenceDegrees": 0.0057
+    },
+    "name": {
+      "status": "passed"
+    },
+    "liuren": {
+      "groups": 8
+    },
+    "vedic": {
+      "status": "passed"
+    },
+    "gua": {
+      "status": "passed"
+    },
+    "yarrow": {
+      "status": "passed"
+    },
+    "method-engine": {
+      "status": "passed"
+    },
+    "question-model": {
+      "status": "passed"
+    },
+    "semantic-review": {
+      "status": "passed"
+    },
+    "causal-question": {
+      "status": "passed"
+    }
+  },
+  "scope": [
+    "Actual original-question parsing, original source spans and monetary/cadence/conditional roles.",
+    "Fifteen real native exporters, unchanged source charts, per-method evidence/checking entry points and honest source metadata.",
+    "Mobile viewport production entry and lazy module cache routing in headless Chromium; no physical Samsung device test.",
+    "Historical numeric/model consistency and selected independent astronomy references; these do not test real-world event forecasts."
+  ],
+  "notPerformed": [
+    "External-model response generation or prose grading",
+    "Human practitioner review",
+    "Empirical forecast validation",
+    "Implementation of every historical school",
+    "Automatic per-reading web search API"
+  ],
+  "initialFindings": [
+    "The supplied two-part question was reduced to compare with unbound events and no monthly amount.",
+    "An independent Vedic export word list selected D27 but omitted detailed D2/D10 data.",
+    "Multiple question relations reused R01; recurring targets, currency and conditional premises needed distinct preservation.",
+    "Existing regression assertions pinned previous version strings and required now-removed hypothetical prompt examples; updated only these obsolete expectations.",
+    "The previously materialized browser binary was incomplete; rebuilt the test runtime from the existing compressed package, then ran the successful production test."
+  ],
+  "documents": [
+    "docs/reader-source-review-20261015.md",
+    "UPDATE-20261015-READER26.md"
+  ]
+}

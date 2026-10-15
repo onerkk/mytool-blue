@@ -1,0 +1,8 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:yarrow
+> node tests/yarrow-20260922.cjs
+
+✓ 64 餘數路徑：老陰／少陽／少陰／老陽 = 1:5:7:3
+✓ 所有合法切點：分二、掛一、四揲、歸餘皆守恆
+✓ 破損紀錄與無安全亂數均拒絕；六爻仍走獨立三錢引擎

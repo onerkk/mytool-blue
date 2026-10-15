@@ -20,7 +20,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261014prompt25',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261015prompt26',LIMIT=8000,BYTES=20000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
@@ -83,7 +83,13 @@ var JY_REC_PACKET = {
   function transitionFacts(t){return {...pick(t,['rule','sourceSection','applicability','layerScope']),...Object.fromEntries(['incoming','transferred','birthTransformation','linked','from','to'].filter(k=>t[k]!==undefined).map(k=>[k,typeof t[k]==='object'?pick(t[k],['fromBranch','toBranch','gan','kind','star','hua','palace','branch','self','centripetal']):t[k]]))};}
   function readablePerson(p){return pick(p,['name','gender','birthLine','trueSolarDateTime','pillars','pillarText','dayMaster','dayMasterElement','strength','elementWeights','favorable','unfavorable','strengthAssessment','seasonalAssessment','functionalAssessment','fuyiAssessment','branchInteractions','specialRuleAssessment','uncertainty','birthInput','birthLunar','palaces','sihua','selfHua','calculationPolicy','northern','chart']);}
   function argala(a){if(!a)return a;return {...pick(a,['profile','policy','houses','planets']),signs:arr(a.signs).map(g=>({...pick(g,['key','sign','direction','thirdMalefics']),channels:arr(g.channels).map(c=>pick(c,['argalaHouse','obstructionHouse','contributors','blockers','vipareeta','countDecision','quarterCounterpairs']))}))};}
-  function vargaScope(q,topic){if(/(?:所有|全部|完整十六|16|十六).{0,8}分盤/.test(q))return null;const divisions=new Set([1,9]);if(/工作|事業|職|career|work/i.test(q)||topic==='career')divisions.add(10);if(/財|收入|金錢/.test(q))divisions.add(2);if(/孩子|子女|養育/.test(q))divisions.add(7);if(/父母|原生家庭/.test(q))divisions.add(12);if(/居住|房|住宅/.test(q))divisions.add(4);if(/學|教育/.test(q))divisions.add(24);if(/內在|精神|修行/.test(q))divisions.add(20);if(/壓力|健康/.test(q))divisions.add(27);return divisions;}
+  function vargaScope(q,topic){
+    const focus=root.JYReadingWorkflow?.nativeFocus?.({method:'vedic',question:q});
+    if(focus)return focus.divisions===null?null:new Set(focus.divisions);
+    // Without the shared semantic planner, retain all computed divisions rather
+    // than silently omit a finance/work layer through an incomplete word list.
+    return null;
+  }
   function north(n){if(!n)return n;return pick(n,['profile','palaceStemBasis','tableSource','starPlacements','flights','paths','opposingAxes','symbolPairs','transitions','sourceAudit']);}
   function facts(kind,c,a,q,options){
     const sections=[],add=(label,data)=>{if(data!==undefined&&data!==null)sections.push({label,data});};const finish=()=>{add('本次計算查核',root.JYEngineComputationAudit?.summary(a.computationAudit)||a.computationAudit);return sections;};

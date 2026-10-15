@@ -43,7 +43,7 @@ function analyzeReadingQuestion(value) {
     domains:{
       relationship:['感情','愛情','戀愛','婚姻','桃花','曖昧','復合','分手','告白','表白','坦白心意','暗戀','喜歡','好感','欣賞','心動','有意思','愛','交往','約會','約我','追求','示好','伴侶','女友','男友','老婆','老公','現任','正緣','對象','配偶','性伴侶','肉體桃花'],
       work:['工作','事業','職場','公司','主管','同事','升遷','職位','作業員','錄取','轉職','離職','職涯','正職','本業','副業'],
-      finance:['財運','求財','破財','損失','賠錢','財務','錢','收入','薪水','薪資','營業額','營收','業績','獎金','中獎','發票','付款','入帳','生意','訂單'],
+      finance:['財運','求財','破財','損失','賠錢','財務','經濟','錢','收入','薪水','薪資','營業額','營收','業績','淨賺','淨利','毛利','利潤','獲利','成本','現金流','負債','還款','獎金','中獎','發票','付款','入帳'],
       health:['健康','身體','疾病','症狀','懷孕','醫療','醫生','住院','體檢','健檢','健康檢查','員工健康檢查','員工健檢'],
       family:['家庭','家人','父母','爸爸','媽媽','孩子','子女'],
       study:['學業','考試','學習','學校','成績','升學'],
@@ -310,7 +310,7 @@ function analyzeReadingQuestion(value) {
     if(hasAny(s,LONG_HORIZON))dims.push('continuity');
     if(hasAny(s,REASON))dims.push('reason');
     if(isAdviceCue(s))dims.push('advice');
-    if(hasAny(s,TIME_WH))dims.push('timing');
+    if(hasAny(s,TIME_WH)||suspectedTimingTypo(s))dims.push('timing');
     if(hasAny(s,PERSON_WH))dims.push('identity');
     if(/百分之幾|機率多少|成功率多少|勝率多少|幾成(?:機率)?/.test(s))dims.push('probability');
     if(/幾歲|歲數|年齡(?:是多少|多大|多少)?|幾年次|出生年|出生年月|生日/.test(s))dims.push('age');
@@ -339,23 +339,29 @@ function analyzeReadingQuestion(value) {
   function parseMeasurementGoal(input){
     var s=String(input||'').replace(/[？?。；;！!]/g,' ').replace(/\s+/g,' ').trim();
     var number='(?:[0-9][0-9,]*(?:\\.[0-9]+)?(?:萬|億)?|[零〇一二兩三四五六七八九十百千萬億]+)';
-    var metrics=['每月訂單量','月訂單量','訂單數','訂單量','訂單','單數','單量','單','件數','筆數','銷售量','銷量','營業額','營收','收入','薪水','薪資','成本','獲利','利潤','客戶數','人數','轉換率','客單價'];
+    var metrics=['每月訂單量','月訂單量','訂單數','訂單量','訂單','單數','單量','單','件數','筆數','銷售量','銷量','營業額','營收','收入','薪水','薪資','成本','淨賺','淨利潤','淨利','毛利潤','毛利','獲利','利潤','客戶數','人數','轉換率','客單價'];
     var metric=metrics.sort(function(a,b){return b.length-a.length;}).map(function(x){return x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|');
-    var boundary='(以上|以下|至少|至多|超過|多於|高於|大於|不到|低於|小於|不超過|不低於|達到|破)';
+    var boundary='(以上|以下|至少|至多|超過|多於|高於|大於|不到|低於|小於|不超過|不低於|達到|達|破)';
     var unit='(?:張|件|筆|個|位|名)?';
     var m=s.match(new RegExp('('+number+')\\s*'+unit+'\\s*('+metric+')\\s*'+boundary)),order='number_first',leadingOperator='';
     if(!m){
-      var lead=/達到|至少|不低於|超過|多於|高於|大於|至多|不超過|不到|低於|小於|破/;
-      m=s.match(new RegExp('('+metric+')\\s*('+lead.source+')?\\s*('+number+')\\s*'+unit+'\\s*'+boundary+'?'));
-      if(m&&(m[2]||m[m.length-1])){order='metric_first';leadingOperator=m[2]||'';}else m=null;
+      var lead=/達到|達|至少|不低於|超過|多於|高於|大於|至多|不超過|不到|低於|小於|破/;
+      var bridge='(?:(?:什麼時候|甚麼時候|何時|多久|每個月|每月|每週|每周|每天|每日|才能|才會|可以|能否|是否|能不能|可不可以|會不會|才|能|會)\\s*)*';
+      m=s.match(new RegExp('('+metric+')\\s*'+bridge+'('+lead.source+')?\\s*('+number+')\\s*'+unit+'\\s*'+boundary+'?'));
+      if(m&&(m[2]||m[m.length-1]||/何時|什麼時候|多久|才能|能否|能不能|是否|可以|可不可以/.test(s))){order='metric_first';leadingOperator=m[2]||'';}else m=null;
     }
     if(!m)return null;
     var metricName=m[order==='number_first'?2:1],numberSurface=m[order==='number_first'?1:3],operatorText=order==='number_first'?m[m.length-1]:(m[m.length-1]||leadingOperator);
-    var metricKind=/訂單|單數|件數|筆數|銷量|銷售量|客戶數|人數/.test(metricName)?'count':/營業額|營收|收入|薪水|薪資|成本|獲利|利潤|客單價/.test(metricName)?'amount':'rate';
+    var metricKind=/訂單|單數|件數|筆數|銷量|銷售量|客戶數|人數/.test(metricName)?'count':/營業額|營收|收入|薪水|薪資|成本|淨賺|淨利|毛利|獲利|利潤|客單價/.test(metricName)?'amount':'rate';
     var prefix=s.slice(0,m.index),clause=s.slice(m.index,m.index+m[0].length),cadence=/每個月|每月|月均|月訂單|月營收|月收入/.test(prefix+clause)?'monthly':/每週|每周|週均|周均/.test(prefix+clause)?'weekly':/每日|每天|日均/.test(prefix+clause)?'daily':null;
     prefix=prefix.replace(/(?:請問|想問|我想問|幫我看|我想知道|想知道|什麼時候|甚麼時候|何時|多久|哪一天|哪天|幾月|哪個月|會不會|能不能|可不可以|能否|是否|可以|能夠|可能|會|能|要|應該|每個月|每月|月均|每週|每周|週均|周均|每日|每天|日均|達到|達成|做到|存到|增加到|提升到|提升至|突破)+/g,' ').replace(/(?:我|本人)\s*/g,' ').replace(/\s+/g,' ').trim();
-    var operators={以上:'gte',至少:'gte',不低於:'gte',達到:'gte',以下:'lte',至多:'lte',不超過:'lte',超過:'gt',多於:'gt',高於:'gt',大於:'gt',破:'gt',不到:'lt',低於:'lt',小於:'lt'};
-    return {metric:metricName,metricKind:metricKind,thresholdSurface:numberSurface,operator:operators[operatorText]||'gte',operatorText:operatorText,cadence:cadence,subject:prefix||null,source:m[0]};
+    prefix=prefix.replace(/(?:營業額|營收)?\s*才\s*(?:營業額|營收)?$/,'').replace(/\s+/g,' ').trim();
+    var operators={以上:'gte',至少:'gte',不低於:'gte',達到:'gte',達:'gte',以下:'lte',至多:'lte',不超過:'lte',超過:'gt',多於:'gt',高於:'gt',大於:'gt',破:'gt',不到:'lt',低於:'lt',小於:'lt'};
+    var financialBasis=/淨賺|淨利/.test(metricName)?'net_profit':/毛利/.test(metricName)?'gross_profit':/營業額|營收/.test(metricName)?'revenue':/收入|薪水|薪資/.test(metricName)?'income':null;
+    var mixedBasis=financialBasis==='net_profit'&&/營業額|營收/.test(s.slice(0,m.index));
+    var recurrence=cadence?{cadence:cadence,required:true,consecutivePeriods:null,oneOffIsInsufficient:true}:null;
+    var conditional=/^(?:如果|假如|假設|若|只要)/.test(s)&&s.slice(0,m.index+m[0].length).search(/[,，]/)<0&&/[,，]/.test(s.slice(m.index+m[0].length));
+    return {metric:metricName,metricKind:metricKind,financialBasis:financialBasis,queryUse:conditional?'conditional-premise':'requested-target',thresholdSurface:numberSurface,operator:operators[operatorText]||'gte',operatorText:operatorText||'達到',operatorExplicit:!!operatorText,cadence:cadence,recurrence:recurrence,subject:prefix.replace(/(?:營業額|營收|才)$/,'').trim()||null,currency:(s.match(/新台幣|新臺幣|台幣|臺幣|人民幣|港幣|美元|日圓|日元|歐元|TWD|NT\$|USD|HKD|CNY|JPY|EUR/i)||[])[0]||null,ambiguity:mixedBasis?{type:'financial_metric_conflict',surfaces:['營業額／營收',metricName],provisionalInterpretation:'net_profit',basis:'原句明示淨賺；營業額與扣成本後利潤仍需分清',userConfirmed:false}:null,source:m[0]};
   }
   function detectYesNo(s){
     var t=s.replace(/\s+/g,'').replace(/[？?。！!]+$/,'');
@@ -367,6 +373,11 @@ function analyzeReadingQuestion(value) {
     // Modal-event questions in Chinese often omit 嗎, e.g.「明天會下雨？」
     if(/[？?]$/.test(String(s||'')) && /(?:會|能|可以|可能|可望|有機會)/.test(t) && !/(?:多少|幾|何時|什麼時候|為什麼|如何|怎麼|誰|哪個)/.test(t))return true;
     return false;
+  }
+  function parseMeasurementGoals(input){
+    var rest=String(input||''),goals=[],offset=0;
+    for(var i=0;i<12&&rest;i++){var goal=parseMeasurementGoal(rest);if(!goal)break;var at=rest.indexOf(goal.source);if(at<0)break;goal.sourceSpan=[offset+at,offset+at+goal.source.length];goals.push(goal);offset+=at+goal.source.length;rest=rest.slice(at+goal.source.length);}
+    return goals;
   }
   function openEnumeration(s){
     var t=String(s||'');
@@ -415,13 +426,27 @@ function analyzeReadingQuestion(value) {
     return t;
   }
 
+  function suspectedTimingTypo(s){return /還(?:是|時)才(?:會|能|可以|可|有)/.test(String(s||''))&&classifyDecisionQuestion(String(s||'')).kind!=='binary';}
+  function splitIndependentQuestions(body){
+    // A comma is a boundary only when both sides contain a question predicate.
+    // Keep conditions, quoted speech, enumerations and comparison operands intact.
+    if(/[「『“"`]/.test(body))return [body];
+    var parts=body.split(/[,，]/),out=[],current=parts.shift()||'';
+    function interrogative(s){return /何時|什麼時候|甚麼時候|多久|哪年|哪月|會不會|能不能|是否|能否|為什麼|為何|怎麼|如何|哪些|有沒有|嗎$/.test(s)||suspectedTimingTypo(s)||classifyDecisionQuestion(s).kind==='binary';}
+    parts.forEach(function(next){
+      if(interrogative(current)&&interrogative(next)&&!/^(?:如果|假如|假設|若|只要|除非|因為|由於|例如|譬如)/.test(current.trim())){out.push(current);current=next;}
+      else current+=','+next;
+    });
+    out.push(current);return out;
+  }
   function splitDiscourseUnits(text){
     var src=String(text||'').trim(), out=[];
     var re=/([^？?。；;！!\n]+)([？?。；;！!\n]+|$)/g,m,order=0;
     while((m=re.exec(src))){
       var body=clean(m[1]),punct=String(m[2]||'').trim();
       if(!body)continue;
-      out.push({id:'U'+(++order),text:body,punctuation:punct,raw:m[0].trim(),isQuestionPunct:/[？?]/.test(punct)});
+      var separated=splitIndependentQuestions(body);
+      separated.forEach(function(part,i){var end=i===separated.length-1?punct:'';out.push({id:'U'+(++order),text:clean(part),punctuation:end,raw:part+end,isQuestionPunct:/[？?]/.test(end)});});
     }
     if(!out.length&&src)out.push({id:'U1',text:clean(src),punct:'',raw:src,isQuestionPunct:/[？?]/.test(src)});
     return out;
@@ -556,15 +581,17 @@ function analyzeReadingQuestion(value) {
       willingness:/願不願意|是否願意|願意|不願意|同不同意|是否同意/.test(s),
       explicitSexualAct:/做愛|愛愛|性交|性行為|性愛|上床/.test(s),recurrenceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||null,
       lexicalInterpretation:lexical,
+      languageNotes:suspectedTimingTypo(s)?[{type:'suspected_timing_typo',surface:(s.match(/還(?:是|時)才(?:會|能|可以|可|有)/)||[])[0],candidate:'何時才',status:'provisional_unconfirmed',originalRetained:true}]:[],
       recurrenceContext:(/(?:還(?=(?:會|能|有|可以|可能|要|想))|再次|重新|再(?!是)|又)/.test(s))?{surfaceCue:(s.match(/再次|重新|還(?=(?:會|能|有|可以|可能|要|想))|再(?!是)|又/)||[])[0]||'',suggestedPremise:'可能延續或重現先前同類事件／機會',status:'linguistic_presupposition_unverified',priorOccurrenceVerified:false,instruction:'記錄原句暗示即可；除非使用者另行確認，不可當成先前事件已發生。'}:null,
       comparisonFrame:/(?:超過|高於|大於|多於|低於|小於|少於|等於|相同於|一樣多|持平)/.test(s),
-      actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),
+      actionSequence:actionMentions(s).map(function(a){return a.verb;}),participants:participantRoles(s,subject),measurementGoal:parseMeasurementGoal(s),measurementGoals:parseMeasurementGoals(s),
       openChoiceSet:/選(?:擇)?哪(?:一個|個|種)?|挑(?:選)?哪(?:一個|個|種)?/.test(s)?{status:'unspecified',object:(s.match(/(?:商品|產品|方案|職缺|學校|房子|平台|品項|供應商|服務)/)||[])[0]||null,selectionAction:actionMentions(s).map(function(a){return a.verb;})}:null,
       hidden:/暗|秘密|隱|沒說|未公開|真心|內心|心裡/.test(s)||(!evalFrame&&hasPrivateState(s)),
       confirmedOccurrence:ill.type!=='question'||/(?:已經|已|確定|顯示|確認)(?:[^，,。？?；;]{0,10})(?:中獎|錄取|成交|付款|入帳|到貨|出貨|簽約|發生|成立)|(?:我|他|她|對方)?(?:中了|錄取了|成交了|付款了|入帳了|到了|出貨了|簽約了)/.test(s),
       futureAction:false,
       occurrenceQuery:false,measurement:null,role:ill.type==='question'?'outcome':'context'
     };
+    if(frame.measurementGoal&&frame.measurementGoal.cadence){frame.temporal.continuity=true;frame.temporal.continuityBasis='explicit-measurement-cadence';}
     frame.conditions=(s.match(/(?:如果|若|假如|只要|除非|直到|必須|一旦)[^，,。？?；;！!]+/g)||[]).map(function(x){return x.trim();});
     frame.negations=(s.replace(/會不會|有沒有|能不能|可不可以|是不是|要不要/g,'').match(/不會|不能|沒有|未曾|尚未|不要|不再|不是|不成立|拒絕/g)||[]);
     frame.objectRef=extractObjectRef(s,subject);
@@ -819,6 +846,7 @@ function analyzeReadingQuestion(value) {
   }
 
   var ambiguities=[];
+  frames.forEach(function(f){(f.languageNotes||[]).forEach(function(n){ambiguities.push(Object.assign({clause:f.index,text:f.text},n));});if(f.measurementGoal&&f.measurementGoal.ambiguity)ambiguities.push(Object.assign({clause:f.index,text:f.text},f.measurementGoal.ambiguity));});
   frames.forEach(function(f){if(f.subjectSource==='surface_pronoun_ambiguous_context')ambiguities.push({clause:f.index,type:f.subjectSource,candidates:(f.coreferenceCandidates||[]).slice(),text:f.text});});
   frames.forEach(function(f){if(f.lexicalInterpretation)ambiguities.push({clause:f.index,type:f.lexicalInterpretation.ambiguityStatus==='ambiguous_unresolved'?'contextual_lexical_ambiguity':(f.lexicalInterpretation.surface==='公司體檢'?'contextual_lexical_interpretation':'lexical_polysemy'),surface:f.lexicalInterpretation.surface,candidates:f.lexicalInterpretation.candidates,selectedInterpretation:f.lexicalInterpretation.selectedInterpretation,selectionBasis:f.lexicalInterpretation.selectionBasis,ambiguityStatus:f.lexicalInterpretation.ambiguityStatus,userConfirmed:false,text:f.text});});
   var notes=[],criticalIssues=[];
@@ -854,7 +882,7 @@ function analyzeReadingQuestion(value) {
   var parseReady=queryIndices.length>0||options.length>0||frames.length>0;
   var ready=parseReady&&!missingDecisionOptions&&!incompleteDecision;
   var coverageStatus=missingDecisionOptions||incompleteDecision?'incomplete':(ambiguities.length?'ambiguous':(unresolved.length?'partial':'resolved'));
-  var contract={version:'4.3.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
+  var contract={version:'4.4.0',policy:'typed_graph_with_required_slot_validation',parseReady:parseReady,ready:ready,criticalIssues:criticalIssues,warnings:unresolved.slice(),branchCount:groups.length||options.length};
   var entityNodeMap={},entityNodes=[],relationEdges=[];
   function ensureNode(kind,label){if(!label)return null;var key=kind+':'+label;if(entityNodeMap[key])return entityNodeMap[key];var node={id:'N'+(entityNodes.length+1),kind:kind,label:label};entityNodeMap[key]=node;entityNodes.push(node);return node;}
   frames.forEach(function(f){
@@ -866,7 +894,7 @@ function analyzeReadingQuestion(value) {
   });
 
   var semantic={
-    version:'4.3.0',status:coverageStatus,
+    version:'4.4.0',status:coverageStatus,
     clauses:frames,
     graph:{nodes:frames.map(function(f){return {id:f.id,unitId:f.unitId,illocution:f.illocution,role:f.role,semanticFrame:f.semanticFrame,subjectRef:f.subjectRef,subjectSource:f.subjectSource,objectRef:f.objectRef,propositionRef:f.propositionRef,exampleRef:f.exampleRef,reportedSpeech:f.reportedSpeech,evaluatorRef:f.evaluatorRef,targetRef:f.targetRef,targetSource:f.targetSource,facetRef:f.facetRef,relationRef:f.relationRef,evaluation:f.evaluation,predicateClass:f.predicateClass,predicateHead:f.predicateHead,dimensions:f.dimensions,domains:f.domains,temporal:f.temporal,actorBoundFutureEvent:!!f.actorBoundFutureEvent,measurement:f.measurement,requestedPrecision:f.requestedPrecision,epistemicScope:f.epistemicScope};}),edges:links.concat(dependencies),discourseLinks:links,dependencies:dependencies,entityNodes:entityNodes,relationEdges:relationEdges},
     topology:{clauseCount:frames.length,questionCount:queryIndices.length,contextCount:frames.filter(function(f){return f.illocution==='context';}).length,exampleCount:frames.filter(function(f){return f.isExample;}).length,componentCount:components.length,dependent:dependent,maxDependencyDepth:(function(){var depth=1;for(var k=0;k<frames.length;k++){var d=1,cur=k,seen={};while(true){var e=dependencies.find(function(x){return x.to===cur&&x.from!==x.to&&!seen[x.from+'>'+x.to];});if(!e)break;seen[e.from+'>'+e.to]=1;d++;cur=e.from;}if(d>depth)depth=d;}return depth;})(),dimensions:allDims,domains:allDomains,targets:unique(frames.map(function(f){return f.targetRef;}).filter(Boolean)),facets:unique(frames.map(function(f){return f.facetRef;}).filter(Boolean)),relations:unique(frames.map(function(f){return f.relationRef;}).filter(Boolean)),longTerm:frames.some(function(f){return !!(f.temporal&&f.temporal.horizon==='long_term');}),continuity:frames.some(function(f){return !!(f.temporal&&f.temporal.continuity);}),evaluation:frames.some(function(f){return f.semanticFrame==='evaluation';})},
@@ -875,7 +903,7 @@ function analyzeReadingQuestion(value) {
   };
 
   return {
-    version:'4.3.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
+    version:'4.4.0',originalQuestion:raw,normalizedQuestion:q,mode:mode,decisionKind:decision.kind,options:options,
     actors:namedActors,branches:branches,clauses:frames,dependencies:dependencies,discourseLinks:links,ready:ready,notes:notes,contract:contract,
     scope:globalScope,monthly:monthly,daily:daily,semantic:semantic
   };

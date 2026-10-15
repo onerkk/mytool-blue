@@ -1,0 +1,6 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:astronomy-independent
+> node tests/astronomy-independent-20261014.cjs
+
+{"status":"passed","assertions":1140,"maximumDifferenceDegrees":0.005661537515152304,"swissVersion":"2.10.03","scope":"15 dates 1900–2100; two sidereal profiles; five houses, four latitudes, three dates. Event predictions are not validated."}

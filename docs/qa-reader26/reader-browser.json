@@ -1,0 +1,126 @@
+{
+  "release": "20261015reader26",
+  "cases": [
+    {
+      "name": "production mobile entry to actual Vedic export",
+      "status": "passed",
+      "version": "2.5.0",
+      "tasks": [
+        {
+          "id": "Q1",
+          "source": "我經濟壓力還是才會消失",
+          "sourceSpan": [
+            0,
+            11
+          ],
+          "goal": "timing",
+          "eventIds": [
+            "QUERY_EVENT"
+          ],
+          "explicitResults": [],
+          "requiredObservables": [
+            "state",
+            "temporal_sequence",
+            "obstacle"
+          ],
+          "measurement": [],
+          "answerRequired": true
+        },
+        {
+          "id": "Q2",
+          "source": "我副業何時才能每月營業額淨賺10萬",
+          "sourceSpan": [
+            12,
+            29
+          ],
+          "goal": "timing",
+          "eventIds": [
+            "QUERY_EVENT_02"
+          ],
+          "explicitResults": [
+            "淨賺"
+          ],
+          "requiredObservables": [
+            "state",
+            "threshold_outcome",
+            "temporal_sequence",
+            "trajectory",
+            "continuity"
+          ],
+          "measurement": [
+            {
+              "metric": "淨賺",
+              "kind": "amount",
+              "basis": "net_profit",
+              "threshold": {
+                "surface": "10萬",
+                "value": 100000,
+                "operator": "gte"
+              },
+              "cadence": "monthly",
+              "recurrence": {
+                "cadence": "monthly",
+                "required": true,
+                "consecutivePeriods": null,
+                "oneOffIsInsufficient": true
+              },
+              "currency": null,
+              "ambiguity": {
+                "type": "financial_metric_conflict",
+                "surfaces": [
+                  "營業額／營收",
+                  "淨賺"
+                ],
+                "provisionalInterpretation": "net_profit",
+                "basis": "原句明示淨賺；營業額與扣成本後利潤仍需分清",
+                "userConfirmed": false
+              }
+            }
+          ],
+          "answerRequired": true
+        }
+      ],
+      "divisions": [
+        1,
+        2,
+        9,
+        10
+      ],
+      "unchanged": true,
+      "sourceQuestion": "我經濟壓力還是才會消失，我副業何時才能每月營業額淨賺10萬？",
+      "hasResearchBoundary": true,
+      "noInventedExamples": true,
+      "promptCharacters": 225278
+    },
+    {
+      "name": "reduced-motion runtime retains current contract",
+      "status": "passed",
+      "workflow": "2.5.0",
+      "reading": "16.0.0",
+      "focus": [
+        1,
+        2,
+        9
+      ],
+      "bodyWidth": 393,
+      "viewport": 393
+    }
+  ],
+  "pageErrors": [],
+  "missing": [],
+  "lazyRequests": [
+    {
+      "path": "/JS/vedic-engine.js",
+      "version": "20261015reader26"
+    },
+    {
+      "path": "/JS/western-prompt.js",
+      "version": "20261015reader26"
+    },
+    {
+      "path": "/JS/vedic-prompt.js",
+      "version": "20261015reader26"
+    }
+  ],
+  "status": "passed"
+}

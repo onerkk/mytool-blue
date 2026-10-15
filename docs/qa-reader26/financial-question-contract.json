@@ -1,0 +1,1510 @@
+{
+  "requirements": {
+    "schema": "jy.request-requirements/1",
+    "version": "2.5.0",
+    "sourceQuestion": "我經濟壓力還是才會消失，我副業何時才能每月營業額淨賺10萬？",
+    "routing": "question-first-no-topic-whitelist",
+    "questionModelStatus": "atomized-with-marked-ambiguity",
+    "tasks": [
+      {
+        "id": "Q1",
+        "source": "我經濟壓力還是才會消失",
+        "sourceSpan": [
+          0,
+          11
+        ],
+        "goal": "timing",
+        "eventIds": [
+          "QUERY_EVENT"
+        ],
+        "explicitResults": [],
+        "requiredObservables": [
+          "state",
+          "temporal_sequence",
+          "obstacle"
+        ],
+        "measurement": [],
+        "answerRequired": true
+      },
+      {
+        "id": "Q2",
+        "source": "我副業何時才能每月營業額淨賺10萬",
+        "sourceSpan": [
+          12,
+          29
+        ],
+        "goal": "timing",
+        "eventIds": [
+          "QUERY_EVENT_02"
+        ],
+        "explicitResults": [
+          "淨賺"
+        ],
+        "requiredObservables": [
+          "state",
+          "threshold_outcome",
+          "temporal_sequence",
+          "trajectory",
+          "continuity"
+        ],
+        "measurement": [
+          {
+            "metric": "淨賺",
+            "kind": "amount",
+            "basis": "net_profit",
+            "threshold": {
+              "surface": "10萬",
+              "value": 100000,
+              "operator": "gte"
+            },
+            "cadence": "monthly",
+            "recurrence": {
+              "cadence": "monthly",
+              "required": true,
+              "consecutivePeriods": null,
+              "oneOffIsInsufficient": true
+            },
+            "currency": null,
+            "ambiguity": {
+              "type": "financial_metric_conflict",
+              "surfaces": [
+                "營業額／營收",
+                "淨賺"
+              ],
+              "provisionalInterpretation": "net_profit",
+              "basis": "原句明示淨賺；營業額與扣成本後利潤仍需分清",
+              "userConfirmed": false
+            }
+          }
+        ],
+        "answerRequired": true
+      }
+    ],
+    "precisionLimits": [
+      {
+        "dimension": "threshold_verification",
+        "status": "not-directly-measured",
+        "affects": "only-this-precision",
+        "haltsWholeReading": false,
+        "traditionalEstimate": "requires-named-rule-premises-and-global-synthesis"
+      }
+    ],
+    "obligations": [
+      "逐一回答原句真正提出的問題，未被分類的部分按原句理解",
+      "讀完本法仍有效的骨架、相關角色與實際作用，專用分類未命中不停止一般判讀",
+      "有據時收斂較支持的方向、程度與條件，不能只給可能有可能沒有",
+      "比較會改變答案的支持與限制，分清現況走向和採取建議後的推演",
+      "辨認重要且切題的連帶發現，以白話解釋影響與做法",
+      "只有具體受影響的精度、資料或程序受限；其餘回答照常完成"
+    ],
+    "inferenceBoundary": "可依本法可靠的一般判法解釋已列原始資料；這屬具名傳統判讀或讀者推導，不冒稱是引擎已自動裁決。不補生日、人物心意、未抽牌、未排運期或未提供背景。",
+    "unresolvedTaskRule": "若某子題仍不能成判，指出已檢查的實際資料、真正卡在哪一環，以及補什麼或觀察什麼能改變判斷；不以整題無法作答收尾。沒有切題證據時不編造象徵。",
+    "outputRule": "這是內部覆蓋契約，不是正文欄位。正文對一般人自然解惑，不照清單交作業。"
+  },
+  "caseBasis": {
+    "schema": "jy.case-basis/1",
+    "method": "vedic",
+    "sourceQuestion": "我經濟壓力還是才會消失，我副業何時才能每月營業額淨賺10萬？",
+    "focus": {
+      "schema": "jy.native-focus/1",
+      "sourceQuestion": "我經濟壓力還是才會消失，我副業何時才能每月營業額淨賺10萬？",
+      "domains": [
+        "career",
+        "finance"
+      ],
+      "aspects": [
+        {
+          "id": "finance",
+          "reason": "原句問金額、財務、收入或財務負擔",
+          "houses": [
+            2,
+            11,
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "id": "career",
+          "reason": "原句問工作、經營、客戶、合作或副業",
+          "houses": [
+            3,
+            7,
+            10,
+            11
+          ]
+        }
+      ],
+      "houses": [
+        2,
+        11,
+        6,
+        8,
+        12,
+        3,
+        7,
+        10
+      ],
+      "divisions": [
+        1,
+        2,
+        9,
+        10
+      ],
+      "thresholds": [
+        {
+          "taskId": "Q2",
+          "metric": "淨賺",
+          "kind": "amount",
+          "basis": "net_profit",
+          "threshold": {
+            "surface": "10萬",
+            "value": 100000,
+            "operator": "gte"
+          },
+          "cadence": "monthly",
+          "recurrence": {
+            "cadence": "monthly",
+            "required": true,
+            "consecutivePeriods": null,
+            "oneOffIsInsufficient": true
+          },
+          "currency": null,
+          "ambiguity": {
+            "type": "financial_metric_conflict",
+            "surfaces": [
+              "營業額／營收",
+              "淨賺"
+            ],
+            "provisionalInterpretation": "net_profit",
+            "basis": "原句明示淨賺；營業額與扣成本後利潤仍需分清",
+            "userConfirmed": false
+          }
+        }
+      ],
+      "origin": "original-question-and-typed-events",
+      "classificationIsWhitelist": false,
+      "fallback": "主題資料優先，仍檢視完整有效原局的重要連帶發現",
+      "distinctions": [
+        "先分一般改善、首次達標與持續達標",
+        "金額門檻是使用者的目標，不能從象徵換算現實金額",
+        "未給幣別、成本或帳款資料就保留未知，不能捏造"
+      ]
+    },
+    "paths": [
+      {
+        "path": "items",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "vargas",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "activation",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "strength",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "bhavaStrength",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "ashtakavarga",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      },
+      {
+        "path": "applicability",
+        "status": "present",
+        "scope": "實際資料入口，不等於完成事件裁決"
+      }
+    ],
+    "comparisonChecks": [
+      "主題宮主的職責、落處、定位星與實際受照先成判",
+      "有效專題分盤與同一運主承接；分清收入增加、成本負擔及留存",
+      "逐期比較當期與後期的支持及阻力；交運不自動等於達標"
+    ],
+    "methodBoundary": "專題分盤、力量與多運法各有用途，不投票也不從強度換算金額",
+    "research": {
+      "status": "source-log-provided-runtime-lookup-not-performed",
+      "sourceLog": [
+        {
+          "id": "bphssudarsana",
+          "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
+          "lastCheckedAt": "2026-10-03",
+          "reviewScope": "D1三輪、49七分盤分類、BPHS原始等數比強、本宮主例外；主文、極性與英譯註補四起始盤逐宮並算；名義2日/12ghatika細分算術不相容另列",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "sudarsana",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-03",
+          "reviewScope": "20分盤上升月日三參照、12月及144段、各次起始盤位和宮主相位、原生BAV核對；原例歧異及BPHS適用條件分列",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "tajaka",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-02",
+          "reviewScope": "年度及当期月／60小時盤、Harsha／Pancha／Dwadasa、歳月主、36Sahams、16Yoga與3年度Dasha；三友敵版本與印例差異並列",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "pvr20",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-02",
+          "reviewScope": "D5／D6／D8／D11補入全部原生分盤作用；Example15的D8末句與推導不符採公式",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "vedictransit",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-02",
+          "reviewScope": "Vedha與兩父子例外、入座時Murthi、27Tara及11特殊宿、PAV Kakshya、原BAV乘消減Pinda、20分盤雙向啟動",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "astronomy",
+          "url": "https://github.com/cosinekitty/astronomy",
+          "lastCheckedAt": "2026-10-14",
+          "reviewScope": "地心視位置與獨立星曆比較",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "swiss",
+          "url": "https://www.astro.com/swisseph/swephprg.htm",
+          "lastCheckedAt": "2026-10-04",
+          "reviewScope": "獨立星曆、宫位數值覆核；沒有納入 Swiss 程式庫",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "pvr",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-15",
+          "reviewScope": "作者教材第6章分盤用途、第11章財富組合、第25章專題行運及第32章出生精度；補正財務／副業詳細輸出選擇，未稱本輪讀完515頁",
+          "verification": "specified-passage-read"
+        },
+        {
+          "id": "brihatav",
+          "url": "https://upload.wikimedia.org/wikipedia/commons/c/c2/The_Brihat_jataka_%28IA_brihatjataka00varaiala%29.pdf",
+          "lastCheckedAt": "2026-10-03",
+          "reviewScope": "p162共主座一有曜一無曜等值清無曜座；本版Trikona仍採PVR，不混入本英譯兩零清第三座",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "bphs",
+          "url": "https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf",
+          "lastCheckedAt": "2026-10-02",
+          "reviewScope": "Santanam英譯六力公式；與Raman月相、動力、照射等差異明列",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "raman",
+          "url": "https://studylib.net/doc/28274582/bhava-and-graha-balas-b.v.raman-1996",
+          "lastCheckedAt": "2026-10-03",
+          "reviewScope": "七曜六力全部分項；第IX章十二Bhava方向／宮主／照射、九曜宮界比例及例59；第十二宮印表總分與分項不符，保留計算與印誤稽核",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "phala",
+          "url": "https://www.siva.sh/phaladeepika/7/26-30",
+          "lastCheckedAt": "2026-10-03",
+          "reviewScope": "7曜4項Neechabhanga條件；力量門檻與互居角宮版本具名",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "pvradvanced",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-04",
+          "reviewScope": "17補充Dasha、20盤Arudha／Argala、8Karaka、41Yoga與特殊點；Tables40/44/45與Examples6/10/30/59/80/95/96核對",
+          "verification": "prior-scoped-review"
+        },
+        {
+          "id": "pvrofficial",
+          "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+          "lastCheckedAt": "2026-10-15",
+          "reviewScope": "同一作者教材的用途與精度段；與pvr同源，不能當兩份獨立驗證",
+          "verification": "specified-passage-read"
+        },
+        {
+          "id": "swissapi",
+          "url": "https://www.astro.com/swisseph/swephprg.htm",
+          "lastCheckedAt": "2026-10-14",
+          "reviewScope": "UT/TT、UTC轉換、行星與宮位API規格；本站以獨立算法／資料覆核，時間尺度不可混用",
+          "verification": "prior-scoped-review"
+        }
+      ],
+      "runtimeBrowsingPerformed": false,
+      "unimplementedOrUncertain": [
+        {
+          "message": "未有可靠公開算法且未實作的地方傳承不偽造；已實算多運法須先讀 applicability",
+          "kind": "technical-rule-or-implementation",
+          "resolved": false
+        }
+      ],
+      "rule": "先核既有來源的實際適用段落。不確定取法時由具瀏覽能力的解讀端真實查閱一手資料，記實際URL及核到的規則；未能查到保留未決，不冒稱本輪查過。未實作算法需補程式與對照後才算完成，只有文獻不算已實算。個人現況缺項不能靠網路或命理補造。"
+    },
+    "judgementStatus": "requires-source-based-synthesis",
+    "humanPractitionerPerformed": false,
+    "predictionValidated": false,
+    "topicRoles": [
+      {
+        "topicHouse": 2,
+        "houseSign": 9,
+        "lord": "Saturn",
+        "lordOwns": [
+          2,
+          3
+        ],
+        "lordOccupies": 11,
+        "lordSign": 6,
+        "dignity": {
+          "status": "exalted",
+          "label": "擢升區",
+          "exaltedSign": true,
+          "debilitated": false,
+          "exaltationDistance": 13.560764212725644
+        },
+        "solar": {
+          "separationDegrees": 58.545961265413325,
+          "thresholdDegrees": 15,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [],
+        "incomingAspects": [
+          {
+            "from": "Mars",
+            "step": 4,
+            "toSign": 6,
+            "toHouse": 11,
+            "toPlanets": [
+              "Saturn"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Saturn",
+          "chain": [
+            "Saturn",
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.1",
+          "planets.Saturn",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 3,
+        "houseSign": 10,
+        "lord": "Saturn",
+        "lordOwns": [
+          2,
+          3
+        ],
+        "lordOccupies": 11,
+        "lordSign": 6,
+        "dignity": {
+          "status": "exalted",
+          "label": "擢升區",
+          "exaltedSign": true,
+          "debilitated": false,
+          "exaltationDistance": 13.560764212725644
+        },
+        "solar": {
+          "separationDegrees": 58.545961265413325,
+          "thresholdDegrees": 15,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [
+          "Moon"
+        ],
+        "incomingAspects": [
+          {
+            "from": "Mars",
+            "step": 4,
+            "toSign": 6,
+            "toHouse": 11,
+            "toPlanets": [
+              "Saturn"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Saturn",
+          "chain": [
+            "Saturn",
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.2",
+          "planets.Saturn",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 6,
+        "houseSign": 1,
+        "lord": "Venus",
+        "lordOwns": [
+          6,
+          11
+        ],
+        "lordOccupies": 9,
+        "lordSign": 4,
+        "dignity": {
+          "status": "enemy",
+          "label": "敵星座",
+          "exaltedSign": false,
+          "debilitated": false,
+          "exaltationDistance": 130.7392268988021
+        },
+        "solar": {
+          "separationDegrees": 0.15404762305888653,
+          "thresholdDegrees": 8,
+          "combust": true,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": true,
+        "occupants": [
+          "Rahu"
+        ],
+        "incomingAspects": [
+          {
+            "from": "Moon",
+            "step": 7,
+            "toSign": 4,
+            "toHouse": 9,
+            "toPlanets": [
+              "Sun",
+              "Venus"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Venus",
+          "chain": [
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.5",
+          "planets.Venus",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 7,
+        "houseSign": 2,
+        "lord": "Mercury",
+        "lordOwns": [
+          7,
+          10
+        ],
+        "lordOccupies": 10,
+        "lordSign": 5,
+        "dignity": {
+          "status": "exalted",
+          "label": "擢升區",
+          "exaltedSign": true,
+          "debilitated": false,
+          "exaltationDistance": 10.638953720638028
+        },
+        "solar": {
+          "separationDegrees": 26.46777175750094,
+          "thresholdDegrees": 14,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [],
+        "incomingAspects": [],
+        "dispositorChain": {
+          "planet": "Mercury",
+          "chain": [
+            "Mercury"
+          ],
+          "closesAt": "Mercury",
+          "cycle": [
+            "Mercury"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.6",
+          "planets.Mercury",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 8,
+        "houseSign": 3,
+        "lord": "Moon",
+        "lordOwns": [
+          8
+        ],
+        "lordOccupies": 3,
+        "lordSign": 10,
+        "dignity": {
+          "status": "neutral",
+          "label": "中性星座",
+          "exaltedSign": false,
+          "debilitated": false,
+          "exaltationDistance": 66.80198847572387
+        },
+        "solar": {
+          "separationDegrees": 161.69526299758485,
+          "thresholdDegrees": 12,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [
+          "Mars"
+        ],
+        "incomingAspects": [
+          {
+            "from": "Sun",
+            "step": 7,
+            "toSign": 10,
+            "toHouse": 3,
+            "toPlanets": [
+              "Moon"
+            ]
+          },
+          {
+            "from": "Mars",
+            "step": 8,
+            "toSign": 10,
+            "toHouse": 3,
+            "toPlanets": [
+              "Moon"
+            ]
+          },
+          {
+            "from": "Venus",
+            "step": 7,
+            "toSign": 10,
+            "toHouse": 3,
+            "toPlanets": [
+              "Moon"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Moon",
+          "chain": [
+            "Moon",
+            "Saturn",
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.7",
+          "planets.Moon",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 10,
+        "houseSign": 5,
+        "lord": "Mercury",
+        "lordOwns": [
+          7,
+          10
+        ],
+        "lordOccupies": 10,
+        "lordSign": 5,
+        "dignity": {
+          "status": "exalted",
+          "label": "擢升區",
+          "exaltedSign": true,
+          "debilitated": false,
+          "exaltationDistance": 10.638953720638028
+        },
+        "solar": {
+          "separationDegrees": 26.46777175750094,
+          "thresholdDegrees": 14,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [
+          "Mercury"
+        ],
+        "incomingAspects": [],
+        "dispositorChain": {
+          "planet": "Mercury",
+          "chain": [
+            "Mercury"
+          ],
+          "closesAt": "Mercury",
+          "cycle": [
+            "Mercury"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.9",
+          "planets.Mercury",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 11,
+        "houseSign": 6,
+        "lord": "Venus",
+        "lordOwns": [
+          6,
+          11
+        ],
+        "lordOccupies": 9,
+        "lordSign": 4,
+        "dignity": {
+          "status": "enemy",
+          "label": "敵星座",
+          "exaltedSign": false,
+          "debilitated": false,
+          "exaltationDistance": 130.7392268988021
+        },
+        "solar": {
+          "separationDegrees": 0.15404762305888653,
+          "thresholdDegrees": 8,
+          "combust": true,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": true,
+        "occupants": [
+          "Saturn"
+        ],
+        "incomingAspects": [
+          {
+            "from": "Moon",
+            "step": 7,
+            "toSign": 4,
+            "toHouse": 9,
+            "toPlanets": [
+              "Sun",
+              "Venus"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Venus",
+          "chain": [
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.10",
+          "planets.Venus",
+          "aspects.graha",
+          "dispositors"
+        ]
+      },
+      {
+        "topicHouse": 12,
+        "houseSign": 7,
+        "lord": "Mars",
+        "lordOwns": [
+          5,
+          12
+        ],
+        "lordOccupies": 8,
+        "lordSign": 3,
+        "dignity": {
+          "status": "debilitated",
+          "label": "落陷區",
+          "exaltedSign": false,
+          "debilitated": true,
+          "exaltationDistance": 165.83085023461706
+        },
+        "solar": {
+          "separationDegrees": 24.062424287243857,
+          "thresholdDegrees": 17,
+          "combust": false,
+          "nearBoundary": false,
+          "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+          "motionSensitive": false
+        },
+        "retrograde": false,
+        "occupants": [
+          "Jupiter",
+          "Ketu"
+        ],
+        "incomingAspects": [
+          {
+            "from": "Jupiter",
+            "step": 9,
+            "toSign": 3,
+            "toHouse": 8,
+            "toPlanets": [
+              "Mars"
+            ]
+          },
+          {
+            "from": "Saturn",
+            "step": 10,
+            "toSign": 3,
+            "toHouse": 8,
+            "toPlanets": [
+              "Mars"
+            ]
+          }
+        ],
+        "dispositorChain": {
+          "planet": "Mars",
+          "chain": [
+            "Mars",
+            "Moon",
+            "Saturn",
+            "Venus",
+            "Sun"
+          ],
+          "closesAt": "Sun",
+          "cycle": [
+            "Sun"
+          ],
+          "selfDispositor": true
+        },
+        "sourcePaths": [
+          "houses.11",
+          "planets.Mars",
+          "aspects.graha",
+          "dispositors"
+        ]
+      }
+    ],
+    "divisionChecks": [
+      {
+        "division": 1,
+        "purpose": "本命與整體",
+        "available": true,
+        "lagna": {
+          "division": 1,
+          "sign": 8,
+          "signName": "射手",
+          "part": 1
+        },
+        "planets": {
+          "Sun": {
+            "division": 1,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 1,
+            "house": 9,
+            "vargottama": false
+          },
+          "Moon": {
+            "division": 1,
+            "sign": 10,
+            "signName": "水瓶",
+            "part": 1,
+            "house": 3,
+            "vargottama": false
+          },
+          "Mars": {
+            "division": 1,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 1,
+            "house": 8,
+            "vargottama": false
+          },
+          "Mercury": {
+            "division": 1,
+            "sign": 5,
+            "signName": "處女",
+            "part": 1,
+            "house": 10,
+            "vargottama": false
+          },
+          "Jupiter": {
+            "division": 1,
+            "sign": 7,
+            "signName": "天蠍",
+            "part": 1,
+            "house": 12,
+            "vargottama": false
+          },
+          "Venus": {
+            "division": 1,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 1,
+            "house": 9,
+            "vargottama": false
+          },
+          "Saturn": {
+            "division": 1,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 1,
+            "house": 11,
+            "vargottama": false
+          },
+          "Rahu": {
+            "division": 1,
+            "sign": 1,
+            "signName": "金牛",
+            "part": 1,
+            "house": 6,
+            "vargottama": false
+          },
+          "Ketu": {
+            "division": 1,
+            "sign": 7,
+            "signName": "天蠍",
+            "part": 1,
+            "house": 12,
+            "vargottama": false
+          }
+        },
+        "sourcePath": "vargas.1",
+        "scope": "依本次提供的出生精度使用；未給誤差就不宣稱細分位置穩定"
+      },
+      {
+        "division": 2,
+        "purpose": "財富與資源",
+        "available": true,
+        "lagna": {
+          "division": 2,
+          "sign": 4,
+          "signName": "獅子",
+          "part": 1
+        },
+        "planets": {
+          "Sun": {
+            "division": 2,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 1,
+            "house": 1,
+            "vargottama": false
+          },
+          "Moon": {
+            "division": 2,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 2,
+            "house": 12,
+            "vargottama": false
+          },
+          "Mars": {
+            "division": 2,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 1,
+            "house": 12,
+            "vargottama": false
+          },
+          "Mercury": {
+            "division": 2,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 1,
+            "house": 12,
+            "vargottama": false
+          },
+          "Jupiter": {
+            "division": 2,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 1,
+            "house": 12,
+            "vargottama": false
+          },
+          "Venus": {
+            "division": 2,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 1,
+            "house": 1,
+            "vargottama": false
+          },
+          "Saturn": {
+            "division": 2,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 1,
+            "house": 1,
+            "vargottama": false
+          },
+          "Rahu": {
+            "division": 2,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 2,
+            "house": 1,
+            "vargottama": false
+          },
+          "Ketu": {
+            "division": 2,
+            "sign": 4,
+            "signName": "獅子",
+            "part": 2,
+            "house": 1,
+            "vargottama": false
+          }
+        },
+        "sourcePath": "vargas.2",
+        "scope": "依本次提供的出生精度使用；未給誤差就不宣稱細分位置穩定"
+      },
+      {
+        "division": 9,
+        "purpose": "關係與成熟",
+        "available": true,
+        "lagna": {
+          "division": 9,
+          "sign": 3,
+          "signName": "巨蟹",
+          "part": 4
+        },
+        "planets": {
+          "Sun": {
+            "division": 9,
+            "sign": 2,
+            "signName": "雙子",
+            "part": 3,
+            "house": 12,
+            "vargottama": false
+          },
+          "Moon": {
+            "division": 9,
+            "sign": 1,
+            "signName": "金牛",
+            "part": 8,
+            "house": 11,
+            "vargottama": false
+          },
+          "Mars": {
+            "division": 9,
+            "sign": 7,
+            "signName": "天蠍",
+            "part": 5,
+            "house": 5,
+            "vargottama": false
+          },
+          "Mercury": {
+            "division": 9,
+            "sign": 10,
+            "signName": "水瓶",
+            "part": 2,
+            "house": 8,
+            "vargottama": false
+          },
+          "Jupiter": {
+            "division": 9,
+            "sign": 5,
+            "signName": "處女",
+            "part": 3,
+            "house": 3,
+            "vargottama": false
+          },
+          "Venus": {
+            "division": 9,
+            "sign": 2,
+            "signName": "雙子",
+            "part": 3,
+            "house": 12,
+            "vargottama": false
+          },
+          "Saturn": {
+            "division": 9,
+            "sign": 7,
+            "signName": "天蠍",
+            "part": 2,
+            "house": 5,
+            "vargottama": false
+          },
+          "Rahu": {
+            "division": 9,
+            "sign": 5,
+            "signName": "處女",
+            "part": 9,
+            "house": 3,
+            "vargottama": false
+          },
+          "Ketu": {
+            "division": 9,
+            "sign": 11,
+            "signName": "雙魚",
+            "part": 9,
+            "house": 9,
+            "vargottama": false
+          }
+        },
+        "sourcePath": "vargas.9",
+        "scope": "依本次提供的出生精度使用；未給誤差就不宣稱細分位置穩定"
+      },
+      {
+        "division": 10,
+        "purpose": "工作與成就",
+        "available": true,
+        "lagna": {
+          "division": 10,
+          "sign": 0,
+          "signName": "牡羊",
+          "part": 5
+        },
+        "planets": {
+          "Sun": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 3,
+            "house": 7,
+            "vargottama": false
+          },
+          "Moon": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 9,
+            "house": 7,
+            "vargottama": false
+          },
+          "Mars": {
+            "division": 10,
+            "sign": 3,
+            "signName": "巨蟹",
+            "part": 5,
+            "house": 4,
+            "vargottama": false
+          },
+          "Mercury": {
+            "division": 10,
+            "sign": 2,
+            "signName": "雙子",
+            "part": 2,
+            "house": 3,
+            "vargottama": false
+          },
+          "Jupiter": {
+            "division": 10,
+            "sign": 5,
+            "signName": "處女",
+            "part": 3,
+            "house": 6,
+            "vargottama": false
+          },
+          "Venus": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 3,
+            "house": 7,
+            "vargottama": false
+          },
+          "Saturn": {
+            "division": 10,
+            "sign": 8,
+            "signName": "射手",
+            "part": 3,
+            "house": 9,
+            "vargottama": false
+          },
+          "Rahu": {
+            "division": 10,
+            "sign": 6,
+            "signName": "天秤",
+            "part": 10,
+            "house": 7,
+            "vargottama": false
+          },
+          "Ketu": {
+            "division": 10,
+            "sign": 0,
+            "signName": "牡羊",
+            "part": 10,
+            "house": 1,
+            "vargottama": false
+          }
+        },
+        "sourcePath": "vargas.10",
+        "scope": "依本次提供的出生精度使用；未給誤差就不宣稱細分位置穩定"
+      }
+    ],
+    "currentPeriodChecks": [
+      {
+        "layer": "maha",
+        "lord": "Mercury",
+        "start": "2011-03-18T05:49:57.400Z",
+        "endExclusive": "2028-03-17T08:46:21.400Z",
+        "owns": [
+          7,
+          10
+        ],
+        "occupies": 10,
+        "conditions": {
+          "dignity": {
+            "status": "exalted",
+            "label": "擢升區",
+            "exaltedSign": true,
+            "debilitated": false,
+            "exaltationDistance": 10.638953720638028
+          },
+          "solar": {
+            "separationDegrees": 26.46777175750094,
+            "thresholdDegrees": 14,
+            "combust": false,
+            "nearBoundary": false,
+            "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+            "motionSensitive": false
+          }
+        },
+        "dispositor": "Mercury",
+        "vargaHouses": [
+          {
+            "division": 1,
+            "placement": {
+              "planet": "Mercury",
+              "division": 1,
+              "sign": 5,
+              "signName": "處女",
+              "part": 1,
+              "house": 10,
+              "vargottama": false,
+              "dignity": "exalted"
+            }
+          },
+          {
+            "division": 2,
+            "placement": {
+              "planet": "Mercury",
+              "division": 2,
+              "sign": 3,
+              "signName": "巨蟹",
+              "part": 1,
+              "house": 12,
+              "vargottama": false,
+              "dignity": "enemy"
+            }
+          },
+          {
+            "division": 9,
+            "placement": {
+              "planet": "Mercury",
+              "division": 9,
+              "sign": 10,
+              "signName": "水瓶",
+              "part": 2,
+              "house": 8,
+              "vargottama": false,
+              "dignity": "neutral"
+            }
+          },
+          {
+            "division": 10,
+            "placement": {
+              "planet": "Mercury",
+              "division": 10,
+              "sign": 2,
+              "signName": "雙子",
+              "part": 2,
+              "house": 3,
+              "vargottama": false,
+              "dignity": "own"
+            }
+          }
+        ],
+        "aspects": [
+          {
+            "from": "Mercury",
+            "step": 7,
+            "toSign": 11,
+            "toHouse": 4,
+            "toPlanets": []
+          }
+        ]
+      },
+      {
+        "layer": "antar",
+        "lord": "Saturn",
+        "start": "2025-07-08T06:06:25.600Z",
+        "endExclusive": "2028-03-17T08:46:21.400Z",
+        "owns": [
+          2,
+          3
+        ],
+        "occupies": 11,
+        "conditions": {
+          "dignity": {
+            "status": "exalted",
+            "label": "擢升區",
+            "exaltedSign": true,
+            "debilitated": false,
+            "exaltationDistance": 13.560764212725644
+          },
+          "solar": {
+            "separationDegrees": 58.545961265413325,
+            "thresholdDegrees": 15,
+            "combust": false,
+            "nearBoundary": false,
+            "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+            "motionSensitive": false
+          }
+        },
+        "dispositor": "Venus",
+        "vargaHouses": [
+          {
+            "division": 1,
+            "placement": {
+              "planet": "Saturn",
+              "division": 1,
+              "sign": 6,
+              "signName": "天秤",
+              "part": 1,
+              "house": 11,
+              "vargottama": false,
+              "dignity": "exalted"
+            }
+          },
+          {
+            "division": 2,
+            "placement": {
+              "planet": "Saturn",
+              "division": 2,
+              "sign": 4,
+              "signName": "獅子",
+              "part": 1,
+              "house": 1,
+              "vargottama": false,
+              "dignity": "enemy"
+            }
+          },
+          {
+            "division": 9,
+            "placement": {
+              "planet": "Saturn",
+              "division": 9,
+              "sign": 7,
+              "signName": "天蠍",
+              "part": 2,
+              "house": 5,
+              "vargottama": false,
+              "dignity": "enemy"
+            }
+          },
+          {
+            "division": 10,
+            "placement": {
+              "planet": "Saturn",
+              "division": 10,
+              "sign": 8,
+              "signName": "射手",
+              "part": 3,
+              "house": 9,
+              "vargottama": false,
+              "dignity": "neutral"
+            }
+          }
+        ],
+        "aspects": [
+          {
+            "from": "Mars",
+            "step": 4,
+            "toSign": 6,
+            "toHouse": 11,
+            "toPlanets": [
+              "Saturn"
+            ]
+          },
+          {
+            "from": "Saturn",
+            "step": 3,
+            "toSign": 8,
+            "toHouse": 1,
+            "toPlanets": []
+          },
+          {
+            "from": "Saturn",
+            "step": 7,
+            "toSign": 0,
+            "toHouse": 5,
+            "toPlanets": []
+          },
+          {
+            "from": "Saturn",
+            "step": 10,
+            "toSign": 3,
+            "toHouse": 8,
+            "toPlanets": [
+              "Mars"
+            ]
+          }
+        ]
+      },
+      {
+        "layer": "pratyantar",
+        "lord": "Venus",
+        "start": "2026-06-25T12:51:44.095Z",
+        "endExclusive": "2026-12-06T09:18:23.395Z",
+        "owns": [
+          6,
+          11
+        ],
+        "occupies": 9,
+        "conditions": {
+          "dignity": {
+            "status": "enemy",
+            "label": "敵星座",
+            "exaltedSign": false,
+            "debilitated": false,
+            "exaltationDistance": 130.7392268988021
+          },
+          "solar": {
+            "separationDegrees": 0.15404762305888653,
+            "thresholdDegrees": 8,
+            "combust": true,
+            "nearBoundary": false,
+            "method": "Surya Siddhanta angular convention (Drik Panchang documentation); longitude separation, not local heliacal visibility",
+            "motionSensitive": false
+          }
+        },
+        "dispositor": "Sun",
+        "vargaHouses": [
+          {
+            "division": 1,
+            "placement": {
+              "planet": "Venus",
+              "division": 1,
+              "sign": 4,
+              "signName": "獅子",
+              "part": 1,
+              "house": 9,
+              "vargottama": false,
+              "dignity": "enemy"
+            }
+          },
+          {
+            "division": 2,
+            "placement": {
+              "planet": "Venus",
+              "division": 2,
+              "sign": 4,
+              "signName": "獅子",
+              "part": 1,
+              "house": 1,
+              "vargottama": false,
+              "dignity": "enemy"
+            }
+          },
+          {
+            "division": 9,
+            "placement": {
+              "planet": "Venus",
+              "division": 9,
+              "sign": 2,
+              "signName": "雙子",
+              "part": 3,
+              "house": 12,
+              "vargottama": false,
+              "dignity": "friend"
+            }
+          },
+          {
+            "division": 10,
+            "placement": {
+              "planet": "Venus",
+              "division": 10,
+              "sign": 6,
+              "signName": "天秤",
+              "part": 3,
+              "house": 7,
+              "vargottama": false,
+              "dignity": "own"
+            }
+          }
+        ],
+        "aspects": [
+          {
+            "from": "Moon",
+            "step": 7,
+            "toSign": 4,
+            "toHouse": 9,
+            "toPlanets": [
+              "Sun",
+              "Venus"
+            ]
+          },
+          {
+            "from": "Venus",
+            "step": 7,
+            "toSign": 10,
+            "toHouse": 3,
+            "toPlanets": [
+              "Moon"
+            ]
+          }
+        ]
+      }
+    ],
+    "timingBoundary": "當期資料可檢查當期作用；其他已列區間仍須按運主同尺度比較，不由交運日期自動判作收入目標日期。"
+  }
+}
