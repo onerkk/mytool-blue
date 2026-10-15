@@ -1,0 +1,42 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test:single-paste
+> node scripts/sync-recommendation-guides.cjs --check && node tests/single-paste-20261015.cjs && node tests/single-paste-ootk-20261015.cjs && node tests/single-paste-layouts-20261015.cjs
+
+Reading v16.0.0 / recommendation v5.3.0: all generated copies match
+PASS bazi real exporter
+PASS ziwei real exporter
+PASS astro real exporter
+PASS vedic real exporter
+PASS liuren real exporter
+PASS liuyao real exporter
+PASS yijing real exporter
+PASS meihua real exporter
+PASS name real exporter
+PASS compat real exporter
+PASS personality real exporter
+PASS tarot real exporter
+PASS lenormand real exporter
+PASS ootk real exporter
+PASS oracle real exporter
+PASS provided financial question retains both outcomes and exact wording
+PASS Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit
+PASS two charts share one instruction block and retain both entire palace tables
+PASS eighty explicit annual rows are never replaced by a top-N sample
+PASS provided Yijing cast retains selected text and all six moving statuses
+PASS full production OOTK preserves every active order, counting step and pair
+PASS Unicode or oversized old exports fail before clipboard and never split
+PASS standalone prompt-brief and prompt-packet carry the same canonical runtime
+{"status":"passed","passed":23,"failed":0}
+[DEEP] 小阿爾克那 56 張深度解讀已載入
+[DEEP] 宮廷牌 16 張深度解讀已載入，78/78 完成
+[牌陣] 自適應佈局 v2 + 完成判定已啟用
+[OOTK v95] Golden Dawn Book T Opening of the Key 已載入
+[OOTK-UI] Opening of the Key 前端 UI 已載入
+{"release":"20261015paste27","cases":[{"seed":0,"characters":7184,"bytes":14382},{"seed":1,"characters":7300,"bytes":14848},{"seed":2,"characters":7107,"bytes":14445},{"seed":3,"characters":7316,"bytes":15000},{"seed":4,"characters":7300,"bytes":14910},{"seed":5,"characters":7204,"bytes":14520},{"seed":6,"characters":7166,"bytes":14296},{"seed":7,"characters":6933,"bytes":14047},{"seed":8,"characters":7055,"bytes":14033},{"seed":9,"characters":7066,"bytes":14200},{"seed":10,"characters":7178,"bytes":14388},{"seed":11,"characters":7183,"bytes":14535},{"seed":12,"characters":7289,"bytes":14705},{"seed":13,"characters":7126,"bytes":14342},{"seed":14,"characters":7140,"bytes":14178},{"seed":15,"characters":7079,"bytes":14395},{"seed":16,"characters":7106,"bytes":14422},{"seed":17,"characters":7090,"bytes":14358},{"seed":18,"characters":7015,"bytes":14233},{"seed":19,"characters":7281,"bytes":14505},{"seed":20,"characters":6809,"bytes":13757},{"seed":21,"characters":7189,"bytes":14679},{"seed":22,"characters":7269,"bytes":14585},{"seed":23,"characters":6825,"bytes":13803},{"seed":24,"characters":7435,"bytes":14947},{"seed":25,"characters":7274,"bytes":14636},{"seed":26,"characters":7297,"bytes":14773},{"seed":27,"characters":7182,"bytes":14260},{"seed":28,"characters":7398,"bytes":14860},{"seed":29,"characters":7522,"bytes":14750},{"seed":30,"characters":7243,"bytes":14819},{"seed":31,"characters":7237,"bytes":14481}],"failures":[],"status":"passed"}
+36-card layouts: all three complete layouts passed.
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice

@@ -104,7 +104,9 @@
     "test:counsel-voice": "node tests/counsel-voice-20261014.cjs",
     "test:practitioner-narrative": "node tests/practitioner-narrative-20261014.cjs",
     "test:plain-language": "node tests/plain-language-20261014.cjs",
-    "test:ritual-visibility:browser": "node tests/ritual-visibility-browser-20261014.cjs"
+    "test:ritual-visibility:browser": "node tests/ritual-visibility-browser-20261014.cjs",
+    "test:single-paste": "node scripts/sync-recommendation-guides.cjs --check && node tests/single-paste-20261015.cjs && node tests/single-paste-ootk-20261015.cjs && node tests/single-paste-layouts-20261015.cjs",
+    "test:single-paste:browser": "node tests/single-paste-browser-20261015.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",

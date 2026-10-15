@@ -10,7 +10,6 @@ const endingMap=keys=>Object.fromEntries(keys.map(k=>[k,q.recommendationEnding(k
 const targets=[
   ['JS/liuren-prompt.js','JY_REC_LIUREN',q.recommendationEnding('liuren')],
   ['JS/prompt-packet.js','JY_REC_PACKET',endingMap(q.methodKinds())],
-  ['JS/prompt-brief.js','JY_REC_BRIEF',endingMap(q.methodKinds())],
   ['JS/name-prompt.js','JY_REC_NAME',q.recommendationEnding('name')],
   ['JS/gua-prompt.js','JY_REC_GUA',{liuyao:q.recommendationEnding('liuyao'),yijing:q.recommendationEnding('yijing')}],
   ['JS/bazi-prompt-root.js','JY_REC_BAZI',textMap(['bazi','compat','personality','chart'])],
@@ -126,6 +125,17 @@ const childRuntime='// BEGIN GENERATED BAZI CHILDREN RUNTIME\n'+fs.readFileSync(
 const childRe=/\/\/ BEGIN GENERATED BAZI CHILDREN RUNTIME\n[\s\S]*?\/\/ END GENERATED BAZI CHILDREN RUNTIME\n/;
 persist(childHost,childRe.test(childOld)?childOld.replace(childRe,()=>childRuntime):childRuntime+childOld);
 persist('bazi-child-analysis.js',fs.readFileSync(path.join(root,'JS/bazi-child-analysis.js'),'utf8'));
+// One canonical compiler for normal, standalone and mixed-cache packet exports.
+// The compiler is embedded in the two delivery hosts so loading either host
+// cannot fall back to the old unbounded JSON or numbered-message formatter.
+const singleSource=fs.readFileSync(path.join(root,'JS/prompt-single-paste.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
+const singleRuntime='// BEGIN GENERATED SINGLE PASTE RUNTIME\n'+singleSource.trimEnd()+'\n// END GENERATED SINGLE PASTE RUNTIME\n';
+const singleRe=/\/\/ BEGIN GENERATED SINGLE PASTE RUNTIME\n[\s\S]*?\/\/ END GENERATED SINGLE PASTE RUNTIME\n/;
+for(const f of ['JS/prompt-brief.js','JS/prompt-packet.js']){
+  const old=fs.readFileSync(path.join(root,f),'utf8');
+  persist(f,singleRe.test(old)?old.replace(singleRe,()=>singleRuntime):singleRuntime+old);
+}
+persist('prompt-single-paste.js',fs.readFileSync(path.join(root,'JS/prompt-single-paste.js'),'utf8'));
 for(const file of new Set(mirrors.concat(['native-depth-contract.js','prompt-brief.js','prompt-packet.js','engine-computation-audit.js','reading-workflow.js','tarot-semantic-engine.js','astro-bridge.js','western-standalone.js','vedic-standalone.js','name-standalone.js'].filter(f=>fs.existsSync(path.join(root,f))))))persist(file,fs.readFileSync(path.join(root,'JS',file),'utf8'));
 // Keep the retained API's OOTK adapter on the same data/read/review code. A
 // scoped runtime works both in Pages and in data-URL test module loaders.

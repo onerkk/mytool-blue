@@ -1,0 +1,24 @@
+PASS bazi real exporter
+PASS ziwei real exporter
+PASS astro real exporter
+PASS vedic real exporter
+PASS liuren real exporter
+PASS liuyao real exporter
+PASS yijing real exporter
+PASS meihua real exporter
+PASS name real exporter
+PASS compat real exporter
+PASS personality real exporter
+PASS tarot real exporter
+PASS lenormand real exporter
+PASS ootk real exporter
+PASS oracle real exporter
+PASS provided financial question retains both outcomes and exact wording
+PASS Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit
+PASS two charts share one instruction block and retain both entire palace tables
+PASS eighty explicit annual rows are never replaced by a top-N sample
+PASS provided Yijing cast retains selected text and all six moving statuses
+PASS full production OOTK preserves every active order, counting step and pair
+PASS Unicode or oversized old exports fail before clipboard and never split
+PASS standalone prompt-brief and prompt-packet carry the same canonical runtime
+{"status":"passed","passed":23,"failed":0}

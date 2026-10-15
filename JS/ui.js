@@ -5808,7 +5808,7 @@ showAuraResult = function(){
       var asset=new URL(src,location.href);
       // Every local lazy module uses this release, including hosts with older
       // hard-coded call-site query strings. Keep external URLs untouched.
-      if(asset.origin===location.origin&&/\/JS\/[^?#]+\.js$/.test(asset.pathname)){asset.searchParams.set('v','20261015reader26');src=asset.href;}
+      if(asset.origin===location.origin&&/\/JS\/[^?#]+\.js$/.test(asset.pathname)){asset.searchParams.set('v','20261015paste27');src=asset.href;}
       key=asset.pathname;
     }catch(e){if(cb)cb(false);return;}
     var entry=jyScriptLoads[key];

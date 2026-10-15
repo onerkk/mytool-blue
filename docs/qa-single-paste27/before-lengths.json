@@ -1,0 +1,92 @@
+[
+  {
+    "method": "bazi",
+    "characters": 54947,
+    "bytes": 92545,
+    "parts": 8
+  },
+  {
+    "method": "ziwei",
+    "characters": 53453,
+    "bytes": 106349,
+    "parts": 8
+  },
+  {
+    "method": "astro",
+    "characters": 25147,
+    "bytes": 45027,
+    "parts": 4
+  },
+  {
+    "method": "vedic",
+    "characters": 310506,
+    "bytes": 374120,
+    "parts": 45
+  },
+  {
+    "method": "liuren",
+    "characters": 59011,
+    "bytes": 91715,
+    "parts": 9
+  },
+  {
+    "method": "liuyao",
+    "characters": 18852,
+    "bytes": 36918,
+    "parts": 3
+  },
+  {
+    "method": "yijing",
+    "characters": 18055,
+    "bytes": 36557,
+    "parts": 3
+  },
+  {
+    "method": "meihua",
+    "characters": 15008,
+    "bytes": 32664,
+    "parts": 3
+  },
+  {
+    "method": "name",
+    "characters": 23449,
+    "bytes": 46029,
+    "parts": 4
+  },
+  {
+    "method": "compat",
+    "characters": 28240,
+    "bytes": 51108,
+    "parts": 5
+  },
+  {
+    "method": "personality",
+    "characters": 11458,
+    "bytes": 25176,
+    "parts": 2
+  },
+  {
+    "method": "tarot",
+    "characters": 10978,
+    "bytes": 25159,
+    "parts": 2
+  },
+  {
+    "method": "lenormand",
+    "characters": 12835,
+    "bytes": 27020,
+    "parts": 2
+  },
+  {
+    "method": "ootk",
+    "characters": 19718,
+    "bytes": 43300,
+    "parts": 3
+  },
+  {
+    "method": "oracle",
+    "characters": 14579,
+    "bytes": 28934,
+    "parts": 3
+  }
+]

@@ -1,0 +1,154 @@
+{
+  "release": "20261015paste27",
+  "status": "passed-with-stated-scope",
+  "deliveryMode": "single-message",
+  "limits": {
+    "unicodeCodePoints": 8000,
+    "utf8Bytes": 20000,
+    "wholeMessageIncludingInstructions": true
+  },
+  "methodCount": 15,
+  "comparison": [
+    {
+      "method": "bazi",
+      "beforeCharacters": 54947,
+      "beforeParts": 8,
+      "afterCharacters": 7324,
+      "afterBytes": 12836,
+      "afterParts": 1
+    },
+    {
+      "method": "ziwei",
+      "beforeCharacters": 53453,
+      "beforeParts": 8,
+      "afterCharacters": 6697,
+      "afterBytes": 13175,
+      "afterParts": 1
+    },
+    {
+      "method": "astro",
+      "beforeCharacters": 25147,
+      "beforeParts": 4,
+      "afterCharacters": 7564,
+      "afterBytes": 11836,
+      "afterParts": 1
+    },
+    {
+      "method": "vedic",
+      "beforeCharacters": 310506,
+      "beforeParts": 45,
+      "afterCharacters": 7606,
+      "afterBytes": 11596,
+      "afterParts": 1
+    },
+    {
+      "method": "liuren",
+      "beforeCharacters": 59011,
+      "beforeParts": 9,
+      "afterCharacters": 6622,
+      "afterBytes": 10592,
+      "afterParts": 1
+    },
+    {
+      "method": "liuyao",
+      "beforeCharacters": 18852,
+      "beforeParts": 3,
+      "afterCharacters": 6955,
+      "afterBytes": 10521,
+      "afterParts": 1
+    },
+    {
+      "method": "yijing",
+      "beforeCharacters": 18055,
+      "beforeParts": 3,
+      "afterCharacters": 5129,
+      "afterBytes": 9089,
+      "afterParts": 1
+    },
+    {
+      "method": "meihua",
+      "beforeCharacters": 15008,
+      "beforeParts": 3,
+      "afterCharacters": 7990,
+      "afterBytes": 14120,
+      "afterParts": 1
+    },
+    {
+      "method": "name",
+      "beforeCharacters": 23449,
+      "beforeParts": 4,
+      "afterCharacters": 7700,
+      "afterBytes": 13589,
+      "afterParts": 1
+    },
+    {
+      "method": "compat",
+      "beforeCharacters": 28240,
+      "beforeParts": 5,
+      "afterCharacters": 7412,
+      "afterBytes": 10698,
+      "afterParts": 1
+    },
+    {
+      "method": "personality",
+      "beforeCharacters": 11458,
+      "beforeParts": 2,
+      "afterCharacters": 3561,
+      "afterBytes": 6409,
+      "afterParts": 1
+    },
+    {
+      "method": "tarot",
+      "beforeCharacters": 10978,
+      "beforeParts": 2,
+      "afterCharacters": 1793,
+      "afterBytes": 4065,
+      "afterParts": 1
+    },
+    {
+      "method": "lenormand",
+      "beforeCharacters": 12835,
+      "beforeParts": 2,
+      "afterCharacters": 2662,
+      "afterBytes": 5247,
+      "afterParts": 1
+    },
+    {
+      "method": "ootk",
+      "beforeCharacters": 19718,
+      "beforeParts": 3,
+      "afterCharacters": 2339,
+      "afterBytes": 5097,
+      "afterParts": 1
+    },
+    {
+      "method": "oracle",
+      "beforeCharacters": 14579,
+      "beforeParts": 3,
+      "afterCharacters": 6195,
+      "afterBytes": 8974,
+      "afterParts": 1
+    }
+  ],
+  "cases": {
+    "nativeAndFidelity": 23,
+    "fullOotkShuffleSeeds": 32,
+    "complete36CardLayouts": 3,
+    "mobileBrowserGroups": 7,
+    "originalBudgetRegressionGroups": 25,
+    "coreEngineGroups": 10,
+    "outputConsistencyGroups": 9,
+    "guaEngineGroups": 14,
+    "guaCasts": 4096,
+    "syntaxFiles": 42
+  },
+  "notPerformed": [
+    "Sending to external free-AI accounts",
+    "Grading externally generated prose",
+    "Human practitioner review",
+    "Empirical forecast validation",
+    "Implementation of every historical school"
+  ],
+  "sourceComputations": "unchanged; original facts and full packet retained; reading projection scope is explicit",
+  "oversizePolicy": "reject before copy; never truncate mandatory rows or split into messages"
+}

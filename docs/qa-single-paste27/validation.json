@@ -1,0 +1,170 @@
+{
+  "release": "20261015paste27",
+  "cases": [
+    {
+      "name": "bazi real exporter",
+      "status": "passed",
+      "characters": 7324,
+      "bytes": 12836,
+      "notExpanded": []
+    },
+    {
+      "name": "ziwei real exporter",
+      "status": "passed",
+      "characters": 6697,
+      "bytes": 13175,
+      "notExpanded": [
+        "目前日小限",
+        "逐項作用與相反依據"
+      ]
+    },
+    {
+      "name": "astro real exporter",
+      "status": "passed",
+      "characters": 7564,
+      "bytes": 11836,
+      "notExpanded": [
+        "形狀與特殊條件",
+        "逐項作用與相反依據"
+      ]
+    },
+    {
+      "name": "vedic real exporter",
+      "status": "passed",
+      "characters": 7606,
+      "bytes": 11596,
+      "notExpanded": [
+        "當期月與細段",
+        "相關分盤Arudha及作用",
+        "逐項作用與相反依據"
+      ]
+    },
+    {
+      "name": "liuren real exporter",
+      "status": "passed",
+      "characters": 6622,
+      "bytes": 10592,
+      "notExpanded": [
+        "實際命中神煞"
+      ]
+    },
+    {
+      "name": "liuyao real exporter",
+      "status": "passed",
+      "characters": 6955,
+      "bytes": 10521,
+      "notExpanded": []
+    },
+    {
+      "name": "yijing real exporter",
+      "status": "passed",
+      "characters": 5129,
+      "bytes": 9089,
+      "notExpanded": []
+    },
+    {
+      "name": "meihua real exporter",
+      "status": "passed",
+      "characters": 7990,
+      "bytes": 14120,
+      "notExpanded": [
+        "逐項作用與相反依據",
+        "規則來源（網址不等於本輪已讀）"
+      ]
+    },
+    {
+      "name": "name real exporter",
+      "status": "passed",
+      "characters": 7700,
+      "bytes": 13589,
+      "notExpanded": [
+        "方法矩陣"
+      ]
+    },
+    {
+      "name": "compat real exporter",
+      "status": "passed",
+      "characters": 7412,
+      "bytes": 10698,
+      "notExpanded": []
+    },
+    {
+      "name": "personality real exporter",
+      "status": "passed",
+      "characters": 3561,
+      "bytes": 6409,
+      "notExpanded": []
+    },
+    {
+      "name": "tarot real exporter",
+      "status": "passed",
+      "characters": 1793,
+      "bytes": 4065,
+      "notExpanded": []
+    },
+    {
+      "name": "lenormand real exporter",
+      "status": "passed",
+      "characters": 2662,
+      "bytes": 5247,
+      "notExpanded": []
+    },
+    {
+      "name": "ootk real exporter",
+      "status": "passed",
+      "characters": 2339,
+      "bytes": 5097,
+      "notExpanded": []
+    },
+    {
+      "name": "oracle real exporter",
+      "status": "passed",
+      "characters": 6195,
+      "bytes": 8974,
+      "notExpanded": []
+    },
+    {
+      "name": "provided financial question retains both outcomes and exact wording",
+      "status": "passed",
+      "characters": 7458
+    },
+    {
+      "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
+      "status": "passed",
+      "tables": 3
+    },
+    {
+      "name": "two charts share one instruction block and retain both entire palace tables",
+      "status": "passed",
+      "characters": 7917
+    },
+    {
+      "name": "eighty explicit annual rows are never replaced by a top-N sample",
+      "status": "passed",
+      "years": 80,
+      "characters": 7978
+    },
+    {
+      "name": "provided Yijing cast retains selected text and all six moving statuses",
+      "status": "passed",
+      "characters": 5232
+    },
+    {
+      "name": "full production OOTK preserves every active order, counting step and pair",
+      "status": "passed",
+      "operations": 5,
+      "characters": 6969
+    },
+    {
+      "name": "Unicode or oversized old exports fail before clipboard and never split",
+      "status": "passed"
+    },
+    {
+      "name": "standalone prompt-brief and prompt-packet carry the same canonical runtime",
+      "status": "passed"
+    }
+  ],
+  "failures": [],
+  "scope": "Real local exporters and content fidelity; no external AI account or forecast accuracy claim.",
+  "status": "passed"
+}

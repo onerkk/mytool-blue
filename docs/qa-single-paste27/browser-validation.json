@@ -1,0 +1,62 @@
+{
+  "release": "20261015paste27",
+  "cases": [
+    {
+      "name": "actual mobile Vedic export of provided two-part question",
+      "characters": 7465,
+      "bytes": 11547,
+      "parts": 1,
+      "unchanged": true,
+      "tasks": 2,
+      "status": "passed"
+    },
+    {
+      "name": "clipboard receives one complete exact body",
+      "status": "passed"
+    },
+    {
+      "name": "download is identical single-message text without multipart wrapper",
+      "status": "passed"
+    },
+    {
+      "name": "denied clipboard exposes one full selectable mobile textarea",
+      "status": "passed",
+      "dialogs": 1,
+      "textareas": 1,
+      "exact": true,
+      "partButtons": 0,
+      "width": 369,
+      "viewport": 393
+    },
+    {
+      "name": "production combined export rebuilds from native chart and its copy button uses same bounded body",
+      "status": "passed",
+      "characters": 7465
+    },
+    {
+      "name": "old oversized export never reaches clipboard",
+      "status": "passed"
+    },
+    {
+      "name": "reload restores exact compact message and independent verification facts",
+      "status": "passed"
+    }
+  ],
+  "pageErrors": [],
+  "missing": [],
+  "lazyRequests": [
+    {
+      "path": "/JS/vedic-engine.js",
+      "version": "20261015paste27"
+    },
+    {
+      "path": "/JS/western-prompt.js",
+      "version": "20261015paste27"
+    },
+    {
+      "path": "/JS/vedic-prompt.js",
+      "version": "20261015paste27"
+    }
+  ],
+  "status": "passed"
+}

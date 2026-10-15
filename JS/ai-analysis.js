@@ -683,7 +683,9 @@
       charts:entries.map(function(e){return Object.assign({label:e.label||null},factSnapshot(e.method,e.chart,e.analysis));})};
   }
   function readVerificationFacts(options){
-    var source=String(options.sourcePrompt||''),m=source.match(/【原盤事實核對】\s*\n([^\n]+)/);
+    var source=String(options.sourcePrompt||''),packet=root.JYPromptPacket?.get(source),cachedFacts=packet?.readingFacts||packet?.readingData?.verificationFacts;
+    if(cachedFacts)return {facts:cachedFacts,status:'available'};
+    var m=source.match(/【原盤事實核對】\s*\n([^\n]+)/);
     if(m){try{
       var parsed=JSON.parse(m[1]),valid=parsed.schema==='jy.reading-facts/1'&&Array.isArray(parsed.charts)&&parsed.charts.every(function(c){
         if(!c||typeof c!=='object'||!METHODS[c.method])return false;
@@ -24658,52 +24660,31 @@ window._jyStartOOTK=function(){
     if(!question)return {prompt:'',reason:'請先輸入本次問題，完成排盤或抽牌。'};
     var p;
     try {p=_buildPayload();}
-    catch(err){console.warn('[full prompt] 資料組裝失敗',err);return {prompt:'',reason:'本次排盤資料無法組裝；若出生資料剛更改，請重新排盤。'};}
-    if(!p)return {prompt:'',reason:'沒有本次排盤資料；請先完成排盤。'};
+    catch(err){console.warn('[full prompt] 舊摘要組裝失敗，改讀已存在的原生盤面',err);p={};}
+    if(!p)p={};
     var raw=p.rawReadings||p.readings||{};
     var dims=p.dims||{};
+    var bundle=state.astroBundle||p.astroBundle||{};
+    var native={bazi:state.bazi,ziwei:state.ziwei,meihua:state.meihua,
+      tarot:p.tarotData?{question:question,tarotData:p.tarotData}:null,
+      ootk:p.ootkData?{question:question,ootkData:p.ootkData}:null,
+      natal:bundle.western,vedic:bundle.vedic,name:state.name};
     var available=METHOD.filter(function(row){
       var key=row[0];
       if(key==='ziwei'&&f.btimeUnknown)return false;
       if((key==='natal'||key==='vedic')&&state.astroError&&!state.astroBundle)return false;
-      return isChartData(raw[key],key)||isChartData(dims[key],key)||
+      return isChartData(native[key],key)||isChartData(raw[key],key)||isChartData(dims[key],key)||
         key==='tarot'&&isChartData(p.tarotData,key)||key==='ootk'&&isChartData(p.ootkData,key)||
         key==='natal'&&isChartData(p.astroBundle&&p.astroBundle.western,key)||
         key==='vedic'&&isChartData(p.astroBundle&&p.astroBundle.vedic,key);
     });
     if(!available.length)return {prompt:'',reason:'本次還沒有可核對的命理資料；請先完成至少一種排盤或抽牌。'};
-    var quality=window.JY_READING_QUALITY;
-    var kinds=available.map(function(row){return row[1];});
-    var sections=[
-      '你是一位使用繁體中文、以問題為中心的資深命理師。依下列本次已計算資料直接回答問題；先判主線，再以最關鍵的資料解釋。',
-      quality&&typeof quality.plainText==='function'?quality.plainText():'先回答問題，再解釋重要依據；分清象徵、條件與現實事實。',
-      '【原問句】\n'+question,
-      '【本次資料範圍】\n'+available.map(function(row){return row[2];}).join('、')+
-        '。只讀有提供資料的系統；同一資料的衍生標籤不重複算獨立證據。',
-      '【出生與曆法資料】\n'+stringify({
-        name:p.name||'',gender:p.gender||'',birth:p.birth||'',birthTime:p.btimeUnknown?'未知':p.birthTime||'',
-        timePrecision:p.timePrecision||'',birthLocation:p.birthLocation||null,
-        trueSolar:p.trueSolar||null,calendarBoundary:p.calendarBoundary||null
-      })
-    ];
-    available.forEach(function(row){
-      var method=quality&&typeof quality.methodLines==='function'?quality.methodLines(row[1]):[];
-      if(method.length)sections.push('【'+row[2]+'判讀要點】\n'+method.join('\n'));
-      var facts=raw[row[0]];
-      // 塔羅如有同一輪結構化牌位資料，只提供一次，避免文字與 JSON 重覆加權。
-      if(row[0]==='tarot'&&p.tarotData)facts=p.tarotData;
-      if(row[0]==='ootk'&&p.ootkData)facts=p.ootkData;
-      if(isChartData(facts,row[0]))sections.push('【'+row[2]+'本次資料】\n'+stringify(facts));
-      if(isChartData(dims[row[0]],row[0]))sections.push('【'+row[2]+'已算出的補充欄位（模型判讀須覆核）】\n'+stringify(dims[row[0]]));
-    });
-    if(p.astroBundle&&hasValue(p.astroBundle))
-      sections.push('【占星實算與精度資料】\n'+stringify(p.astroBundle));
-    if(p.photos&&hasValue(p.photos))
-      sections.push('【照片】本提示詞僅含文字，未附原始影像；需要分析照片時請自行於對話中另附，不可據檔名想像內容。');
-    sections.push('【整合要求】各法先按原問題成判；若盤面資料相衝，說明是不同層面還是同一命題的分歧。格局的結構命中、成立、受阻、待審分層，不能把候選等同成格；出生時辰未知時不引用依賴時辰的宮位與細運。正文先給方向，再給關鍵依據、阻力、成立條件及可以觀察的下一步。');
-    if(quality&&typeof quality.recommendationEnding==='function')
-      sections.push(quality.recommendationEnding(kinds));
-    return {prompt:window.JYReadingWorkflow.finish(sections.join('\n\n'),{methods:kinds,question:question}),reason:''};
+    if(!window.JYPromptPacket)return {prompt:'',reason:'完整提示詞元件未載入，請重新載入頁面。'};
+    function parsed(value){if(typeof value!=='string')return value;try{return JSON.parse(value);}catch(_){return null;}}
+    var entries=available.map(function(row){return {method:row[1],chart:native[row[0]]||parsed(raw[row[0]])||parsed(dims[row[0]]),label:row[2]};}).filter(function(entry){return !!entry.chart;});
+    if(!entries.length)return {prompt:'',reason:'本次只有舊版摘要，缺少原生盤面；請重新排盤後產生完整提示詞。'};
+    try{return {prompt:window.JYPromptPacket.buildMany(entries,question),reason:''};}
+    catch(error){return {prompt:'',reason:String(error.message||error)};}
   }
   window.JY_buildFullExportPrompt=function(){return prepare().prompt;};
   window.JY_renderFullExportPrompt=function(mount){
@@ -24728,8 +24709,8 @@ window._jyStartOOTK=function(){
       details.appendChild(summary);details.appendChild(text);card.appendChild(details);
       button.addEventListener('click',function(){
         function fail(){button.textContent='請展開下方文字，手動複製';details.open=true;}
-        if(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function'){fail();return;}
-        navigator.clipboard.writeText(result.prompt).then(function(){
+        if(!window.JYPromptPacket&&(!navigator.clipboard||typeof navigator.clipboard.writeText!=='function')){fail();return;}
+        (window.JYPromptPacket?window.JYPromptPacket.copy(result.prompt):navigator.clipboard.writeText(result.prompt)).then(function(){
           button.textContent='✓ 已複製到剪貼簿';setTimeout(function(){button.textContent='複製完整提示詞';},2200);
         },fail);
       });

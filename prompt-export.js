@@ -1075,7 +1075,9 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
       charts:entries.map(function(e){return Object.assign({label:e.label||null},factSnapshot(e.method,e.chart,e.analysis));})};
   }
   function readVerificationFacts(options){
-    var source=String(options.sourcePrompt||''),m=source.match(/【原盤事實核對】\s*\n([^\n]+)/);
+    var source=String(options.sourcePrompt||''),packet=root.JYPromptPacket?.get(source),cachedFacts=packet?.readingFacts||packet?.readingData?.verificationFacts;
+    if(cachedFacts)return {facts:cachedFacts,status:'available'};
+    var m=source.match(/【原盤事實核對】\s*\n([^\n]+)/);
     if(m){try{
       var parsed=JSON.parse(m[1]),valid=parsed.schema==='jy.reading-facts/1'&&Array.isArray(parsed.charts)&&parsed.charts.every(function(c){
         if(!c||typeof c!=='object'||!METHODS[c.method])return false;
@@ -2215,7 +2217,7 @@ var JY_REC_EXPORT = {
       setTimeout(function () { btn.textContent = old; }, 2200);
     }
     if (window.JYPromptPacket || (navigator.clipboard && navigator.clipboard.writeText)) {
-      (window.JYPromptPacket?window.JYPromptPacket.copy(text):navigator.clipboard.writeText(text)).then(function () { done(true); }, function () { fallback(); });
+      (window.JYPromptPacket?window.JYPromptPacket.copy(text):navigator.clipboard.writeText(text)).then(function () { done(true); }, function (error) { if(error&&/OVER_BUDGET/.test(error.code||'')){done(false);if(btn)btn.textContent=error.message;return;}fallback(); });
     } else { fallback(); }
     function fallback() {
       var ta=null,previous=document.activeElement;

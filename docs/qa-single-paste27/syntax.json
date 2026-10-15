@@ -1,0 +1,173 @@
+{
+  "status": "passed",
+  "files": [
+    {
+      "file": "bazi-suite-core.js",
+      "mode": "script"
+    },
+    {
+      "file": "ziwei-standalone.js",
+      "mode": "script"
+    },
+    {
+      "file": "prompt-export.js",
+      "mode": "script"
+    },
+    {
+      "file": "lenormand.js",
+      "mode": "script"
+    },
+    {
+      "file": "ui.js",
+      "mode": "script"
+    },
+    {
+      "file": "sw.js",
+      "mode": "script"
+    },
+    {
+      "file": "prompt-single-paste.js",
+      "mode": "script"
+    },
+    {
+      "file": "ai-analysis.js",
+      "mode": "script"
+    },
+    {
+      "file": "meihua-standalone.js",
+      "mode": "script"
+    },
+    {
+      "file": "relationship-core.js",
+      "mode": "script"
+    },
+    {
+      "file": "prompt-packet.js",
+      "mode": "script"
+    },
+    {
+      "file": "prompt-brief.js",
+      "mode": "script"
+    },
+    {
+      "file": "oracle.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/bazi-suite-core.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/ziwei-standalone.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/vedic-prompt.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/prompt-export.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/name-standalone.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/lenormand.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/ui.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/western-prompt.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/sw.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/gua-prompt.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/reading-workflow.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/gua-room.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/liuren-prompt.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/name-prompt.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/prompt-single-paste.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/ai-analysis.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/meihua-standalone.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/relationship-core.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/prompt-packet.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/prompt-brief.js",
+      "mode": "script"
+    },
+    {
+      "file": "JS/oracle.js",
+      "mode": "script"
+    },
+    {
+      "file": "workers/ai-proxy.js",
+      "mode": "module"
+    },
+    {
+      "file": "tests/single-paste-20261015.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "tests/single-paste-ootk-20261015.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "tests/single-paste-browser-20261015.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "tests/prompt-budget-20261003.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "tests/single-paste-layouts-20261015.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "scripts/sync-recommendation-guides.cjs",
+      "mode": "script"
+    },
+    {
+      "file": "functions/api/ai.js",
+      "mode": "module"
+    }
+  ]
+}

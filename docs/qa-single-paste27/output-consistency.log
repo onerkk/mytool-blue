@@ -1,0 +1,10 @@
+PASS 120 root combinations: day sitting root and four-branch root are independent facts
+PASS Actual Bazi standalone and six-lens exports distinguish sitting root from roots elsewhere
+PASS Complete composite payload preserves neutral strength, god identities, Shensha and exact luck dates
+PASS Actual composite Bazi result renderer displays neutral and distinguishes day/other roots
+PASS Ziwei AI payload retains calculation facts and saved lunar year without UI verdicts
+PASS 384 Meihua cases: moving trigram is Yong; changed Yong and both mutual trigrams retain their actual relation to Ti
+PASS Meihua saved casting time reaches initial analysis, enriched season and complete composite output
+PASS 27 tarot mode/spread combinations remain identical through the full composite adapter, including RWS reversals
+PASS Invalid tarot draws and stopped Key cannot leave fabricated or stale composite cards
+Output consistency: 9/9 groups passed.

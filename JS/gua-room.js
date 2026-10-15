@@ -198,7 +198,7 @@
     var text=root.JYGuaPrompt.build(s.result),area=s.root.querySelector('.gw-prompt-area'),ok=false;
     try{if(root.JYPromptPacket){await root.JYPromptPacket.copy(text);ok=true;}else if(root.navigator.clipboard&&root.navigator.clipboard.writeText){await root.navigator.clipboard.writeText(text);ok=true;}}catch(_){}
     if(!ok){var t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;opacity:0';s.root.appendChild(t);t.focus();t.select();try{ok=document.execCommand('copy');}catch(_){}t.remove();}
-    if(ok)note('已複製本次提示詞；分段時請依序貼齊。');else{var fold=s.root.querySelector('.gw-prompt-fold');fold.open=true;area.focus();area.select();note('無法自動複製，請長按已選取的提示詞複製。');}
+    if(ok)note('已複製一份完整提示詞，可一次貼上。');else{var fold=s.root.querySelector('.gw-prompt-fold');fold.open=true;area.focus();area.select();note('無法自動複製，請長按已選取的提示詞複製。');}
     return ok;
   }
   function save(s){var blob=new Blob([JSON.stringify(s.result,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=s.kind+'-'+s.result.calendar.wall.slice(0,10)+'.json';s.root.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);}
