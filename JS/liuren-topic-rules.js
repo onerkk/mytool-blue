@@ -1,6 +1,6 @@
 /* 六壬大全卷三分類占。Consume liuren-core's actual annual() participant schema. */
 (function(root){'use strict';
-  const VERSION='20261004liuren-topic14',SOURCE='https://zh.wikisource.org/zh-hant/六壬大全/3';
+  const VERSION='20261016case28',SOURCE='https://zh.wikisource.org/zh-hant/六壬大全/3';
   const A=x=>Array.isArray(x)?x:[],clone=x=>x==null?null:JSON.parse(JSON.stringify(x));
   const B=Array.from('子丑寅卯辰巳午未申酉戌亥');
   function topic(q){
@@ -9,6 +9,8 @@
     if(/行人|回來|回来|歸來|归来|失聯|失联|人在何方|何時回|何时回/.test(q))out.push('traveler');
     if(/病|疾病|康復|康复|住院|症狀|症状/.test(q))out.push('illness');
     if(/空亡|虛假|虚假|落空|能不能成|是否成/.test(q))out.push('void-general');
+    const work=root.JYReadingWorkflow?.situation?.(q)?.workDecision??/上班|值班|輪班|交接|代班|出勤|調班/.test(q);
+    if(work)out.push('work-obligations');
     return [...new Set(out)];
   }
   function compute(r,question){
@@ -16,6 +18,17 @@
     const ts=topic(question??r.question),first=r.transmissions[0],checks=[];
     if(first.empty)checks.push({id:'initial-void',topic:'void-general',status:'matched',evidence:clone(first),
       readingScope:'發用旬空是傳統條件；須合讀填實、出旬及原題喜憂，不能斷言現實結果已落空。'});
+    if(ts.includes('work-obligations')){
+      const ref='https://zh.wikisource.org/zh-hant/六壬大全/7',brief=p=>p?{branch:p.branch,earth:p.earth,kinship:p.kinship,general:p.general,empty:p.empty}:null;
+      const constraint=r.transmissions.every(p=>p.kinship==='官鬼'),relations={子:'卯',丑:'戌',寅:'巳',卯:'子',辰:'辰',巳:'申',午:'午',未:'丑',申:'寅',酉:'酉',戌:'未',亥:'亥'};
+      const edges=[[0,1],[1,2],[2,0]].map(([a,b])=>({from:r.transmissions[a].branch,to:r.transmissions[b].branch,punishes:relations[r.transmissions[a].branch]===r.transmissions[b].branch}));
+      checks.push({id:'work-self-environment',topic:'work-obligations',status:'calculated',source:ref,
+        evidence:{self:brief(r.courses[0]),environment:brief(r.courses[2]),transmissions:r.transmissions.map(brief),edges},
+        readingScope:'干與支兩端先分讀；工作情境是現代問事應用，不宣稱古籍有排班公式。支不固定等於同事，天空天將也不等於旬空或現實無人。'});
+      checks.push({id:'work-constraint-chain',topic:'work-obligations',status:constraint?'matched':'not-matched',source:ref,
+        evidence:{allTransmissionsConstrainDay:constraint,branches:r.transmissions.map(p=>p.branch),initialVoid:!!first.empty,season:r.seasonal?.states||null},
+        readingScope:constraint?'可合讀為職責／約束反覆牽動的象徵線索，須比較本人低落與外在任務兩種解釋；初空、旺衰及救應都保留。可核問是否替補或交接未到位，不能推出有人請假、人數或一定停工。':'未成立三傳皆官鬼；不得為配合工作題硬寫壓力鏈或人力不足。'});
+    }
     if(ts.includes('wealth')){
       const places=A(r.plate).filter(x=>x.kinship==='妻財');
       checks.push({id:'wealth-placements',topic:'wealth',status:places.length?'calculated':'not-found',evidence:clone(places),

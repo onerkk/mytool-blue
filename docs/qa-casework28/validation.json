@@ -1,0 +1,788 @@
+{
+  "release": "20261016case28",
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "原題：出勤與情緒、人生方向分開；已上班不再當待決定",
+      "passed": true
+    },
+    {
+      "name": "反例：學校請假、上班遇到異性不強套排班缺人",
+      "passed": true
+    },
+    {
+      "name": "假設、問句、傳聞不升格為本人已發生",
+      "passed": true
+    },
+    {
+      "name": "照顧與共同責任不限工作關鍵字",
+      "passed": true
+    },
+    {
+      "name": "原盤實算：癸亥伏吟有克丑戌未；不是無克自信",
+      "passed": true
+    },
+    {
+      "name": "原典杜傳例與無克自任、自信分開",
+      "passed": true
+    },
+    {
+      "name": "工作取用與相刑能傳到分析；初空旺衰仍保留",
+      "passed": true
+    },
+    {
+      "name": "未成立反例不套三傳責任鏈；手動取用不被覆蓋",
+      "passed": true
+    },
+    {
+      "name": "原題及回饋提示詞完整保留核心、反證、角色；不重新起盤",
+      "passed": true
+    },
+    {
+      "name": "出勤問題有時間範圍時重讀仍守原明示窗口",
+      "passed": true
+    },
+    {
+      "name": "舊紀錄可更新取法標籤；不偷偷改動原傳或原始紀錄",
+      "passed": true
+    },
+    {
+      "name": "六爻同一卦補充問意：重新取用但不改爻、日辰及明示期限",
+      "passed": true
+    },
+    {
+      "name": "審稿區分未知人數、假設、已回報及事後倒填",
+      "passed": true
+    },
+    {
+      "name": "十五方法共用輸出契約（傳輸測試，非十五套實盤重算）",
+      "passed": true
+    },
+    {
+      "name": "安全情境不強制出勤與導購",
+      "passed": true
+    },
+    {
+      "name": "與原版比較8640組合法取課，三傳不被口吻修正改寫",
+      "passed": true
+    }
+  ],
+  "budgets": [
+    {
+      "method": "liuren",
+      "case": "original",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 7689,
+      "utf8Bytes": 14023,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "天地盤：序/地/天/下/將/六親/空/遁干/季/破/日/將/地生剋/內戰/外戰/日支關係（1是0否?未知）",
+        "四課（同欄序）",
+        "三傳（同欄序）",
+        "生剋方向與干支",
+        "問事取用與可核線索",
+        "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "天地盤：序/地/天/下/將/六親/空/遁干/季/破/日/將/地生剋/內戰/外戰/日支關係（1是0否?未知）",
+        "四課（同欄序）",
+        "三傳（同欄序）",
+        "生剋方向與干支",
+        "問事取用與可核線索",
+        "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [
+        "實際命中神煞",
+        "逐項作用與相反依據",
+        "規則來源（網址不等於本輪已讀）"
+      ],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "liuren",
+      "case": "feedback",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 7727,
+      "utf8Bytes": 14125,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "天地盤：序/地/天/下/將/六親/空/遁干/季/破/日/將/地生剋/內戰/外戰/日支關係（1是0否?未知）",
+        "四課（同欄序）",
+        "三傳（同欄序）",
+        "生剋方向與干支",
+        "問事取用與可核線索",
+        "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "天地盤：序/地/天/下/將/六親/空/遁干/季/破/日/將/地生剋/內戰/外戰/日支關係（1是0否?未知）",
+        "四課（同欄序）",
+        "三傳（同欄序）",
+        "生剋方向與干支",
+        "問事取用與可核線索",
+        "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [
+        "實際命中神煞",
+        "逐項作用與相反依據",
+        "規則來源（網址不等於本輪已讀）"
+      ],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "liuyao",
+      "case": "same-cast-new-context",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 7903,
+      "utf8Bytes": 12979,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "六爻取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與六爻",
+        "六爻：位/值/干支/六親/世應/六神/月日狀態/變爻/飛伏",
+        "事情取用（assessmentLine指同位全部爻狀態，伏神另列）",
+        "全部爻狀態：位/季/月/日/強度/日沖/可用/生扶動爻/障礙/空/墓/長生",
+        "全部作用方向：事情/目標位/作用爻位/六親/作用/動靜/可用/障礙",
+        "應期範圍",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "六爻取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與六爻",
+        "六爻：位/值/干支/六親/世應/六神/月日狀態/變爻/飛伏",
+        "事情取用（assessmentLine指同位全部爻狀態，伏神另列）",
+        "全部爻狀態：位/季/月/日/強度/日沖/可用/生扶動爻/障礙/空/墓/長生",
+        "全部作用方向：事情/目標位/作用爻位/六親/作用/動靜/可用/障礙",
+        "應期範圍",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [
+        "動變與合沖",
+        "逐項作用與相反依據",
+        "規則來源（網址不等於本輪已讀）"
+      ],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "tarot",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2678,
+      "utf8Bytes": 6370,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "塔羅取法",
+        "本法處境取讀（指引，非事件證據）",
+        "牌陣與程序",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "塔羅取法",
+        "本法處境取讀（指引，非事件證據）",
+        "牌陣與程序",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "ootk",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2960,
+      "utf8Bytes": 7000,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "五輪塔羅取法",
+        "本法處境取讀（指引，非事件證據）",
+        "程序、代表牌及預先綁定",
+        "五輪資料欄序",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "五輪塔羅取法",
+        "本法處境取讀（指引，非事件證據）",
+        "程序、代表牌及預先綁定",
+        "五輪資料欄序",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "lenormand",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2735,
+      "utf8Bytes": 6540,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "雷諾曼取法",
+        "本法處境取讀（指引，非事件證據）",
+        "牌陣與程序",
+        "鏡像與鄰接規則",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "雷諾曼取法",
+        "本法處境取讀（指引，非事件證據）",
+        "牌陣與程序",
+        "鏡像與鄰接規則",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "bazi",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2731,
+      "utf8Bytes": 6409,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "八字取法",
+        "本法處境取讀（指引，非事件證據）",
+        "定盤設定",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "八字取法",
+        "本法處境取讀（指引，非事件證據）",
+        "定盤設定",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "compat",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2771,
+      "utf8Bytes": 6467,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "合盤取法",
+        "本法處境取讀（指引，非事件證據）",
+        "雙方角色與精度",
+        "雙向關係",
+        "同步運限",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "合盤取法",
+        "本法處境取讀（指引，非事件證據）",
+        "雙方角色與精度",
+        "雙向關係",
+        "同步運限",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "ziwei",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2659,
+      "utf8Bytes": 6341,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "紫微斗數取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "紫微斗數取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "meihua",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2667,
+      "utf8Bytes": 6333,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "梅花易數取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與本互變",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "梅花易數取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與本互變",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "liuyao",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2712,
+      "utf8Bytes": 6400,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "六爻取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與六爻",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "六爻取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦與六爻",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "yijing",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2796,
+      "utf8Bytes": 6580,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "易經取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦記錄",
+        "本次擇辭主參（完整原文）",
+        "彖象與所選原文對讀",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "易經取法",
+        "本法處境取讀（指引，非事件證據）",
+        "起卦記錄",
+        "本次擇辭主參（完整原文）",
+        "彖象與所選原文對讀",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "oracle",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2637,
+      "utf8Bytes": 6273,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "籤詩取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "籤詩取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "astro",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2782,
+      "utf8Bytes": 6540,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "西洋占星取法",
+        "本法處境取讀（指引，非事件證據）",
+        "輸入與宮制",
+        "尊貴與接納：曜/持有/失勢/落陷/游離/座擢三界面主",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "西洋占星取法",
+        "本法處境取讀（指引，非事件證據）",
+        "輸入與宮制",
+        "尊貴與接納：曜/持有/失勢/落陷/游離/座擢三界面主",
+        "形狀與特殊條件",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "vedic",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2883,
+      "utf8Bytes": 6811,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "印度占星取法",
+        "本法處境取讀（指引，非事件證據）",
+        "定盤：出生UTC/參照UTC/緯經/民用日期時間時區/歲長/歲差制與度/交點/宮制/上升座度/時辰未知",
+        "星座相位與定位（座序0牡羊；行星相位已逐宮列於受照欄）",
+        "主運、副運、次副運及所問區間",
+        "多運法適用性",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "印度占星取法",
+        "本法處境取讀（指引，非事件證據）",
+        "定盤：出生UTC/參照UTC/緯經/民用日期時間時區/歲長/歲差制與度/交點/宮制/上升座度/時辰未知",
+        "星座相位與定位（座序0牡羊；行星相位已逐宮列於受照欄）",
+        "主運、副運、次副運及所問區間",
+        "多運法適用性",
+        "三重年運",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "name",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2659,
+      "utf8Bytes": 6343,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "姓名學取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "姓名學取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "liuren",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2917,
+      "utf8Bytes": 6815,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "生剋方向與干支",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "大六壬取法",
+        "本法處境取讀（指引，非事件證據）",
+        "日時與取課",
+        "生剋方向與干支",
+        "取用與候選範圍",
+        "候選日閱讀界線",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    },
+    {
+      "method": "personality",
+      "case": "transport-only",
+      "version": "20261016single28",
+      "mode": "single-message",
+      "limits": {
+        "characters": 8000,
+        "utf8Bytes": 20000
+      },
+      "characters": 2635,
+      "utf8Bytes": 6257,
+      "coreBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "五軸人格取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "includedBlocks": [
+        "原句子題核對",
+        "處境、責任與方案",
+        "五軸人格取法",
+        "本法處境取讀（指引，非事件證據）",
+        "可讀範圍與缺項"
+      ],
+      "notExpanded": [],
+      "completeCore": true,
+      "originalQuestionPreserved": true,
+      "sourceChartMutated": false,
+      "usesReferences": false,
+      "requiresAttachment": false,
+      "guaranteedExternalPlatformLimit": false
+    }
+  ],
+  "scope": {
+    "realCalculation": [
+      "liuren",
+      "liuyao"
+    ],
+    "sharedTransportMethods": 15,
+    "baselineCompared": true,
+    "browserFullSite": "not-run-truncated-input-archive",
+    "liveLLMQuality": "not-measured",
+    "predictionAccuracy": "not-validated"
+  }
+}

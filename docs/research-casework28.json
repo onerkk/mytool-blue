@@ -1,0 +1,170 @@
+{
+  "release": "20261016case28",
+  "sources": [
+    {
+      "id": "zipingorder",
+      "url": "https://www.donglishuzhai.net/chapter/3733.html",
+      "scope": "《子平真詮》第二十章生剋先後正文：位置與作用先後，不能只數符號。",
+      "methods": [
+        "bazi",
+        "compat"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "ziwei",
+      "url": "https://iztro.com/zh_TW/posts/horoscope",
+      "scope": "作者運限物件及各限層的定位、宮位接口段。未重算全部流派表，未升級本地 iztro。",
+      "methods": [
+        "ziwei",
+        "compat"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "pvr",
+      "url": "https://www.vedicastrologer.org/articles/vedic_astro_textbook.pdf",
+      "scope": "第6.3表11及6.5：分盤用途與按議題連結宮星；D10用於職業。未讀完515頁。",
+      "methods": [
+        "vedic"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "horarylight",
+      "url": "https://www.skyscript.co.uk/tobyn2.html",
+      "scope": "作者成相、傳光、集光與第三方協助的條件段；象徵中介不代表真人已同意。",
+      "methods": [
+        "astro"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "liurenclasses7",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/7",
+      "scope": "伏吟課正文、無克自任／自信、杜傳及訂訛；六癸丑戌未例；日人辰宅段。",
+      "methods": [
+        "liuren"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "battle",
+      "url": "https://zh.wikisource.org/zh-hant/六壬大全/10",
+      "scope": "殃咎課的神將內外生剋，以及鬼墓段；沒有把官鬼一概當壞事。",
+      "methods": [
+        "liuren"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "liuyaotarget",
+      "url": "https://zh.wikisource.org/zh-hant/增刪卜易/8",
+      "scope": "用神章六親取用：拘束、同輩、庇護等角色。現代出勤／排班是應用層，不是古籍人數公式。",
+      "methods": [
+        "liuyao"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "meihua",
+      "url": "https://zh.wikisource.org/zh-hant/梅花易數/卷二",
+      "scope": "人事占的體主用客、互變與旺衰；只讀指定相關段落，不補現場外應。",
+      "methods": [
+        "meihua"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "yizhu",
+      "url": "https://www.eee-learning.com/book/4716",
+      "scope": "《御纂周易折中》考變占第四：0至6動爻主讀與集說；保留原著與注釋層級。",
+      "methods": [
+        "yijing"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "waite",
+      "url": "https://en.wikisource.org/wiki/The_Pictorial_Key_to_the_Tarot/Part_3",
+      "scope": "Part III 占法段，第七本人、第八環境、第九期望的區分；不是本次必用牌陣。",
+      "methods": [
+        "tarot"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "bookt",
+      "url": "https://sacred-texts.com/book/liber-lxxviii-a-description-of-the-cards-of-the-tarot/liber-lxxviii-a-description-of-the-cards-of-the-tarot",
+      "scope": "第一操作向求問者核實問題、失敗須停止，及五操作程序段；未確認不冒稱驗題。",
+      "methods": [
+        "ootk",
+        "tarot"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "lenormand",
+      "url": "https://prismavisions.com/pages/lenormand-the-grand-tableau",
+      "scope": "作者／出版者 Houses、工作例與 knighting 段；合法幾何按本次布局，不把4×9套成8×4＋4。",
+      "methods": [
+        "lenormand"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "unihan",
+      "url": "https://www.unicode.org/reports/tr38/",
+      "scope": "kTotalStrokes 欄位規格；字典資料不提供現場人力或命運證明。",
+      "methods": [
+        "name"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    },
+    {
+      "id": "namebook",
+      "url": "https://ndlsearch.ndl.go.jp/books/R100000039-I2971289",
+      "scope": "書目所列作者、1950年版本、313頁；未取得內文，不視為數理公式驗證。",
+      "methods": [
+        "name"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "bibliography-only"
+    },
+    {
+      "id": "oraclefull",
+      "url": "https://donghaimazu.com/post/fortune-sticks/fs01/",
+      "scope": "第一籤原詩及作事等事項欄：總吉意與作事條件並讀。本輪未重讀六十籤。",
+      "methods": [
+        "oracle"
+      ],
+      "checkedAt": "2026-10-16",
+      "verificationLevel": "specified-passage-read"
+    }
+  ],
+  "localModelOnly": [
+    "personality：本站五軸生日映射；沒有找到或宣稱外部心理測量效度，本次只修共用問意與輸出契約。"
+  ],
+  "notEstablished": [
+    "沒有來源能由本題盤面唯一推出已有4人請假或現場必定停工。",
+    "沒有宣稱全流派完整、預測準確率已驗證或已閱讀所有來源全文。"
+  ],
+  "lookupLimits": [
+    "維基文庫易學啟蒙通釋卷下的搜尋未定位指定段，改讀易學網考變占正文。",
+    "iztro 首次 guide/horoscope 路徑失敗，改讀 posts/horoscope。"
+  ],
+  "applicationBoundary": "本次新增的人力／交接核對是現代決策框架，不冒稱古籍原文或已算事件。"
+}

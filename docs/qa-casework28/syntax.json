@@ -1,0 +1,194 @@
+{
+  "checked": 47,
+  "passed": 47,
+  "results": [
+    {
+      "file": "prompt-brief.js",
+      "passed": true
+    },
+    {
+      "file": "ai-analysis.js",
+      "passed": true
+    },
+    {
+      "file": "native-rule-sources.js",
+      "passed": true
+    },
+    {
+      "file": "tarot-foundation.js",
+      "passed": true
+    },
+    {
+      "file": "bazi-suite-core.js",
+      "passed": true
+    },
+    {
+      "file": "oracle.js",
+      "passed": true
+    },
+    {
+      "file": "lenormand.js",
+      "passed": true
+    },
+    {
+      "file": "meihua-standalone.js",
+      "passed": true
+    },
+    {
+      "file": "sw.js",
+      "passed": true
+    },
+    {
+      "file": "relationship-core.js",
+      "passed": true
+    },
+    {
+      "file": "native-depth-contract.js",
+      "passed": true
+    },
+    {
+      "file": "ziwei-standalone.js",
+      "passed": true
+    },
+    {
+      "file": "prompt-packet.js",
+      "passed": true
+    },
+    {
+      "file": "native-chart-analysis.js",
+      "passed": true
+    },
+    {
+      "file": "prompt-export.js",
+      "passed": true
+    },
+    {
+      "file": "prompt-single-paste.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-classes.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuyao-core.js",
+      "passed": true
+    },
+    {
+      "file": "JS/prompt-brief.js",
+      "passed": true
+    },
+    {
+      "file": "JS/ai-analysis.js",
+      "passed": true
+    },
+    {
+      "file": "JS/native-rule-sources.js",
+      "passed": true
+    },
+    {
+      "file": "JS/vedic-prompt.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-completion.js",
+      "passed": true
+    },
+    {
+      "file": "JS/tarot-foundation.js",
+      "passed": true
+    },
+    {
+      "file": "JS/bazi-suite-core.js",
+      "passed": true
+    },
+    {
+      "file": "JS/oracle.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-room.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-core.js",
+      "passed": true
+    },
+    {
+      "file": "JS/lenormand.js",
+      "passed": true
+    },
+    {
+      "file": "JS/name-prompt.js",
+      "passed": true
+    },
+    {
+      "file": "JS/reading-workflow.js",
+      "passed": true
+    },
+    {
+      "file": "JS/meihua-standalone.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-topic-rules.js",
+      "passed": true
+    },
+    {
+      "file": "JS/sw.js",
+      "passed": true
+    },
+    {
+      "file": "JS/gua-prompt.js",
+      "passed": true
+    },
+    {
+      "file": "JS/relationship-core.js",
+      "passed": true
+    },
+    {
+      "file": "JS/native-depth-contract.js",
+      "passed": true
+    },
+    {
+      "file": "JS/ziwei-standalone.js",
+      "passed": true
+    },
+    {
+      "file": "JS/prompt-packet.js",
+      "passed": true
+    },
+    {
+      "file": "JS/native-chart-analysis.js",
+      "passed": true
+    },
+    {
+      "file": "JS/prompt-export.js",
+      "passed": true
+    },
+    {
+      "file": "JS/liuren-prompt.js",
+      "passed": true
+    },
+    {
+      "file": "JS/prompt-single-paste.js",
+      "passed": true
+    },
+    {
+      "file": "JS/western-prompt.js",
+      "passed": true
+    },
+    {
+      "file": "tests/casework28.test.cjs",
+      "passed": true
+    },
+    {
+      "file": "scripts/sync-casework28.cjs",
+      "passed": true
+    },
+    {
+      "file": "JS/shared/question-planner.js",
+      "passed": true
+    }
+  ]
+}

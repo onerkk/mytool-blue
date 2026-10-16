@@ -1,4 +1,4 @@
-/*! Jingyue Liuyao / Wen Wang Gua · 1.3.0
+/*! Jingyue Liuyao / Wen Wang Gua · 1.4.0
  * Pure, deterministic Na Jia calculation. Arrays always run bottom → top.
  * Sources and deliberate school policies: docs/liuyao-20260922.md.
  * A correctly calculated traditional chart does not validate prediction.
@@ -167,7 +167,7 @@
     if(/(?:中|得|拿|收|領|賺|獲).{0,6}(?:多少|錢|金|款|獎|收入|利潤)/.test(q))wealth.push({label:'取得金錢結果',weight:90,match:(q.match(/(?:中|得|拿|收|領|賺|獲).{0,6}(?:多少|錢|金|款|獎|收入|利潤)/)||[''])[0]});
     add('financial-gain','wealth','妻財','事情用神',wealth);
 
-    var career=[],careerOutcome=/(?:求職|找工作|錄取|面試|升遷|升職|職位|主管|考公職|轉職|換工作|失業|裁員|辭職|聘用|offer|官司|訴訟|工作.{0,8}(?:找到|保住|穩定|去留|發展)|事業.{0,8}(?:發展|升遷|去留)|副業.{0,8}(?:發展|去留|做下去|擴大))/i;
+    var career=[],careerOutcome=/(?:上班|值班|輪班|交接|代班|調班|出勤|求職|找工作|錄取|面試|升遷|升職|職位|主管|考公職|轉職|換工作|失業|裁員|辭職|聘用|offer|官司|訴訟|工作.{0,8}(?:找到|保住|穩定|去留|發展)|事業.{0,8}(?:發展|升遷|去留)|副業.{0,8}(?:發展|去留|做下去|擴大))/i;
     evidenceHit([careerOutcome],q,120,'職位／功名結果',career);
     if(/(?:工作|職場|事業)/.test(q)&&!career.length)career.push({label:'職業事項',weight:95,match:(q.match(/(?:工作|職場|事業)/)||[''])[0]});
     else if(/副業/.test(q)&&!career.length)career.push({label:'副業情境',weight:60,match:'副業'});
@@ -237,6 +237,7 @@
     if(!frames.length)return {mode:'unresolved',status:'unresolved',primary:null,candidates:[],targets:[],intent:parsed,note:'原問句未能可靠映射到傳統用神；引擎停止自動猜測，不以世應作萬用備援。'};
     var targets=frames.map(function(f){return structuredTarget(f.relative,f.role,'primary',f.id);}),candidates=[];
     frames.forEach(function(f){if(candidates.indexOf(f.relative)<0)candidates.push(f.relative);});
+    if(frames.some(function(f){return f.domain==='career';}))targets.push(structuredTarget('世','本人承受與出勤取捨','context','self-capacity'));
     if(frames.some(function(f){return f.domain==='wealth';}))targets.push(structuredTarget('世','問卜者承接','context','self-receipt'));
     if(frames.some(function(f){return f.domain==='health'&&f.relative==='世';}))targets.push(structuredTarget('官鬼','病勢參照','context','illness-factor'));
     var intimate=parsed.facets&&parsed.facets.intimacy,coverageNote=intimate&&intimate.present?
@@ -437,14 +438,14 @@
     });
     var links=[0,1,2].map(function(i){return branchLinks(lines[i].branch,lines[i+3].branch);});
     var changedLinks=[0,1,2].map(function(i){return branchLinks(changedLines[i].branch,changedLines[i+3].branch);});
-    var result={version:'1.3.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
+    var result={version:'1.4.0',system:'liuyao',method:mode,question:String(input.question||'').trim(),calendar:date,values:values.slice(),records:records,
       original:original,changed:changed,hasChange:code!==changedCode,lines:lines,movingPositions:lines.filter(function(l){return l.moving;}).map(function(l){return l.position;}),
       structures:{sixClash:links.every(function(p){return p.clash;}),sixCombine:links.every(function(p){return p.combine;}),changedSixClash:changedLinks.every(function(p){return p.clash;}),changedSixCombine:changedLinks.every(function(p){return p.combine;})},
       focus:focusFor(input.question,input.focus),policy:{lineOrder:'bottom-up',coinConvention:'字面=2、背面=3；6老陰、7少陽、8少陰、9老陽',relativeBasis:'本卦卦宮五行（變爻亦同）',hiddenRule:'本卦缺六親時，取本宮純卦同位伏神',monthBasis:'節令交節瞬間，不以農曆初一換月',dayClash:'interpretation.lines 依動靜與月日生扶分類，矛盾不硬判',prediction:'傳統象徵解讀，不是現實事件的保證'}};
     result.interpretation=interpretation(result,input);
     return freeze(result);
   }
-  var api={version:'1.3.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
+  var api={version:'1.4.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
     fromCoins:fromCoins,toss:toss,localTimeAt:localTimeAt,calendar:calendar,calculate:calculate,focusFor:focusFor,resolveQuestionIntent:resolveQuestionIntent,canonicalTargets:canonicalTargets,calendarSegments:calendarSegments,
     assessLine:assessLine,lifeStage:lifeStage,parseWindow:parseWindow,interpretation:interpretation,trigramData:copy(TRIGRAMS),labels:LABELS.slice()};
   root.JYLiuyaoCore=freeze(api);

@@ -1,0 +1,82 @@
+{
+  "JS/ai-analysis.js": {
+    "mirror": "ai-analysis.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "0cb4691543861a3603771ff5b0c7fe77a535b7d53f8757fc4ee727af83881316"
+  },
+  "JS/bazi-suite-core.js": {
+    "mirror": "bazi-suite-core.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "9c8f4df3d93b3083d9d3d6157aa2a138d7afbbb2b627407f08bd3901584bd0ce"
+  },
+  "JS/lenormand.js": {
+    "mirror": "lenormand.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "5cab91615592f7e47b78dee8bd36216276cbe41a17e52ceb9fa1b2d854aa0e7b"
+  },
+  "JS/meihua-standalone.js": {
+    "mirror": "meihua-standalone.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "157bb13390b1c0c81edf1c2eea6d50b481a9e90360d5c3a79951dfdc0aa66c21"
+  },
+  "JS/oracle.js": {
+    "mirror": "oracle.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "3e15add0ddd0d06b8b326af1422d472146b22443ccc2aa7c2fee77e9ef9f559a"
+  },
+  "JS/prompt-export.js": {
+    "mirror": "prompt-export.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "ad42529a60fd8007c4a5db1e79663c82d12746c753bfac1fc2e540ddb80c52c7"
+  },
+  "JS/prompt-packet.js": {
+    "mirror": "prompt-packet.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "5e64f267446e57d9d8e8d1befeb6621ecf6366493198fb89454b1e1f610fd30c"
+  },
+  "JS/prompt-single-paste.js": {
+    "mirror": "prompt-single-paste.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "0a269bdd45a710480d7095f68cf6b663c85c64ad6330e2784df40bc8e306ec68"
+  },
+  "JS/relationship-core.js": {
+    "mirror": "relationship-core.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "6409868faca9a3dff2608655ba29c834f84ac5c88f8ea2e13c31db818b7e961c"
+  },
+  "JS/sw.js": {
+    "mirror": "sw.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "5b3e4e0edcdf21ba7ad2f9dd77f672fd0a8e2186d70bb36690c92304ebfc7981"
+  },
+  "JS/ziwei-standalone.js": {
+    "mirror": "ziwei-standalone.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "ad6eb22404ae066b0d20a1275d98620b958892bbf3f74387e0df1031da12094a"
+  },
+  "JS/native-chart-analysis.js": {
+    "mirror": "native-chart-analysis.js",
+    "source": "CHANGED-FILES-20261014-SCOPE.json",
+    "sha256": "61a5fa7619bea1e8abab5a56c68c5bb724f942bbf115768e81783fbf4c8ff681"
+  },
+  "JS/native-depth-contract.js": {
+    "mirror": "native-depth-contract.js",
+    "source": "CHANGED-FILES-20261015-READER26.json",
+    "sha256": "4622fa381c844bb997038c594602f80fee9b0bbd536f589c7eb1a837414d88cf"
+  },
+  "JS/native-rule-sources.js": {
+    "mirror": "native-rule-sources.js",
+    "source": "CHANGED-FILES-20261015-READER26.json",
+    "sha256": "a629933ec9fb46235db55c2b2cc42e1cf08e924276133fc55d317fca580423dd"
+  },
+  "JS/tarot-foundation.js": {
+    "mirror": "tarot-foundation.js",
+    "source": "CHANGED-FILES-20261015-READER26.json",
+    "sha256": "f63f40171965b73f832a1856710fc6cb0abc2317f46d5831c8c0133f7a27f1f3"
+  },
+  "JS/prompt-brief.js": {
+    "mirror": "prompt-brief.js",
+    "source": "CHANGED-FILES-20261015-PASTE27.json",
+    "sha256": "16f13520d9da948ab391ff1599f61fa9f672755de2e582ccf2fd1eee2418909c"
+  }
+}

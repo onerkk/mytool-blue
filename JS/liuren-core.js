@@ -5,7 +5,7 @@
  */
 (function(root){
   'use strict';
-  var VERSION='20261003liuren3',GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥');
+  var VERSION='20261016case28',GAN=Array.from('甲乙丙丁戊己庚辛壬癸'),ZHI=Array.from('子丑寅卯辰巳午未申酉戌亥');
   var ELEMENTS=['木','火','土','金','水'],GE=[0,0,1,1,2,2,3,3,4,4],ZE=[4,2,0,0,2,1,1,2,3,3,2,4],JI=[2,4,5,7,5,7,8,10,11,1];
   var GENERALS=['貴人','螣蛇','朱雀','六合','勾陳','青龍','天空','白虎','太常','玄武','太陰','天后'];
   var SHORT=['貴','蛇','雀','合','勾','龍','空','虎','常','玄','陰','后'];
@@ -51,8 +51,15 @@
       if(cs.length===1){if(!gate)gate='賊剋';type=lows.length?'重審':'元首';selected=[cs[0].index];return follow(cs[0].upper);}return compare(cs);
     }
     if(offset===0){
-      gate='伏吟';type=yang?'自任':'自信';var f=(yang||g===1||g===9)?gy:zy,m=XING[f];if(m===f)m=(yang||g===1||g===9)?zy:gy;var end=XING[m];if(end===m||end===f)end=mod(m+6,12);path=[f,m,end];
-      trace.push({step:'伏吟',rule:'陽日及乙癸取干上，其餘陰日取支上；循刑，遇自刑與互刑按本版規則改取支／干上或沖'});
+      gate='伏吟';
+      var low=unique(courses.filter(function(c){return c.relation==='下賊上';})),high=unique(courses.filter(function(c){return c.relation==='上剋下';})),clashCourses=low.length?low:high;
+      // 課經卷七：有克先取克；自任／自信只用於無克。
+      type=clashCourses.length?'有克':(yang?'自任':'自信');
+      var f=clashCourses.length?clashCourses[0].upper:(yang?gy:zy),m=XING[f];
+      if(clashCourses.length)selected=[clashCourses[0].index];
+      var blocked=m===f;if(blocked)m=f===gy?zy:gy;
+      var end=XING[m],interrupt=blocked||end===m||end===f;if(end===m||end===f)end=mod(m+6,12);if(interrupt)type='杜傳';path=[f,m,end];
+      trace.push({step:'伏吟',rule:'有克先取克，無克陽取干上自任、陰取支上自信；循刑，自刑改取另一端，重遇自刑或互刑取沖為杜傳',hasOvercoming:clashCourses.length>0,subtype:type,interruptedPunishment:interrupt,source:'https://zh.wikisource.org/zh-hant/六壬大全/7#伏吟課'});
     }else if(offset===6){
       gate='返吟';path=thief();if(!path){type='無依';path=[MA[d],zy,gy];trace.push({step:'返吟無剋',rule:'驛馬發用，支上為中、干上為末'});}
     }else{

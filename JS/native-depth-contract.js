@@ -1,6 +1,6 @@
 (function(root){
   'use strict';
-  const VERSION='20261015depth26';
+  const VERSION='20261016depth28';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -55,7 +55,7 @@
     ziwei:{paths:['items','layers','northern','patternAssessment','schoolCompletion'],checks:['主題宮連同三方四正，逐一追到飛入、飛出與自化的實際兩端','本命、大限、流年分層比較同一事件，不以吉星數量裁決'],bounds:'未套用的流派或未知時辰不能由文字補成定盤'},
     vedic:{paths:['items','vargas','activation','strength','bhavaStrength','ashtakavarga','applicability'],checks:['主題宮主的職責、落處、定位星與實際受照先成判','有效專題分盤與同一運主承接；分清收入增加、成本負擔及留存','逐期比較當期與後期的支持及阻力；交運不自動等於達標'],bounds:'專題分盤、力量與多運法各有用途，不投票也不從強度換算金額'},
     astro:{paths:['items','essentialDignities','transits','progressions','returnAnalysis','horary'],checks:['先辨本命與卜卦用途，沿主題宮主、定位鏈與相位雙端解釋','本命能力、實算行運觸發、次限及返照各自有時間範圍'],bounds:'未算相位或年度不能由當日位置外推，候選入相不代表事件已成'},
-    liuren:{paths:['plate','courses','transmissions','ganZhi','edges','targets','topicRules','timing'],checks:['日干、日支、主題角色與三段傳遞的生克方向合讀','財物是否送達、是否伴隨消耗或受制，不能見財即判得財'],bounds:'缺年命只限制相關規則；未來候選日期不是已發生事件'},
+    liuren:{paths:['plate','courses','transmissions','ganZhi','edges','targets','topicRules','timing'],checks:['日干、日支、主題角色與三段傳遞的生克方向合讀','逐傳核刑沖與制化；本人承受和環境要求分讀，不能見官鬼就指定事故或缺人','財物是否送達、是否伴隨消耗或受制，不能見財即判得財'],bounds:'缺年命只限制相關規則；未來候選日期不是已發生事件'},
     liuyao:{paths:['items','targets','influences','transformations','classicalBalance','timing'],checks:['取用對應原問句；月、日、動與變的作用能否有效到達該爻','世應、伏飛、空破及可實現的解阻條件與最強反向作用比較'],bounds:'不得只看旺衰、空亡或吉凶爻數；無月日的爻不能假設有時令'},
     meihua:{paths:['body','use','nuclear','originalLines','changedLines','castContext'],checks:['原體固定，本卦、互卦、變卦依既定方法承接','求財與交易按各自原典判，體克用不能因一般生克表一律寫壞'],bounds:'卦氣的傳統取時須交代換算及時令，不把數字直接指定公曆日'},
     yijing:{paths:['reading','originalGeometry','changedGeometry','expositions','complementaryViews'],checks:['先確認實際動爻數及本次擇辭政策，再比較主讀與參讀的情境','把原文中的做法、前提與後果連到同一子題'],bounds:'互錯綜或爻位關係不能越過主讀原文，也不因卦名直接保證事件'},
@@ -67,15 +67,36 @@
     compat:{paths:['items','timeline','projectionGroups'],checks:['先核雙方原局，再分A到B及B到A的實際作用','共同時段與各自承擔分開；不能由匹配替對方宣布意願'],bounds:'不交換雙方喜忌，不由相合保證交往、婚姻或合作收益'},
     personality:{paths:['items','modelInputs','disclaimer'],checks:['逐軸追原輸入及相反條件，落到可觀察的決策與溝通行為'],bounds:'本站命理映射不是心理量表，不計事件日期、疾病或收入'}
   };
-  function nativeBasis(method,chart,analysis,focus){
+  // Reading lenses use each method's existing evidence. They are not new
+  // divination formulae and do not measure staffing, consent or actual events.
+  const WORK_CONTEXT={
+    bazi:['原局承受與外在約束，須連同根氣、資源和救應讀；不把責任一概解成個性','長期方向只核已算大運流年；本命結構不能推出今日同事缺勤'],
+    ziwei:['命身、事業與交友相關宮位連同三方和實際飛化讀；自己、工作要求與支援分開','本命及運限分層，不把交友宮直接指認某位同事或人數'],
+    vedic:['以D1本人、日常責任、職業及支援的實際宮主作用為主；D10只核職業承接','有效運期與原局一同讀，宮力不等於今日現場人力'],
+    astro:['先辨本命或卜卦，再按本盤宮主與雙端相位分讀本人、工作和支援','卜卦如有實算傳光／集光或受阻才用；第三方象徵不是某人已答應代班'],
+    liuren:['干支兩端、三傳刑沖生剋連同空破旺衰讀，區分本人承受與環境牽制','是否有救應須看實際作用；官鬼、旬空、天空不直接等於缺人或停工'],
+    liuyao:['世爻承受、工作取用及有效生扶制約合讀；保留動變、空破與飛伏的反證','兄弟或應爻須有原題角色依據才作同事或對方，不自動斷缺勤'],
+    yijing:['依本次主讀卦爻辭的角色、進退與承擔條件，分辨想休息和仍須承接的矛盾','已上班就解讀當下調整；未選方案作條件比較，不另起一卦'],
+    meihua:['固定原體，合本互變及時令，區分本人消耗、外在牽制與得到支援','只有實際提供才讀現場外應；不得把人數或職位補成外應'],
+    tarot:['按原牌位區分本人感受、外在處境、限制及可用支援，再合全部正反作用','沒有環境位就讀既有合法關係並標限制，不補抽、不把宮廷牌指定成缺勤同事'],
+    lenormand:['依原布局的主題綁定和合法連續牌句讀工作、阻礙及支援，保留順序與反證','不因塔羅式牌義或幾張牌就斷缺勤人數，不另造人物牌'],
+    ootk:['只用有效輪次，追問工作責任、承擔與支援如何在各輪承接或受阻','未確認主堆不冒稱驗題；未完成程序不補成已知現場'],
+    oracle:['原詩前後條件及本廟作事欄一起讀，區分該承接、暫緩與調整的情況','總吉意不覆蓋作事限制；詩句不能證實同事缺勤'],
+    name:['只讀實際姓名算式和音形義能說明的象徵傾向，工作處境另外核實','姓名不能計算今日人力或重新找到方向的日期，不為回答而補生辰'],
+    compat:['雙方已有資料才分各自承擔與雙向作用；先確認原題第二人的角色','未提供主管或同事資料就保持未知，不能把任意第二人套成支援者'],
+    personality:['用已算五軸的兩端與反向條件談承擔、界線和求助方式','人格傾向不是現場人力資料，也不能預測轉運日']
+  };
+  function nativeBasis(method,chart,analysis,focus,situation){
     const spec=CASEWORK[method]||{paths:['items'],checks:[],bounds:'未有具名取法不補造'};
     const paths=spec.paths.map(path=>({path,status:has(analysis,path)||has(chart,path)?'present':'missing',scope:'實際資料入口，不等於完成事件裁決'}));
     const sources=root.JYNativeRuleSources?.forMethod?.(method)||[];
     const out={schema:'jy.case-basis/1',method,sourceQuestion:focus?.sourceQuestion||'',focus,paths,comparisonChecks:spec.checks,methodBoundary:spec.bounds,
-      research:{status:'source-log-provided-runtime-lookup-not-performed',sourceLog:sources.map(s=>({id:s.id,url:s.reviewURL||s.url,lastCheckedAt:s.checkedAt,reviewScope:s.reader26ReviewScope||s.scope,verification:s.reader26VerificationLevel||'prior-scoped-review'})),runtimeBrowsingPerformed:false,
+      research:{status:'source-log-provided-runtime-lookup-not-performed',sourceLog:sources.map(s=>({id:s.id,url:s.reviewURL||s.url,lastCheckedAt:s.checkedAt,reviewScope:s.reviewScope||s.reader26ReviewScope||s.scope,verification:s.verificationLevel||s.reader26VerificationLevel||'prior-scoped-review'})),runtimeBrowsingPerformed:false,
         unimplementedOrUncertain:A(analysis?.unavailable).map(message=>({message,kind:/未實作|算法|流派|傳承|原典|版本|歧義/.test(message)?'technical-rule-or-implementation':/時刻|時辰|出生|未提供|未完成|程序/.test(message)?'input-or-procedure':'method-scope',resolved:false})),
         rule:'先核既有來源的實際適用段落。不確定取法時由具瀏覽能力的解讀端真實查閱一手資料，記實際URL及核到的規則；未能查到保留未決，不冒稱本輪查過。未實作算法需補程式與對照後才算完成，只有文獻不算已實算。個人現況缺項不能靠網路或命理補造。'},
       judgementStatus:'requires-source-based-synthesis',humanPractitionerPerformed:false,predictionValidated:false};
+    if(situation?.workDecision)out.contextReading={status:'reading-instructions-not-event-findings',checks:WORK_CONTEXT[method]||[],
+      boundary:'只沿本法實有資料找支持與相反作用。現場人力、交接與調度屬待核實背景，不能由提示詞自行變成盤面證據。'};
     if(method==='vedic'&&!chart?.input?.unknownTime){
       const houses=A(chart?.houses),ps=chart?.planets||{},wanted=focus?.houses?.length?focus.houses:houses.map(h=>h.house);
       out.topicRoles=houses.filter(h=>wanted.includes(h.house)).map(h=>{
@@ -98,10 +119,10 @@
     const limitations=A(analysis?.unavailable).map(message=>({message,kind:/證實|準確率|保證|未發生事件|人物心意/.test(message)?'event-not-verified':/未實作|未有可靠|師承|異派|其他.*流派/.test(message)?'outside-registered-rules':'missing-or-limited-layer',haltsOtherEvidence:false}));
     const specialization=analysis?.topicRules;
     return {schema:'jy.request-coverage/1',method,sourceQuestion:plan?.question||String(options.question||''),
-      requirements:plan?.requestRequirements||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
+      requirements:plan?.requestRequirements||null,situation:plan?.situation||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
       usableNativeEvidence:available.length>0||units.some(x=>x.evidenceCount>0),
       specializedClassification:{available:!!specialization,topics:A(specialization?.topics),fallback:'專用分類缺少或未命中，只限制該分類；仍用實際原生骨架與本法一般判讀回答原句。'},
-      caseBasis:nativeBasis(method,chart,analysis,root.JYReadingWorkflow?.nativeFocus?.({method,question:plan?.question||options.question||'',plan})),
+      caseBasis:nativeBasis(method,chart,analysis,root.JYReadingWorkflow?.nativeFocus?.({method,question:plan?.question||options.question||'',plan}),plan?.situation),
       taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,measurement:t.measurement||[],evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依實際角色、作用方向與時間形成支持及限制；候選清單未替讀者裁決事件。'})),
       interpretationRule:'逐題從有效原生資料選取實際相關作用；讀者可依具名傳統判法推讀，但不能冒稱新的讀法已由引擎實算。分類清單與語義標籤不是可問問題白名單。',
       timeRule:'本次實算時窗只限制可報的時點；不限期或更長的原問句，不能因窗口外未算就判窗口外永不發生。',

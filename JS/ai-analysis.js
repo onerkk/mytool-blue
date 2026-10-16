@@ -2,7 +2,7 @@
 /* Local answer planning and review. No network, random draws or chart mutation. */
 (function installReadingWorkflow(root){
   'use strict';
-  var VERSION='2.5.0';
+  var VERSION='2.6.0';
   // Reinstallation is stateless and keeps direct CommonJS imports usable even
   // after an embedded standalone copy has populated the global API.
   var FOOTER='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
@@ -289,7 +289,7 @@
 };
   // END GENERATED WORKFLOW METHOD GUIDES
   // BEGIN GENERATED WORKFLOW VOICE GUIDE
-  var AUTHOR_VOICE = "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。\n【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。\n【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。";
+  var AUTHOR_VOICE = "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。\n【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。\n【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。";
   // END GENERATED WORKFLOW VOICE GUIDE
   var FULL_AREAS = {
   "liuren": "完整讀十二天地盤、四課、九宗門取傳、三傳的遞生互克、十二天將、六親旬空遁干、月令內外戰。64課族逐條成立／否／缺資料分開，290神煞只採實際課傳年命命中。同源別名不加票，雙人年命依明示輸入，應期沒有候選日實算不造日期；各子題交代最強支持、牽制、改判條件及可採行動。",
@@ -312,7 +312,7 @@
     if(event&&event.queryOperator){if(/relative_timing/.test(event.queryOperator))return 'timing';if(event.queryOperator==='choice'||event.comparison)return 'compare';}
     if((event&&event.queryOperator==='enumeration_guidance')||/(?:有哪些|哪幾(?:項|個|點|種)|哪些(?:項目|地方|方面|問題|原因|事項)|有什麼(?:問題|項目|地方|方面|事項).{0,12}(?:注意|留意|關注)?|有何(?:問題|項目|事項))/.test(q))return 'enumeration';
     if(/比較|哪個|哪一|何者|二選|三選|選擇|該不該|要不要/.test(q)||/還是(?!才(?:會|能|可|有))/.test(q))return 'compare';
-    if(/如何|怎麼|怎樣|該怎|幫助|幫忙|做什麼|做甚麼|改善|修復|處理|應對/.test(q))return 'help';
+    if(/如何|怎麼|怎樣|怎辦|怎么办|該怎|幫助|幫忙|做什麼|做甚麼|改善|修復|處理|應對/.test(q))return 'help';
     if(/何時|什麼時候|甚麼時候|多久|哪年|哪月|時機/.test(q))return 'timing';
     if(/為什麼|為何|原因|結構|卡點|挑戰|問題在哪/.test(q))return 'explain';
     if(/會不會|能不能|可不可以|是否|有沒有|能否|嗎|會否/.test(q))return 'direction';
@@ -416,12 +416,55 @@
       topicEvidenceRequired:child?['本法實際子女議題位置或問事綁定','總數與新增、親生與照顧及時間分開','只按已列資料分析不同取法與運期']:[],
       rule:'unsupportedDimensions 只列尚未直接測量的精度，不是禁止象徵解讀，也不是不成立證據；有具名可推估規則仍需合盤審理。缺切題資料需具體指出，不能造線索。'};
   }
+  // Context is a question-routing aid, never an oracle of undisclosed events.
+  // Preserve every source and its modality; a question/hypothesis is not a fact.
+  function situation(question,notes){
+    var q=String(question||''),n=String(notes||''),sources=[['question',q],['notes',n]],text=q+'\n'+n;
+    var units=[];sources.forEach(function(pair){var re=/[^。！？!?；;\n]+[。！？!?；;]?/g,m;
+      while((m=re.exec(pair[1]))){var s=m[0].trim();if(!s)continue;
+        var modality=/[？?]$/.test(s)||/是否|會不會|能不能|有沒有/.test(s)?'question':/假如|假設|如果|假设|若是|例如|譬如/.test(s)?'hypothetical':/聽說|据說|據說|聽同事|他说|他說|她說/.test(s)?'reported-speech':/沒有|並非|不是|不曾|尚未/.test(s)?'negated':'user-reported';
+        units.push({source:pair[0],span:[m.index,m.index+m[0].length],text:s,modality:modality});
+      }
+    });
+    var work=/上班|下班|值班|輪班|排班|交接|代班|調班|出勤|現場人員|人手|人力|請假|请假|到班|當班/.test(text);
+    // A school leave question alone is not an industrial staffing decision.
+    if(/上學|上课|上課|學校|学校/.test(text)&&!/上班|值班|輪班|交接|同事|人力|人手/.test(text))work=false;
+    var workDecision=work&&(/請假|请假|休息|休假|交接|代班|調班|缺勤|缺人|人力|人手/.test(text)||/(?:我|本人).{0,12}(?:上班|到班).{0,8}(?:了|累|快樂|開心|壓力|負擔)|(?:今天|明天).{0,6}(?:要不要|該不該|能否).{0,6}上班/.test(text));
+    var completed=units.some(function(u){return u.modality==='user-reported'&&/(?:我|本人)(?:已經|已|還是|仍然|今天|現在|現在已經|最後)?(?:來|去|到|來到)?上班了|我(?:已經|已)到班/.test(u.text)&&!/(?:沒有|沒|未|不)(?:來|去|到)?上班/.test(u.text);});
+    var emotion=/不快樂|不快乐|不開心|不开心|無力|无力|低落|疲憊|疲惫|失去目標|失去目标|沒目標|沒方向|迷茫/.test(text);
+    var direction=/目標|目标|方向|自己的天|人生|命格|出路|天職|使命/.test(text);
+    var checks=[],branches=[];
+    if(workDecision){
+      checks.push({id:'staffing',question:'本班實到人力、必要崗位與替補／交接是否足夠？',state:'requires-real-world-check'},
+        {id:'responsibility',question:'誰能核准休息、調度或減量；少一人對同事與現場運作有何影響？',state:'requires-real-world-check'},
+        {id:'capacity',question:'自己目前能否安全承擔工作，能否安排短休或調整工作量？',state:'requires-real-world-check'});
+      branches=[{condition:'實際人力與交接足夠',consider:'比較休息恢復與正常出勤的得失'},
+        {condition:'實際人力或必要崗位不足',consider:'先請主管調度、替補或減量；不把所有責任壓給本人，也不以命理要求硬撐'}];
+    }else if(/照顧|照护|照護|接送|看顧/.test(text)){
+      checks.push({id:'care-handover',question:'誰需要照顧、誰能接手，替代安排是否已確認？',state:'requires-real-world-check'});
+    }else if(/合作|共同|合夥|合伙|退出|解約|辞職|辭職|離職/.test(text)){
+      checks.push({id:'shared-obligation',question:'退出或改變安排會影響誰；承諾、交接與代替方案是否落實？',state:'requires-real-world-check'});
+    }
+    if(emotion&&direction)checks.push({id:'direction',question:'今天的負荷、持續的不快樂與長期想要的生活，哪一項最需要先處理？',state:'requires-real-world-check'});
+    var typo=/請教.{0,4}休息/.test(q)&&/上班/.test(q)?{surface:'請教休息',tentative:'可能指請假休息',confirmed:false}:null;
+    return {schema:'jy.situation/1',workDecision:workDecision,stage:completed?'already-at-work':'not-established',
+      emotionalStrain:emotion,longTermDirection:direction,sources:units,lexicalUncertainty:typo,
+      checks:checks,branches:branches,
+      distinctions:workDecision?['本人感受與現場條件分開','個人承擔、同事支援、主管安排、運作後果分開',completed?'已到班：解答當下調整與下次安排；未選方案只作反事實比較':'尚未確認是否已行動，不代替本人決定']:[],
+      boundary:'問題與現實核對清單不是盤面證據。未提供的人數、缺勤原因、職位與停工結果保持未知；事後補充只作使用者回報，不倒填成原先算中。'};
+  }
+  function situationPrompt(s){
+    if(!s||!s.checks.length)return '';
+    return ['【本題處境與決策核對】',JSON.stringify({stage:s.stage,distinctions:s.distinctions,check:s.checks.map(function(x){return x.question;}),branches:s.branches,lexicalUncertainty:s.lexicalUncertainty}),
+      '先從本法有效資料判斷較像個人消耗、外在責任還是兩者拉扯，並保留相反依據。有人接手與無人接手的後果須分開；不知道的現場資訊，用一個切題的核對問題或條件句交代，仍完成其餘解讀。'+s.boundary].join('\n');
+  }
   function nativeFocus(options){
-    options=options||{};var q=String(options.question||''),p=options.plan||plan({method:options.method||'vedic',question:q}),domains=Array.from(new Set((p.domains||[]).map(function(d){return d==='work'?'career':d;})));
+    options=options||{};var q=String(options.question||''),p=options.plan||plan({method:options.method||'vedic',question:q,notes:options.notes}),domains=Array.from(new Set((p.domains||[]).map(function(d){return d==='work'?'career':d;})));
     var aspects=[],houses=[],divisions=[1,9],allDivisions=/(?:所有|全部|完整十六|16|十六|二十|20).{0,8}分盤/.test(q);
     function add(id,why,hs,ds){aspects.push({id:id,reason:why,houses:hs||[]});houses=houses.concat(hs||[]);divisions=divisions.concat(ds||[]);}
     if(domains.includes('finance'))add('finance','原句問金額、財務、收入或財務負擔',[2,11,6,8,12],[2]);
     if(domains.includes('career')||domains.includes('commerce'))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
+    if(p.situation?.workDecision)add('work-obligations','出勤取捨須核日常責任與可用支援；宮位不是實到人力資料',[1,6,10,11],[]);
     if(domains.includes('relationship')||domains.includes('intimacy'))add('relationship','原句問關係或互動',[1,5,7],[9]);
     if(/子女|生育|備孕|懷孕|生孩子|生小孩|養育/.test(q))add('children','原句問子女、生育或養育',[2,5,9],[7]);
     if(/父母|原生家庭|爸爸|媽媽|父親|母親/.test(q))add('parents','原句明示父母',[4,9],[12]);
@@ -446,7 +489,8 @@
     var care=/幫助|幫忙|照顧|陪伴|怎麼辦|該如何|不穩定|發作|病情|治療|康復|症狀|停藥|減藥|換藥|就醫|生病|失眠|自傷|自殺/.test(q);
     var clinical=/(?:我|她|他|現任|伴侶|女友|男友|父|母|家人|朋友).{0,30}(?:停藥|減藥|換藥|就醫|病情|症狀|手術|治療)/.test(q);
     var health=(model.queryIntent&&model.queryIntent.domains||[]).indexOf('health')>=0||(disease&&care)||clinical||/自傷|自殺/.test(q);
-    var domains=(model.queryIntent&&model.queryIntent.domains||[]).slice();
+    var caseContext=situation(q,options.notes),domains=(model.queryIntent&&model.queryIntent.domains||[]).slice();
+    if(caseContext.workDecision)domains.push('career');
     if(health)domains.push('health');
     if(/投資|借貸|負債|股票|基金|財務|營業額|收入|財運|賺錢|副業|正職|本業/.test(q))domains.push('finance');
     if(/法律|官司|訴訟|離婚協議|提告|判刑|合約糾紛/.test(q))domains.push('legal');
@@ -457,7 +501,7 @@
       complex=broad||tasks.length>1||ids.length>1||(model.events||[]).some(function(e){return (e.requiredObservables||[]).length>=3||(e.participants||[]).length>=2||(e.actionSequence||[]).length>=2||(e.conditions||[]).length>0||!!e.comparison||!!e.evaluation||!!e.causalSituation||e.metricCadence&&e.queryOperator==='relative_timing_to_threshold'||e.type==='recommendation_with_unprovided_options'||e.queryOperator==='enumeration_guidance';});
     var healthExam=domains.indexOf('health')>=0&&/(?:體檢|健檢|健康檢查|檢查報告|篩檢)/.test(q);
     var scope=readingScope(q,ids,model);
-    return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,
+    return {version:VERSION,question:q,methods:ids,tasks:tasks,domains:domains,situation:caseContext,
       depth:broad?'comprehensive':complex?'deep':'focused',reportScope:report,
       questionModel:model,readingScope:scope,requestRequirements:requestRequirements(q,tasks,model,scope),
       healthSupport:health&&/現任|女友|男友|伴侶|她|他|父|母|家人|朋友/.test(q),healthExam:healthExam,
@@ -514,6 +558,7 @@
     // instructions; preserve their complete source data and original wording.
     var providedVoice=String(options?.providedGuide||'');
     lines.push(providedVoice?AUTHOR_VOICE.split('\n').filter(function(line){return !providedVoice.includes(line);}).join('\n'):AUTHOR_VOICE);
+    var contextText=situationPrompt(p.situation);if(contextText)lines.push(contextText);
     lines.push('【本題可讀內容與精度界線】'+JSON.stringify(p.readingScope)+'\n先把仍有效的議題線索解讀完整，再把未確定部分說清；不得把一個未測量標籤變成整題拒答。');
     lines.push('【任意原題的完整解讀任務】'+JSON.stringify(p.requestRequirements));
     var components=requestedComponents(p.question);
@@ -806,6 +851,17 @@
       if(childFacts.hourKnown===false&&/(?:時柱|時支|子女位置).{0,25}(?:表示|代表|是|為).{0,25}(?:孩子|子女|人數)/.test(answer))issue('UNCONFIRMED_HOUR_CHILD_CLAIM','review','出生時位未確認，不以暫排時柱斷子女數量或相處。');
     }
     var paragraphs=answer.split(/\n\s*\n/).filter(Boolean),first=paragraphs[0],sentences=answer.match(/[^。！？!?\n]+[。！？!?]?/g)||[];
+    if(p.situation.workDecision&&p.careContext.level!=='safety-first'){
+      if(!/人力|人手|替補|交接|調度|代班|現場|崗位|同事|主管/.test(answer))issue('WORK_CONTEXT_OMITTED','revision','出勤取捨只談心情或運勢，漏了外在責任：需核對實到人力、交接及誰能調度，再比較休息與出勤的後果；這是現實核對，不能冒稱已知缺人。');
+      var reported=p.situation.sources.filter(function(s){return s.modality==='user-reported';}).map(function(s){return s.text;}).join('\n');
+      sentences.forEach(function(s){
+        if(/若|假如|如果|假設|可能|是否|幾人|多少人|不能|不可|無法|不代表|不等於|沒有證據|未必|[？?]/.test(s))return;
+        var re=/(?:請假|休假|缺勤|缺席|人力|人手).{0,12}?([\d一二兩三四五六七八九十]+)\s*(?:個)?人|([\d一二兩三四五六七八九十]+)\s*(?:個)?人.{0,8}(?:請假|休假|缺勤|缺席)/g,m;
+        while((m=re.exec(s))){var v=numeral(m[1]||m[2]),reportedCounts=Array.from(reported.matchAll(new RegExp(re.source,'g'))).map(function(x){return numeral(x[1]||x[2]);});if(!reportedCounts.includes(v))issue('UNREPORTED_STAFFING_COUNT','error','回答把未提供的請假／缺勤人數說成事實；符號、課數與牌數不能換成現場人數。',s);}
+      });
+      if(/(?:早已|早就|原本就|事前已|之前就).{0,15}(?:算出|看出|預見|算中)|(?:回饋|補充).{0,20}(?:證明|證實).{0,20}(?:算中|準確|早就)/.test(answer))issue('HINDSIGHT_AS_PREDICTION','revision','事後補充須明說是使用者新回報；沒有保留事前同一項具體判斷，不能宣稱已經算中。');
+    }
+    if(/^(?:根據(?:你提供的|本次)|以下(?:是|將)|我(?:會|將)(?:先|從)|作為(?:一個|一名)?AI)/.test(first))issue('REPORT_VOICE_OPENING','revision','開頭改為直接解答當事人的事情，保留必要條件；不先介紹分析流程。',first);
     if(/(?:先看|先核|鏡射|鏡像|\d\s*[↔→]\s*\d|中心.{0,8}(?:位置|牌)|本次牌陣)/.test(first)&&!/(?:你可以先|建議你先|優先.{0,12}(?:做|聯絡|安排|確認))/.test(first))issue('METHOD_FIRST','revision','開頭以技法說明代替答案；先寫本題主判或第一步。',first);
     var methodStarts=paragraphs.filter(function(x){return /^(?:先看|再看|接著看|開頭的|牌面上|鏡射|鏡像|中心牌|第[一二三四五六七八九十\d]+[張宮爻])/.test(x);}).length;
     if(methodStarts>=3)issue('METHOD_TOUR','revision','多段按技法或位置報盤；改成每段先解答，再提供必要依據。');
@@ -877,8 +933,9 @@
       '【原始提示詞與盤面】',String(options.sourcePrompt),render(options),careContext(options.question,options.notes).commercialRequired?FOOTER:SAFETY_ENDING].join('\n\n');
   }
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
-  api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;
+  api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;api.situation=situation;api.situationPrompt=situationPrompt;
   root.JYReadingWorkflow=Object.freeze(api);
+  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED RECOMMENDATION JY_REC_API
