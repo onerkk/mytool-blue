@@ -1,6 +1,6 @@
 {
   "release": "20261016case28",
-  "passed": 16,
+  "passed": 15,
   "failed": 0,
   "results": [
     {
@@ -62,24 +62,20 @@
     {
       "name": "安全情境不強制出勤與導購",
       "passed": true
-    },
-    {
-      "name": "與原版比較8640組合法取課，三傳不被口吻修正改寫",
-      "passed": true
     }
   ],
   "budgets": [
     {
       "method": "liuren",
       "case": "original",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 7689,
-      "utf8Bytes": 14023,
+      "characters": 8827,
+      "utf8Bytes": 16533,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -110,12 +106,12 @@
         "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
         "取用與候選範圍",
         "候選日閱讀界線",
-        "可讀範圍與缺項"
+        "可讀範圍與缺項",
+        "規則來源（網址不等於本輪已讀）"
       ],
       "notExpanded": [
         "實際命中神煞",
-        "逐項作用與相反依據",
-        "規則來源（網址不等於本輪已讀）"
+        "逐項作用與相反依據"
       ],
       "completeCore": true,
       "originalQuestionPreserved": true,
@@ -127,14 +123,14 @@
     {
       "method": "liuren",
       "case": "feedback",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 7727,
-      "utf8Bytes": 14125,
+      "characters": 8865,
+      "utf8Bytes": 16635,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -165,12 +161,12 @@
         "成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）",
         "取用與候選範圍",
         "候選日閱讀界線",
-        "可讀範圍與缺項"
+        "可讀範圍與缺項",
+        "規則來源（網址不等於本輪已讀）"
       ],
       "notExpanded": [
         "實際命中神煞",
-        "逐項作用與相反依據",
-        "規則來源（網址不等於本輪已讀）"
+        "逐項作用與相反依據"
       ],
       "completeCore": true,
       "originalQuestionPreserved": true,
@@ -182,14 +178,14 @@
     {
       "method": "liuyao",
       "case": "same-cast-new-context",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 7903,
-      "utf8Bytes": 12979,
+      "characters": 8836,
+      "utf8Bytes": 15214,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -213,11 +209,11 @@
         "事情取用（assessmentLine指同位全部爻狀態，伏神另列）",
         "全部爻狀態：位/季/月/日/強度/日沖/可用/生扶動爻/障礙/空/墓/長生",
         "全部作用方向：事情/目標位/作用爻位/六親/作用/動靜/可用/障礙",
+        "動變與合沖",
         "應期範圍",
         "可讀範圍與缺項"
       ],
       "notExpanded": [
-        "動變與合沖",
         "逐項作用與相反依據",
         "規則來源（網址不等於本輪已讀）"
       ],
@@ -231,14 +227,14 @@
     {
       "method": "tarot",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2678,
-      "utf8Bytes": 6370,
+      "characters": 3308,
+      "utf8Bytes": 8254,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -266,14 +262,14 @@
     {
       "method": "ootk",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2960,
-      "utf8Bytes": 7000,
+      "characters": 3590,
+      "utf8Bytes": 8884,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -303,14 +299,14 @@
     {
       "method": "lenormand",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2735,
-      "utf8Bytes": 6540,
+      "characters": 3365,
+      "utf8Bytes": 8424,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -340,14 +336,14 @@
     {
       "method": "bazi",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2731,
-      "utf8Bytes": 6409,
+      "characters": 3361,
+      "utf8Bytes": 8293,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -375,14 +371,14 @@
     {
       "method": "compat",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2771,
-      "utf8Bytes": 6467,
+      "characters": 3401,
+      "utf8Bytes": 8351,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -414,14 +410,14 @@
     {
       "method": "ziwei",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2659,
-      "utf8Bytes": 6341,
+      "characters": 3289,
+      "utf8Bytes": 8225,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -447,14 +443,14 @@
     {
       "method": "meihua",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2667,
-      "utf8Bytes": 6333,
+      "characters": 3297,
+      "utf8Bytes": 8217,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -482,14 +478,14 @@
     {
       "method": "liuyao",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2712,
-      "utf8Bytes": 6400,
+      "characters": 3342,
+      "utf8Bytes": 8284,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -517,14 +513,14 @@
     {
       "method": "yijing",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2796,
-      "utf8Bytes": 6580,
+      "characters": 3426,
+      "utf8Bytes": 8464,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -556,14 +552,14 @@
     {
       "method": "oracle",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2637,
-      "utf8Bytes": 6273,
+      "characters": 3267,
+      "utf8Bytes": 8157,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -589,14 +585,14 @@
     {
       "method": "astro",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2782,
-      "utf8Bytes": 6540,
+      "characters": 3412,
+      "utf8Bytes": 8424,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -627,14 +623,14 @@
     {
       "method": "vedic",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2883,
-      "utf8Bytes": 6811,
+      "characters": 3513,
+      "utf8Bytes": 8695,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -669,14 +665,14 @@
     {
       "method": "name",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2659,
-      "utf8Bytes": 6343,
+      "characters": 3289,
+      "utf8Bytes": 8227,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -702,14 +698,14 @@
     {
       "method": "liuren",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2917,
-      "utf8Bytes": 6815,
+      "characters": 3547,
+      "utf8Bytes": 8699,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -743,14 +739,14 @@
     {
       "method": "personality",
       "case": "transport-only",
-      "version": "20261016single28",
+      "version": "20261021single29",
       "mode": "single-message",
       "limits": {
-        "characters": 8000,
-        "utf8Bytes": 20000
+        "characters": 9000,
+        "utf8Bytes": 22000
       },
-      "characters": 2635,
-      "utf8Bytes": 6257,
+      "characters": 3265,
+      "utf8Bytes": 8141,
       "coreBlocks": [
         "原句子題核對",
         "處境、責任與方案",
@@ -780,7 +776,7 @@
       "liuyao"
     ],
     "sharedTransportMethods": 15,
-    "baselineCompared": true,
+    "baselineCompared": false,
     "browserFullSite": "not-run-truncated-input-archive",
     "liveLLMQuality": "not-measured",
     "predictionAccuracy": "not-validated"

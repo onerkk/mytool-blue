@@ -1,0 +1,158 @@
+/* 靜月之光 · 立體層次與交接導引 / 20261021depth29
+ * 只加一層：不覆寫各房間的版面、顏色變數與既有動畫，只補「按下去有深度、卡片有厚度、步驟有層次」。
+ * 全部位移類效果都受 prefers-reduced-motion 保護；hover 只在真的有滑鼠的裝置啟用。 */
+
+:root{
+  --jy-depth-gold:#e4c994;
+  --jy-depth-gold-soft:#c9a84c;
+  --jy-depth-ink:#050a11;
+  --jy-depth-rim:#ffebcb2e;
+  --jy-depth-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+/* ── 探索之門：有厚度的卡，按下去會往桌面沉 ── */
+.jy-atelier .at-tool{
+  transform-style:preserve-3d;
+  transition:transform .32s var(--jy-depth-ease),box-shadow .32s var(--jy-depth-ease),border-color .32s;
+  will-change:transform;
+}
+.jy-atelier .at-tool::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(118deg,#fff0 30%,#ffffff12 48%,#fff0 60%);
+  opacity:0;transition:opacity .35s;
+}
+.jy-atelier .at-tool .at-art{transition:transform .4s var(--jy-depth-ease);transform:translateZ(14px)}
+.jy-atelier .at-tool strong{transform:translateZ(8px)}
+.jy-atelier .at-tool .at-tool-arrow{transition:transform .3s var(--jy-depth-ease),background .3s,color .3s}
+.jy-atelier .at-tool:active{
+  transform:translateY(3px) scale(.985);
+  box-shadow:0 2px 0 var(--jy-depth-ink),0 3px 0 #7c6c513d,0 8px 14px #0005,inset 0 1px 0 var(--jy-depth-rim);
+}
+@media (hover:hover){
+  .jy-atelier .at-tool:hover{transform:translateY(-4px) rotateX(2.5deg);border-color:#e8d2a86a;
+    box-shadow:0 10px 0 var(--jy-depth-ink),0 11px 0 #7c6c514a,0 30px 40px #0006,0 0 0 1px #ffe8bd14,inset 0 1px 0 #ffebcb48}
+  .jy-atelier .at-tool:hover::after{opacity:1}
+  .jy-atelier .at-tool:hover .at-art{transform:translateZ(22px) scale(1.04)}
+  .jy-atelier .at-tool:hover .at-tool-arrow{transform:translate(2px,-2px);background:#e4c99420;color:#fff}
+}
+
+/* ── 主按鈕：金色實心鍵帽，按下去真的會沉 ── */
+.jy-atelier :is(.at-primary,.btn-primary,.btn-gold,.btn-cta-pulse,.ln-ai-copy-btn,.mhx-ai-copy-btn,.bzx-ai-copy-btn,.orc-ai-copy-btn,.at-dock-action,#tarot-dock-action,.jy-flow-next,[data-flow-next]){
+  position:relative;isolation:isolate;
+  transition:transform .18s var(--jy-depth-ease),box-shadow .18s var(--jy-depth-ease),filter .18s;
+}
+.jy-atelier :is(.at-primary,.btn-primary,.btn-gold,.btn-cta-pulse,.ln-ai-copy-btn,.mhx-ai-copy-btn,.bzx-ai-copy-btn,.orc-ai-copy-btn,#tarot-dock-action):active{
+  transform:translateY(3px) scale(.99)!important;
+  box-shadow:inset 0 1px 0 #fff8,0 1px 0 #766044,0 4px 10px #d2a96722!important;
+  filter:saturate(1.08);
+}
+.jy-atelier :is(.at-primary,.btn-primary,.btn-gold,.ln-ai-copy-btn,.mhx-ai-copy-btn,.bzx-ai-copy-btn,.orc-ai-copy-btn)::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(100deg,#fff0 35%,#ffffff33 50%,#fff0 65%);
+  background-size:220% 100%;background-position:120% 0;opacity:0;transition:opacity .3s;
+}
+@media (hover:hover){
+  .jy-atelier :is(.at-primary,.btn-primary,.btn-gold,.ln-ai-copy-btn,.mhx-ai-copy-btn,.bzx-ai-copy-btn,.orc-ai-copy-btn):hover::after{
+    opacity:1;animation:jy-depth-sheen 1.1s var(--jy-depth-ease) forwards;
+  }
+}
+@keyframes jy-depth-sheen{from{background-position:120% 0}to{background-position:-20% 0}}
+
+/* ── 次要／選項按鈕：薄浮雕，被選中時往內亮 ── */
+.jy-atelier :is(.ln-spread-btn,.mhx-method-btn,.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.bzs-chip,.bzs-choice-btn,.bzs-tab,.radio-pill,.btn-outline,.dim-tab,.result-tab,.at-quick button){
+  transition:transform .16s var(--jy-depth-ease),box-shadow .16s,background .2s,border-color .2s;
+  box-shadow:0 2px 0 #0007,inset 0 1px 0 #ffffff10;
+}
+.jy-atelier :is(.ln-spread-btn,.mhx-method-btn,.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.bzs-chip,.bzs-choice-btn,.bzs-tab,.radio-pill,.btn-outline,.dim-tab,.result-tab,.at-quick button):active{
+  transform:translateY(2px);box-shadow:0 0 0 #0007,inset 0 2px 4px #0006;
+}
+.jy-atelier :is(.ln-spread-btn,.mhx-method-btn,.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.bzs-chip,.bzs-choice-btn,.bzs-tab,.radio-pill,.dim-tab,.result-tab):is(.active,.on,.selected,.sel,[aria-pressed=true],[aria-selected=true]){
+  box-shadow:inset 0 0 0 1px #e4c99466,inset 0 -2px 0 #e4c99433,0 0 18px #c9a84c2a,0 2px 0 #0007;
+}
+
+/* ── AI 捷徑：像一排可以按下去的鍵 ── */
+.jy-atelier :is(.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut,.bzs-ai a,[data-action=ai]){
+  transition:transform .16s var(--jy-depth-ease),box-shadow .16s,border-color .2s;
+  box-shadow:0 3px 0 #050d18,0 6px 12px #0004,inset 0 1px 0 #ffffff14!important;
+}
+.jy-atelier :is(.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut,.bzs-ai a,[data-action=ai]) img{transition:transform .25s var(--jy-depth-ease);filter:drop-shadow(0 3px 4px #0008)}
+.jy-atelier :is(.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut,.bzs-ai a,[data-action=ai]):active{transform:translateY(3px);box-shadow:0 0 0 #050d18,inset 0 2px 5px #0007!important}
+@media (hover:hover){
+  .jy-atelier :is(.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut,.bzs-ai a,[data-action=ai]):hover{transform:translateY(-2px);border-color:#e4c99466!important;box-shadow:0 5px 0 #050d18,0 12px 20px #0005,inset 0 1px 0 #ffffff1c!important}
+  .jy-atelier :is(.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut,.bzs-ai a,[data-action=ai]):hover img{transform:translateY(-2px) scale(1.08)}
+}
+
+/* ── 牌卡：有厚度、翻開時輕微立體傾斜，點選時沉下 ── */
+.jy-atelier :is(.ln-card,.tarot-deck-card,.at-recent-face,.ootk-card,.jy-card-face){transform-style:preserve-3d;backface-visibility:hidden}
+.jy-atelier .ln-card{transition:transform .22s var(--jy-depth-ease),box-shadow .22s,border-color .22s}
+.jy-atelier .ln-card:active{transform:translateY(2px) scale(.985);box-shadow:0 2px 0 #050d18,0 5px 10px #0005,inset 0 1px 0 #fff2!important}
+.jy-atelier .ln-card .ln-card-img{box-shadow:0 1px 0 #fff2,0 6px 14px #0007;transition:transform .3s var(--jy-depth-ease)}
+@media (hover:hover){
+  .jy-atelier .ln-card:hover{transform:translateY(-4px) rotateX(3deg);border-color:#e4c99466!important;box-shadow:0 9px 0 #050d18,0 18px 28px #0006,0 0 22px #c9a84c22,inset 0 1px 0 #fff2!important}
+  .jy-atelier .ln-card:hover .ln-card-img{transform:translateZ(10px)}
+}
+.jy-atelier .ln-spread-board{perspective:900px}
+.jy-atelier .at-card-position{text-shadow:0 1px 0 #000a}
+
+/* ── 步驟導引：目前步驟像浮起來的印章 ── */
+.jy-atelier .at-flow-guide span{transition:transform .25s var(--jy-depth-ease),color .25s}
+.jy-atelier .at-flow-guide span[aria-current=step],.jy-atelier .at-flow-guide span.is-current{color:#fff;transform:translateY(-1px)}
+.jy-atelier .at-flow-guide b{box-shadow:0 1px 0 #000}
+.jy-atelier :is(.jy-flow-steps,.at-flow-steps) button[aria-current=step]{box-shadow:0 4px 0 #050a11,0 10px 18px #0005,inset 0 1px 0 #ffebcb40,0 0 0 1px #e4c99455}
+
+/* ── 玻璃卡片的邊光：讓區塊之間有前後距離 ── */
+.jy-atelier :is(.bzx-section,.ln-section,.mhx-section,.zw-in-sec,.bzs-card,.card,.ln-ai-card,.mhx-ai-card,.bzx-ai-card){
+  box-shadow:0 1px 0 #ffffff0d inset,0 -1px 0 #0006 inset,0 14px 30px -12px #000b;
+}
+.jy-atelier :is(.ln-ai-card,.mhx-ai-card,.bzx-ai-card){
+  background-image:radial-gradient(ellipse at 20% 0%,#c9a84c1a,transparent 55%);
+}
+
+/* ── 鍵盤／輔助焦點：所有可按元件統一金色描邊 ── */
+.jy-atelier :is(button,a,[role=button],summary,input,select,textarea):focus-visible{
+  outline:2px solid #e4c994;outline-offset:2px;box-shadow:0 0 0 5px #c9a84c33;
+}
+
+/* ── 交接導引：複製成功後的底部卡 ── */
+.jy-handoff{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;
+  padding:0 0 env(safe-area-inset-bottom,0);background:#02060dcc;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;transition:opacity .25s var(--jy-depth-ease)}
+.jy-handoff.is-open{opacity:1}
+.jy-handoff-sheet{box-sizing:border-box;width:min(560px,100%);max-height:88dvh;overflow:auto;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0));
+  border:1px solid #e4c99455;border-bottom:0;border-radius:22px 22px 0 0;color:#e8e2d5;
+  background:linear-gradient(170deg,#1b2a40,#0e1726 70%,#0a1220);
+  box-shadow:0 -1px 0 #ffebcb30 inset,0 -24px 60px #0009,0 0 0 1px #ffe8bd10;
+  font:15px/1.65 var(--f-body,"Noto Sans TC",sans-serif);
+  transform:translateY(24px);transition:transform .3s var(--jy-depth-ease)}
+.jy-handoff.is-open .jy-handoff-sheet{transform:none}
+@media (min-width:640px){.jy-handoff{align-items:center;padding:16px}.jy-handoff-sheet{border-radius:22px;border-bottom:1px solid #e4c99455;transform:translateY(12px) scale(.98)}}
+.jy-handoff-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.jy-handoff-head b{display:block;font:600 1.05rem/1.4 var(--f-display,"Noto Serif TC",serif);color:#f3e6c9}
+.jy-handoff-head small{display:block;color:#a9b6c8;font-size:.86rem;margin-top:2px}
+.jy-handoff-check{display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:50%;color:#1c160c;font-weight:700;
+  background:linear-gradient(135deg,#f9e7c3,#cfac6c);box-shadow:0 3px 0 #766044,0 8px 16px #d2a96744,inset 0 1px 0 #fffc}
+.jy-handoff-close{margin-left:auto;flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid #ffffff22;background:#ffffff0a;color:#d4dfed;font-size:14px;cursor:pointer}
+.jy-handoff-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.jy-handoff-steps li{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:14px;border:1px solid #ffffff12;background:#ffffff07;
+  box-shadow:0 2px 0 #050a11,inset 0 1px 0 #ffffff10}
+.jy-handoff-steps li i{display:grid;place-items:center;flex-shrink:0;width:26px;height:26px;border-radius:50%;font:600 13px/1 var(--f-body,sans-serif);font-style:normal;color:#1c160c;
+  background:linear-gradient(135deg,#f3dfb5,#c9a84c);box-shadow:0 2px 0 #5d4a2c,inset 0 1px 0 #fffb}
+.jy-handoff-steps li b{display:block;color:#f3e6c9;font-weight:600;font-size:.98rem}
+.jy-handoff-steps li span{display:block;color:#b7c3d4;font-size:.88rem;margin-top:2px}
+.jy-handoff-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
+.jy-handoff-mute{display:inline-flex;align-items:center;gap:8px;color:#9fb0c6;font-size:.84rem;cursor:pointer}
+.jy-handoff-mute input{accent-color:#c9a84c;width:16px;height:16px}
+.jy-handoff-ok{margin-left:auto;min-width:132px;min-height:46px;padding:10px 22px;border:1px solid #ffe8bdc9;border-radius:12px;color:#282319;
+  background:linear-gradient(115deg,#f9e7c3 0%,#ddbb7e 78%,#cfac6c 100%);font:600 .98rem/1 var(--f-body,sans-serif);cursor:pointer;
+  box-shadow:inset 0 1px 0 #fffc,0 4px 0 #766044,0 12px 26px #d2a96722;transition:transform .16s var(--jy-depth-ease),box-shadow .16s}
+.jy-handoff-ok:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #fffc,0 1px 0 #766044,0 4px 10px #d2a96722}
+
+/* ── 動態減量：所有位移與光掃都關掉，深度只留陰影 ── */
+@media (prefers-reduced-motion:reduce){
+  .jy-atelier .at-tool,.jy-atelier .at-tool .at-art,.jy-atelier .ln-card,.jy-atelier .ln-card .ln-card-img,
+  .jy-handoff,.jy-handoff-sheet,.jy-handoff-ok,
+  .jy-atelier :is(.at-primary,.btn-primary,.btn-gold,.btn-cta-pulse,.ln-ai-copy-btn,.mhx-ai-copy-btn,.bzx-ai-copy-btn,.orc-ai-copy-btn,.ln-spread-btn,.mhx-method-btn,.bzx-gbtn,.bzx-dbtn,.zw-in-pill,.bzs-chip,.bzs-choice-btn,.bzs-tab,.radio-pill,.btn-outline,.bzx-ai-sc,.ln-ai-sc,.mhx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut){
+    transition:none!important;animation:none!important;transform:none!important;
+  }
+  .jy-handoff{opacity:1}
+}

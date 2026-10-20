@@ -538,7 +538,7 @@
     if(k==='ziwei'&&specific?.technicalRulesLines)lines.push.apply(lines,specific.technicalRulesLines());
     if(k==='ziwei'&&specific?.domainRouterLines)lines.push.apply(lines,specific.domainRouterLines());
     if(k==='bazi'&&specific?.universalRulesLines)lines.push.apply(lines,specific.universalRulesLines());
-    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
+    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.1.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
     lines.push.apply(lines,guide?.length?guide:[METHODS[k].path,FULL_AREAS[k]]);
     return lines.join('\n');
   }

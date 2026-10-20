@@ -1,7 +1,7 @@
 /* Reading contract v16: source-based case synthesis, explicit language ambiguity and scoped native evidence. Never changes a cast. */
 (function(root){
   'use strict';
-  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動，並用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
+  var RECOMMENDATION_TEXT='【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，用二到四句自然對話推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如要把話說清楚、要穩住別衝動、要收心專注、要給自己安全感、要重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說清是提醒自己的象徵，連回解讀裡講到的那個下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款；理由須引用本次一項有效盤面發現，用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效，不把五行／星盤象徵說成身體實際缺少某種礦物。不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。';
   var RECOMMENDATION_METHODS={
     bazi:'八字：只按本題實際取用與調候推導色系，分開原局與歲運；不按缺行直接補石。',
     compat:'合盤：說清推薦是給A、B或共同互動；不把另一人的五行當成佩戴者的補劑。給A的建議只能用A已覆核的取用；不能因B喜土金水就叫A戴土色。未定取用時改以本題行動與色彩意象選設計，明說是象徵性提醒。',
@@ -27,7 +27,7 @@
     var guides=selected.map(function(k){k=k==='western'?'astro':k;if(used[k]||!RECOMMENDATION_METHODS[k])return '';used[k]=true;return RECOMMENDATION_METHODS[k];}).filter(Boolean);
     return [RECOMMENDATION_TEXT,guides.length?'【本法選材提醒】\n'+guides.join('\n'):''].filter(Boolean).join('\n');
   }
-  var READING_VERSION='16.0.0';
+  var READING_VERSION='16.1.0';
   var PLAIN_TEXT=[
     '【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。',
     '【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。',
@@ -37,7 +37,8 @@
   var TRUTH_POLICY=[
     '【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。',
     '【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。',
-    '【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。'
+    '【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。',
+    '【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。'
   ].join('\n');
   var NARRATIVE_POLICY=[
     '【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。',
@@ -413,6 +414,6 @@
   function recommendationEnding(kinds){return FINAL_VOICE+'\n'+recommendationText(kinds)+'\n'+SHOP_FOOTER;}
   // Preserve the legacy [0]=voice, [1]=truth slots used by standalone hosts.
   function lines(kind){return [PLAIN_TEXT,TRUTH_POLICY,NARRATIVE_POLICY,'【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。'].concat(methodLines(kind));}
-  root.JY_READING_QUALITY=Object.freeze({version:'5.3.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},narrativePolicy:function(){return NARRATIVE_POLICY;},narrativeExample:narrativeExample,proactivePolicy:function(){return voiceProactive();},truthPolicy:function(){return TRUTH_POLICY;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
+  root.JY_READING_QUALITY=Object.freeze({version:'5.4.0',readingVersion:READING_VERSION,lines:lines,methodLines:methodLines,payloadGuide:payloadGuide,methodKinds:function(){return Object.keys(METHODS);},plainText:function(){return PLAIN_TEXT;},narrativePolicy:function(){return NARRATIVE_POLICY;},narrativeExample:narrativeExample,proactivePolicy:function(){return voiceProactive();},truthPolicy:function(){return TRUTH_POLICY;},finalVoice:function(){return FINAL_VOICE;},timeScope:timeScope,reportScope:reportScope,recommendationText:recommendationText,recommendationEnding:recommendationEnding,recommendationPolicy:recommendationPolicy});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JY_READING_QUALITY;
 })(typeof window!=='undefined'?window:globalThis);

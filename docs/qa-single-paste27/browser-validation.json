@@ -3,8 +3,8 @@
   "cases": [
     {
       "name": "actual mobile Vedic export of provided two-part question",
-      "characters": 7465,
-      "bytes": 11547,
+      "characters": 8919,
+      "bytes": 14767,
       "parts": 1,
       "unchanged": true,
       "tasks": 2,
@@ -31,7 +31,7 @@
     {
       "name": "production combined export rebuilds from native chart and its copy button uses same bounded body",
       "status": "passed",
-      "characters": 7465
+      "characters": 8919
     },
     {
       "name": "old oversized export never reaches clipboard",
@@ -47,15 +47,15 @@
   "lazyRequests": [
     {
       "path": "/JS/vedic-engine.js",
-      "version": "20261015paste27"
+      "version": "20261021depth29"
     },
     {
       "path": "/JS/western-prompt.js",
-      "version": "20261015paste27"
+      "version": "20261021depth29"
     },
     {
       "path": "/JS/vedic-prompt.js",
-      "version": "20261015paste27"
+      "version": "20261021depth29"
     }
   ],
   "status": "passed"

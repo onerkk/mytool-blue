@@ -1,0 +1,452 @@
+{
+ "release": "20261021depth29",
+ "added": [
+  "CSS/depth-polish-20261021.css",
+  "JS/reading-handoff.js"
+ ],
+ "changed": [
+  "JS/ai-analysis.js",
+  "JS/bazi-prompt-root.js",
+  "JS/bazi-suite-core.js",
+  "JS/gua-prompt.js",
+  "JS/lenormand.js",
+  "JS/liuren-prompt.js",
+  "JS/meihua-standalone.js",
+  "JS/name-prompt.js",
+  "JS/oracle.js",
+  "JS/prompt-brief.js",
+  "JS/prompt-export.js",
+  "JS/prompt-packet.js",
+  "JS/prompt-single-paste.js",
+  "JS/reading-quality.js",
+  "JS/reading-workflow.js",
+  "JS/relationship-core.js",
+  "JS/sw.js",
+  "JS/ui.js",
+  "JS/vedic-prompt.js",
+  "JS/western-prompt.js",
+  "JS/ziwei-prompt-root.js",
+  "JS/ziwei-standalone.js",
+  "ai-analysis.js",
+  "bazi-prompt-root.js",
+  "bazi-suite-core.js",
+  "docs/prompt-budget-validation-20261003.json",
+  "docs/qa-casework28/liuren-feedback-prompt.txt",
+  "docs/qa-casework28/liuren-original-prompt.txt",
+  "docs/qa-casework28/liuyao-context-prompt.txt",
+  "docs/qa-casework28/validation.json",
+  "docs/qa-single-paste27/after-astro.txt",
+  "docs/qa-single-paste27/after-bazi.txt",
+  "docs/qa-single-paste27/after-compat.txt",
+  "docs/qa-single-paste27/after-lenormand.txt",
+  "docs/qa-single-paste27/after-liuren.txt",
+  "docs/qa-single-paste27/after-liuyao.txt",
+  "docs/qa-single-paste27/after-meihua.txt",
+  "docs/qa-single-paste27/after-name.txt",
+  "docs/qa-single-paste27/after-ootk.txt",
+  "docs/qa-single-paste27/after-oracle.txt",
+  "docs/qa-single-paste27/after-personality.txt",
+  "docs/qa-single-paste27/after-tarot.txt",
+  "docs/qa-single-paste27/after-vedic.txt",
+  "docs/qa-single-paste27/after-yijing.txt",
+  "docs/qa-single-paste27/after-ziwei.txt",
+  "docs/qa-single-paste27/browser-validation.json",
+  "docs/qa-single-paste27/layout-validation.json",
+  "docs/qa-single-paste27/ootk-validation.json",
+  "docs/qa-single-paste27/validation.json",
+  "functions/api/ai.js",
+  "index.html",
+  "lenormand.js",
+  "meihua-standalone.js",
+  "oracle.js",
+  "prompt-brief.js",
+  "prompt-export.js",
+  "prompt-packet.js",
+  "prompt-single-paste.js",
+  "relationship-core.js",
+  "scripts/sync-casework28.cjs",
+  "sw.js",
+  "tests/casework28.test.cjs",
+  "tests/prompt-budget-20261003.cjs",
+  "tests/single-paste-20261015.cjs",
+  "tests/single-paste-browser-20261015.cjs",
+  "tests/single-paste-layouts-20261015.cjs",
+  "tests/single-paste-ootk-20261015.cjs",
+  "ui.js",
+  "workers/ai-proxy.js",
+  "ziwei-prompt-root.js",
+  "ziwei-standalone.js"
+ ],
+ "files": [
+  {
+   "path": "CSS/depth-polish-20261021.css",
+   "bytes": 11901,
+   "sha256": "fa7f4c57a76fdb703a49eef502ae7f0e5160bd152b82580957fa1c421471f30f"
+  },
+  {
+   "path": "JS/ai-analysis.js",
+   "bytes": 1607564,
+   "sha256": "8f762316b42934975620dcf5234be689cc1b5e87802237444a831fac6e3d78af"
+  },
+  {
+   "path": "JS/bazi-prompt-root.js",
+   "bytes": 58645,
+   "sha256": "eaa9d1a31e91e09d3467f9ec601d980dc813c2a62d69ff4f98bb2b4674ea760f"
+  },
+  {
+   "path": "JS/bazi-suite-core.js",
+   "bytes": 235206,
+   "sha256": "2db267a54979aa5e646288a0ec27740e5ba1f96f588354b747d3ab3921d8e4cb"
+  },
+  {
+   "path": "JS/gua-prompt.js",
+   "bytes": 202181,
+   "sha256": "7707f8e658c192a308756af30866894196a94263978a9806b55e39debf01a7ab"
+  },
+  {
+   "path": "JS/lenormand.js",
+   "bytes": 411005,
+   "sha256": "98fe6e8f76059c14fe94adbf718d73ae9245444e6be05f4faa0b148ed061cc2e"
+  },
+  {
+   "path": "JS/liuren-prompt.js",
+   "bytes": 188535,
+   "sha256": "8d593cbef3cee32087ab19bc18b4f62da8747889677385373d8d2a7eee909771"
+  },
+  {
+   "path": "JS/meihua-standalone.js",
+   "bytes": 242877,
+   "sha256": "7734e377925af6c4a33e219c837440d5e82ba392cacd6f4316786ce1562d5307"
+  },
+  {
+   "path": "JS/name-prompt.js",
+   "bytes": 192940,
+   "sha256": "01206b27175b7ba9e84e838278f41a0826ad7d29cba19de51317e75e18140904"
+  },
+  {
+   "path": "JS/oracle.js",
+   "bytes": 310793,
+   "sha256": "eb6cbc4115e6c7dfc51cfb849e7f8997991b097cc1d37f6888577253ff07d93b"
+  },
+  {
+   "path": "JS/prompt-brief.js",
+   "bytes": 48895,
+   "sha256": "b25d803ac0da162c9e26a76570a2ef629d890854a55fdc43ce8296e42305ec76"
+  },
+  {
+   "path": "JS/prompt-export.js",
+   "bytes": 356719,
+   "sha256": "f96ea11d9f316a52336c73bd0031b5404b9d0eca04eef503c71f82a41e1d6c15"
+  },
+  {
+   "path": "JS/prompt-packet.js",
+   "bytes": 132442,
+   "sha256": "7f46b54286be7a08e66c61e866b265b98584f3d64d0ff1a7c19549dedf4f37fa"
+  },
+  {
+   "path": "JS/prompt-single-paste.js",
+   "bytes": 48472,
+   "sha256": "2d8a6e82f2e547f723d8d1fbf2cc6a9842d443738f7924db250dc04bd2c74fe5"
+  },
+  {
+   "path": "JS/reading-handoff.js",
+   "bytes": 5138,
+   "sha256": "6a15f25a3edf9d7f302b3a1d4a406ded7b8a759bc20895f5297b664894286f4f"
+  },
+  {
+   "path": "JS/reading-quality.js",
+   "bytes": 81810,
+   "sha256": "ddf36f223c854539231a0b469eaf3481c0af2d735a97609d3f4666563c7bb5a9"
+  },
+  {
+   "path": "JS/reading-workflow.js",
+   "bytes": 168389,
+   "sha256": "e58b02a5ddb28e435909ecfe0348eacef334a55b5dadaad15b8c7d18c79f02d5"
+  },
+  {
+   "path": "JS/relationship-core.js",
+   "bytes": 217590,
+   "sha256": "bdc45eac47b124a2c7869907ec0bdb3ab9b35995220ff303bf90fc70d84ab629"
+  },
+  {
+   "path": "JS/sw.js",
+   "bytes": 8402,
+   "sha256": "544c5c03befb87c8259b7ca8344baf1d5516a404b006fa72c309d0bab3212b0b"
+  },
+  {
+   "path": "JS/ui.js",
+   "bytes": 435046,
+   "sha256": "8b8101645e74f4bde2a74ce1913b3220a6fe003eb0772fe515bb455dfe5e729a"
+  },
+  {
+   "path": "JS/vedic-prompt.js",
+   "bytes": 204986,
+   "sha256": "3d4a1b289219715c5274545977a1f30659343439d0c86cc294a2fb9d9b532503"
+  },
+  {
+   "path": "JS/western-prompt.js",
+   "bytes": 192548,
+   "sha256": "e3f90f15cb842a2f184b0599ebfb7ea1c38caacaa88aade10e5417186cfc1bb5"
+  },
+  {
+   "path": "JS/ziwei-prompt-root.js",
+   "bytes": 22711,
+   "sha256": "19c210733f0952d987e6d0b867918382f6dbf4c7dd13e0bc8c205a4b2ebb7ff4"
+  },
+  {
+   "path": "JS/ziwei-standalone.js",
+   "bytes": 268872,
+   "sha256": "ff6451a0bce061c0f72063566f074d38fae73c2b788a92a544195839abd93151"
+  },
+  {
+   "path": "README-DEPTH29.md",
+   "bytes": 6054,
+   "sha256": "02c8ff4bb84f0a5ae7960395ac0d30ab1a67d5934ce87afd19b468b51a56e015"
+  },
+  {
+   "path": "ai-analysis.js",
+   "bytes": 1607564,
+   "sha256": "8f762316b42934975620dcf5234be689cc1b5e87802237444a831fac6e3d78af"
+  },
+  {
+   "path": "bazi-prompt-root.js",
+   "bytes": 58645,
+   "sha256": "eaa9d1a31e91e09d3467f9ec601d980dc813c2a62d69ff4f98bb2b4674ea760f"
+  },
+  {
+   "path": "bazi-suite-core.js",
+   "bytes": 235206,
+   "sha256": "2db267a54979aa5e646288a0ec27740e5ba1f96f588354b747d3ab3921d8e4cb"
+  },
+  {
+   "path": "docs/prompt-budget-validation-20261003.json",
+   "bytes": 3740,
+   "sha256": "be94a40f318f2c5a184fc15eb210c30bb875f2516a4c44ce4b254d75d95a3f40"
+  },
+  {
+   "path": "docs/qa-casework28/liuren-feedback-prompt.txt",
+   "bytes": 16635,
+   "sha256": "0287eb66d536d417b43959bdeb42267feb45b0ff2a82ae9bf4a009f23c9ca4c6"
+  },
+  {
+   "path": "docs/qa-casework28/liuren-original-prompt.txt",
+   "bytes": 16533,
+   "sha256": "cc0da842daefb91e385449046cde6a70d5d686ca9bf18fd83d19e8c2c296de91"
+  },
+  {
+   "path": "docs/qa-casework28/liuyao-context-prompt.txt",
+   "bytes": 15214,
+   "sha256": "fdd5ae19fb7a3f147034a3478a35ed7a0f0a2ec4a3f2d95f1d5dacacae9f8878"
+  },
+  {
+   "path": "docs/qa-casework28/validation.json",
+   "bytes": 24238,
+   "sha256": "ea7e5f955e914f8602f4d679160ee0536ed5db5a3ebc72e46a91197905bcabb4"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-astro.txt",
+   "bytes": 14486,
+   "sha256": "49daddba21115bf936c1fbb03713a03c79b3e5066fc4683ae2901c30dacae9e1"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-bazi.txt",
+   "bytes": 15486,
+   "sha256": "df7b863ff1c72ba5d4ce7e485bb68a1dad4e918794fd5b5a2230b5b24351eade"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-compat.txt",
+   "bytes": 13348,
+   "sha256": "8f91cd94e3bb476272343f0d6e6c74b02f00e92d66215d73b5e98050519db978"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-lenormand.txt",
+   "bytes": 7899,
+   "sha256": "42af291d91b2e7f4f8181a5872af32b28b08583b8afcfdf3bb7597961806dad9"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-liuren.txt",
+   "bytes": 13990,
+   "sha256": "70732a85044dddc9c8ac05ec2b3828e5a4390bc3af43b7783e2d0cd3c3d72c64"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-liuyao.txt",
+   "bytes": 13380,
+   "sha256": "25df2d8dd2752eb087c7e3e214894d65cf4608a7b1095e9448a6f67b76b2cc92"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-meihua.txt",
+   "bytes": 16883,
+   "sha256": "f5214d55bc8d631fef6337004889dc499cb50a68499754df93511380a7a62e88"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-name.txt",
+   "bytes": 16239,
+   "sha256": "6ffd48775098d4a7fa8918112b937c284aa9ab2133eb9524cd1ca99cc514978b"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-ootk.txt",
+   "bytes": 16725,
+   "sha256": "443dad7485ae2590d894cacf63c616fa75345f0a532dcfbc62bb00c41aa08058"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-oracle.txt",
+   "bytes": 11624,
+   "sha256": "5e60b45c40743546e623e57f68749b9ed3cbe3967da2b70bd4a781755e0a8cc6"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-personality.txt",
+   "bytes": 9059,
+   "sha256": "5932b6bdeb2399ecc16ef2dbcb18beb28d5f79dd55c8cf257397a6aa52a8f7ad"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-tarot.txt",
+   "bytes": 6715,
+   "sha256": "7aeccef04f5c636dd025f05fc828e2ba7ce76b14f7b1c353c856287925afbc84"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-vedic.txt",
+   "bytes": 13800,
+   "sha256": "c3550091b53893f7d9e16eeeafbd69bcddc50a26d26a8a5581e02cd860ebaeab"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-yijing.txt",
+   "bytes": 12012,
+   "sha256": "e5c5bf8d3b62679621861632f5d1d7d68699a0b4993fbca72943c7356d8cbeee"
+  },
+  {
+   "path": "docs/qa-single-paste27/after-ziwei.txt",
+   "bytes": 20596,
+   "sha256": "352afa3ba95486398a93dbfbae8b101f9205a368786d60ccb45c102139c19bc5"
+  },
+  {
+   "path": "docs/qa-single-paste27/browser-validation.json",
+   "bytes": 1485,
+   "sha256": "e52288d60b87b237229d3da456a081ef68fafa9ef58e71606e9da9f0a443b6a7"
+  },
+  {
+   "path": "docs/qa-single-paste27/layout-validation.json",
+   "bytes": 364,
+   "sha256": "3102f7da570098558c015d429da1ead68422a594cceb4bb4f953bf606ff7001f"
+  },
+  {
+   "path": "docs/qa-single-paste27/ootk-validation.json",
+   "bytes": 2577,
+   "sha256": "c12a5be0fb5ca38c383bbae391bcc778df8e99b4efcdfc279954c04469467af8"
+  },
+  {
+   "path": "docs/qa-single-paste27/validation.json",
+   "bytes": 3996,
+   "sha256": "c0ffee69062d5b104efa4d31c136a923a092d943807190e282f2912bbec120bc"
+  },
+  {
+   "path": "functions/api/ai.js",
+   "bytes": 317612,
+   "sha256": "be7dba1bc525a2f07ed50dec8821c89f6248aa4c2f11eb6f9c0cd8d1fc41f286"
+  },
+  {
+   "path": "index.html",
+   "bytes": 152853,
+   "sha256": "9352f42858f13ddf08d010b3fb699d85d045ec0317ec06763054aefc99b68587"
+  },
+  {
+   "path": "lenormand.js",
+   "bytes": 411005,
+   "sha256": "98fe6e8f76059c14fe94adbf718d73ae9245444e6be05f4faa0b148ed061cc2e"
+  },
+  {
+   "path": "meihua-standalone.js",
+   "bytes": 242877,
+   "sha256": "7734e377925af6c4a33e219c837440d5e82ba392cacd6f4316786ce1562d5307"
+  },
+  {
+   "path": "oracle.js",
+   "bytes": 310793,
+   "sha256": "eb6cbc4115e6c7dfc51cfb849e7f8997991b097cc1d37f6888577253ff07d93b"
+  },
+  {
+   "path": "prompt-brief.js",
+   "bytes": 48895,
+   "sha256": "b25d803ac0da162c9e26a76570a2ef629d890854a55fdc43ce8296e42305ec76"
+  },
+  {
+   "path": "prompt-export.js",
+   "bytes": 356719,
+   "sha256": "f96ea11d9f316a52336c73bd0031b5404b9d0eca04eef503c71f82a41e1d6c15"
+  },
+  {
+   "path": "prompt-packet.js",
+   "bytes": 132442,
+   "sha256": "7f46b54286be7a08e66c61e866b265b98584f3d64d0ff1a7c19549dedf4f37fa"
+  },
+  {
+   "path": "prompt-single-paste.js",
+   "bytes": 48472,
+   "sha256": "2d8a6e82f2e547f723d8d1fbf2cc6a9842d443738f7924db250dc04bd2c74fe5"
+  },
+  {
+   "path": "relationship-core.js",
+   "bytes": 217590,
+   "sha256": "bdc45eac47b124a2c7869907ec0bdb3ab9b35995220ff303bf90fc70d84ab629"
+  },
+  {
+   "path": "scripts/sync-casework28.cjs",
+   "bytes": 1769,
+   "sha256": "3af3a79eba894994e187e93f29447842fec7014be26a605eda825abfad77e4d6"
+  },
+  {
+   "path": "sw.js",
+   "bytes": 8402,
+   "sha256": "544c5c03befb87c8259b7ca8344baf1d5516a404b006fa72c309d0bab3212b0b"
+  },
+  {
+   "path": "tests/casework28.test.cjs",
+   "bytes": 10843,
+   "sha256": "30c2074486538bb5666b5a194d3d468c8e44ba4c4096a5f139fa7405d051b439"
+  },
+  {
+   "path": "tests/prompt-budget-20261003.cjs",
+   "bytes": 11071,
+   "sha256": "a5cd400c13b724b14207ded7f59a6f4987acf21d37919d07449a97c1bd295a0c"
+  },
+  {
+   "path": "tests/single-paste-20261015.cjs",
+   "bytes": 7364,
+   "sha256": "adec53e8c38fd44b813199fe67f491ea853f7a133f7c7d8f22d53a01f3b680af"
+  },
+  {
+   "path": "tests/single-paste-browser-20261015.cjs",
+   "bytes": 7533,
+   "sha256": "9bfaf2532aae9d0d60466e7ff763f52c99704f721a0fd7019c58c93207af3db2"
+  },
+  {
+   "path": "tests/single-paste-layouts-20261015.cjs",
+   "bytes": 1282,
+   "sha256": "3a21469c4bdb98183874a8f3a219656bb8a52cb96a9f0ffe789b8f8ccddcbbb2"
+  },
+  {
+   "path": "tests/single-paste-ootk-20261015.cjs",
+   "bytes": 2127,
+   "sha256": "17e5cc6faca41956a6ed429c8298cfc0e78932f4b51b4c560df668eb22b89c8c"
+  },
+  {
+   "path": "ui.js",
+   "bytes": 435046,
+   "sha256": "8b8101645e74f4bde2a74ce1913b3220a6fe003eb0772fe515bb455dfe5e729a"
+  },
+  {
+   "path": "workers/ai-proxy.js",
+   "bytes": 317783,
+   "sha256": "7855d7c39fc9c04d7398c33fb2d1ec4ccad199bc68ebefeb7ebac5b9d6debf2d"
+  },
+  {
+   "path": "ziwei-prompt-root.js",
+   "bytes": 22711,
+   "sha256": "19c210733f0952d987e6d0b867918382f6dbf4c7dd13e0bc8c205a4b2ebb7ff4"
+  },
+  {
+   "path": "ziwei-standalone.js",
+   "bytes": 268872,
+   "sha256": "ff6451a0bce061c0f72063566f074d38fae73c2b788a92a544195839abd93151"
+  }
+ ]
+}

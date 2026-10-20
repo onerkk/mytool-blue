@@ -1,8 +1,8 @@
 {
-  "testedAt": "2026-10-15T06:41:02.935Z",
+  "testedAt": "2026-10-20T21:40:55.607Z",
   "limits": {
-    "characters": 8000,
-    "utf8Bytes": 20000
+    "characters": 9000,
+    "utf8Bytes": 22000
   },
   "results": [
     {

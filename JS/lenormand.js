@@ -539,7 +539,7 @@
     if(k==='ziwei'&&specific?.technicalRulesLines)lines.push.apply(lines,specific.technicalRulesLines());
     if(k==='ziwei'&&specific?.domainRouterLines)lines.push.apply(lines,specific.domainRouterLines());
     if(k==='bazi'&&specific?.universalRulesLines)lines.push.apply(lines,specific.universalRulesLines());
-    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
+    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.1.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
     lines.push.apply(lines,guide?.length?guide:[METHODS[k].path,FULL_AREAS[k]]);
     return lines.join('\n');
   }
@@ -935,13 +935,12 @@
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
   api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;api.situation=situation;api.situationPrompt=situationPrompt;
   root.JYReadingWorkflow=Object.freeze(api);
-  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_LENORMAND
 var JY_READING_LENORMAND = [
   "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。",
-  "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
+  "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。",
   "【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。",
   "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
   "【雷諾曼：完整牌句】依原問題→相鄰牌→完整長線→實際位置選主義；相鄰 A→B 是主題與修飾的關係，加入C後重讀全句。中間牌要有實際功能，末牌與全線共同定落點；這些是判讀方法，正文直接說牌句在本題的意思。",
@@ -960,7 +959,7 @@ var JY_READING_LENORMAND = [
 ];
 // END GENERATED READING JY_READING_LENORMAND
 // BEGIN GENERATED RECOMMENDATION JY_REC_LENORMAND
-var JY_REC_LENORMAND = "【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動，並用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
+var JY_REC_LENORMAND = "【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，用二到四句自然對話推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如要把話說清楚、要穩住別衝動、要收心專注、要給自己安全感、要重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說清是提醒自己的象徵，連回解讀裡講到的那個下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款；理由須引用本次一項有效盤面發現，用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效，不把五行／星盤象徵說成身體實際缺少某種礦物。不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n雷諾曼：依實際相鄰牌句與牌陣位置取主題；月亮不自動配月光石，心不自動配粉晶。";
 // END GENERATED RECOMMENDATION JY_REC_LENORMAND
 // ═══════════════════════════════════════
 // 靜月之光 — 雷諾曼牌 Lenormand v22.0（Frame Semantic Entity–Relation–Facet Graph）
@@ -2907,7 +2906,7 @@ function _lnPushOutputContract(lines, legalNames) {
 }
 function _lnPushBrandModule(lines) {
   lines.push('<品牌附加層>');
-  lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("5.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('lenormand'):JY_REC_LENORMAND));
+  lines.push((window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("5.4.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationText('lenormand'):JY_REC_LENORMAND));
   lines.push('</品牌附加層>','');
 }
 
@@ -2954,7 +2953,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
   if(spreadId==='two')lines.push('雙牌主題與修飾方法參考：https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-lenormand-card-combinations');
   lines.push('線讀／鏡像／九宮格方法參考：Tina Gong（Labyrinthos）https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-three-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads 、https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-nine-card-portrait-box-or-3x3-lenormand-spreads 。本站雙路比較、議題九宮格的軸與末排收束採明示變體，不宣稱是唯一正統。');
   lines.push('牌義流派對照：月亮的認可／情感用法參見讀牌者 Layla https://www.lenormandreader.com/the-moon；Labyrinthos 的月亮文偏現代心理語彙，並非所有流派的共同定義。依題目與組合選擇有解釋力的一支；不影響答案的流派差異不展開。方法參考：牌組作者 James R. Eads 的 Grand Tableau 說明 https://prismavisions.com/pages/lenormand-the-grand-tableau 。該作者頁面採四排九張；本站提供4×9與4×8＋4兩種版式，宮位、鄰域、鏡像和騎士步須依本次提供的版式與座標，不互相借用連線；此為方法書目，並非作者認證或 AI 已即時查網。雷諾曼不套用塔羅的大阿卡那、正逆位與元素尊貴。');
-  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("16.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
+  lines=lines.concat(window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("16.1.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines('lenormand'):JY_READING_LENORMAND);
   _lnPushReaderKernel(lines);
   _lnPushSpreadModule(lines, spreadId, drawn, personRepId, customFocusId,sp);
   _lnPushCardData(lines, drawn, sp);

@@ -563,7 +563,7 @@ return function timeScope(question,referenceYear){
     if(k==='ziwei'&&specific?.technicalRulesLines)lines.push.apply(lines,specific.technicalRulesLines());
     if(k==='ziwei'&&specific?.domainRouterLines)lines.push.apply(lines,specific.domainRouterLines());
     if(k==='bazi'&&specific?.universalRulesLines)lines.push.apply(lines,specific.universalRulesLines());
-    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
+    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.1.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
     lines.push.apply(lines,guide?.length?guide:[METHODS[k].path,FULL_AREAS[k]]);
     return lines.join('\n');
   }
@@ -959,7 +959,6 @@ return function timeScope(question,referenceYear){
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
   api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;api.situation=situation;api.situationPrompt=situationPrompt;
   root.JYReadingWorkflow=Object.freeze(api);
-  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 /*! bazi-suite-core.js — 靜月之光八字完整功能套件核心 v1.3.0 (2026-09-04)

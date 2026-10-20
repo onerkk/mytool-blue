@@ -13,7 +13,9 @@ for(const name of fs.readdirSync(path.join(root,'JS')).filter(f=>f.endsWith('.js
     const i=s.indexOf(begin)+begin.length,closing=new RegExp('^'+end+'\\r?$','m').exec(s.slice(i));
     if(!closing)throw Error('Missing closing marker in '+p);
     const j=i+closing.index;
-    s=s.slice(0,i)+read(source).trimEnd()+'\n'+s.slice(j);
+    // Embedded copies omit the CommonJS export line, exactly like scripts/sync-recommendation-guides.cjs,
+    // so both checks agree on the same bytes.
+    s=s.slice(0,i)+read(source).replace(/^  if\(typeof module[^\n]+\n/m,'').trimEnd()+'\n'+s.slice(j);
   }
   write(p,s);
 }

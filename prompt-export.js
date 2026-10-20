@@ -221,10 +221,10 @@ if(!root.JYNativeCards?.ootkReadingVersion || String(root.JYNativeCards.ootkRead
 })(typeof window==='undefined'?globalThis:window);
 
 }
-if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261015depth26",undefined,{numeric:true})<0){
+if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.version).localeCompare("20261016depth28",undefined,{numeric:true})<0){
 (function(root){
   'use strict';
-  const VERSION='20261015depth26';
+  const VERSION='20261016depth28';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
@@ -279,7 +279,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     ziwei:{paths:['items','layers','northern','patternAssessment','schoolCompletion'],checks:['主題宮連同三方四正，逐一追到飛入、飛出與自化的實際兩端','本命、大限、流年分層比較同一事件，不以吉星數量裁決'],bounds:'未套用的流派或未知時辰不能由文字補成定盤'},
     vedic:{paths:['items','vargas','activation','strength','bhavaStrength','ashtakavarga','applicability'],checks:['主題宮主的職責、落處、定位星與實際受照先成判','有效專題分盤與同一運主承接；分清收入增加、成本負擔及留存','逐期比較當期與後期的支持及阻力；交運不自動等於達標'],bounds:'專題分盤、力量與多運法各有用途，不投票也不從強度換算金額'},
     astro:{paths:['items','essentialDignities','transits','progressions','returnAnalysis','horary'],checks:['先辨本命與卜卦用途，沿主題宮主、定位鏈與相位雙端解釋','本命能力、實算行運觸發、次限及返照各自有時間範圍'],bounds:'未算相位或年度不能由當日位置外推，候選入相不代表事件已成'},
-    liuren:{paths:['plate','courses','transmissions','ganZhi','edges','targets','topicRules','timing'],checks:['日干、日支、主題角色與三段傳遞的生克方向合讀','財物是否送達、是否伴隨消耗或受制，不能見財即判得財'],bounds:'缺年命只限制相關規則；未來候選日期不是已發生事件'},
+    liuren:{paths:['plate','courses','transmissions','ganZhi','edges','targets','topicRules','timing'],checks:['日干、日支、主題角色與三段傳遞的生克方向合讀','逐傳核刑沖與制化；本人承受和環境要求分讀，不能見官鬼就指定事故或缺人','財物是否送達、是否伴隨消耗或受制，不能見財即判得財'],bounds:'缺年命只限制相關規則；未來候選日期不是已發生事件'},
     liuyao:{paths:['items','targets','influences','transformations','classicalBalance','timing'],checks:['取用對應原問句；月、日、動與變的作用能否有效到達該爻','世應、伏飛、空破及可實現的解阻條件與最強反向作用比較'],bounds:'不得只看旺衰、空亡或吉凶爻數；無月日的爻不能假設有時令'},
     meihua:{paths:['body','use','nuclear','originalLines','changedLines','castContext'],checks:['原體固定，本卦、互卦、變卦依既定方法承接','求財與交易按各自原典判，體克用不能因一般生克表一律寫壞'],bounds:'卦氣的傳統取時須交代換算及時令，不把數字直接指定公曆日'},
     yijing:{paths:['reading','originalGeometry','changedGeometry','expositions','complementaryViews'],checks:['先確認實際動爻數及本次擇辭政策，再比較主讀與參讀的情境','把原文中的做法、前提與後果連到同一子題'],bounds:'互錯綜或爻位關係不能越過主讀原文，也不因卦名直接保證事件'},
@@ -291,15 +291,36 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     compat:{paths:['items','timeline','projectionGroups'],checks:['先核雙方原局，再分A到B及B到A的實際作用','共同時段與各自承擔分開；不能由匹配替對方宣布意願'],bounds:'不交換雙方喜忌，不由相合保證交往、婚姻或合作收益'},
     personality:{paths:['items','modelInputs','disclaimer'],checks:['逐軸追原輸入及相反條件，落到可觀察的決策與溝通行為'],bounds:'本站命理映射不是心理量表，不計事件日期、疾病或收入'}
   };
-  function nativeBasis(method,chart,analysis,focus){
+  // Reading lenses use each method's existing evidence. They are not new
+  // divination formulae and do not measure staffing, consent or actual events.
+  const WORK_CONTEXT={
+    bazi:['原局承受與外在約束，須連同根氣、資源和救應讀；不把責任一概解成個性','長期方向只核已算大運流年；本命結構不能推出今日同事缺勤'],
+    ziwei:['命身、事業與交友相關宮位連同三方和實際飛化讀；自己、工作要求與支援分開','本命及運限分層，不把交友宮直接指認某位同事或人數'],
+    vedic:['以D1本人、日常責任、職業及支援的實際宮主作用為主；D10只核職業承接','有效運期與原局一同讀，宮力不等於今日現場人力'],
+    astro:['先辨本命或卜卦，再按本盤宮主與雙端相位分讀本人、工作和支援','卜卦如有實算傳光／集光或受阻才用；第三方象徵不是某人已答應代班'],
+    liuren:['干支兩端、三傳刑沖生剋連同空破旺衰讀，區分本人承受與環境牽制','是否有救應須看實際作用；官鬼、旬空、天空不直接等於缺人或停工'],
+    liuyao:['世爻承受、工作取用及有效生扶制約合讀；保留動變、空破與飛伏的反證','兄弟或應爻須有原題角色依據才作同事或對方，不自動斷缺勤'],
+    yijing:['依本次主讀卦爻辭的角色、進退與承擔條件，分辨想休息和仍須承接的矛盾','已上班就解讀當下調整；未選方案作條件比較，不另起一卦'],
+    meihua:['固定原體，合本互變及時令，區分本人消耗、外在牽制與得到支援','只有實際提供才讀現場外應；不得把人數或職位補成外應'],
+    tarot:['按原牌位區分本人感受、外在處境、限制及可用支援，再合全部正反作用','沒有環境位就讀既有合法關係並標限制，不補抽、不把宮廷牌指定成缺勤同事'],
+    lenormand:['依原布局的主題綁定和合法連續牌句讀工作、阻礙及支援，保留順序與反證','不因塔羅式牌義或幾張牌就斷缺勤人數，不另造人物牌'],
+    ootk:['只用有效輪次，追問工作責任、承擔與支援如何在各輪承接或受阻','未確認主堆不冒稱驗題；未完成程序不補成已知現場'],
+    oracle:['原詩前後條件及本廟作事欄一起讀，區分該承接、暫緩與調整的情況','總吉意不覆蓋作事限制；詩句不能證實同事缺勤'],
+    name:['只讀實際姓名算式和音形義能說明的象徵傾向，工作處境另外核實','姓名不能計算今日人力或重新找到方向的日期，不為回答而補生辰'],
+    compat:['雙方已有資料才分各自承擔與雙向作用；先確認原題第二人的角色','未提供主管或同事資料就保持未知，不能把任意第二人套成支援者'],
+    personality:['用已算五軸的兩端與反向條件談承擔、界線和求助方式','人格傾向不是現場人力資料，也不能預測轉運日']
+  };
+  function nativeBasis(method,chart,analysis,focus,situation){
     const spec=CASEWORK[method]||{paths:['items'],checks:[],bounds:'未有具名取法不補造'};
     const paths=spec.paths.map(path=>({path,status:has(analysis,path)||has(chart,path)?'present':'missing',scope:'實際資料入口，不等於完成事件裁決'}));
     const sources=root.JYNativeRuleSources?.forMethod?.(method)||[];
     const out={schema:'jy.case-basis/1',method,sourceQuestion:focus?.sourceQuestion||'',focus,paths,comparisonChecks:spec.checks,methodBoundary:spec.bounds,
-      research:{status:'source-log-provided-runtime-lookup-not-performed',sourceLog:sources.map(s=>({id:s.id,url:s.reviewURL||s.url,lastCheckedAt:s.checkedAt,reviewScope:s.reader26ReviewScope||s.scope,verification:s.reader26VerificationLevel||'prior-scoped-review'})),runtimeBrowsingPerformed:false,
+      research:{status:'source-log-provided-runtime-lookup-not-performed',sourceLog:sources.map(s=>({id:s.id,url:s.reviewURL||s.url,lastCheckedAt:s.checkedAt,reviewScope:s.reviewScope||s.reader26ReviewScope||s.scope,verification:s.verificationLevel||s.reader26VerificationLevel||'prior-scoped-review'})),runtimeBrowsingPerformed:false,
         unimplementedOrUncertain:A(analysis?.unavailable).map(message=>({message,kind:/未實作|算法|流派|傳承|原典|版本|歧義/.test(message)?'technical-rule-or-implementation':/時刻|時辰|出生|未提供|未完成|程序/.test(message)?'input-or-procedure':'method-scope',resolved:false})),
         rule:'先核既有來源的實際適用段落。不確定取法時由具瀏覽能力的解讀端真實查閱一手資料，記實際URL及核到的規則；未能查到保留未決，不冒稱本輪查過。未實作算法需補程式與對照後才算完成，只有文獻不算已實算。個人現況缺項不能靠網路或命理補造。'},
       judgementStatus:'requires-source-based-synthesis',humanPractitionerPerformed:false,predictionValidated:false};
+    if(situation?.workDecision)out.contextReading={status:'reading-instructions-not-event-findings',checks:WORK_CONTEXT[method]||[],
+      boundary:'只沿本法實有資料找支持與相反作用。現場人力、交接與調度屬待核實背景，不能由提示詞自行變成盤面證據。'};
     if(method==='vedic'&&!chart?.input?.unknownTime){
       const houses=A(chart?.houses),ps=chart?.planets||{},wanted=focus?.houses?.length?focus.houses:houses.map(h=>h.house);
       out.topicRoles=houses.filter(h=>wanted.includes(h.house)).map(h=>{
@@ -322,10 +343,10 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     const limitations=A(analysis?.unavailable).map(message=>({message,kind:/證實|準確率|保證|未發生事件|人物心意/.test(message)?'event-not-verified':/未實作|未有可靠|師承|異派|其他.*流派/.test(message)?'outside-registered-rules':'missing-or-limited-layer',haltsOtherEvidence:false}));
     const specialization=analysis?.topicRules;
     return {schema:'jy.request-coverage/1',method,sourceQuestion:plan?.question||String(options.question||''),
-      requirements:plan?.requestRequirements||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
+      requirements:plan?.requestRequirements||null,situation:plan?.situation||null,availableEvidence:available,candidateEvidenceUnits:units,missingEvidence:missing,limitations,
       usableNativeEvidence:available.length>0||units.some(x=>x.evidenceCount>0),
       specializedClassification:{available:!!specialization,topics:A(specialization?.topics),fallback:'專用分類缺少或未命中，只限制該分類；仍用實際原生骨架與本法一般判讀回答原句。'},
-      caseBasis:nativeBasis(method,chart,analysis,root.JYReadingWorkflow?.nativeFocus?.({method,question:plan?.question||options.question||'',plan})),
+      caseBasis:nativeBasis(method,chart,analysis,root.JYReadingWorkflow?.nativeFocus?.({method,question:plan?.question||options.question||'',plan}),plan?.situation),
       taskCoverage:A(plan?.requestRequirements?.tasks).map(t=>({taskId:t.id,source:t.source,goal:t.goal,measurement:t.measurement||[],evidenceCandidates:units.map(x=>x.id),state:available.length||units.some(x=>x.evidenceCount>0)?'must-synthesize-supported-direction':'requires-concrete-input-gap',resolution:'依實際角色、作用方向與時間形成支持及限制；候選清單未替讀者裁決事件。'})),
       interpretationRule:'逐題從有效原生資料選取實際相關作用；讀者可依具名傳統判法推讀，但不能冒稱新的讀法已由引擎實算。分類清單與語義標籤不是可問問題白名單。',
       timeRule:'本次實算時窗只限制可報的時點；不限期或更長的原問句，不能因窗口外未算就判窗口外永不發生。',
@@ -931,7 +952,7 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
     if(k==='ziwei'&&specific?.technicalRulesLines)lines.push.apply(lines,specific.technicalRulesLines());
     if(k==='ziwei'&&specific?.domainRouterLines)lines.push.apply(lines,specific.domainRouterLines());
     if(k==='bazi'&&specific?.universalRulesLines)lines.push.apply(lines,specific.universalRulesLines());
-    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.0.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
+    var quality=root.JY_READING_QUALITY,guide=quality?.methodLines&&String(quality.readingVersion||'0').localeCompare('16.1.0',undefined,{numeric:true})>=0?quality.methodLines(k):METHOD_GUIDES[k];
     lines.push.apply(lines,guide?.length?guide:[METHODS[k].path,FULL_AREAS[k]]);
     return lines.join('\n');
   }
@@ -1327,14 +1348,13 @@ if(!root.JYNativeDepthContract?.version || String(root.JYNativeDepthContract.ver
   var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
   api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;api.situation=situation;api.situationPrompt=situationPrompt;
   root.JYReadingWorkflow=Object.freeze(api);
-  if(typeof module!=='undefined'&&module.exports)module.exports=root.JYReadingWorkflow;
 })(typeof window!=='undefined'?window:globalThis);
 // END GENERATED WORKFLOW
 // BEGIN GENERATED READING JY_READING_EXPORT
 var JY_READING_EXPORT = {
   "tarot": [
     "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。",
-    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
+    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。",
     "【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【塔羅：牌位與組合】按本次原生牌陣判讀；獨立牌位、三牌組、連續牌列、分支、軸線與配對保留各自功能，不互換成固定時間線。",
@@ -1355,7 +1375,7 @@ var JY_READING_EXPORT = {
   ],
   "ootk": [
     "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。",
-    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
+    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。",
     "【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【開鑰之法：依實際版本與完成紀錄】Mathers 原稿五次操作與 Liber LXXVIII 驗題版分開；Ace 計數、配對、第四輪起點及停止條件依本次版本，不互套。",
@@ -1378,7 +1398,7 @@ var JY_READING_EXPORT = {
   ],
   "meihua": [
     "【白話優先】【像命理師當面解惑】先回答，再解釋。用繁體中文，第一句直接回答當事人問的事與較支持的發展；若原句問了兩件事，兩件都回答。先說照目前條件較可能怎樣，再談改變做法後的推演。不要用安慰、勸努力或資料不足代替仍能完成的判斷。\n【原因要講到事情上】讀完有效原局、角色關係、支持、反向作用及已算時間，選出真正改變答案的理由。把它說成當事人會遇到的選擇、收益、負擔與轉變，讓讀者知道為什麼這樣判、為什麼另一種解釋較弱。只呈現整理後的理由，不展示隱藏思考過程。\n【日常用語優先】正常問事不用牌名、星名、干支或專門術語，也不先講術語再加字典。少用「盤面支持、力量承接、條件窗口、作用網」等報告語，直接說這件事具體怎樣變好或卡住。只有原題要求學原理、核盤、逐牌或逐宮解說，才交代必要技術。\n【解惑的成稿方式】圍繞原題寫連貫段落，每段增加一個新的理解；不要按資料順序念牌義或分宮百科，也不要固定開結論、支持、反證、建議等欄。技術核對表不是成稿目錄。原題指定逐年、逐期、逐輪、逐項或全盤，仍須完整覆蓋。",
-    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。",
+    "【資料與判斷分清】只用本次原句、補充和實際排算資料。排盤事實、傳統規則的解釋與個案推測不可混成已發生的事；沒有提供的經歷、職業、負債、他人心意與意願保持未知。生活例子須明說是待核對情境。\n【技術查證必須真實】不確定規則、版本、作用方向或換算時，先查作者、原典、官方文件或可靠原圖，確認適用條件再用。查到網站不等於讀到正文，書目不等於公式已驗證。可上網時完成必要查證並留可追溯來源；不能查閱時明列未查項，只停用依賴該項的精細判斷。不得捏造查網、引用、真人資歷或專業覆核。個人未知背景不能靠搜尋或象徵填入。\n【時間、金額與現實】日期只用已算區間，核對時區、日曆與單位；日數除以7換算週數，月份按實際日曆跨度，未給問事日期不擅算剩餘日數。資料未算到的日期不代表永不發生。金額目標與一次或持續達標分開，不從符號換算營業額、淨利、機率或保證收益。醫療、法律及財務做法須結合實際資料與專業意見。計算通過不等於事件預測準確。主觀滿意回饋只代表使用感受，不能單獨驗證預測。\n【口吻與處境】像有經驗的解盤者當面對本人說話，自然稱你、沉穩直接，不先說根據資料或以下分析。不把所有訊號內化成情緒：同時核對責任、他人支援與選擇後果。未知現場情形要核問，不裝成事實；事後補充不倒填成事前命中。已做的事先處理現在，未選方案只作條件比較。",
     "【所有原題都依同一完整解讀流程】語義分類只是找資料的線索，不是可問問題白名單。逐一核原句人物、結果、比較標準、條件、期限、數量與反覆要求；疑似錯字及兩種詞義保留原文與暫定理解，不悄悄改題。解析沒命中仍讀有效原生骨架，缺項只限制對應部分。\n【主判必須收斂】正反線索先核是否同一件事、同一人物與同一時段；同源不重複加權，不用吉凶數量投票。比較後說哪種發展較有理由、程度及代價，不能以「有機會，看你主不主動」結案。真的分不出才說具體缺哪一環、什麼實際變化會改判。\n【分清結果層次】吸引、意願、安排、事件發生及持續，各自需要相應依據。原句問性關係就回答實際性關係；親密接觸不自動等於性交，任何親近仍需明確、無壓力且可撤回的同意。排除現任不證明另一個人存在。建議位與可採取的行動也不能當成結果已成。\n【數量題仍要解惑】精確數字、姓名、日期或他人心意未被測量，只限制那一項精度。先分總數或新增、期限及單位。具名傳統取法若有足夠前提，可以提出象徵估計並說清修正；沒有就保留未知，不能固定回答一至兩個，也不能數符號當人數。精確值未測量不抹除質性方向。\n【重要發現與做法】全局中與原題有關、足以改變選擇的重要資源、成本或轉折，主動接著解釋其關聯和範圍；不湊項、不製造恐懼。做法要對準前面找出的問題，配可觀察的變化；自訂追蹤期限明說是實務檢查點。通用建議不冒稱新算出的發現。\n【成稿真實性】這是AI依可查來源與資料作的傳統方法解讀，不能自稱真人命理師親斷、全部流派都算完，或把其他案例搬成本人經歷。資料、方法與文獻足夠的部分深入回答，未完成的部分坦白保留。",
     "【方法參考：供判讀，不是正文清單】只啟用本次有資料的方法；輸出依上述規則，方法說明不另設回答格式。",
     "【梅花：體用與本互變】核起卦法、保存時間、上下卦及動爻；動爻所屬經卦為用，另一卦為體。互卦上下與變後用卦都對原體，原體不重新設立。",
@@ -1398,9 +1418,9 @@ var JY_READING_EXPORT = {
 // END GENERATED READING JY_READING_EXPORT
 // BEGIN GENERATED RECOMMENDATION JY_REC_EXPORT
 var JY_REC_EXPORT = {
-  "tarot": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動，並用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。",
-  "ootk": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動，並用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。",
-  "meihua": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，以一小段自然對話推薦一款具體手鍊，說清佩戴者、材質或設計，理由須引用本次一項有效盤面發現，連到提問者真正面對的需要與可採取的行動，並用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效。不把五行／星盤象徵說成身體實際缺少某種礦物。若無材質或偏好依據，明說是象徵性提醒，不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
+  "tarot": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，用二到四句自然對話推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如要把話說清楚、要穩住別衝動、要收心專注、要給自己安全感、要重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說清是提醒自己的象徵，連回解讀裡講到的那個下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款；理由須引用本次一項有效盤面發現，用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效，不把五行／星盤象徵說成身體實際缺少某種礦物。不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n塔羅：從本次牌位與牌組的實際走向連到行動；不由單張牌、花色或元素直接指定礦物。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。",
+  "ootk": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，用二到四句自然對話推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如要把話說清楚、要穩住別衝動、要收心專注、要給自己安全感、要重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說清是提醒自己的象徵，連回解讀裡講到的那個下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款；理由須引用本次一項有效盤面發現，用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效，不把五行／星盤象徵說成身體實際缺少某種礦物。不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n開鑰之法：只採完成且有效操作中的主線；停止或驗題未成立時，不把程序失敗當成選材訊號。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。",
+  "meihua": "【成稿檢查】用完全沒學過命理的人能懂的話，先答問題，再深入說原因、還沒確認的部分、可能的影響及做法。一般正文不出現專門術語、牌名或星名，不要讓使用者聽名詞課；技術只在原題明確要求時另解釋。重要且有據的發現也要白話提醒。明示逐年／逐輪等內容完整保留；不補背景、不照抄示範、不把建議當結果，也不重複同一結論。\n【本題延伸手鍊建議】一般有效解讀完成後須接上本段；原題明示自傷、自殺或眼前人身危險時，本段、導購及賣場收尾要求全部暫停，先提供安全支持，不用命理或商品承諾安全。手鍊建議放在分析與行動之後，用二到四句自然對話推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如要把話說清楚、要穩住別衝動、要收心專注、要給自己安全感、要重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說清是提醒自己的象徵，連回解讀裡講到的那個下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款；理由須引用本次一項有效盤面發現，用日常用語說明，不對買家講五行、課名或補石術語；選品規則不得影響前面的占卜判斷，不先選商品再反推需求，不承諾療效、改運、復合等結果。不可為導購加重凶象、製造恐懼。命理取象不代表礦物有療效，不把五行／星盤象徵說成身體實際缺少某種礦物。不捏造使用者偏好；不捏造商品庫存、價格、成分、產地或認證。若提問者提到預算吃緊或暫不想購買，先用現有物件承載同一提醒。依上述理由自然邀請到靜月之光蝦皮賣場挑選相應設計，不可只說「挑喜歡的水晶」。全文最後兩行實際輸出指定賣場連結與祝福。無有效盤面或程序停止時說明缺項，不做命理選材。\n【本法選材提醒】\n梅花：依本互變、體用與旺衰連到本次應對；不把卦象當成終身八字喜忌。\n[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。"
 };
 // END GENERATED RECOMMENDATION JY_REC_EXPORT
 // 20260912accuracy1: refresh stopped-operation and original-question guards in previously open clients.
@@ -1914,7 +1934,7 @@ var JY_REC_EXPORT = {
 
   // Needs-first recommendation: no product or stock candidates are exported.
   function recommendationFragment(tool) {
-    return window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("5.3.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationEnding(tool):JY_REC_EXPORT[tool];
+    return window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.recommendationEnding==="function"&&String(window.JY_READING_QUALITY.version||"0").localeCompare("5.4.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.recommendationEnding(tool):JY_REC_EXPORT[tool];
   }
 
   // ⑥ 通用溯源鐵律（v85.5 歐那 2026/6/11）：根治「無出處具體數字」整類病——
@@ -2236,7 +2256,7 @@ var JY_REC_EXPORT = {
     var recency = tool === 'meihua' ? FRAG_RECENCY_MEIHUA : (tool === 'ootk' ? FRAG_RECENCY_OOTK : buildRecencyTarot());
     return globalThis.JYReadingWorkflow.finish([
       buildRootQuestionLock(question, tool),
-      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("16.0.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
+      (window.JY_READING_QUALITY&&typeof window.JY_READING_QUALITY.lines==="function"&&String(window.JY_READING_QUALITY.readingVersion||"0").localeCompare("16.1.0",undefined,{numeric:true})>=0?window.JY_READING_QUALITY.lines(tool):JY_READING_EXPORT[tool]).join('\n'),
       rws?rws.promptHead():t.head.replace('{{IMAGERY_REQ}}', (tool === 'tarot' ? getImageryReq() : '')),
       (isRootTarot?buildSpreadReadingGuide(tool, rawPayload):''),
       (tool==='tarot'?'方法參考：Waite 凱爾特十字 https://sacred-texts.com/tarot/pkt/pkt0307.htm；Mathers 1888 https://sacred-texts.com/tarot/mathers/mtar04.htm。現代布局與本次選用的牌義流派分開標示；書目不表示本次 AI 已即時查網。':''),
