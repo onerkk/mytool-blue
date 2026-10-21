@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021name44
+/* 靜月之光 · 共用動態系統 / 20261021liuren45
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021name44';
+  var doc = root.document, VERSION = '20261021liuren45';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -152,7 +152,7 @@
   setInterval(function () {
     if (doc.hidden) return;
     var now = homeVisible();
-    if (wasHome === false && now) { seen.clear(); dealt.clear(); cascade(); }
+    if (wasHome === false && now) { seen.clear(); dealt.clear(); shapes.clear(); recent = Object.create(null); cascade(); }
     wasHome = now;
   }, 300);
   if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', function () { setTimeout(cascade, 120); });
@@ -282,9 +282,9 @@
   var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines', built = new WeakSet();
   function inView(el) { var b = el.getBoundingClientRect(); return b.width > 0 && b.bottom > 0 && b.top < root.innerHeight; }
   function ritualOpen() { return !!doc.querySelector('dialog.jr-dialog[open]'); }
-  var NAMEP = '.nm-character,.nm-grid-fact';  // 姓名學：字卡與五格沒有專屬容器 class，以父層為盤面容器
+  var NAMEP = '.nm-character,.nm-grid-fact,.lr-transmission';  // 姓名學字卡／五格、六壬三傳：無專屬容器 class，以父層為盤面容器
   function parts(c) {
-    var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact'); if (nm.length) return Array.prototype.slice.call(nm);
+    var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact, :scope > .lr-transmission'); if (nm.length) return Array.prototype.slice.call(nm);
     if (c.matches('[data-living-pillars]')) return Array.prototype.slice.call(c.querySelectorAll('.jx-pillar'));
     if (c.matches('.jx-orbit')) return Array.prototype.slice.call(c.querySelectorAll('.jx-orbit-aura,.jx-orbit-lines,.jx-palace,.jx-orbit-center'));
     return Array.prototype.slice.call(c.querySelectorAll('.jx-yao'));
@@ -295,7 +295,15 @@
     built.add(c); c.setAttribute('data-jy-assembled', String(Date.now() % 100000));
     var list = parts(c), EASE = 'cubic-bezier(.16,1,.3,1)';
     try {
-      if (list[0] && list[0].matches(NAMEP)) {  // 字卡：墨暈中清晰成形；五格：依序升起
+      if (list[0] && list[0].matches('.lr-transmission')) {  // 六壬三傳：初→中→末依序由左滑入，像事情沿三傳推進
+        list.forEach(function (el, i) {
+          el.animate([
+            { translate: '-28px 0', opacity: 0, filter: 'brightness(1.7)', offset: 0 },
+            { translate: '4px 0', opacity: 1, filter: 'brightness(1.15)', offset: 0.7 },
+            { translate: '0 0', opacity: 1, filter: 'none', offset: 1 }
+          ], { duration: 700, delay: 140 + i * 280, easing: EASE, fill: 'backwards' });
+        });
+      } else if (list[0] && list[0].matches(NAMEP)) {  // 字卡：墨暈中清晰成形；五格：依序升起
         list.forEach(function (el, i) {
           var ink = el.matches('.nm-character');
           el.animate([
@@ -333,8 +341,16 @@
   }
   var waiting = null;
   if ('IntersectionObserver' in root) waiting = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { waiting.unobserve(x.target); assemble(x.target); } }); }, { threshold: 0.15 });
+  // 以「內容」去重：有些房間會定時重繪（六壬活時時鐘），每次重繪都是新元素；若以元素判斷會無限從透明重播而永遠看不見。
+  var shapes = new Set(), recent = Object.create(null);
+  function shape(c) { return parts(c).map(function (el) { return (el.textContent || '').replace(/\s+/g, ''); }).join('|').slice(0, 240); }
   function adopt(c) {
     if (built.has(c) || reduced() || !canAnimate) return;
+    var sk = shape(c), first = parts(c)[0], host = c.closest('[id]');
+    var tk = (host ? host.id : '') + '|' + (first ? String(first.className).split(' ')[0] : ''), now = Date.now();
+    // 第二道防護：同房間同類盤面 60 秒內只成形一次（內容含會變動的文字時，內容去重會被繞過）。
+    if (!sk || shapes.has(sk) || (recent[tk] && now - recent[tk] < 60000)) { built.add(c); release(parts(c)); return; }
+    shapes.add(sk); recent[tk] = now;
     if (inView(c)) {
       var list = parts(c); list.forEach(function (el) { el.style.opacity = '0'; });  // 繪製前先藏，避免先閃完整盤面
       var go = function () { if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); };
