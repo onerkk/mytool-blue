@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021western46
+/* 靜月之光 · 共用動態系統 / 20261021vedic47
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021western46';
+  var doc = root.document, VERSION = '20261021vedic47';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -285,6 +285,7 @@
   var NAMEP = '.nm-character,.nm-grid-fact,.lr-transmission';  // 姓名學字卡／五格、六壬三傳：無專屬容器 class，以父層為盤面容器
   function parts(c) {
     var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact, :scope > .lr-transmission'); if (nm.length) return Array.prototype.slice.call(nm);
+    if (c.querySelector && c.querySelector(':scope > .vd-chart-border')) return Array.prototype.slice.call(c.children).filter(function (x) { return !/^(defs|style|title|desc)$/i.test(x.tagName); });
     if (c.matches('.wx-chart-svg')) return Array.prototype.slice.call(c.children).filter(function (x) { return !/^(defs|style|title|desc)$/i.test(x.tagName); });
     if (c.matches('[data-living-pillars]')) return Array.prototype.slice.call(c.querySelectorAll('.jx-pillar'));
     if (c.matches('.jx-orbit')) return Array.prototype.slice.call(c.querySelectorAll('.jx-orbit-aura,.jx-orbit-lines,.jx-palace,.jx-orbit-center'));
@@ -296,7 +297,23 @@
     built.add(c); c.setAttribute('data-jy-assembled', String(Date.now() % 100000));
     var list = parts(c), EASE = 'cubic-bezier(.16,1,.3,1)';
     try {
-      if (c.matches('.wx-chart-svg')) {  // 西洋星盤（扁平 SVG，無分組）：依幾何分類——圓由中心擴開、分隔線繞圈畫出、外圈符號浮現、行星符號依角度彈出、相位線最後畫出
+      if (c.querySelector(':scope > .vd-chart-border')) {  // 印度星盤：外框沿路徑畫出 → 十二宮依序浮現 → 行星在宮內彈出
+        var cells = 0;
+        list.forEach(function (el) {
+          if (el.matches('.vd-chart-border')) {
+            var L = 1000; try { L = el.getTotalLength(); } catch (_) {}
+            el.animate([{ strokeDasharray: L + ' ' + L, strokeDashoffset: String(L) }, { strokeDasharray: L + ' ' + L, strokeDashoffset: '0' }], { duration: 900, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'backwards' });
+          } else {
+            el.style.transformBox = 'fill-box'; el.style.transformOrigin = 'center';
+            el.animate([{ opacity: 0, scale: '0.82' }, { opacity: 1, scale: '1' }], { duration: 520, delay: 320 + cells * 70, easing: EASE, fill: 'backwards' }); cells++;
+          }
+        });
+        Array.prototype.slice.call(c.querySelectorAll('.vd-cell-planets')).forEach(function (p, j) {
+          p.style.transformBox = 'fill-box'; p.style.transformOrigin = 'center';
+          p.animate([{ opacity: 0, scale: '0.4' }, { opacity: 1, scale: '1.18', offset: 0.7 }, { opacity: 1, scale: '1' }], { duration: 520, delay: 320 + cells * 70 + 120 + j * 110, easing: EASE, fill: 'backwards' });
+        });
+        setTimeout(function () { c.querySelectorAll('[style*=transform-box]').forEach(function (el) { el.style.removeProperty('transform-box'); el.style.removeProperty('transform-origin'); }); }, 3600);
+      } else       if (c.matches('.wx-chart-svg')) {  // 西洋星盤（扁平 SVG，無分組）：依幾何分類——圓由中心擴開、分隔線繞圈畫出、外圈符號浮現、行星符號依角度彈出、相位線最後畫出
         var vb = (c.getAttribute('viewBox') || '0 0 600 600').split(/[\s,]+/).map(Number), cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2, R = Math.min(vb[2], vb[3]) / 2;
         var turnOf = function (x, y) { return (Math.atan2(y - cy, x - cx) + Math.PI) / (2 * Math.PI); };
         list.forEach(function (el) {
@@ -370,7 +387,7 @@
   function adopt(c) {
     if (built.has(c) || reduced() || !canAnimate) return;
     var sk = shape(c), first = parts(c)[0], host = c.closest('[id]');
-    var tk = (host ? host.id : '') + '|' + (first ? String(first.className).split(' ')[0] : ''), now = Date.now();
+    var tk = (host ? host.id : '') + '|' + (first && first.getAttribute ? String(first.getAttribute('class') || first.tagName).split(' ')[0] : ''), now = Date.now();  // SVG 的 className 是物件，改讀屬性
     // 第二道防護：同房間同類盤面 60 秒內只成形一次（內容含會變動的文字時，內容去重會被繞過）。
     if (!sk) return;  // 內容尚未畫完（例如星盤先畫圓線、文字最後才加）：先不標記，等內容出現再成形
     if (shapes.has(sk) || (recent[tk] && now - recent[tk] < 60000)) { built.add(c); release(parts(c)); return; }
@@ -398,10 +415,12 @@
         if (n.nodeType !== 1) return;
         if (n.matches && n.matches(NAMEP) && n.parentElement) found.add(n.parentElement);
         if (n.querySelectorAll) n.querySelectorAll(NAMEP).forEach(function (x) { if (x.parentElement) found.add(x.parentElement); });
+        if (n.matches && n.matches('.vd-chart-border') && n.ownerSVGElement) found.add(n.ownerSVGElement);
+        if (n.querySelectorAll) n.querySelectorAll('.vd-chart-border').forEach(function (x) { if (x.ownerSVGElement) found.add(x.ownerSVGElement); });
       });
     });
     // 西洋儀式畫面（.wx-ceremony）有自己的星盤演出，不介入；只在結果頁星盤成形，否則結果頁會被內容去重跳過。
-    found.forEach(function (c) { if (c.closest && c.closest('.wx-ceremony')) return; if (parts(c).length) adopt(c); });
+    found.forEach(function (c) { if (c.closest && c.closest('.wx-ceremony,[class*=vdr-]')) return; if (parts(c).length) adopt(c); });
   }).observe(doc.documentElement, { childList: true, subtree: true });
 
   root.JYMotion = Object.freeze({ version: VERSION, bloom: bloom, cascade: cascade, reveal: mark, turn: turn, deal: deal, assemble: assemble });
