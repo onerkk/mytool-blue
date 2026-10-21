@@ -156,3 +156,51 @@
   }
   .jy-handoff{opacity:1}
 }
+
+/* ════════ 最終權威層 · 可讀性與狀態一致（20261021 走查） ════════
+ * 根因：同一元件被 atelier-ui → flow-refinement → reading-depth → immersive-experience 多層 !important 疊寫，
+ * 底色與字色分別來自不同年代的設計，於是出現「深字印在深底」。這裡把每個受影響元件的「底＋字」一次定案，
+ * 之後任何舊層都無法只改其中一半。 */
+
+/* 1. 共用步驟條（雷諾曼、八字、合盤、紫微、梅花）：目前步驟的數字圈 */
+.jy-atelier .jc-flow-steps button b{
+  display:grid!important;place-items:center;width:30px!important;height:30px!important;margin:0 auto 6px!important;
+  border-radius:50%!important;border:1px solid #c5b38c55!important;background:#132735!important;color:#d9ccb0!important;
+  font:600 12px/1 var(--f-body,sans-serif)!important;letter-spacing:.5px!important;box-shadow:inset 0 1px 0 #ffffff10!important;
+  transition:transform .25s var(--jy-depth-ease),background .25s,color .25s;
+}
+.jy-atelier .jc-flow-steps button[aria-current=step] b{
+  background:linear-gradient(135deg,#f6e6c3,#d2ad6c)!important;color:#1d1810!important;border-color:#f6e2bb!important;
+  box-shadow:0 3px 0 #6b5434,0 6px 16px #d2ad6c44,inset 0 1px 0 #fffc!important;transform:translateY(-1px);
+}
+.jy-atelier .jc-flow-steps button[aria-current=step] span{color:#f3e3c2!important}
+.jy-atelier .jc-flow-steps button:not([aria-current=step]) span{color:#aebdcb!important}
+
+/* 2. 選中狀態一律「深色發光底＋淺字」，說明小字跟著變淺（原本 #484438 鎖死 → 選中後消失） */
+.jy-atelier :is(.ln-spread-btn,.mhx-method-btn).active :is(span,small),
+.jy-atelier :is(.bzs-choice-btn,.bzx-gbtn,.zw-in-pill).on :is(span,small){color:#eadcbf!important;opacity:.92!important}
+
+/* 3. 六爻／易經：歷次手機修補把字縮到 .5–.6rem（8–9.6px），設可讀下限 */
+.gw-room .gw-eyebrow,.gw-room[data-phase] .gw-eyebrow,.gw-room .gw-hex-card .gw-eyebrow{font-size:max(10.5px,.67rem)!important;letter-spacing:.14em}
+.gw-room .gw-footer{font-size:max(10.5px,.66rem)!important}
+.gw-room .gw-stage-heading,.gw-room[data-phase] .gw-stage-heading{font-size:max(12px,.8rem)!important}
+.gw-room .gw-scene-instruction,.gw-room[data-phase] .gw-scene-instruction{font-size:max(12px,.75rem)!important;color:#c9d6d6!important}
+.gw-room[data-phase] .gw-stage-summary,.gw-room[data-phase] .gw-progress-row>span:last-child{font-size:max(12px,.75rem)!important}
+.gw-room[data-phase=casting] .gw-actions .gw-primary{font-size:max(14px,.875rem)!important}
+.gw-room[data-phase=casting] .gw-actions .gw-quiet{font-size:max(13px,.8rem)!important}
+.gw-room .gw-steps b{font-size:12px!important}
+.gw-room :is(.gw-line-label,.gw-line-state,.gw-legend,.gw-legend *,.gw-yarrow-step,.gw-yarrow-step *){font-size:max(11.5px,1em)}
+.gw-room .gw-room-ai :is(a,button) :is(span,b,small),.gw-room [data-ai] :is(span,b,small){font-size:max(12px,1em)}
+.jy-foley-button{font-size:max(12px,.8rem)!important}
+
+/* 4. 牌名、AI 捷徑名稱 */
+.jy-atelier .ln-card-name{font-size:11.5px!important;line-height:1.35}
+.jy-atelier :is(.ln-ai-sc,.mhx-ai-sc,.bzx-ai-sc,.zw-ai-sc,.orc-ai-shortcut,.jy-ai-shortcut) :is(span,b,small,div){font-size:max(12px,1em)}
+/* 3b. 擲錢逐爻進度、揲蓍側欄說明（原 8.8–10.4px） */
+.gw-room .gw-progress-row>span,.gw-room[data-phase=casting] .gw-progress-row>span:last-child{font-size:max(12px,.75rem)!important;line-height:1.45}
+.gw-room .gw-yarrow-action :is(p,span),.gw-room .gw-yarrow-progress span{font-size:max(12px,.75rem)!important;line-height:1.5}
+.gw-room .gw-yarrow-progress span.is-current{color:#f3dfb4!important}
+/* 4b. 牌位標籤、牌名、儀式進度字：舊層用更高權重鎖在 9–10px */
+body.jy-atelier .at-card-position,body.jy-atelier [class*=spread] .at-card-position{font-size:11.5px!important;letter-spacing:.04em}
+body.jy-atelier .ln-card .ln-card-name,body.jy-atelier [class*=ln-] .ln-card-name{font-size:11.5px!important}
+body.jy-atelier .jr-progress :is(span,li,b),body.jy-atelier [class*=jr-] .is-current{font-size:max(11.5px,1em)!important}
