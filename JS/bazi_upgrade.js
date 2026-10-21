@@ -280,95 +280,98 @@ function baziCheckSuiYunBingLin(bazi) {
 
 // ── 5. 桃花 · 驛馬 · 華蓋 完整表 ──
 
+// 神煞定位表：同一份表供本命逐柱定位與大運流年引動共用。
+// 查法依《三命通會》卷三（驛馬、咸池、將星華蓋、天乙、十干祿、劫煞亡神、孤辰寡宿）；
+// 驛馬、咸池、華蓋、將星、劫煞、亡神同時以年支與日支查（神白經「但以日為年」），並標明查法來源。
+// 血刃以月支查四柱其他地支。神煞只作輔助象義，先論格局喜忌，不單獨定吉凶。
+var BAZI_SS_GROUP={申:'水',子:'水',辰:'水',寅:'火',午:'火',戌:'火',巳:'金',酉:'金',丑:'金',亥:'木',卯:'木',未:'木'};
+var BAZI_SS_BY_GROUP={
+  '桃花':{水:'酉',火:'卯',金:'午',木:'子'},
+  '驛馬':{水:'寅',火:'申',金:'亥',木:'巳'},
+  '華蓋':{水:'辰',火:'戌',金:'丑',木:'未'},
+  '將星':{水:'子',火:'午',金:'酉',木:'卯'},
+  '劫煞':{水:'巳',火:'亥',金:'寅',木:'申'},
+  '亡神':{水:'亥',火:'巳',金:'申',木:'寅'}
+};
+var BAZI_SS_DAY_STEM={
+  '天乙貴人':{甲:['丑','未'],戊:['丑','未'],庚:['丑','未'],乙:['子','申'],己:['子','申'],丙:['亥','酉'],丁:['亥','酉'],壬:['卯','巳'],癸:['卯','巳'],辛:['午','寅']},
+  '文昌':{甲:['巳'],乙:['午'],丙:['申'],丁:['酉'],戊:['申'],己:['酉'],庚:['亥'],辛:['子'],壬:['寅'],癸:['卯']},
+  '祿神':{甲:['寅'],乙:['卯'],丙:['巳'],丁:['午'],戊:['巳'],己:['午'],庚:['申'],辛:['酉'],壬:['亥'],癸:['子']},
+  '羊刃':{甲:['卯'],丙:['午'],戊:['午'],庚:['酉'],壬:['子']}
+};
+var BAZI_SS_YEAR_BRANCH={
+  '紅鸞':{子:'卯',丑:'寅',寅:'丑',卯:'子',辰:'亥',巳:'戌',午:'酉',未:'申',申:'未',酉:'午',戌:'巳',亥:'辰'},
+  '天喜':{子:'酉',丑:'申',寅:'未',卯:'午',辰:'巳',巳:'辰',午:'卯',未:'寅',申:'丑',酉:'子',戌:'亥',亥:'戌'},
+  '孤辰':{子:'寅',丑:'寅',寅:'巳',卯:'巳',辰:'巳',巳:'申',午:'申',未:'申',申:'亥',酉:'亥',戌:'亥',亥:'寅'},
+  '寡宿':{子:'戌',丑:'戌',寅:'丑',卯:'丑',辰:'丑',巳:'辰',午:'辰',未:'辰',申:'未',酉:'未',戌:'未',亥:'戌'}
+};
+var BAZI_SS_MONTH={
+  '天德貴人':{寅:'丁',卯:'申',辰:'壬',巳:'辛',午:'亥',未:'甲',申:'癸',酉:'寅',戌:'丙',亥:'乙',子:'巳',丑:'庚'},
+  '月德貴人':{寅:'丙',午:'丙',戌:'丙',申:'壬',子:'壬',辰:'壬',亥:'甲',卯:'甲',未:'甲',巳:'庚',酉:'庚',丑:'庚'},
+  '血刃':{寅:'丑',卯:'未',辰:'寅',巳:'申',午:'卯',未:'酉',申:'辰',酉:'戌',戌:'巳',亥:'亥',子:'午',丑:'子'}
+};
+var BAZI_SS_MEANING={
+  '天乙貴人':'貴人、有人提攜或關鍵時有人幫','文昌':'讀書、文字、考試與表達','祿神':'本身的飯碗、收入與自我支撐',
+  '羊刃':'剛硬、衝勁、競爭心，也主急躁與受傷風險','桃花':'人緣、異性吸引與社交場合','驛馬':'奔波、外出、搬遷、換環境',
+  '華蓋':'獨處、鑽研、技藝與宗教玄學興趣，也帶孤高','將星':'主導、帶頭、掌事','劫煞':'突發變動、被搶先或損耗',
+  '亡神':'暗中消耗、心事與是非','紅鸞':'婚戀喜事、感情機會','天喜':'喜慶、添丁或好消息','孤辰':'人際上偏孤、獨來獨往',
+  '寡宿':'感情與親緣上較冷清','天德貴人':'逢難有解、長輩或制度上的保護','月德貴人':'逢難有解、做事有人緩頰',
+  '血刃':'開刀、外傷、見血之事要留意','空亡':'落空、虛而不實、要等填實或沖開'
+};
+function _baziXunKong(gan,zhi){
+  var TG=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'],DZ=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  var gi=TG.indexOf(gan),zi=DZ.indexOf(zhi);if(gi<0||zi<0)return [];
+  var head=(zi-gi+12)%12;return [DZ[(head+10)%12],DZ[(head+11)%12]];
+}
+// 以本命查表：回傳某一干支（大運或流年）引動的神煞與空亡。供運歲列表使用。
+function baziBranchShenSha(bazi, gz) {
+  if (!bazi || !bazi.pillars || !gz || String(gz).length < 2) return [];
+  var s = String(gz).charAt(0), b = String(gz).charAt(1), out = [];
+  var dm = bazi.dm || _pGan(bazi, 2), yZ = _pZhi(bazi, 0), mZ = _pZhi(bazi, 1), dZ = _pZhi(bazi, 2);
+  function add(name, base) { var label = name + '（' + base + '）'; if (out.indexOf(label) < 0) out.push(label); }
+  Object.keys(BAZI_SS_DAY_STEM).forEach(function(n){ var t = BAZI_SS_DAY_STEM[n][dm]; if (t && t.indexOf(b) >= 0) add(n, '日干'); });
+  [['年支', yZ], ['日支', dZ]].forEach(function(p){ var g = BAZI_SS_GROUP[p[1]]; if (!g) return;
+    Object.keys(BAZI_SS_BY_GROUP).forEach(function(n){ if (BAZI_SS_BY_GROUP[n][g] === b) add(n, p[0]); }); });
+  Object.keys(BAZI_SS_YEAR_BRANCH).forEach(function(n){ if (BAZI_SS_YEAR_BRANCH[n][yZ] === b) add(n, '年支'); });
+  if (BAZI_SS_MONTH['天德貴人'][mZ] && (BAZI_SS_MONTH['天德貴人'][mZ] === s || BAZI_SS_MONTH['天德貴人'][mZ] === b)) add('天德貴人', '月支');
+  if (BAZI_SS_MONTH['月德貴人'][mZ] === s) add('月德貴人', '月支');
+  if (BAZI_SS_MONTH['血刃'][mZ] === b) add('血刃', '月支');
+  if (_baziXunKong(dm, dZ).indexOf(b) >= 0) add('空亡', '日柱旬空');
+  if (_baziXunKong(_pGan(bazi, 0), yZ).indexOf(b) >= 0) add('空亡', '年柱旬空');
+  return out;
+}
 function baziExtraShenSha(bazi) {
   if (!bazi || !bazi.pillars) return [];
-
-  var results = [];
-  var dayZhi = _pZhi(bazi, 2);
-  var yearZhi = _pZhi(bazi, 0);
-  var allZhi = [_pZhi(bazi,0), _pZhi(bazi,1), _pZhi(bazi,2), _pZhi(bazi,3)];
-
-  // 桃花（咸池）：以年支或日支查
-  var taoHua = {寅:'卯',午:'卯',戌:'卯', 申:'酉',子:'酉',辰:'酉', 巳:'午',酉:'午',丑:'午', 亥:'子',卯:'子',未:'子'};
-  var thTarget = taoHua[dayZhi] || taoHua[yearZhi];
-  if (thTarget && allZhi.includes(thTarget)) {
-    var thPillar = ['年','月','日','時'][allZhi.indexOf(thTarget)];
-    results.push({
-      name: '桃花',
-      pillar: thPillar,
-      zh: thPillar + '柱帶桃花（' + thTarget + '）：傳統上作人際吸引、社交表現的輔助象義，不代表必有戀情或婚外情' +
-          (thPillar === '時' ? '；落時柱僅表示晚期或成果領域可參考此象' : thPillar === '月' ? '；落月柱可參考職場／社會場域的人際象' : '')
-    });
+  var names = ['年','月','日','時'], gans = [0,1,2,3].map(function(i){ return _pGan(bazi, i); }), zhis = [0,1,2,3].map(function(i){ return _pZhi(bazi, i); });
+  var dm = bazi.dm || gans[2], yZ = zhis[0], mZ = zhis[1], dZ = zhis[2];
+  var map = {}, order = [];
+  function hit(name, idx, ch, base) {
+    if (!ch) return; var key = name + '@' + idx;
+    if (!map[key]) { map[key] = {name:name, pillar:names[idx], char:ch, bases:[]}; order.push(key); }
+    if (map[key].bases.indexOf(base) < 0) map[key].bases.push(base);
   }
-
-  // 驛馬：以年支或日支查
-  var yiMa = {寅:'申',午:'申',戌:'申', 申:'寅',子:'寅',辰:'寅', 巳:'亥',酉:'亥',丑:'亥', 亥:'巳',卯:'巳',未:'巳'};
-  var ymTarget = yiMa[dayZhi] || yiMa[yearZhi];
-  if (ymTarget && allZhi.includes(ymTarget)) {
-    var ymPillar = ['年','月','日','時'][allZhi.indexOf(ymTarget)];
-    results.push({
-      name: '驛馬',
-      pillar: ymPillar,
-      zh: ymPillar + '柱帶驛馬（' + ymTarget + '）：傳統上作移動、轉換、外出象義；是否真的多遷動仍看歲運引發'
-    });
-  }
-
-  // 華蓋：以年支或日支查
-  var huaGai = {寅:'辰',午:'辰',戌:'辰', 申:'戌',子:'戌',辰:'戌', 巳:'丑',酉:'丑',丑:'丑', 亥:'未',卯:'未',未:'未'};
-  var hgTarget = huaGai[dayZhi] || huaGai[yearZhi];
-  if (hgTarget && allZhi.includes(hgTarget)) {
-    var hgPillar = ['年','月','日','時'][allZhi.indexOf(hgTarget)];
-    results.push({
-      name: '華蓋',
-      pillar: hgPillar,
-      zh: hgPillar + '柱帶華蓋（' + hgTarget + '）：傳統上作獨處、技藝、精神性或審美象義，不能直接斷定性格與天賦'
-    });
-  }
-
-  // 將星
-  var jiangXing = {寅:'午',午:'午',戌:'午', 申:'子',子:'子',辰:'子', 巳:'酉',酉:'酉',丑:'酉', 亥:'卯',卯:'卯',未:'卯'};
-  var jxTarget = jiangXing[yearZhi];
-  if (jxTarget && allZhi.includes(jxTarget)) {
-    results.push({name:'將星', zh:'命帶將星：傳統上作主導、組織或承擔象義，僅供輔助'});
-  }
-
-  // 天乙貴人（以日干查）
-  var tianYi = {甲:['丑','未'],乙:['子','申'],丙:['亥','酉'],丁:['亥','酉'],
-    戊:['丑','未'],己:['子','申'],庚:['丑','未'],辛:['寅','午'],壬:['卯','巳'],癸:['卯','巳']};
-  var dm = bazi.dm;
-  var tyTargets = tianYi[dm] || [];
-  tyTargets.forEach(function(t) {
-    if (allZhi.includes(t)) {
-      var tyPillar = ['年','月','日','時'][allZhi.indexOf(t)];
-      results.push({name:'天乙貴人', pillar:tyPillar, zh:tyPillar + '柱帶天乙貴人（' + t + '）：傳統貴人象義，不能保證逢凶化吉或必有他人相助'});
-    }
+  // 日干查四柱地支（含日支：日坐祿、日坐貴之類）
+  Object.keys(BAZI_SS_DAY_STEM).forEach(function(n){ var t = BAZI_SS_DAY_STEM[n][dm] || [];
+    zhis.forEach(function(z, i){ if (z && t.indexOf(z) >= 0) hit(n, i, z, '日干'); }); });
+  // 年支、日支各自查其他三柱
+  [[0, '年支'], [2, '日支']].forEach(function(p){ var g = BAZI_SS_GROUP[zhis[p[0]]]; if (!g) return;
+    Object.keys(BAZI_SS_BY_GROUP).forEach(function(n){ var target = BAZI_SS_BY_GROUP[n][g];
+      zhis.forEach(function(z, i){ if (i !== p[0] && z === target) hit(n, i, z, p[1]); }); }); });
+  Object.keys(BAZI_SS_YEAR_BRANCH).forEach(function(n){ var target = BAZI_SS_YEAR_BRANCH[n][yZ];
+    zhis.forEach(function(z, i){ if (i !== 0 && z === target) hit(n, i, z, '年支'); }); });
+  // 月支查天月德（干或支）與血刃（其他地支）
+  var td = BAZI_SS_MONTH['天德貴人'][mZ], yd = BAZI_SS_MONTH['月德貴人'][mZ], xr = BAZI_SS_MONTH['血刃'][mZ];
+  gans.forEach(function(g, i){ if (g && g === td) hit('天德貴人', i, g, '月支'); if (g && g === yd) hit('月德貴人', i, g, '月支'); });
+  zhis.forEach(function(z, i){ if (i !== 1 && z && z === td) hit('天德貴人', i, z, '月支'); if (i !== 1 && z && z === xr) hit('血刃', i, z, '月支'); });
+  // 旬空：日柱旬空查年月時，年柱旬空查月日時
+  _baziXunKong(dm, dZ).forEach(function(k){ zhis.forEach(function(z, i){ if (i !== 2 && z === k) hit('空亡', i, z, '日柱旬空'); }); });
+  _baziXunKong(gans[0], yZ).forEach(function(k){ zhis.forEach(function(z, i){ if (i !== 0 && z === k) hit('空亡', i, z, '年柱旬空'); }); });
+  return order.map(function(k){ var r = map[k];
+    return {name:r.name, pillar:r.pillar, char:r.char, base:r.bases.join('、'),
+      zh:r.pillar + '柱' + r.char + '帶' + r.name + '（以' + r.bases.join('、') + '查）：傳統象義為' + (BAZI_SS_MEANING[r.name] || '輔助象義') + '；只作輔助線索，吉凶仍看格局喜忌與歲運引動'};
   });
-
-  // 文昌貴人（以日干查）
-  var wenChang = {甲:'巳',乙:'午',丙:'申',丁:'酉',戊:'申',己:'酉',庚:'亥',辛:'子',壬:'寅',癸:'卯'};
-  var wcTarget = wenChang[dm];
-  if (wcTarget && allZhi.includes(wcTarget)) {
-    results.push({name:'文昌', zh:'命帶文昌：傳統上作學習、文字、表達象義，不保證學業或考試結果'});
-  }
-
-  // 羊刃（以日干查）
-  var yangRen = {甲:'卯',丙:'午',戊:'午',庚:'酉',壬:'子'};
-  var yrTarget = yangRen[dm];
-  if (yrTarget && allZhi.includes(yrTarget)) {
-    var yrPillar = ['年','月','日','時'][allZhi.indexOf(yrTarget)];
-    results.push({name:'羊刃', pillar:yrPillar, zh:yrPillar + '柱帶羊刃（' + yrTarget + '）：傳統上作剛健、競爭或急切象義，需與全局共同判斷'});
-  }
-
-  // 祿神（以日干查，已在建祿格判定）
-  var luShen = {甲:'寅',乙:'卯',丙:'巳',丁:'午',戊:'巳',己:'午',庚:'申',辛:'酉',壬:'亥',癸:'子'};
-  var lsTarget = luShen[dm];
-  if (lsTarget && allZhi.includes(lsTarget)) {
-    var lsPillar = ['年','月','日','時'][allZhi.indexOf(lsTarget)];
-    results.push({name:'祿神', pillar:lsPillar, zh:lsPillar + '柱帶祿神（' + lsTarget + '）：傳統上作資源、職祿或自我支撐象義，不保證財富或生活條件'});
-  }
-
-  return results;
 }
+if (typeof window !== 'undefined') { window.baziExtraShenSha = baziExtraShenSha; window.baziBranchShenSha = baziBranchShenSha; }
 
 
 // ── 6. 十神組合格局 ──

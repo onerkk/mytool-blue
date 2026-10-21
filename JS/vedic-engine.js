@@ -396,7 +396,7 @@
     const panchanga={tithi:partFloor(phase/12)+1,paksha:phase<180?'白半月 Shukla（漸盈）':'黑半月 Krishna（漸虧）',elongation:phase,yoga:partFloor(norm(planets.Sun.longitude+planets.Moon.longitude)*27/360)+1,karana:half===0?'Kimstughna':half>=57?['Shakuni','Chatushpada','Naga'][half-57]:karanas[(half-1)%7],note:'出生瞬間的角度項；未把民用午夜當作傳統日出日界'};
     const ranked=KEYS.slice(0,7).sort((a,b)=>planets[b].degree-planets[a].degree),karakaNames=['AK','AmK','BK','MK','PK','GK','DK'];
     const karakas=ranked.map((k,i)=>({role:karakaNames[i],planet:k,degree:planets[k].degree,tied:ranked.some(x=>x!==k&&Math.abs(planets[x].degree-planets[k].degree)<1e-8)}));
-    const now=astronomy(reference,input.latitude,input.longitude,input.ayanamsa),transits=KEYS.map(k=>{const p=placement(now.planets[k].sidereal);return {planet:k,...p,fromLagna:lagna?mod(p.sign-lagna.sign,12)+1:null,fromMoon:mod(p.sign-planets.Moon.sign,12)+1,bav:av&&av.bav[k]?av.bav[k][p.sign]:null,sav:av?av.sav[p.sign]:null};});
+    const now=astronomy(reference,input.latitude,input.longitude,input.ayanamsa),prior=astronomy(new Date(instant(reference).getTime()-86400000),input.latitude,input.longitude,input.ayanamsa),transits=KEYS.map(k=>{const p=placement(now.planets[k].sidereal),speed=((now.planets[k].sidereal-prior.planets[k].sidereal+540)%360)-180;return {planet:k,...p,speed,retrograde:speed<0,fromLagna:lagna?mod(p.sign-lagna.sign,12)+1:null,fromMoon:mod(p.sign-planets.Moon.sign,12)+1,bav:av&&av.bav[k]?av.bav[k][p.sign]:null,sav:av?av.sav[p.sign]:null};});
     const transitSnapshots=[];
     for(let i=1;i<=36;i++){
       const date=new Date(Date.UTC(reference.getUTCFullYear(),reference.getUTCMonth()+i,1,12));if(date>=max)break;

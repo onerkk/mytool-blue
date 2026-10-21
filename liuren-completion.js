@@ -4,7 +4,7 @@
  */
 (function(root){
  'use strict';
- const VERSION='20261003-liuren-completion1',DAY=86400000,G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),E=['木','火','土','金','水'],BE=[4,2,0,0,2,1,1,2,3,3,2,4],GE=[0,0,1,1,2,2,3,3,4,4],HE=[1,0,11,10,9,8,7,6,5,4,3,2],MUB=[7,10,4,1,4];
+ const VERSION='20261016case28',DAY=86400000,G=Array.from('甲乙丙丁戊己庚辛壬癸'),B=Array.from('子丑寅卯辰巳午未申酉戌亥'),E=['木','火','土','金','水'],BE=[4,2,0,0,2,1,1,2,3,3,2,4],GE=[0,0,1,1,2,2,3,3,4,4],HE=[1,0,11,10,9,8,7,6,5,4,3,2],MUB=[7,10,4,1,4];
  const mod=(n,m=12)=>(n%m+m)%m,pad=n=>String(n).padStart(2,'0'),iso=n=>new Date(n).toISOString(),seasonState=(a,m)=>a===m?'旺':mod(m+1,5)===a?'相':mod(a+1,5)===m?'休':mod(a+2,5)===m?'囚':'死';
  const SOURCES={earth18:'https://zh.wikisource.org/wiki/選擇紀要/上編',liuren:'https://zh.wikisource.org/zh-hant/六壬大全_(四庫全書本)/全覽',astronomy:'https://github.com/cosinekitty/astronomy'};
  function finiteCoordinate(value,bound,label){if(value==null||value==='')return null;const n=Number(value);if(!Number.isFinite(n)||Math.abs(n)>bound)throw Error(label+'無效');return n;}
@@ -37,8 +37,10 @@
  function targetSelection(r,input){
    const permitted=['妻財','官鬼','父母','子孫','兄弟','干支'],manual=input.targetKinship&&input.targetKinship!=='auto'?input.targetKinship:null;if(manual&&!permitted.includes(manual))throw Error('六壬取用方向無效');
    const q=String(r.question||''),hits=[];
-   for(const [kind,pattern,role]of [['妻財',/財|钱|錢|收入|獲利|利润|利潤|交易|投資|付款|費用|貨物/,'資源／財務'],['官鬼',/工作|職位|职位|升遷|升迁|官司|诉讼|訴訟|考公|任職|任职/,'職務／約束'],['父母',/文書|文件|合同|契約|证件|證件|房屋|買房|买房|考試|考试|學習|学习|父母|老師|老师/,'文書／庇護'],['子孫',/子女|孩子|兒子|儿子|女兒|女儿|學生|学生|寵物|宠物/,'子女／受養者'],['兄弟',/兄弟|姊妹|姐妹|同事|同伴|朋友|夥伴|伙伴/,'同輩']])if(pattern.test(q))hits.push({kinship:kind,role});
+   for(const [kind,pattern,role]of [['妻財',/財|钱|錢|收入|獲利|利润|利潤|交易|投資|付款|費用|貨物/,'資源／財務'],['官鬼',/工作|職位|职位|職缺|职缺|升遷|升迁|升職|升职|官司|诉讼|訴訟|考公|任職|任职|面試|面试|錄取|录取|錄用|录用|求職|求职|應徵|应征|找工作|換工作|换工作|轉職|转职|跳槽/,'職務／約束'],['父母',/文書|文件|合同|契約|证件|證件|房屋|買房|买房|考試|考试|學習|学习|父母|老師|老师|放榜|上榜|榜單|榜单|通知書|通知书|證照|执照|執照/,'文書／庇護'],['子孫',/子女|孩子|兒子|儿子|女兒|女儿|學生|学生|寵物|宠物/,'子女／受養者'],['兄弟',/兄弟|姊妹|姐妹|同事|同伴|朋友|夥伴|伙伴/,'同輩']])if(pattern.test(q))hits.push({kinship:kind,role});
    if(/伴侶|伴侣|婚姻|夫妻|感情|交往|復合|复合|關係|关系/.test(q))hits.push({kinship:'干支',role:'双方；不凭问句猜性别或配偶身份'});
+   const work=root.JYReadingWorkflow?.situation?.(q,input.notes)?.workDecision??(/上班|值班|輪班|交接|代班|出勤|調班/.test(q));
+   if(work){hits.push({kinship:'官鬼',role:'出勤職責／外在約束'},{kinship:'干支',role:'本人與事情環境分讀'});}
    const selected=manual?[{kinship:manual,role:'使用者明示'}]:hits.filter((x,i,a)=>a.findIndex(y=>y.kinship===x.kinship)===i);
    const targets=selected.map(x=>({...x,placements:x.kinship==='干支'?[{...r.courses[0],role:'干上'},{...r.courses[2],role:'支上'}]:r.plate.filter(p=>p.kinship===x.kinship).map(p=>({...p,role:'天盤'+p.branch+'臨'+p.earth})),transmissions:x.kinship==='干支'?r.transmissions.filter(t=>[r.courses[0].branchIndex,r.courses[2].branchIndex].includes(t.branchIndex)):r.transmissions.filter(t=>t.kinship===x.kinship)}));
    return {mode:manual?'manual':'question-explicit-domain',status:targets.length?'calculated':'unresolved-topic',targets,policy:'事情六親與提問者干、對象／環境支分開；自動只辨明示議題。多項並存不強排唯一用神，全部實際天盤落點保留。'};

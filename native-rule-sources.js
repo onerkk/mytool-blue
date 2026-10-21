@@ -71,7 +71,7 @@
     ["sancaistudy","陶宏麟2018姓名筆劃數吉凶與運勢","作者研究原文","https://econ.ntu.edu.tw/ter/new/data/new/TER47-3/TER473-4.pdf","表4分類總數獨立核對；研究4來源共識23與本次2網站共25不可混稱"],
     ["horaryorbs","Deborah Houlding行星光圈表","作者技術原文","https://www.skyscript.co.uk/aspectorbs.html","兩具名行星光圈取半；傳統相位和現代容許度分開"],
     ["horaryvoid","Deborah Houlding月亮空亡的定義","作者技術原文","https://www.skyscript.co.uk/voc.html","完整月亮入座至出座UTC時窗；五個具名操作化模型分列，保留光圈及精確版本；不是全歷史空亡定義的唯一復刻"],
-    ["horaryreception","Skyscript Reception","作者技術原文","https://www.skyscript.co.uk/glossary/reception/","主星接納來客方向，實際尊貴位置与古典相位條件"],
+    ["horaryreception","Skyscript Reception","作者技術原文","https://www.skyscript.co.uk/glossary/reception/","主星接納來客方向，實際尊貴位置與古典相位條件"],
     ["horarymoonentry","Deborah Houlding：When the Moon Translates Light or becomes Void","作者技術原文","https://www.skyscript.co.uk/moon2.html","Schoner具名解讀的換座前進入相位光圈；全座區間不受一般卜卦1日視窗截斷，與精確及全座合相模型分列；历史語义另列"]
     ,["horarydenials1","Graeme Tobyn：Perfection and its denial I (2007)","作者技術研究原文","https://www.skyscript.co.uk/tobyn2.html","轉逆、換座、Lilly時間序禁止及三類截光形式核對；空間等距版本不混算"]
     ,["horarydenials2","Graeme Tobyn：Perfection and its denial II (2007)","作者技術研究原文","https://www.skyscript.co.uk/tobyn3.html","嚴格中介輕重、駐留逆行B→A時序，返光燃燒／逆行與雙逆follower例外；近駐留質性及現實角色待判"]
@@ -109,7 +109,7 @@
     astronomy:'作者README的地心位置、精度範圍與独立驗證說明；本地仍固定2.1.19',
     swissapi:'官方Programming Interface的UT/TT、UTC及極區宮制失敗／退回規格；不是本輪重算全部星曆資料',
     pvrofficial:'作者教材第15.2–15.3章：不同力量參數不可互換，六力與AV用途分開；不是515頁全文重讀',
-    liuyao26:'旬空章原文与生扶、動空、月破前提；見空不能一律作廢',
+    liuyao26:'旬空章原文與生扶、動空、月破前提；見空不能一律作廢',
     meihua:'卷一卦數、體用、互卦與年月日時起例；不將本次體用擴成終身原局',
     yijingwings:'乾卦卦爻辭、彖象、用九及文言；不是本輪重讀全部64卦',
     yizhu:'《御纂周易折中》所錄考變占第四0至6動爻及三爻二十組合主貞悔；替代無法取讀的原URL',

@@ -557,9 +557,10 @@ function getShenSha(pillars){
   const kongWang2=DZ_LIST[(xunStart+11)%12];
   if([yZ,mZ,hZ].some(z=>z===kongWang1||z===kongWang2)) ss.push('空亡');
 
-  // 26. 血刃 — 以日支查（日支前兩位），見於其他地支
-  const XUEREN_ZHI=DZ_LIST[(dzIdx(dZ)+2)%12];
-  if([yZ,mZ,hZ].includes(XUEREN_ZHI)) ss.push('血刃');
+  // 26. 血刃 — 以月支查四柱其他地支（寅月丑、卯月未、辰月寅、巳月申、午月卯、未月酉、
+  //     申月辰、酉月戌、戌月巳、亥月亥、子月午、丑月子）。舊版「日支前兩位」查不到出處，已改。
+  const XUEREN={寅:'丑',卯:'未',辰:'寅',巳:'申',午:'卯',未:'酉',申:'辰',酉:'戌',戌:'巳',亥:'亥',子:'午',丑:'子'};
+  if(XUEREN[mZ]&&[yZ,dZ,hZ].includes(XUEREN[mZ])) ss.push('血刃');
 
   // 27. 紅艷煞 — 以日干查，見於四柱地支
   const HONGYAN={甲:'午',乙:'午',丙:'寅',丁:'未',戊:'辰',己:'辰',庚:'戌',辛:'酉',壬:'子',癸:'申'};

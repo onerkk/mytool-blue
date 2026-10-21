@@ -37,7 +37,7 @@
  function targetSelection(r,input){
    const permitted=['妻財','官鬼','父母','子孫','兄弟','干支'],manual=input.targetKinship&&input.targetKinship!=='auto'?input.targetKinship:null;if(manual&&!permitted.includes(manual))throw Error('六壬取用方向無效');
    const q=String(r.question||''),hits=[];
-   for(const [kind,pattern,role]of [['妻財',/財|钱|錢|收入|獲利|利润|利潤|交易|投資|付款|費用|貨物/,'資源／財務'],['官鬼',/工作|職位|职位|升遷|升迁|官司|诉讼|訴訟|考公|任職|任职/,'職務／約束'],['父母',/文書|文件|合同|契約|证件|證件|房屋|買房|买房|考試|考试|學習|学习|父母|老師|老师/,'文書／庇護'],['子孫',/子女|孩子|兒子|儿子|女兒|女儿|學生|学生|寵物|宠物/,'子女／受養者'],['兄弟',/兄弟|姊妹|姐妹|同事|同伴|朋友|夥伴|伙伴/,'同輩']])if(pattern.test(q))hits.push({kinship:kind,role});
+   for(const [kind,pattern,role]of [['妻財',/財|钱|錢|收入|獲利|利润|利潤|交易|投資|付款|費用|貨物/,'資源／財務'],['官鬼',/工作|職位|职位|職缺|职缺|升遷|升迁|升職|升职|官司|诉讼|訴訟|考公|任職|任职|面試|面试|錄取|录取|錄用|录用|求職|求职|應徵|应征|找工作|換工作|换工作|轉職|转职|跳槽/,'職務／約束'],['父母',/文書|文件|合同|契約|证件|證件|房屋|買房|买房|考試|考试|學習|学习|父母|老師|老师|放榜|上榜|榜單|榜单|通知書|通知书|證照|执照|執照/,'文書／庇護'],['子孫',/子女|孩子|兒子|儿子|女兒|女儿|學生|学生|寵物|宠物/,'子女／受養者'],['兄弟',/兄弟|姊妹|姐妹|同事|同伴|朋友|夥伴|伙伴/,'同輩']])if(pattern.test(q))hits.push({kinship:kind,role});
    if(/伴侶|伴侣|婚姻|夫妻|感情|交往|復合|复合|關係|关系/.test(q))hits.push({kinship:'干支',role:'双方；不凭问句猜性别或配偶身份'});
    const work=root.JYReadingWorkflow?.situation?.(q,input.notes)?.workDecision??(/上班|值班|輪班|交接|代班|出勤|調班/.test(q));
    if(work){hits.push({kinship:'官鬼',role:'出勤職責／外在約束'},{kinship:'干支',role:'本人與事情環境分讀'});}
