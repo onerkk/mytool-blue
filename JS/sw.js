@@ -58,7 +58,7 @@
 // v130：牌區與說明分列、完整牌陣高度、解碼預覽、場景無空白切換。
 // v131: 20261014scope24 逐題精度界線與子女原典作用；保留v130圖像與牌陣修復。
 // v133: 原句分題、持續數值目標、來源查核與十五法資料選用；保留原盤及圖像修復。
-const CACHE_NAME = 'jy-main-v154';
+const CACHE_NAME = 'jy-main-v155';
 
 self.addEventListener('install', event => {
   self.skipWaiting();

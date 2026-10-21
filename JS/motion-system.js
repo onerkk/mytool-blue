@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021vedic47
+/* 靜月之光 · 共用動態系統 / 20261021compat48
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021vedic47';
+  var doc = root.document, VERSION = '20261021compat48';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -279,13 +279,15 @@
   }, { capture: true, passive: true });
 
   /* ── 8. 盤面成形：八字四柱、紫微星環、梅花六爻（共用 immersive-experience 舞台；原進場動畫被 animation/transition:none 關閉） ── */
-  var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines,.wx-chart-svg', built = new WeakSet();
+  var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines,.wx-chart-svg,.bzs-pillars,.pair-chart-grid', built = new WeakSet();
   function inView(el) { var b = el.getBoundingClientRect(); return b.width > 0 && b.bottom > 0 && b.top < root.innerHeight; }
   function ritualOpen() { return !!doc.querySelector('dialog.jr-dialog[open]'); }
-  var NAMEP = '.nm-character,.nm-grid-fact,.lr-transmission';  // 姓名學字卡／五格、六壬三傳：無專屬容器 class，以父層為盤面容器
+  var NAMEP = '.nm-character,.nm-grid-fact,.lr-transmission,.pair-flight';  // 姓名學字卡／五格、六壬三傳：無專屬容器 class，以父層為盤面容器
   function parts(c) {
-    var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact, :scope > .lr-transmission'); if (nm.length) return Array.prototype.slice.call(nm);
+    var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact, :scope > .lr-transmission, :scope > .pair-flight'); if (nm.length) return Array.prototype.slice.call(nm);
     if (c.querySelector && c.querySelector(':scope > .vd-chart-border')) return Array.prototype.slice.call(c.children).filter(function (x) { return !/^(defs|style|title|desc)$/i.test(x.tagName); });
+    if (c.matches('.bzs-pillars')) return Array.prototype.slice.call(c.querySelectorAll('.bzs-pillar'));
+    if (c.matches('.pair-chart-grid')) return Array.prototype.slice.call(c.children);
     if (c.matches('.wx-chart-svg')) return Array.prototype.slice.call(c.children).filter(function (x) { return !/^(defs|style|title|desc)$/i.test(x.tagName); });
     if (c.matches('[data-living-pillars]')) return Array.prototype.slice.call(c.querySelectorAll('.jx-pillar'));
     if (c.matches('.jx-orbit')) return Array.prototype.slice.call(c.querySelectorAll('.jx-orbit-aura,.jx-orbit-lines,.jx-palace,.jx-orbit-center'));
@@ -297,7 +299,14 @@
     built.add(c); c.setAttribute('data-jy-assembled', String(Date.now() % 100000));
     var list = parts(c), EASE = 'cubic-bezier(.16,1,.3,1)';
     try {
-      if (c.querySelector(':scope > .vd-chart-border')) {  // 印度星盤：外框沿路徑畫出 → 十二宮依序浮現 → 行星在宮內彈出
+      if (c.matches('.bzs-pillars,.pair-chart-grid') || (list[0] && list[0].matches('.pair-flight'))) {  // 合盤：甲左乙右相向而來、宮格依序亮起、跨盤四化最後帶金光彈出
+        var nth = Array.prototype.indexOf.call(doc.querySelectorAll(c.matches('.bzs-pillars') ? '.bzs-pillars' : '.pair-chart-grid'), c), side = nth % 2 ? 1 : -1, lag = nth % 2 ? 220 : 0;
+        list.forEach(function (el, i) {
+          if (c.matches('.bzs-pillars')) el.animate([{ translate: (side * 34) + 'px 0', opacity: 0, filter: 'blur(3px)' }, { translate: (side * -3) + 'px 0', opacity: 1, filter: 'blur(0)', offset: 0.72 }, { translate: '0 0', opacity: 1, filter: 'none' }], { duration: 720, delay: 120 + lag + i * 120, easing: EASE, fill: 'backwards' });
+          else if (c.matches('.pair-chart-grid')) el.animate([{ opacity: 0, scale: '0.86' }, { opacity: 1, scale: '1' }], { duration: 460, delay: 160 + lag + i * 45, easing: EASE, fill: 'backwards' });
+          else el.animate([{ opacity: 0, scale: '0.6', boxShadow: '0 0 0 0 #f3d79a00' }, { opacity: 1, scale: '1.06', boxShadow: '0 0 0 2px #f3d79a88, 0 0 22px 6px #e9cf9866', offset: 0.6 }, { opacity: 1, scale: '1', boxShadow: '0 0 0 0 #f3d79a00' }], { duration: 760, delay: 160 + i * 130, easing: EASE, fill: 'backwards' });
+        });
+      } else       if (c.querySelector(':scope > .vd-chart-border')) {  // 印度星盤：外框沿路徑畫出 → 十二宮依序浮現 → 行星在宮內彈出
         var cells = 0;
         list.forEach(function (el) {
           if (el.matches('.vd-chart-border')) {
@@ -384,21 +393,37 @@
   // 以「內容」去重：有些房間會定時重繪（六壬活時時鐘），每次重繪都是新元素；若以元素判斷會無限從透明重播而永遠看不見。
   var shapes = new Set(), recent = Object.create(null);
   function shape(c) { return parts(c).map(function (el) { return (el.textContent || '').replace(/\s+/g, ''); }).join('|').slice(0, 240); }
+  // 守門：回傳 empty（內容未畫完，先不處理）、skip（已成形過／定時重繪）、ok；同時給出去重鍵。
+  function guard(c) {
+    var sk = shape(c), first = parts(c)[0], host = c.closest('[id]');
+    var tk = (host ? host.id : '') + '|' + (first && first.getAttribute ? String(first.getAttribute('class') || first.tagName).split(' ')[0] : '');  // SVG 的 className 是物件，改讀屬性
+    try { var cc = String(c.getAttribute('class') || '').trim().split(/\s+/)[0], same = doc.querySelectorAll(c.tagName.toLowerCase() + (cc ? '.' + cc : '')); tk += '#' + Array.prototype.indexOf.call(same, c); } catch (_) {}  // 同頁多組同類盤面（合盤甲乙方）各自計算
+    if (!sk) return { v: 'empty' };
+    if (shapes.has(sk) || (recent[tk] && Date.now() - recent[tk] < 60000)) return { v: 'skip' };  // 內容去重＋同房同類 60 秒內只成形一次
+    return { v: 'ok', sk: sk, tk: tk };
+  }
+  // 兩段式：出現時先藏（僅限確定要成形的），等頁面穩定 220ms 後，只對「仍在頁面上」的盤面成形並記錄。
+  // 這樣連續重繪（合盤、西洋結果頁）時，被替換掉的舊盤面不會留下紀錄而擋住真正留下來的那一份。
+  var pend = new Set(), settleT = 0;
   function adopt(c) {
     if (built.has(c) || reduced() || !canAnimate) return;
-    var sk = shape(c), first = parts(c)[0], host = c.closest('[id]');
-    var tk = (host ? host.id : '') + '|' + (first && first.getAttribute ? String(first.getAttribute('class') || first.tagName).split(' ')[0] : ''), now = Date.now();  // SVG 的 className 是物件，改讀屬性
-    // 第二道防護：同房間同類盤面 60 秒內只成形一次（內容含會變動的文字時，內容去重會被繞過）。
-    if (!sk) return;  // 內容尚未畫完（例如星盤先畫圓線、文字最後才加）：先不標記，等內容出現再成形
-    if (shapes.has(sk) || (recent[tk] && now - recent[tk] < 60000)) { built.add(c); release(parts(c)); return; }
-    shapes.add(sk); recent[tk] = now;
-    if (inView(c)) {
-      var list = parts(c); list.forEach(function (el) { el.style.opacity = '0'; });  // 繪製前先藏，避免先閃完整盤面
-      var go = function () { if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); };
-      go();
-      setTimeout(function () { release(list); }, 6000);  // 保險：任何情況下 6 秒後一定可見
-    } else if (waiting) waiting.observe(c);
+    var g = guard(c); if (g.v === 'empty') return;
+    if (g.v === 'skip') { built.add(c); release(parts(c)); return; }
+    var list = parts(c); if (inView(c)) list.forEach(function (el) { el.style.opacity = '0'; });  // 繪製前先藏，避免先閃完整盤面
+    pend.add(c); clearTimeout(settleT); settleT = setTimeout(flush, 220);
+    setTimeout(function () { release(list); }, 6000);  // 保險：任何情況下 6 秒後一定可見
   }
+  function flush() {
+    var list = Array.from(pend); pend.clear();
+    list.forEach(function (c) {
+      if (!c.isConnected || built.has(c)) return;
+      var g = guard(c); if (g.v !== 'ok') { built.add(c); release(parts(c)); return; }
+      shapes.add(g.sk); recent[g.tk] = Date.now();
+      if (inView(c)) { var go = function () { if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); }; go(); }
+      else { release(parts(c)); if (waiting) waiting.observe(c); }
+    });
+  }
+
   // 舞台可能是「既有容器、內容後塞」（紫微星環），所以新加入的元素只要位於盤面容器內也算；同一批變動收齊後再處理。
   new MutationObserver(function (records) {
     var found = new Set();
