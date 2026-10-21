@@ -1,4 +1,4 @@
-/* 靜月之光 · 共用動態系統 / 20261021motion37
+/* 靜月之光 · 共用動態系統 / 20261021motion38
  * 一套節奏、一種月光語言，貫穿十四個房間：門卡綻放進房、結果分段浮現、按壓光暈、回首頁門卡歸位。
  * 只動 transform / opacity；所有層 pointer-events:none，不攔任何點擊；減少動態時整套關閉。 */
 
@@ -14,7 +14,7 @@
 .jy-veil{position:fixed;left:0;top:0;width:100vw;height:100dvh;z-index:2147482000;pointer-events:none;
   transform-origin:0 0;border-radius:22px;overflow:hidden;will-change:transform,opacity;contain:strict;
   background:
-    radial-gradient(120% 70% at 50% 38%,rgba(246,230,195,.92) 0%,rgba(210,173,108,.55) 22%,rgba(30,44,66,.92) 52%,var(--jy-night) 78%);
+    radial-gradient(130% 78% at 50% 40%,#fbf1da 0%,#e9cf98 9%,#b8915a 20%,#4a4436 34%,#1b2638 50%,#0d1626 68%,var(--jy-night) 86%);
   box-shadow:0 0 0 1px #ffe8bd55,0 30px 80px #000c}
 .jy-veil::before{content:'';position:absolute;inset:0;
   background:
@@ -22,10 +22,10 @@
     radial-gradient(1.5px 1.5px at 84% 64%,#fff7 50%,transparent 51%),radial-gradient(2px 2px at 30% 78%,#fff8 50%,transparent 51%),
     radial-gradient(1px 1px at 56% 52%,#fffa 50%,transparent 51%),radial-gradient(1.5px 1.5px at 10% 58%,#fff6 50%,transparent 51%);
   opacity:.9}
-.jy-veil-moon{position:absolute;left:50%;top:38%;width:92px;height:92px;margin:-46px 0 0 -46px;border-radius:50%;
-  box-shadow:inset -18px -4px 0 0 var(--jy-moon),0 0 46px 10px #f6e6c388;opacity:0;transform:scale(.6) rotate(-18deg)}
-.jy-veil-title{position:absolute;left:0;right:0;top:calc(38% + 64px);text-align:center;color:#fff6e3;opacity:0;
-  font:500 20px/1.4 var(--f-display,"Noto Serif TC",serif);letter-spacing:.32em;text-shadow:0 2px 18px #000a}
+.jy-veil-moon{position:absolute;left:50%;top:40%;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;
+  box-shadow:inset -22px -5px 0 0 #fffaf0,0 0 60px 18px #fff3d6aa,0 0 140px 50px #e9cf9855;opacity:0;transform:scale(.6) rotate(-18deg)}
+.jy-veil-title{position:absolute;left:0;right:0;top:calc(40% + 78px);text-align:center;color:#2a2116;opacity:0;
+  font:600 22px/1.4 var(--f-display,"Noto Serif TC",serif);letter-spacing:.32em;text-shadow:0 1px 0 #fff8,0 0 24px #fff3d6}
 
 /* ── 2. 結果分段浮現：只套在結果卡片，不碰表單 ── */
 .jy-rv{opacity:0;transform:translateY(18px) scale(.985);filter:blur(2px)}

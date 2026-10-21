@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021motion37
+/* 靜月之光 · 共用動態系統 / 20261021motion38
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021motion37';
+  var doc = root.document, VERSION = '20261021motion38';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -28,26 +28,31 @@
     veil.querySelector('.jy-veil-title').textContent = doorTitle(el);
     doc.body.appendChild(veil);
     var from = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + (r.width / vw) + ',' + (r.height / vh) + ')';
+    // 整段等速；緩動放在每一段的起始關鍵影格（整段套前傾曲線會把擴展、停留、淡出全擠到前 50ms）。
+    var EXPAND = 'cubic-bezier(.16,1,.3,1)', SOFT = 'cubic-bezier(.4,0,.2,1)', SPRING = 'cubic-bezier(.34,1.56,.64,1)';
     var a = veil.animate([
-      { transform: from, opacity: 0, borderRadius: '22px', offset: 0 },
-      { opacity: 1, offset: 0.12 },
-      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.48 },
-      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.66 },
+      { transform: from, opacity: 0, borderRadius: '22px', offset: 0, easing: EXPAND },
+      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.40, easing: 'linear' },
+      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.64, easing: SOFT },
       { transform: 'translate(0,0) scale(1.04,1.04)', borderRadius: '0px', opacity: 0, offset: 1 }
-    ], { duration: 1050, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'forwards' });
+    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
     var moon = veil.querySelector('.jy-veil-moon'), title = veil.querySelector('.jy-veil-title');
     moon.animate([
-      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0 },
-      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0.28 },
-      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.58 },
-      { opacity: 0, transform: 'scale(1.18) rotate(6deg)', offset: 1 }
-    ], { duration: 1050, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0, easing: 'linear' },
+      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0.24, easing: SPRING },
+      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.52, easing: 'linear' },
+      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.66, easing: SOFT },
+      { opacity: 0, transform: 'scale(1.16) rotate(6deg)', offset: 1 }
+    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
     title.animate([
-      { opacity: 0, letterSpacing: '.6em', offset: 0 }, { opacity: 0, offset: 0.34 },
-      { opacity: 1, letterSpacing: '.32em', offset: 0.6 }, { opacity: 0, offset: 1 }
-    ], { duration: 1050, easing: 'ease-out', fill: 'forwards' });
+      { opacity: 0, letterSpacing: '.62em', offset: 0, easing: 'linear' },
+      { opacity: 0, letterSpacing: '.62em', offset: 0.32, easing: EXPAND },
+      { opacity: 1, letterSpacing: '.32em', offset: 0.56, easing: 'linear' },
+      { opacity: 1, letterSpacing: '.32em', offset: 0.68, easing: SOFT },
+      { opacity: 0, letterSpacing: '.3em', offset: 1 }
+    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
     var done = function () { if (veil.isConnected) veil.remove(); };
-    a.onfinish = done; setTimeout(done, 1600);
+    a.onfinish = done; setTimeout(done, 1700);
   }
   doc.addEventListener('click', function (e) {
     var el = e.target && e.target.closest && e.target.closest(DOOR);
