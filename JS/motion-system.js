@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021liuren45
+/* 靜月之光 · 共用動態系統 / 20261021western46
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021liuren45';
+  var doc = root.document, VERSION = '20261021western46';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -279,12 +279,13 @@
   }, { capture: true, passive: true });
 
   /* ── 8. 盤面成形：八字四柱、紫微星環、梅花六爻（共用 immersive-experience 舞台；原進場動畫被 animation/transition:none 關閉） ── */
-  var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines', built = new WeakSet();
+  var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines,.wx-chart-svg', built = new WeakSet();
   function inView(el) { var b = el.getBoundingClientRect(); return b.width > 0 && b.bottom > 0 && b.top < root.innerHeight; }
   function ritualOpen() { return !!doc.querySelector('dialog.jr-dialog[open]'); }
   var NAMEP = '.nm-character,.nm-grid-fact,.lr-transmission';  // 姓名學字卡／五格、六壬三傳：無專屬容器 class，以父層為盤面容器
   function parts(c) {
     var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact, :scope > .lr-transmission'); if (nm.length) return Array.prototype.slice.call(nm);
+    if (c.matches('.wx-chart-svg')) return Array.prototype.slice.call(c.children).filter(function (x) { return !/^(defs|style|title|desc)$/i.test(x.tagName); });
     if (c.matches('[data-living-pillars]')) return Array.prototype.slice.call(c.querySelectorAll('.jx-pillar'));
     if (c.matches('.jx-orbit')) return Array.prototype.slice.call(c.querySelectorAll('.jx-orbit-aura,.jx-orbit-lines,.jx-palace,.jx-orbit-center'));
     return Array.prototype.slice.call(c.querySelectorAll('.jx-yao'));
@@ -295,7 +296,29 @@
     built.add(c); c.setAttribute('data-jy-assembled', String(Date.now() % 100000));
     var list = parts(c), EASE = 'cubic-bezier(.16,1,.3,1)';
     try {
-      if (list[0] && list[0].matches('.lr-transmission')) {  // 六壬三傳：初→中→末依序由左滑入，像事情沿三傳推進
+      if (c.matches('.wx-chart-svg')) {  // 西洋星盤（扁平 SVG，無分組）：依幾何分類——圓由中心擴開、分隔線繞圈畫出、外圈符號浮現、行星符號依角度彈出、相位線最後畫出
+        var vb = (c.getAttribute('viewBox') || '0 0 600 600').split(/[\s,]+/).map(Number), cx = vb[0] + vb[2] / 2, cy = vb[1] + vb[3] / 2, R = Math.min(vb[2], vb[3]) / 2;
+        var turnOf = function (x, y) { return (Math.atan2(y - cy, x - cx) + Math.PI) / (2 * Math.PI); };
+        list.forEach(function (el) {
+          var tag = el.tagName.toLowerCase();
+          if (tag === 'circle' || tag === 'ellipse') {
+            el.style.transformBox = 'view-box'; el.style.transformOrigin = cx + 'px ' + cy + 'px';
+            el.animate([{ scale: '0.55', opacity: 0 }, { scale: '1', opacity: 1 }], { duration: 760, delay: 60, easing: EASE, fill: 'backwards' });
+          } else if (tag === 'line') {
+            var x1 = +el.getAttribute('x1') || 0, y1 = +el.getAttribute('y1') || 0, x2 = +el.getAttribute('x2') || 0, y2 = +el.getAttribute('y2') || 0;
+            var len = Math.hypot(x2 - x1, y2 - y1) || 1, aspect = Math.max(Math.hypot(x1 - cx, y1 - cy), Math.hypot(x2 - cx, y2 - cy)) < R * 0.6, o = turnOf((x1 + x2) / 2, (y1 + y2) / 2);
+            el.animate([{ strokeDasharray: len + ' ' + len, strokeDashoffset: String(len) }, { strokeDasharray: len + ' ' + len, strokeDashoffset: '0' }],
+              { duration: aspect ? 640 : 420, delay: aspect ? 1400 + o * 650 : 320 + o * 520, easing: 'cubic-bezier(.3,.6,.2,1)', fill: 'backwards' });
+          } else {
+            var bx = null; try { bx = el.getBBox(); } catch (_) {}
+            var mx = bx ? bx.x + bx.width / 2 : cx, my = bx ? bx.y + bx.height / 2 : cy, outer = Math.hypot(mx - cx, my - cy) > R * 0.72, o2 = turnOf(mx, my);
+            if (tag === 'text' || tag === 'use') { el.style.transformBox = 'fill-box'; el.style.transformOrigin = 'center';
+              el.animate([{ opacity: 0, scale: '0.4' }, { opacity: 1, scale: '1.18', offset: 0.7 }, { opacity: 1, scale: '1' }], { duration: 520, delay: outer ? 380 + o2 * 480 : 880 + o2 * 520, easing: EASE, fill: 'backwards' }); }
+            else el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, delay: 300 + o2 * 500, easing: 'ease-out', fill: 'backwards' });
+          }
+        });
+        setTimeout(function () { list.forEach(function (el) { el.style.removeProperty('transform-box'); el.style.removeProperty('transform-origin'); }); }, 3600);
+      } else       if (list[0] && list[0].matches('.lr-transmission')) {  // 六壬三傳：初→中→末依序由左滑入，像事情沿三傳推進
         list.forEach(function (el, i) {
           el.animate([
             { translate: '-28px 0', opacity: 0, filter: 'brightness(1.7)', offset: 0 },
@@ -349,7 +372,8 @@
     var sk = shape(c), first = parts(c)[0], host = c.closest('[id]');
     var tk = (host ? host.id : '') + '|' + (first ? String(first.className).split(' ')[0] : ''), now = Date.now();
     // 第二道防護：同房間同類盤面 60 秒內只成形一次（內容含會變動的文字時，內容去重會被繞過）。
-    if (!sk || shapes.has(sk) || (recent[tk] && now - recent[tk] < 60000)) { built.add(c); release(parts(c)); return; }
+    if (!sk) return;  // 內容尚未畫完（例如星盤先畫圓線、文字最後才加）：先不標記，等內容出現再成形
+    if (shapes.has(sk) || (recent[tk] && now - recent[tk] < 60000)) { built.add(c); release(parts(c)); return; }
     shapes.add(sk); recent[tk] = now;
     if (inView(c)) {
       var list = parts(c); list.forEach(function (el) { el.style.opacity = '0'; });  // 繪製前先藏，避免先閃完整盤面
@@ -376,7 +400,8 @@
         if (n.querySelectorAll) n.querySelectorAll(NAMEP).forEach(function (x) { if (x.parentElement) found.add(x.parentElement); });
       });
     });
-    found.forEach(function (c) { if (parts(c).length) adopt(c); });
+    // 西洋儀式畫面（.wx-ceremony）有自己的星盤演出，不介入；只在結果頁星盤成形，否則結果頁會被內容去重跳過。
+    found.forEach(function (c) { if (c.closest && c.closest('.wx-ceremony')) return; if (parts(c).length) adopt(c); });
   }).observe(doc.documentElement, { childList: true, subtree: true });
 
   root.JYMotion = Object.freeze({ version: VERSION, bloom: bloom, cascade: cascade, reveal: mark, turn: turn, deal: deal, assemble: assemble });
