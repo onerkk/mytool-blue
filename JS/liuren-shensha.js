@@ -94,9 +94,9 @@
     {issue:'《指南》皇恩方圖與韻訣末四月及《大全》不同',selected:'皇恩方圖採戌丑辰未酉卯子午寅巳申亥；別表原位另列，不混入64課族《大全》算法',variants:{guideVerse:'戌丑辰未酉卯子午寅申巳亥',daquan:'戌丑辰未卯酉子午亥寅巳申'}},
     {issue:'《指南》門煞方圖與韻訣不一致',selected:'門煞方圖採完整十二欄，另列韻訣四組酉辰卯戌，不暗換'},
     {issue:'天馬／皇恩月序表轉錄行位不清',selected:'天馬單欄明示另採《大全》午順六陽；未將不清楚陰支行擅作皇恩'},
-    {issue:'《指南》罪至第十月轉錄為胡，不是干支',selected:'另採《大全》卷五完整月序，十辰；原錯字保留，不宣稱已校改《指南》原图',raw:'午子未丑申寅酉卯戌胡亥巳',selectedTable:'午子未丑申寅酉卯戌辰亥巳',source:SOURCES.daquan5},
+    {issue:'《指南》罪至第十月轉錄為胡，不是干支',selected:'另採《大全》卷五完整月序，十辰；原錯字保留，不宣稱已校改《指南》原圖',raw:'午子未丑申寅酉卯戌胡亥巳',selectedTable:'午子未丑申寅酉卯戌辰亥巳',source:SOURCES.daquan5},
     {issue:'日長生方圖土申生，末段編者辨訂主張土干同火',selected:'日長生方圖保留原表；反對意見明示，不以另一版長生覆蓋'},
-    {issue:'神煞名稱重複且同一原理可產生多個別名',selected:'按來源層和id保留；不能當獨立證據票数。只定位，不將名字直譯成疾病、災難或保證事件'}
+    {issue:'神煞名稱重複且同一原理可產生多個別名',selected:'按來源層和id保留；不能當獨立證據票數。只定位，不將名字直譯成疾病、災難或保證事件'}
   ];
   function target(value){
     if(value==null)return {original:null,branches:[],status:'not-applicable'};

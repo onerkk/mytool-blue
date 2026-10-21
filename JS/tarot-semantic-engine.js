@@ -384,7 +384,7 @@
       ['sequence_member_node','ordered_period_row','declared_temporal_pair','period_summary','declared_outer_pair','surprise_triad_context','arch_surprise_synthesis'],
       {state:'qualitative_inference',trajectory:'qualitative_inference',outcome:'qualitative_inference',exact_date:'not_measured',cardinality:'not_measured'},
       {kind:'historical_arch_three_periods_with_surprises',independentComparableChannels:0},
-      ['過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；代表牌另置中央。','兩張意外牌從最初未用的11張另抽，不能當66張主盤或兩個獨立結果。','原文後段按堆頂政策重排首33末66大圓；讀S66、32對及原65单張。']
+      ['過去1–11及34–44、現在23–33及56–66、未來12–22及45–55；代表牌另置中央。','兩張意外牌從最初未用的11張另抽，不能當66張主盤或兩個獨立結果。','原文後段按堆頂政策重排首33末66大圓；讀S66、32對及原65單張。']
     ),
     mathers_horseshoe: makeSpec(
       'mathers_horseshoe', 'Mathers 1888 第一法完整 Horseshoe', 'gd_book_t',

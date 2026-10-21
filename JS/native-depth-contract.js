@@ -9,7 +9,7 @@
     synthesis:['先回答原題','再交代最強支持鏈','再交代最強反證／牽制','說明成立條件與會推翻結論的條件','時間題只使用已實算運期／候選時窗','最後才給行動建議'],
     forbidden:['不得把同源規則重複計票','不得把缺資料補成事實','不得把象徵直接當已發生事件','不得以單一吉凶指標蓋過完整作用網','不得把不同流派互相矛盾的表硬平均成唯一答案'],
     confidence:'本題內部解讀把握度只能描述有效證據的收斂與限制；有關鍵缺項或流派衝突時降低確定度。它不是現實事件機率，也不是經驗證的預測準確率。',
-    truthBoundary:{calculationValidation:'reproducible-within-selected-profile',predictionValidation:'not-performed',claimLevels:['排盤或抽取的可重算事實','具名傳統規則及本站模型','待現實核對的個案推論'],rule:'計算核對不等於事件預測已驗證；模型強弱或凶吉不構成終身判決，沒有已算救應不得捏造转機。'}
+    truthBoundary:{calculationValidation:'reproducible-within-selected-profile',predictionValidation:'not-performed',claimLevels:['排盤或抽取的可重算事實','具名傳統規則及本站模型','待現實核對的個案推論'],rule:'計算核對不等於事件預測已驗證；模型強弱或凶吉不構成終身判決，沒有已算救應不得捏造轉機。'}
   };
   const P={
     bazi:{profile:'子平月令／根氣／成敗救應＋窮通條件分層',required:[['四柱與藏干','pillars'],['月令人元司事','seasonalCommander'],['根氣與旺衰','strength'],['子平功能判讀','functionalAssessment'],['古典條件矩陣','classicalAssessment'],['古法質性裁決','classicalAdjudication'],['大運流年實算','annualSegments']],order:['月令與司令','日主根氣及全局旺衰','透藏十神及生克路徑','格局成敗救應','調候與古典條件','大運→流年→必要時小運'],conflicts:['調候、扶抑、格局不是三套票數；若結論不同要解釋哪一層在本題優先','合局只在成化條件成立時視為轉化，否則保留合絆／牽制'],forbidden:['不得以五行缺什麼直接判喜用','不得把古訣字面命中直接斷成事件']},

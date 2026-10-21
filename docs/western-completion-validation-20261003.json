@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-10-04T01:46:03.978Z",
+  "testedAt": "2026-10-21T05:44:36.512Z",
   "passed": 8,
   "failed": 0,
   "regiomontanusIndependentCusps": 60,
@@ -9,7 +9,7 @@
       "status": "passed"
     },
     {
-      "name": "迁居盤同一UTC十星黃經不變，實際重算四角十二宮和落宮",
+      "name": "遷居盤同一UTC十星黃經不變，實際重算四角十二宮和落宮",
       "status": "passed"
     },
     {
@@ -29,7 +29,7 @@
       "status": "passed"
     },
     {
-      "name": "新增卜卦與迁居全部事實傳入原生JSON和提示詞",
+      "name": "新增卜卦與遷居全部事實傳入原生JSON和提示詞",
       "status": "passed"
     },
     {

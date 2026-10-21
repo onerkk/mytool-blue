@@ -66,7 +66,7 @@
       hour:hourKnown?{...p.hour,relations:hourRelations}:null,actualBranchPairs:allRelations,branches,
       countCapability:{precision:'not-finalized',symbolic:'registered-rule-hypotheses-and-qualitative-synthesis',scope:'只限制精確終身總數，不停止子女主題分析'},
       sourceVariants:['《淵海》長生數七與《真詮評註》數四不同，養位留二與留一不同；不能當独立票數','《淵海》六親段與論子息段的女命男女角色相反；本包合看食傷，不預測胎兒性別'],
-      limits:[...(!inputGender?['性別未明列：兩條件支線不得平均成相同數字']:[]),...(!hourKnown?['時位未確認：不套其數量、作用或精確交運']:[]),'缺少已生子女與生育規劃，不能把總數寫成還能再生幾人','傳統數量是象徵假定，不是已驗證事件或医学檢查'],sources:SOURCES,predictionValidated:false};
+      limits:[...(!inputGender?['性別未明列：兩條件支線不得平均成相同數字']:[]),...(!hourKnown?['時位未確認：不套其數量、作用或精確交運']:[]),'缺少已生子女與生育規劃，不能把總數寫成還能再生幾人','傳統數量是象徵假定，不是已驗證事件或醫學檢查'],sources:SOURCES,predictionValidated:false};
   }
   function forReading(v,years){if(!v)return null;return {...v,branches:arr(v.branches).map(b=>({...b,annuals:arr(b.annuals).filter(y=>!years||years.includes(y.year))}))};}
   root.JYBaziChildren=Object.freeze({version:VERSION,compute,forReading,stage,countEntry,childQuestion,sources:SOURCES});
@@ -91,7 +91,7 @@ var JY_READING_BAZI = {
     "格局須核月令立格、透藏與成敗救應；從格、化氣格審實際成立條件。扶抑、調候、通關與病藥並非同一取用理由，牴觸時交代先後和能改判的條件。",
     "學業、事業、財務、婚戀、家庭與生活負荷各自連回本局功能通路。財星只是資源議題，能否取得與留住須合日主承受、食傷輸出、官印制化及歲運。",
     "大運與流年逐段判新增干支如何引動原局、喜用能否承接及忌勢有無救應。交運年保留前後區間；逐年列運期、主題、偏利／偏阻／混合、象徵影響程度、盤面依據、條件與檢查點，不因相同年干重複套話。",
-    "【八字術語界線】身弱、財多身弱只描述此模型中的作用負荷；需合原局有效印比、食傷生財、官印制化、成敗救應及歲運才判本题順阻。不能只憑這個標籤斷不能工作、不能有錢或婚姻必敗；印比扶身也不一律有利，特殊從勢與調候仍須分層。",
+    "【八字術語界線】身弱、財多身弱只描述此模型中的作用負荷；需合原局有效印比、食傷生財、官印制化、成敗救應及歲運才判本題順阻。不能只憑這個標籤斷不能工作、不能有錢或婚姻必敗；印比扶身也不一律有利，特殊從勢與調候仍須分層。",
     "【議題線索與精度分開】子女題核本次明列性別與採用取法、子女角色實際透藏根氣、時位及真正作用、已算運歲。若有 children 議題資料須合讀各支線與數量規則。古訣初查數可作具名象徵假定，不能自動當今生全部親生子女總數；自行中和、符號個數或一個不利配對都不能硬斷少子、無子。原局未見仍追已算運勢；時位有印也不能單憑它保證晚年受子女供養。",
     "【本法重要發現與解惑方式】讀原局反覆模式、成敗救應及實算當期歲運；重大資源、工作負荷、關係需求或轉折，即使未問也解釋其作用和應對，不將標籤斷成終身命運。"
   ],

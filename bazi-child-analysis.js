@@ -65,7 +65,7 @@
       hour:hourKnown?{...p.hour,relations:hourRelations}:null,actualBranchPairs:allRelations,branches,
       countCapability:{precision:'not-finalized',symbolic:'registered-rule-hypotheses-and-qualitative-synthesis',scope:'只限制精確終身總數，不停止子女主題分析'},
       sourceVariants:['《淵海》長生數七與《真詮評註》數四不同，養位留二與留一不同；不能當独立票數','《淵海》六親段與論子息段的女命男女角色相反；本包合看食傷，不預測胎兒性別'],
-      limits:[...(!inputGender?['性別未明列：兩條件支線不得平均成相同數字']:[]),...(!hourKnown?['時位未確認：不套其數量、作用或精確交運']:[]),'缺少已生子女與生育規劃，不能把總數寫成還能再生幾人','傳統數量是象徵假定，不是已驗證事件或医学檢查'],sources:SOURCES,predictionValidated:false};
+      limits:[...(!inputGender?['性別未明列：兩條件支線不得平均成相同數字']:[]),...(!hourKnown?['時位未確認：不套其數量、作用或精確交運']:[]),'缺少已生子女與生育規劃，不能把總數寫成還能再生幾人','傳統數量是象徵假定，不是已驗證事件或醫學檢查'],sources:SOURCES,predictionValidated:false};
   }
   function forReading(v,years){if(!v)return null;return {...v,branches:arr(v.branches).map(b=>({...b,annuals:arr(b.annuals).filter(y=>!years||years.includes(y.year))}))};}
   root.JYBaziChildren=Object.freeze({version:VERSION,compute,forReading,stage,countEntry,childQuestion,sources:SOURCES});
