@@ -7,7 +7,13 @@ const OOTK_RUNTIME = {};
     const d=raw.tarotData||raw,cards=arr(d.cards),rws=d.sourceProfile==='rws_reversals'||d.readingMode==='rws_reversals';
     if(!cards.length||new Set(cards.map(c=>c.id)).size!==cards.length||cards.some(c=>!Number.isInteger(c.id)||c.id<0||c.id>77))throw Error('塔羅發牌紀錄缺漏、重複或牌號無效。');
     const register=arr(typeof TAROT==='undefined'?root.TAROT:TAROT);
-    const records=cards.map((c,i)=>{const p=register.find(x=>x.id===c.id),slot=arr(d.methodPlan?.slots)[i]||{};if(rws&&!p)throw Error('RWS牌義表沒有此牌。');return {index:i+1,id:c.id,name:c.name||c.n,position:c.position||c.pos||slot.label||'位置'+(i+1),direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):'Book T，不套RWS逆位',keywords:rws&&typeof c.isUp==='boolean'?String(c.isUp?p.kwUp:p.kwRv).split('·'):[],binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
+    // Topic of the site's curated RWS meaning: the room's declared focus first, then explicit question words.
+    const q=String(raw.question||d.question||''),ft=String(raw.focusType||d.focusType||'');
+    const topic=/love|感情/.test(ft)||/感情|戀愛|恋爱|喜歡|喜欢|曖昧|暧昧|復合|复合|交往|分手|前任|對象|对象|伴侶|伴侣|婚|桃花|心意|愛|爱/.test(q)?'love':/career|事業|工作/.test(ft)||/工作|事業|事业|職|职|面試|面试|升遷|升迁|老闆|老板|同事|創業|创业|考試|考试|錄取|录取/.test(q)?'career':/wealth|財/.test(ft)||/財|财|錢|钱|投資|投资|收入|薪|生意|賺|赚|負債|负债/.test(q)?'wealth':/health|健康/.test(ft)||/健康|身體|身体|病|手術|手术|懷孕|怀孕/.test(q)?'health':/spirit|靈性/.test(ft)||/靈性|灵性|修行|冥想/.test(q)?'spiritual':'general';
+    const topicLabel={love:'感情',career:'事業',wealth:'財務',health:'健康',spiritual:'靈性',general:'一般'}[topic];
+    const records=cards.map((c,i)=>{const p=register.find(x=>x.id===c.id),slot=arr(d.methodPlan?.slots)[i]||{};if(rws&&!p)throw Error('RWS牌義表沒有此牌。');const up=c.isUp===true,dir=typeof c.isUp==='boolean',pos=c.position||c.pos||slot.label||'位置'+(i+1),advice=/建議|建议|行動|行动|該怎麼|怎麼做/.test(pos);
+      const meaning=rws&&dir&&p?(advice&&p[up?'adviceUp':'adviceRv'])||(topic!=='general'&&p[topic+(up?'Up':'Rv')])||p[up?'up':'rv']||null:null;
+      return {index:i+1,id:c.id,name:c.name||c.n,position:pos,direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):'Book T，不套RWS逆位',keywords:rws&&dir?String(up?p.kwUp:p.kwRv).split('·'):[],meaning,meaningTopic:meaning?(advice&&p[up?'adviceUp':'adviceRv']?'建議':topicLabel):null,element:p?.el||null,binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
     const groups={},ranks={};for(const r of records){const k=r.binding?.eventId||'QUERY_EVENT';(groups[k]||(groups[k]=[])).push(r.index);if(r.suit!=='major')(ranks[r.rank]||(ranks[r.rank]=[])).push(r.index);}
     return {records,eventGroups:Object.entries(groups).map(([eventId,positions])=>({eventId,positions})),rankEchoes:Object.entries(ranks).filter(([,p])=>p.length>1).map(([rank,positions])=>({rank,positions})),majorPositions:records.filter(r=>r.suit==='major').map(r=>r.index),courtPositions:records.filter(r=>['page','knight','queen','king'].includes(r.rank)).map(r=>r.index),methodData:copy(d.methodData),drawProcedure:copy(d.drawProcedure),policy:'逐張實際牌位、方向與議題綁定；關鍵詞不是成功率或他人心意的證明。'};
   }
@@ -36,7 +42,20 @@ const OOTK_RUNTIME = {};
       if(spread==='grand'){paths.push([33,34,35,36]);mirror.push({a:33,b:36,axis:'tail'},{a:34,b:35,axis:'tail'});neighbors.push({a:33,b:34},{a:34,b:35},{a:35,b:36});}
     }else throw Error('沒有明列合法雷諾曼布局。');
     const adjacent=[],segments=[];paths.forEach((p,branch)=>{for(let i=0;i<p.length-1;i++){const key=p[i]+'/'+p[i+1];if(!adjacent.some(x=>x.key===key))adjacent.push({key,from:p[i],to:p[i+1]});for(let j=i+2;j<=p.length;j++)segments.push({path:branch+1,positions:p.slice(i,j),cards:p.slice(i,j).map(k=>records[k-1].name)});}});
-    return {records,paths,adjacent,segments,mirror,knights,neighbors,commonContext:spread==='choice'?4:null,methodData:copy(d.methodData||d.nativeMethodData),geometry:copy(d.geometry),policy:'本布局實算全部合法連續片段、鏡像、鄰接與騎士步；8×4主盤與尾排分開，不跨接選項分線。'};
+    // Grand Tableau reading aids (houses, significators' square of nine, corners). Position
+    // geometry only; meanings stay with the reader. Row/column facts are computed so the
+    // AI does not have to re-derive the grid.
+    let tableau=null;
+    if(spread==='grand'||spread==='grand_nines'){
+      const w=spread==='grand'?8:9,main=spread==='grand'?32:36,byId=id=>records.find(r=>r.id===id),cell=pos=>pos<=main?{row:Math.floor((pos-1)/w)+1,col:(pos-1)%w+1}:{row:'尾排',col:pos-main};
+      const dirs=[['左上',-1,-1],['上',-1,0],['右上',-1,1],['左',0,-1],['右',0,1],['左下',1,-1],['下',1,0],['右下',1,1]];
+      const at=(r,c)=>r>=1&&r<=main/w&&c>=1&&c<=w?(r-1)*w+c:null;
+      const view=id=>{const r=byId(id);if(!r)return null;const pos=r.index,g=cell(pos),around={};if(pos<=main)for(const [k,dr,dc]of dirs){const q=at(g.row+dr,g.col+dc);if(q)around[k]=records[q-1].name;}return {id,name:r.name,position:pos,row:g.row,col:g.col,around};};
+      tableau={width:w,mainCount:main,houses:records.map(r=>({house:r.index,houseName:byId(r.index)?.name||null,card:r.name,cardId:r.id})),ownHouses:records.filter(r=>r.id===r.index).map(r=>r.name),
+        significators:[28,29].map(view).filter(Boolean),corners:(spread==='grand'?[1,8,25,32]:[1,9,28,36]).map(p=>records[p-1].name),
+        cells:records.map(r=>({id:r.id,name:r.name,position:r.index,...cell(r.index)})),policy:'格號即宮號（第N格是第N號牌的宮）；指示牌九宮格：左為已發生、右為將來、上為想法意識、下為潛在或根基；距離以同盤格數計，1為貼身。'};
+    }
+    return {records,paths,adjacent,segments,mirror,knights,neighbors,tableau,commonContext:spread==='choice'?4:null,methodData:copy(d.methodData||d.nativeMethodData),geometry:copy(d.geometry),policy:'本布局實算全部合法連續片段、鏡像、鄰接與騎士步；8×4主盤與尾排分開，不跨接選項分線。'};
   }
   const OOTK_LAYER_SPEC={
     op1:{index:1,stage:'當下基底',questionRole:'以代表牌落域、第一次合法計數、配對與尊貴建立原題當下最先成立的基底；回答現在最主要的狀態、印象或條件，不把待確認主線冒充已確認。'},

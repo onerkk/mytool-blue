@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261022single30',LIMIT=9000,BYTES=22000;
+  const VERSION='20261022single31',LIMIT=9000,BYTES=22000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -22,7 +22,7 @@
   const hasData=x=>x!==null&&x!==undefined&&x!==''&&(!Array.isArray(x)||x.length>0)&&(!(typeof x==='object'&&!Array.isArray(x))||Object.keys(x).length>0);
   const affirmative=x=>x===true||['established','structural','conditional','variant-structure','matched','timing-supported','weakened','undetermined'].includes(x);
   const guides={
-    bazi:'先核四柱、節令、根氣與透藏，分開強弱、格局、調候及生剋先後；成化、合去、特殊格局須有完整前提。強弱等級是站內相對模型，不取代月令格局。必須自己收斂出本盤喜用與忌：以月令格局該順用或逆用為主，再合調候急需與扶抑，三者衝突要說取捨理由；資料標中和或未給喜忌時也要定。大運流年一律拿干支對照這組喜忌與格局成敗（例如官格怕傷官、殺格喜食制）判好壞，不憑單一十神名稱。神煞、空亡只作輔助，不單獨定吉凶。相對權重不是事件機率。',
+    bazi:'先核四柱、節令、根氣與透藏，分開強弱、格局、調候與生剋先後；成化、合去、特殊格局須有完整前提。強弱等級只是站內相對模型。一定要收斂出喜用與忌：以月令格局順用或逆用為主，合調候與扶抑，衝突時說取捨；資料標中和也要定。運歲干支對照這組喜忌與格局成敗判好壞（如官格怕傷官、殺格喜食制）。神煞、空亡只作輔助。',
     ziwei:'先合讀十二宮、三方對宮與生年四化，再核宮干飛化、自化及運限疊宮；來源宮與去向不可倒置，不把空宮借星當原坐。沿所選安星、四化表與換年增歲政策，格局名稱不保證事件。',
     vedic:'D1掌宮、落宮、尊貴、近日與相位先成主判；相關分盤及D9只核承接。主運、副運、次副運依實算起訖；六力、宮力及AV各有用途，強不必吉。其他運法先核適用，不跨版本投票；當期歲時不能擴成未算逐年。',
     astro:'先核本命星位、宮主、尊貴接納與實際相位，再合已算行運、次限與回歸。卜卦另核問事雙方、入相、傳光集光、受阻及月亮狀態，不能用本命規則保證事件；保留宮制與流派。',
@@ -33,7 +33,7 @@
     name:'原名與全部候選用相同用途、筆畫及數理版本比較；先音形義與使用條件，再分讀五格、三才、生肖、生辰及姓名卦。異體筆畫與多音字保留未定，不把各派分數相加；沒有生辰不補喜用。',
     compat:'保留甲乙各自原局與雙向作用；跨盤合沖不等於任一方已成化。角色、意願、相處與事件分開，再核已算同期運限；無同意或回應資料不能替對方宣告決定。',
     personality:'這是本地五軸生日模型，按實際各軸輸入解釋長處、拉扯與調整；不是臨床測驗、科學診斷或其他未公開模型，不由類型推他人意願或必然事件。',
-    tarot:'依實際牌陣、每張位置與方向及議題綁定合讀，保留全組相反作用。RWS正逆與Book T不可混套；宮廷牌不自動指認真人。建議位置不當已成結果；未提供的圖像細節不可捏造。',
+    tarot:'依實際牌陣、每張位置與方向及議題綁定合讀，保留全組相反作用。整組大牌多寡、缺哪個元素、逆位比例與重複數字要納入整體判讀。RWS正逆與Book T不可混套；宮廷牌不自動指認真人，王牌（Ace）不是宮廷牌，沒有宮廷牌就不推對方年齡長相。建議位置不當已成結果；未提供的圖像細節不可捏造。',
     lenormand:'牌序與本次布局先行，合讀合法相鄰連續片段、中心、鏡像及實際補充關係；分線不可跨接，8×4主盤與尾排分開。正反線索收斂為完整語意，不逐張念牌義、不套塔羅逆位。',
     ootk:'依Book T五輪實際程序逐輪形成對原題新增的判斷，再合成方向及最強反證。只讀有效完成輪；主堆未確認保持待確認。計數、配對、尊貴、代表牌朝向與重現各依原始證據，不重複加權；五輪不是五個月份。',
     oracle:'先核籤號、版本與實際籤詩原文，連同條件、先後與相關事項合讀；典故名稱不當本人經歷。總吉意不覆蓋詩句限制；文化時間詞不直接換成日曆日期。'
@@ -96,7 +96,7 @@
     add('宮干飛化：來源/來源支/星/化/去向/去向支/自化/向心',A(core.northern?.flights).map(f=>row([f.from||f.sourcePalace,f.fromBranch,f.star,f.kind,f.to||f.targetPalace,f.toBranch,f.self,f.centripetal])).join(';'));
     function layer(p){if(!p)return '';return row([p.layer||'大限',p.year??p.ageStart,p.month??p.ageEnd,p.gz||(p.gan||'')+(p.branch||''),p.mingBranch||p.branch,p.context?.age??p.age,p.decadeCandidates?.map(d=>d.ageStart+'–'+d.ageEnd+'歲'),A(p.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||''))]);}
     add('運限表欄序','層/年或起歲/月或迄歲/干支/命宮地支/虛歲/生日跨限候選/四化星→地支。沿本命地支星位讀；各層宮職以其命宮重標，不能改成本命原坐。未列流曜不作額外吉凶依據。');
-    const l=s('運限疊宮')||{};add('大限',A(l.decades).map(layer).join('\n'));add('當期與所問流年：年/干支/命支/虛歲/生日跨限候選/四化→地支',[l.annual,...A(s('明示年度流年'))].filter(Boolean).map(p=>row([p.year,p.gz,p.mingBranch,p.context?.age??p.age??'',A(p.decadeCandidates).map(d=>d.ageStart+'–'+d.ageEnd+'歲'),A(p.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||''))])).join('\n'));add('全部已算流月',A(l.months).map(p=>A(p.segments).length?p.segments.map(z=>interval({start:z.startsAt,end:z.endsAt})+' '+layer(z)).join('\n'):layer(p)).join('\n'),1);add('目前日小限',compactObject({minor:a.currentMinor,daily:l.daily,hourly:l.hourly}),4);add('年度缺項',s('流年輸出範圍')?.missingYears);
+    const l=s('運限疊宮')||{};add('大限',A(l.decades).map(layer).join('\n'));add('當期與所問流年：年/干支/命支/虛歲/生日跨限候選/四化→地支/小限宮',[l.annual,...A(s('明示年度流年'))].filter(Boolean).map(p=>row([p.year,p.gz,p.mingBranch,p.context?.age??p.age??'',A(p.decadeCandidates).map(d=>d.ageStart+'–'+d.ageEnd+'歲'),A(p.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||'')),p.minor?.palace?p.minor.palace+p.minor.branch:''])).join('\n'));add('所問年度流月：年/月/干支/流月命支/四化→地支',A(s('明示年度流月')).flatMap(y=>A(y.months).map(m=>row([y.year,m.month,m.gz,m.mingBranch,A(m.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||''))]))).join('\n'),2);add('全部已算流月',A(l.months).map(p=>A(p.segments).length?p.segments.map(z=>interval({start:z.startsAt,end:z.endsAt})+' '+layer(z)).join('\n'):layer(p)).join('\n'),1);add('目前日小限',compactObject({minor:a.currentMinor,daily:l.daily,hourly:l.hourly}),4);add('年度缺項',s('流年輸出範圍')?.missingYears);
     add('實際格局與轉象',{patterns:briefChecks(s('格局條件核對')?.patterns),transitions:compactObject(core.northern?.transitions)},2);
   }
   function vedic(ctx){const{c,a,section:s,add}=ctx,core=s('D1九曜與掌宮相位')||{};
@@ -237,9 +237,16 @@
         add(op.operation+'完整輪次',lines.join('\n'));
       });return;
     }
-    add('牌陣與程序',{method:c.methodPlan?.method||c.methodPlan?.id,sourceProfile:c.sourceProfile||c.tarotData?.sourceProfile,spread:c.spreadType||c.spread||c.lenormandData?.spreadType,drawProcedure:d.drawProcedure,eventGroups:d.eventGroups,commonContext:d.commonContext});
+    add('牌陣與程序',{method:c.methodPlan?.method||c.methodPlan?.id||c.tarotData?.methodPlan?.id,sourceProfile:c.sourceProfile||c.tarotData?.sourceProfile,spread:c.spreadType||c.spread||c.lenormandData?.spreadType||c.tarotData?.spreadZh||c.tarotData?.spreadType,drawProcedure:d.drawProcedure,eventGroups:d.eventGroups,commonContext:d.commonContext});
     const ln=e.method==='lenormand';// 雷諾曼沒有逆位，不印「方向?」讓AI誤以為缺資料
     add(ln?'全部牌序：位置/牌號/牌名/含義/人物事件綁定（雷諾曼不分正逆）':'全部牌序：位置/牌號/牌名/方向/含義/人物事件綁定',A(d.records).map(p=>row(ln?[p.position||p.index,p.id,p.name,p.keywords||p.meaning,p.binding]:[p.position||p.index,p.id,p.name,p.direction,p.keywords||p.meaning,p.binding])).join('\n'));
+    if(!ln&&A(d.records).length){const R=A(d.records),SU=[['wand','權杖','火'],['cup','聖杯','水'],['sword','寶劍','風'],['pent','錢幣','土']],majors=R.filter(r=>r.suit==='major'),rev=R.filter(r=>r.direction==='逆位'),miss=SU.filter(([k])=>!R.some(r=>r.suit===k)).map(([,n,el])=>n+'('+el+')'),at=ix=>A(ix).map(i=>R[i-1]?.position).filter(Boolean).join('、');
+      add('整組牌結構（數量本身就是讀牌線索）',['大牌'+majors.length+'/'+R.length+'張'+(majors.length?'（'+majors.map(r=>r.position).join('、')+'）':''),'花色：'+SU.map(([k,n,el])=>n+'('+el+')'+R.filter(r=>r.suit===k).length).join(' ')+(miss.length&&R.length>=5?'；缺'+miss.join('、'):''),R.some(r=>r.direction==='正位'||r.direction==='逆位')?'逆位'+rev.length+'張':null,A(d.courtPositions).length?'宮廷牌在：'+at(d.courtPositions):'沒有宮廷牌',A(d.rankEchoes).length?'重複數字：'+d.rankEchoes.map(x=>(({ace:'王牌',page:'侍者',knight:'騎士',queen:'皇后',king:'國王'})[x.rank]||x.rank)+'（'+at(x.positions)+'）').join('；'):null].filter(Boolean).join('；'));
+      const mt=R.filter(r=>r.meaning);if(mt.length)add('本站整理的RWS牌義參考（依原題主題；可依整組牌補充修正，不可忽略）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
+    if(e.method==='lenormand'&&d.tableau){const tb=d.tableau,q=String(ctx.data.question||''),cellOf=id=>A(tb.cells).find(x=>x.id===id),dist=(a,b)=>{const x=cellOf(a),y=cellOf(b);return x&&y&&typeof x.row==='number'&&typeof y.row==='number'?Math.max(Math.abs(x.row-y.row),Math.abs(x.col-y.col)):null;};
+      const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪/,[34,15]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
+      add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));
+      add('大牌陣宮位：格/宮名/落入的牌（自宮：'+(A(tb.ownHouses).join('、')||'無')+'；四角：'+A(tb.corners).join('、')+'）',A(tb.houses).map(h=>h.house+h.houseName+'宮:'+h.card).join(' '),1);}
     if(e.method==='lenormand'){add('合法全線',d.paths);add('鏡像與鄰接規則','依上列牌序及布局讀全部合法相鄰連續片段；鏡像繞中心成對。格狀主盤按實際行列讀橫直斜線與騎士步，分線不跨接。');add('鏡像及騎士步',P(d,['mirror','knights']),3);}
     else add('實際牌陣特殊作用',compactObject(d.methodData),1);
   }
@@ -266,7 +273,7 @@
     const end='【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
     const fit=t=>chars(t)<=LIMIT&&bytes(t)<=BYTES;
-    const core=blocks.filter(b=>b.priority===0),selected=new Set(core),essential=render(core);
+    const core=blocks.filter(b=>b.priority===0),selected=new Set(core),optionalCount=new Set(blocks.filter(b=>b.priority>0).map(b=>b.label)).size,essential=render(core).replace('\n【資料結束】',optionalCount?'\n【未展開細表】另有'+optionalCount+'項旁系細表未展開（完整清單在本工具）；不據此精斷。\n【資料結束】':'\n【資料結束】');
     if(!fit(essential)){const error=new Error('本次原題與必要資料共有'+chars(essential)+'字，超過單次貼上預算；內容未截斷，也不會分段複製。請縮小一次要求的年度或比較份數後重新產生。');error.code='SINGLE_PROMPT_CORE_OVER_BUDGET';error.characters=chars(essential);error.utf8Bytes=bytes(essential);error.blocks=core.map(b=>({label:b.label,characters:chars(b.value)}));error.limits={characters:LIMIT,utf8Bytes:BYTES};throw error;}
     // Fill optional blocks in priority order while always counting the scope
     // receipt of whatever is still not expanded. A second pass retries blocks
