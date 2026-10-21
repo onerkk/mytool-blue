@@ -1093,7 +1093,7 @@ return function timeScope(question,referenceYear){
       functionalAssessment: chart && chart.functionalAssessment || null,
       chineseZodiac: CHINESE_ZODIAC[(p[0] && p[0].zhi) || ''] || '',
       chenggu: chart && chart.chenggu || null,
-      auxiliary: {mingGong:chart&&chart.mingGong||null,taiYuan:chart&&chart.taiYuan||null,taiXi:chart&&chart.taiXi||null,shenGong:chart&&chart.shenGong||null,kongwang:safeArray(chart&&chart.kongwang)},
+      auxiliary: {mingGong:chart&&chart.mingGong||null,taiYuan:chart&&chart.taiYuan||null,taiXi:chart&&chart.taiXi||null,shenGong:chart&&chart.shenGong||null,kongwang:chart&&chart.kongwang&&typeof chart.kongwang==='object'?chart.kongwang:null},
       unknownTime: !!(meta && meta.unknown)
     };
   }

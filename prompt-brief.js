@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261022single31',LIMIT=9000,BYTES=22000;
+  const VERSION='20261022single32',LIMIT=9000,BYTES=22000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -32,7 +32,7 @@
     yijing:'嚴守本次朱子擇辭的主讀、參讀與原文；本卦處境和變化條件合讀，之卦不保證未來。三變依所列主貞悔；四五變取之卦不變爻；乾坤全變用九用六。彖象、位置及互錯綜只補充，不混六爻納甲或梅花規則。經文數字不直接當日期。',
     meihua:'原體保持不換；本卦、互卦、變卦分別核體用生剋與月令旺衰，再讀動爻與整體轉折。先後階段不硬換成月份；象徵數字不能直接算收入、幾週或事件事實。',
     name:'原名與全部候選用相同用途、筆畫及數理版本比較；先音形義與使用條件，再分讀五格、三才、生肖、生辰及姓名卦。異體筆畫與多音字保留未定，不把各派分數相加；沒有生辰不補喜用。',
-    compat:'保留甲乙各自原局與雙向作用；跨盤合沖不等於任一方已成化。角色、意願、相處與事件分開，再核已算同期運限；無同意或回應資料不能替對方宣告決定。',
+    compat:'保留甲乙各自原局與雙向作用；跨盤合沖不等於任一方已成化。喜忌欄空白時先各自依月令格局定出喜忌，再看對方偏強的五行對自己是幫還是壓；日干五合、夫妻宮刑沖合要優先講。角色、意願、相處與事件分開，再核已算同期運限；無同意或回應資料不能替對方宣告決定。',
     personality:'這是本地五軸生日模型，按實際各軸輸入解釋長處、拉扯與調整；不是臨床測驗、科學診斷或其他未公開模型，不由類型推他人意願或必然事件。',
     tarot:'依實際牌陣、每張位置與方向及議題綁定合讀，保留全組相反作用。整組大牌多寡、缺哪個元素、逆位比例與重複數字要納入整體判讀。RWS正逆與Book T不可混套；宮廷牌不自動指認真人，王牌（Ace）不是宮廷牌，沒有宮廷牌就不推對方年齡長相。建議位置不當已成結果；未提供的圖像細節不可捏造。',
     lenormand:'牌序與本次布局先行，合讀合法相鄰連續片段、中心、鏡像及實際補充關係；分線不可跨接，8×4主盤與尾排分開。正反線索收斂為完整語意，不逐張念牌義、不套塔羅逆位。',
@@ -180,10 +180,12 @@
     if(A(c.personA?.palaces).length&&(c.projectionGroups||c.overlays))return compatZiwei(ctx,c);
     add('雙方角色與精度',{scenario:c.scenario,uncertainty:c.uncertainty});
     add('出生時間核對',compactObject(c.birthTimeAudit),3);
-    for(const k of ['personA','personB']){const p=c[k];if(!p)continue;add(k+'原局',{...P(p,['name','gender','pillars','dayMaster','strength','favorable','unfavorable','uncertainty','birthInput','birthLunar','sihua']),palaces:p.palaces?A(p.palaces).map(v=>P(v,['name','branch','stars'])):undefined,roots:A(p.functionalAssessment?.rootContext).filter(v=>v.hasRoot&&v.stem===p.dayMaster).map(v=>({stem:v.stem,roots:A(v.roots).map(z=>P(z,['pillar','branch','stem','mainQi','rootKind','clashedBy']))})),seasonal:P(p.seasonalAssessment,['conclusion'])});}
+    for(const k of ['personA','personB']){const p=c[k];if(!p)continue;add((k==='personA'?'甲方':'乙方')+'原局',{...P(p,['name','gender','pillars','dayMaster','strength','favorable','unfavorable','uncertainty','birthInput','birthLunar','sihua']),kongwang:p.auxiliary?.kongwang||undefined,palaces:p.palaces?A(p.palaces).map(v=>P(v,['name','branch','stars'])):undefined,roots:A(p.functionalAssessment?.rootContext).filter(v=>v.hasRoot&&v.stem===p.dayMaster).map(v=>({stem:v.stem,roots:A(v.roots).map(z=>P(z,['pillar','branch','stem','mainQi','rootKind','clashedBy']))})),seasonal:P(p.seasonalAssessment,['conclusion'])});}
     add('雙向十神：對方柱/天干/十神/藏干',Object.entries(c.directionalTenGods||{}).map(([k,vs])=>k+':'+A(vs).map(v=>row([v.partnerPillar,v.partnerStem,v.tenGod,v.hidden])).join(';')).join('\n'));
     add('雙方日主與夫妻宮',{dayMasters:c.dayMasters,spousePalace:c.spousePalace});
-    add('跨盤天干作用：甲柱/乙柱/甲干/乙干/作用',A(c.stemRelations).map(v=>row([v.aPillar,v.bPillar,v.aStem,v.bStem,v.relation])).join('\n'));
+    const SR={generate:'甲生乙',receive:'乙生甲',control:'甲剋乙',controlled:'乙剋甲',same:'同五行'},PL={year:'年',month:'月',day:'日',hour:'時'};
+    add('跨盤天干作用：甲柱/乙柱/甲干/乙干/作用',A(c.stemRelations).map(v=>row([PL[v.aPillar]||v.aPillar,PL[v.bPillar]||v.bPillar,v.aStem,v.bStem,v.typeCode==='STEM_COMBINATION'?'五合(化'+(v.candidateElement||'?')+'候選，未必成化)':v.type==='同干'?'同干':(SR[v.relation]||v.relation)])).join('\n'));
+    if(c.elementComplement)add('五行互補（站內相對權重，偏強五行是否落在對方喜忌）',{甲偏強:c.elementComplement.dominantA,乙偏強:c.elementComplement.dominantB,乙可助甲:c.elementComplement.partnerMaySupportA,甲可助乙:c.elementComplement.partnerMaySupportB,乙加重甲負擔:c.elementComplement.partnerMayLoadA,甲加重乙負擔:c.elementComplement.partnerMayLoadB},1);
     add('跨盤地支作用：類型/甲柱/乙柱/甲支/乙支/成化狀態',A(c.branchRelations).map(v=>row([v.type,v.aPillar,v.bPillar,v.aBranch,v.bBranch,v.transformationStatus])).join('\n'));
     add('跨盤三合三會與其他組合',{groups:A(c.groupRelations).map(v=>P(v,['type','branches','element','participants','transformationStatus','interpretationScope'])),overlays:compactObject(c.overlays),directions:compactObject(c.directions),projectionGroups:compactObject(c.projectionGroups)},2);
     const sy=c.luckSynchronization;const periods=p=>A(p?.segments).length?p.segments:[p].filter(Boolean);const annual=p=>periods(p).map(v=>[v.dayun,v.gz||v.annual,v.god,interval(v.window),v.connections?.map(z=>[z.from,z.to,z.stemRelation,z.stemCombination,z.branchRelations])]);
@@ -244,6 +246,7 @@
     if(!ln&&A(d.records).length){const R=A(d.records),SU=[['wand','權杖','火'],['cup','聖杯','水'],['sword','寶劍','風'],['pent','錢幣','土']],majors=R.filter(r=>r.suit==='major'),rev=R.filter(r=>r.direction==='逆位'),miss=SU.filter(([k])=>!R.some(r=>r.suit===k)).map(([,n,el])=>n+'('+el+')'),at=ix=>A(ix).map(i=>R[i-1]?.position).filter(Boolean).join('、');
       add('整組牌結構（數量本身就是讀牌線索）',['大牌'+majors.length+'/'+R.length+'張'+(majors.length?'（'+majors.map(r=>r.position).join('、')+'）':''),'花色：'+SU.map(([k,n,el])=>n+'('+el+')'+R.filter(r=>r.suit===k).length).join(' ')+(miss.length&&R.length>=5?'；缺'+miss.join('、'):''),R.some(r=>r.direction==='正位'||r.direction==='逆位')?'逆位'+rev.length+'張':null,A(d.courtPositions).length?'宮廷牌在：'+at(d.courtPositions):'沒有宮廷牌',A(d.rankEchoes).length?'重複數字：'+d.rankEchoes.map(x=>(({ace:'王牌',page:'侍者',knight:'騎士',queen:'皇后',king:'國王'})[x.rank]||x.rank)+'（'+at(x.positions)+'）').join('；'):null].filter(Boolean).join('；'));
       const mt=R.filter(r=>r.meaning);if(mt.length)add('本站整理的RWS牌義參考（依原題主題；可依整組牌補充修正，不可忽略）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
+    if(e.method==='lenormand'&&A(d.records).length===9&&String(c.spreadType||c.lenormandData?.spreadType)==='nine'){const N=i=>d.records[i-1]?.name,g=ix=>ix.map(N).join('、');add('九宮格讀法（中心是核心；左欄已發生、中欄現在、右欄將來；上列想法意識、中列現實、下列潛在根基；四角是框住整件事的條件）','中心：'+N(5)+'；四角：'+g([1,3,7,9])+'；左欄：'+g([1,4,7])+'；中欄：'+g([2,5,8])+'；右欄：'+g([3,6,9])+'；上列：'+g([1,2,3])+'；下列：'+g([7,8,9])+'；兩條對角：'+g([1,5,9])+'／'+g([3,5,7]));}
     if(e.method==='lenormand'&&d.tableau){const tb=d.tableau,q=String(ctx.data.question||''),cellOf=id=>A(tb.cells).find(x=>x.id===id),dist=(a,b)=>{const x=cellOf(a),y=cellOf(b);return x&&y&&typeof x.row==='number'&&typeof y.row==='number'?Math.max(Math.abs(x.row-y.row),Math.abs(x.col-y.col)):null;};
       const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪/,[34,15]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
       add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));

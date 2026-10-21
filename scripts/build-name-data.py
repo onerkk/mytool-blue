@@ -32,6 +32,7 @@ radicals = [unicodedata.normalize('NFKC', chr(0x2F00+i)) for i in range(214)]
 def radical_strokes(n): return next(i+1 for i,e in enumerate(ends) if n <= e)
 rows = {}
 ambiguous = 0
+corrected = 0
 for ch in sorted(new.keys() | old.keys(), key=ord):
     props, earlier = new.get(ch, {}), old.get(ch, {})
     totals = set()
@@ -55,6 +56,11 @@ for ch in sorted(new.keys() | old.keys(), key=ord):
         if ':' in entry: alternatives.update(entry.split(':',1)[1].split(','))
     alternatives.update(re.findall(r'([^\s()]+)\(\d+\)',props.get('kHanyuPinlu','')))
     alternatives.difference_update(props.get('kMandarin','').split())
+    # Kangxi full forms never have fewer strokes than the modern form. A lower
+    # radical+residual total is the dictionary's index position (e.g. 政 66.4
+    # although 攴4+正5=9), so the modern total is the actual stroke count.
+    if kangxi is not None and modern is not None and kangxi < modern:
+        kangxi = modern; corrected += 1
     rows[ch] = [kangxi, modern, radical, props.get('kMandarin',''), props.get('kDefinition',''), earlier.get('kRSKangXi',''), ' '.join(sorted(alternatives))]
 
 meta = {
@@ -62,7 +68,8 @@ meta = {
     'kangxiResolved':sum(r[0] is not None for r in rows.values()),
     'modernResolved':sum(r[1] is not None for r in rows.values()),
     'kangxiAmbiguous':ambiguous,
-    'kangxiPolicy':'Unicode 14.0.0 kRSKangXi 的康熙部首原筆畫＋餘筆畫；多條分類僅在總數相同時採用。這是可核的部首還原口徑，未宣稱逐字核對康熙原書。',
+    'kangxiIndexResidualCorrected':corrected,
+    'kangxiPolicy':'Unicode 14.0.0 kRSKangXi 的康熙部首原筆畫＋餘筆畫；多條分類僅在總數相同時採用。康熙全形不會少於現代筆畫，部首餘筆畫低於現代總筆畫者屬字典排序位置而非實際筆畫（如政攴4＋正5＝9），改取現代總筆畫，共'+str(corrected)+'字。未宣稱逐字核對康熙原書。',
     'modernPolicy':'Unicode 17.0.0 kTotalStrokes；有台灣 IRG_T alternate 時優先，否則標作 Unicode 現代筆畫，未宣稱教育部逐字核對。',
     'unknownPolicy':'無康熙資料、多候選總數不同或未知字不以現代筆畫猜算；允許使用者核對後覆核。',
     'sources':[
