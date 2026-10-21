@@ -39,3 +39,13 @@ single-paste 23 組、casework28 15 組、prompt-budget、三種 36 張布局、
 
 ## 第四段（尚未完成）
 印度占星、西洋占星、姓名學、大六壬、開鑰之法實機走查；西洋與六壬專家欄位收合；靈籤停止後的溫和出口；全站 npm test 回歸對照。
+
+---
+# 第五段 · 20261021walk32 · 印度占星凍結根治
+
+- 現象：按「開啟我的印度星殿」後整頁凍結十幾秒（實測主執行緒長任務 25.6s／17.5s／9.1s；Node 純運算 16.1 秒）。
+- 根因（CPU 剖析）：88% 時間在 Tajaka 年盤反覆計算星曆；其中一半以上耗在星曆庫的 Closure Compiler ES5 降級層 $jscomp.makeIterator，而非天文運算本身。
+- 修法：JS/vendor/astronomy-engine-2.1.19.min.js 改用同版本官方未降級建置（astronomy.browser.js）並以 terser 原生語法壓縮。來源、雜湊與驗證記錄於 JS/vendor/ASTRONOMY-ENGINE-BUILD.md。
+- 結果：印度占星 16.1 → 4.2 秒（約 3.8 倍）；西洋占星 0.50 → 0.13 秒；所有使用星曆的房間同步受惠。印度＋西洋完整輸出 11MB JSON 與原建置逐位元組相同。檔案 116KB → 111KB。
+- 前一次中斷回覆曾嘗試的 Web Worker 改動未驗證、缺逾時保護，已還原，不納入。
+- 測試：astro-rules-audit、astrology-share、single-paste、compat-real、兩支 sync --check 通過。
