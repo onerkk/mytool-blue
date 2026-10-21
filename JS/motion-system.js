@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021ink42
+/* 靜月之光 · 共用動態系統 / 20261021name44
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021ink42';
+  var doc = root.document, VERSION = '20261021name44';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -278,5 +278,90 @@
     } catch (_) {}
   }, { capture: true, passive: true });
 
-  root.JYMotion = Object.freeze({ version: VERSION, bloom: bloom, cascade: cascade, reveal: mark, turn: turn, deal: deal });
+  /* ── 8. 盤面成形：八字四柱、紫微星環、梅花六爻（共用 immersive-experience 舞台；原進場動畫被 animation/transition:none 關閉） ── */
+  var STAGE = '[data-living-pillars],.jx-orbit,.jx-hex-lines', built = new WeakSet();
+  function inView(el) { var b = el.getBoundingClientRect(); return b.width > 0 && b.bottom > 0 && b.top < root.innerHeight; }
+  function ritualOpen() { return !!doc.querySelector('dialog.jr-dialog[open]'); }
+  var NAMEP = '.nm-character,.nm-grid-fact';  // 姓名學：字卡與五格沒有專屬容器 class，以父層為盤面容器
+  function parts(c) {
+    var nm = c.querySelectorAll(':scope > .nm-character, :scope > .nm-grid-fact'); if (nm.length) return Array.prototype.slice.call(nm);
+    if (c.matches('[data-living-pillars]')) return Array.prototype.slice.call(c.querySelectorAll('.jx-pillar'));
+    if (c.matches('.jx-orbit')) return Array.prototype.slice.call(c.querySelectorAll('.jx-orbit-aura,.jx-orbit-lines,.jx-palace,.jx-orbit-center'));
+    return Array.prototype.slice.call(c.querySelectorAll('.jx-yao'));
+  }
+  function release(list) { list.forEach(function (el) { el.style.removeProperty('opacity'); }); }
+  function assemble(c, force) {
+    if ((!force && built.has(c)) || reduced() || !canAnimate) { release(parts(c)); return; }
+    built.add(c); c.setAttribute('data-jy-assembled', String(Date.now() % 100000));
+    var list = parts(c), EASE = 'cubic-bezier(.16,1,.3,1)';
+    try {
+      if (list[0] && list[0].matches(NAMEP)) {  // 字卡：墨暈中清晰成形；五格：依序升起
+        list.forEach(function (el, i) {
+          var ink = el.matches('.nm-character');
+          el.animate([
+            { translate: '0 22px', scale: '0.92', opacity: 0, filter: ink ? 'blur(4px) brightness(1.7)' : 'blur(2px)', offset: 0 },
+            { translate: '0 -4px', scale: '1.02', opacity: 1, filter: 'blur(0) brightness(1.05)', offset: 0.7 },
+            { translate: '0 0', scale: '1', opacity: 1, filter: 'none', offset: 1 }
+          ], { duration: ink ? 760 : 620, delay: 120 + i * (ink ? 200 : 120), easing: EASE, fill: 'backwards' });
+        });
+      } else if (c.matches('[data-living-pillars]')) {
+        list.forEach(function (p, i) {
+          p.animate([
+            { translate: '0 34px', scale: '0.9', opacity: 0, filter: 'blur(4px)', offset: 0 },
+            { translate: '0 -6px', scale: '1.03', opacity: 1, filter: 'blur(0)', offset: 0.7 },
+            { translate: '0 0', scale: '1', opacity: 1, filter: 'none', offset: 1 }
+          ], { duration: 780, delay: 120 + i * 160, easing: EASE, fill: 'backwards' });
+          if (p.getAttribute('data-pillar') === 'day')  // 日主：代表「自己」的那一柱，落定後泛起金光
+            p.animate([{ boxShadow: '0 0 0 0 #f3d79a00' }, { boxShadow: '0 0 0 2px #f3d79aaa, 0 0 34px 8px #e9cf9877', offset: 0.45 }, { boxShadow: '0 0 0 0 #f3d79a00' }],
+              { duration: 1400, delay: 120 + i * 160 + 700, easing: 'ease-in-out' });
+        });
+      } else if (c.matches('.jx-orbit')) {
+        var k = 0;
+        list.forEach(function (el) {
+          if (el.matches('.jx-orbit-aura')) el.animate([{ scale: '0.6', opacity: 0 }, { scale: '1', opacity: 1 }], { duration: 900, easing: EASE, fill: 'backwards' });
+          else if (el.matches('.jx-orbit-lines')) el.animate([{ rotate: '-24deg', opacity: 0 }, { rotate: '0deg', opacity: 1 }], { duration: 1100, delay: 150, easing: EASE, fill: 'backwards' });
+          else if (el.matches('.jx-palace')) { el.animate([{ scale: '0.35', opacity: 0 }, { scale: '1.08', opacity: 1, offset: 0.65 }, { scale: '1', opacity: 1 }], { duration: 620, delay: 280 + k * 65, easing: EASE, fill: 'backwards' }); k++; }
+          else el.animate([{ scale: '0.8', opacity: 0, filter: 'blur(3px)' }, { scale: '1', opacity: 1, filter: 'blur(0)' }], { duration: 700, delay: 280 + 12 * 65 + 120, easing: EASE, fill: 'backwards' });
+        });
+      } else {
+        list.slice().reverse().forEach(function (y, i) {  // 由初爻（最下）往上
+          y.animate([{ clipPath: 'inset(0 100% 0 0)', filter: 'brightness(1.9)' }, { clipPath: 'inset(0 0 0 0)', filter: 'none' }], { duration: 600, delay: 120 + i * 170, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'backwards' });
+        });
+      }
+    } catch (_) {}
+    release(list);
+  }
+  var waiting = null;
+  if ('IntersectionObserver' in root) waiting = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { waiting.unobserve(x.target); assemble(x.target); } }); }, { threshold: 0.15 });
+  function adopt(c) {
+    if (built.has(c) || reduced() || !canAnimate) return;
+    if (inView(c)) {
+      var list = parts(c); list.forEach(function (el) { el.style.opacity = '0'; });  // 繪製前先藏，避免先閃完整盤面
+      var go = function () { if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); };
+      go();
+      setTimeout(function () { release(list); }, 6000);  // 保險：任何情況下 6 秒後一定可見
+    } else if (waiting) waiting.observe(c);
+  }
+  // 舞台可能是「既有容器、內容後塞」（紫微星環），所以新加入的元素只要位於盤面容器內也算；同一批變動收齊後再處理。
+  new MutationObserver(function (records) {
+    var found = new Set();
+    records.forEach(function (r) {
+      r.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.matches && n.matches(STAGE)) found.add(n);
+        else if (n.closest) { var host = n.closest(STAGE); if (host) found.add(host); }
+        if (n.querySelectorAll) n.querySelectorAll(STAGE).forEach(function (x) { found.add(x); });
+      });
+    });
+    records.forEach(function (r) {
+      r.addedNodes.forEach(function (n) {
+        if (n.nodeType !== 1) return;
+        if (n.matches && n.matches(NAMEP) && n.parentElement) found.add(n.parentElement);
+        if (n.querySelectorAll) n.querySelectorAll(NAMEP).forEach(function (x) { if (x.parentElement) found.add(x.parentElement); });
+      });
+    });
+    found.forEach(function (c) { if (parts(c).length) adopt(c); });
+  }).observe(doc.documentElement, { childList: true, subtree: true });
+
+  root.JYMotion = Object.freeze({ version: VERSION, bloom: bloom, cascade: cascade, reveal: mark, turn: turn, deal: deal, assemble: assemble });
 })(typeof window !== 'undefined' ? window : globalThis);
