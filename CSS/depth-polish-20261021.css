@@ -208,3 +208,10 @@ body.jy-atelier .jr-progress :is(span,li,b),body.jy-atelier [class*=jr-] .is-cur
 .bzs-toast{width:max-content!important;max-width:min(92vw,520px)!important;box-sizing:border-box;border-radius:14px!important;
   padding:12px 16px!important;font-size:14px!important;line-height:1.6!important;text-align:left;
   bottom:calc(24px + env(safe-area-inset-bottom,0px))!important;box-shadow:0 12px 30px #0008}
+/* 6. 西洋／姓名／六壬：按鈕與內容文字 9–10px（走查 walk33） */
+body.jy-atelier :is(.wx-quiet,.lr-secondary,.lr-replay){font-size:max(13px,.85rem)!important;min-height:40px;padding-left:14px;padding-right:14px}
+body.jy-atelier :is(#wx-ceremony-label,[class*=wx-ceremony] .on,[class*=wx-ceremony] span){font-size:max(11.5px,1em)!important}
+body.jy-atelier #wx-city-zone{font-size:12px!important}
+body.jy-atelier #western-page details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+body.jy-atelier :is(.nm-char-data,.nm-formula,.nm-await){font-size:max(12px,.8rem)!important;line-height:1.55}
+body.jy-atelier #lr-status .lr-status,body.jy-atelier #lr-scene-label{font-size:max(12px,.8rem)!important}
