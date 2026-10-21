@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021cards39
+/* 靜月之光 · 共用動態系統 / 20261021cards40
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021cards39';
+  var doc = root.document, VERSION = '20261021cards40';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -168,7 +168,7 @@
         { scale: '1 1', translate: '0 0', offset: 1 }
       ], { duration: 700, easing: 'linear' });
       // 特效層掛在儀式 dialog（瀏覽器頂層）內、以牌的版面位置定位，避開按鈕內的溢出裁切與堆疊層級。
-      var face = btn.querySelector('.jr-flip') || btn.querySelector('.jr-front') || btn;  // 只貼合牌面，不含下方牌名
+      var face = btn.querySelector('.jr-flip,.tarot-reveal-inner') || btn.querySelector('.jr-front') || btn;  // 只貼合牌面，不含下方牌名
       var host = btn.closest('dialog') || doc.body, r = face.getBoundingClientRect(), hr = host === doc.body ? { left: 0, top: 0 } : host.getBoundingClientRect();
       var w = face.offsetWidth || r.width, h = face.offsetHeight || r.height, cx = r.left + r.width / 2 - hr.left, cy = r.top + r.height / 2 - hr.top;
       var fx = doc.createElement('div'); fx.className = 'jy-fx'; fx.setAttribute('aria-hidden', 'true');
@@ -195,9 +195,11 @@
   new MutationObserver(function (records) {
     records.forEach(function (r) {
       var t = r.target;
-      if (t.classList && t.classList.contains('jr-reveal') && t.getAttribute('aria-pressed') === 'true') turn(t);
+      if (!t.classList) return;
+      if (r.attributeName === 'aria-pressed' && t.classList.contains('jr-reveal') && t.getAttribute('aria-pressed') === 'true') turn(t);
+      else if (r.attributeName === 'class' && t.classList.contains('tarot-reveal') && t.classList.contains('flipping')) turn(t);  // 塔羅結果頁翻牌
     });
-  }).observe(doc.documentElement, { attributes: true, subtree: true, attributeFilter: ['aria-pressed'] });
+  }).observe(doc.documentElement, { attributes: true, subtree: true, attributeFilter: ['aria-pressed', 'class'] });
 
   /* ── 6. 發牌：結果牌陣從上方牌堆依序飛落到牌位（同一次占卜只發一次） ── */
   var dealt = new Set();
@@ -205,16 +207,22 @@
     if (reduced() || !canAnimate || !cards.length) return;
     var ox = root.innerWidth / 2, oy = root.innerHeight * 0.1, n = 0;
     cards.forEach(function (c) {
-      var b = c.getBoundingClientRect(); if (!b.width || b.top > root.innerHeight * 1.4) return;
-      var dx = ox - (b.left + b.width / 2), dy = oy - (b.top + b.height / 2), rot = (n % 2 ? 1 : -1) * (8 + (n * 5) % 9);
-      try {
-        c.animate([
-          { translate: dx + 'px ' + dy + 'px', rotate: rot + 'deg', scale: '0.5', opacity: 0, offset: 0 },
-          { opacity: 1, offset: 0.18 },
-          { translate: '0 -8px', rotate: '0deg', scale: '1.04', opacity: 1, offset: 0.8 },
-          { translate: '0 0', rotate: '0deg', scale: '1', opacity: 1, offset: 1 }
-        ], { duration: 680, delay: n * 90, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
-      } catch (_) {}
+      var b = c.getBoundingClientRect(); if (!b.width || b.top > root.innerHeight * 1.4) { c.style.removeProperty('opacity'); return; }
+      var dx = ox - (b.left + b.width / 2), dy = oy - (b.top + b.height / 2), rot = (n % 2 ? 1 : -1) * (8 + (n * 5) % 9), delay = n * 90;
+      // 先解碼牌圖再發牌（最多等 450ms），避免飛行途中顯示暗面。牌在等待期間以內聯透明度隱藏。
+      var imgs = Array.prototype.slice.call(c.querySelectorAll('img'));
+      var ready = Promise.race([Promise.all(imgs.map(function (im) { return im.decode ? im.decode().catch(function () {}) : null; })), new Promise(function (r) { setTimeout(r, 450); })]);
+      ready.then(function () {
+        try {
+          c.animate([
+            { translate: dx + 'px ' + dy + 'px', rotate: rot + 'deg', scale: '0.5', opacity: 0, offset: 0 },
+            { opacity: 1, offset: 0.18 },
+            { translate: '0 -8px', rotate: '0deg', scale: '1.04', opacity: 1, offset: 0.8 },
+            { translate: '0 0', rotate: '0deg', scale: '1', opacity: 1, offset: 1 }
+          ], { duration: 680, delay: delay, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
+        } catch (_) {}
+        c.style.removeProperty('opacity');
+      });
       n++;
     });
   }
@@ -233,8 +241,40 @@
       var k = (ln ? 'ln' : 'ootk') + '|' + (c.textContent || '').replace(/\s+/g, '').slice(0, 30);
       if (dealt.has(k)) return false; dealt.add(k); return true;
     });
-    if (fresh.length) requestAnimationFrame(function () { deal(fresh); });
+    if (!fresh.length || reduced() || !canAnimate) return;
+    fresh.forEach(function (c) { c.style.opacity = '0'; });  // 觀察者在繪製前執行：先藏起，避免先閃現在牌位
+    requestAnimationFrame(function () { deal(fresh); });
   }).observe(doc.documentElement, { childList: true, subtree: true });
+
+  /* ── 7. 塔羅抽牌飛行：點下牌堆中的一張，牌背沿弧線飛向抽牌進度區（原本的抬起淡出照舊，這裡只疊特效） ── */
+  // 牌堆在「按下」時就完成抽牌（比 click 早），所以在 pointerdown 擷取階段觸發，搶在牌被標為已抽之前讀取位置。
+  doc.addEventListener('pointerdown', function (e) {
+    var card = e.target && e.target.closest && e.target.closest('.tarot-deck-card');
+    if (!card || card.classList.contains('picked') || reduced() || !canAnimate) return;
+    try {
+      var r = card.getBoundingClientRect(); if (!r.width) return;
+      var dock = doc.getElementById('tarot-dock-action'), tr = dock && dock.getBoundingClientRect();
+      var tx = tr && tr.width ? tr.left + tr.width / 2 : root.innerWidth / 2, ty = tr && tr.width ? tr.top + tr.height / 2 : root.innerHeight * 0.85;
+      // 不複製原牌的 3D 結構（背面靠 rotateY＋背面隱藏才可見，脫離原環境會變透明）：讀出牌背圖另建實心分身。
+      var src = null, all = [card].concat(Array.prototype.slice.call(card.querySelectorAll('*')));
+      for (var q = 0; q < all.length && !src; q++) {
+        var el = all[q];
+        if (el.tagName === 'IMG' && (el.currentSrc || el.src)) { src = 'url("' + (el.currentSrc || el.src) + '")'; break; }
+        var bg = getComputedStyle(el).backgroundImage; if (bg && bg.indexOf('url(') >= 0) src = bg;
+      }
+      var ghost = doc.createElement('div'); ghost.className = 'jy-card-ghost'; ghost.setAttribute('aria-hidden', 'true');
+      ghost.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;z-index:2147481000;pointer-events:none;background:' + (src ? src + ' center/cover no-repeat,' : '') + 'linear-gradient(150deg,#f3e3bd,#c9a35f);';
+      doc.body.appendChild(ghost);
+      var dx = tx - (r.left + r.width / 2), dy = ty - (r.top + r.height / 2), lift = Math.min(-70, dy * 0.35 - 90);
+      ghost.animate([
+        { translate: '0 0', rotate: '0deg', scale: '1', opacity: 1, offset: 0, easing: 'cubic-bezier(.2,.8,.3,1)' },
+        { translate: (dx * 0.35) + 'px ' + lift + 'px', rotate: '-14deg', scale: '1.12', opacity: 1, offset: 0.38, easing: 'cubic-bezier(.5,0,.75,0)' },
+        { translate: dx + 'px ' + dy + 'px', rotate: '8deg', scale: '0.28', opacity: 0.15, offset: 1 }
+      ], { duration: 720, easing: 'linear', fill: 'forwards' }).onfinish = function () { ghost.remove(); };
+      setTimeout(function () { if (ghost.isConnected) ghost.remove(); }, 1200);
+      if (dock) dock.animate([{ scale: '1' }, { scale: '1.06' }, { scale: '1' }], { duration: 360, delay: 640, easing: 'cubic-bezier(.34,1.56,.64,1)' });
+    } catch (_) {}
+  }, { capture: true, passive: true });
 
   root.JYMotion = Object.freeze({ version: VERSION, bloom: bloom, cascade: cascade, reveal: mark, turn: turn, deal: deal });
 })(typeof window !== 'undefined' ? window : globalThis);

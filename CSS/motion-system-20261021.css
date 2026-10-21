@@ -1,4 +1,4 @@
-/* 靜月之光 · 共用動態系統 / 20261021cards39
+/* 靜月之光 · 共用動態系統 / 20261021cards40
  * 一套節奏、一種月光語言，貫穿十四個房間：門卡綻放進房、結果分段浮現、按壓光暈、回首頁門卡歸位。
  * 只動 transform / opacity；所有層 pointer-events:none，不攔任何點擊；減少動態時整套關閉。 */
 
@@ -64,3 +64,6 @@
   background:radial-gradient(circle,#fffdf3 0%,#f3d79a 55%,transparent 72%);box-shadow:0 0 12px 4px #fff0c8cc,0 0 26px 8px #f3d79a66}
 @media (prefers-reduced-motion:reduce){.jy-fx,.jy-spark{display:none!important}}
 
+/* ── 7. 塔羅抽牌飛行的牌背分身 ── */
+.jy-card-ghost{border-radius:8px;box-shadow:0 0 0 1px #ffe8bd99,0 10px 30px #000a,0 0 28px 8px #e9cf9866;will-change:translate,rotate,scale,opacity}
+@media (prefers-reduced-motion:reduce){.jy-card-ghost{display:none!important}}
