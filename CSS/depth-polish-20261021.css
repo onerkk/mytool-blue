@@ -219,3 +219,5 @@ body.jy-atelier #lr-status .lr-status,body.jy-atelier #lr-scene-label{font-size:
 .orc-tc-alt{display:block;margin:12px auto 0;min-height:46px;padding:10px 20px;border-radius:12px;border:1px solid #e4c99455;background:#ffffff0c;color:#efe2c4;font:500 15px/1.4 var(--f-body,sans-serif);cursor:pointer;box-shadow:0 3px 0 #0007,inset 0 1px 0 #ffffff14;transition:transform .16s,box-shadow .16s}
 .orc-tc-alt:active{transform:translateY(2px);box-shadow:inset 0 2px 4px #0007}
 .orc-tc-alt-note{margin:8px auto 0;text-align:center;font-size:13px;color:#c7cdd6;opacity:.9}
+/* 8. 六壬欄位白話說明 */
+.lr-field-hint{display:block;margin-top:6px;font-size:13px;line-height:1.5;color:#b9c6c9}
