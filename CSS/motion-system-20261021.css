@@ -1,0 +1,56 @@
+/* 靜月之光 · 共用動態系統 / 20261021motion37
+ * 一套節奏、一種月光語言，貫穿十四個房間：門卡綻放進房、結果分段浮現、按壓光暈、回首頁門卡歸位。
+ * 只動 transform / opacity；所有層 pointer-events:none，不攔任何點擊；減少動態時整套關閉。 */
+
+:root{
+  --jy-ease-out:cubic-bezier(.16,1,.3,1);      /* 進場：快起慢收 */
+  --jy-ease-in:cubic-bezier(.7,0,.84,0);       /* 離場 */
+  --jy-ease-spring:cubic-bezier(.34,1.56,.64,1);/* 回彈：按鈕、徽記 */
+  --jy-dur-1:140ms;--jy-dur-2:260ms;--jy-dur-3:420ms;--jy-dur-4:680ms;
+  --jy-moon:#f6e6c3;--jy-moon-gold:#d2ad6c;--jy-night:#08111d;
+}
+
+/* ── 1. 門卡綻放：從點下的那扇門，月光擴成全螢幕再溶入房間 ── */
+.jy-veil{position:fixed;left:0;top:0;width:100vw;height:100dvh;z-index:2147482000;pointer-events:none;
+  transform-origin:0 0;border-radius:22px;overflow:hidden;will-change:transform,opacity;contain:strict;
+  background:
+    radial-gradient(120% 70% at 50% 38%,rgba(246,230,195,.92) 0%,rgba(210,173,108,.55) 22%,rgba(30,44,66,.92) 52%,var(--jy-night) 78%);
+  box-shadow:0 0 0 1px #ffe8bd55,0 30px 80px #000c}
+.jy-veil::before{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(2px 2px at 18% 26%,#fff9 50%,transparent 51%),radial-gradient(1.5px 1.5px at 72% 18%,#fff8 50%,transparent 51%),
+    radial-gradient(1.5px 1.5px at 84% 64%,#fff7 50%,transparent 51%),radial-gradient(2px 2px at 30% 78%,#fff8 50%,transparent 51%),
+    radial-gradient(1px 1px at 56% 52%,#fffa 50%,transparent 51%),radial-gradient(1.5px 1.5px at 10% 58%,#fff6 50%,transparent 51%);
+  opacity:.9}
+.jy-veil-moon{position:absolute;left:50%;top:38%;width:92px;height:92px;margin:-46px 0 0 -46px;border-radius:50%;
+  box-shadow:inset -18px -4px 0 0 var(--jy-moon),0 0 46px 10px #f6e6c388;opacity:0;transform:scale(.6) rotate(-18deg)}
+.jy-veil-title{position:absolute;left:0;right:0;top:calc(38% + 64px);text-align:center;color:#fff6e3;opacity:0;
+  font:500 20px/1.4 var(--f-display,"Noto Serif TC",serif);letter-spacing:.32em;text-shadow:0 2px 18px #000a}
+
+/* ── 2. 結果分段浮現：只套在結果卡片，不碰表單 ── */
+.jy-rv{opacity:0;transform:translateY(18px) scale(.985);filter:blur(2px)}
+.jy-rv.jy-in{opacity:1;transform:none;filter:none;
+  transition:opacity var(--jy-dur-4) var(--jy-ease-out),transform var(--jy-dur-4) var(--jy-ease-out),filter var(--jy-dur-3) var(--jy-ease-out);
+  transition-delay:var(--jy-rv-delay,0ms)}
+
+/* ── 3. 按壓光暈：從指尖位置擴散 ── */
+.jy-press{position:relative;overflow:hidden}
+.jy-ripple{position:absolute;border-radius:50%;pointer-events:none;width:12px;height:12px;margin:-6px 0 0 -6px;
+  background:radial-gradient(circle,#fffbe9 0%,#ffe8bdaa 32%,#ffe8bd00 70%);mix-blend-mode:screen;
+  animation:jy-ripple 620ms var(--jy-ease-out) forwards}
+@keyframes jy-ripple{from{transform:scale(1);opacity:.85}to{transform:scale(var(--jy-ripple-scale,26));opacity:0}}
+
+/* ── 4. 首頁門卡依序就位（初次載入與從房間返回） ── */
+.jy-door-in{animation:jy-door-in var(--jy-dur-4) var(--jy-ease-out) both;animation-delay:var(--jy-door-delay,0ms)}
+@keyframes jy-door-in{from{opacity:0;transform:translateY(22px) rotateX(10deg) scale(.97)}to{opacity:1;transform:none}}
+
+/* 門卡被點下的瞬間：先往內收一下，像真的推開一扇門 */
+.jy-atelier .at-tool.jy-door-pressed{transform:scale(.965)!important;transition:transform 120ms var(--jy-ease-out)!important}
+
+/* ── 減少動態：整套停用，內容一律直接可見 ── */
+@media (prefers-reduced-motion:reduce){
+  .jy-veil{display:none!important}
+  .jy-rv,.jy-rv.jy-in{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
+  .jy-ripple{display:none!important}
+  .jy-door-in{animation:none!important}
+}

@@ -12,7 +12,8 @@
   function isRoom(el){
     if(SKIP.test(el.tagName)||el.hasAttribute(MARK))return false;
     if(el.matches('[role=dialog],[aria-modal=true],#jy-handoff,#jy-prompt-packet,.modal-overlay'))return false;
-    var cs=getComputedStyle(el);if(cs.position!=='fixed'||cs.display==='none'||cs.visibility==='hidden')return false;
+    if(el.classList.contains('jy-veil')||el.getAttribute('aria-hidden')==='true')return false;
+    var cs=getComputedStyle(el);if(cs.position!=='fixed'||cs.display==='none'||cs.visibility==='hidden'||cs.pointerEvents==='none')return false;
     var r=el.getBoundingClientRect();return r.width>=innerWidth*0.9&&r.height>=innerHeight*0.85&&z(el)>=1000;
   }
   function release(){doc.querySelectorAll('['+MARK+']').forEach(function(el){el.inert=false;el.removeAttribute(MARK);});}
