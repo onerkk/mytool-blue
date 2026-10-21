@@ -2053,7 +2053,7 @@ h+='</ul>';
 h+='</div>';
 h+='<p class="orc-tc-final">今天沒有取得籤詩，仍可以好好照顧自己的步調。</p>';
 h+='<div class="orc-tc-actions">';
-h+='<button class="orc-btn-primary orc-tc-btn" onclick="_oracleClose()">🌙 今日到此・謝過神恩</button>';
+h+='<button class="orc-btn-primary orc-tc-btn" onclick="_oracleClose()">🌙 今日到此・謝過神恩</button>';h+='<button type="button" class="orc-tc-alt" onclick="_oracleToTarot()">換個方式，用塔羅整理同一件事</button>';h+='<p class="orc-tc-alt-note">這不是重新求籤，只是先把心裡的事理清楚。</p>';
 h+='</div>';
 h+='<p class="orc-tc-footnote">本日暫停 · 明日可重新開始</p>';
 h+='</div>';  // /content
@@ -2892,4 +2892,16 @@ document.head.appendChild(css);
   // ═══ 鎏金夜祭 v2（2026/6/10）：視圖升級層——第二樣式表 append-only，同表後者勝、整段可刪回退；流光動畫引用 style.css v81.0 全域 keyframes（jyGiltFlow），快取舊版時退化為靜態鎏金，無害 ═══
   try{var _g2=document.createElement('style');_g2.setAttribute('data-jy-gilt2','oracle');_g2.textContent='.orc-btn-primary{border-radius:12px;box-shadow:0 10px 24px rgba(110,18,18,.5),inset 0 1px 0 rgba(255,235,200,.35)}.orc-btn-primary:active{transform:translateY(1px)}.orc-btn-outline{border-radius:12px}.orc-btn-primary:focus-visible,.orc-btn-outline:focus-visible{outline:2px solid #f0d9a8;outline-offset:2px}';document.head.appendChild(_g2);}catch(e){}
 console.log('[Oracle] 靜月靈籤 v7 loaded — knowledge-open prompt with full poem data');
+
+  /* walk35：三次未允杯後的溫和出口。記下使用者寫的所求之事；按下時關閉靈籤、開啟塔羅快讀並帶入同一問題。不重新求籤。 */
+  
+    if(typeof document!=='undefined')document.addEventListener('input',function(e){if(e.target&&e.target.id==='orc-q-input')window.__jyOracleQ=e.target.value;},true);
+    window._oracleToTarot=function(){
+      var q=String(window.__jyOracleQ||'').trim();
+      try{if(typeof window._oracleClose==='function')window._oracleClose();}catch(e){}
+      setTimeout(function(){
+        if(typeof window._atelierChoose==='function')window._atelierChoose('tarot');
+        var f=document.getElementById('f-question');if(f&&q){f.value=q;f.dispatchEvent(new Event('input',{bubbles:true}));}
+      },350);
+    };
 })();

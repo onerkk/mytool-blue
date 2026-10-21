@@ -1993,6 +1993,8 @@ enhanceTarot = function(tarot) {
     if (!(r === 'king' || r === 'queen' || r === 'knight' || r === 'page')) return null;
     return COURT_FACING[s + '-' + r] || 'forward';
   }
+  // 供開鑰之法設定面板的朝向提示使用（唯讀；面板在另一個閉包，原本取不到）。
+  try { if (typeof window !== 'undefined') window.JYOotkCourtFacing = getCourtFacing; } catch (e) {}
   function getBookTCountDirection(card) {
     // The UI binding records the upright artwork facing of the chosen
     // significator.  Book T preserves any physical inversion that occurs in
@@ -3777,7 +3779,7 @@ enhanceTarot = function(tarot) {
     var profileSelect=panel.querySelector('#ootk-procedure-profile');
     profileSelect.value='mathers_continuous';
     profileSelect.onchange=function(){var strict=profileSelect.value==='liber78_validation';panel.querySelector('#ootk-validation-fields').style.display=strict?'':'none';panel.querySelector('#ootk-profile-note').textContent=strict?'驗題版依預選領域檢核，未命中可能在第一至第三操作停止；這是可選版本，不代表問題問錯。':'原稿版依實際落堆解讀，不需猜中元素、宮位或星座。每輪只洗牌一次，完整保留五層。';};
-    function showStep(n){step=n;error.textContent='';panel.querySelector('#ootk-setup-step1').style.display=n===1?'':'none';panel.querySelector('#ootk-setup-step2').style.display=n===2?'':'none';back.style.display=n===2?'':'none';next.textContent=n===1?'下一步：確認領域':'確認並開始五次操作';panel.querySelector('#ootk-setup-progress').textContent=n+'／2　'+(n===1?'選擇代表牌':'確認問題領域');panel.querySelector('#ootk-setup-body').scrollTop=0;}
+    function showStep(n){step=n;error.textContent='';panel.querySelector('#ootk-setup-step1').style.display=n===1?'':'none';panel.querySelector('#ootk-setup-step2').style.display=n===2?'':'none';back.style.display=n===2?'':'none';next.textContent=n===1?'下一步：確認領域':'確認並開始五次操作';panel.querySelector('#ootk-setup-progress').textContent=n+'／2　'+(n===1?'選擇代表牌':'確認人物朝向');panel.querySelector('#ootk-setup-body').scrollTop=0;}
     panel.querySelector('#ootk-cancel').onclick=function(){close();};back.onclick=function(){showStep(1);};
     panel.querySelectorAll('.ootk-manual-sig').forEach(function(button){button.onclick=function(){
       selected=Number(button.dataset.id);error.textContent='';
@@ -3786,9 +3788,15 @@ enhanceTarot = function(tarot) {
       panel.querySelector('#ootk-selected-name').textContent=card.n;
       panel.querySelector('#ootk-selected-img').src=getTarotCardImage(card);
     };});
+    // 第二步引導：依本站牌圖提示人物朝向，仍由使用者自己確認選擇（不代選，保留原設計）。
+    function ootkFacingHint(){var card=courts.find(function(c){return c.id===selected;}),f=null;try{var gf=typeof getCourtFacing==='function'?getCourtFacing:(typeof window!=='undefined'&&window.JYOotkCourtFacing);f=gf&&card?gf(card):null;}catch(e){f=null;}
+      var sel=panel.querySelector('#ootk-bind-direction'),el=panel.querySelector('#ootk-facing-hint');if(!sel)return;
+      if(!el){el=document.createElement('p');el.id='ootk-facing-hint';el.className='ootk-setup-note ootk-facing-hint';el.setAttribute('aria-live','polite');sel.insertAdjacentElement('afterend',el);}
+      var name=card?(card.n||card.name||'這張牌'):'這張牌';
+      el.textContent=f==='left'?'看上方的「'+name+'」：本站牌圖中人物看向左方。若你看到的也是向左，就選「朝左，向左計數」。':f==='right'?'看上方的「'+name+'」：本站牌圖中人物看向右方。若你看到的也是向右，就選「朝右，向右計數」。':f==='forward'?'看上方的「'+name+'」：本站牌圖中人物正面朝前。請自己約定一個方向（多數人約定向右），五次操作都照同一方向數。':'看上方「'+name+'」的牌圖，人物看向哪一邊就選哪一邊；正面朝前時請自己約定一個方向。';}
     next.onclick=function(){
       if(selected<0){error.textContent='請先選擇一張代表牌。';panel.querySelector('.ootk-manual-sig').focus();return;}
-      if(step===1){showStep(2);panel.querySelector('#ootk-bind-direction').focus();return;}
+      if(step===1){showStep(2);ootkFacingHint();panel.querySelector('#ootk-bind-direction').focus();return;}
       var fields={countDirection:'direction',expectedPile:'pile',primaryHouse:'house-primary',cognateHouse:'house-cognate',expectedSign:'sign',expectedSephirah:'seph'},raw={confirmedBeforeDeal:true,procedureProfile:profileSelect.value};
       Object.keys(fields).forEach(function(k){raw[k]=panel.querySelector('#ootk-bind-'+fields[k]).value;});
       var missing=Object.keys(fields).find(function(k){return (k==='countDirection'||(raw.procedureProfile==='liber78_validation'&&k!=='cognateHouse')) && raw[k]==='';});
