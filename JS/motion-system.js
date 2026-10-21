@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021spread41
+/* 靜月之光 · 共用動態系統 / 20261021ink42
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021spread41';
+  var doc = root.document, VERSION = '20261021ink42';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -76,7 +76,9 @@
     // 動畫結束後移除標記，讓卡片恢復自身的 transform／filter 樣式。
     setTimeout(function () { el.classList.remove('jy-rv', 'jy-in'); el.style.removeProperty('--jy-rv-delay'); }, 1200);
   }
-  function show(el) { if (!el.classList.contains('jy-rv')) return; el.classList.add('jy-in'); if (io) io.unobserve(el); settle(el); }
+  // 需要完整播完的書寫動畫（卦卡、籤詩）掛上不會被移除的 jy-draw，由「進入畫面」觸發，避免在畫面外先播完。
+  var DRAW = '.gw-hex-card,.or-poem-column';
+  function show(el) { if (!el.classList.contains('jy-rv')) return; if (el.matches(DRAW)) el.classList.add('jy-draw'); el.classList.add('jy-in'); if (io) io.unobserve(el); settle(el); }
   if ('IntersectionObserver' in root) {
     io = new IntersectionObserver(function (entries) {
       var batch = entries.filter(function (x) { return x.isIntersecting; }).sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });

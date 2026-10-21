@@ -1,4 +1,4 @@
-/* 靜月之光 · 共用動態系統 / 20261021spread41
+/* 靜月之光 · 共用動態系統 / 20261021ink42
  * 一套節奏、一種月光語言，貫穿十四個房間：門卡綻放進房、結果分段浮現、按壓光暈、回首頁門卡歸位。
  * 只動 transform / opacity；所有層 pointer-events:none，不攔任何點擊；減少動態時整套關閉。 */
 
@@ -67,3 +67,27 @@
 /* ── 7. 塔羅抽牌飛行的牌背分身 ── */
 .jy-card-ghost{border-radius:8px;box-shadow:0 0 0 1px #ffe8bd99,0 10px 30px #000a,0 0 28px 8px #e9cf9866;will-change:translate,rotate,scale,opacity}
 @media (prefers-reduced-motion:reduce){.jy-card-ghost{display:none!important}}
+
+/* ── 8. 墨書成形：一爻成形、六爻成卦（由初爻往上）、籤詩逐行顯現 ── */
+@keyframes jy-ink-draw{from{clip-path:inset(0 100% 0 0);filter:brightness(1.9)}62%{filter:brightness(1.25)}to{clip-path:inset(0 0 0 0);filter:none}}
+@keyframes jy-ink-down{from{clip-path:inset(0 0 100% 0);opacity:.25}to{clip-path:inset(0 0 0 0);opacity:1}}
+@keyframes jy-moving-pulse{0%,100%{box-shadow:0 0 0 0 #e0705a00}50%{box-shadow:0 0 0 3px #e0705a66,0 0 16px 5px #f3c27a77}}
+.gw-progress-row.is-new .gw-yao i{animation:jy-ink-draw .62s cubic-bezier(.2,.7,.2,1) both}
+.gw-progress-row.is-new .gw-yao i+i{animation-delay:.14s}
+.gw-progress-row.is-new .gw-yao.is-moving i{animation:jy-ink-draw .62s cubic-bezier(.2,.7,.2,1) both,jy-moving-pulse 1.3s .75s ease-in-out 2}
+.gw-hex-card.jy-draw .gw-hex-line,.gw-room .gw-hex-card.jy-draw button.gw-hex-line{animation:jy-ink-draw .6s cubic-bezier(.2,.7,.2,1) both!important}  /* 本卦爻線是按鈕，全域樣式關掉按鈕動畫 → 需 !important */
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(6){animation-delay:.12s!important}
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(5){animation-delay:.30s!important}
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(4){animation-delay:.48s!important}
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(3){animation-delay:.66s!important}
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(2){animation-delay:.84s!important}
+.gw-room .gw-hex-card.jy-draw .gw-hex-line:nth-child(1){animation-delay:1.02s!important}
+#oracle-screen .or-poem-column.jy-draw .or-poem-line{animation:jy-ink-draw 1s cubic-bezier(.25,.6,.2,1) both!important}  /* oracle-result.css 以 #oracle-screen 指定籤詩行動畫，需同權重 */
+#oracle-screen .or-poem-column.jy-draw .or-poem-lines[data-layout=vertical] .or-poem-line{animation-name:jy-ink-down!important}
+#oracle-screen .or-poem-column.jy-draw .or-poem-line:nth-child(1){animation-delay:.25s!important}
+#oracle-screen .or-poem-column.jy-draw .or-poem-line:nth-child(2){animation-delay:.8s!important}
+#oracle-screen .or-poem-column.jy-draw .or-poem-line:nth-child(3){animation-delay:1.35s!important}
+#oracle-screen .or-poem-column.jy-draw .or-poem-line:nth-child(4){animation-delay:1.9s!important}
+@media (prefers-reduced-motion:reduce){
+  .gw-progress-row.is-new .gw-yao i,.gw-room .gw-hex-card.jy-draw .gw-hex-line,#oracle-screen .or-poem-column.jy-draw .or-poem-line{animation:none!important;clip-path:none!important;filter:none!important}
+}
