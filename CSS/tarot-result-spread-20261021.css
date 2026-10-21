@@ -1,0 +1,37 @@
+/* 靜月之光 · 塔羅結果頁「本次牌陣」 / 20261021spread41 */
+.jy-ts{margin:18px 0 22px;padding:18px 14px 16px;border-radius:18px;border:1px solid #e4c99433;
+  background:radial-gradient(120% 60% at 50% 0%,#e9cf981a,transparent 60%),linear-gradient(170deg,#152238,#0c1424);
+  box-shadow:inset 0 1px 0 #ffffff12,0 18px 40px -18px #000c}
+.jy-ts-head{text-align:center;margin-bottom:14px}
+.jy-ts-eyebrow{display:block;font-size:11px;letter-spacing:.22em;color:#cdb98c}
+.jy-ts-head h2{margin:6px 0 4px;font:600 20px/1.4 var(--f-display,"Noto Serif TC",serif);color:#f3e3c2}
+.jy-ts-head p{margin:0;font-size:13.5px;line-height:1.6;color:#b9c6d4}
+.jy-ts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px}
+.jy-ts.is-big .jy-ts-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
+.jy-ts-card{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:8px 4px 10px;border-radius:14px;cursor:pointer;
+  border:1px solid #ffffff12;background:#ffffff06;color:#e8dcc3;font:inherit;position:relative;
+  box-shadow:0 2px 0 #050a11,inset 0 1px 0 #ffffff0d;transition:transform .2s var(--jy-ease-out,ease),box-shadow .2s,border-color .2s}
+.jy-ts-card:active{transform:translateY(2px)}
+.jy-ts-card[aria-pressed=true]{border-color:#e4c994aa;box-shadow:0 0 0 1px #e4c99466,0 8px 22px #d2ad6c33,inset 0 1px 0 #ffebcb33;transform:translateY(-3px)}
+.jy-ts-pos{font-size:11.5px;letter-spacing:.04em;color:#d9c08a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.jy-ts-face{display:block;width:100%;aspect-ratio:3/5;border-radius:9px;overflow:hidden;background:#1b2638;
+  box-shadow:0 0 0 1px #ffe8bd55,0 6px 14px #000a}
+.jy-ts-face img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.jy-ts-card:not(.is-open) .jy-ts-face img{opacity:0}
+.jy-ts-card.is-open.is-rv .jy-ts-face img{transform:rotate(180deg)}
+.jy-ts-name{font-size:13px;line-height:1.35;text-align:center;color:#f1e4c8}
+.jy-ts-name em{display:block;font-style:normal;font-size:11.5px;color:#b9c6d4}
+.jy-ts-card.is-rv .jy-ts-name em{color:#e8b3a3}
+.jy-ts.is-big .jy-ts-pos,.jy-ts.is-big .jy-ts-name em{font-size:11px}
+.jy-ts-detail{margin-top:14px;padding:14px 14px 12px;border-radius:14px;border:1px solid #e4c99440;background:#0a1220cc;color:#dfe6ee;
+  animation:jy-ts-in .35s var(--jy-ease-out,ease) both}
+.jy-ts-detail b{display:block;color:#e9cf98;font-size:13px;letter-spacing:.04em}
+.jy-ts-detail small{display:block;margin-top:2px;color:#aebdcb;font-size:13px}
+.jy-ts-detail h3{margin:10px 0 2px;font:600 18px/1.4 var(--f-display,"Noto Serif TC",serif);color:#f6e8c8}
+.jy-ts-detail h3 em{font-style:normal;font-size:13px;margin-left:8px;color:#cdb98c}
+.jy-ts-detail .jy-ts-kw{color:#e9cf98;font-size:13.5px;margin:4px 0 6px}
+.jy-ts-detail p{margin:0 0 6px;font-size:15px;line-height:1.75}
+.jy-ts-detail .jy-ts-note{margin-top:8px;font-size:12.5px;color:#9fb0c3}
+@keyframes jy-ts-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.jy-ts-detail{animation:none}.jy-ts-card{transition:none}}
+.jy-ts{scroll-margin-top:76px}

@@ -1,11 +1,11 @@
-/* 靜月之光 · 共用動態系統 / 20261021cards40
+/* 靜月之光 · 共用動態系統 / 20261021spread41
  * 1) 門卡綻放進房  2) 結果分段浮現  3) 按壓光暈＋Android 輕震  4) 回首頁門卡依序歸位
  * 原則：不攔截、不延遲任何既有點擊（房間照常立即開啟，特效只疊在上面）；只動 transform/opacity；
  * 「減少動態」時全部停用；任何一步失敗都靜默略過，不影響流程。 */
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021cards40';
+  var doc = root.document, VERSION = '20261021spread41';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -65,7 +65,7 @@
   var RESULT = ['.jy-native-analysis', '.ln-ai-card', '.bzx-ai-card', '.mhx-ai-card', '.zw-ai', '.orc-ai-prompt-card', '.jy-ex-card',
     '.gw-hex-card', '.gw-reading-card', '.jy-reading-result', '.lr-result-column', '.nm-result-summary', '.ootk-result-card',
     '.or-result-heading', '.or-result-grid', '.or-poem-column', '.vd-result-heading', '.wx-summary-card', '.wx-reading-card',
-    '.pair-result', '.at-result-note', '[data-reveal]'].join(',');
+    '.pair-result', '.at-result-note', '.ootk-record-heading', '.ootk-record-row', '[data-reveal]'].join(',');
   var seen = new Set(), pending = new Set(), io = null;
   function key(el) {
     var host = el.closest('[id]');
@@ -168,7 +168,7 @@
         { scale: '1 1', translate: '0 0', offset: 1 }
       ], { duration: 700, easing: 'linear' });
       // 特效層掛在儀式 dialog（瀏覽器頂層）內、以牌的版面位置定位，避開按鈕內的溢出裁切與堆疊層級。
-      var face = btn.querySelector('.jr-flip,.tarot-reveal-inner') || btn.querySelector('.jr-front') || btn;  // 只貼合牌面，不含下方牌名
+      var face = btn.querySelector('.jr-flip,.tarot-reveal-inner,.jy-ts-face') || btn.querySelector('.jr-front') || btn;  // 只貼合牌面，不含下方牌名
       var host = btn.closest('dialog') || doc.body, r = face.getBoundingClientRect(), hr = host === doc.body ? { left: 0, top: 0 } : host.getBoundingClientRect();
       var w = face.offsetWidth || r.width, h = face.offsetHeight || r.height, cx = r.left + r.width / 2 - hr.left, cy = r.top + r.height / 2 - hr.top;
       var fx = doc.createElement('div'); fx.className = 'jy-fx'; fx.setAttribute('aria-hidden', 'true');
@@ -231,14 +231,14 @@
     records.forEach(function (r) {
       r.addedNodes.forEach(function (node) {
         if (node.nodeType !== 1 || !node.querySelectorAll) return;
-        node.querySelectorAll('.ln-card,.ootk-result-card').forEach(function (c) { batch.push(c); });
-        if (node.matches && node.matches('.ln-card,.ootk-result-card')) batch.push(node);
+        node.querySelectorAll('.ln-card,.ootk-result-card,.jy-ts-card').forEach(function (c) { batch.push(c); });
+        if (node.matches && node.matches('.ln-card,.ootk-result-card,.jy-ts-card')) batch.push(node);
       });
     });
     if (!batch.length) return;
     var fresh = batch.filter(function (c) {
       var ln = c.closest('#ln-screen'); if (ln && ln.getAttribute('data-flow-view') !== 'result') return false;
-      var k = (ln ? 'ln' : 'ootk') + '|' + (c.textContent || '').replace(/\s+/g, '').slice(0, 30);
+      var k = (ln ? 'ln' : c.classList.contains('jy-ts-card') ? 'ts' : 'ootk') + '|' + (c.textContent || '').replace(/\s+/g, '').slice(0, 30);
       if (dealt.has(k)) return false; dealt.add(k); return true;
     });
     if (!fresh.length || reduced() || !canAnimate) return;
