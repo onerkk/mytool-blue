@@ -160,12 +160,45 @@
     A(s('所有姓名實算')).forEach(p=>{add(p.name+'字音形義：字/採筆畫/康熙/現代/候選讀音/字義/部首/字根',A(p.characters).map(v=>row([v.char,v.stroke,v.kangxi,v.modern,v.readings,v.meaning,v.radical,v.roots])).join('\n'));add(p.name+'主讀數理（五格欄序：格/數/公式/原著主題/傾向/摘要/通行版）',{role:p.comparisonRole,strokeBasis:p.inputPolicy?.strokeBasis,sancaiProfile:p.inputPolicy?.sancaiProfile,readingConfirmation:p.phonetic?.resolution?.confirmedReading,toneSequence:p.phonetic?.toneSequence,warnings:p.phonetic?.warnings,...grids(p.fiveGrids)});add(p.name+'筆畫異讀敏感性',{differences:p.strokeSensitivity?.differences,alternateBasis:p.strokeSensitivity?.alternateBasis,alternate:p.strokeSensitivity?.alternateFiveGrids?{grids:A(p.strokeSensitivity.alternateFiveGrids.grids).map(g=>[g.role,g.num,g.formula,g.originalNumerology?.theme,g.originalNumerology?.tone]),sanCai:{configuration:p.strokeSensitivity.alternateFiveGrids.sanCai?.configuration,versions:A(p.strokeSensitivity.alternateFiveGrids.sanCai?.versions).map(v=>[v.profile,v.level])},yinYang:p.strokeSensitivity.alternateFiveGrids.yinYang?.sequence}:null});add(p.name+'其他方法狀態',{zodiac:P(p.zodiac,['status','reason']),bazi:P(p.bazi,['status','reason']),nameGua:p.nameGua?{status:p.nameGua.status,movingLine:p.nameGua.movingLine,original:P(p.nameGua.original,['name','judgment','line']),changed:P(p.nameGua.changed,['name','judgment'])}:null});});
     add('方法矩陣',compactObject(s('比較方向與方法矩陣')),4);
   }
-  function compat(ctx){const{section:s,add}=ctx,c=s('雙方及雙向原盤作用')||{};add('雙方角色與精度',{scenario:c.scenario,uncertainty:c.uncertainty,birthTimeAudit:c.birthTimeAudit});
+  function compat(ctx){const{section:s,add}=ctx,c=s('雙方及雙向原盤作用')||{};
+    // 紫微雙向與八字雙向形狀不同：紫微交給專屬寫入器，避免整包宮位星曜與逐條投射被當成必要資料。
+    if(A(c.personA?.palaces).length&&(c.projectionGroups||c.overlays))return compatZiwei(ctx,c);
+    add('雙方角色與精度',{scenario:c.scenario,uncertainty:c.uncertainty});
+    add('出生時間核對',compactObject(c.birthTimeAudit),3);
     for(const k of ['personA','personB']){const p=c[k];if(!p)continue;add(k+'原局',{...P(p,['name','gender','pillars','dayMaster','strength','favorable','unfavorable','uncertainty','birthInput','birthLunar','sihua']),palaces:p.palaces?A(p.palaces).map(v=>P(v,['name','branch','stars'])):undefined,roots:A(p.functionalAssessment?.rootContext).filter(v=>v.hasRoot&&v.stem===p.dayMaster).map(v=>({stem:v.stem,roots:A(v.roots).map(z=>P(z,['pillar','branch','stem','mainQi','rootKind','clashedBy']))})),seasonal:P(p.seasonalAssessment,['conclusion'])});}
     add('雙向十神：對方柱/天干/十神/藏干',Object.entries(c.directionalTenGods||{}).map(([k,vs])=>k+':'+A(vs).map(v=>row([v.partnerPillar,v.partnerStem,v.tenGod,v.hidden])).join(';')).join('\n'));
-    add('雙向關係',{dayMasters:c.dayMasters,spousePalace:c.spousePalace,stemRelations:A(c.stemRelations).map(v=>[v.aPillar,v.bPillar,v.aStem,v.bStem,v.relation]),branchRelations:A(c.branchRelations).map(v=>[v.type,v.aPillar,v.bPillar,v.aBranch,v.bBranch,v.transformationStatus]),groups:A(c.groupRelations).map(v=>P(v,['type','branches','element','participants','transformationStatus','interpretationScope'])),overlays:compactObject(c.overlays),directions:compactObject(c.directions),projectionGroups:compactObject(c.projectionGroups)});
+    add('雙方日主與夫妻宮',{dayMasters:c.dayMasters,spousePalace:c.spousePalace});
+    add('跨盤天干作用：甲柱/乙柱/甲干/乙干/作用',A(c.stemRelations).map(v=>row([v.aPillar,v.bPillar,v.aStem,v.bStem,v.relation])).join('\n'));
+    add('跨盤地支作用：類型/甲柱/乙柱/甲支/乙支/成化狀態',A(c.branchRelations).map(v=>row([v.type,v.aPillar,v.bPillar,v.aBranch,v.bBranch,v.transformationStatus])).join('\n'));
+    add('跨盤三合三會與其他組合',{groups:A(c.groupRelations).map(v=>P(v,['type','branches','element','participants','transformationStatus','interpretationScope'])),overlays:compactObject(c.overlays),directions:compactObject(c.directions),projectionGroups:compactObject(c.projectionGroups)},2);
     const sy=c.luckSynchronization;const periods=p=>A(p?.segments).length?p.segments:[p].filter(Boolean);const annual=p=>periods(p).map(v=>[v.dayun,v.gz||v.annual,v.god,interval(v.window),v.connections?.map(z=>[z.from,z.to,z.stemRelation,z.stemCombination,z.branchRelations])]);
-    add('同步運限',{currentA:P(sy?.aCurrent,['gz','ageStart','ageEnd','window']),currentB:P(sy?.bCurrent,['gz','ageStart','ageEnd','window']),years:A(sy?.years).map(v=>({year:v.year,window:interval(v.window),a:annual(v.a),b:annual(v.b)}))});
+    const now=Date.now(),years=A(sy?.years),live=years.filter(v=>!v.window?.endExclusive||Date.parse(v.window.endExclusive)>now),near=new Set((live.length?live:years).slice(0,3));
+    const yr=v=>({year:v.year,window:interval(v.window),a:annual(v.a),b:annual(v.b)});
+    add('同步運限（目前起三年）',{currentA:P(sy?.aCurrent,['gz','ageStart','ageEnd','window']),currentB:P(sy?.bCurrent,['gz','ageStart','ageEnd','window']),years:years.filter(v=>near.has(v)).map(yr)});
+    add('同步運限（其他年份）',{years:years.filter(v=>!near.has(v)).map(yr)},2);
+    add('紫微雙向運限',compactObject(c.timeline),2);
+  }
+  function compatZiwei(ctx,c){const{add}=ctx;
+    const MAIN=new Set(['major','sha','lucky']),hua=h=>String(h||'').replace('化','');
+    const star=x=>x.name+(x.brightness||'')+(x.natalHua?hua(x.natalHua):'');
+    const focus=new Set(A(c.focusPalaces));
+    add('紫微雙方角色與精度',{scenario:c.scenarioId,focusPalaces:c.focusPalaces,policy:c.policy,unavailable:c.unavailable});
+    add('紫微出生時間核對',compactObject(c.birthTimeAudit),3);
+    for(const [k,tag] of [['personA','甲'],['personB','乙']]){const p=c[k];if(!p)continue;
+      const head={yearGanZhi:(p.yearStem||'')+(p.yearBranch||''),wuxingJu:p.wuxingJu,mingZhu:p.mingZhu,shenZhu:p.shenZhu,currentAge:p.currentAge,natalSihua:A(p.natalTransformations).map(t=>t.star+hua(t.hua)+'→'+t.targetPalace).join('、')};
+      Object.keys(head).forEach(x=>{if(head[x]===''||head[x]==null)delete head[x];});
+      add('紫微'+tag+'方本命：宮/支/干/主星與煞曜（亮度、生年四化）',(Object.keys(head).length?json(head)+'\n':'')+A(p.palaces).map(v=>row([v.name+(v.isMing?'(命)':'')+(v.isShen?'(身)':''),v.branch,v.gan,A(v.stars).filter(x=>MAIN.has(x.type)).map(star).join(' ')||'空宮'])).join('\n'));
+      const cur=A(p.decades).find(d=>d.isCurrent)||A(p.decades).find(d=>p.currentAge>=d.ageStart&&p.currentAge<=d.ageEnd);
+      if(cur)add('紫微'+tag+'方目前大限',{age:cur.ageStart+'–'+cur.ageEnd,ganZhi:(cur.gan||'')+(cur.branch||''),natalPalace:cur.palaceName,sihua:A(cur.transformations||cur.sihua).map(t=>t.star+hua(t.hua)+'→'+(t.targetPalace||t.natalPalace||'')).join('、')||undefined});
+      add('紫微'+tag+'方輔佐雜曜',A(p.palaces).map(v=>v.name+':'+A(v.stars).filter(x=>!MAIN.has(x.type)).map(x=>x.name).join(' ')).join('\n'),4);
+      add('紫微'+tag+'方宮干飛化與自化',compactObject({palaceFlights:p.palaceFlights,selfTransformations:p.selfTransformations}),3);
+      add('紫微'+tag+'方三方四正、格局與來因',compactObject({sanFangSiZheng:p.sanFangSiZheng,patternAssessment:p.patternAssessment,laiYin:p.laiYin}),4);
+    }
+    add('紫微宮位疊合：地支/甲方宮/乙方宮',A(c.overlays).map(v=>row([v.branch,v.aPalace+(v.aBody?'(身)':''),v.bPalace+(v.bBody?'(身)':'')])).join('\n'));
+    const pg=A(c.projectionGroups),hit=v=>focus.has(v.targetPalace)||v.targetPalace==='命宮';
+    const line=v=>row([v.sourcePerson+'→'+v.targetPerson,v.stem,v.star+hua(v.hua),v.targetPalace,v.targetBranch,A(v.origins).map(o=>o.palace||'生年').join('+'),v.independentCount]);
+    add('紫微跨盤四化投射・題目主宮（方向/干/星化/落宮/支/來源/獨立次數；跨盤引動參照，非受方自身四化）',pg.filter(hit).map(line).join('\n'));
+    add('紫微跨盤四化投射・其他宮位',pg.filter(v=>!hit(v)).map(line).join('\n'),2);
     add('紫微雙向運限',compactObject(c.timeline),2);
   }
   function personality(ctx){const{section:s,add}=ctx;const p=s('五軸實算與模型界線')||{};add('模型及五軸',compactObject(P(p,['system','independent','code','name','traits','axes','modelInputs','strengths','watch','provisional'])));}

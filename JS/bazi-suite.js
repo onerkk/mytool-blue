@@ -26,8 +26,10 @@
   function byId(id){return document.getElementById(id);}
   function toast(msg,bad){
     var t=byId('bzs-toast'); if(!t)return;
-    t.textContent=msg;t.className='bzs-toast show'+(bad?' bad':'');
-    clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='bzs-toast';},2300);
+    t.textContent=msg;t.className='bzs-toast show'+(bad?' bad':'');t.setAttribute('role',bad?'alert':'status');
+    // 長訊息（例如資料超量說明）需要讀得完：每字約 90ms，2.3–9 秒。
+    var ms=Math.min(9000,Math.max(2300,String(msg||'').length*90));
+    clearTimeout(toast._t);toast._t=setTimeout(function(){t.className='bzs-toast';},ms);
   }
   function icon(title,body){return '<div class="bzs-empty"><div class="bzs-moon">☾</div><b>'+esc(title)+'</b><p>'+esc(body)+'</p></div>';}
 
