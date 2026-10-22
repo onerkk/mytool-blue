@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single51',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single52',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -567,10 +567,11 @@
     return lines.join('\n');
   }
   function focusYijing(c,q){
-    if(!c?.original)return null;const domain=detectDomain(q),lines=[];
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：本卦'+(c.original.fullName||c.original.name)+'是現在的處境'+(c.originalText?.judgment?'—'+String(c.originalText.judgment).replace(/。$/,''):'')+(c.changed?'；之卦'+(c.changed.fullName||c.changed.name)+'是變化方向，不是保證':'；無動爻，讀卦辭為主'));
-    const sel=A(c.reading?.selections);if(sel.length)lines.push('本次擇辭（'+(c.reading.rule||'')+'）：'+sel.map(s=>s.role+'「'+s.label+'：'+s.text+'」').join('；')+'—先把主讀那句翻成這件事的現況，參讀補條件');
-    if(c.originalText?.image)lines.push('象辭：'+c.originalText.image);
+    if(!c?.original)return null;const domain=detectDomain(q),lines=[],mv=A(c.movingPositions),same=!c.changed||c.changed.number===c.original.number;
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：本卦'+(c.original.fullName||c.original.name)+'是現在的處境'+(c.originalText?.judgment?'—'+String(c.originalText.judgment).replace(/。$/,''):'')+(mv.length&&!same?'；之卦'+(c.changed.fullName||c.changed.name)+'是變化方向，不是保證':'；**六爻皆靜，沒有變化方向**：事情會維持本卦的樣子，答案全在卦辭，不要去編「之後會變成怎樣」'));
+    const sel=A(c.reading?.selections);if(sel.length)lines.push('本次擇辭（'+(c.reading.rule||'')+'）：'+sel.map(s=>s.role+'「'+s.label+'：'+s.text+'」').join('；')+'—主讀那句就是答案本體，先翻成這件事的現況；其餘爻辭不是他會經歷的六個階段，不拿來排時間');
+    if(c.originalText?.image)lines.push('象辭：'+c.originalText.image+'—這是「該怎麼做」的那句');
+    const hx=A(c.complementaryViews||c.expositions).find(x=>x.side==='original');if(hx?.mutual?.name)lines.push('互卦'+hx.mutual.name+'（中間過程的樣子）'+(hx.opposite?.name?'、錯卦'+hx.opposite.name+'（反面）':'')+'—只作補充，不蓋過卦辭');
     return lines.join('\n');
   }
   const TAROT_KEY={love:['loveUp','loveRv'],career:['careerUp','careerRv'],wealth:['wealthUp','wealthRv'],health:['healthUp','healthRv'],move:['up','rv'],general:['up','rv']};
