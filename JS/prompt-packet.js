@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single49',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single50',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -140,7 +140,11 @@
     add('輸入與宮制',{input:core.input,policy:P(core.policy,['zodiac','houseSystem','chartType','node','orbs','minorOrbs']),unknown:!!a.coverage?.provisional});
     const lt=core.lots;if(lt?.fortune)add('福點與精神點（Lot of Fortune／Spirit）',['福點','精神點'].map((n,i)=>{const x=i?lt.spirit:lt.fortune;return n+'在'+x.signName+num(x.degree)+'度第'+x.house+'宮，主星'+zh(x.lord)+'（'+x.formula+'）';}).join('；')+'。福點看身體與財物際遇，精神點看心志與作為。',1);
     const pf=core.profection;if(pf)add('年度小限（整宮制）','滿'+pf.age+'歲：小限到第'+pf.house+'宮'+pf.signName+'，年主星'+zh(pf.lord)+(pf.lordNatal?'（本命在'+pf.lordNatal.signName+'第'+pf.lordNatal.house+'宮）':'')+'；'+interval(pf.window)+'。年主星的行運、相位與回歸盤狀態是這一年的主軸。');add('全部星位：曜/座/度/宮/順逆/尊貴',planetRows(core.planets));add('宮頭與四角',compactObject(core.houses));add('本命相位',aspectRows(core.aspects));
-    add('尊貴與接納：曜/持有/失勢/落陷/游離/座擢三界面主',{sect:core.sect,ruler:core.chartRuler,dignities:A(core.essentialDignities?.planets).map(p=>[zh(p.planet),p.held,state(p.detriment),state(p.fall),state(p.peregrine),['signLord','exaltationLord','triplicityLord','termLord','faceLord'].map(k=>zh(p[k]))]),hosting:A(core.essentialDignities?.dignityHosting).map(p=>[zh(p.host),zh(p.guest),p.dignities]),mutual:A(core.essentialDignities?.mutualHosting).map(p=>({a:p.a?.host,b:p.b?.host,aToB:p.b?.dignities,bToA:p.a?.dignities}))});
+    {const DW={sign:'入廟',exaltation:'擢升',triplicity:'三分主',term:'界主',face:'面主'},dw=l=>A(l).map(k=>DW[k]||k).join('、');
+      const ed=core.essentialDignities||{},sol=A(core.specialConditions?.solar||core.conditions?.solar),solOf=k=>sol.find(x=>x.planet===k),SOL={cazimi:'日心（被太陽抱住，傳統反而視為有力）',combust:'燃燒（被太陽燒掉，弱）','under-beams':'日光下（偏弱）',clear:''};
+      const rows=A(ed.planets).map(p=>zh(p.planet)+'：'+(A(p.held).length?'持有'+dw(p.held):'無本質尊貴')+(p.detriment?'、失勢':'')+(p.fall?'、落陷':'')+(p.peregrine?'、游離（沒根，靠接納）':'')+(solOf(p.planet)&&SOL[solOf(p.planet).state]?'、'+SOL[solOf(p.planet).state]:'')+'；所在度數由'+zh(p.signLord)+'（座）'+(p.exaltationLord?'、'+zh(p.exaltationLord)+'（擢）':'')+'、'+zh(p.triplicityLord)+'（三分）、'+zh(p.termLord)+'（界）、'+zh(p.faceLord)+'（面）管');
+      const mut=A(ed.mutualHosting).map(m=>zh(m.a?.host)+'與'+zh(m.b?.host)+'互容（'+dw(m.b?.dignities)+'／'+dw(m.a?.dignities)+'）—兩顆星互相有辦法，問題能互相解');
+      add('尊貴與接納（引擎已寫成句）',[(core.sect?.name?'盤別：'+core.sect.name+'；':'')+'盤主星'+zh(core.chartRuler||''),...rows,...(mut.length?['互容：'+mut.join('；')]:[])].join('\n'));}
     add('形狀與特殊條件',{patterns:compactObject(core.patterns),shapes:compactObject(core.chartShapes),conditions:compactObject(core.specialConditions)},2);
     const future=s('實算行運次限與回歸')||{};for(const [k,p0]of Object.entries(future)){if(!p0)continue;const ov=A(p0.natalHouseOverlay),p=ov.length&&ov[0].progressedHouse===undefined&&p0.planets?{...p0,natalHouseOverlay:[],planets:Object.fromEntries(Object.entries(p0.planets).map(([pk,pv])=>[pk,{...pv,house:ov.find(v=>v.planet===pk)?.natalHouse??pv.house}]))}:p0;const kn=({transits:'行運',progressions:'次限推運',returnAnalysis:'太陽回歸'})[k]||k;add(kn+'時點與相位',{utc:p.utc,referenceUTC:p.referenceUTC,purpose:p.purpose,aspects:aspectRows(p.aspects),angleAspects:aspectRows(p.angleAspects),overlay:Array.isArray(p.natalOverlay)&&p.natalOverlay[0]?.a?aspectRows(p.natalOverlay):A(p.natalHouseOverlay||p.natalOverlay).map(v=>[zh(v.planet),v.progressedHouse,v.natalHouse])});add(kn+'星位'+(k==='transits'?'（宮欄＝落在本命第幾宮）':''),planetRows(p.planets,false),k==='transits'?1:2);}
     const h=(s('問事及搬遷')||{}).horary;if(h){add('卜卦取用',{significators:h.significators,selectedHouse:h.selectedHouse,querent:h.querent,quesited:h.quesited,moon:compactObject(h.moon),orbPolicy:h.orbPolicy});add('傳光集光及受阻',compactObject({translation:h.translationChecks||h.translationCandidates,collection:h.collectionChecks||h.collectionCandidates,denials:h.denialChecks||h.perfectionAndInterference,light:h.lightChecks}),1);add('卜卦實際時序',compactObject(h.timeline),3);}
@@ -467,37 +471,42 @@
   }
   const AS_DOMAIN={career:{houses:[10,6,2],planets:['Saturn','Sun','Jupiter']},wealth:{houses:[2,8,11],planets:['Venus','Jupiter','Saturn']},love:{houses:[7,5,8],planets:['Venus','Mars','Moon']},health:{houses:[1,6,12],planets:['Mars','Saturn','Moon']},move:{houses:[9,4,3],planets:['Jupiter','Uranus','Moon']},general:{houses:[1,10,7],planets:['Sun','Moon','Saturn']}};
   function houseOf(lon,cusps){if(!Array.isArray(cusps)||cusps.length<12||!Number.isFinite(lon))return null;for(let i=0;i<12;i++){const a=cusps[i],b=cusps[(i+1)%12];const d=((b-a)%360+360)%360,x=((lon-a)%360+360)%360;if(x<d||d===0)return i+1;}return null;}
+  const PLANET_LIFE={Sun:'自我、名聲、父親或老闆',Moon:'情緒、需要、日常節奏',Mercury:'腦筋、溝通、文書',Venus:'人緣、錢、喜好',Mars:'行動、衝突、幹勁',Jupiter:'機會、擴張、貴人',Saturn:'規矩、責任、壓力、慢',Uranus:'突變、想掙脫',Neptune:'模糊、理想、消耗',Pluto:'權力、徹底改造',NorthNode:'要走的方向',SouthNode:'習慣的老路'};
   function focusAstro(c,q){
     if(!c?.planets||!c?.houses)return null;
     const domain=detectDomain(q),cfg=AS_DOMAIN[domain]||AS_DOMAIN.general,cusps=c.houses.cusps,lines=[];
-    const occupantsOf=n=>Object.values(c.planets).filter(p=>p.house===n).map(p=>zh(p.key));
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的宮與行星：\n'+cfg.houses.map(n=>{const cusp=cusps?.[n-1];const sign=Number.isFinite(cusp)?signs[Math.floor((((cusp%360)+360)%360)/30)]:'?';const occ=occupantsOf(n);return n+'宮（'+(HOUSE_LIFE[n]||'')+'）宮頭'+sign+(occ.length?'，宮內'+occ.join('、'):'，宮內無星');}).join('\n')+'\n'+cfg.planets.map(k=>{const p=c.planets[k];if(!p)return null;return zh(k)+'在'+p.signName+p.house+'宮'+(p.retrograde?'逆行':'')+(p.dignity?.name&&p.dignity.name!=='無廟旺弱陷'?'（'+p.dignity.name+'）':'');}).filter(Boolean).join('；'));
     const RULER=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'];
-    const rulers=cfg.houses.map(n=>{const cusp=cusps?.[n-1];if(!Number.isFinite(cusp))return null;const sg=Math.floor((((cusp%360)+360)%360)/30),r=RULER[sg],pl=c.planets[r];if(!pl)return null;return n+'宮主'+zh(r)+'落'+pl.house+'宮'+(pl.retrograde?'逆行':'')+(pl.dignity?.name&&pl.dignity.name!=='無廟旺弱陷'?'（'+pl.dignity.name+'）':'');}).filter(Boolean);if(rulers.length)lines.push('題宮宮主落在哪（這件事的力氣來自哪一宮）：'+rulers.join('；'));
-    const tr=c.transits?.planets;if(tr&&cusps){const slow=['Saturn','Jupiter','Uranus','Neptune','Pluto'].map(k=>{const p=tr[k];if(!p)return null;const h=houseOf(p.longitude,cusps);return zh(k)+'行運在'+p.signName+'、過本命'+h+'宮'+(cfg.houses.includes(h)?'（正在本題宮位上）':'')+(p.retrograde?'逆行':'');}).filter(Boolean);lines.push('現在的行運（'+String(c.transits.utc||'').slice(0,10)+'）：'+slow.join('；')+'。土星過的宮是在收緊與考驗，木星過的宮是在放大與給機會。');}
-    if(c.profection?.house)lines.push('今年小限落'+c.profection.house+'宮'+(c.profection.lord?'，年主'+zh(c.profection.lord):'')+'：今年的主題先從這裡起。');
-    // 逐年：土木行運過本命哪一宮（回歸黃道，用本盤宮頭），以及整宮小限宮。
-    const refY=new Date(c.input?.reference||c.transits?.utc||Date.now()).getUTCFullYear(),years=askedYears(q,refY),birth=new Date(c.input?.utc||0),ascSign=Number.isFinite(c.houses?.angles?.ASC)?Math.floor((((c.houses.angles.ASC%360)+360)%360)/30):null;
-    const yearLine=y=>{const d=new Date(Date.UTC(y,6,1));const parts=['Saturn','Jupiter'].map(b=>{const lon=eclLon(b,d);if(lon==null)return null;const h=houseOf(lon,cusps);return zh(b)+'過本命'+h+'宮'+(cfg.houses.includes(h)?'（在本題宮位上）':'');}).filter(Boolean);
-      let age=y-birth.getUTCFullYear();if(Number.isFinite(age)&&ascSign!=null){const ph=((age%12)+12)%12+1;parts.push('小限'+ph+'宮（約'+age+'歲）');}
-      return y+'：'+(parts.length?parts.join('、'):'未算');};
-    if(cusps){lines.push('所問年份逐年訊號：\n'+years.map(yearLine).join('\n'));lines.push('過去三年回看（開場先挑一兩件他能自己核對的事說）：\n'+[refY-3,refY-2,refY-1].map(yearLine).join('\n'));}
+    const signOf=lon=>Math.floor((((lon%360)+360)%360)/30),rulerOf=n=>{const cusp=cusps?.[n-1];return Number.isFinite(cusp)?RULER[signOf(cusp)]:null;};
+    const sol=A(c.specialConditions?.solar),solState=k=>(sol.find(x=>x.planet===k)||{}).state,ed=A(c.essentialDignities?.planets),edOf=k=>ed.find(x=>x.planet===k),mut=A(c.essentialDignities?.mutualHosting);
+    const strength=k=>{const pl=c.planets[k];if(!pl)return {w:0,t:[]};let w=0,t=[];const st=A(pl.dignity?.states);if(st.includes('入廟')||st.includes('擢升')){w+=2;t.push(st.join('・'));}else if(st.includes('落陷')||st.includes('失勢')){w-=2;t.push(st.join('・'));}const e=edOf(k);if(e&&e.peregrine){w-=1;t.push('游離');}
+      const ss=solState(k);if(ss==='cazimi'){w+=2;t.push('日心—被太陽抱住，落陷也反而有力');}else if(ss==='combust'){w-=1;t.push('燃燒');}else if(ss==='under-beams'){t.push('日光下');}
+      if(pl.retrograde){t.push('逆行—力氣往內收、慢半拍');}if([6,8,12].includes(pl.house)){w-=1;t.push('落'+pl.house+'宮（苦宮）');}else if([1,4,7,10].includes(pl.house)){w+=1;t.push('落'+pl.house+'宮（角宮，有力）');}
+      if(mut.some(m=>m.a?.host===k||m.b?.host===k)){w+=1;t.push('有互容—問題有人接');}return {w,t};};
+    const verdict=w=>w>=2?'撐得住、底子強':w>=1?'偏穩':w<=-2?'撐不起來、是弱點':w<0?'偏弱':'普通';
+    const occ=n=>Object.values(c.planets).filter(p=>p.house===n);
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的宮：\n'+cfg.houses.map(n=>{const r=rulerOf(n);const st=r?strength(r):{w:0,t:[]};const o=occ(n);return n+'宮（'+(HOUSE_LIFE[n]||'')+'）：宮主'+(r?zh(r):'?')+(c.planets[r]?'在'+c.planets[r].signName+c.planets[r].house+'宮':'')+(st.t.length?'（'+st.t.join('、')+'）':'')+'→'+verdict(st.w)+(o.length?'；宮內'+o.map(p=>zh(p.key)+'—'+(PLANET_LIFE[p.key]||'')+(p.dignity?.name&&p.dignity.name!=='無廟旺弱陷'&&p.dignity.name!=='現代行星／交點'?'（'+p.dignity.name+'）':'')).join('、'):'；宮內無星');}).join('\n'));
+    // tight natal aspects among topic planets
+    const topicKeys=new Set([...cfg.houses.map(rulerOf).filter(Boolean),...cfg.houses.flatMap(n=>occ(n).map(p=>p.key)),...cfg.planets]);
+    const tight=A(c.aspects).filter(a=>a.orb<=3&&(topicKeys.has(a.a)||topicKeys.has(a.b))).slice(0,6).map(a=>zh(a.a)+a.name+zh(a.b)+'（差'+a.orb.toFixed(1)+'度）—'+({合相:'綁在一起、同進退',四分相:'卡、硬碰硬',對分相:'兩頭拉',三分相:'順手、互相幫',六分相:'有機會、要去用'}[a.name]||''));
+    if(tight.length)lines.push('與本題有關、角度緊的相位：'+tight.join('；'));
+    // transits over angles / topic planets
+    const trP=c.transits?.planets,trA=A(c.transits?.aspects).filter(a=>a.orb<=1.5),ANG={1:'上升（整個人、身體）',4:'天底（家、根基）',7:'下降（伴侶、合作）',10:'天頂（事業、名聲）'};
+    if(trP&&cusps){const outer=['Saturn','Jupiter','Uranus','Neptune','Pluto'].map(k=>{const p=trP[k];if(!p)return null;const h=houseOf(p.longitude,cusps);return {k,h,p};}).filter(Boolean);
+      const big=outer.filter(x=>[1,4,7,10].includes(x.h)).map(x=>zh(x.k)+'正過'+ANG[x.h]+'（'+x.p.signName+(x.p.retrograde?'逆行':'')+'）—'+({Saturn:'這幾年在這裡被收緊、要負責、變慢',Jupiter:'這一年這裡被放大、有機會',Uranus:'這幾年這裡在被掀掉、想換',Neptune:'這幾年這裡模糊、消耗、看不清',Pluto:'這幾年這裡被徹底改造，整個人在換皮'}[x.k]||''));
+      const topicT=outer.filter(x=>cfg.houses.includes(x.h)&&![1,4,7,10].includes(x.h)).map(x=>zh(x.k)+'行運過本命'+x.h+'宮（'+(HOUSE_LIFE[x.h]||'')+'）—'+({Saturn:'收緊、考驗',Jupiter:'放大、給機會',Uranus:'突變',Neptune:'模糊消耗',Pluto:'翻掉重來'}[x.k]||''));
+      const hits=trA.filter(a=>topicKeys.has(a.b)).slice(0,4).map(a=>'行運'+zh(a.a)+a.name+'本命'+zh(a.b)+'（差'+a.orb.toFixed(1)+'度，'+(a.phase||'')+'）');
+      lines.push('現在的行運（'+String(c.transits.utc||'').slice(0,10)+'）：'+[...big,...topicT].join('；')+(hits.length?'。打到本題星的精準相位：'+hits.join('、')+'—這幾週的感受就從這裡來，不是整份工作的結論':''));}
+    if(c.profection?.house){const pf=c.profection,ln=pf.lordNatal;lines.push('今年小限落'+pf.house+'宮（'+(HOUSE_LIFE[pf.house]||'')+'），年主'+zh(pf.lord)+(ln?'在本命'+ln.signName+ln.house+'宮（'+(HOUSE_LIFE[ln.house]||'')+'）':'')+'：今年的主題從這裡起，年主星的行運與回歸狀態是今年主軸'+(cfg.houses.includes(pf.house)?'；小限正落在本題宮位，今年本題會被直接推到台前':''));}
+    const sr=c.activeSolarReturn||c.solarReturn;const srA=A(sr?.aspects).filter(a=>/ASC|MC/.test(String(a.b))||/ASC|MC/.test(String(a.a))).filter(a=>a.orb<=3).slice(0,3);if(srA.length)lines.push('太陽回歸（今年）打到四角的相位：'+srA.map(a=>zh(a.a)+a.name+zh(a.b)+'（差'+(a.orb||0).toFixed(1)+'度）').join('、')+'—回歸盤的四角相位是今年哪條軸被點亮');
+    // yearly
+    const refY=new Date(c.input?.reference||c.transits?.utc||Date.now()).getUTCFullYear(),years=askedYears(q,refY),birth=new Date(c.input?.utc||0),ascSign=Number.isFinite(c.houses?.angles?.ASC)?signOf(c.houses.angles.ASC):null;
+    const yearLine=y=>{const d=new Date(Date.UTC(y,6,1));const parts=[['Saturn','土星過'],['Jupiter','木星過']].map(([b,lab])=>{const lon=eclLon(b,d);if(lon==null)return null;const h=houseOf(lon,cusps);return lab+h+'宮（'+(HOUSE_LIFE[h]||'')+'）'+(b==='Saturn'?'→那裡收緊、要熬、要負責':'→那裡放大、有機會')+(cfg.houses.includes(h)?'，正在本題宮位上':'');}).filter(Boolean);
+      let age=y-birth.getUTCFullYear();if(Number.isFinite(age)&&ascSign!=null){const ph=((age%12)+12)%12+1;const lord=RULER[(ascSign+ph-1)%12];parts.push('小限'+ph+'宮（'+(HOUSE_LIFE[ph]||'')+'），年主'+zh(lord)+(cfg.houses.includes(ph)?'—那一年本題被推到台前':''));}
+      return y+'：'+(parts.length?parts.join('；'):'未算');};
+    if(cusps){lines.push('所問年份逐年訊號：\n'+years.map(yearLine).join('\n'));lines.push('過去三年回看（只用這裡寫的，不要替他編事件）：\n'+[refY-3,refY-2,refY-1].map(yearLine).join('\n'));}
     if(asksTiming(q))lines.push('原題問時間：用土星、木星進出本題宮位與行運精準相位的日期當區間；月亮與內行星只定日子不定年。');
     return lines.join('\n');
   }
-  const GENERIC_FOCUS={
-    liuyao:{career:'用神：官鬼看職位與公司、父母看文書合約與單位、妻財看薪水；世爻是你自己。',wealth:'用神：妻財；兄弟動是分錢，官鬼看支出壓力，子孫是財源。',love:'用神：男看妻財、女看官鬼；應爻看對方，世應生合沖剋先定關係走向。',health:'用神：官鬼為病、世爻為身、子孫為醫藥；官鬼旺動剋世要特別看。',move:'用神：父母看文書，世應看去留，遷移看動爻與月日。',general:'先定世爻（自己）與應爻（對方／環境），再定題目用神。'},
-    liuren:{career:'先看官鬼、父母與日干上神，三傳有無官動、貴人順逆。',wealth:'先看妻財與日干上神、財爻旺衰及三傳是否生合日干。',love:'男看妻財女看官鬼，再看日辰（我）與支辰（對方）上神相生相剋。',health:'看官鬼為病、日干旺衰與三傳是否剋日。',move:'看驛馬、遷移與三傳動向。',general:'先看日支上神與三傳初中末的走向。'},
-    meihua:{career:'體為自己、用為工作與公司；官方與長官看體用生剋，互卦看中途，變卦看結局。',wealth:'體用生剋定財：用生體得財、體剋用亦可得、體生用是付出。',love:'體為自己、用為對方；用生體對方主動，體生用是你在追。',health:'體卦旺相為吉；用剋體為病，變卦看轉機。',move:'看動爻與變卦方向，互卦為過程。',general:'先定體用，再讀本互變三段。'},
-    yijing:{career:'看本卦卦辭與動爻爻辭對「位」與「進退」的說法。',wealth:'看爻辭對得失、利不利的說法。',love:'看爻辭對相遇、相應、分合的說法。',health:'看爻辭對憂、疾、吉凶的說法。',move:'看爻辭對行、往、利涉的說法。',general:'先讀本卦處境，再讀動爻與之卦變化。'},
-    name:{general:'先音形義與使用場合，再看數理、三才與生肖；比較候選時先列不可接受的硬傷。'},
-    compat:{general:'先各自定盤底色與喜忌，再看雙方互相補或壓；夫妻宮／日支互動最先講。'},
-    personality:{general:'五軸是本地模型，不等於臨床；講長處、拉扯與調整，不推事件。'},
-    tarot:{general:'先看結果位與核心位是否同向；宮廷牌才推人，Ace 不是宮廷牌；花色速度配數字階段才能給時間。'},
-    lenormand:{general:'先定代表牌與靠近它的牌，再讀連續片段；雷諾曼無逆位。'},
-    ootk:{general:'逐輪看對原題新增了什麼判斷，最後合成方向與最強反證。'},
-    oracle:{general:'先讀籤詩原文與條件，再接本題；典故名不是本人經歷。'}
-  };
   /* ── 其他十一種方法的本題焦點 ── */
   const REL_LIFE={官鬼:'職位、公司、壓力、病、對女命也指對象',父母:'文書、合約、單位、長輩、庇護',妻財:'錢、薪水、對男命也指對象',子孫:'解憂、順心、醫藥，但會剋官（工作題看它動不動）',兄弟:'同事競爭、分錢、阻隔'};
   function liuyaoUseGod(domain,gender){return domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財','子孫']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼','子孫']:domain==='move'?['父母','子孫']:['官鬼','妻財'];}
@@ -619,6 +628,19 @@
     return lines.join('\n');
   }
   function focusPersonality(c,q){if(!c?.axes&&!c?.traits)return null;const t=A(c.traits).slice(0,3).map(x=>x.name||x.label||x).join('、');return '這是本地五軸生日模型，不是心理測驗：先用'+(t||'各軸')+'講他在本題裡會怎麼反應、卡在哪、怎麼調整；不用類型推事件，也不推別人心意。';}
+  const GENERIC_FOCUS={
+    liuyao:{career:'用神：官鬼看職位與公司、父母看文書合約與單位、妻財看薪水；世爻是你自己。',wealth:'用神：妻財；兄弟動是分錢，官鬼看支出壓力，子孫是財源。',love:'用神：男看妻財、女看官鬼；應爻看對方，世應生合沖剋先定關係走向。',health:'用神：官鬼為病、世爻為身、子孫為醫藥；官鬼旺動剋世要特別看。',move:'用神：父母看文書，世應看去留，遷移看動爻與月日。',general:'先定世爻（自己）與應爻（對方／環境），再定題目用神。'},
+    liuren:{career:'先看官鬼、父母與日干上神，三傳有無官動、貴人順逆。',wealth:'先看妻財與日干上神、財爻旺衰及三傳是否生合日干。',love:'男看妻財女看官鬼，再看日辰（我）與支辰（對方）上神相生相剋。',health:'看官鬼為病、日干旺衰與三傳是否剋日。',move:'看驛馬、遷移與三傳動向。',general:'先看日支上神與三傳初中末的走向。'},
+    meihua:{career:'體為自己、用為工作與公司；互卦看中途，變卦看結局。',wealth:'體用生剋定財：用生體得財、體剋用亦可得、體生用是付出。',love:'體為自己、用為對方；用生體對方主動，體生用是你在追。',health:'體卦旺相為吉；用剋體為病，變卦看轉機。',move:'看動爻與變卦方向，互卦為過程。',general:'先定體用，再讀本互變三段。'},
+    yijing:{career:'看本卦卦辭與動爻爻辭對「位」與「進退」的說法。',wealth:'看爻辭對得失、利不利的說法。',love:'看爻辭對相遇、相應、分合的說法。',health:'看爻辭對憂、疾、吉凶的說法。',move:'看爻辭對行、往、利涉的說法。',general:'先讀本卦處境，再讀動爻與之卦變化。'},
+    name:{general:'先音形義與使用場合，再看數理、三才與生肖；比較候選時先列不可接受的硬傷。'},
+    compat:{general:'先各自定盤底色與喜忌，再看雙方互相補或壓；夫妻宮／日支互動最先講。'},
+    personality:{general:'五軸是本地模型，不等於臨床；講長處、拉扯與調整，不推事件。'},
+    tarot:{general:'先看結果位與核心位是否同向；宮廷牌才推人，Ace 不是宮廷牌；花色速度配數字階段才能給時間。'},
+    lenormand:{general:'先定代表牌與靠近它的牌，再讀連續片段；雷諾曼無逆位。'},
+    ootk:{general:'逐輪看對原題新增了什麼判斷，最後合成方向與最強反證；只讀有效完成的輪次，結論只能到已完成的那一輪為止。'},
+    oracle:{general:'先讀籤詩原文與條件，再接本題；典故名不是本人經歷。'}
+  };
   function focusGeneric(method,q){const t=GENERIC_FOCUS[method];if(!t)return null;const domain=detectDomain(q);const text=t[domain]||t.general;return text?'本題（'+DOMAIN_LABEL[domain]+'）'+text+(asksTiming(q)?'原題問時間：有具名取法才給區間，並說出依據。':''):null;}
   function focusFor(e,question,section){
     try{
@@ -693,7 +715,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt41',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt42',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
