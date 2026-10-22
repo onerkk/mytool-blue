@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single47',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single48',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -179,7 +179,18 @@
     add('互錯綜（只補充卦形）',Object.entries(v.complementaryViews||{}).map(([side,p])=>({side,...Object.fromEntries(['mutual','overturned','opposite'].map(k=>[k,gua(p[k]?.hexagram)]))})));
   }
   function meihua(ctx){const{c,section:s,add}=ctx,m=s('本互變與起卦輸入')||c,tri=x=>x&&x.name?x.name+(x.nat||'')+'('+(x.el||'')+')':null,hx=x=>x?(x.n||'')+(x.j?'：'+x.j:''):null;add('起卦與本互變',{上卦:tri(c.up),下卦:tri(c.lo),動爻:c.dong,體卦:tri(c.tiG),用卦:tri(c.yoG),起卦時點:c.castContext?.timestamp,本卦:hx(c.ben),互卦:hx(c.hu),變卦:hx(c.bian),互卦取法:c.nuclear?.exception?c.nuclear.note:undefined});
-    if(m.movingLine)add('本卦動爻爻辭（原典：成卦先看爻辭；以時間數字起的先天卦以體用為主、爻辭參照）',m.movingLine.hexagram+m.movingLine.label+'：'+m.movingLine.text);add('原體四階段實際作用',s('原體四階段作用'));add('進退與時間界線',P(c,['analysis','timing','risk','strategy','yingQi']),1);}
+    if(m.movingLine)add('本卦動爻爻辭（原典：成卦先看爻辭；以時間數字起的先天卦以體用為主、爻辭參照）',m.movingLine.hexagram+m.movingLine.label+'：'+m.movingLine.text);add('原體四階段實際作用',s('原體四階段作用'));
+    const an=c.analysis||{},nb=an.narrativeBlocks||{},yq=c.yingQi||an.yingQi||{},tm=c.timing||an.timingFull||{},rk=c.risk||{},st=c.strategy||{};
+    const WS={旺:'當令最強',相:'有力',休:'退氣',囚:'受困',死:'無力'};
+    const L=[];
+    if(an.tiYong)L.push('體用：'+an.tiYong.rel+'（'+(an.tiYong.judge||'')+'）—'+(an.tiYong.desc||'')+'；體卦'+(an.wangShuai?.ti?.level?WS[an.wangShuai.ti.level]||an.wangShuai.ti.level:'')+'、用卦'+(an.wangShuai?.yo?.level?WS[an.wangShuai.yo.level]||an.wangShuai.yo.level:'')+'（本節令'+(an.wangShuai?.ti?.monthZhi||'')+'月）');
+    if(nb.situation)L.push('處境：'+nb.situation);if(nb.coreTension)L.push('張力：'+nb.coreTension);if(nb.trend)L.push('走向：'+nb.trend);if(nb.risk&&nb.risk!==nb.trend)L.push('風險：'+nb.risk);
+    if(an.eventNature)L.push('事情的性質（本卦五行取象）：'+(an.eventNature.label||'')+'—'+A(an.eventNature.events).join('、')+'；節奏'+(an.eventNature.speed||'')+(an.eventNature.timing?'；對應季節候選：'+an.eventNature.timing:''));
+    if(tm.label||tm.windowLabel)L.push('應期：'+(tm.label||tm.windowLabel||'')+(tm.label&&(tm.range||tm.windowLabel)?'（'+(tm.range||tm.windowLabel)+'）':'')+(tm.note?'；'+tm.note:''));
+    if(yq.jiTxt||yq.layerTxt)L.push('應期候選（卦氣）：'+[yq.layerTxt,yq.jiTxt,yq.baiTxt].filter(Boolean).join('；'));
+    if(A(st.advice).length)L.push('站內策略傾向：'+st.advice.join('、')+'（'+({wait:'先等',push:'可推',hold:'守住',retreat:'退一步'}[st.mode]||'')+'）');
+    if(A(rk.points).length)L.push('風險提醒：'+rk.points.join('；'));
+    add('進退與時間界線（引擎已寫成句）',L.join('\n'));}
   function name(ctx){const{section:s,add}=ctx,core=s('原名與候選、拆分及比較條件')||{};add('比較條件',P(core,['surname','purpose','baseline','candidateNames','criteria']));
     const grids=g=>({status:g?.status,grids:A(g?.grids).map(v=>[v.role,v.num,v.formula,v.originalNumerology?.theme,v.originalNumerology?.tone,v.originalNumerology?.summary,v.commonModernTable?.level]),sanCai:{configuration:g?.sanCai?.configuration,profile:g?.sanCai?.profile,versions:A(g?.sanCai?.versions).map(v=>[v.profile,v.level]),relations:g?.sanCai?.relations},yinYang:g?.yinYang?.sequence});
     A(s('所有姓名實算')).forEach(p=>{add(p.name+'字音形義：字/採筆畫/康熙/現代/候選讀音/字義/部首/字根',A(p.characters).map(v=>row([v.char,v.stroke,v.kangxi,v.modern,v.readings,v.meaning,v.radical,v.roots])).join('\n'));add(p.name+'主讀數理（五格欄序：格/數/公式/原著主題/傾向/摘要/通行版）',{role:p.comparisonRole,strokeBasis:p.inputPolicy?.strokeBasis,sancaiProfile:p.inputPolicy?.sancaiProfile,readingConfirmation:p.phonetic?.resolution?.confirmedReading,toneSequence:p.phonetic?.toneSequence,warnings:p.phonetic?.warnings,...grids(p.fiveGrids)});add(p.name+'筆畫異讀敏感性',{differences:p.strokeSensitivity?.differences,alternateBasis:p.strokeSensitivity?.alternateBasis,alternate:p.strokeSensitivity?.alternateFiveGrids?{grids:A(p.strokeSensitivity.alternateFiveGrids.grids).map(g=>[g.role,g.num,g.formula,g.originalNumerology?.theme,g.originalNumerology?.tone]),sanCai:{configuration:p.strokeSensitivity.alternateFiveGrids.sanCai?.configuration,versions:A(p.strokeSensitivity.alternateFiveGrids.sanCai?.versions).map(v=>[v.profile,v.level])},yinYang:p.strokeSensitivity.alternateFiveGrids.yinYang?.sequence}:null});add(p.name+'其他方法狀態',{zodiac:P(p.zodiac,['status','reason']),bazi:P(p.bazi,['status','reason']),nameGua:p.nameGua?{status:p.nameGua.status,movingLine:p.nameGua.movingLine,original:P(p.nameGua.original,['name','judgment','line']),changed:P(p.nameGua.changed,['name','judgment'])}:null});});
@@ -495,11 +506,16 @@
     if(asksTiming(q))lines.push('原題問時間：先看末傳與用神所落之支，再看沖空填空之日；課體候選日只是條件觸發。');
     return lines.join('\n');
   }
-  function focusMeihua(c,q){
-    if(!c?.ben)return null;const domain=detectDomain(q),lines=[];
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：體卦'+(c.tiG?.name||'?')+'（'+(c.tiG?.el||'?')+'，你自己）、用卦'+(c.yoG?.name||'?')+'（'+(c.yoG?.el||'?')+'，'+({career:'工作與公司',wealth:'錢與機會',love:'對方',health:'病與身體',move:'去處'}[domain]||'這件事')+'）：'+(c.ty?.r||'?')+(c.ty?.d?'—'+c.ty.d:''));
-    lines.push('本卦'+c.ben.n+'（'+(c.ben.j||'')+'）→互卦'+(c.hu?.n||'?')+'（過程）→變卦'+(c.bian?.n||'?')+'（'+(c.bian?.j||'')+'，結局）；動爻第'+(c.dong||'?')+'爻'+(c.summary?'。'+c.summary:''));
-    if(c.timing?.windowLabel)lines.push('時間感：'+c.timing.windowLabel+(c.timing.note?'；'+c.timing.note:''));
+  function focusMeihua(c,q,section){
+    if(!c?.ben)return null;const domain=detectDomain(q),lines=[],an=c.analysis||{},m=section&&section('本互變與起卦輸入')||{};
+    const REL={體生用:'你在貼力氣，回報少',用生體:'對方／環境在養你，省力',體剋用:'你能掌控，但要出力',用剋體:'被壓著、受制',比和:'同氣，平順、延續'};
+    const ab=r=>String(r||'').replace(/A/g,'體').replace(/B/g,'用');const relOf=r=>REL[ab(r)]||ab(r);
+    const hu=an.huGua||{},bi=an.bianGua||{};
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：體卦'+(c.tiG?.name||'?')+'（'+(c.tiG?.el||'?')+'，你自己）、用卦'+(c.yoG?.name||'?')+'（'+(c.yoG?.el||'?')+'，'+({career:'工作與公司',wealth:'錢與機會',love:'對方',health:'病與身體',move:'去處'}[domain]||'這件事')+'）');
+    lines.push('三段讀法：現在＝本卦'+(c.ben?.n||'')+'，'+(c.ty?.r||'?')+'—'+relOf(c.ty?.r)+'；中段＝互卦'+(c.hu?.n||'')+'（下互'+(hu.lowerRelation?'：'+hu.lowerRelation.replace('A','體').replace('B','用'):'')+'、上互'+(hu.upperRelation?'：'+hu.upperRelation.replace('A','體').replace('B','用'):'')+'）'+(hu.effect?'—'+hu.effect:'')+'；結局＝變卦'+(c.bian?.n||'')+'，'+ab(bi.changedUseRelation||'?')+'—'+relOf(bi.changedUseRelation)+(bi.effect?'；'+bi.effect:''));
+    if(m.movingLine)lines.push('動爻第'+(c.dong||'?')+'爻（'+(an.dongYao?.inYong?'在用卦，變化來自對方／環境':'在體卦，變化來自你自己')+'）爻辭「'+m.movingLine.label+'：'+m.movingLine.text+'」—爻辭是這件事的關鍵一句，結論要跟它對得上');
+    lines.push('答案的程度：本卦'+(c.ty?.f||an.tiYong?.judge||'')+'只是現在；結局以變卦為準，兩者不同向時要講「現在怎樣、後來怎樣」');
+    lines.push('時間規則：梅花只給近期／中段／後段三段和季節候選（'+(an.eventNature?.timing?'本卦五行→'+an.eventNature.timing:'')+(c.yingQi?.jiTxt?'；'+c.yingQi.jiTxt.split('；')[0]:'')+'），不給幾個月幾週；寫出「三到六個月」這種數字就是編造');
     return lines.join('\n');
   }
   function focusYijing(c,q){
@@ -589,7 +605,7 @@
   function focusFor(e,question,section){
     try{
       const gender=e.chart?.gender||e.chart?.input?.gender||e.chart?.participants?.gender||null,m=e.method,c=e.chart;
-      let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender):m==='meihua'?focusMeihua(c,question):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
+      let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender):m==='meihua'?focusMeihua(c,question,section):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
       if(!text)text=focusGeneric(m,question);
       return text?text+'\n（以上是引擎依題意挑出的閱讀順序與材料，不是結論；請用完整資料裁決，並把這裡的訊號講成生活裡的樣子。）':null;
     }catch(err){return null;}
