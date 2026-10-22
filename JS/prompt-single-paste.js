@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single59',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single60',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -321,7 +321,7 @@
     }
     if(e.method==='lenormand'&&A(d.records).length===9&&String(c.spreadType||c.lenormandData?.spreadType)==='nine'){const N=i=>d.records[i-1]?.name,g=ix=>ix.map(N).join('、');add('九宮格讀法（中心是核心；左欄已發生、中欄現在、右欄將來；上列想法意識、中列現實、下列潛在根基；四角是框住整件事的條件）','中心：'+N(5)+'；四角：'+g([1,3,7,9])+'；左欄：'+g([1,4,7])+'；中欄：'+g([2,5,8])+'；右欄：'+g([3,6,9])+'；上列：'+g([1,2,3])+'；下列：'+g([7,8,9])+'；兩條對角：'+g([1,5,9])+'／'+g([3,5,7]));}
     if(e.method==='lenormand'&&d.tableau){const tb=d.tableau,q=String(ctx.data.question||''),cellOf=id=>A(tb.cells).find(x=>x.id===id),dist=(a,b)=>{const x=cellOf(a),y=cellOf(b);return x&&y&&typeof x.row==='number'&&typeof y.row==='number'?Math.max(Math.abs(x.row-y.row),Math.abs(x.col-y.col)):null;};
-      const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪/,[34,15]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
+      const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪|賣場|副業|網拍|經營|開店|客人|訂單|營收|電商|店/,[34,15,3,20]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
       add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));
       add('大牌陣宮位：格/宮名/落入的牌（自宮：'+(A(tb.ownHouses).join('、')||'無')+'；四角：'+A(tb.corners).join('、')+'）',A(tb.houses).map(h=>h.house+h.houseName+'宮:'+h.card).join(' '),1);}
     if(e.method==='lenormand'){
@@ -354,12 +354,13 @@
   const GOD_LIFE={比肩:'同輩、合夥與比較；靠自己撐',劫財:'分錢、被搶資源、衝動花費',食神:'才華順手發揮、日子放鬆、口福',傷官:'想自己做主、不服管、口舌快、創意多',偏財:'外來或意外的機會財、投機、人情場合（男命也指異性緣）',正財:'固定收入、務實經營（男命也指正緣）',七殺:'壓力、硬碰硬、突發變故、小人（女命也指強勢對象）',正官:'職位、制度、主管與名分（女命也指正緣）',偏印:'偏門技能、想太多、表達被壓、孤獨感',正印:'貴人、文書證照、長輩或體制的保護'};
   const DOMAINS=[
     ['love',/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手|前任|老公|老婆|男友|女友|正緣|正缘|在一起|告白|追|約會|约会|心意|真心|愛我|爱我|想我|聯絡我|联络我|回我|他對我|她對我|他跟我|她跟我|性/],
-    ['career',/工作|事業|事业|職|职|轉職|转职|離職|离职|升遷|升迁|老闆|老板|主管|公司|面試|面试|創業|创业|開店|开店|副業|副业|考試|考试|學業|学业|讀書|读书/],
+    ['business',/副業|副业|賣場|卖场|網拍|网拍|生意|經營|经营|創業|创业|開店|开店|接案|工作室|品牌|客人|客戶|客户|訂單|订单|營收|营收|營業額|营业额|進貨|进货|庫存|库存|蝦皮|虾皮|電商|电商|攤|店/],
+    ['career',/工作|事業|事业|職|职|轉職|转职|離職|离职|升遷|升迁|老闆|老板|主管|公司|面試|面试|考試|考试|學業|学业|讀書|读书/],
     ['wealth',/財|财|錢|钱|收入|薪|投資|投资|股|債|债|貸|贷|營業額|营业额|淨賺|净赚|存款|買房|买房|借/],
     ['health',/健康|病|身體|身体|手術|手术|醫|医|檢查|检查|睡眠|焦慮|焦虑|憂鬱|抑郁|好轉|好转|康復|康复/],
     ['move',/搬|出國|出国|移民|留學|留学|旅行|換地方|换地方|遷移|迁移/]
   ];
-  const DOMAIN_LABEL={love:'感情',career:'事業／工作',wealth:'財務',health:'健康',move:'遷移／出國',general:'整體處境'};
+  const DOMAIN_LABEL={love:'感情',career:'事業／工作',business:'生意／副業',wealth:'財務',health:'健康',move:'遷移／出國',general:'整體處境'};
   function detectDomain(q){q=String(q||'');for(const [k,re] of DOMAINS)if(re.test(q))return k;return 'general';}
   const asksAmount=q=>/多少錢|多少元|幾塊|幾萬|幾千|多少|幾個|幾次|幾張|幾人|機率|百分之|幾成|中多少|賺多少|賠多少|多久能回本/.test(String(q||''));
   const AMOUNT_RULE='量化題（金額、次數、機率）：牌面、卦象與盤面都不會給數字，正文不造任何金額、次數或百分比；只答「會不會／大概沒有、很小、比期待少、有一筆」，題目本身有固定級距（例如發票獎級、考試及格線）時可以用級距的名稱，但不能挑一個數字說會中那個。';
@@ -390,7 +391,7 @@
     const sa=c.strengthAssessment||{},lean=sa.lean,p=c.pillars;
     const strengthText=sa.level?(sa.level+(lean?'，站內傾向'+lean.direction+'（'+lean.basis.join('、')+'）':''))+'；格局：'+(c.zhengGe?.geName||'未定'):null;
     if(strengthText)lines.push('本盤底色：'+strengthText+'。喜忌仍由你依格局、調候與病藥定，但定了就要貫徹到每一年的判斷。');
-    const want={career:['正官','七殺','正印','偏印','傷官','食神'],wealth:['正財','偏財','食神','傷官','劫財','比肩'],love:gender==='female'?['正官','七殺','比肩','劫財','傷官']:['正財','偏財','比肩','劫財'],health:['七殺','正官','偏印','劫財'],move:['偏財','傷官','七殺'],general:[]}[domain]||[];
+    const want={business:['正財','偏財','食神','傷官','比肩','劫財'],career:['正官','七殺','正印','偏印','傷官','食神'],wealth:['正財','偏財','食神','傷官','劫財','比肩'],love:gender==='female'?['正官','七殺','比肩','劫財','傷官']:['正財','偏財','比肩','劫財'],health:['七殺','正官','偏印','劫財'],move:['偏財','傷官','七殺'],general:[]}[domain]||[];
     const godsAt=[];['year','month','day','hour'].forEach(k=>{const g=c.gods?.[k];if(!g)return;const lab={year:'年',month:'月',day:'日',hour:'時'}[k];if(g.gan&&g.gan!=='日主')godsAt.push({god:g.gan,where:lab+'干'});A(g.zhi).forEach((x,i)=>godsAt.push({god:x,where:lab+'支'+(i===0?'本氣':'藏')}));});
     const rel=godsAt.filter(x=>want.includes(x.god)&&!/藏$/.test(x.where)),grouped=[];rel.forEach(x=>{const g=grouped.find(y=>y.god===x.god);if(g)g.where.push(x.where);else grouped.push({god:x.god,where:[x.where]});});
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的字：'+(grouped.length?grouped.map(x=>x.god+'（'+x.where.join('、')+'）—'+GOD_LIFE[x.god]).join('；'):'原局沒有直接對應的十神明透或本氣，要從大運流年補進來的字看')+(domain==='love'?'；日支'+c.pillars.day.zhi+'是夫妻宮，沖合空亡先看它':''));
@@ -409,8 +410,8 @@
   const HUA_LIFE={化祿:'順、有機會、有緣',化權:'想掌控、爭、衝突也在這',化科:'名聲、貴人、被看見',化忌:'卡住、損耗、放不下'};
   const SHA_SET=['擎羊','陀羅','火星','鈴星','地空','地劫'];
   const PALACE_LIFE={命:'你自己、整個人的狀態',兄弟:'兄弟姊妹、同輩、合夥',夫妻:'伴侶、親密關係',子女:'子女、下屬、作品',財帛:'收入、錢怎麼進來',疾厄:'身體、勞累、脾氣',遷移:'外面的機會、出門、換環境',交友:'同事、朋友、人際場',官祿:'工作本身、職位、事業',田宅:'家、房產、公司內部環境',福德:'心情、想法、享受與執念',父母:'主管、公司、長輩、文書證照'};
-  const PALACE_ROLE={career:{官祿:'工作本身與職位',命:'你在這件事裡的狀態',遷移:'換環境或外面的機會',財帛:'薪水收入',父母:'主管、公司與文書'},wealth:{財帛:'錢怎麼進來',田宅:'存得住的、資產',福德:'花錢與享受的心態',官祿:'靠工作賺的部分'},love:{夫妻:'伴侶與關係本身',福德:'你對感情的執念與心情',命:'你自己',子女:'親密與桃花'},health:{疾厄:'身體與病',命:'你的體質與狀態',父母:'醫療與照護'},move:{遷移:'出門、搬遷與外面的機會',命:'你自己',田宅:'家與根基'},general:{命:'你自己',財帛:'收入',官祿:'工作',夫妻:'關係'}};
-  const ZW_DOMAIN={career:['官祿','命宮','遷移','財帛','父母'],wealth:['財帛','田宅','福德','官祿'],love:['夫妻','福德','命宮','子女'],health:['疾厄','命宮','父母'],move:['遷移','命宮','田宅'],general:['命宮','財帛','官祿','夫妻']};
+  const PALACE_ROLE={business:{財帛:'生意的錢怎麼進來',官祿:'這門生意本身',遷移:'外面的市場與客流',福德:'你對它的投入與執念',交友:'客人與同行'},career:{官祿:'工作本身與職位',命:'你在這件事裡的狀態',遷移:'換環境或外面的機會',財帛:'薪水收入',父母:'主管、公司與文書'},wealth:{財帛:'錢怎麼進來',田宅:'存得住的、資產',福德:'花錢與享受的心態',官祿:'靠工作賺的部分'},love:{夫妻:'伴侶與關係本身',福德:'你對感情的執念與心情',命:'你自己',子女:'親密與桃花'},health:{疾厄:'身體與病',命:'你的體質與狀態',父母:'醫療與照護'},move:{遷移:'出門、搬遷與外面的機會',命:'你自己',田宅:'家與根基'},general:{命:'你自己',財帛:'收入',官祿:'工作',夫妻:'關係'}};
+  const ZW_DOMAIN={business:['財帛','官祿','遷移','福德','交友'],career:['官祿','命宮','遷移','財帛','父母'],wealth:['財帛','田宅','福德','官祿'],love:['夫妻','福德','命宮','子女'],health:['疾厄','命宮','父母'],move:['遷移','命宮','田宅'],general:['命宮','財帛','官祿','夫妻']};
   function zwPalaceName(n){return String(n||'').replace('宮','');}
   function focusZiwei(c,q){
     if(!A(c?.palaces).length)return null;
@@ -448,7 +449,7 @@
   }
   function eclLon(body,date){try{const AE=root.Astronomy;if(!AE||!AE.GeoVector)return null;const v=AE.GeoVector(AE.Body[body],date,true);return ((AE.Ecliptic(v).elon%360)+360)%360;}catch(e){return null;}}
   const signCount=(a,b)=>((b-a)%12+12)%12+1;
-  const VD_DOMAIN={career:[10,6,2,11],wealth:[2,11,5,9],love:[7,5,11,2],health:[1,6,8,12],move:[12,9,4,3],general:[1,10,7,2]};
+  const VD_DOMAIN={business:[2,11,7,10],career:[10,6,2,11],wealth:[2,11,5,9],love:[7,5,11,2],health:[1,6,8,12],move:[12,9,4,3],general:[1,10,7,2]};
   const HOUSE_LIFE={1:'自己、身體與整體走向',2:'收入、家庭、說話',3:'努力、手足、短途',4:'家、房產、母親、安定',5:'子女、戀愛、創作、投機',6:'工作日常、債務、疾病、競爭',7:'伴侶、合作、對手',8:'變故、他人之財、長壽',9:'運氣、父親、長途、信念',10:'事業、名聲、職位',11:'收穫、人脈、願望',12:'消耗、外地、隱退、睡眠'};
   const YOGA_LIFE={Bhadra:'水星在角宮入廟或入自宮：腦筋、專業與表達是本錢，靠本事能站穩',Ruchaka:'火星強：行動力與膽識',Hamsa:'木星強：見識、貴人與原則',Malavya:'金星強：魅力、享受與人緣',Sasa:'土星強：耐力、紀律與長期經營',Vesi:'太陽後一宮有星：有人在你背後推',Vosi:'太陽前一宮有星：你習慣先開路',Ubhayachara:'太陽兩側都有星：資源從兩邊來',Vipareeta:'困難宮主互換：別人出事反而讓你得利，逆境翻盤的格',Yogakaraka:'同時掌角宮與三分宮：這顆星走運時最有力',Daama:'行星分布六宮：多方涉獵、人脈廣',Amala:'月亮或上升第十宮有吉星：名聲乾淨、做事有口碑',Kaahala:'第四宮主與木星角宮：固執但有根基',Bheri:'多宮有星：生活面廣、不單靠一門',Mridanga:'名望與人緣',Brahma:'學問與長壽',Gaja:'月木角宮：貴人與財運','Gaja Kesari':'月木角宮：貴人與名聲','Chandra-Mangala':'月火同宮：靠自己賺',Budhaditya:'日水同宮：聰明、口才',Dhana:'財宮連結：賺錢有格',Raja:'角宮與三分宮主連結：地位與名望'};
   const yogaLife=n=>{const k=Object.keys(YOGA_LIFE).find(k=>String(n||'').startsWith(k)||String(n||'').includes(k));return k?YOGA_LIFE[k]:'';};
@@ -485,7 +486,7 @@
     if(asksTiming(q))lines.push('原題問時間：先用副運與次副運換手的日期當區間，再用行運土星、木星過本題宮位確認；不要用流年宮數字直接換成日期。');
     return lines.join('\n');
   }
-  const AS_DOMAIN={career:{houses:[10,6,2],planets:['Saturn','Sun','Jupiter']},wealth:{houses:[2,8,11],planets:['Venus','Jupiter','Saturn']},love:{houses:[7,5,8],planets:['Venus','Mars','Moon']},health:{houses:[1,6,12],planets:['Mars','Saturn','Moon']},move:{houses:[9,4,3],planets:['Jupiter','Uranus','Moon']},general:{houses:[1,10,7],planets:['Sun','Moon','Saturn']}};
+  const AS_DOMAIN={business:{houses:[2,10,7],planets:['Venus','Jupiter','Mercury']},career:{houses:[10,6,2],planets:['Saturn','Sun','Jupiter']},wealth:{houses:[2,8,11],planets:['Venus','Jupiter','Saturn']},love:{houses:[7,5,8],planets:['Venus','Mars','Moon']},health:{houses:[1,6,12],planets:['Mars','Saturn','Moon']},move:{houses:[9,4,3],planets:['Jupiter','Uranus','Moon']},general:{houses:[1,10,7],planets:['Sun','Moon','Saturn']}};
   function houseOf(lon,cusps){if(!Array.isArray(cusps)||cusps.length<12||!Number.isFinite(lon))return null;for(let i=0;i<12;i++){const a=cusps[i],b=cusps[(i+1)%12];const d=((b-a)%360+360)%360,x=((lon-a)%360+360)%360;if(x<d||d===0)return i+1;}return null;}
   const PLANET_LIFE={Sun:'自我、名聲、父親或老闆',Moon:'情緒、需要、日常節奏',Mercury:'腦筋、溝通、文書',Venus:'人緣、錢、喜好',Mars:'行動、衝突、幹勁',Jupiter:'機會、擴張、貴人',Saturn:'規矩、責任、壓力、慢',Uranus:'突變、想掙脫',Neptune:'模糊、理想、消耗',Pluto:'權力、徹底改造',NorthNode:'要走的方向',SouthNode:'習慣的老路'};
   function focusAstro(c,q){
@@ -525,7 +526,7 @@
   }
   /* ── 其他十一種方法的本題焦點 ── */
   const REL_LIFE={官鬼:'職位、公司、壓力、病、對女命也指對象',父母:'文書、合約、單位、長輩、庇護',妻財:'錢、薪水、對男命也指對象',子孫:'解憂、順心、醫藥，但會剋官（工作題看它動不動）',兄弟:'同事競爭、分錢、阻隔'};
-  function liuyaoUseGod(domain,gender){return domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財','子孫']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼','子孫']:domain==='move'?['父母','子孫']:['官鬼','妻財'];}
+  function liuyaoUseGod(domain,gender){return domain==='career'?['官鬼','父母']:domain==='business'?['妻財','子孫']:domain==='wealth'?['妻財','子孫']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼','子孫']:domain==='move'?['父母','子孫']:['官鬼','妻財'];}
   const LY_ROLE={用神:'用神（這件事本身）',元神:'元神（生用神的，給養分）',忌神:'忌神（克用神的，威脅）',仇神:'仇神（克元神、生忌神，間接搗亂）',其他:''};
   const LY_WS={旺:'當令最強',相:'有力',休:'退氣、弱一點',囚:'受困、弱',死:'無力'};
   function lyAssess(c,pos){const tgt=A(c.interpretation?.targets);for(const t of tgt){const cand=A(t.candidates).find(x=>x.position===pos);if(cand&&cand.assessment)return cand.assessment;}return null;}
@@ -563,7 +564,7 @@
   const LR_TYPE={元首:'上剋下，名正言順，事從上頭來',重審:'下剋上，由下反上，先亂後定',知一:'兩可取近，事在近處、擇一',涉害:'涉害深者，過程費力、繞路',遙剋:'遠處動手，事由遠方或間接而來',昴星:'無剋取昴，暗中有驚、事情不明',虎視:'昴星陽日，暗中有驚',冬蛇掩目:'昴星陰日，閉目不見，事多隱晦',別責:'無法取傳，別求出路',八專:'干支同位，兩人同心或同謀',伏吟:'原地不動，事情拖著',返吟:'來回反覆，動盪不定',亨通:'初傳生日干，事情對你有利',盤珠:'三傳不出四課，事情在原處打轉、不往外走',孤寡:'發用旬空，起頭是空的、孤立',鬼墓:'日辰墓或官鬼入傳，壓力沉、事情悶住',迍福:'禍福相雜，有利也有阻',三奇:'奇儀入傳，逢凶化吉的助力',六儀:'旬首入傳，有貴氣與解救',雜狀物類:'依初傳五行與六親取象'};
   function focusLiuren(c,q,gender,section){
     if(!A(c?.transmissions).length)return null;const domain=detectDomain(q),lines=[];
-    const wants=domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼']:domain==='move'?['父母']:['官鬼','妻財'];
+    const wants=domain==='career'?['官鬼','父母']:domain==='business'||domain==='wealth'?['妻財']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼']:domain==='move'?['父母']:['官鬼','妻財'];
     const tr=c.transmissions,gen=g=>LR_GENERAL[g]?'（'+LR_GENERAL[g]+'）':'';
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；'));
     const onTr=tr.filter(t=>wants.includes(t.kinship));
@@ -584,7 +585,7 @@
     const REL={體生用:'你在貼力氣，回報少',用生體:'對方／環境在養你，省力',體剋用:'你能掌控，但要出力',用剋體:'被壓著、受制',比和:'同氣，平順、延續'};
     const ab=r=>String(r||'').replace(/A/g,'體').replace(/B/g,'用');const relOf=r=>REL[ab(r)]||ab(r);
     const hu=an.huGua||{},bi=an.bianGua||{};
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：體卦'+(c.tiG?.name||'?')+'（'+(c.tiG?.el||'?')+'，你自己）、用卦'+(c.yoG?.name||'?')+'（'+(c.yoG?.el||'?')+'，'+({career:'工作與公司',wealth:'錢與機會',love:'對方',health:'病與身體',move:'去處'}[domain]||'這件事')+'）');
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：體卦'+(c.tiG?.name||'?')+'（'+(c.tiG?.el||'?')+'，你自己）、用卦'+(c.yoG?.name||'?')+'（'+(c.yoG?.el||'?')+'，'+({business:'這門生意',career:'工作與公司',wealth:'錢與機會',love:'對方',health:'病與身體',move:'去處'}[domain]||'這件事')+'）');
     lines.push('三段讀法：現在＝本卦'+(c.ben?.n||'')+'，'+(c.ty?.r||'?')+'—'+relOf(c.ty?.r)+'；中段＝互卦'+(c.hu?.n||'')+'（下互'+(hu.lowerRelation?'：'+hu.lowerRelation.replace('A','體').replace('B','用'):'')+'、上互'+(hu.upperRelation?'：'+hu.upperRelation.replace('A','體').replace('B','用'):'')+'）'+(hu.effect?'—'+hu.effect:'')+'；結局＝變卦'+(c.bian?.n||'')+'，'+ab(bi.changedUseRelation||'?')+'—'+relOf(bi.changedUseRelation)+(bi.effect?'；'+bi.effect:''));
     if(m.movingLine)lines.push('動爻第'+(c.dong||'?')+'爻（'+(an.dongYao?.inYong?'在用卦，變化來自對方／環境':'在體卦，變化來自你自己')+'）爻辭「'+m.movingLine.label+'：'+m.movingLine.text+'」—爻辭是這件事的關鍵一句，結論要跟它對得上');
     lines.push('答案的程度：本卦'+(c.ty?.f||an.tiYong?.judge||'')+'只是現在；結局以變卦為準，兩者不同向時要講「現在怎樣、後來怎樣」');
@@ -599,7 +600,7 @@
     const hx=A(c.complementaryViews||c.expositions).find(x=>x.side==='original');if(hx?.mutual?.name)lines.push('互卦'+hx.mutual.name+'（中間過程的樣子）'+(hx.opposite?.name?'、錯卦'+hx.opposite.name+'（反面）':'')+'—只作補充，不蓋過卦辭');
     return lines.join('\n');
   }
-  const TAROT_KEY={love:['loveUp','loveRv'],career:['careerUp','careerRv'],wealth:['wealthUp','wealthRv'],health:['healthUp','healthRv'],move:['up','rv'],general:['up','rv']};
+  const TAROT_KEY={love:['loveUp','loveRv'],business:['wealthUp','wealthRv'],career:['careerUp','careerRv'],wealth:['wealthUp','wealthRv'],health:['healthUp','healthRv'],move:['up','rv'],general:['up','rv']};
   function focusTarot(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),[ku,kr]=TAROT_KEY[domain]||TAROT_KEY.general,lines=[];
     const meaning=r=>{const card=A(c?.cards).find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
@@ -633,7 +634,7 @@
   function focusLenormand(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),lines=[],n=recs.length;
     const spread=String(c?.spreadType||d.spreadType||''),nm=i=>recs[i-1]?recs[i-1].name:'?',pr=c?.personRep||d.personRep;
-    const theme={career:[14,35,19,27],wealth:[34,15,20],love:[24,25,28,29],health:[5,8,36],move:[1,3,17]}[domain]||[];
+    const theme={business:[34,15,3,20,35,14,24],career:[14,35,19,27],wealth:[34,15,20],love:[24,25,28,29],health:[5,8,36],move:[1,3,17]}[domain]||[];
     const present=theme.map(id=>recs.find(r=>r.id===id)).filter(Boolean);
     const md=c?.methodData||d.methodData||{};
     if(spread==='nine'&&n===9)lines.push('本題（'+DOMAIN_LABEL[domain]+'）九宮格：中心'+nm(5)+'是核心，先把它跟上下左右'+[2,4,6,8].map(nm).join('、')+'連成一句；左欄已發生，右欄是走向。');
@@ -642,7 +643,7 @@
     else if(spread==='branches'&&A(md.branches).length)lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+md.branches.length+'路分線：'+md.branches.map((b,i)=>'「'+(b.entity||b.question||'')+'」'+[1,2,3].map(j=>nm(i*3+j)).join('、')).join('；')+'—每路各答一次原句子題。');
     else if(d.tableau)lines.push('本題（'+DOMAIN_LABEL[domain]+'）大牌陣：先找'+(pr?'本人'+pr.name:'本人（本次未聲明性別，先從題目對應的主題牌起）')+'周圍八張與所在橫列；離得越近越快。');
     else lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：中心'+nm(Math.ceil(n/2))+'是重點，整條讀成一句，不逐張念。');
-    lines.push(present.length?'題目對應的主題牌在牌面上：'+present.map(r=>r.name+'（'+(r.position||'第'+(recs.indexOf(r)+1)+'張')+'）').join('、')+'—它們旁邊的牌就是這件事的狀況':'題目對應的主題牌（'+({career:'狐狸、錨、塔、信',wealth:'魚、熊、戒指',love:'心、戒指、紳士、淑女',health:'大樹、棺材、十字架',move:'騎士、船、道路'}[domain]||'')+'）都沒出現：事情目前沒有直接落在本題上，用整條線的走向答，程度要保守');
+    lines.push(present.length?'題目對應的主題牌在牌面上：'+present.map(r=>r.name+'（'+(r.position||'第'+(recs.indexOf(r)+1)+'張')+'）').join('、')+'—它們旁邊的牌就是這件事的狀況':'題目對應的主題牌（'+({business:'魚、熊、船、花園、錨、狐狸',career:'狐狸、錨、塔、信',wealth:'魚、熊、戒指',love:'心、戒指、紳士、淑女',health:'大樹、棺材、十字架',move:'騎士、船、道路'}[domain]||'')+'）都沒出現：事情目前沒有直接落在本題上，用整條線的走向答，程度要保守');
     lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉；大樹、百合、錨這些慢牌不是壞牌，是穩與慢。');
     if(asksTiming(q))lines.push('原題問時間：雷諾曼只給快慢——離代表牌或中心越近越快、越遠越慢，騎士、鸛、船、信是快牌，山、錨、大樹、棺材是慢牌；大牌陣的格數不換算月份，沒有具名取法就不給日期。');
     return lines.join('\n');
@@ -658,7 +659,7 @@
   }
   function focusOracle(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};if(!d.poem&&!c?.p)return null;const domain=detectDomain(q),lines=[];
-    const catMap={career:['作事','求職','功名','謀望','仕途','職業'],wealth:['求財','財利','生意','經營','買賣'],love:['婚姻','求婚','姻緣','感情'],health:['疾病','病症','身體','健康'],move:['出行','行人','移徙','遠行','出外']};
+    const catMap={business:['求財','財利','生意','經營','買賣','開店'],career:['作事','求職','功名','謀望','仕途','職業'],wealth:['求財','財利','生意','經營','買賣'],love:['婚姻','求婚','姻緣','感情'],health:['疾病','病症','身體','健康'],move:['出行','行人','移徙','遠行','出外']};
     const cats=A(d.categories),hit=cats.filter(x=>x.present&&(catMap[domain]||[]).some(k=>String(x.name).includes(k)));
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）：先讀整首籤詩的方向'+(d.reading?.direction?'（'+d.reading.direction+'：'+(d.reading.summary||'')+'）':'')+'，再看對應事項'+(hit.length?hit.map(x=>'「'+x.name+'」'+(A(x.textFeatureTags).length?'（'+x.textFeatureTags.map(t=>({supportive:'有利',caution:'要小心',conditional:'有條件',negative:'不利',delay:'要等',waiting:'要等',late:'偏晚',early:'偏早'}[t]||'')).join('、')+'）':'')).join('、')+'—事項附記裡有條件或先後時，以附記為準，不用總吉意蓋過去':'（本籤沒有直接對應本題的事項，只能用整首方向與「凡事」附記）'));
     if(d.reading?.premises)lines.push('成立前提：'+d.reading.premises);
@@ -689,16 +690,16 @@
     const br=A(c.branchRelations);const strong=br.filter(r=>/六沖|六合|三合|相刑/.test(r.type));if(strong.length)lines.push('跨盤最強互動：'+strong.slice(0,4).map(r=>'甲'+({year:'年',month:'月',day:'日',hour:'時'}[r.aPillar]||r.aPillar)+r.aBranch+'與乙'+({year:'年',month:'月',day:'日',hour:'時'}[r.bPillar]||r.bPillar)+r.bBranch+r.type).join('；')+'—日柱之間的沖合最重，年柱其次');
     const dirA=A(c.directionalTenGods?.aViewsB).find(x=>x.partnerPillar==='day'),dirB=A(c.directionalTenGods?.bViewsA).find(x=>x.partnerPillar==='day');if(dirA||dirB)lines.push('對方在你命裡是什麼：'+(dirA?'甲看乙日主為'+dirA.tenGod+'（'+(GOD_LIFE[dirA.tenGod]||'')+'）':'')+(dirB?'；乙看甲日主為'+dirB.tenGod+'（'+(GOD_LIFE[dirB.tenGod]||'')+'）':''));
     if(c.scenario?.focus)lines.push('本次情境「'+(c.scenario.name||'')+'」要答的：'+c.scenario.focus);
-    const domain=detectDomain(q);lines.unshift('本題（'+DOMAIN_LABEL[domain]+'）合盤：先各自定盤底色，再看兩盤互動；'+({love:'感情題看雙方夫妻宮（日支）互動、對方在你命裡是什麼十神',career:'工作題看雙方官殺印的互補與日主誰管誰',wealth:'財務題看雙方財星互動與誰養誰',general:'先看日主關係與夫妻宮'}[domain]||'先看日主關係與夫妻宮'));
+    const domain=detectDomain(q);lines.unshift('本題（'+DOMAIN_LABEL[domain]+'）合盤：先各自定盤底色，再看兩盤互動；'+({love:'感情題看雙方夫妻宮（日支）互動、對方在你命裡是什麼十神',career:'工作題看雙方官殺印的互補與日主誰管誰',business:'合夥題看雙方財星與食傷互動、誰出錢誰出力',wealth:'財務題看雙方財星互動與誰養誰',general:'先看日主關係與夫妻宮'}[domain]||'先看日主關係與夫妻宮'));
     if(asksTiming(q))lines.push('原題問時間：合盤的時機看雙方大運、流年同步（運限同步段），兩人同時走到感情／工作運動的年份才是時間點；不從合沖數量換算日期。');
     return lines.join('\n');
   }
   function focusPersonality(c,q){if(!c?.axes&&!c?.traits)return null;const t=A(c.traits).slice(0,3).map(x=>x.name||x.label||x).join('、');return '本題（'+DOMAIN_LABEL[detectDomain(q)]+'）這是本地五軸生日模型，不是心理測驗：先用'+(t||'各軸')+'講他在本題裡會怎麼反應、卡在哪、怎麼調整；不用類型推事件，也不推別人心意'+(asksTiming(q)?'；五軸模型沒有時間軸，問時間只能說「看不出來」，不給區間':'')+'。';}
   const GENERIC_FOCUS={
-    liuyao:{career:'用神：官鬼看職位與公司、父母看文書合約與單位、妻財看薪水；世爻是你自己。',wealth:'用神：妻財；兄弟動是分錢，官鬼看支出壓力，子孫是財源。',love:'用神：男看妻財、女看官鬼；應爻看對方，世應生合沖剋先定關係走向。',health:'用神：官鬼為病、世爻為身、子孫為醫藥；官鬼旺動剋世要特別看。',move:'用神：父母看文書，世應看去留，遷移看動爻與月日。',general:'先定世爻（自己）與應爻（對方／環境），再定題目用神。'},
-    liuren:{career:'先看官鬼、父母與日干上神，三傳有無官動、貴人順逆。',wealth:'先看妻財與日干上神、財爻旺衰及三傳是否生合日干。',love:'男看妻財女看官鬼，再看日辰（我）與支辰（對方）上神相生相剋。',health:'看官鬼為病、日干旺衰與三傳是否剋日。',move:'看驛馬、遷移與三傳動向。',general:'先看日支上神與三傳初中末的走向。'},
-    meihua:{career:'體為自己、用為工作與公司；互卦看中途，變卦看結局。',wealth:'體用生剋定財：用生體得財、體剋用亦可得、體生用是付出。',love:'體為自己、用為對方；用生體對方主動，體生用是你在追。',health:'體卦旺相為吉；用剋體為病，變卦看轉機。',move:'看動爻與變卦方向，互卦為過程。',general:'先定體用，再讀本互變三段。'},
-    yijing:{career:'看本卦卦辭與動爻爻辭對「位」與「進退」的說法。',wealth:'看爻辭對得失、利不利的說法。',love:'看爻辭對相遇、相應、分合的說法。',health:'看爻辭對憂、疾、吉凶的說法。',move:'看爻辭對行、往、利涉的說法。',general:'先讀本卦處境，再讀動爻與之卦變化。'},
+    liuyao:{business:'用神：妻財（錢與客人）、子孫（財源與商品）；兄弟動是分錢與同行競爭，官鬼看平台與壓力。',career:'用神：官鬼看職位與公司、父母看文書合約與單位、妻財看薪水；世爻是你自己。',wealth:'用神：妻財；兄弟動是分錢，官鬼看支出壓力，子孫是財源。',love:'用神：男看妻財、女看官鬼；應爻看對方，世應生合沖剋先定關係走向。',health:'用神：官鬼為病、世爻為身、子孫為醫藥；官鬼旺動剋世要特別看。',move:'用神：父母看文書，世應看去留，遷移看動爻與月日。',general:'先定世爻（自己）與應爻（對方／環境），再定題目用神。'},
+    liuren:{business:'先看妻財與日干上神，三傳有無財生合日干、是否落空。',career:'先看官鬼、父母與日干上神，三傳有無官動、貴人順逆。',wealth:'先看妻財與日干上神、財爻旺衰及三傳是否生合日干。',love:'男看妻財女看官鬼，再看日辰（我）與支辰（對方）上神相生相剋。',health:'看官鬼為病、日干旺衰與三傳是否剋日。',move:'看驛馬、遷移與三傳動向。',general:'先看日支上神與三傳初中末的走向。'},
+    meihua:{business:'體為自己、用為這門生意；用生體得財，體生用是你在貼錢貼力。',career:'體為自己、用為工作與公司；互卦看中途，變卦看結局。',wealth:'體用生剋定財：用生體得財、體剋用亦可得、體生用是付出。',love:'體為自己、用為對方；用生體對方主動，體生用是你在追。',health:'體卦旺相為吉；用剋體為病，變卦看轉機。',move:'看動爻與變卦方向，互卦為過程。',general:'先定體用，再讀本互變三段。'},
+    yijing:{business:'看爻辭對利、往、貞、吝的說法，當成做下去划不划算。',career:'看本卦卦辭與動爻爻辭對「位」與「進退」的說法。',wealth:'看爻辭對得失、利不利的說法。',love:'看爻辭對相遇、相應、分合的說法。',health:'看爻辭對憂、疾、吉凶的說法。',move:'看爻辭對行、往、利涉的說法。',general:'先讀本卦處境，再讀動爻與之卦變化。'},
     name:{general:'先音形義與使用場合，再看數理、三才與生肖；比較候選時先列不可接受的硬傷。'},
     compat:{general:'先各自定盤底色與喜忌，再看雙方互相補或壓；夫妻宮／日支互動最先講。'},
     personality:{general:'五軸是本地模型，不等於臨床；講長處、拉扯與調整，不推事件。'},

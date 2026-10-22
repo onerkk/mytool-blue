@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict');
 const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-packet'].forEach(env.load);const x=examples(c),P=c.JYPromptPacket;
-const Q={career:'目前的工作適合我嗎？',love:'他會跟我在一起嗎？',wealth:'明年財運會變好嗎？',timing:'我什麼時候會換工作？',amount:'下個月業績能做到多少？',third:'公司的女同事喜歡我嗎？',decision:'我該不該離職？',health:'媽媽的病會好轉嗎？',year:'2028年我適合創業嗎？',two:'我會升遷嗎？薪水會漲嗎？',rebound:'我們會復合嗎？'};
+const Q={career:'目前的工作適合我嗎？',love:'他會跟我在一起嗎？',wealth:'明年財運會變好嗎？',timing:'我什麼時候會換工作？',amount:'下個月業績能做到多少？',third:'公司的女同事喜歡我嗎？',decision:'我該不該離職？',health:'媽媽的病會好轉嗎？',year:'2028年我適合創業嗎？',two:'我會升遷嗎？薪水會漲嗎？',rebound:'我們會復合嗎？',business:'我蝦皮水晶賣場這副業該一直堅持嗎？'};
 const CHART=['bazi','ziwei','vedic','astro'],CARD=['tarot','lenormand','ootk'],GUA=['liuyao','liuren','meihua','yijing'],OTHER=['name','compat','personality','oracle'];
 const NO_PAST=[...CARD,...GUA,'oracle','name','personality'];
 const problems=[];let checked=0;
@@ -32,6 +32,9 @@ for(const [method,chart] of Object.entries(x.charts)){
     if(['bazi','ziwei','vedic','astro'].includes(method)&&type==='love'&&!/夫妻|7宮|伴侶/.test(f))bad('love question but no partner palace/house');
     if(/undefined|NaN|\?宮|\?（/.test(f))bad('undefined/NaN in focus');
     if(type==='year'&&CHART.includes(method)&&!/2028/.test(f))bad('named year not in focus');
+    if(type==='business'&&!/生意／副業/.test(f)&&!['ootk','personality'].includes(method))bad('business question not labeled as business');
+    if(type==='business'&&method==='lenormand'&&!/魚|船|熊|牌3/.test(f))bad('business question but no money card');
+    if(type==='business'&&['bazi'].includes(method)&&!/正財|偏財|食神|傷官/.test(f))bad('business question but no wealth gods');
     if(type==='two'&&!/原句子題核對（每一題都要各自答）/.test(body)&&!/子題/.test(body))bad('two sub-questions not listed in Chinese');
     if(type==='health'&&CHART.includes(method)&&!/疾厄|6宮|1宮|健康|身體|官殺|七殺|正官|日主/.test(f))bad('health question but no health palace/house');
     if(type==='rebound'&&['bazi','ziwei','vedic','astro'].includes(method)&&!/夫妻|7宮|伴侶/.test(f))bad('rebound is a love question but no partner palace');
