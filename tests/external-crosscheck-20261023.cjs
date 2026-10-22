@@ -56,7 +56,7 @@ test('every method delivers a question-focus block, no English keys leak into it
     const segNoNames=seg.split('\n').filter(l=>!l.startsWith('已成立的格')&&!l.startsWith('比較對象')).join('\n').replace(/Ace|Book T/g,'');assert(!/[A-Za-z]{4,}/.test(segNoNames),method+' english key in focus: '+segNoNames.match(/[A-Za-z]{4,}/));
     assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=12000&&P.utf8(body)<=28000,method);
     if(method==='bazi'){assert(seg.includes('傷官撞正官'));assert(seg.includes('過去三年回看'));assert(seg.includes('2023癸卯'));}
-    if(method==='ziwei'){assert(seg.includes('官祿（巳）'));assert(seg.includes('流年命宮走本命'));}
+    if(method==='ziwei'){assert(seg.includes('官祿宮（這題裡＝工作本身與職位）'));assert(seg.includes('流年命宮落本命'));assert(seg.includes('正沖你的命宮'));}
     if(method==='vedic'){assert(seg.includes('主運'));assert(seg.includes('過去三年回看'));}if(method==='astro'){assert(seg.includes('行運'));assert(seg.includes('過去三年回看'));}}
 });
 test('optional: iztro cross-check when installed',()=>{
