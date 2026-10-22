@@ -5005,6 +5005,17 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     strengthConflictReason='完整三合／三會同時出現扶身與洩耗／制身方向，不能用單一強弱標籤取代全局制化';
   }
   const integratedDirection = isNeutral?'中和附近':strong?'偏強向':'偏弱向';
+  // 中和帶內仍給出可核對的傾向：月令先決，其次日支坐根與透干助力。不改 isNeutral 與扶抑全表，只補一個透明傾向欄。
+  let lean=null;
+  if(isNeutral){
+    const basis=[];let dir=0;
+    if(deLing){dir+=2;basis.push('得令（月支'+dmMonthState+'）');}else if(deXiang){dir+=1;basis.push('得相（月支'+dmMonthState+'）');}else{dir-=2;basis.push('失令（月支'+dmMonthState+'）');}
+    if(sittingRoot){dir+=1;basis.push('日支坐根');}else{dir-=1;basis.push('日支無本氣根');}
+    if(deShi){dir+=1;basis.push('透干助力'+helpCount+'位');}else{basis.push('透干助力只'+helpCount+'位');}
+    if(hasFormationSupport&&!hasFormationDrain){dir+=1;basis.push('三合三會扶身');}else if(hasFormationDrain&&!hasFormationSupport){dir-=1;basis.push('三合三會洩耗');}
+    const direction=dir>0?'中和偏強':dir<0?'中和偏弱':(_adjPts>=27?'中和偏強':'中和偏弱');
+    lean={direction:direction,score:dir,basis:basis,usage:direction==='中和偏弱'?'傾向先護日主：印、比劫與調候字優先，官殺食傷財要看有無承接':'傾向先用洩耗：食傷、財、官殺先看能否承接，印比過多反成累贅',note:'這是中和帶內的站內傾向，不改變上列七級分類；喜忌最終仍合格局、調候與病藥裁決。'};
+  }
   const interactionSummary=formationEffects.length?formationEffects.map(e=>e.targetElement+e.label+'（'+e.statusCode+'）').join('、'):'無已成勢的完整三合／三會改變方向';
   const strengthAssessment = {
     model:'JINGYUE_RELATIVE_STRENGTH_V4_ADJUDICATED', level:strongLevel,quantitativeLevel:strongLevel,isStrong:strong,isNeutral:isNeutral,
@@ -5013,6 +5024,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
     components:{month:{state:dmMonthState,supportClass:monthSupportClass,points:monthAdjustment},root:{hasAnyRoot:deDi,rootedPillarCount:rootedPillarCount,rootedPillars:rootedPillars,hasRootInAllFourBranches:hasRootInAllFourBranches,allFourBranches:hasRootInAllFourBranches,sittingRoot:sittingRoot,points:rootAdjustment},exposedHelp:{count:helpCount,points:stemAdjustment},formations:{summary:interactionSummary,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none'}},
     evidence:[dm+'生於'+mZ+'月，月支五行狀態為'+dmMonthState+'（'+monthSupportClass+'）',rootLabels.length?'根氣：'+rootLabels.join('、')+'；有根柱 '+rootedPillarCount+'/4':'四支藏干無同五行根',printedHelpers.length?'透干助力：'+printedHelpers.map(s=>s.label+'（'+s.god+(s.constraints.length?'，'+s.constraints.join('、'):'')+'）').join('、'):'年、月、時干無印比透出',interactionSummary],
     structuralTensions:structuralTensions,interactionAssessment:{policy:branchInteractionAssessment?branchInteractionAssessment.policy:null,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none',groups:(branchInteractionAssessment&&branchInteractionAssessment.groups||[]).map(function(g){return {type:g.type,branches:g.branches,targetElement:g.targetElement,formationStatus:g.formationStatus,influenceStrength:g.influenceStrength,dayMasterEffect:g.dayMasterEffect};})},
+    lean:lean,
     conflict:strengthConflict,conflictReason:strengthConflictReason,
     sources:['https://www.donglishuzhai.net/chapter/3719.html'],
     disclaimer:'月令、根氣、透干先由相對模型分類；完整三合／三會另經成勢裁決後只作方向性交叉核對，不使用自訂吉凶加分。七級名稱仍是本站相對模型，不等同古籍唯一旺衰定論；最終取用還須合看格局、調候、病藥與通關。'
@@ -5504,9 +5516,20 @@ function getMingGong(yGi, mZi, hZi, mi, year, month, day, hour, minute){
   if (year != null && typeof ZQ !== 'undefined') {
     var zqIdx = (im + 11) % 12;                   // 月支 → ZQ 索引（丑→0…子→11，對齊 JQ 節序）
     if (im === 0 && month === 1) { passZhongqi = true; }   // 子月一月段：必已過前一年冬至
-    else if (ZQ[year]) {
-      var birthNum = month*1000000 + day*10000 + hour*100 + (minute||0);
-      passZhongqi = birthNum >= ZQ[year][zqIdx];
+    else {
+      // 中氣時刻優先取已載入的曆法引擎（與四柱同源，官方節氣差≤1分鐘）；備援分鐘表最大偏差約1.6分鐘。
+      var ZQ_NAMES=['大寒','雨水','春分','穀雨','小滿','夏至','大暑','處暑','秋分','霜降','小雪','冬至'],engineMs=null;
+      try{
+        if(typeof window!=='undefined'&&window.Solar&&typeof window.Solar.fromYmd==='function'){
+          var tbl=window.Solar.fromYmd(year,6,1).getLunar().getJieQiTable(),key=Object.keys(tbl).find(function(k){return k.replace('谷雨','穀雨').replace('小满','小滿').replace('处暑','處暑')===ZQ_NAMES[zqIdx];});
+          if(key&&tbl[key]&&typeof tbl[key].toYmdHms==='function'&&String(tbl[key].toYmdHms()).slice(0,4)===String(year))engineMs=Date.parse(tbl[key].toYmdHms().replace(' ','T')+'+08:00');
+        }
+      }catch(e){engineMs=null;}
+      if(Number.isFinite(engineMs)){passZhongqi = (Date.UTC(year,month-1,day,hour,minute||0)-8*3600000) >= engineMs;}
+      else if (ZQ[year]) {
+        var birthNum = month*1000000 + day*10000 + hour*100 + (minute||0);
+        passZhongqi = birthNum >= ZQ[year][zqIdx];
+      }
     }
   }
   var imAdj = passZhongqi ? (im + 1) % 12 : im;

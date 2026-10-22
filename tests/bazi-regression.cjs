@@ -325,7 +325,7 @@ test('1994 戊寅案例：月刃格與午月本氣正印分欄，不再輸出月
 
 test('首頁載入本地曆法引擎且版本路徑正確', () => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert(html.includes('JS/vendor/lunar.js?v=1.7.7'));
+  assert(/JS\/vendor\/lunar\.js\?v=[^"']+/.test(html));
   assert(html.includes('JS/solar-location.js'));
   assert(html.includes('JS/bazi-calendar-core.js'));
   assert(html.includes('JS/bazi.js'));

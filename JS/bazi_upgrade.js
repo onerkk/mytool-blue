@@ -234,8 +234,11 @@ function baziCalcLiuYue(bazi, liuNianGan, liuNianZhi, stance) {
     }
 
     var label = score >= 3 ? '大吉' : score >= 1 ? '吉' : score >= 0 ? '平' : score >= -2 ? '凶' : '大凶';
+    // 十神是固定公式，和喜忌無關；中和盤全標「平」時，AI 仍要有每月的字可讀。
+    var MAIN_QI = {子:'癸',丑:'己',寅:'甲',卯:'乙',辰:'戊',巳:'丙',午:'丁',未:'己',申:'庚',酉:'辛',戌:'戊',亥:'壬'};
+    var dmGan = bazi.dm || _pGan(bazi, 2), mGod = (typeof tenGod === 'function' && dmGan) ? tenGod(dmGan, mGan) : '', mZGod = (typeof tenGod === 'function' && dmGan) ? tenGod(dmGan, MAIN_QI[mZhi]) : '';
     months.push({
-      month: i + 1, monthName: monthNames[i], gan: mGan, zhi: mZhi, gz: mGan + mZhi,
+      month: i + 1, monthName: monthNames[i], gan: mGan, zhi: mZhi, gz: mGan + mZhi, god: mGod, zGod: mZGod,
       ganEl: mEl, zhiEl: mZhiEl, score: score, label: label, isChong: isChong, isHe: isHe, note: note,
       zh: monthNames[i] + '（' + mGan + mZhi + '）：' + label + (isChong ? '⚡沖日支' : '') + (isHe ? '💛合日支' : '') + note
     });

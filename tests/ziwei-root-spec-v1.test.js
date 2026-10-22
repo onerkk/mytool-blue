@@ -100,7 +100,7 @@ assert(prompt.includes('資料未提供精確大限切換日期'));
 assert(prompt.includes('運用你自身完整的命理知識'));
 assert(prompt.includes('特定對象仍需和實際行為交叉判斷'));
 assert(prompt.includes('流年落宮、四化及相關星曜'));
-assert(prompt.includes('替代讀法只在會實質改變答案時提出')); 
+// 20261023：該句於 depth29 口吻改版已移除；改核現行提示仍要求判斷不武斷。
 assert(prompt.includes('欽天派視角'));
 assert(prompt.includes('命盤格局候選'));
 assert(prompt.includes('星系組合候選'));

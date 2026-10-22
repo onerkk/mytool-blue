@@ -32,7 +32,7 @@ test('all fifteen real exports retain facts and distinguish arithmetic from even
     const before=JSON.stringify(chart),a=N.analyze(method,chart);
     assert.equal(a.depthContract.truthBoundary.predictionValidation,'not-performed',method);
     const text=c.JYPromptPacket.build(method,chart,'未來工作與感情該如何調整？');
-    assert(text.includes('計算核對不等於事件預測已驗證'),method);
+    assert(text.includes('計算通過不等於預測準確')||text.includes('計算核對不等於事件預測已驗證'),method);
     assert.equal(c.JYPromptPacket.get(text).contentChunks.join(''),text);
     assert.equal(JSON.stringify(chart),before,method+' mutated chart');
   }

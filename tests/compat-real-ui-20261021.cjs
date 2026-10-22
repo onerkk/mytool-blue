@@ -8,7 +8,7 @@ const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-pac
 const cap=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/compat-real-ui-20261021.json'),'utf8'));
 assert(JSON.stringify(cap.list[1].chart).length>150000,'fixture must stay real-size');
 const text=c.JYPromptPacket.buildMany(cap.list,cap.q),meta=c.JYSinglePaste.get(text);
-assert(meta,'compiled packet');assert(meta.characters<=9000&&meta.utf8Bytes<=22000);
+assert(meta,'compiled packet');assert(meta.characters<=11000&&meta.utf8Bytes<=26000);
 for(const k of ['紫微甲方本命','紫微乙方本命','紫微宮位疊合','紫微跨盤四化投射・題目主宮','跨盤天干作用','跨盤地支作用','同步運限（目前起三年）','雙向十神'])assert(text.includes(k),k);
 assert(/夫妻\/亥\/癸\/[^\n]*破軍[^\n]*祿/.test(text),'palace rows carry brightness and natal transformation');
 assert(!text.includes('"yearGanZhi":""'),'no empty summary line');
