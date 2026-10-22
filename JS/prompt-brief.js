@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single53',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single54',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -543,14 +543,23 @@
     lines.push(asksTiming(q)?'原題問時間：用神旺相看近期，休囚看出旬／逢值逢合；空亡的忌神在填實那個地支的月日要特別看；動爻化出之字出現的月日是應期候選，要說出是哪個字。':'應期只在他問時間時才講；這裡先只定「現在撐不撐得住、往哪邊走」。');
     return lines.join('\n');
   }
-  function focusLiuren(c,q,gender){
+  const LR_GENERAL={貴人:'有人罩、體面、長輩與貴人',螣蛇:'驚疑、虛驚、纏繞',朱雀:'口舌、文書、消息、是非',六合:'和合、合作、婚姻',勾陳:'牽扯、拖延、田土、官非',青龍:'財喜、順利、生機',天空:'虛詐、空頭、不實在',白虎:'凶險、急事、血光、道路',太常:'和順、衣食、宴飲、平常',玄武:'暗昧、失物、偷盜、不明',太陰:'陰私、暗助、隱藏',天后:'女性、恩澤、柔軟'};
+  const LR_TYPE={元首:'上剋下，名正言順，事從上頭來',重審:'下剋上，由下反上，先亂後定',知一:'兩可取近，事在近處、擇一',涉害:'涉害深者，過程費力、繞路',遙剋:'遠處動手，事由遠方或間接而來',昴星:'無剋取昴，暗中有驚、事情不明',虎視:'昴星陽日，暗中有驚',冬蛇掩目:'昴星陰日，閉目不見，事多隱晦',別責:'無法取傳，別求出路',八專:'干支同位，兩人同心或同謀',伏吟:'原地不動，事情拖著',返吟:'來回反覆，動盪不定',亨通:'初傳生日干，事情對你有利',盤珠:'三傳不出四課，事情在原處打轉、不往外走',孤寡:'發用旬空，起頭是空的、孤立',鬼墓:'日辰墓或官鬼入傳，壓力沉、事情悶住',迍福:'禍福相雜，有利也有阻',三奇:'奇儀入傳，逢凶化吉的助力',六儀:'旬首入傳，有貴氣與解救',雜狀物類:'依初傳五行與六親取象'};
+  function focusLiuren(c,q,gender,section){
     if(!A(c?.transmissions).length)return null;const domain=detectDomain(q),lines=[];
     const wants=domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼']:domain==='move'?['父母']:['官鬼','妻財'];
-    const tr=c.transmissions;lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；'));
-    lines.push('三傳：'+tr.map(t=>t.role+t.branch+'（'+t.kinship+'，'+t.general+(t.empty?'，空':'')+'）').join('→')+'—初傳是事情起頭，中傳是過程，末傳是結果；'+(tr.some(t=>wants.includes(t.kinship))?'用神'+tr.filter(t=>wants.includes(t.kinship)).map(t=>'在'+t.role).join('、')+'，事情直接上傳':'用神不上傳，要從四課與日干上神找'));
-    const k1=A(c.courses)[0],k3=A(c.courses)[2];if(k1)lines.push('日干上神'+k1.upper+'（'+k1.kinship+'，'+k1.general+'）是你自己現在頂著什麼；'+(k3?'日支上神'+k3.upper+'（'+k3.kinship+'）是對方或環境現在的狀態':''));
-    const empty=tr.filter(t=>t.empty);if(empty.length)lines.push(empty.map(t=>t.role+'落空').join('、')+'：那一段會虛、拖或不了了之，除非被沖實');
+    const tr=c.transmissions,gen=g=>LR_GENERAL[g]?'（'+LR_GENERAL[g]+'）':'';
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；'));
+    const onTr=tr.filter(t=>wants.includes(t.kinship));
+    lines.push('三傳：'+tr.map(t=>t.role+t.branch+'（'+t.kinship+'乘'+t.general+gen(t.general)+(t.empty?'，旬空':'')+'）').join('→')+'。初傳是事情起頭，中傳是過程，末傳是結果。'+(onTr.length?'用神'+onTr.map(t=>'在'+t.role).join('、')+'：這件事本身就在動，是主角':'**用神不上傳**：這件事本身沒在動，這次課動的是'+[...new Set(tr.map(t=>t.kinship))].map(k=>k+'（'+(REL_LIFE[k]||'')+'）').join('、')+'；要先講「現在動的是什麼」，不能直接拿三傳判工作本身'));
+    const mt=c.method||{};if(mt.type)lines.push('課體：'+(mt.gate||'')+(mt.type?'・'+mt.type:'')+(LR_TYPE[mt.type]?'—'+LR_TYPE[mt.type]:'')+(A(mt.tags).filter(t=>t!==mt.type&&t!==mt.gate&&LR_TYPE[t]).map(t=>'；'+t+'—'+LR_TYPE[t]).join('')));
+    const est=A(c.classAnalysis?.checks).filter(x=>x.established&&LR_TYPE[x.name]&&x.name!==mt.type).map(x=>x.name+'—'+LR_TYPE[x.name]);if(est.length)lines.push('同時成立的課體（都要納入，方向相反時要說清哪個管起頭、哪個管結果）：'+est.join('；'));
+    const k1=A(c.courses)[0],k3=A(c.courses)[2];if(k1)lines.push('日干上神'+k1.upper+'（'+k1.kinship+'乘'+k1.general+gen(k1.general)+'）是你自己現在頂著的'+(k3?'；日支上神'+k3.upper+'（'+k3.kinship+'乘'+k3.general+gen(k3.general)+'）是對方或環境現在的狀態':''));
+    const core=section&&section('天地盤、四課三傳與時令')||c;const g2z=core.ganZhi?.ganToZhi||c.ganZhi?.ganToZhi;if(g2z)lines.push('你（日干）與環境（日支）：'+g2z+'—'+({受生:'環境在養你、對你有利',生:'你在付出、養環境',受克:'環境壓著你',克:'你壓得住環境',比和:'兩邊平起平坐'}[g2z]||''));
+    const edges=A(core.edges||c.edges);if(edges.length)lines.push('三傳走向：'+edges.map(e=>{const from=e.from,to=e.to,r=e.relation,flags=e.links||{};return from+'對'+to+r+(flags.clash?'、沖':'')+(flags.combine?'、合':'')+(flags.harm?'、害':'')+(flags.punishes?'、刑':'')+(flags.destruction?'、破':'');}).join('；')+'—生是推著走，剋是擋，刑沖害是中途出事');
+    const empty=tr.filter(t=>t.empty);if(empty.length)lines.push(empty.map(t=>t.role+'落空').join('、')+'：那一段會虛、拖或不了了之，除非被沖實；初傳空＝起頭是空的，先不要把承諾當真');
     if(c.noble)lines.push('貴人'+c.noble.branch+(c.noble.direction?'、'+c.noble.direction:'')+'：順布事情順著走，逆布要繞路');
+    const win=c.timing?.window;if(win?.startDate)lines.push('應期範圍：'+win.startDate+'→'+(win.endDateInclusive||'')+'（'+(win.source==='default60-calendar-days'?'未給期限，站內預設六十天':'依原題期限')+'）；候選日未列，不自造日期，只講這段期間內「會不會、往哪邊」');
     if(asksTiming(q))lines.push('原題問時間：先看末傳與用神所落之支，再看沖空填空之日；課體候選日只是條件觸發。');
     return lines.join('\n');
   }
@@ -677,7 +686,7 @@
   function focusFor(e,question,section){
     try{
       const gender=e.chart?.gender||e.chart?.input?.gender||e.chart?.participants?.gender||null,m=e.method,c=e.chart;
-      let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender):m==='meihua'?focusMeihua(c,question,section):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
+      let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender,section):m==='meihua'?focusMeihua(c,question,section):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
       if(!text)text=focusGeneric(m,question);
       return text?text+'\n（以上是引擎依題意挑出的閱讀順序與材料，不是結論；請用完整資料裁決，並把這裡的訊號講成生活裡的樣子。）':null;
     }catch(err){return null;}
