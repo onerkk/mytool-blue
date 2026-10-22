@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single54',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single55',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -600,7 +600,12 @@
     if(!picked.length){const keyPos=/(結果|未來|結局|出路|最終)/,corePos=/(核心|目前|現況|現在|狀態|本人|你)/,advPos=/(建議|行動|該做|介入|方向|對策)/,obsPos=/(阻礙|阻力|障礙|挑戰|困難)/;const pick=re=>recs.filter(r=>re.test(String(r.position||'')));picked=[...new Set([...pick(corePos),...pick(keyPos),...pick(obsPos),...pick(advPos)])];if(!picked.length)picked=recs.slice(0,3);}
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看：\n'+picked.map(show).join('\n'));
     const majors=recs.filter(r=>r.suit==='major'),rev=recs.filter(r=>/逆/.test(r.direction||'')),courts=recs.filter(r=>['page','knight','queen','king'].includes(String(r.rank)));
-    lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+(courts.length?courts.map(r=>r.name+'（'+r.position+'）').join('、')+'—'+(/(?:對方|他|她|對象|那個人|主管|老闆)/.test(String(q))?'問到別人時才用它推人':'這題問的是你自己，宮廷牌是你在這件事裡的角色或階段（侍者＝新手學習期、騎士＝衝、皇后＝照顧、國王＝掌控），不是另一個人'):'無，不要硬推對方年齡長相'));
+    // 有沒有「另一個人」由引擎的問題編譯決定（knownCounterpart／knownDyad／unknownPerson），再以人物名詞補強；不靠幾個代名詞猜。
+    const cq=c?.compiledQuestion||c?.tarotData?.compiledQuestion||null,cf=cq?.features||{},other=!!(c?.knownCounterpart||c?.tarotData?.knownCounterpart||cq?.knownCounterpart||cf.knownDyad||cf.unknownPerson)||/(?:對方|他|她|對象|那個人|主管|老闆|同事|工程師|朋友|男生|女生|男人|女人|先生|小姐|前任|現任|某人|學長|學姊|學弟|學妹|老師|客戶|曖昧|喜歡的人|暗戀|追求|伴侶|男友|女友|老公|老婆)/.test(String(q));
+    const envIdx=idx('environment'),personIdx=idx('person_aggregate'),selfIdx=recs.map((r,i)=>/querent|self|本人/.test(String(slots[i]?.role||''))?i:-1).filter(i=>i>=0);
+    const courtNote=courts.length?courts.map(r=>{const i=recs.indexOf(r);const where=personIdx.includes(i)?'對方位＝就是對方':envIdx.includes(i)?'環境／他人位＝'+(other?'最常是對方或對方的態度':'周圍的人或現實條件'):selfIdx.includes(i)?'本人位＝你自己':'其他位＝依上下文，可能是人也可能是一種態度';return r.name+'（'+r.position+'，'+where+'）';}).join('、')+'—'+(other?'這題有另一個人，宮廷牌可以指人，但只在位置對得上時指；不推年齡長相':'這題問的是你自己，宮廷牌是你在這件事裡的角色或階段（侍者＝新手學習期、騎士＝衝、皇后＝照顧、國王＝掌控），不是另一個人'):'無，不要硬推對方年齡長相';
+    lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+courtNote);
+    if(other)lines.push('對方的心意只能講「現在的樣子像是…」，不能講成已確認的事實；有環境位或對方位的牌才拿來講對方，本人位的牌不是對方');
     const st=idx('state')[0],oc=idx('outcome').slice(-1)[0];
     if(st!=null&&oc!=null){const ro=/逆/.test(recs[oc].direction||''),rc=/逆/.test(recs[st].direction||'');lines.push('現況與結果'+(ro===rc?'同向':'不同向')+'：'+(ro===rc?'答案可以講得篤定一點':'先講現在為什麼卡或順，再講結果為什麼轉'));}
     if(asksTiming(q))lines.push('原題問時間：權杖快、寶劍次之、聖杯慢、金幣最慢；數字小是起頭、大是收尾；大牌不定時間。');
