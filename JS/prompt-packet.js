@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single50',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single51',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -510,16 +510,37 @@
   /* ── 其他十一種方法的本題焦點 ── */
   const REL_LIFE={官鬼:'職位、公司、壓力、病、對女命也指對象',父母:'文書、合約、單位、長輩、庇護',妻財:'錢、薪水、對男命也指對象',子孫:'解憂、順心、醫藥，但會剋官（工作題看它動不動）',兄弟:'同事競爭、分錢、阻隔'};
   function liuyaoUseGod(domain,gender){return domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財','子孫']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼','子孫']:domain==='move'?['父母','子孫']:['官鬼','妻財'];}
-  function lyState(l){const s=l.states||{};const bits=[];bits.push('月令'+(s.monthRelation||'?')+(s.monthBroken?'（月破）':''));bits.push('日辰'+(s.dayRelation||'?')+(s.dayClash?'（日沖）':'')+(s.dayCombine?'（日合）':''));if(s.void)bits.push('旬空');if(l.moving)bits.push('動'+(l.changed?'化'+l.changed.relative+l.changed.branch+(l.transition?.returnLabel?'，'+l.transition.returnLabel:''):''));return bits.join('、');}
+  const LY_ROLE={用神:'用神（這件事本身）',元神:'元神（生用神的，給養分）',忌神:'忌神（克用神的，威脅）',仇神:'仇神（克元神、生忌神，間接搗亂）',其他:''};
+  const LY_WS={旺:'當令最強',相:'有力',休:'退氣、弱一點',囚:'受困、弱',死:'無力'};
+  function lyAssess(c,pos){const tgt=A(c.interpretation?.targets);for(const t of tgt){const cand=A(t.candidates).find(x=>x.position===pos);if(cand&&cand.assessment)return cand.assessment;}return null;}
+  function lyStateLine(c,l){const a=lyAssess(c,l.position)||{};const bits=[];
+    if(a.season?.label)bits.push('月令'+(LY_WS[a.season.label]||a.season.label)+(a.season.direction?'（'+a.season.direction+'）':''));
+    if(a.dayInfluence)bits.push(a.dayInfluence);
+    const st=l.states||{};if(st.dayCombine)bits.push('日合（被綁住、拖）');if(st.dayClash)bits.push('日沖（被衝動、不穩）');if(st.monthBroken)bits.push('月破');if(st.void)bits.push('旬空（現在是空的，要等出旬或填實）');
+    if(l.moving){const tr=l.transition||{};bits.push('動'+(l.changed?'化'+l.changed.relative+l.changed.branch+(tr.advance?'（進神，越來越強）':tr.retreat?'（退神，在退場、越來越弱）':tr.returnLabel?'（'+tr.returnLabel+'）':''):''));}
+    if(a.strength)bits.push({supported:'整體有撐',unsupported:'整體沒撐','supported-with-pressure':'有撐但有壓'}[a.strength]||'');
+    return bits.filter(Boolean).join('、');}
   function focusLiuyao(c,q,gender){
     if(!A(c?.lines).length)return null;const domain=detectDomain(q),lines=[];
-    const primary=c.focus?.primary||c.interpretation?.targets?.[0]?.relative||liuyaoUseGod(domain,gender)[0],wants=[...new Set([primary,...liuyaoUseGod(domain,gender)])];
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；')+'；世爻是你自己，應爻是對方或環境。');
-    wants.forEach(r=>{const ls=c.lines.filter(l=>l.relative===r);const hidden=A(c.lines).filter(l=>l.hidden&&l.hidden.relative===r);if(!ls.length&&!hidden.length){lines.push(r+'不上卦也無伏神：這件事目前沒有著力點，先別急著定論');return;}ls.forEach(l=>lines.push(r+l.branch+'在'+l.label+(l.role?'（'+l.role+'）':'')+'：'+lyState(l)));hidden.forEach(l=>lines.push(r+'伏在'+l.label+'（'+l.hidden.branch+'）：要等飛神動或日月引出才算有用'));});
-    const shi=c.lines.find(l=>l.role==='世'),ying=c.lines.find(l=>l.role==='應');if(shi)lines.push('世爻'+shi.relative+shi.branch+'（你自己）：'+lyState(shi)+(ying?'；應爻'+ying.relative+ying.branch+'（對方／環境）：'+lyState(ying):''));
-    const mv=c.lines.filter(l=>l.moving);lines.push(mv.length?'動爻：'+mv.map(l=>l.label+l.relative+l.branch+'動化'+(l.changed?l.changed.relative+l.changed.branch:'?')+(l.transition?.returnLabel?'（'+l.transition.returnLabel+'）':'')).join('；')+'—動的字才是正在發生的事，化出來的字是結果走向':'六爻安靜：事情原地不動，先看日月對用神的生剋');
-    if(c.calendar)lines.push('月建'+(c.calendar.monthBranch||'?')+'、日辰'+(c.calendar.day||'?')+'，旬空'+A(c.calendar.voidBranches).join('')+'：旬空的用神要等出旬或日月填實才應驗');
-    if(asksTiming(q))lines.push('原題問時間：用神旺相看近期，休囚看出旬／逢值逢合；動爻化出之字出現的月日是應期候選，要說出是哪個字。');
+    const primary=c.focus?.primary||c.interpretation?.targets?.[0]?.relative||liuyaoUseGod(domain,gender)[0];
+    const shi=c.lines.find(l=>l.role==='世'),ying=c.lines.find(l=>l.role==='應');
+    // roles from 作用方向
+    const roleOf={};A(c.interpretation?.targets).forEach(t=>A(t.influences||t.actions||t.directions).forEach(x=>{if(x.position!=null&&x.role)roleOf[x.position]=x.role;}));
+    const REL6=(u,r)=>{const gen={父母:'兄弟',兄弟:'子孫',子孫:'妻財',妻財:'官鬼',官鬼:'父母'},ke={父母:'子孫',子孫:'官鬼',官鬼:'兄弟',兄弟:'妻財',妻財:'父母'};if(r===u)return '用神';if(gen[r]===u)return '元神';if(ke[r]===u)return '忌神';if(gen[gen[r]]===u)return '仇神';return '其他';};
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+primary+'—'+(REL_LIFE[primary]||'')+'；世爻是你自己，應爻是對方或環境。');
+    const us=c.lines.filter(l=>l.relative===primary),hidden=c.lines.filter(l=>l.hidden&&l.hidden.relative===primary);
+    if(!us.length&&!hidden.length)lines.push(primary+'不上卦也無伏神：這件事目前沒有著力點，先別急著定論');
+    us.forEach(l=>lines.push('用神'+primary+l.branch+'在'+l.label+(l.role==='世'?'，而且就是世爻—這件事就在你身上，你人已經在裡面，不是外來的':l.role==='應'?'，而且是應爻—這件事在對方／環境那邊':'')+'：'+lyStateLine(c,l)));
+    hidden.forEach(l=>lines.push(primary+'伏在'+l.label+'（'+l.hidden.branch+'）：要等飛神動或日月引出才算有用'));
+    const others=c.lines.filter(l=>l.relative!==primary).map(l=>({l,role:REL6(primary,l.relative)})).filter(x=>x.role!=='其他');
+    const byRole={};others.forEach(x=>{(byRole[x.role]=byRole[x.role]||[]).push(x.l);});
+    ['元神','忌神','仇神'].forEach(r=>{if(!byRole[r])return;lines.push(LY_ROLE[r]+'：'+byRole[r].map(l=>l.relative+l.branch+'在'+l.label+(l.role?'（'+l.role+'）':'')+'—'+lyStateLine(c,l)).join('；')+(r==='忌神'?'。忌神空亡或無力＝威脅暫時不存在，填實的日子才會冒出來；忌神動而旺＝這件事正被打':r==='元神'?'。元神弱＝沒有後援，撐得辛苦':'。仇神動＝有人在旁邊攪局，退神就是在退場'));});
+    if(shi)lines.push('世爻'+shi.relative+shi.branch+'（你自己）：'+lyStateLine(c,shi)+(ying?'；應爻'+ying.relative+ying.branch+'（對方／環境）：'+lyStateLine(c,ying):''));
+    const mv=c.lines.filter(l=>l.moving);lines.push(mv.length?'動爻：'+mv.map(l=>l.label+l.relative+l.branch+'動化'+(l.changed?l.changed.relative+l.changed.branch:'?')+(l.transition?.advance?'（進神）':l.transition?.retreat?'（退神）':l.transition?.returnLabel?'（'+l.transition.returnLabel+'）':'')).join('；')+'—動的字才是正在發生的事，化出來的字是結果走向；進神是越來越強，退神是正在退場':'六爻安靜：事情原地不動，先看日月對用神的生剋');
+    const st=c.structures||{};if(st.sixClash||st.sixCombine||st.changedSixClash||st.changedSixCombine)lines.push('卦身：本卦'+(st.sixClash?'六沖（散、急、難久）':st.sixCombine?'六合（聚、成、拖）':'非沖非合')+'→變卦'+(st.changedSixClash?'六沖（最後散掉或急變）':st.changedSixCombine?'六合（最後聚攏、穩下來、拖著）':'非沖非合')+'—這是整件事的大方向，單爻吉凶要放在這底下看');
+    const comb=A(c.combinations).filter(x=>x.status==='incomplete'&&A(x.activePositions).length);if(comb.length)lines.push('待補的三合：'+comb.map(x=>x.name+'，缺'+A(x.missing).join('')+'—等缺的那個字出現（日月或動化）才成局').join('；'));
+    if(c.calendar)lines.push('月建'+(c.calendar.monthBranch||'?')+'、日辰'+(c.calendar.day||'?')+'，旬空'+A(c.calendar.voidBranches).join('')+'：空亡的爻要等出旬或日月填實才算數');
+    lines.push(asksTiming(q)?'原題問時間：用神旺相看近期，休囚看出旬／逢值逢合；空亡的忌神在填實那個地支的月日要特別看；動爻化出之字出現的月日是應期候選，要說出是哪個字。':'應期只在他問時間時才講；這裡先只定「現在撐不撐得住、往哪邊走」。');
     return lines.join('\n');
   }
   function focusLiuren(c,q,gender){
@@ -715,7 +736,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt42',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt43',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
