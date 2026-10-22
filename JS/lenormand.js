@@ -1272,13 +1272,13 @@ function _lnDomainIds(q) {
 // This is a conservative language parser, not a claim that keywords understand every question.
 function classifyDecisionQuestion(question) {
   var raw = String(question || '').trim();
-  function result(kind, left, right, reason) {
-    return {kind:kind, left:left || null, right:right || null, source:raw, reason:reason || ''};
+  function result(kind, left, right, reason, options) {
+    return {kind:kind, left:left || null, right:right || null, source:raw, reason:reason || '', options:options || null};
   }
   function clean(value, first) {
     var s = String(value || '').trim().replace(/^[，,：:\s]+|[，,。？?！!；;\s]+$/g, '');
     s = s.replace(/(?:[，,]\s*)?(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合(?:我|我們)?|好|有利|可行|值得).*$/, '');
-    s = s.replace(/(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)(?:嗎|呢)?$/, '').replace(/[嗎呢]$/, '').trim();
+    s = s.replace(/(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)(?:嗎|呢)?$/, '').replace(/(?:好|划算|適合|有利|值得)$/, '').replace(/[嗎呢]$/, '').trim();
     if (first) {
       s = s.replace(/^(?:請幫我|請問|請|幫我|我想知道|我想問|想問|我想|想)(?:比較)?\s*/, '').replace(/^比較\s*/, '');
       s = s.replace(/^(?:我|我們)(?:和|跟|與).{1,16}?(?:應該|該|要選|選擇|考慮)\s*/, '');
@@ -1302,6 +1302,13 @@ function classifyDecisionQuestion(question) {
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
   var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者|哪裡|哪邊|哪一邊)(?:比較|較|更)?(?:適合|好|有利|可行|值得)?|(?:該|應該)選|比較.{0,50}(?:適合|有利|好|值得)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
+  // 列舉三個以上人物／對象再問「選誰／選哪個」：是多方案決策，選項由列舉本身提供。
+  var listPick = raw.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:和|跟|與)?((?:[^，,。？?！!]{1,12}?(?:、|和|跟|與)){2,}[^，,。？?！!]{1,12}?)(?:[，,](?:這|那)?(?:三|四|五|六|\d)(?:個|位|家|間|種)?(?:人|選項|方案|公司|地方|對象)?)?[，,]?(?:我|我們)?(?:到底)?(?:該|應該|要)?(?:選|挑)(?:誰|哪個|哪一個|哪位|哪)/);
+  if (listPick) {
+    var picks = listPick[1].split(/、|(?:^|[^我])(?:和|跟|與)/).map(function(x){return String(x||'').replace(/^(?:和|跟|與)/,'').trim();}).filter(Boolean);
+    picks = picks.filter(function(x,i,a){return a.indexOf(x)===i;});
+    if (picks.length >= 3) return result('multiple', null, null, '原文列出' + picks.length + '個對象再問選誰；每個對象各成一路。', picks);
+  }
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
     var action = clean(takeOrWait[1], false);
@@ -1315,7 +1322,7 @@ function classifyDecisionQuestion(question) {
     if (decisionCue && /(?:選|考慮)[^，,]+[，,][^，,]+$/.test(q.slice(0, matches[0].at).replace(/[，,\s]+$/, ''))) return result('multiple');
     // 「她還是喜歡我嗎」means "still", not A=her, B=likes me.
     if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
-    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
+    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     // Polarity alternatives are one outcome proposition, not two hypotheses or two user choices:
     // 「會聯絡還是不聯絡」「喜歡還是不喜歡」「能成功還是不能成功」.
@@ -1332,7 +1339,8 @@ function classifyDecisionQuestion(question) {
     var sharedMoveDestination = sharedActionMatch && /^(?:搬到|搬去)$/.test(sharedActionMatch[1]) && /^[^，,。！？?；;\s]{1,8}$/.test(right);
     var inheritedAction = sharedActionMatch && !sharedMoveDestination && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
     if (inheritedAction) right = sharedActionMatch[1] + right;
-    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
+    // 「換到新部門好，還是留在原部門」：方案後接「好／比較好／划算」再接「還是」，是兩方案比較的口語型。
+    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q) || (!hypothesis && /(?<!變|會變|越來越|比較|更|不|沒|是|會|能)(?:好|划算|適合|有利|值得)[，,]?\s*(?:還是|或是|或者)/.test(q)) || (!hypothesis && /(?:還是|或是|或者)[^，,。？?]*(?<!變|不|沒)(?:好|划算|適合|有利|值得)(?:[？?]|$)/.test(q));
     if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
     return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
   }
@@ -2025,6 +2033,7 @@ function analyzeReadingQuestion(value) {
   if(labels.length>=2)options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
   if(!options.length){var bare=q.match(/(?:^|[^A-Za-z])((?:[A-Z]\s*、\s*){2,}[A-Z])(?:$|[^A-Za-z])/i);if(bare)options=bare[1].split(/\s*、\s*/).map(function(x){return x.toUpperCase();});}
   if(decision.kind==='binary')options=[decision.left,decision.right];
+  if(decision.kind==='multiple'&&Array.isArray(decision.options)&&decision.options.length>=3&&options.length<3)options=decision.options.slice();
   if(decision.kind==='multiple'&&options.length<3){
     var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/^(?:我)?(?:有|的)?(?:選項|方案)(?:是|有|為)?\s*/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
     options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);
@@ -2422,7 +2431,10 @@ function _lnAnalyzeQuestion(q) {
   var globalCue = /人生全貌|整體人生|所有面向|全部領域|全年整體|年度總運|未來一年整體|人生各方面|(?:今年|明年|全年|年度)(?:的)?整體(?:運勢|狀況|發展)/.test(q);
   var looksLikePersonPair = /^(?:我|你|他|她|我們|你們|他們|她們)(?:和|跟|與)/.test(compact);
   var domainList = /(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)(?:方面)?(?:、|以及|及|和|與|跟)(?:感情|愛情|婚姻|桃花|工作|事業|財運|財務|家庭|學業|健康|旅行)/.test(q);
-  var isGlobal = globalCue || (domainIds.length >= 2 && domainList);
+  var isGlobal = globalCue || (domainIds.length >= 2 && domainList) || /整體來看|各方面|各個面向|全面|全景|人生方向|人生(?:走向|道路|課題)|回顧(?:今年|這一年)|展望(?:明年|來年)|年度回顧|每個月|每月|十二個月|一整年|整年/.test(q);
+  // 有人物關係、長期狀態或時間範圍的是非題，三張線不夠承載，另行標記。
+  var hasPeriod = /今年|明年|後年|年底|年初|上半年|下半年|未來.{0,2}(?:個月|年|季)|接下來.{0,3}(?:個月|年|週|季)|這幾個月|這半年|這一年|半年內|一年內|三個月內|\d+個月/.test(q);
+  var relationalStake = /復合|結婚|離婚|分手|交往|在一起|和好|懷孕|升遷|加薪|錄取|上榜|考上|創業|投資|買房|搬家|健康|病|手術|官司|簽約|合約|離職|換工作|婚姻|有救|救得|裁員|失業|資遣|降職|調職|被告|欠債|破產/.test(q) || /(?:我們|我和|我跟|我與|這段(?:感情|關係)|男友|女友|老公|老婆|伴侶|主管|老闆|同事|家人|父母|媽媽|爸爸|妹妹|弟弟|哥哥|姊姊|孩子)/.test(q);
 
   // The same tested parser is embedded in both readers; no load-order dependency.
   var decision = classifyDecisionQuestion(q);
@@ -2430,6 +2442,7 @@ function _lnAnalyzeQuestion(q) {
   var incompleteChoice = decision.kind === 'incomplete';
   var hypothesisChoice = decision.kind === 'hypotheses' || decision.kind === 'ambiguous';
   var isChoice = decision.kind === 'binary' && !!decision.left && !!decision.right;
+  var isDecision = !isChoice && (/(?:是不是該|是否該)(?:換|轉|離|辭|去|接|投|搬|創|開|簽|留|繼續|放棄|結|分|告白|復合)/.test(q) || /(?:投資|生意|案子|計畫|合作|合夥|這筆|這個案|這份工作|這個機會|邀約|這間公司|這個職位)[^，。]{0,8}(?:能不能|可不可以|值不值得|適不適合)/.test(q) || /(?:應該|適合|適不適合|能不能|值不值得|可以)(?:接受|答應|去|換|轉|辭|離職|跳槽|創業|開店|投資|買|賣|簽|搬|結婚|分手|告白|復合|借|貸|繼續|放棄|留|進修|合作|合夥|出國|留學)|適合我嗎|適不適合我|值得嗎|可行嗎|能做嗎/.test(q));
   var choiceA = isChoice ? decision.left : null, choiceB = isChoice ? decision.right : null;
 
   var yesNoPartRe = /嗎\s*$|^(?:會不會|有沒有|能不能|可不可以|是不是|是否|要不要|該不該|應不應該|適不適合|值不值得|行不行|成不成|愛不愛|喜不喜歡)/;
@@ -2525,7 +2538,7 @@ function _lnAnalyzeQuestion(q) {
   var result={
     questionPlan:sharedQuestion, q:originalQuestion, analysisQuestion:q, compact:compact, parts:parts, empty:!originalQuestion,
     domainIds:domainIds, hypothesisChoice:hypothesisChoice,
-    isChoice:isChoice, choiceA:choiceA, choiceB:choiceB,
+    isChoice:isChoice, choiceA:choiceA, choiceB:choiceB, isDecision:isDecision, hasPeriod:hasPeriod, relationalStake:relationalStake,
     moreThanTwoOptions:moreThanTwoOptions, incompleteChoice:incompleteChoice,
     asksWhen:asksWhen, asksExactDate:asksExactDate, hasFixedHorizon:hasFixedHorizon,
     asksWhy:asksWhy, asksHow:asksHow, isYesNo:isYesNo, partYesNoCount:partYesNoCount,
@@ -2708,6 +2721,10 @@ var LENORMAND_SPREAD_DECISION_TABLE=[
   {id:'nine',when:function(x){return !!(x.semanticEvaluation&&x.evaluationFacets&&x.evaluationFacets.length>=2);},why:'同一評估對象包含多個明示面向，九宮格可用中心與交會線檢查整體、各面向與牽制是否一致'},
   {id:'nine',when:function(x){return !!(x.isOverview||x.isConditionalProfileBundle||x.profileTraitCount>=2);},why:'同一議題明確要求三個以上面向，需要九宮格以多條合法交會線回答'},
   {id:'seven',when:function(x){return !!(x.dependencyGate&&x.futureActionClaim);},why:'同一人物的隱性狀態與後續明確行動具有前後條件依賴，七張線保留狀態、轉折、阻力與是否落實行動的完整路徑'},
+  {id:'five',when:function(x){return !!x.isDecision;},why:'這是單一行動的取捨：五張線看現況、成因、介入點、代價與走向，不拆成兩路'},
+  {id:'nine',when:function(x){var q=String(x.q||'');return !!(/背後|暗中|偷偷|搞我|陷害|小人|排擠|隱瞞|外遇|出軌|第三者|瞞著|身心靈/.test(q)||/問題.{0,6}出在哪|問題.{0,4}在哪裡|癥結/.test(q)||(x.asksWhy&&!x.isYesNo&&/(?:我們|我和|我跟|這段|男友|女友|老公|老婆|伴侶|主管|老闆|同事|家人|父母|媽媽|爸爸)/.test(q)));},why:'有隱藏因素、多個面向或關係裡的成因要找，九宮格用中心與交會線分出表面、底下與走向'},
+  {id:'seven',when:function(x){return !!(x.isYesNo&&x.hasPeriod&&x.relationalStake);},why:'有時間範圍又牽涉人或重大事項，七張線保留發展、轉折與落點'},
+  {id:'five',when:function(x){return !!(x.isYesNo&&x.relationalStake);},why:'牽涉人物關係或重大事項的是非題，三張線不夠看成因與條件，五張線先定傾向再看代價'},
   {id:'five',when:function(x){return !!(x.semanticEvaluation&&x.semanticLongTerm);},why:'這是長期適配／持續性評估，需要保留目前基礎、耗損、可持續條件與後續走向'},
   {id:'five',when:function(x){return !!(x.asksWhy||x.asksHow||x.asksWhen||x.asksPersonProfile||x.asksExactAge||x.asksExactIdentity||x.isInner||x.isHiddenClaim||x.facetCount>=2);},why:'同一事件需要原因、方法、時間、人物輪廓、隱含狀態或階段脈絡，五張線較完整'},
   {id:'three',when:function(x){return !!(x.asksExactAmount||x.asksExactCount||x.asksProbability);},why:'這是單一事件的結果／幅度問題，三張線先判事件是否成立，再判相對強弱或級距；量測精度由引擎能力層另行標記'},
@@ -3500,5 +3517,5 @@ function _lnReviewAnswerGranularity(question, answer) {
   return {ok:issues.length===0,issues:issues,capability:x.capability};
 }
 
-window.JYLenormand={version:'23.1.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
+window.JYLenormand={version:'23.2.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
 })();

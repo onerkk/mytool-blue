@@ -674,6 +674,7 @@ function analyzeReadingQuestion(value) {
   if(labels.length>=2)options=labels.map(function(m){return clean(m[2].replace(/[？?].*$/,'').replace(/(?:哪個|哪一個|何者|要選哪|該選哪).*$/,''));});
   if(!options.length){var bare=q.match(/(?:^|[^A-Za-z])((?:[A-Z]\s*、\s*){2,}[A-Z])(?:$|[^A-Za-z])/i);if(bare)options=bare[1].split(/\s*、\s*/).map(function(x){return x.toUpperCase();});}
   if(decision.kind==='binary')options=[decision.left,decision.right];
+  if(decision.kind==='multiple'&&Array.isArray(decision.options)&&decision.options.length>=3&&options.length<3)options=decision.options.slice();
   if(decision.kind==='multiple'&&options.length<3){
     var surface=q.replace(/^(?:我)?(?:該|應該|應不應該|要)(?:選擇|選)?/,'').replace(/^.*?(?:選項(?:是|有)?|方案(?:是|有)?)\s*[:：]/,'').replace(/^(?:我)?(?:有|的)?(?:選項|方案)(?:是|有|為)?\s*/,'').replace(/(?:我)?(?:應該|應|該)?(?:選擇|選|要選|要)(?=[^，,；;]*還是)/,'').replace(/(?:哪個|哪一個|何者|三選一|四選一|五選一|六選一|比較適合|比較好|較適合).*$/,'');
     options=surface.split(/、|還是|或是|或者|[，,；;\n]/).map(clean).filter(Boolean);

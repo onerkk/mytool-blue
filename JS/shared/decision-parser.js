@@ -2,13 +2,13 @@
 // This is a conservative language parser, not a claim that keywords understand every question.
 function classifyDecisionQuestion(question) {
   var raw = String(question || '').trim();
-  function result(kind, left, right, reason) {
-    return {kind:kind, left:left || null, right:right || null, source:raw, reason:reason || ''};
+  function result(kind, left, right, reason, options) {
+    return {kind:kind, left:left || null, right:right || null, source:raw, reason:reason || '', options:options || null};
   }
   function clean(value, first) {
     var s = String(value || '').trim().replace(/^[，,：:\s]+|[，,。？?！!；;\s]+$/g, '');
     s = s.replace(/(?:[，,]\s*)?(?:哪一個|哪個|何者)(?:比較|較|更)?(?:適合(?:我|我們)?|好|有利|可行|值得).*$/, '');
-    s = s.replace(/(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)(?:嗎|呢)?$/, '').replace(/[嗎呢]$/, '').trim();
+    s = s.replace(/(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)(?:嗎|呢)?$/, '').replace(/(?:好|划算|適合|有利|值得)$/, '').replace(/[嗎呢]$/, '').trim();
     if (first) {
       s = s.replace(/^(?:請幫我|請問|請|幫我|我想知道|我想問|想問|我想|想)(?:比較)?\s*/, '').replace(/^比較\s*/, '');
       s = s.replace(/^(?:我|我們)(?:和|跟|與).{1,16}?(?:應該|該|要選|選擇|考慮)\s*/, '');
@@ -32,6 +32,13 @@ function classifyDecisionQuestion(question) {
   while ((m = connector.exec(q))) matches.push({at:m.index, value:m[0]});
   var decisionCue = /(?:我|我們)(?:(?:和|跟|與).{1,16})?(?:到底)?(?:該|應該|可以|要|想選|選|考慮)|^(?:該|應該|要|選|考慮)|(?:方案|選項)(?:是|有|為)|二選一|二擇一|兩個選項|請比較|(?:哪一個|哪個|何者|哪裡|哪邊|哪一邊)(?:比較|較|更)?(?:適合|好|有利|可行|值得)?|(?:該|應該)選|比較.{0,50}(?:適合|有利|好|值得)/.test(q);
   if (matches.length > 1 && decisionCue) return result('multiple', null, null, '原文有三個以上選項，先整理共同條件，不能假造第三條路的牌位。');
+  // 列舉三個以上人物／對象再問「選誰／選哪個」：是多方案決策，選項由列舉本身提供。
+  var listPick = raw.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:和|跟|與)?((?:[^，,。？?！!]{1,12}?(?:、|和|跟|與)){2,}[^，,。？?！!]{1,12}?)(?:[，,](?:這|那)?(?:三|四|五|六|\d)(?:個|位|家|間|種)?(?:人|選項|方案|公司|地方|對象)?)?[，,]?(?:我|我們)?(?:到底)?(?:該|應該|要)?(?:選|挑)(?:誰|哪個|哪一個|哪位|哪)/);
+  if (listPick) {
+    var picks = listPick[1].split(/、|(?:^|[^我])(?:和|跟|與)/).map(function(x){return String(x||'').replace(/^(?:和|跟|與)/,'').trim();}).filter(Boolean);
+    picks = picks.filter(function(x,i,a){return a.indexOf(x)===i;});
+    if (picks.length >= 3) return result('multiple', null, null, '原文列出' + picks.length + '個對象再問選誰；每個對象各成一路。', picks);
+  }
   var takeOrWait = !matches.length && q.match(/^(?:請問|我想知道|想問)?(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*(.+?)(?:[，,]|$)/);
   if (takeOrWait) {
     var action = clean(takeOrWait[1], false);
@@ -45,7 +52,7 @@ function classifyDecisionQuestion(question) {
     if (decisionCue && /(?:選|考慮)[^，,]+[，,][^，,]+$/.test(q.slice(0, matches[0].at).replace(/[，,\s]+$/, ''))) return result('multiple');
     // 「她還是喜歡我嗎」means "still", not A=her, B=likes me.
     if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
-    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
+    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     // Polarity alternatives are one outcome proposition, not two hypotheses or two user choices:
     // 「會聯絡還是不聯絡」「喜歡還是不喜歡」「能成功還是不能成功」.
@@ -62,7 +69,8 @@ function classifyDecisionQuestion(question) {
     var sharedMoveDestination = sharedActionMatch && /^(?:搬到|搬去)$/.test(sharedActionMatch[1]) && /^[^，,。！？?；;\s]{1,8}$/.test(right);
     var inheritedAction = sharedActionMatch && !sharedMoveDestination && !actionStart.test(right) && right.length <= 24 && !/[嗎呢？?]/.test(right) && !hypothesis;
     if (inheritedAction) right = sharedActionMatch[1] + right;
-    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q);
+    // 「換到新部門好，還是留在原部門」：方案後接「好／比較好／划算」再接「還是」，是兩方案比較的口語型。
+    var explicitComparisonTail = /(?:比較|較|更)(?:適合(?:我|我們)?|好|有利|可行|值得)|(?:哪裡|哪邊|哪一邊).*(?:適合|好|有利|發展)/.test(q) || (!hypothesis && /(?<!變|會變|越來越|比較|更|不|沒|是|會|能)(?:好|划算|適合|有利|值得)[，,]?\s*(?:還是|或是|或者)/.test(q)) || (!hypothesis && /(?:還是|或是|或者)[^，,。？?]*(?<!變|不|沒)(?:好|划算|適合|有利|值得)(?:[？?]|$)/.test(q));
     if (!decisionCue && !explicitComparisonTail && !labels && !(actionStart.test(left) && actionStart.test(right)) && !inheritedAction) return result(hypothesis ? 'hypotheses' : 'ambiguous', null, null, '這是在詢問狀況或不同解釋；沒有確認是命主可選的兩個行動。');
     return result('binary', left, right, '先比較兩個原文方案各自的條件與走向，再看共同限制。');
   }

@@ -166,6 +166,6 @@ check('review allows conditional symbolic relationship answer', r.ok===true, JSO
 check('root and JS lenormand identical', fs.readFileSync(path.join(root,'lenormand.js'),'utf8')===fs.readFileSync(sourcePath,'utf8'));
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 check('index loads current lenormand cache token', !!require('./production-assets.cjs').assetVersion(index,'JS/lenormand.js','20260928'));
-check('public API current', sandbox.window.JYLenormand && sandbox.window.JYLenormand.version==='23.1.0', JSON.stringify(sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version));
+check('public API current', sandbox.window.JYLenormand && sandbox.window.JYLenormand.version==='23.2.0', JSON.stringify(sandbox.window.JYLenormand&&sandbox.window.JYLenormand.version));
 
 console.log(`Lenormand legacy compatibility: ${pass} checks PASS`);
