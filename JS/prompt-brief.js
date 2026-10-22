@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single43',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single44',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -287,7 +287,14 @@
       const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪/,[34,15]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
       add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));
       add('大牌陣宮位：格/宮名/落入的牌（自宮：'+(A(tb.ownHouses).join('、')||'無')+'；四角：'+A(tb.corners).join('、')+'）',A(tb.houses).map(h=>h.house+h.houseName+'宮:'+h.card).join(' '),1);}
-    if(e.method==='lenormand'){add('合法全線',d.paths);add('鏡像與鄰接規則','依上列牌序及布局讀全部合法相鄰連續片段；鏡像繞中心成對。格狀主盤按實際行列讀橫直斜線與騎士步，分線不跨接。');add('鏡像及騎士步',P(d,['mirror','knights']),3);}
+    if(e.method==='lenormand'){
+      const R=A(d.records),N=i=>R[i-1]?.name||('第'+i+'張'),g=c.declaredGender||d.declaredGender,pr=c.personRep||d.personRep,cf=c.customFocus||d.customFocus;
+      const inSpread=id=>R.find(r=>r.id===id);
+      add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是他現在的處境':'，本次未抽到，整個牌陣直接當成他的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
+      const paths=A(d.paths),mirror=A(d.mirror),isLine=paths.length===1&&!d.tableau&&R.length!==9;
+      if(isLine&&R.length>=3){const mid=Math.ceil(R.length/2);add('線陣讀法（引擎幾何）','整條線：'+paths[0].map(N).join('→')+'；中心'+N(mid)+'是這件事的核心，左邊'+paths[0].slice(0,mid-1).map(N).join('、')+'是已經在發生或推著它的，右邊'+paths[0].slice(mid).map(N).join('、')+'是它接下來的走向。相鄰兩張連成一句：'+paths[0].slice(0,-1).map((p,i)=>N(p)+'＋'+N(paths[0][i+1])).join('、')+(mirror.length?'。鏡像成對（繞中心對照，常是因果或一體兩面）：'+mirror.map(m=>N(m.a)+'↔'+N(m.b)).join('、'):'')+'。先把整條讀成一句話，再回頭看哪一段對本題最重。');}
+      else {add('合法全線',d.paths);add('鏡像與鄰接規則','依上列牌序及布局讀全部合法相鄰連續片段；鏡像繞中心成對。格狀主盤按實際行列讀橫直斜線與騎士步，分線不跨接。');add('鏡像及騎士步',P(d,['mirror','knights']),3);}
+    }
     else add('實際牌陣特殊作用',compactObject(d.methodData),1);
   }
   /* ── 本題焦點層（引擎預算）──
@@ -486,12 +493,14 @@
   }
   function focusLenormand(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),lines=[],n=recs.length;
-    const spread=String(c?.spreadType||d.spreadType||'');
-    const nm=i=>recs[i-1]?recs[i-1].name:'?';
-    if(spread==='nine'&&n===9){lines.push('本題（'+DOMAIN_LABEL[domain]+'）九宮格：中心'+nm(5)+'是核心，先把它跟上下左右'+[2,4,6,8].map(nm).join('、')+'連成一句；左欄'+[1,4,7].map(nm).join('、')+'已發生，右欄'+[3,6,9].map(nm).join('、')+'是走向；四角'+[1,3,7,9].map(nm).join('、')+'框住整件事。');}
-    else if(n<=5){lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：'+recs.map(r=>r.name).join('→')+'—中間那張是重點，左右兩張修飾它，整條線讀成一句話，不逐張念。');}
-    else{const sig=recs.find(r=>/(紳士|男人|淑女|女人|28|29)/.test(r.name));lines.push('本題（'+DOMAIN_LABEL[domain]+'）大牌陣：先找代表牌'+(sig?sig.name+'（第'+sig.index+'張）':'（紳士／淑女）')+'，看它周圍八張與它所在的橫列；離代表牌越近越快、越遠越慢；'+({career:'工作題再找狐狸（工作）、錨（穩定）、書（文件）在哪',wealth:'財務題再找魚（錢）、熊（大財）、太陽',love:'感情題再找心、戒指、另一張代表牌在哪',health:'健康題再找樹（身體）、棺材（結束）、老鼠（損耗）在哪'}[domain]||'再找與題目直接對應的那張牌在哪')+'。');}
-    lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉。');
+    const spread=String(c?.spreadType||d.spreadType||''),nm=i=>recs[i-1]?recs[i-1].name:'?',pr=c?.personRep||d.personRep;
+    const theme={career:[14,35,19,27],wealth:[34,15,20],love:[24,25,28,29],health:[5,8,36],move:[1,3,17]}[domain]||[];
+    const present=theme.map(id=>recs.find(r=>r.id===id)).filter(Boolean);
+    if(spread==='nine'&&n===9)lines.push('本題（'+DOMAIN_LABEL[domain]+'）九宮格：中心'+nm(5)+'是核心，先把它跟上下左右'+[2,4,6,8].map(nm).join('、')+'連成一句；左欄已發生，右欄是走向。');
+    else if(d.tableau)lines.push('本題（'+DOMAIN_LABEL[domain]+'）大牌陣：先找'+(pr?'本人'+pr.name:'本人（本次未聲明性別，先從題目對應的主題牌起）')+'周圍八張與所在橫列；離得越近越快。');
+    else lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：中心'+nm(Math.ceil(n/2))+'是重點，整條讀成一句，不逐張念。');
+    lines.push(present.length?'題目對應的主題牌在牌面上：'+present.map(r=>r.name+'（'+(r.position||'第'+(recs.indexOf(r)+1)+'張')+'）').join('、')+'—它們旁邊的牌就是這件事的狀況':'題目對應的主題牌（'+({career:'狐狸、錨、塔、信',wealth:'魚、熊、戒指',love:'心、戒指、紳士、淑女',health:'大樹、棺材、十字架',move:'騎士、船、道路'}[domain]||'')+'）都沒出現：事情目前沒有直接落在本題上，用整條線的走向答，程度要保守');
+    lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉；大樹、百合、錨這些慢牌不是壞牌，是穩與慢。');
     return lines.join('\n');
   }
   function focusOotk(c,q,section){return null;}

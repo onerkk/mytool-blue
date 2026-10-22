@@ -2910,8 +2910,11 @@ function _lnPushBrandModule(lines) {
   lines.push('</品牌附加層>','');
 }
 
-function _lnNativeData(drawn,spreadId,sp){
-  return {spreadType:spreadId,expectedCount:sp.count,cards:drawn.map(function(p,i){var d=CARDS.find(function(x){return x.id===p.id;})||p;return {id:p.id,name:d.name,position:sp.positions&&sp.positions[i],meaning:{keywords:d.key,scope:d.scope},guard:d.guard};}),methodData:sp};
+function _lnNativeData(drawn,spreadId,sp,declaredGender){
+  // 代表牌規則由引擎決定並隨資料輸出：性別聲明優先，其次預先指定；未聲明時紳士／淑女只是牌面人物，不自動當本人。
+  var repId=_lnPersonRepId(declaredGender),focusId=_lnCustomFocusId();
+  return {spreadType:spreadId,expectedCount:sp.count,declaredGender:declaredGender||null,personRep:repId?{id:repId,name:repId===28?'紳士':'淑女',basis:declaredGender?'性別聲明':'預先指定'}:null,customFocus:focusId?{id:focusId,name:(CARDS[focusId-1]||{}).name||null}:null,
+    cards:drawn.map(function(p,i){var d=CARDS.find(function(x){return x.id===p.id;})||p;return {id:p.id,name:d.name,position:sp.positions&&sp.positions[i],meaning:{keywords:d.key,scope:d.scope},guard:d.guard,isPersonRep:repId===p.id,isCustomFocus:focusId===p.id,presetSig:!!p._presetSig};}),methodData:sp};
 }
 function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readingPlan) {
   var sp = readingPlan||_lnBuildSpreadDef(spreadId,question);
@@ -2920,7 +2923,7 @@ function buildPrompt(question, drawn, spreadId, sigGender, declaredGender, readi
     var canonical=CARDS[c.id-1];
     if(['name','en','key','scope','guard'].some(function(k){return c[k]!==canonical[k];}))throw new Error('雷諾曼牌號、牌名或牌義與本次牌庫不一致，請重新產生資料');
   });
-  if(window.JYPromptPacket)return window.JYPromptPacket.build('lenormand',_lnNativeData(drawn,spreadId,sp),question||'請依本次完整牌陣分析');
+  if(window.JYPromptPacket)return window.JYPromptPacket.build('lenormand',_lnNativeData(drawn,spreadId,sp,declaredGender),question||'請依本次完整牌陣分析');
   var lines = [];
   var legalNames = drawn.map(function(c){ return c.name; });
   var personRepId = _lnPersonRepId(declaredGender);
@@ -3497,5 +3500,5 @@ function _lnReviewAnswerGranularity(question, answer) {
   return {ok:issues.length===0,issues:issues,capability:x.capability};
 }
 
-window.JYLenormand={version:'23.0.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
+window.JYLenormand={version:'23.1.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
 })();
