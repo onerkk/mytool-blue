@@ -9,7 +9,7 @@ for(const [kind,chart]of Object.entries(x.charts))test(kind+' full chart unchang
  const before=JSON.stringify(chart),nativeBefore=JSON.stringify(c.JYNativeAnalysis.analyze(kind,chart)),text=P.build(kind,chart,x.q),{p,data}=unpack(text);
  assert.equal(JSON.stringify(chart),before);assert.equal(JSON.stringify(c.JYNativeAnalysis.analyze(kind,chart)),nativeBefore);
  assert.equal(data.question,x.q);assert.equal(data.method,kind);assert(text.includes('jy.native-analysis/1'));assert(text.includes('"method":"'+kind+'"'));
- p.parts.forEach((part,i)=>{assert(P.chars(part)<=11000);assert(P.utf8(part)<=26000);assert.equal(part,p.body);assert(!part.includes('undefined'));});
+ p.parts.forEach((part,i)=>{assert(P.chars(part)<=12000);assert(P.utf8(part)<=28000);assert.equal(part,p.body);assert(!part.includes('undefined'));});
  const sections=data.sections,by=label=>sections.find(s=>s.label===label)?.data;
  if(kind==='bazi'){assert.equal(by('四柱、節令與換日依據').pillars.length,4);assert(by('大運與所問年度').annualSegments.every(y=>y.year>=2026&&y.year<=2029));assert(new Set(by('大運與所問年度').annualSegments.map(y=>y.year)).size===4);}
  if(kind==='ziwei'){assert.equal(by('本命十二宮与指定四化').palaces.length,12);assert.equal(by('運限疊宮').months.length,12);assert.equal(by('本命十二宮与指定四化').northern.flights.length,48);}

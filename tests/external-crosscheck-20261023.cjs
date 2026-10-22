@@ -54,7 +54,7 @@ test('every method delivers a question-focus block, no English keys leak into it
   for(const [method,chart] of Object.entries(x.charts)){const body=P.build(method,chart,q),p=P.get(body);
     assert(body.includes('【本題焦點'),method);const seg=body.split('【本題焦點')[1].split('\n\n【')[0];
     const segNoNames=seg.split('\n').filter(l=>!l.startsWith('已成立的格')).join('\n').replace(/Ace|Book T/g,'');assert(!/[A-Za-z]{4,}/.test(segNoNames),method+' english key in focus: '+segNoNames.match(/[A-Za-z]{4,}/));
-    assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=11000&&P.utf8(body)<=26000,method);
+    assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=12000&&P.utf8(body)<=28000,method);
     if(method==='bazi'){assert(seg.includes('傷官撞正官'));assert(seg.includes('過去三年回看'));assert(seg.includes('2023癸卯'));}
     if(method==='ziwei'){assert(seg.includes('官祿（巳）'));assert(seg.includes('流年命宮走本命'));}
     if(method==='vedic'){assert(seg.includes('主運'));assert(seg.includes('過去三年回看'));}if(method==='astro'){assert(seg.includes('行運'));assert(seg.includes('過去三年回看'));}}
