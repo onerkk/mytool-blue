@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single37',LIMIT=11000,BYTES=26000;
+  const VERSION='20261023single38',LIMIT=11000,BYTES=26000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -340,6 +340,8 @@
     if(asksTiming(q))lines.push('原題問時間：先用流年四化與流年命宮定哪一年，再用流月表定月份；每個時間點都要說是哪顆化曜或哪個宮觸發。');
     return lines.join('\n');
   }
+  function eclLon(body,date){try{const AE=root.Astronomy;if(!AE||!AE.GeoVector)return null;const v=AE.GeoVector(AE.Body[body],date,true);return ((AE.Ecliptic(v).elon%360)+360)%360;}catch(e){return null;}}
+  const signCount=(a,b)=>((b-a)%12+12)%12+1;
   const VD_DOMAIN={career:[10,6,2,11],wealth:[2,11,5,9],love:[7,5,11,2],health:[1,6,8,12],move:[12,9,4,3],general:[1,10,7,2]};
   const HOUSE_LIFE={1:'自己、身體與整體走向',2:'收入、家庭、說話',3:'努力、手足、短途',4:'家、房產、母親、安定',5:'子女、戀愛、創作、投機',6:'工作日常、債務、疾病、競爭',7:'伴侶、合作、對手',8:'變故、他人之財、長壽',9:'運氣、父親、長途、信念',10:'事業、名聲、職位',11:'收穫、人脈、願望',12:'消耗、外地、隱退、睡眠'};
   function focusVedic(c,q){
@@ -348,6 +350,13 @@
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的宮：\n'+hs.map(n=>{const h=c.houses.find(x=>x.house===n);if(!h)return null;return n+'宮（'+(HOUSE_LIFE[n]||'')+'）：'+h.signName+'，宮主'+zh(h.lord)+'落'+h.lordHouse+'宮'+(A(h.occupants).length?'，宮內有'+h.occupants.map(zh).join('、'):'，宮內無星')+(A(h.aspectedBy).length?'，受'+h.aspectedBy.map(zh).join('、')+'照':'')+(Number.isFinite(h.sav)?'，八分法'+h.sav+'分（28以上算有底）':'');}).filter(Boolean).join('\n'));
     const DIGN={exalted:'入廟',moola:'根本三方',own:'自宮',friend:'友宮',neutral:'中性',enemy:'敵宮',debilitated:'落陷'},dz=d=>{const v=dig(d);return DIGN[v]||v;},ym=x=>{const d=new Date(x);return Number.isFinite(+d)?d.toISOString().slice(0,7):'?';};const cur=c.dasha?.current;if(cur){const lordOf=k=>{const p=cur[k];if(!p)return null;const planet=c.planets?.[p.lord];const ruled=c.houses.filter(h=>h.lord===p.lord).map(h=>h.house);return ({maha:'主運',antar:'副運',pratyantar:'次副運'}[k]||k)+zh(p.lord)+(planet?'（落'+planet.house+'宮，掌'+ruled.join('、')+'宮'+(planet.dignity?'，'+dz(planet.dignity):'')+'）':'')+' '+ym(p.start)+'→'+ym(p.end);};lines.push('現行大運：'+['maha','antar','pratyantar'].map(lordOf).filter(Boolean).join('；')+'。大運主所掌與所落的宮，就是這段時間事情會從哪裡發動；它跟本題宮位有沒有關聯決定了題目答案的力度。');}
     const yg=A(c.yogas).filter(y=>y.present!==false&&(y.active||y.formed||y.status===undefined||affirmative(y.status))).slice(0,4);if(yg.length)lines.push('已成立的格（只列名稱，解釋時要落到本題）：'+yg.map(y=>y.name||y.id).join('、'));
+    // 逐年：當年主運／副運，以及土木行運從上升數起的宮位（恆星黃道：由本盤太陽的回歸／恆星差推歲差）。
+    const ref=new Date(c.dasha?.reference||c.input?.reference||Date.now()).getUTCFullYear(),years=askedYears(q,ref),sunP=c.planets?.Sun,ay0=sunP&&Number.isFinite(sunP.tropical)&&Number.isFinite(sunP.longitude)?((sunP.tropical-sunP.longitude)%360+360)%360:null,birthY=new Date(c.dasha?.birth||c.input?.utc||0).getUTCFullYear(),lagnaSign=c.lagna?.sign;
+    const yearLine=y=>{const t=Date.UTC(y,6,1);const maha=A(c.dasha?.periods).find(p=>p.start<=t&&t<p.end),antar=maha&&A(maha.children).find(p=>p.start<=t&&t<p.end);const ruledOf=l=>c.houses.filter(h=>h.lord===l).map(h=>h.house).join('、');let txt=y+'：'+(maha?'主運'+zh(maha.lord)+(ruledOf(maha.lord)?'（掌'+ruledOf(maha.lord)+'宮）':''):'主運未算')+(antar?'、副運'+zh(antar.lord)+(ruledOf(antar.lord)?'（掌'+ruledOf(antar.lord)+'宮）':''):'');
+      if(ay0!=null&&Number.isFinite(lagnaSign)){const ay=ay0+(y-birthY)*0.013967;const d=new Date(t);const tr=['Jupiter','Saturn'].map(b=>{const lon=eclLon(b,d);if(lon==null)return null;const sid=((lon-ay)%360+360)%360,sg=Math.floor(sid/30);return zh(b)+'行運第'+signCount(lagnaSign,sg)+'宮'+(hs.includes(signCount(lagnaSign,sg))?'（在本題宮位上）':'');}).filter(Boolean);if(tr.length)txt+='；'+tr.join('、');}
+      return txt;};
+    lines.push('所問年份逐年訊號：\n'+years.map(yearLine).join('\n'));
+    lines.push('過去三年回看（開場先挑一兩件他能自己核對的事說）：\n'+[ref-3,ref-2,ref-1].map(yearLine).join('\n'));
     if(asksTiming(q))lines.push('原題問時間：用副運（antar）與次副運換手的日期當區間，再用行運土星、木星過本題宮位確認；不要用流年宮數字直接換成日期。');
     return lines.join('\n');
   }
@@ -360,6 +369,12 @@
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的宮與行星：\n'+cfg.houses.map(n=>{const cusp=cusps?.[n-1];const sign=Number.isFinite(cusp)?signs[Math.floor((((cusp%360)+360)%360)/30)]:'?';const occ=occupantsOf(n);return n+'宮（'+(HOUSE_LIFE[n]||'')+'）宮頭'+sign+(occ.length?'，宮內'+occ.join('、'):'，宮內無星');}).join('\n')+'\n'+cfg.planets.map(k=>{const p=c.planets[k];if(!p)return null;return zh(k)+'在'+p.signName+p.house+'宮'+(p.retrograde?'逆行':'')+(p.dignity?.name&&p.dignity.name!=='無廟旺弱陷'?'（'+p.dignity.name+'）':'');}).filter(Boolean).join('；'));
     const tr=c.transits?.planets;if(tr&&cusps){const slow=['Saturn','Jupiter','Uranus','Neptune','Pluto'].map(k=>{const p=tr[k];if(!p)return null;const h=houseOf(p.longitude,cusps);return zh(k)+'行運在'+p.signName+'、過本命'+h+'宮'+(cfg.houses.includes(h)?'（正在本題宮位上）':'')+(p.retrograde?'逆行':'');}).filter(Boolean);lines.push('現在的行運（'+String(c.transits.utc||'').slice(0,10)+'）：'+slow.join('；')+'。土星過的宮是在收緊與考驗，木星過的宮是在放大與給機會。');}
     if(c.profection?.house)lines.push('今年小限落'+c.profection.house+'宮'+(c.profection.lord?'，年主'+zh(c.profection.lord):'')+'：今年的主題先從這裡起。');
+    // 逐年：土木行運過本命哪一宮（回歸黃道，用本盤宮頭），以及整宮小限宮。
+    const refY=new Date(c.input?.reference||c.transits?.utc||Date.now()).getUTCFullYear(),years=askedYears(q,refY),birth=new Date(c.input?.utc||0),ascSign=Number.isFinite(c.houses?.angles?.ASC)?Math.floor((((c.houses.angles.ASC%360)+360)%360)/30):null;
+    const yearLine=y=>{const d=new Date(Date.UTC(y,6,1));const parts=['Saturn','Jupiter'].map(b=>{const lon=eclLon(b,d);if(lon==null)return null;const h=houseOf(lon,cusps);return zh(b)+'過本命'+h+'宮'+(cfg.houses.includes(h)?'（在本題宮位上）':'');}).filter(Boolean);
+      let age=y-birth.getUTCFullYear();if(Number.isFinite(age)&&ascSign!=null){const ph=((age%12)+12)%12+1;parts.push('小限'+ph+'宮（約'+age+'歲）');}
+      return y+'：'+(parts.length?parts.join('、'):'未算');};
+    if(cusps){lines.push('所問年份逐年訊號：\n'+years.map(yearLine).join('\n'));lines.push('過去三年回看（開場先挑一兩件他能自己核對的事說）：\n'+[refY-3,refY-2,refY-1].map(yearLine).join('\n'));}
     if(asksTiming(q))lines.push('原題問時間：用土星、木星進出本題宮位與行運精準相位的日期當區間；月亮與內行星只定日子不定年。');
     return lines.join('\n');
   }

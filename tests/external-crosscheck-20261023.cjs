@@ -57,7 +57,7 @@ test('every method delivers a question-focus block, no English keys leak into it
     assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=11000&&P.utf8(body)<=26000,method);
     if(method==='bazi'){assert(seg.includes('傷官撞正官'));assert(seg.includes('過去三年回看'));assert(seg.includes('2023癸卯'));}
     if(method==='ziwei'){assert(seg.includes('官祿（巳）'));assert(seg.includes('流年命宮走本命'));}
-    if(method==='vedic')assert(seg.includes('主運'));if(method==='astro')assert(seg.includes('行運'));}
+    if(method==='vedic'){assert(seg.includes('主運'));assert(seg.includes('過去三年回看'));}if(method==='astro'){assert(seg.includes('行運'));assert(seg.includes('過去三年回看'));}}
 });
 test('optional: iztro cross-check when installed',()=>{
   let iz=null;try{iz=require('iztro');}catch(e){console.log('  (iztro not installed; skipped)');return;}
