@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single38',LIMIT=11000,BYTES=26000;
+  const VERSION='20261023single39',LIMIT=11000,BYTES=26000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -281,15 +281,16 @@
   const DOMAIN_LABEL={love:'感情',career:'事業／工作',wealth:'財務',health:'健康',move:'遷移／出國',general:'整體處境'};
   function detectDomain(q){q=String(q||'');for(const [k,re] of DOMAINS)if(re.test(q))return k;return 'general';}
   const asksTiming=q=>/何時|什麼時候|什么时候|哪一年|哪年|幾月|几月|多久|時機|时机|今年|明年|20\d\d/.test(String(q||''));
-  function askedYears(q,ref){const ys=[...new Set((String(q||'').match(/20\d\d/g)||[]).map(Number).filter(y=>y>=ref-1&&y<=ref+12))].sort();if(ys.length>1)return Array.from({length:Math.min(6,ys[ys.length-1]-ys[0]+1)},(_,i)=>ys[0]+i);if(ys.length===1)return ys[0]===ref?[ref,ref+1]:[ys[0]];return [ref,ref+1];}
+  function askedYears(q,ref){const ys=[...new Set((String(q||'').match(/20\d\d/g)||[]).map(Number).filter(y=>y>=ref-1&&y<=ref+12))].sort();if(ys.length>1)return Array.from({length:Math.min(6,ys[ys.length-1]-ys[0]+1)},(_,i)=>ys[0]+i);if(ys.length===1)return ys[0]===ref?[ref,ref+1,ref+2]:[ys[0]];return [ref,ref+1,ref+2];}
   function ganzhiOfYear(y){return GZ_G[((y-4)%10+10)%10]+GZ_Z[((y-4)%12+12)%12];}
   function tenGod(dm,g){const a=GZ_G.indexOf(dm),b=GZ_G.indexOf(g);if(a<0||b<0)return '';return [['比肩','劫財'],['食神','傷官'],['偏財','正財'],['七殺','正官'],['偏印','正印']][(((Math.floor(b/2)-Math.floor(a/2))%5)+5)%5][(((a-b)%2)+2)%2];}
   const GE_DISTURB={正官:{傷官:'傷官撞正官：位子、名分或與主管的關係最容易出狀況的一年',七殺:'官殺同見：多頭馬車、兩邊要求你，容易被夾在中間'},七殺:{食神:'食神制殺：壓力反而被你用上，是轉守為攻的一年',正官:'官殺同見：多頭馬車、兩邊要求你'},正財:{比肩:'比劫奪財：錢被分走、同行競爭、合夥要算清楚',劫財:'劫財見財：破財、借貸、衝動花費要特別防'},偏財:{比肩:'比劫奪財：機會財被瓜分、競爭變多',劫財:'劫財見財：破財與人情花費的一年'},正印:{正財:'財壞印：為了錢或現實，安穩、證照或長輩支持被削弱',偏財:'財壞印：為了機會財犧牲穩定或名聲'},偏印:{正財:'財壞印：現實壓過了想法與保護',偏財:'財壞印：機會財干擾了原本的保護'},食神:{偏印:'梟神奪食：才華與表達被壓住，做起來綁手綁腳'},傷官:{正官:'傷官見官：跟制度、主管或名分正面對撞的一年'},建祿:{正財:'祿見財：要靠自己把錢抓住，別被同輩分走',偏財:'祿見財：機會來但競爭者也來'},月刃:{正財:'刃見財：守不住錢、容易為錢起衝突',偏財:'刃見財：機會財旁邊有人等著分'}};
+  const GE_SUPPORT={正官:{正財:'財生官：名分、職位和收入接得上，正官格的順年',偏財:'財生官：外來機會替位子加分',正印:'官印相生：有長輩或體制撐著，壓力能被消化'},七殺:{正印:'殺印相生：壓力變成被託付的責任',偏印:'殺印相生：硬仗有人在背後撐'},正財:{食神:'食傷生財：靠本事把錢做出來',傷官:'食傷生財：靠點子與口才生財，但別得罪人',正官:'財官相生：錢與名分一起來'},偏財:{食神:'食傷生財：機會財靠本事接住',傷官:'食傷生財：點子換成錢的一年'},正印:{正官:'官印相生：體制替你背書',七殺:'殺印相生：壓力換來位置'},偏印:{七殺:'殺印相生：危機變轉機'},食神:{正財:'食神生財：做的事開始變現',偏財:'食神生財：興趣接到錢'},傷官:{正財:'傷官生財：才華換成收入的一年',偏財:'傷官生財：外來機會看上你的本事'}};
   function geKey(name){name=String(name||'');for(const k of Object.keys(GE_DISTURB))if(name.startsWith(k))return k;return null;}
   function baziYearSignals(c,y,domain,gender){
     const dm=c.dm,p=c.pillars||{},gz=ganzhiOfYear(y),g=gz[0],z=gz[1],gg=tenGod(dm,g),zg=tenGod(dm,MAIN_QI[z]);
     const out=[],ge=geKey(c.zhengGe?.geName);
-    if(ge&&GE_DISTURB[ge][gg])out.push(GE_DISTURB[ge][gg]);
+    if(ge&&GE_DISTURB[ge][gg])out.push(GE_DISTURB[ge][gg]);else if(ge&&GE_SUPPORT[ge]&&GE_SUPPORT[ge][gg])out.push(GE_SUPPORT[ge][gg]);
     if(GHE[dm]===g)out.push('流年干合住你的日干：這一年很容易被人、被關係或合作牽著走，自己的主張會變軟');
     if(p.day&&CHONG[z]===p.day.zhi)out.push('流年沖日支：自身位置、住處或伴侶關係會被動搖，感情題尤其要看這一年');
     if(p.month&&CHONG[z]===p.month.zhi)out.push('流年沖月支：工作環境、家裡或原本的架構會換掉一塊');
@@ -303,7 +304,7 @@
   function focusBazi(c,q,gender){
     if(!c?.pillars||!c.dm)return null;
     const domain=detectDomain(q),ref=c.liuNianPeriod?.year||new Date().getUTCFullYear(),years=askedYears(q,ref),lines=[];
-    const sa=c.strengthAssessment||{},lean=sa.lean;
+    const sa=c.strengthAssessment||{},lean=sa.lean,p=c.pillars;
     const strengthText=sa.level?(sa.level+(lean?'，站內傾向'+lean.direction+'（'+lean.basis.join('、')+'）':''))+'；格局：'+(c.zhengGe?.geName||'未定'):null;
     if(strengthText)lines.push('本盤底色：'+strengthText+'。喜忌仍由你依格局、調候與病藥定，但定了就要貫徹到每一年的判斷。');
     const want={career:['正官','七殺','正印','偏印','傷官','食神'],wealth:['正財','偏財','食神','傷官','劫財','比肩'],love:gender==='female'?['正官','七殺','比肩','劫財','傷官']:['正財','偏財','比肩','劫財'],health:['七殺','正官','偏印','劫財'],move:['偏財','傷官','七殺'],general:[]}[domain]||[];
@@ -311,7 +312,9 @@
     const rel=godsAt.filter(x=>want.includes(x.god)&&!/藏$/.test(x.where)),grouped=[];rel.forEach(x=>{const g=grouped.find(y=>y.god===x.god);if(g)g.where.push(x.where);else grouped.push({god:x.god,where:[x.where]});});
     if(domain!=='general')lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看的字：'+(grouped.length?grouped.map(x=>x.god+'（'+x.where.join('、')+'）—'+GOD_LIFE[x.god]).join('；'):'原局沒有直接對應的十神明透或本氣，要從大運流年補進來的字看')+(domain==='love'?'；日支'+c.pillars.day.zhi+'是夫妻宮，沖合空亡先看它':''));
     const PL={year:'年柱',month:'月柱',day:'日柱',hour:'時柱'},pl=x=>PL[x]||x;
+    ['year','month','hour'].forEach(k=>{const st=c.pillars[k]?.gan;if(st&&GHE[c.dm]===st){const g=tenGod(c.dm,st);lines.push('日主'+c.dm+'合住'+pl(k).replace('柱','干')+st+'（'+g+'）：'+(g==='正官'||g==='七殺'?'人被職位、制度或主管綁著，想走走不掉，留下來也悶；這是本盤對工作題最核心的一筆':g==='正財'||g==='偏財'?'人被錢或伴侶綁著，取捨都繞著它':'人被'+(GOD_LIFE[g]||g)+'這件事綁住'));}});
     const dec=baziDecadeAt(c,ref);if(dec&&dec.gz&&dec.gz!=='小運')lines.push('現行大運'+dec.gz+'（'+dec.ageStart+'–'+dec.ageEnd+'歲）：干'+dec.god+'、支'+dec.zGod+'，十年的主題是「'+(GOD_LIFE[dec.god]||'')+'」'+(A(dec.clash).length?'；此運沖'+dec.clash.map(pl).join('、'):'')+(A(dec.he).length?'；合'+dec.he.map(pl).join('、'):''));
+    if(dec){const i=A(c.dayun).indexOf(dec),nx=A(c.dayun)[i+1];if(nx&&nx.gz&&nx.gz!=='小運'){const st=nx.window?.start?String(nx.window.start).slice(0,7):'';const nz=nx.gz[1],flags=[];if(p.day&&CHONG[nz]===p.day.zhi)flags.push('沖日支');if(p.month&&CHONG[nz]===p.month.zhi)flags.push('沖月支');if(p.day&&HE6[nz]===p.day.zhi)flags.push('合日支');if(GHE[c.dm]===nx.gz[0])flags.push('合日干');lines.push('下一步大運'+nx.gz+'（'+nx.ageStart+'–'+nx.ageEnd+'歲，'+st+'起）：干'+nx.god+'、支'+nx.zGod+'，主題換成「'+(GOD_LIFE[nx.god]||'')+'」'+(flags.length?'；'+flags.join('、')+'—換運那一年通常就是真的會動的時間點，問時機的題目要看這裡':''));}}
     const yrs=years.map(y=>baziYearSignals(c,y,domain,gender)).map(r=>r.y+r.gz+'（干'+r.gg+'、支'+r.zg+'）：'+(r.hits.length?r.hits.join('；'):'沒有觸動格局或沖合日支，主要看'+r.gg+'這個字的日常樣子—'+(GOD_LIFE[r.gg]||'')));
     lines.push('所問年份逐年訊號：\n'+yrs.join('\n'));
     const past=[ref-3,ref-2,ref-1].map(y=>baziYearSignals(c,y,domain,gender)).map(r=>r.y+r.gz+'：'+(r.hits.length?r.hits.join('；'):r.gg+'年—'+(GOD_LIFE[r.gg]||'')));
