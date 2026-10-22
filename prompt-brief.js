@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single40',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single41',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -403,10 +403,110 @@
     ootk:{general:'逐輪看對原題新增了什麼判斷，最後合成方向與最強反證。'},
     oracle:{general:'先讀籤詩原文與條件，再接本題；典故名不是本人經歷。'}
   };
+  /* ── 其他十一種方法的本題焦點 ── */
+  const REL_LIFE={官鬼:'職位、公司、壓力、病、對女命也指對象',父母:'文書、合約、單位、長輩、庇護',妻財:'錢、薪水、對男命也指對象',子孫:'解憂、順心、醫藥，但會剋官（工作題看它動不動）',兄弟:'同事競爭、分錢、阻隔'};
+  function liuyaoUseGod(domain,gender){return domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財','子孫']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼','子孫']:domain==='move'?['父母','子孫']:['官鬼','妻財'];}
+  function lyState(l){const s=l.states||{};const bits=[];bits.push('月令'+(s.monthRelation||'?')+(s.monthBroken?'（月破）':''));bits.push('日辰'+(s.dayRelation||'?')+(s.dayClash?'（日沖）':'')+(s.dayCombine?'（日合）':''));if(s.void)bits.push('旬空');if(l.moving)bits.push('動'+(l.changed?'化'+l.changed.relative+l.changed.branch+(l.transition?.returnLabel?'，'+l.transition.returnLabel:''):''));return bits.join('、');}
+  function focusLiuyao(c,q,gender){
+    if(!A(c?.lines).length)return null;const domain=detectDomain(q),lines=[];
+    const primary=c.focus?.primary||c.interpretation?.targets?.[0]?.relative||liuyaoUseGod(domain,gender)[0],wants=[...new Set([primary,...liuyaoUseGod(domain,gender)])];
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；')+'；世爻是你自己，應爻是對方或環境。');
+    wants.forEach(r=>{const ls=c.lines.filter(l=>l.relative===r);const hidden=A(c.lines).filter(l=>l.hidden&&l.hidden.relative===r);if(!ls.length&&!hidden.length){lines.push(r+'不上卦也無伏神：這件事目前沒有著力點，先別急著定論');return;}ls.forEach(l=>lines.push(r+l.branch+'在'+l.label+(l.role?'（'+l.role+'）':'')+'：'+lyState(l)));hidden.forEach(l=>lines.push(r+'伏在'+l.label+'（'+l.hidden.branch+'）：要等飛神動或日月引出才算有用'));});
+    const shi=c.lines.find(l=>l.role==='世'),ying=c.lines.find(l=>l.role==='應');if(shi)lines.push('世爻'+shi.relative+shi.branch+'（你自己）：'+lyState(shi)+(ying?'；應爻'+ying.relative+ying.branch+'（對方／環境）：'+lyState(ying):''));
+    const mv=c.lines.filter(l=>l.moving);lines.push(mv.length?'動爻：'+mv.map(l=>l.label+l.relative+l.branch+'動化'+(l.changed?l.changed.relative+l.changed.branch:'?')+(l.transition?.returnLabel?'（'+l.transition.returnLabel+'）':'')).join('；')+'—動的字才是正在發生的事，化出來的字是結果走向':'六爻安靜：事情原地不動，先看日月對用神的生剋');
+    if(c.calendar)lines.push('月建'+(c.calendar.monthBranch||'?')+'、日辰'+(c.calendar.day||'?')+'，旬空'+A(c.calendar.voidBranches).join('')+'：旬空的用神要等出旬或日月填實才應驗');
+    if(asksTiming(q))lines.push('原題問時間：用神旺相看近期，休囚看出旬／逢值逢合；動爻化出之字出現的月日是應期候選，要說出是哪個字。');
+    return lines.join('\n');
+  }
+  function focusLiuren(c,q,gender){
+    if(!A(c?.transmissions).length)return null;const domain=detectDomain(q),lines=[];
+    const wants=domain==='career'?['官鬼','父母']:domain==='wealth'?['妻財']:domain==='love'?(gender==='female'?['官鬼']:['妻財']):domain==='health'?['官鬼']:domain==='move'?['父母']:['官鬼','妻財'];
+    const tr=c.transmissions;lines.push('本題（'+DOMAIN_LABEL[domain]+'）用神：'+wants.map(r=>r+'—'+(REL_LIFE[r]||'')).join('；'));
+    lines.push('三傳：'+tr.map(t=>t.role+t.branch+'（'+t.kinship+'，'+t.general+(t.empty?'，空':'')+'）').join('→')+'—初傳是事情起頭，中傳是過程，末傳是結果；'+(tr.some(t=>wants.includes(t.kinship))?'用神'+tr.filter(t=>wants.includes(t.kinship)).map(t=>'在'+t.role).join('、')+'，事情直接上傳':'用神不上傳，要從四課與日干上神找'));
+    const k1=A(c.courses)[0],k3=A(c.courses)[2];if(k1)lines.push('日干上神'+k1.upper+'（'+k1.kinship+'，'+k1.general+'）是你自己現在頂著什麼；'+(k3?'日支上神'+k3.upper+'（'+k3.kinship+'）是對方或環境現在的狀態':''));
+    const empty=tr.filter(t=>t.empty);if(empty.length)lines.push(empty.map(t=>t.role+'落空').join('、')+'：那一段會虛、拖或不了了之，除非被沖實');
+    if(c.noble)lines.push('貴人'+c.noble.branch+(c.noble.direction?'、'+c.noble.direction:'')+'：順布事情順著走，逆布要繞路');
+    if(asksTiming(q))lines.push('原題問時間：先看末傳與用神所落之支，再看沖空填空之日；課體候選日只是條件觸發。');
+    return lines.join('\n');
+  }
+  function focusMeihua(c,q){
+    if(!c?.ben)return null;const domain=detectDomain(q),lines=[];
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：體卦'+(c.tiG?.name||'?')+'（'+(c.tiG?.el||'?')+'，你自己）、用卦'+(c.yoG?.name||'?')+'（'+(c.yoG?.el||'?')+'，'+({career:'工作與公司',wealth:'錢與機會',love:'對方',health:'病與身體',move:'去處'}[domain]||'這件事')+'）：'+(c.ty?.r||'?')+(c.ty?.d?'—'+c.ty.d:''));
+    lines.push('本卦'+c.ben.n+'（'+(c.ben.j||'')+'）→互卦'+(c.hu?.n||'?')+'（過程）→變卦'+(c.bian?.n||'?')+'（'+(c.bian?.j||'')+'，結局）；動爻第'+(c.dong||'?')+'爻'+(c.summary?'。'+c.summary:''));
+    if(c.timing?.windowLabel)lines.push('時間感：'+c.timing.windowLabel+(c.timing.note?'；'+c.timing.note:''));
+    return lines.join('\n');
+  }
+  function focusYijing(c,q){
+    if(!c?.original)return null;const domain=detectDomain(q),lines=[];
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：本卦'+(c.original.fullName||c.original.name)+'是現在的處境'+(c.originalText?.judgment?'—'+String(c.originalText.judgment).replace(/。$/,''):'')+(c.changed?'；之卦'+(c.changed.fullName||c.changed.name)+'是變化方向，不是保證':'；無動爻，讀卦辭為主'));
+    const sel=A(c.reading?.selections);if(sel.length)lines.push('本次擇辭（'+(c.reading.rule||'')+'）：'+sel.map(s=>s.role+'「'+s.label+'：'+s.text+'」').join('；')+'—先把主讀那句翻成這件事的現況，參讀補條件');
+    if(c.originalText?.image)lines.push('象辭：'+c.originalText.image);
+    return lines.join('\n');
+  }
+  const TAROT_KEY={love:['loveUp','loveRv'],career:['careerUp','careerRv'],wealth:['wealthUp','wealthRv'],health:['healthUp','healthRv'],move:['up','rv'],general:['up','rv']};
+  function focusTarot(c,q,section){
+    const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),[ku,kr]=TAROT_KEY[domain]||TAROT_KEY.general,lines=[];
+    const meaning=r=>{const card=A(c?.cards).find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
+    const keyPos=/(結果|未來|結局|出路|最終)/,corePos=/(核心|目前|現況|現在|狀態|本人|你)/,advPos=/(建議|行動|該做)/;
+    const pick=re=>recs.filter(r=>re.test(String(r.position||'')));
+    const show=r=>r.position+'：'+r.name+(r.direction?r.direction:'')+'—'+meaning(r);
+    const outs=pick(keyPos),cores=pick(corePos),advs=pick(advPos);
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看：'+(cores.length?'\n'+cores.map(show).join('\n'):'')+(outs.length?'\n'+outs.map(show).join('\n'):'')+(advs.length?'\n'+advs.map(show).join('\n'):'')+(!cores.length&&!outs.length?'\n'+recs.slice(0,3).map(show).join('\n'):''));
+    const majors=recs.filter(r=>r.suit==='major'),rev=recs.filter(r=>/逆/.test(r.direction||'')),courts=recs.filter(r=>['page','knight','queen','king'].includes(String(r.rank)));
+    lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+(courts.length?courts.map(r=>r.name).join('、')+'—才可以推人':'無，不要硬推對方年齡長相'));
+    if(outs.length&&cores.length){const o=outs[0],cr=cores[0];const ro=/逆/.test(o.direction||''),rc=/逆/.test(cr.direction||'');lines.push('核心與結果'+(ro===rc?'同向':'不同向')+'：'+(ro===rc?'答案可以講得篤定一點':'先講現在為什麼卡或順，再講結果為什麼轉'));}
+    if(asksTiming(q))lines.push('原題問時間：權杖快、寶劍次之、聖杯慢、金幣最慢；數字小是起頭、大是收尾；大牌不定時間。');
+    return lines.join('\n');
+  }
+  function focusLenormand(c,q,section){
+    const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),lines=[],n=recs.length;
+    const spread=String(c?.spreadType||d.spreadType||'');
+    const nm=i=>recs[i-1]?recs[i-1].name:'?';
+    if(spread==='nine'&&n===9){lines.push('本題（'+DOMAIN_LABEL[domain]+'）九宮格：中心'+nm(5)+'是核心，先把它跟上下左右'+[2,4,6,8].map(nm).join('、')+'連成一句；左欄'+[1,4,7].map(nm).join('、')+'已發生，右欄'+[3,6,9].map(nm).join('、')+'是走向；四角'+[1,3,7,9].map(nm).join('、')+'框住整件事。');}
+    else if(n<=5){lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：'+recs.map(r=>r.name).join('→')+'—中間那張是重點，左右兩張修飾它，整條線讀成一句話，不逐張念。');}
+    else{const sig=recs.find(r=>/(紳士|男人|淑女|女人|28|29)/.test(r.name));lines.push('本題（'+DOMAIN_LABEL[domain]+'）大牌陣：先找代表牌'+(sig?sig.name+'（第'+sig.index+'張）':'（紳士／淑女）')+'，看它周圍八張與它所在的橫列；離代表牌越近越快、越遠越慢；'+({career:'工作題再找狐狸（工作）、錨（穩定）、書（文件）在哪',wealth:'財務題再找魚（錢）、熊（大財）、太陽',love:'感情題再找心、戒指、另一張代表牌在哪',health:'健康題再找樹（身體）、棺材（結束）、老鼠（損耗）在哪'}[domain]||'再找與題目直接對應的那張牌在哪')+'。');}
+    lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉。');
+    return lines.join('\n');
+  }
+  function focusOotk(c,q,section){
+    const d=section&&section('本次完整操作與牌籤作用')||{};const ops=A(d.operations);if(!ops.length)return null;const domain=detectDomain(q),lines=[];
+    const valid=ops.filter(o=>o.valid&&!o.abandoned),names={op1:'第一輪（當下狀態）',op2:'第二輪（展開與推進）',op3:'第三輪（心裡的想法與處境）',op4:'第四輪（時間與轉折）',op5:'第五輪（結局）'};
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）已完成'+valid.length+'／5輪：'+valid.map(o=>names[o.operation]||o.operation).join('、')+'；未做或放棄的輪次不補造，結論只能到已完成的那一輪為止。');
+    valid.forEach(o=>{const dt=o.data||{};const keys=A(dt.keyCards).map(k=>k.name||k.card||k).slice(0,3);const sig=dt.significator||dt.representative;if(keys.length||sig)lines.push((names[o.operation]||o.operation)+'：'+(sig?'代表牌'+(sig.name||sig)+(sig.facing||sig.direction?'面向'+(sig.facing||sig.direction):'')+'；':'')+(keys.length?'關鍵牌'+keys.join('、'):''));});
+    if(valid.length>=2)lines.push('各輪結論牌的花色若集中（例如都是寶劍），那個方向就是答案的主軸；輪與輪結論相反時，以後面那輪修正前面那輪，但要說出為什麼。');
+    return lines.join('\n');
+  }
+  function focusOracle(c,q,section){
+    const d=section&&section('本次完整操作與牌籤作用')||{};if(!d.poem&&!c?.p)return null;const domain=detectDomain(q),lines=[];
+    const catMap={career:['作事','求職','功名','謀望','仕途','職業'],wealth:['求財','財利','生意','經營','買賣'],love:['婚姻','求婚','姻緣','感情'],health:['疾病','病症','身體','健康'],move:['出行','行人','移徙','遠行','出外']};
+    const cats=A(d.categories),hit=cats.filter(x=>x.present&&(catMap[domain]||[]).some(k=>String(x.name).includes(k)));
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）：先讀整首籤詩的方向'+(d.reading?.direction?'（'+d.reading.direction+'：'+(d.reading.summary||'')+'）':'')+'，再看對應事項'+(hit.length?hit.map(x=>'「'+x.name+'」'+(A(x.textFeatureTags).length?'（'+x.textFeatureTags.map(t=>({supportive:'有利',caution:'要小心',conditional:'有條件',negative:'不利',delay:'要等',waiting:'要等',late:'偏晚',early:'偏早'}[t]||'')).join('、')+'）':'')).join('、')+'—事項附記裡有條件或先後時，以附記為準，不用總吉意蓋過去':'（本籤沒有直接對應本題的事項，只能用整首方向與「凡事」附記）'));
+    if(d.reading?.premises)lines.push('成立前提：'+d.reading.premises);
+    return lines.join('\n');
+  }
+  function focusName(c,q){
+    if(!A(c?.names).length)return null;const lines=[];
+    const row=n=>{const g=n.fiveGrids||{};const grids=A(g.grids).map(x=>x.role+x.num+(x.level?'（'+x.level+'）':'')).join('、');const sc=g.sanCai?(g.sanCai.configuration||''):'';return n.name+(n.comparisonRole==='baseline'?'（原名）':'')+'：'+grids+(sc?'；三才'+sc:'')+(n.phonetic?.warnings?.length?'；讀音提醒'+n.phonetic.warnings.join('、'):'');};
+    lines.push('比較對象：\n'+c.names.map(row).join('\n'));
+    lines.push('先講每個名字一眼看到的硬傷（讀音歧義、字義、筆畫爭議），再比數理；不同派的分數不能相加，原名未必要改。');
+    return lines.join('\n');
+  }
+  function focusCompat(c,q){
+    if(!c?.personA||!c?.personB)return null;const lines=[],a=c.personA,b=c.personB;
+    lines.push('甲方'+(a.dayMaster||'')+'（'+(a.strength||'')+'）、乙方'+(b.dayMaster||'')+'（'+(b.strength||'')+'）：日主關係'+(c.dayMasters?.aToB?.label||'')+'—'+({control:'甲管乙，乙受壓',controlled:'乙管甲',generate:'甲養乙',generated:'乙養甲',same:'同氣，像朋友也像對手'}[c.dayMasters?.aToB?.type]||'兩人氣場的基本方向'));
+    if(c.spousePalace)lines.push('夫妻宮：甲日柱'+c.spousePalace.aDayPillar+'、乙日柱'+c.spousePalace.bDayPillar+'，'+(c.spousePalace.stemRelation?.label||'')+(A(c.spousePalace.branchRelations).length?'；日支'+c.spousePalace.branchRelations.map(r=>r.type||r.label).join('、'):'；日支之間沒有合沖'));
+    const br=A(c.branchRelations);const strong=br.filter(r=>/六沖|六合|三合|相刑/.test(r.type));if(strong.length)lines.push('跨盤最強互動：'+strong.slice(0,4).map(r=>'甲'+({year:'年',month:'月',day:'日',hour:'時'}[r.aPillar]||r.aPillar)+r.aBranch+'與乙'+({year:'年',month:'月',day:'日',hour:'時'}[r.bPillar]||r.bPillar)+r.bBranch+r.type).join('；')+'—日柱之間的沖合最重，年柱其次');
+    const dirA=A(c.directionalTenGods?.aViewsB).find(x=>x.partnerPillar==='day'),dirB=A(c.directionalTenGods?.bViewsA).find(x=>x.partnerPillar==='day');if(dirA||dirB)lines.push('對方在你命裡是什麼：'+(dirA?'甲看乙日主為'+dirA.tenGod+'（'+(GOD_LIFE[dirA.tenGod]||'')+'）':'')+(dirB?'；乙看甲日主為'+dirB.tenGod+'（'+(GOD_LIFE[dirB.tenGod]||'')+'）':''));
+    if(c.scenario?.focus)lines.push('本次情境「'+(c.scenario.name||'')+'」要答的：'+c.scenario.focus);
+    return lines.join('\n');
+  }
+  function focusPersonality(c,q){if(!c?.axes&&!c?.traits)return null;const t=A(c.traits).slice(0,3).map(x=>x.name||x.label||x).join('、');return '這是本地五軸生日模型，不是心理測驗：先用'+(t||'各軸')+'講他在本題裡會怎麼反應、卡在哪、怎麼調整；不用類型推事件，也不推別人心意。';}
   function focusGeneric(method,q){const t=GENERIC_FOCUS[method];if(!t)return null;const domain=detectDomain(q);const text=t[domain]||t.general;return text?'本題（'+DOMAIN_LABEL[domain]+'）'+text+(asksTiming(q)?'原題問時間：有具名取法才給區間，並說出依據。':''):null;}
-  function focusFor(e,question){
+  function focusFor(e,question,section){
     try{
-      const gender=e.chart?.gender||e.chart?.input?.gender||null,text=e.method==='bazi'?focusBazi(e.chart,question,gender):e.method==='ziwei'?focusZiwei(e.chart,question):e.method==='vedic'?focusVedic(e.chart,question):e.method==='astro'?focusAstro(e.chart,question):focusGeneric(e.method,question);
+      const gender=e.chart?.gender||e.chart?.input?.gender||e.chart?.participants?.gender||null,m=e.method,c=e.chart;
+      let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender):m==='meihua'?focusMeihua(c,question):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
+      if(!text)text=focusGeneric(m,question);
       return text?text+'\n（以上是引擎依題意挑出的閱讀順序與材料，不是結論；請用完整資料裁決，並把這裡的訊號講成生活裡的樣子。）':null;
     }catch(err){return null;}
   }
@@ -423,7 +523,7 @@
     if(situationText)add('處境、責任與方案',situationText.replace(/^【[^】]+】\n/,''));
     if(A(data.failures).length)add('未納入的紀錄',data.failures.map(f=>P(f,['sourceEntryIndex','label','method','status','reason','errorCode'])));
     for(const e of entries){const ctx=createContext(e,data);ctx.add((names[e.method]||e.method)+'取法',guides[e.method]||'依本次實際資料與所選方法合讀。');
-      const focusText=focusFor(e,data.question);if(focusText)ctx.add('本題焦點（引擎依題意預算的閱讀順序與回看材料）',focusText);
+      const focusText=focusFor(e,data.question,ctx.section);if(focusText)ctx.add('本題焦點（引擎依題意預算的閱讀順序與回看材料）',focusText);
       const contextReading=e.analysis.depthContract?.requestCoverage?.caseBasis?.contextReading;
       if(contextReading)ctx.add('本法處境取讀（指引，非事件證據）',contextReading.checks.join('；')+'。'+contextReading.boundary);
       (writers[e.method]||cards)(ctx);

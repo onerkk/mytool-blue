@@ -53,7 +53,7 @@ test('every method delivers a question-focus block, no English keys leak into it
   const x=examples(c),P=c.JYPromptPacket;const q='我目前薪水不高，想半年內轉職，該先留在原公司累積還是現在就走？';
   for(const [method,chart] of Object.entries(x.charts)){const body=P.build(method,chart,q),p=P.get(body);
     assert(body.includes('【本題焦點'),method);const seg=body.split('【本題焦點')[1].split('\n\n【')[0];
-    const segNoNames=seg.split('\n').filter(l=>!l.startsWith('已成立的格')).join('\n').replace(/Ace|Book T/g,'');assert(!/[A-Za-z]{4,}/.test(segNoNames),method+' english key in focus: '+segNoNames.match(/[A-Za-z]{4,}/));
+    const segNoNames=seg.split('\n').filter(l=>!l.startsWith('已成立的格')&&!l.startsWith('比較對象')).join('\n').replace(/Ace|Book T/g,'');assert(!/[A-Za-z]{4,}/.test(segNoNames),method+' english key in focus: '+segNoNames.match(/[A-Za-z]{4,}/));
     assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=12000&&P.utf8(body)<=28000,method);
     if(method==='bazi'){assert(seg.includes('傷官撞正官'));assert(seg.includes('過去三年回看'));assert(seg.includes('2023癸卯'));}
     if(method==='ziwei'){assert(seg.includes('官祿（巳）'));assert(seg.includes('流年命宮走本命'));}
