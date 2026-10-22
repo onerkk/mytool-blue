@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single55',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single56',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -352,6 +352,8 @@
   ];
   const DOMAIN_LABEL={love:'感情',career:'事業／工作',wealth:'財務',health:'健康',move:'遷移／出國',general:'整體處境'};
   function detectDomain(q){q=String(q||'');for(const [k,re] of DOMAINS)if(re.test(q))return k;return 'general';}
+  const asksAmount=q=>/多少錢|多少元|幾塊|幾萬|幾千|多少|幾個|幾次|幾張|幾人|機率|百分之|幾成|中多少|賺多少|賠多少|多久能回本/.test(String(q||''));
+  const AMOUNT_RULE='量化題（金額、次數、機率）：牌面、卦象與盤面都不會給數字，正文不造任何金額、次數或百分比；只答「會不會／大概沒有、很小、比期待少、有一筆」，題目本身有固定級距（例如發票獎級、考試及格線）時可以用級距的名稱，但不能挑一個數字說會中那個。';
   const asksTiming=q=>/何時|什麼時候|什么时候|哪一年|哪年|幾月|几月|多久|時機|时机|今年|明年|20\d\d/.test(String(q||''));
   function askedYears(q,ref){const ys=[...new Set((String(q||'').match(/20\d\d/g)||[]).map(Number).filter(y=>y>=ref-1&&y<=ref+12))].sort();if(ys.length>1)return Array.from({length:Math.min(6,ys[ys.length-1]-ys[0]+1)},(_,i)=>ys[0]+i);if(ys.length===1)return ys[0]===ref?[ref,ref+1,ref+2]:[ys[0]];return [ref,ref+1,ref+2];}
   function ganzhiOfYear(y){return GZ_G[((y-4)%10+10)%10]+GZ_Z[((y-4)%12+12)%12];}
@@ -692,6 +694,7 @@
       const gender=e.chart?.gender||e.chart?.input?.gender||e.chart?.participants?.gender||null,m=e.method,c=e.chart;
       let text=m==='bazi'?focusBazi(c,question,gender):m==='ziwei'?focusZiwei(c,question):m==='vedic'?focusVedic(c,question):m==='astro'?focusAstro(c,question):m==='liuyao'?focusLiuyao(c,question,gender):m==='liuren'?focusLiuren(c,question,gender,section):m==='meihua'?focusMeihua(c,question,section):m==='yijing'?focusYijing(c,question):m==='tarot'?focusTarot(c,question,section):m==='lenormand'?focusLenormand(c,question,section):m==='ootk'?focusOotk(c,question,section):m==='oracle'?focusOracle(c,question,section):m==='name'?focusName(c,question):m==='compat'?focusCompat(c,question):m==='personality'?focusPersonality(c,question):null;
       if(!text)text=focusGeneric(m,question);
+      if(text&&asksAmount(question))text+='\n'+AMOUNT_RULE;
       return text?text+'\n（以上是引擎依題意挑出的閱讀順序與材料，不是結論；請用完整資料裁決，並把這裡的訊號講成生活裡的樣子。）':null;
     }catch(err){return null;}
   }
