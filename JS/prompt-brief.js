@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single42',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single43',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -91,7 +91,7 @@
       const mz=(A(core.pillars||a.pillars).find(p=>/月/.test(p.label||''))||{}).zhi||'',urgent=/[亥子丑]/.test(mz)&&/[金水]/.test(dmEl)?'冬令金水，太寒，調候為急':/[巳午未]/.test(mz)&&/[木火]/.test(dmEl)?'夏令木火，太燥，調候為急':'不屬冬令金水或夏令木火，依評注調候不為急，以月令格局為主、調候為輔';
       if(R)add('月令格局順逆用法（子平真詮論用神原則換成本盤五行；仍須合調候與成敗救應才定喜忌）',pat+'格：'+R[0]+'。本盤即'+R[1]+'。'+dmEl+'日生'+mz+'月：'+urgent+'。',1);}
     add('取格成立與破救',A(cl?.patterns).filter(p=>p.selected).map(p=>({name:p.name,...Object.fromEntries(['formation','failure','taboo','rescue'].map(k=>[k,A(p[k]).map(r=>P(r,['name','value','status','needsJudgment','actual','needed','evidence']))]))})),1);
-    const y=s('大運與所問年度');if(y){const decades=A(y.decades).filter(d=>y.range?.all||y.range?.requestedDecades||d.isCurrent||A(y.annualSegments).some(v=>v.dayun===d.gz));add('所問區間大運',decades.map(d=>row([d.gz,d.ageStart+'–'+d.ageEnd+'歲',interval(d.window),d.isCurrent?'當期':''])).join('\n'));const dc=new Map();A(y.annualSegments).forEach(v=>{if(!dc.has(v.dayun))dc.set(v.dayun,A(v.connections).filter(z=>z.from==='大運'));});add('各大運對四柱作用：去向/干生剋/干合/支關係/重柱',[...dc].map(([k,rs])=>k+':'+rs.map(z=>row([z.to,z.stemRelation,z.stemCombination,z.branchRelations,z.repeatedPillar])).join(';')).join('\n'));add('所問流年：年/大運/流年/十神/區間/原局作用',A(y.annualSegments).map(v=>row([v.year,v.dayun,v.annual,v.god,interval(v.window),A(v.connections).filter(z=>z.from!=='大運').map(z=>row([z.to,z.stemRelation,z.stemCombination,z.branchRelations,z.repeatedPillar]))])).join('\n'));add('年度缺項',y.missingYears);const ss=[...A(y.decades).filter(d=>A(d.shensha).length&&decades.includes(d)).map(d=>'大運'+d.gz+':'+d.shensha.join('、')),...A(y.annualSegments).filter(v=>A(v.shensha).length).map(v=>v.year+v.annual+':'+v.shensha.join('、'))];add('所問運歲引動神煞與旬空（輔助）',[...new Set(ss)].join('\n'),1);const ly=core.liuNianPeriod?.year||c.liuNianPeriod?.year;add('流月'+(ly?'（'+ly+'年，立春換年、各節換月）':'')+'：月/干支/干十神/支十神/站內扶抑標記（中和盤全標平，依你定的喜忌重判）/日支沖/日支合',A(y.liuYue||c.liuYue).map(p=>row([p.monthName||p.month,p.gz,p.god||'',p.zGod||'',p.label,p.isChong?'沖':'',p.isHe?'合':''])).join(';'),2);}
+    const y=s('大運與所問年度');if(y){const decades=A(y.decades).filter(d=>y.range?.all||y.range?.requestedDecades||d.isCurrent||A(y.annualSegments).some(v=>v.dayun===d.gz));add('所問區間大運',decades.map(d=>row([d.gz,d.ageStart+'–'+d.ageEnd+'歲',interval(d.window),d.isCurrent?'當期':''])).join('\n'));const dc=new Map();A(y.annualSegments).forEach(v=>{if(!dc.has(v.dayun))dc.set(v.dayun,A(v.connections).filter(z=>z.from==='大運'));});const PLN={year:'年柱',month:'月柱',day:'日柱',hour:'時柱'},BR={combine:'六合',clash:'六沖',harm:'六害',same:'伏吟',punish:'相刑',destroy:'相破',triple:'三合',directional:'三會'},brw=x=>A(Array.isArray(x)?x:String(x||'').split(/[,、]/).filter(Boolean)).map(v=>BR[v]||v).join('、'),yn=x=>x===true||x==='是'?'是':'',conn=z=>(PLN[z.to]||z.to)+'：干'+(z.stemRelation||'無')+(yn(z.stemCombination)?'、干合':'')+(brw(z.branchRelations)?'、支'+brw(z.branchRelations):'')+(yn(z.repeatedPillar)?'、重柱':'');add('各大運對四柱作用（干生剋以大運為主詞）',[...dc].map(([k,rs])=>k+'：'+rs.map(conn).join('；')).join('\n'));add('所問流年：年/大運/流年/十神/區間/對原局作用',A(y.annualSegments).map(v=>row([v.year,v.dayun,v.annual,v.god,interval(v.window),A(v.connections).filter(z=>z.from!=='大運').map(conn).join('；')])).join('\n'));add('年度缺項',y.missingYears);const ss=[...A(y.decades).filter(d=>A(d.shensha).length&&decades.includes(d)).map(d=>'大運'+d.gz+':'+d.shensha.join('、')),...A(y.annualSegments).filter(v=>A(v.shensha).length).map(v=>v.year+v.annual+':'+v.shensha.join('、'))];add('所問運歲引動神煞與旬空（輔助）',[...new Set(ss)].join('\n'),1);const ly=core.liuNianPeriod?.year||c.liuNianPeriod?.year;add('流月'+(ly?'（'+ly+'年，立春換年、各節換月）':'')+'：月/干支/干十神/支十神/站內扶抑標記（中和盤全標平，依你定的喜忌重判）/日支沖/日支合',A(y.liuYue||c.liuYue).map(p=>row([p.monthName||p.month,p.gz,p.god||'',p.zGod||'',p.label,p.isChong?'沖':'',p.isHe?'合':''])).join(';'),2);}
     const child=s('子女議題實算與數量假定');if(child?.requested)add('子女取法與數量前提',compactObject(child));
     const qt=s('調候與本月原文條件');add('調候取用前提',{stems:compactObject(qt?.stems),conclusion:qt?.conclusion});add('當月調候原文',A(qt?.classicalClauses?.sourceParagraphs).map(p=>p.text).join('\n'),2);
   }
@@ -240,16 +240,41 @@
       const dignity=p=>row([id(p.card),p.pile||'',relation(p.relation)||'',id(p.leftCard),relation(p.leftDignity)||'',id(p.rightCard),relation(p.rightDignity)||'',state(p.fullDignity),state(p.neutralizedByContraryFlanks)]);
       add('程序、代表牌及預先綁定',{status:d.status,completed:d.completed,notCompleted:d.notCompleted,significator:d.significator,integrity:P(d.integrity,['status','errors','missing']),procedure:d.context?.procedureProfile,countRule:d.context?.countRule,bindings:d.context?.predeclaredBindings,courtMapping:d.context?.sourceContract?.courtMapping});
       add('Book T核心義：牌號/牌名/元素/計數值/原典核心（每張只列一次）',[...dict.values()].sort((a,b)=>a.id-b.id).map(p=>row([p.id,p.name,p.element,p.countValue,p.coreMeaning||p.bookTTitle||'本次未提供原典牌義'])).join('\n'));
-      add('五輪資料欄序','牌號↑正置、↓倒置；這是實體朝向，不套RWS逆位。各輪牌序完整且獨立。範圍=有效/停止/領域/義/主線確認/代表位/倒置/方向/起算/停止原因。方向右=right、左=left、序=deal_order；關係弱=weaken、友=friendly、強=strengthen、中=neutral。計數=位/牌號/步數/方向；配對=左位/右位/左牌/右牌/尊貴，中央單張右側?。尊貴=牌/堆/堆關係/左牌/左關係/右牌/右關係/完整/兩側抵銷；1是0否?未知。位序照原紀錄，第四輪中心不跳數，環牌1至36。');
-      A(d.operations).forEach(op=>{const o=op.data||op;const orientation=p=>p.ootkInverted===true||p.physicalOrientation==='inverted'?'↓':p.ootkInverted===false||p.physicalOrientation==='upright'?'↑':'?';
-        const lines=['範圍='+row([state(op.valid),state(op.abandoned),o.activePile??o.activeHouse??o.activeSign??o.activeSephirah,o.domainMeaning||o.sephirahMeaning,o.mainLineValidation,o.sigPosition,state(o.significatorInverted),o.countDirection,o.countingStart,o.abandonReason]),
-          '牌序='+(A(o.activeCards).length?o.activeCards.map(p=>String(p.id)+orientation(p)).join(','):txt(o.sequence)),
-          '計數='+A(o.countingPath||o.countingSteps||o.counting).map(p=>row([p.position,p.cardId??p.id,p.countValue,direction(p.direction)])).join(';'),
-          '配對='+A(o.pairs||o.pairing).map(p=>row([p.leftPosition??p.leftPos,p.rightPosition??p.rightPos,id(p.left),id(p.right),relation(p.dignity)])).join(';'),
-          '尊貴='+A(o.dignities||o.elementalDignities).map(dignity).join(';')];
-        if(A(o.openingCards).length)lines.push('開堆='+json(o.openingCards.map(p=>[p.pile,id(p.card),p.pileDignity?.relation])));
-        add(op.operation+'完整輪次',lines.join('\n'));
-      });return;
+      const name=x=>{const o=typeof x==='object'&&x?x:dict.get(typeof x==='number'?x:Number(x))||[...dict.values()].find(p=>p.name===x);return o?o.name:String(x??'?');};
+      const core=x=>{const o=typeof x==='object'&&x?x:dict.get(typeof x==='number'?x:Number(x))||[...dict.values()].find(p=>p.name===x);return o&&(o.coreMeaning||o.bookTTitle)?String(o.coreMeaning||o.bookTTitle).split(/[；;。]/)[0]:'';};
+      const relWord=x=>({weaken:'削弱',friendly:'友善',strengthen:'增強',neutral:'中性'})[x]||x||'未記錄';
+      const pileWord=x=>({fire:'火堆（事業、行動）',water:'水堆（感情、關係）',air:'風堆（思考、口舌、是非）',earth:'土堆（金錢、物質、實際事務）'})[x]||x;
+      const sig=d.significator,sigId=sig&&sig.id,b=d.context?.predeclaredBindings||{},opNames={op1:'第一輪（當下狀態）',op2:'第二輪（展開與推進）',op3:'第三輪（心裡的想法與處境）',op4:'第四輪（時間與轉折）',op5:'第五輪（結局）'};
+      const pathIds=new Map();const cid_=x=>typeof x==='object'&&x?x.id:x;
+      A(d.operations).forEach(op=>{const o=op.data||op;const key=op.operation;const L=[];
+        if(!op.valid){add((opNames[key]||key)+'：未完成或無效，不補造',o.abandonReason||'程序未成立');return;}
+        if(op.abandoned){add((opNames[key]||key)+'：已放棄，不補造',o.abandonReason||'');return;}
+        const dom=o.domainMeaning||o.sephirahMeaning;const where=o.activePile??o.activeHouse??o.activeSign??o.activeSephirah;
+        if(key==='op1'){const match=b.expectedPile&&where?(b.expectedPile===where):null;L.push('代表牌'+name(sigId)+'落在'+pileWord(where)+(match===true?'，與問題性質相符':match===false?'；問的是'+pileWord(b.expectedPile)+'的事卻落在這裡—依Book T，事情不如他想的那樣，或他真正在意的其實是這一堆代表的事，開場就要講這一點':''));}
+        else if(key==='op2'){L.push('代表牌落第'+where+'宮'+(dom?'（'+dom+'）':'')+(b.primaryHouse&&Number(where)!==Number(b.primaryHouse)?'；問的是第'+b.primaryHouse+'宮的事卻落到這裡，表示事情的推進力來自這一宮的人事':'，與問題所屬宮位相符'));}
+        else if(key==='op3'){L.push('代表牌落'+where+(dom?'（'+dom+'）':'')+(b.expectedSign&&String(where)!==String(b.expectedSign)?'；與預期星座不同，心裡的狀態和他嘴上問的不一致':''));}
+        else if(key==='op4'){L.push('三十六牌環，代表牌在第'+(o.sigPosition??'?')+'位；這一輪只能給季節感（代表牌所在星座區段），不能換算幾週幾月，沒有具名取法就不給日期');}
+        else if(key==='op5'){L.push('結局落'+where+(dom?'（'+dom+'）':'')+'：這一輪的計數路徑就是事情最後會走到哪裡');}
+        if(o.significatorInverted===true)L.push('代表牌倒置：他自己不在狀態、或事情背著他的意願走');
+        if(A(o.openingCards).length)L.push('四堆翻面初示牌：'+o.openingCards.map(pc=>pileWord(pc.pile).split('（')[0]+' '+name(cid_(pc.card))+(pc.pileDignity?.relation?'（'+relWord(pc.pileDignity.relation)+'）':'')).join('、')+'—初示牌只定四堆氣氛，不當結論');
+        const path=A(o.countingPath||o.countingSteps||o.counting);const cards=A(o.activeCards);
+        if(path.length){const chain=path.map(st=>{const cid=st.cardId??st.id;const c0=cards.find(x=>x.id===cid)||dict.get(cid);const inv=c0&&(c0.ootkInverted===true||c0.physicalOrientation==='inverted');if(cid!=null){if(!pathIds.has(cid))pathIds.set(cid,new Set());pathIds.get(cid).add(key);}return name(cid)+(inv?'（倒）':'')+(core(cid)?'＝'+core(cid):'');});L.push('計數路徑：'+chain.join(' → ')+'。'+(key==='op5'?'最後一張就是結局的樣子，倒數第二張是怎麼走到那裡':'路徑是事情的走向，停在哪張就是這一輪的結論'));}
+        const pairs=A(o.pairs||o.pairing);const sp=pairs.find(pr=>cid_(pr.left)===sigId||cid_(pr.right)===sigId||name(cid_(pr.left))===name(sigId)||name(cid_(pr.right))===name(sigId));
+        if(sp){const l=cid_(sp.left),r=cid_(sp.right);const other=(l===sigId||name(l)===name(sigId))?r:l;L.push('代表牌與'+name(other)+'配對，關係'+relWord(sp.dignity)+'：'+(sp.dignity==='weaken'?'身邊的力量在拖他、互相抵消':sp.dignity==='strengthen'?'身邊的力量在推他、同方向':'身邊的力量平和，不加也不減')+(core(other)?'；那張牌說的是'+core(other):''));}
+        const dg=A(o.dignities||o.elementalDignities).find(x=>cid_(x.card)===sigId||name(cid_(x.card))===name(sigId));
+        if(dg){const lc=cid_(dg.leftCard),rc=cid_(dg.rightCard);L.push('代表牌兩側：'+(lc!=null?name(lc)+'（'+relWord(dg.leftDignity)+'）':'無')+'、'+(rc!=null?name(rc)+'（'+relWord(dg.rightDignity)+'）':'無')+(dg.neutralizedByContraryFlanks===true?'，兩側相反抵銷，這一輪的力度要打折':dg.fullDignity===true?'，尊貴完整':''));}
+        const orient=pc=>pc.ootkInverted===true||pc.physicalOrientation==='inverted'?'（倒）':'';
+        if(cards.length)L.push('牌序（'+cards.length+'張，完整）：'+cards.map(pc=>name(pc.id)+orient(pc)).join('、'));
+        const others=pairs.filter(pr=>pr!==sp).map(pr=>name(cid_(pr.left))+'＋'+name(cid_(pr.right))+'（'+relWord(pr.dignity)+'）');
+        if(others.length)L.push('其餘配對（'+others.length+'組，完整；增強的那幾組是推力、削弱的是阻力，用來補路徑沒講到的人事）：'+others.join('、'));
+        const pathSet=new Set(path.map(st=>st.cardId??st.id));const dgs=A(o.dignities||o.elementalDignities).filter(x=>x!==dg&&pathSet.has(cid_(x.card)));
+        if(dgs.length)L.push('路徑牌尊貴：'+dgs.map(x=>name(cid_(x.card))+'—左'+(cid_(x.leftCard)!=null?name(cid_(x.leftCard))+relWord(x.leftDignity):'無')+'、右'+(cid_(x.rightCard)!=null?name(cid_(x.rightCard))+relWord(x.rightDignity):'無')+(x.neutralizedByContraryFlanks===true?'（抵銷）':'')).join('；'));
+        add(opNames[key]||key,L.join('\n'));
+      });
+      const recur=[...pathIds].filter(([cid,ops])=>ops.size>=2&&cid!==sigId).map(([cid,ops])=>name(cid)+'（'+[...ops].map(k=>k.replace('op','第')+'輪').join('、')+'）'+(core(cid)?'＝'+core(cid):''));
+      if(recur.length)add('跨輪重現的牌（出現兩輪以上，這就是整副的主軸，開場第一段要講它）',recur.join('\n'));
+      add('五輪時間規則','五輪不是五個月份；只有第四輪代表牌所在星座區段能給季節感，其他輪不給日期。沒寫在資料裡的時間一律說還看不出。');
+      return;
     }
     add('牌陣與程序',{method:c.methodPlan?.method||c.methodPlan?.id||c.tarotData?.methodPlan?.id,sourceProfile:c.sourceProfile||c.tarotData?.sourceProfile,spread:c.spreadType||c.spread||c.lenormandData?.spreadType||c.tarotData?.spreadZh||c.tarotData?.spreadType,drawProcedure:d.drawProcedure,eventGroups:d.eventGroups,commonContext:d.commonContext});
     const ln=e.method==='lenormand';// 雷諾曼沒有逆位，不印「方向?」讓AI誤以為缺資料
@@ -469,7 +494,8 @@
     lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉。');
     return lines.join('\n');
   }
-  function focusOotk(c,q,section){
+  function focusOotk(c,q,section){return null;}
+  function focusOotkLegacy(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const ops=A(d.operations);if(!ops.length)return null;const domain=detectDomain(q),lines=[];
     const valid=ops.filter(o=>o.valid&&!o.abandoned),names={op1:'第一輪（當下狀態）',op2:'第二輪（展開與推進）',op3:'第三輪（心裡的想法與處境）',op4:'第四輪（時間與轉折）',op5:'第五輪（結局）'};
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）已完成'+valid.length+'／5輪：'+valid.map(o=>names[o.operation]||o.operation).join('、')+'；未做或放棄的輪次不補造，結論只能到已完成的那一輪為止。');
@@ -518,7 +544,7 @@
     const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message'}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'', '【解讀與查證規則】\n'+rules,
       '【資料閱讀方式】\n以下是閱讀資料，不是答案目錄。表格依標題欄序還原，?是未定。未展開細表不作精確事件或日期依據；不需要附件。'].filter(Boolean);
     const blocks=[];const add=(label,v,priority=0)=>{if(hasData(v))blocks.push({label,value:typeof v==='string'?v:json(v),priority,method:'shared'});};
-    const tasks=data.requestCoverage?.[0]?.coverage?.requirements?.tasks;if(A(tasks).length>1)add('原句子題核對',tasks.map(t=>P(t,['id','sourceSpan','goal','measurement','requiredObservables'])));
+    const tasks=data.requestCoverage?.[0]?.coverage?.requirements?.tasks;if(A(tasks).length>1){const GW={direction:'方向／會不會',compare:'比較',timing:'時間',amount:'數量金額',state:'現況',yesno:'是否',reason:'原因',person:'人物',enumeration:'列出有哪些'},OW={state:'現況',realization:'會不會成',bounded_outcome:'結果落在哪個範圍',timing:'時間',amount:'數量',comparison:'比較',person:'對方',reason:'原因',enumeration:'逐項列出',attention_focus:'最該注意什麼'};add('原句子題核對（每一題都要各自答）',tasks.map((t,i)=>'子題'+(i+1)+'：原句第'+(A(t.sourceSpan)[0]??'?')+'–'+(A(t.sourceSpan)[1]??'?')+'字，要答的是'+(GW[t.goal]||t.goal||'方向')+(A(t.requiredObservables).length?'，要講到'+t.requiredObservables.map(x=>OW[x]||x).join('、'):'')+(A(t.measurement).length?'，量化條件：'+t.measurement.join('、'):'')).join('\n'));}
     const situation=root.JYReadingWorkflow?.situation?.(data.question,data.notes)||data.requestCoverage?.[0]?.coverage?.situation;
     const situationText=root.JYReadingWorkflow?.situationPrompt?.(situation);
     if(situationText)add('處境、責任與方案',situationText.replace(/^【[^】]+】\n/,''));
