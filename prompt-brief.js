@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single52',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single53',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -634,10 +634,20 @@
     return lines.join('\n');
   }
   function focusName(c,q){
-    if(!A(c?.names).length)return null;const lines=[];
-    const row=n=>{const g=n.fiveGrids||{};const grids=A(g.grids).map(x=>x.role+x.num+(x.level?'（'+x.level+'）':'')).join('、');const sc=g.sanCai?(g.sanCai.configuration||''):'';return n.name+(n.comparisonRole==='baseline'?'（原名）':'')+'：'+grids+(sc?'；三才'+sc:'')+(n.phonetic?.warnings?.length?'；讀音提醒'+n.phonetic.warnings.join('、'):'');};
-    lines.push('比較對象：\n'+c.names.map(row).join('\n'));
-    lines.push('先講每個名字一眼看到的硬傷（讀音歧義、字義、筆畫爭議），再比數理；不同派的分數不能相加，原名未必要改。');
+    if(!A(c?.names).length)return null;const domain=detectDomain(q),lines=[],isNameQ=/名字|改名|取名|命名|哪個名|名好|姓名/.test(String(q||''));
+    const GRID_LIFE={天格:'家世與上面給的條件（不太能改）',人格:'本性與做事的核心',地格:'年輕時與底下的根基',外格:'外在環境、人際與機運',總格:'整體走勢與後半生'};
+    const row=n=>{const g=n.fiveGrids||{};const grids=A(g.grids).map(x=>x.role+x.num+'「'+(x.theme||x.originalNumerology?.theme||'')+'」'+(x.level||x.tone?'（'+(x.level||x.tone)+'）':'')+'—'+(GRID_LIFE[x.role]||'')).join('；');
+      const sc=g.sanCai||{};const rel=A(sc.relations).map(r=>r.from.replace('格','')+(r.relation==='相剋'?'剋':r.relation==='相生'?'生':r.relation)+r.to.replace('格','')).join('、');
+      const vers=A(sc.versions).map(v=>(v.name||v.profile)+'：'+v.level).join('、');
+      const ss=n.strokeSensitivity;const alt=ss&&ss.alternateFiveGrids;
+      const out=[n.name+(n.comparisonRole==='baseline'?'（原名）':'')+'：'+grids];
+      if(sc.configuration)out.push('三才'+sc.configuration+(rel?'（'+rel+'）':'')+(vers?'—各派：'+vers:''));
+      if(alt&&A(ss.differences).length)out.push('筆畫敏感：'+ss.differences.map(d=>d.char+'康熙'+d.kangxi+'畫／現代'+d.modern+'畫').join('、')+'，改用現代筆畫時三才變成'+(alt.sanCai?.configuration||'?')+(A(alt.sanCai?.versions).length?'（'+alt.sanCai.versions.map(v=>(v.name||v.profile)+'：'+v.level).join('、')+'）':'')+'—兩種取法結論不同時，要兩版都講，不能只挑一版');
+      const ng=n.nameGua;if(ng&&ng.status==='complete'&&ng.original)out.push('姓名卦：'+ng.original.name+'「'+(ng.original.judgment||'')+'」'+(ng.original.line?'，動爻'+ng.original.line.label+'「'+ng.original.line.text+'」':'')+(ng.changed?'→'+ng.changed.name+'「'+(ng.changed.judgment||'')+'」':'')+'—名字裡長期的處事模式，不是今年的事');
+      if(n.zodiac?.status!=='complete'||n.bazi?.status!=='complete')out.push('未提供生辰：生肖形義與五行喜用沒算，不要補');
+      return out.join('\n');};
+    lines.push((isNameQ?'比較對象：':'本題不是改名題，名字只能講「這個人的本性、處事模式、跟環境的互動方式」：')+'\n'+c.names.map(row).join('\n'));
+    lines.push(isNameQ?'先講每個名字一眼看到的硬傷（讀音歧義、字義、筆畫爭議），再比數理；不同派的分數不能相加，原名未必要改。':'三才怎麼讀：天剋人＝上面的人或制度壓著你，天生人＝上面給資源，人生地＝你能帶動底下，地剋人＝底下或根基反過來拖你，人剋地＝你壓得住底下但費力。回答方式：用人格與三才講他適不適合這種做事方式，用外格講環境對他的態度，用姓名卦講長期模式；姓名學沒有時間軸，不給「接下來幾個月」的跡象、不講會發生什麼事，程度要保守，並建議用有生辰的方法再看。');
     return lines.join('\n');
   }
   function focusCompat(c,q){
