@@ -22,7 +22,8 @@
   opacity:0;transition:opacity .35s;
 }
 .jy-atelier .at-tool .at-art{transition:transform .4s var(--jy-depth-ease);transform:translateZ(14px)}
-.jy-atelier .at-tool strong{transform:translateZ(8px)}
+/* 20261023：工具名稱不再放到 3D 深度層。Android Chrome 在 preserve-3d 容器裡，文字層夾在 art(z=14) 與底層之間時會被整層吃掉，首頁 03 以後的卡片名稱因此消失；文字留在基準面，深度只給圖。 */
+.jy-atelier .at-tool strong{transform:none;position:relative;z-index:2;display:block}
 .jy-atelier .at-tool .at-tool-arrow{transition:transform .3s var(--jy-depth-ease),background .3s,color .3s}
 .jy-atelier .at-tool:active{
   transform:translateY(3px) scale(.985);
