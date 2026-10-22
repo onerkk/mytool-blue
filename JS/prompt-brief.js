@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single44',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single45',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -291,9 +291,20 @@
       const R=A(d.records),N=i=>R[i-1]?.name||('第'+i+'張'),g=c.declaredGender||d.declaredGender,pr=c.personRep||d.personRep,cf=c.customFocus||d.customFocus;
       const inSpread=id=>R.find(r=>r.id===id);
       add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是他現在的處境':'，本次未抽到，整個牌陣直接當成他的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
-      const paths=A(d.paths),mirror=A(d.mirror),isLine=paths.length===1&&!d.tableau&&R.length!==9;
-      if(isLine&&R.length>=3){const mid=Math.ceil(R.length/2);add('線陣讀法（引擎幾何）','整條線：'+paths[0].map(N).join('→')+'；中心'+N(mid)+'是這件事的核心，左邊'+paths[0].slice(0,mid-1).map(N).join('、')+'是已經在發生或推著它的，右邊'+paths[0].slice(mid).map(N).join('、')+'是它接下來的走向。相鄰兩張連成一句：'+paths[0].slice(0,-1).map((p,i)=>N(p)+'＋'+N(paths[0][i+1])).join('、')+(mirror.length?'。鏡像成對（繞中心對照，常是因果或一體兩面）：'+mirror.map(m=>N(m.a)+'↔'+N(m.b)).join('、'):'')+'。先把整條讀成一句話，再回頭看哪一段對本題最重。');}
-      else {add('合法全線',d.paths);add('鏡像與鄰接規則','依上列牌序及布局讀全部合法相鄰連續片段；鏡像繞中心成對。格狀主盤按實際行列讀橫直斜線與騎士步，分線不跨接。');add('鏡像及騎士步',P(d,['mirror','knights']),3);}
+      const paths=A(d.paths),mirror=A(d.mirror),knights=A(d.knights),spread=String(c.spreadType||d.spreadType||''),md=c.methodData||d.methodData||{};
+      const pairNames=list=>list.map(m=>N(m.a)+'↔'+N(m.b)).join('、');
+      if(spread==='two'&&R.length===2){add('雙牌讀法（引擎幾何）','主題'+N(1)+'，修飾'+N(2)+'：第二張形容第一張，讀成一句「'+N(1)+'，而且是'+N(2)+'那種」；沒有中心、沒有鏡像，不要讀成線。');}
+      else if(spread==='choice'&&R.length===7){add('雙路比較讀法（引擎幾何）','A路：'+[1,2,3].map(N).join('→')+'；共同背景：'+N(4)+'；B路：'+[5,6,7].map(N).join('→')+'。兩路各自先讀成一句，共同背景同時套在兩路上，再用同一個標準比較；分線不跨接，A3與B1不相鄰。'+(pr&&inSpread(pr.id)?'本人'+pr.name+'落在'+inSpread(pr.id).position+'：只表示他的心思現在站在那一路，不代表那一路結果較好。':''));}
+      else if(spread==='branches'&&A(md.branches).length){const br=A(md.branches);add('分線讀法（引擎幾何，每路獨立）',br.map((b,i)=>'第'+(i+1)+'路「'+(b.entity||b.question||'')+'」：'+[1,2,3].map(j=>N(i*3+j)).join('→')+'—單獨讀成一句').join('\n')+'\n路與路之間不相鄰、不比牌面吉凶總數；逐路答完原句的每個子題，再講共同條件。');}
+      else if(spread==='nine'&&R.length===9){add('九宮格鏡像與騎士步（引擎幾何）','鏡像成對（隔著中心對照）：'+pairNames(mirror)+'；騎士步（隔格相望，較遠的影響）：'+pairNames(knights)+'。先讀中心與四正，再用鏡像補因果，騎士步只在改變結論時用。');}
+      else if(d.tableau&&R.length===36){const rowLen=spread==='grand_nines'?9:8,rows=[];for(let r=0;r<4;r++)rows.push(R.slice(r*rowLen,r*rowLen+rowLen).map(x=>x.name).join('→'));const tail=rowLen===8?R.slice(32,36).map(x=>x.name).join('→'):'';
+        const sigRec=pr&&inSpread(pr.id);let sigGeo='';if(sigRec){const idx=R.indexOf(sigRec);if(idx<32||rowLen===9){const r=Math.floor(idx/rowLen),cc=idx%rowLen;const col=[];for(let k=0;k<4;k++)col.push(R[k*rowLen+cc]?.name);const dg1=[],dg2=[];for(let k=-3;k<=3;k++){const rr=r+k,c1=cc+k,c2=cc-k;if(rr>=0&&rr<4&&c1>=0&&c1<rowLen)dg1.push(R[rr*rowLen+c1].name);if(rr>=0&&rr<4&&c2>=0&&c2<rowLen)dg2.push(R[rr*rowLen+c2].name);}
+          const mr=mirror.filter(m=>m.a===idx+1||m.b===idx+1).map(m=>N(m.a===idx+1?m.b:m.a)),kn=knights.filter(m=>m.a===idx+1||m.b===idx+1).map(m=>N(m.a===idx+1?m.b:m.a));
+          sigGeo='\n本人'+pr.name+'所在橫列：'+rows[r]+'；直欄：'+col.filter(Boolean).join('→')+'；兩條斜線：'+dg1.join('→')+'／'+dg2.join('→')+(mr.length?'；鏡像牌：'+mr.join('、'):'')+(kn.length?'；騎士步牌：'+kn.join('、'):'')+'。橫列是他這段時間的主線，左邊已發生、右邊將發生；直欄上面是他想的、下面是壓在底下的。';}
+          else sigGeo='\n本人'+pr.name+'落在尾排（第'+(idx-31)+'張）：尾排是整件事的結語，不與主盤連線。';}
+        add('大牌陣四列與尾排（引擎幾何；每列由左到右就是時間順序）',rows.map((x,i)=>'第'+(i+1)+'列：'+x).join('\n')+(tail?'\n尾排（結語，獨立讀）：'+tail:'')+sigGeo+'\n其他牌的橫直斜線同理用它的列欄取，不從牌號算。');}
+      else if(paths.length===1&&R.length>=3){const mid=Math.ceil(R.length/2);add('線陣讀法（引擎幾何）','整條線：'+paths[0].map(N).join('→')+'；中心'+N(mid)+'是這件事的核心，左邊'+paths[0].slice(0,mid-1).map(N).join('、')+'是已經在發生或推著它的，右邊'+paths[0].slice(mid).map(N).join('、')+'是它接下來的走向。相鄰兩張連成一句：'+paths[0].slice(0,-1).map((p,i)=>N(p)+'＋'+N(paths[0][i+1])).join('、')+(mirror.length?'。鏡像成對（繞中心對照，常是因果或一體兩面）：'+pairNames(mirror):'')+'。先把整條讀成一句話，再回頭看哪一段對本題最重。');}
+      else {add('合法全線',d.paths);add('鏡像及騎士步',P(d,['mirror','knights']),3);}
     }
     else add('實際牌陣特殊作用',compactObject(d.methodData),1);
   }
@@ -496,7 +507,11 @@
     const spread=String(c?.spreadType||d.spreadType||''),nm=i=>recs[i-1]?recs[i-1].name:'?',pr=c?.personRep||d.personRep;
     const theme={career:[14,35,19,27],wealth:[34,15,20],love:[24,25,28,29],health:[5,8,36],move:[1,3,17]}[domain]||[];
     const present=theme.map(id=>recs.find(r=>r.id===id)).filter(Boolean);
+    const md=c?.methodData||d.methodData||{};
     if(spread==='nine'&&n===9)lines.push('本題（'+DOMAIN_LABEL[domain]+'）九宮格：中心'+nm(5)+'是核心，先把它跟上下左右'+[2,4,6,8].map(nm).join('、')+'連成一句；左欄已發生，右欄是走向。');
+    else if(spread==='two')lines.push('本題（'+DOMAIN_LABEL[domain]+'）雙牌：'+nm(1)+'被'+nm(2)+'形容，一句話答完，程度保守。');
+    else if(spread==='choice')lines.push('本題（'+DOMAIN_LABEL[domain]+'）雙路比較：A路'+[1,2,3].map(nm).join('、')+'對B路'+[5,6,7].map(nm).join('、')+'，共同背景'+nm(4)+'套在兩路上；答案要明講哪一路較好、差在哪。');
+    else if(spread==='branches'&&A(md.branches).length)lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+md.branches.length+'路分線：'+md.branches.map((b,i)=>'「'+(b.entity||b.question||'')+'」'+[1,2,3].map(j=>nm(i*3+j)).join('、')).join('；')+'—每路各答一次原句子題。');
     else if(d.tableau)lines.push('本題（'+DOMAIN_LABEL[domain]+'）大牌陣：先找'+(pr?'本人'+pr.name:'本人（本次未聲明性別，先從題目對應的主題牌起）')+'周圍八張與所在橫列；離得越近越快。');
     else lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：中心'+nm(Math.ceil(n/2))+'是重點，整條讀成一句，不逐張念。');
     lines.push(present.length?'題目對應的主題牌在牌面上：'+present.map(r=>r.name+'（'+(r.position||'第'+(recs.indexOf(r)+1)+'張')+'）').join('、')+'—它們旁邊的牌就是這件事的狀況':'題目對應的主題牌（'+({career:'狐狸、錨、塔、信',wealth:'魚、熊、戒指',love:'心、戒指、紳士、淑女',health:'大樹、棺材、十字架',move:'騎士、船、道路'}[domain]||'')+'）都沒出現：事情目前沒有直接落在本題上，用整條線的走向答，程度要保守');
