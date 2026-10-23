@@ -3,6 +3,45 @@
 const OOTK_RUNTIME = {};
 (function(root){
   'use strict';
+// BEGIN SHARED QUESTION PROFILE
+/* 題目輪廓：全站唯一的題意判斷。焦點層、牌義分類、跨方法推薦都讀這裡，不再各自寫正規式。
+   由 scripts/build-question-profile.cjs 原樣嵌入各使用檔；tests/question-profile-sync-20261023.cjs 核對各嵌入版本逐字一致。 */
+function jyQuestionProfile(question){
+  var q=String(question||'');
+  var DOMAIN_RULES=[
+    ['love',/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|暧昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手|前任|老公|老婆|男友|女友|正緣|正缘|在一起|告白|約會|约会|心意|真心|愛我|爱我|想我|聯絡我|联络我|回我|他對我|她對我|他跟我|她跟我|肉體|肉体|上床|親密|亲密/],
+    ['business',/副業|副业|賣場|卖场|網拍|网拍|生意|經營|经营|創業|创业|開店|开店|接案|工作室|品牌|客人|客戶|客户|訂單|订单|營收|营收|營業額|营业额|進貨|进货|庫存|库存|蝦皮|虾皮|電商|电商|攤|店/],
+    ['career',/工作|事業|事业|職|职|轉職|转职|離職|离职|升遷|升迁|老闆|老板|主管|公司|部門|部门|上班|跳槽|績效|绩效|發展|发展|面試|面试|考試|考试|學業|学业|讀書|读书|同事|錄取|录取/],
+    ['wealth',/財|财|錢(?!包)|钱(?!包)|收入|薪|投資|投资|股|債|债|貸|贷|存款|買房|买房|借|發票|发票|中獎|中奖/],
+    ['health',/健康|病|身體|身体|手術|手术|醫|医|檢查|检查|睡眠|焦慮|焦虑|憂鬱|忧郁|抑郁|好轉|好转|康復|康复|懷孕|怀孕/],
+    ['move',/搬|出國|出国|移民|留學|留学|旅行|換地方|换地方|遷移|迁移/]
+  ];
+  var domain='general';for(var i=0;i<DOMAIN_RULES.length;i++){if(DOMAIN_RULES[i][1].test(q)){domain=DOMAIN_RULES[i][0];break;}}
+  var asks={
+    timing:/何時|什麼時候|什么时候|哪一天|哪一年|哪年|幾月|几月|哪個月|多久|時機|时机|幾時|什麼時間|要等多久/.test(q),
+    amount:/多少錢|多少元|幾塊|幾萬|幾千|多少|幾個|幾次|幾張|幾人|機率|百分之|幾成|中多少|賺多少|賠多少/.test(q),
+    vocation:/適合(?:做)?(?:什麼|哪種|哪一種|哪類)(?:工作|行業|職業|領域|方向|工)|做什麼(?:工作|行業|比較|會)|哪一行|哪個行業|什麼行業|什麼職業|職業方向|天職|適合的工作|適合我.{0,6}(?:工作|行業)|未來發揮|發揮的是什麼|轉(?:行|職).{0,6}(?:做什麼|什麼)|命格.{0,8}(?:工作|行業|發揮)/.test(q),
+    thirdPerson:/對方|他|她|對象|那個人|主管|老闆|同事|工程師|朋友|男生|女生|男人|女人|先生|小姐|前任|現任|某人|學長|學姊|學弟|學妹|老師|客戶|曖昧|喜歡的人|暗戀|追求|伴侶|男友|女友|老公|老婆|家人|爸|媽|妹妹|弟弟|哥哥|姊姊/.test(q),
+    mind:/心意|真心|喜歡我|愛我|想我|在乎我|對我|心裡在想|怎麼看我|有沒有感覺|會跟我|復合|告白/.test(q),
+    intimacy:/肉體|肉体|上床|發生關係|发生关系|性關係|性关系|做愛|做爱/.test(q),
+    longTerm:/適合我|適不適合|一直|長期|長遠|一輩子|這輩子|人生|命中|天生|體質|個性|性格|本性|該走哪條路|方向|整體運勢|今年|明年|後年|運勢|流年|大運|命盤|哪一年|哪年|幾歲|未來幾年|幾年內|20\d\d/.test(q),
+    overall:/整體|各方面|全面|人生|運勢|回顧|展望|一整年|每個月|全年/.test(q),
+    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|失物|來不來|到不到|出現/.test(q),
+    shortTime:/今天|明天|這週|這幾天|這個月|下個月|幾天|幾週|週內|月內|最近|近期|這陣子/.test(q),
+    interact:/我們|彼此|相處|溝通|關係|吵架|冷戰|和好|感情|婚姻|伴侶|男友|女友|老公|老婆|前任/.test(q),
+    choice:/還是|或是|或者|哪個比較|哪一個|選哪|二選一/.test(q),
+    decision:/該不該|要不要|應不應該|該繼續|該堅持|該放棄|該停|該換|值不值得|值得嗎|划算嗎/.test(q),
+    why:/為什麼|原因|怎麼會|出在哪|卡在哪|癥結/.test(q),
+    how:/該怎麼|怎麼辦|怎麼做|要怎樣|怎樣才|方法|建議|如何(?:做|處理|面對|改善|準備|開始|選|溝通|調整|經營|安排)/.test(q),
+    guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
+    name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
+    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q)
+  };
+  if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
+  var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
+  return {question:q,domain:domain,cardTopic:CARD_TOPIC[domain],asks:asks};
+}
+// END SHARED QUESTION PROFILE
   const arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x));
   function tarot(raw){
     const d=raw.tarotData||raw,cards=arr(d.cards),rws=d.sourceProfile==='rws_reversals'||d.readingMode==='rws_reversals';
@@ -10,7 +49,8 @@ const OOTK_RUNTIME = {};
     const register=arr(typeof TAROT==='undefined'?root.TAROT:TAROT);
     // Topic of the site's curated RWS meaning: the room's declared focus first, then explicit question words.
     const q=String(raw.question||d.question||''),ft=String(raw.focusType||d.focusType||'');
-    const topic=/love|感情/.test(ft)||/感情|戀愛|恋爱|喜歡|喜欢|曖昧|暧昧|復合|复合|交往|分手|前任|對象|对象|伴侶|伴侣|婚|桃花|心意|愛|爱|在一起|告白|約會|约会|真心|想我|回我|聯絡我|联络我|男友|女友|老公|老婆|正緣|正缘/.test(q)?'love':/career|事業|工作/.test(ft)||/工作|事業|事业|職|职|公司|主管|部門|部门|上班|職場|职场|轉職|转职|離職|离职|跳槽|升職|升职|績效|绩效|面試|面试|升遷|升迁|老闆|老板|同事|創業|创业|考試|考试|錄取|录取|學業|学业|發展|发展/.test(q)?'career':/wealth|財/.test(ft)||/財|财|錢|钱|投資|投资|收入|薪|生意|賺|赚|負債|负债|副業|副业|賣場|卖场|網拍|网拍|經營|经营|開店|开店|客人|訂單|订单|營收|营收|電商|电商|發票|发票|中獎|中奖/.test(q)?'wealth':/health|健康/.test(ft)||/健康|身體|身体|病|手術|手术|懷孕|怀孕|康復|康复|睡眠/.test(q)?'health':/spirit|靈性/.test(ft)||/靈性|灵性|修行|冥想/.test(q)?'spiritual':'general';
+    const ftTopic=/love|感情/.test(ft)?'love':/career|事業|工作/.test(ft)?'career':/wealth|財/.test(ft)?'wealth':/health|健康/.test(ft)?'health':/spirit|靈性/.test(ft)?'spiritual':null;
+    const topic=ftTopic||(/靈性|灵性|修行|冥想/.test(q)?'spiritual':jyQuestionProfile(q).cardTopic);
     const topicLabel={love:'感情',career:'事業',wealth:'財務',health:'健康',spiritual:'靈性',general:'一般'}[topic];
     const records=cards.map((c,i)=>{const p=register.find(x=>x.id===c.id),slot=arr(d.methodPlan?.slots)[i]||{};if(rws&&!p)throw Error('RWS牌義表沒有此牌。');const up=c.isUp===true,dir=typeof c.isUp==='boolean',pos=c.position||c.pos||slot.label||'位置'+(i+1),advice=/建議|建议|行動|行动|該怎麼|怎麼做/.test(pos);
       const meaning=rws&&dir&&p?(advice&&p[up?'adviceUp':'adviceRv'])||(topic!=='general'&&p[topic+(up?'Up':'Rv')])||p[up?'up':'rv']||null:null;

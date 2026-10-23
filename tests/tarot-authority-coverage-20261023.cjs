@@ -9,7 +9,7 @@ const Q=['今年我有需要特別注意什麼嗎？','他會跟我在一起嗎�
 const missing=new Set();let n=0;
 for(const id of Object.keys(F.METHODS)){if(id==='ootk')continue;for(const q of Q){let p;try{p=F.instantiateMethod(id,F.compileQuestion(q,{referenceDate:'2026-10-23'}));}catch(e){continue;}p.slots.forEach(s=>{n++;const a=norm(String(s.authority||''));if(!AUTH.includes(a))missing.add(id+':'+s.authority);});}}
 assert.equal(missing.size,0,'unmapped tarot authorities: '+[...missing].join(', '));
-const at=eval('('+src.match(/const asksTiming=(q=>[^;]*);/)[1]+')');
+const at=q=>require('../JS/shared/question-profile.js').jyQuestionProfile(q).asks.timing;
 for(const q of ['今年我有需要特別注意什麼嗎？','明年財運如何？','2028年我適合創業嗎？'])assert.equal(at(q),false,q);
 for(const q of ['我什麼時候會換工作？','哪一年適合買房？','要等多久？'])assert.equal(at(q),true,q);
 console.log(JSON.stringify({slots:n,authorities:AUTH.length,passed:2}));

@@ -13,6 +13,7 @@ for(const id of Object.keys(F.METHODS)){if(id==='ootk'||id==='mathers_66')contin
   const drawn=Array.from({length:plan.count},(_,i)=>Object.assign({},c.TAROT[(i*11+3)%78],{isUp:i%3!==1,readingMode:'rws_reversals'}));
   let body;try{body=P.build('tarot',c.JYTarotReading.payload({spreadType:id,drawn,methodPlan:plan,compiledQuestion:compiled},q,drawn,id,plan,c.SPREAD_DEFS&&c.SPREAD_DEFS[id]),q);}catch(err){bad.push(id+': build '+err.message.slice(0,50));continue;}
   const i=body.indexOf('【本題焦點'),f=body.slice(i,body.indexOf('\n\n【',i+5));checked++;
+  {const t=body.replace(/https?:\/\/\S+/g,'').replace(/^【[^】]*】\n+\{[^\n]*\}/,'').split(/\n\n(?=【)/).filter(x=>!/^【規則來源/.test(x)).join('\n');const w=t.match(/(?<![A-Za-z0-9-])[a-z][A-Za-z0-9_]{2,}(?:-[A-Za-z0-9_]+)*(?![A-Za-z0-9])/);if(w)bad.push(id+': english in real payload prompt: '+w[0]);if(/\{"|\["/.test(t))bad.push(id+': JSON in real payload prompt');}
   const ix=plan.slots.map((s,k)=>k),au=k=>norm(String(plan.slots[k].authority||'')),ro=k=>String(plan.slots[k].role||'');
   const landIdx=(()=>{const t=ix.filter(k=>/terminal/.test(ro(k)));if(t.length)return t[t.length-1];const o=ix.filter(k=>au(k)==='outcome');if(o.length)return o[o.length-1];const sy=ix.filter(k=>au(k)==='synthesis');if(sy.length)return sy[sy.length-1];const nat=ix.filter(k=>au(k)==='development'&&!/alternative/.test(ro(k)));return nat.length?nat[nat.length-1]:undefined;})();
   const rowsSec=body.slice(body.indexOf('【全部牌序'),body.indexOf('\n\n【',body.indexOf('【全部牌序')+3)).split('\n').slice(1);
@@ -21,12 +22,8 @@ for(const id of Object.keys(F.METHODS)){if(id==='ootk'||id==='mathers_66')contin
   const mt=body.match(/〔(一般|事業)〕/g)||[];if(mt.length&&mt.every(x=>x==='〔一般〕'))bad.push(id+': career question got general meanings');
 }
 console.log('spreads checked',checked);if(bad.length)console.log(bad.join('\n'));assert.equal(bad.length,0);
-// classifier agreement
-const src=fs.readFileSync(path.join(__dirname,'..','JS/native-card-analysis.js'),'utf8');const topicExpr=src.match(/const topic=([^;]*);/)[1];
-const engineTopic=(qq,ft='')=>{const q=qq;return eval(topicExpr);};
-const ps=fs.readFileSync(path.join(__dirname,'..','JS/prompt-single-paste.js'),'utf8');const DOM=eval(ps.match(/const DOMAINS=(\[[\s\S]*?\n  \]);/)[1]);
-const focusDomain=qq=>{for(const [k,re] of DOM)if(re.test(qq))return k;return 'general';};
-const map={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
-const qs=['我在目前公司未來發展為何？','他會跟我在一起嗎？','我蝦皮賣場這副業值得堅持嗎？','明年財運如何？','媽媽的病會好轉嗎？','我和主管處得來嗎？','下個月業績能達標嗎？','這段婚姻還有救嗎？'];
-const dis=qs.filter(x=>map[focusDomain(x)]!==engineTopic(x));assert.equal(dis.length,0,'classifier disagreement: '+dis.map(x=>x+' focus='+focusDomain(x)+' engine='+engineTopic(x)).join('; '));
+// 題型判斷只剩一個來源：引擎牌義分類讀 jyQuestionProfile().cardTopic
+const prof=require('../JS/shared/question-profile.js').jyQuestionProfile;
+const nca=fs.readFileSync(path.join(__dirname,'..','JS/native-card-analysis.js'),'utf8');assert(/jyQuestionProfile\(q\)\.cardTopic/.test(nca),'card meaning topic must come from the shared profile');
+for(const qq of ['我在目前公司未來發展為何？','他會跟我在一起嗎？','我蝦皮賣場這副業值得堅持嗎？','明年財運如何？','媽媽的病會好轉嗎？'])assert.notEqual(prof(qq).cardTopic,'general',qq);
 console.log(JSON.stringify({passed:2}));
