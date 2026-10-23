@@ -710,7 +710,7 @@ return function timeScope(question,referenceYear){
       out.dayMaster=c.dm||c.dayMaster||null;
       out.pillars=Object.fromEntries(['year','month','day','hour'].filter(function(k){return c.pillars?.[k]&&!(k==='hour'&&out.partial);}).map(function(k){var p=c.pillars[k];return [k,typeof p==='string'?p:p.gan+p.zhi];}));
       out.gender=c.gender||null;
-      if(a.children?.requested)out.children={inputGender:a.children.inputGender,hourKnown:a.children.hourKnown,actualBranchPairs:copy(a.children.actualBranchPairs),branches:a.children.branches.map(function(b){return {gender:b.gender,status:b.status,evidenceDirection:b.evidenceDirection,placements:b.placements.map(function(x){return {id:x.id,pillar:x.pillar,stem:x.stem,god:x.god,visible:x.visible};}),count:copy(b.count)};})};
+      if(a.children)out.children={inputGender:a.children.inputGender,hourKnown:a.children.hourKnown,actualBranchPairs:copy(a.children.actualBranchPairs),branches:a.children.branches.map(function(b){return {gender:b.gender,status:b.status,evidenceDirection:b.evidenceDirection,placements:b.placements.map(function(x){return {id:x.id,pillar:x.pillar,stem:x.stem,god:x.god,visible:x.visible};}),count:copy(b.count)};})};
     }else if(method==='ziwei'){
       out.palaces=out.partial?[]:(c.palaces||[]).map(function(p){return {name:p.name,branch:p.branch,gan:p.gan,isShen:!!p.isShen,stars:(p.stars||[]).map(function(s){return {name:s.name,type:s.type};})};});
       out.sihua=copy(c.sihua||[]);out.selfHua=copy(c.selfHua||[]);

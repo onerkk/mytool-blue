@@ -12,4 +12,8 @@ for(const q of Q)for(const [m,chart] of Object.entries(x.charts)){let b;try{b=P.
   const t=b.replace(/https?:\/\/\S+/g,'').replace(/^【[^】]*】\n+\{[^\n]*\}/,'').split(/\n\n(?=【)/).filter(s=>!/^【規則來源/.test(s)).join('\n');
   const w=t.match(/(?<![A-Za-z0-9-])[a-z][A-Za-z0-9_]{2,}(?:-[A-Za-z0-9_]+)*(?![A-Za-z0-9])/);if(w)bad.push(m+'｜'+q+'｜english '+w[0]);
   if(/\{"|\["/.test(t))bad.push(m+'｜'+q+'｜JSON');if(/undefined|NaN/.test(t))bad.push(m+'｜'+q+'｜undefined');}
+// 引擎算好的正統分析不得看題型才交付：八字子息分析在任何問題下都要送到
+{const bz=P.build('bazi',x.charts.bazi,'目前的工作適合我嗎？');if(!bz.includes('【子女（論子息）實算】'))bad.push('bazi｜children analysis gated by question');}
+// 可讀性：任何資料段不得被攤平成大量無標籤值
+for(const [m,chart] of Object.entries(x.charts)){let b;try{b=P.build(m,chart,'我今生有幾個兒女？');}catch(e){continue;}for(const sec of b.split(/\n\n(?=【)/)){const title=(sec.match(/^【([^】]*)】/)||[])[1]||'';if(/規則|取法|成稿|一次貼上|原問題|資料閱讀|讀完資料/.test(title))continue;const segs=sec.slice(title.length+2).split(/[；\n]/).map(z=>z.trim()).filter(Boolean);if(segs.length<8)continue;const bare=segs.filter(z=>/^(是|否|未定|男|女|[0-9.]+)$/.test(z)).length;if(bare/segs.length>0.12)bad.push(m+'｜'+title.slice(0,24)+'｜unreadable flattening '+bare+'/'+segs.length);}}
 console.log('builds',n,'problems',bad.length);bad.slice(0,15).forEach(x=>console.log(x));assert.equal(bad.length,0);console.log(JSON.stringify({passed:1}));

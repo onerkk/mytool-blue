@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023orthodox73',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023orthodox74',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -23,10 +23,10 @@
   const hasData=x=>x!==null&&x!==undefined&&x!==''&&(!Array.isArray(x)||x.length>0)&&(!(typeof x==='object'&&!Array.isArray(x))||Object.keys(x).length>0);
   const affirmative=x=>x===true||['established','structural','conditional','variant-structure','matched','timing-supported','weakened','undetermined'].includes(x);
   const guides={
-    bazi:'依子平正統推演：先定四柱與節令，看日主得令、得地、得勢，通根與透藏；以月令取格，審格局成敗與救應；依《子平真詮》順逆取用、《滴天髓》論衰旺、《窮通寶鑑》論調候，定喜用忌神。行運以大運管十年、流年管一年，看運歲干支對原局與格局的生剋合沖、成格破格，判吉凶與程度；應年取流年觸發之字，應月取流月。神煞作參考。',
-    ziwei:'依紫微斗數正統推演：以命宮、身宮與原題所屬宮位為主，合看三方四正與對宮；論主星廟旺利陷、輔佐與煞曜、生年四化，再看宮干飛化與自化。行運以大限十年、流年一年疊宮，看大限與流年四化入題宮及沖照，判吉凶、程度與應期。',
-    vedic:'依帕拉薩拉（BPHS）正統推演：以上升與原題所屬宮位為主，看宮主落宮、尊貴、合相與相位，以 D9 驗證強弱，專項看相關分盤；以維姆紹塔里大運的主運、副運、次副運主星所掌宮位與其本命狀態論事情何時發生，再以土星、木星行運過題宮及從月亮起算的位置印證。',
-    astro:'依傳統占星正統推演：本命看原題所屬宮位的宮頭星座、宮主星落宮與本質尊貴、宮內行星與相位；時機以行運、二次推運、太陽回歸與年度小限論，外行星與土星、木星過題宮或觸及宮主為應期。卜卦盤依卜卦規則看問卜者與所問事之宮主是否入相成事。',
+    bazi:'依子平正統推演：先定四柱與節令，看日主得令、得地、得勢，通根與透藏；以月令取格，審格局成敗與救應；依《子平真詮》順逆取用、《滴天髓》論衰旺、《窮通寶鑑》論調候，定喜用忌神。行運以大運管十年、流年管一年，看運歲干支對原局與格局的生剋合沖、成格破格，判吉凶與程度；應年取流年觸發之字，應月取流月。六親依《三命通會》論六親：男命以財為妻、官殺為子，女命以官殺為夫、食傷為子；妻看日支（夫妻宮），子女兼看時柱（子女宮），子數依子星在時支的十二長生與子息歌。神煞作參考。',
+    ziwei:'依紫微斗數正統推演：以命宮、身宮與原題所屬宮位為主，合看三方四正與對宮；論主星廟旺利陷、輔佐與煞曜、生年四化，再看宮干飛化與自化。行運以大限十年、流年一年疊宮，看大限與流年四化入題宮及沖照，判吉凶、程度與應期。六親看對應宮位（夫妻、子女、父母、兄弟、交友）的主星、四化與三方四正。',
+    vedic:'依帕拉薩拉（BPHS）正統推演：以上升與原題所屬宮位為主，看宮主落宮、尊貴、合相與相位，以 D9 驗證強弱，專項看相關分盤；以維姆紹塔里大運的主運、副運、次副運主星所掌宮位與其本命狀態論事情何時發生，再以土星、木星行運過題宮及從月亮起算的位置印證。六親看對應宮位、宮主與自然代表星：子女看五宮、木星與 D7，配偶看七宮、金星與 D9，父親看九宮與太陽，母親看四宮與月亮。',
+    astro:'依傳統占星正統推演：本命看原題所屬宮位的宮頭星座、宮主星落宮與本質尊貴、宮內行星與相位；時機以行運、二次推運、太陽回歸與年度小限論，外行星與土星、木星過題宮或觸及宮主為應期。卜卦盤依卜卦規則看問卜者與所問事之宮主是否入相成事。六親看對應宮位與宮主：子女五宮，配偶七宮，父母十宮與四宮，手足三宮。',
     liuren:'依大六壬正統推演：排天地盤、四課、三傳與天將，依課體（賊剋、比用、涉害、遙剋、昴星、別責、八專、伏吟、返吟）定發用；以日干為己、日支為彼，論干支上神、三傳生剋遞進、天將吉凶、旺相休囚與空亡，判事情的起頭、過程與結果；應期取三傳與用神所在之支，及沖合空填之日。',
     liuyao:'依京房納甲及《增刪卜易》《卜筮正宗》正統推演：依原題取用神，世爻為己、應爻為彼；論用神旺衰（月建、日辰的生剋沖合）、動變（化進化退、回頭生剋）、原神忌神仇神、飛伏、旬空月破、六沖六合與三合局，判吉凶與程度；應期依用神旺衰、動靜、空破、合沖之正統取法定出。',
     yijing:'依朱子《易學啟蒙》考變占法推演：依本次變爻數取占辭（本卦卦辭、本卦變爻辭、之卦卦辭或之卦不變爻辭），參合彖傳、象傳與爻位，判現在的處境與進退之道。',
@@ -98,6 +98,28 @@
     const parts=Object.entries(v).filter(([k,x])=>hasData(x)&&k!=='id').map(([k,x])=>{const r=readable(x,depth+1),nested=x!==null&&typeof x==='object'&&!Array.isArray(x);if(!String(r).trim())return '';const lab=zhWord(k)!==k?zhWord(k):zhText(k);return (lab?lab+'：':'')+(nested&&depth>0?'（'+r+'）':nested?'\n'+r.split('\n').map(l=>'  '+l).join('\n'):r);});
     return parts.filter(Boolean).join(depth?'；':'\n');
   }
+  // 子平論子息：照正統順序寫成句子（子星→落位→時柱子女宮→生扶制剋→已成立作用→古訣子數→運限觸動）。
+  function renderChildren(ch){
+    const PL={year:'年',month:'月',day:'日',hour:'時'},QI={main:'本氣',middle:'中氣',residual:'餘氣'};
+    const pos=x=>PL[x.pillar]+(x.visible?'干':'支')+x.stem+x.god+(x.visible?'（透）':'（藏，'+(QI[x.qi]||'')+'）');
+    const rel=r=>[r.clash&&'沖',r.harm&&'害',r.combine&&'合',r.destruction&&'破'].filter(Boolean).join('、');
+    const L=[];
+    A(ch.branches).forEach(br=>{
+      L.push((br.gender==='male'?'男命':'女命')+'子星：'+(br.gender==='male'?'剋日干者（官殺）':'日干所生者（食傷）')+'，五行'+br.targetElement+'，陽干'+br.targetYang+'（依《三命通會》卷七論六親）');
+      if(A(br.placements).length)L.push('子星落位：'+br.placements.map(pos).join('、')+'；透'+(br.visibleCount??0)+'、有根'+(br.rootCount??0)+(br.monthlyMainMatches?'；月令本氣即子星':''));
+      if(A(br.supporters).length)L.push('生扶子星：'+br.supporters.map(pos).join('、'));
+      if(A(br.controllers).length)L.push('制剋子星：'+br.controllers.map(pos).join('、')+(A(br.controlCandidates).length?'（'+br.controlCandidates.map(cc=>cc.stems+(cc.samePillar?'同柱':'隔'+cc.distance+'位')).join('、')+'；實際力量依季節、透藏、全局制化與救應判）':''));
+      const est=A(br.actualMechanisms).filter(m=>m.status==='established'||m.status==='structural').map(m=>m.name);if(est.length)L.push('已成立作用：'+est.join('、'));
+      const ct=br.count;if(ct&&ct.stage)L.push('古訣子數：子星陽干'+ct.targetYang+'在時支為「'+ct.stage+'」；'+A(ct.tables).map(t=>({yuanhai:'《淵海子平》子息歌',['ziping-xu']:'《子平真詮評註》'}[t.profile]||t.profile)+'數'+(t.rawNumber??'—')+(t.historicalRetainedNumber!=null?'、養位留'+t.historicalRetainedNumber:'')).join('；')+'（古訣數指男孩或生養之數，非今生親生總數）');
+      const lk=A(br.luck).filter(d=>d.targetStem||A(d.targetHidden).length||d.controllerStem||d.supportStem||rel(d.hourRelations||{})).map(d=>d.gz+'運（'+d.ageStart+'–'+d.ageEnd+'歲'+(d.isCurrent?'，當期':'')+'）：'+[d.targetStem&&'子星透干',A(d.targetHidden).length&&'子星藏支',d.supportStem&&'生扶子星',d.controllerStem&&'制剋子星',rel(d.hourRelations||{})&&'與時支'+rel(d.hourRelations)].filter(Boolean).join('、'));
+      if(lk.length)L.push('大運觸動：'+lk.join('；'));
+      const an=A(br.annuals).filter(y=>y.targetStem||A(y.targetHidden).length||rel(y.hourRelations||{})).map(y=>y.year+y.gz+'：'+[y.targetStem&&'子星透干',A(y.targetHidden).length&&'子星藏支',rel(y.hourRelations||{})&&'與時支'+rel(y.hourRelations)].filter(Boolean).join('、'));
+      if(an.length)L.push('流年觸動：'+an.join('；'));
+    });
+    const h=ch.hour;if(h)L.push('時柱（子女宮）：'+h.gan+h.zhi+(A(h.relations).filter(r=>rel(r)).length?'；與'+h.relations.filter(r=>rel(r)).map(r=>PL[r.from]+'支'+r.branches+rel(r)).join('、'):'；與年月日支無沖害合破'));
+    if(A(ch.sourceVariants).length)L.push('版本差異：'+ch.sourceVariants.join('；'));
+    return L.join('\n');
+  }
   function createContext(e,data){
     const b=[],prefix=e.label?e.label+' · ':'';
     const section=label=>data.sections.find(s=>s.label===prefix+label)?.data;
@@ -129,7 +151,7 @@
     {const ST={'not-present':'無','present':'有','structural-candidate':'有候選、要審','needs-judgment':'要你判'};const KW={formation:'成格條件',failure:'破格',taboo:'所忌',rescue:'救應'};
       add('取格成立與破救（引擎已寫成句）',A(cl?.patterns).filter(p=>p.selected).map(p=>p.name+'格：'+['formation','failure','taboo','rescue'].map(k=>KW[k]+'—'+(A(p[k]).map(r=>r.name+'('+(r.value===true?'有':r.value===false?'無':'?')+(r.status&&ST[r.status]&&ST[r.status]!=='有'&&ST[r.status]!=='無'?'，'+ST[r.status]:'')+')').join('、')||'無')).join('；')).join('\n'),1);}
     const y=s('大運與所問年度');if(y){const decades=A(y.decades).filter(d=>y.range?.all||y.range?.requestedDecades||d.isCurrent||A(y.annualSegments).some(v=>v.dayun===d.gz));add('所問區間大運',decades.map(d=>row([d.gz,d.ageStart+'–'+d.ageEnd+'歲',interval(d.window),d.isCurrent?'當期':''])).join('\n'));const dc=new Map();A(y.annualSegments).forEach(v=>{if(!dc.has(v.dayun))dc.set(v.dayun,A(v.connections).filter(z=>z.from==='大運'));});const PLN={year:'年柱',month:'月柱',day:'日柱',hour:'時柱'},BR={combine:'六合',clash:'六沖',harm:'六害',same:'伏吟',punish:'相刑',destroy:'相破',triple:'三合',directional:'三會'},brw=x=>A(Array.isArray(x)?x:String(x||'').split(/[,、]/).filter(Boolean)).map(v=>BR[v]||v).join('、'),yn=x=>x===true||x==='是'?'是':'',conn=z=>(PLN[z.to]||z.to)+'：干'+(z.stemRelation||'無')+(yn(z.stemCombination)?'、干合':'')+(brw(z.branchRelations)?'、支'+brw(z.branchRelations):'')+(yn(z.repeatedPillar)?'、重柱':'');add('各大運對四柱作用（干生剋以大運為主詞）',[...dc].map(([k,rs])=>k+'：'+rs.map(conn).join('；')).join('\n'));add('所問流年：年/大運/流年/十神/區間/對原局作用',A(y.annualSegments).map(v=>row([v.year,v.dayun,v.annual,v.god,interval(v.window),A(v.connections).filter(z=>z.from!=='大運').map(conn).join('；')])).join('\n'));add('年度缺項',y.missingYears);const ss=[...A(y.decades).filter(d=>A(d.shensha).length&&decades.includes(d)).map(d=>'大運'+d.gz+':'+d.shensha.join('、')),...A(y.annualSegments).filter(v=>A(v.shensha).length).map(v=>v.year+v.annual+':'+v.shensha.join('、'))];add('所問運歲引動神煞與旬空（輔助）',[...new Set(ss)].join('\n'),1);const ly=core.liuNianPeriod?.year||c.liuNianPeriod?.year;add('流月'+(ly?'（'+ly+'年，立春換年、各節換月）':'')+'：月/干支/干十神/支十神/站內扶抑標記（中和盤全標平，依你定的喜忌重判）/日支沖/日支合',A(y.liuYue||c.liuYue).map(p=>row([p.monthName||p.month,p.gz,p.god||'',p.zGod||'',p.label,p.isChong?'沖':'',p.isHe?'合':''])).join(';'),2);}
-    const child=s('子女議題實算與數量假定');if(child?.requested)add('子女取法與數量前提',compactObject(child));
+    const child=s('子女議題實算與數量假定');if(child)add('子女（論子息）實算',renderChildren(child));
     const qt=s('調候與本月原文條件');add('調候取用前提（引擎已寫成句）',[...A(qt?.stems).map(x=>x.stem+(x.element?'（'+x.element+'）':'')+'：'+(x.status||'')+(A(x.exposed).length?'，透於'+x.exposed.join('、'):'')+(A(x.hidden).length?'，藏於'+x.hidden.join('、'):'')+(A(x.roots).length?'，根在'+x.roots.join('、'):'')+(A(x.constraints).length?'，限制：'+x.constraints.join('、'):'')+(x.usableAutomatically?'，可直接取用':'，不自動取用，要審')),qt?.conclusion?'結論：'+qt.conclusion:''].filter(Boolean).join('\n'));add('當月調候原文',A(qt?.classicalClauses?.sourceParagraphs).map(p=>p.text).join('\n'),2);
   }
   function ziwei(ctx){const{c,a,section:s,add}=ctx,core=s('本命十二宮与指定四化');if(!core){add('時辰未定',s('出生輸入與未定盤界線'));return;}
@@ -171,7 +193,12 @@
     const av=s('八分法所有分盤');add('AV原表：D/SAV/BAV日/月/水/金/火/木/土；SAV逗號分隔，BAV各12個位數逐字對牡羊至雙魚',Object.entries(av?.vargas||{}).map(([d,v])=>'D'+d+'/'+v.sav.join(',')+'/'+keys.slice(0,7).map(k=>A(v.bav?.[k]).join('')).join('/')).join('\n'));
     const t=s('本次歲時完整核算');if(t){add('本次年度範圍',{status:t.status,window:t.window,muntha:t.muntha,yearLord:P(t.ruleLedger?.yearLord,['status','winner','alternatives','tier']),annualLagna:t.annual?.lagna});add('年度星位',planetRows(t.annual?.planets,false),2);add('當期月與細段',[t.currentMonth,t.currentSixtyHour].filter(Boolean).map(p=>({kind:p.kind,window:p.window,lagna:p.chart?.lagna,planets:planetRows(p.chart?.planets,false),lord:P(p.monthLord||p.ruleLedger?.yearLord,['status','winner','alternatives','tier'])})),4);}
     const sc=s('Sudarsana三重年運月運細運');add('三重年運',{status:sc?.status,yearOfLife:sc?.yearOfLife,yearHouse:sc?.yearHouse,window:sc?.window,limits:sc?.limits},4);
-    add('相關分盤Arudha及作用',Object.entries(s('Jaimini與特殊點')?.vargas||{}).map(([d,v])=>({D:d,arudhas:v.arudhas})),5);
+    {const SIGN=['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'],AN={AL:'上升象（AL）',UL:'婚姻象（UL）'};
+      const vg=s('Jaimini與特殊點')?.vargas||{};
+      add('Arudha 象點（Jaimini；依 PVR 算法）',Object.entries(vg).map(([d,v])=>{const ar=v.arudhas||{};
+        const bh=A(ar.bhava).map(r=>(AN[r.name]||r.name+'（第'+r.house+'宮象）')+'在'+(SIGN[r.sign]||'?')+'（宮主'+zh(r.lordSelection?.winner||'')+(r.exception?'，例外規則':'')+'）').join('；');
+        const gr=A(ar.graha).map(r=>zh(r.planet)+'象在'+(SIGN[r.sign]||'?')+(r.exception?'（例外規則）':'')).join('；');
+        return 'D'+d+'：'+bh+(gr?'\nD'+d+'行星象：'+gr:'');}).join('\n'),5);}
   }
   function astro(ctx){const{c,a,section:s,add}=ctx,core=s('本次用途、完整星位與宮位')||{};
     add('輸入與宮制',{input:core.input,policy:P(core.policy,['zodiac','houseSystem','chartType','node','orbs','minorOrbs']),unknown:!!a.coverage?.provisional});
@@ -437,7 +464,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt65',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt66',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
