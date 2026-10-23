@@ -968,6 +968,7 @@ function recommendReadingSystem(question, options) {
   if(f.how&&!f.event){add('yijing',4,'該怎麼做、進退分寸，卦爻辭最直接');add('tarot',2,'建議位');add('oracle',2,'要一個方向');}
   if(f.guidance){add('oracle',5,'要的是一句提醒與方向，靈籤最貼');add('yijing',2,'');}
   if(f.name){add('name',8,'改名取名看姓名學');}
+  if(/適合(?:做)?(?:什麼|哪種|哪一種|哪類)(?:工作|行業|職業|領域)|哪一行|什麼行業|什麼職業|職業方向|天職|適合的工作|命格.{0,8}(?:工作|行業|發揮)/.test(q)){add('bazi',5,'適合哪一行要看格局與喜用五行');add('ziwei',4,'官祿宮主星直接對應職業類型');add('vedic',2,'十宮與職業代表星');add('astro',2,'天頂與十宮');}
   if(f.business){add('bazi',3,'生意做不做得起來，看財星食傷與大運');add('liuyao',2,'這門生意最近成不成，看妻財');add('lenormand',2,'生意的錢、客人、通路在大牌陣看得到');add('meihua',1,'');}
   if(f.money&&!f.business&&!f.event){add('bazi',3,'財運看財星與大運流年');add('liuyao',2,'一筆錢進不進得來看妻財');add('lenormand',1,'');}
   if(f.health){add('bazi',3,'體質與哪一年要注意，看五行與流年');add('liuyao',3,'病占看官鬼與世爻');add('ziwei',1,'');add('vedic',1,'');}
