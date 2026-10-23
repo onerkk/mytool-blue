@@ -49,16 +49,11 @@ test('neutral charts carry an explicit, reasoned lean and monthly rows carry ten
   const strong=c.computeBazi(1990,5,15,14,30,'male',{timezoneOffset:8});assert.equal(strong.strengthAssessment.lean,null);
   assert.equal(b.liuYue[0].god,'正官');assert.equal(b.liuYue[0].zGod,'劫財');
 });
-test('every method delivers a question-focus block, no English keys leak into it, and budgets hold',()=>{
-  const x=examples(c),P=c.JYPromptPacket;const q='我目前薪水不高，想半年內轉職，該先留在原公司累積還是現在就走？';
-  for(const [method,chart] of Object.entries(x.charts)){const body=P.build(method,chart,q),p=P.get(body);
-    assert(body.includes('【本題焦點'),method);const seg=body.split('【本題焦點')[1].split('\n\n【')[0];
-    const segNoNames=seg.split('\n').filter(l=>!l.startsWith('已成立的格')&&!l.startsWith('比較對象')).join('\n').replace(/Ace|Book T/g,'');assert(!/[A-Za-z]{4,}/.test(segNoNames),method+' english key in focus: '+segNoNames.match(/[A-Za-z]{4,}/));
-    assert(body.includes('【讀完資料再提醒一次】'));assert(P.chars(body)<=12000&&P.utf8(body)<=28000,method);
-    if(method==='bazi'){assert(seg.includes('傷官撞正官'));assert(seg.includes('過去三年回看'));assert(seg.includes('2023癸卯'));}
-    if(method==='ziwei'){assert(seg.includes('官祿宮（這題裡＝工作本身與職位）'));assert(seg.includes('流年命宮落本命'));assert(seg.includes('正沖你的命宮'));}
-    if(method==='vedic'){assert(seg.includes('主運'));assert(seg.includes('過去三年回看'));}if(method==='astro'){assert(seg.includes('行運'));assert(seg.includes('過去三年回看'));}}
+test('every method delivers an orthodox-procedure section and budgets hold',()=>{
+  const {environment,examples}=require('./native-fixtures-20261003.cjs');const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-packet'].forEach(env.load);const x=examples(c);
+  for(const [method,chart] of Object.entries(x.charts)){const body=c.JYPromptPacket.build(method,chart,'目前的工作適合我嗎？');assert(/【本法正統取法（[^）]+）】\n依/.test(body),method);assert(!/本題焦點|本題邊界/.test(body),method);}
 });
+
 test('optional: iztro cross-check when installed',()=>{
   let iz=null;try{iz=require('iztro');}catch(e){console.log('  (iztro not installed; skipped)');return;}
   const {astro}=iz;astro.config({yearDivide:'normal',horoscopeDivide:'normal'});let seed=7;const rnd=(a,b)=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return a+seed%(b-a+1);};

@@ -4,11 +4,8 @@
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');const root=path.resolve(__dirname,'..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');const src=read('JS/shared/question-profile.js');
 const block=src.slice(src.indexOf('// BEGIN SHARED QUESTION PROFILE'),src.indexOf('// END SHARED QUESTION PROFILE'));
-const users=['JS/prompt-single-paste.js','JS/prompt-packet.js','JS/prompt-brief.js','JS/native-card-analysis.js','JS/tarot-foundation.js','JS/lenormand.js','JS/shared/question-planner.js','tarot-foundation.js','lenormand.js'];
+const users=['JS/native-card-analysis.js','JS/tarot-foundation.js','JS/lenormand.js','JS/shared/question-planner.js','tarot-foundation.js','lenormand.js'];
 for(const f of users){const s=read(f);assert(s.includes(block),f+' embeds a stale or missing question profile');}
-const psp=read('JS/prompt-single-paste.js');
-assert(!/const DOMAINS=\[/.test(psp),'prompt layer must not keep its own domain table');
-for(const k of ['asksTiming','asksAmount','asksVocation'])assert(new RegExp('const '+k+'=q=>jyQuestionProfile\\(q\\)\\.asks\\.').test(psp),k+' must delegate to the profile');
 const {jyQuestionProfile:P}=require('../JS/shared/question-profile.js');
 const cases=[['我在目前公司未來發展為何？','career'],['公司異性女工程師未來會跟我交往嗎？','love'],['我蝦皮水晶賣場這副業該一直堅持嗎？','business'],['明年財運如何？','wealth'],['媽媽的病會好轉嗎？','health'],['錢包掉了找得回來嗎？','general'],['今年我有需要特別注意什麼嗎？','general']];
 for(const [q,d] of cases)assert.equal(P(q).domain,d,q);

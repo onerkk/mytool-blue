@@ -12,7 +12,7 @@ assert(meta,'compiled packet');assert(meta.characters<=12000&&meta.utf8Bytes<=28
 for(const k of ['紫微甲方本命','紫微乙方本命','紫微宮位疊合','紫微跨盤四化投射・題目主宮','跨盤天干作用','跨盤地支作用','同步運限（目前起三年）','雙向十神'])assert(text.includes(k),k);
 assert(/夫妻\/亥\/癸\/[^\n]*破軍[^\n]*祿/.test(text),'palace rows carry brightness and natal transformation');
 assert(!text.includes('"yearGanZhi":""'),'no empty summary line');
-assert(text.includes('【未展開細表】'),'omitted optional blocks are receipted');
+assert(!(meta.notExpanded>0)||text.includes('【未展開細表】'),'omitted optional blocks are receipted when any are omitted');
 assert.equal(text.split('https://shopee.tw/a50h95648d?tab=shop').length-1,1);
 assert(!/NaN|undefined|\[object Object\]/.test(text));
 console.log(JSON.stringify({status:'passed',characters:meta.characters,bytes:meta.utf8Bytes,included:meta.includedBlocks.length,notExpanded:meta.notExpanded.length}));

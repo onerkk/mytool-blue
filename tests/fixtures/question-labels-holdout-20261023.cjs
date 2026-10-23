@@ -1,0 +1,9 @@
+module.exports=[
+['我暗戀的學妹知道我的心意嗎','love',true],['我跟男朋友適合結婚嗎','love',true],['離婚後還會遇到好對象嗎','love',false],['她只是把我當備胎嗎','love',true],['我該跟曖昧對象告白嗎','love',true],
+['今年會升職加薪嗎','career',false],['要不要辭職去讀書','career',false],['新工作的試用期會過嗎','career',false],['老闆會不會給我年終','career',true],['我適合當公務員嗎','career',false],
+['我的網拍今年能做起來嗎','business',false],['要不要跟朋友一起開店','business',true],['客人會回購嗎','business',true],
+['這個月的開銷會不會超支','wealth',false],['股票該停損嗎','wealth',false],['我會不會中樂透','wealth',false],
+['我的腰傷什麼時候會好','health',false],['阿嬤住院會順利出院嗎','health',true],
+['要不要搬回老家住','move',false],['留學申請會上嗎','career',false],
+['我最近運氣怎麼這麼差','general',false],['這週有什麼要小心的','general',false]
+];
