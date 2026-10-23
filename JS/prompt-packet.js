@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single62',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single63',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -40,7 +40,7 @@
     oracle:'先核籤號、版本與實際籤詩原文，連同條件、先後與相關事項合讀；典故名稱不當本人經歷。總吉意不覆蓋詩句限制；文化時間詞不直接換成日曆日期。'
   };
   const rules=[
-    '用繁體中文，像有經驗的解盤者當面對本人說話：你是一位看盤二十年、說話沉穩的命理師，對方就坐在你面前，心裡有事、沒學過命理。第一句直接回答眼前的事（會或不會、較可能怎樣、程度多少），再把原因、牽掛、代價與下一步說透。自然稱你，有判斷但不武斷，不用安慰、勸努力或資料不足代替仍能完成的判斷。不先說根據資料、以下分析，不用主判、證據鏈、盤面支持、條件窗口等報告語。一般正文不用術語、牌星名、干支或名詞字典，非提不可時當場用一句生活話說明；原題要求核盤才解釋技術。連貫成段，不用粗體小標、不分結論／證據／建議欄、不逐牌逐宮逐條念，同一結論只講一次。答完第一句，用一兩句說出他此刻大概正經歷的處境（要有依據），讓他知道你看懂了。術語換白話：先想訊號在生活裡的樣子再寫，例如不寫傷官見官，寫今年容易跟上司頂撞、位子被動搖；不寫權杖王牌逆位，寫想開始卻點不起火。多種方法並列時按結論分段，不以某方法這邊開頭。',
+    '用繁體中文，像有經驗的解盤者當面對本人說話：你是一位看盤二十年、說話沉穩的命理師，對方就坐在你面前，心裡有事、沒學過命理。第一句直接回答眼前的事（會或不會、較可能怎樣、程度多少），再把原因、牽掛、代價與下一步說透。自然稱你，有判斷但不武斷，不用安慰、勸努力或資料不足代替仍能完成的判斷。不先說根據資料、以下分析，不用主判、證據鏈、盤面支持、條件窗口等報告語。一般正文不用術語、牌星名、干支或名詞字典，非提不可時當場用一句生活話說明；原題要求核盤才解釋技術。連貫成段，不用粗體小標、不分結論／證據／建議欄、不逐牌逐宮逐條念，同一結論只講一次。答完第一句，用一兩句說出他此刻大概正經歷的處境（要有依據），讓他知道你看懂了。術語換白話：先想訊號在生活裡的樣子再寫，例如不寫傷官見官，寫今年容易跟上司頂撞、位子被動搖；不寫權杖王牌逆位，寫想開始卻點不起火（這兩句只示範怎麼轉，正文不要沿用這兩句的字眼，要依本次的訊號自己寫）。多種方法並列時按結論分段，不以某方法這邊開頭。',
     '先從「本題焦點」那段挑最強的兩三條深挖，講透它們怎麼推出答案，其餘訊號只在改變結論時才提；不要每一條都點到為止。資料裡有「過去三年回看」時，開場答完第一句後拿其中最像的一兩件事講出來（例如：前年你應該換過位置或跟上面的人處不好），讓他能自己核對；要有依據，說錯就認，不硬凹。資料裡沒有回看段（抽牌、起卦、籤詩都沒有）就不講過去，不把牌義或卦象倒推成他經歷過的事；最多說「現在的樣子像是…」。焦點段裡的宮名、星名、化曜、干支只是給你定位用，正文只留破折號後面那句生活話；寫出「官祿宮有天相鈴星」這種句子就是失敗。資料裡的英文鍵名、代號與JSON只是給你讀的，正文一個都不要出現；程度用「很可能、偏向、看不出來」這類話說，不報百分比。',
     '壞消息照講：用有溫度的話說，但不包裝成好消息，不以有機會、看你主不主動、多溝通結案。逐答原句所有人物、事件、比較、時間、金額與反覆條件，問兩件事就答兩件，解析不取代原句。合讀完整有效骨架、最強支持與最強反證，收斂方向、程度及條件，同源不重複加權；重要連帶發現配實際檢查點。',
     '寫完前自查，缺一項就補進正文：①每個子題都有明確答案與程度；②為什麼這樣判，講成本人會遇到的處境、選擇與代價，不是名詞解釋；③哪些在本人手上能改、哪些不在；④原題問時間就給區間和理由，沒依據就老實說還看不出；⑤接下來一至三個月可以自己觀察到的跡象；⑥一個今天就能做、具體到行為的下一步；⑦最可能推翻這個判斷的情況。這是深度檢查，不是成稿目錄，不得照抄成條列。',
@@ -309,11 +309,12 @@
     if(e.method==='tarot'&&A(d.records).length){
       // 牌陣結構由引擎的方法登記（牌位權責＋依賴鏈）寫成句子；不靠牌位名稱猜。
       const plan=c.methodPlan||c.tarotData?.methodPlan||null,R=A(d.records),slots=A(plan?.slots),deps=A(plan?.dependencies);
-      const AUTH={state:'現況',cause:'成因',obstacle:'阻礙',advice:'建議／介入',outcome:'結果',antecedent:'既有影響（過去）',timeline:'時間段',environment:'環境／他人',person_aggregate:'對方',comparison:'比較路',domain:'生活領域',structural:'結構層',synthesis:'總結',interaction_force:'交叉力量',development:'走向',cause_action:'成因與行動'};
+      const AUTH={state:'現況',cause:'成因',enabler:'助力（推動這件事的力量）',obstacle:'阻礙',advice:'建議／介入',outcome:'結果',antecedent:'既有影響（過去）',timeline:'時間段',stage:'階段',environment:'環境／他人',person_aggregate:'對方',comparison:'比較路',domain:'生活領域',structural:'結構層',synthesis:'總結',interaction_force:'交叉力量',development:'走向',cause_action:'成因與行動'};
       const nm=i=>R[i]?(R[i].name+(R[i].direction||'')):'?',lab=i=>slots[i]?.label||R[i]?.position||('第'+(i+1)+'張');
-      const normA=a=>/outcome/.test(String(a||''))?'outcome':/antecedent|receding|prior|past/.test(String(a||''))?'antecedent':String(a||'structural');
+      const normA=a=>/outcome/.test(String(a||''))?'outcome':/antecedent|receding|prior|past/.test(String(a||''))?'antecedent':/^person/.test(String(a||''))?'person_aggregate':String(a||'structural');
       const byAuth={};slots.forEach((sl,i)=>{if(!R[i])return;const a=normA(sl.authority||sl.role);(byAuth[a]=byAuth[a]||[]).push(lab(i)+'＝'+nm(i));});
-      const order=['state','person_aggregate','cause','antecedent','obstacle','interaction_force','environment','advice','timeline','development','comparison','outcome','domain','structural','synthesis'];
+      const order=['state','person_aggregate','cause','enabler','antecedent','obstacle','interaction_force','environment','advice','timeline','stage','development','comparison','outcome','domain','structural','synthesis'];
+      const unmapped=[...new Set(slots.map(sl=>normA(sl.authority||sl.role)).filter(a=>!AUTH[a]))];if(unmapped.length)order.push(...unmapped);
       const lines=order.filter(a=>byAuth[a]).map(a=>(AUTH[a]||a)+'：'+byAuth[a].join('；'));
       const mid=String(c.methodPlan?.id||c.tarotData?.methodPlan?.id||c.spreadType||'');
       const chainNote={celtic_cross:['交叉：第一張被第二張橫壓，先講核心被什麼牽制','縱軸：根基→核心→可能成形，是這件事從底到頂的結構','橫軸：身後→核心→身前，是時間流向','杖列：本人、環境、希望或恐懼、結果，由下往上讀成結論','希望或恐懼對著結果看：期待的和會發生的是不是同一件'],cross:['交叉：核心被阻礙牽制','過去→核心→未來是時間流','建議要對著交叉的阻礙講'],five_card:['成因→現況→阻礙是為什麼卡','介入→阻礙→現況→結果是怎麼解'],three_card:['基礎→現況→結果一條線'],timeline:['五段依序，轉折在中間，最後一段是落點，不換算日期'],either_or:['A路：背景→A狀態→A走向','B路：背景→B狀態→B走向，同一標準比較'],relationship:['你→對方→關係本身','限制對著關係本身','介入→限制→關係→走向'],horseshoe:['過去→現在→隱藏影響是起點','他人→阻礙是外力','建議→他人→阻礙→結果是解法到落點'],tree_of_life:['右柱（慈悲）：智慧、慈悲、勝利','左柱（嚴厲）：理解、嚴厲、榮耀','中柱：王冠→美→基礎→結果，中柱是主線'],zodiac:['對宮成對：一宮對七宮、二對八、三對九、四對十、五對十一、六對十二；先讀題目所在的宮與它的對宮，再總結'],minor_arcana:['成因→現況→阻礙','環境→資源→介入→結果'],fifteen_card:['中列三張是核心','四組各三張：自然走向、替代走向、決策依據、不可控條件'],mathers_21:['三列各七張，由右到左讀成三段敘事'],mathers_horseshoe:['三組馬蹄，由右到左先成連貫答案，再首尾配對'],year_review:['前三張回顧，後五張展望，不是八個月份'],monthly:['十二張各一個月，第十三張總結'],multi_option:['每個選項各三張：現況、限制、走向，同一尺度比較'],multi_question:['每個子題五張各自成句，不互借牌位']}[mid]||[];
@@ -366,7 +367,7 @@
   const asksAmount=q=>/多少錢|多少元|幾塊|幾萬|幾千|多少|幾個|幾次|幾張|幾人|機率|百分之|幾成|中多少|賺多少|賠多少|多久能回本/.test(String(q||''));
   const AMOUNT_RULE='量化題（金額、次數、機率）：牌面、卦象與盤面都不會給數字，正文不造任何金額、次數或百分比；只答「會不會／大概沒有、很小、比期待少、有一筆」，題目本身有固定級距（例如發票獎級、考試及格線）時可以用級距的名稱，但不能挑一個數字說會中那個。';
   const asksVocation=q=>/適合(?:做)?(?:什麼|哪種|哪一種|哪類)(?:工作|行業|職業|領域|方向|工)|做什麼(?:工作|行業|比較|會)|哪一行|哪個行業|什麼行業|什麼職業|職業方向|天職|適合的工作|適合我.{0,6}(?:工作|行業)|未來發揮|發揮的是什麼|轉(?:行|職).{0,6}(?:做什麼|什麼)|命格.{0,8}(?:工作|行業|發揮)/.test(String(q||''));
-  const asksTiming=q=>/何時|什麼時候|什么时候|哪一年|哪年|幾月|几月|多久|時機|时机|今年|明年|20\d\d/.test(String(q||''));
+  const asksTiming=q=>/何時|什麼時候|什么时候|哪一天|哪一年|哪年|幾月|几月|哪個月|多久|時機|时机|幾時|什麼時間|要等多久|會在.{0,4}(?:年|月)(?:嗎|呢)?[？?]?$/.test(String(q||''));
   function askedYears(q,ref){const ys=[...new Set((String(q||'').match(/20\d\d/g)||[]).map(Number).filter(y=>y>=ref-1&&y<=ref+12))].sort();if(ys.length>1)return Array.from({length:Math.min(6,ys[ys.length-1]-ys[0]+1)},(_,i)=>ys[0]+i);if(ys.length===1)return ys[0]===ref?[ref,ref+1,ref+2]:[ys[0]];return [ref,ref+1,ref+2];}
   function ganzhiOfYear(y){return GZ_G[((y-4)%10+10)%10]+GZ_Z[((y-4)%12+12)%12];}
   function tenGod(dm,g){const a=GZ_G.indexOf(dm),b=GZ_G.indexOf(g);if(a<0||b<0)return '';return [['比肩','劫財'],['食神','傷官'],['偏財','正財'],['七殺','正官'],['偏印','正印']][(((Math.floor(b/2)-Math.floor(a/2))%5)+5)%5][(((a-b)%2)+2)%2];}
@@ -616,14 +617,14 @@
     const meaning=r=>{const card=A(c?.cards).find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
     const show=r=>r.position+'：'+r.name+(r.direction?r.direction:'')+'—'+meaning(r);
     const plan=c?.methodPlan||c?.tarotData?.methodPlan||null,slots=A(plan?.slots),mid=String(plan?.id||c?.spreadType||'');
-    const auth=i=>{const a=String(slots[i]?.authority||''),r=String(slots[i]?.role||'');return /outcome/.test(a)?'outcome':/antecedent/.test(a)||/receding|prior|past/.test(r)?'antecedent':a;};
+    const auth=i=>{const a=String(slots[i]?.authority||''),r=String(slots[i]?.role||'');return /outcome/.test(a)?'outcome':/antecedent/.test(a)||/receding|prior|past/.test(r)?'antecedent':/^person/.test(a)?'person_aggregate':a;};
     const idx=a=>recs.map((r,i)=>auth(i)===a?i:-1).filter(i=>i>=0);
     let picked=[];
     if(slots.length===recs.length){
       if(mid==='zodiac'){const H={career:[9,5,1],wealth:[1,7,10],love:[6,4,10],health:[5,0,11],move:[8,3,2],general:[0,9,6]}[domain]||[0,9,6];picked=H.concat([12]).map(i=>recs[i]).filter(Boolean);}
       else if(mid==='tree_of_life'){picked=[0,5,8,9].map(i=>recs[i]).filter(Boolean);}
       else if(mid==='monthly'){picked=[recs[12],recs[0],recs[1],recs[2]].filter(Boolean);}
-      else{const want=['state','outcome','person_aggregate','obstacle','cause','advice','comparison','synthesis'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));picked=[...new Set(picked)].slice(0,7);}
+      else{const want=['state','outcome','person_aggregate','obstacle','cause','enabler','advice','comparison','synthesis'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));picked=[...new Set(picked)].slice(0,7);}
     }
     if(!picked.length){const keyPos=/(結果|未來|結局|出路|最終)/,corePos=/(核心|目前|現況|現在|狀態|本人|你)/,advPos=/(建議|行動|該做|介入|方向|對策)/,obsPos=/(阻礙|阻力|障礙|挑戰|困難)/;const pick=re=>recs.filter(r=>re.test(String(r.position||'')));picked=[...new Set([...pick(corePos),...pick(keyPos),...pick(obsPos),...pick(advPos)])];if(!picked.length)picked=recs.slice(0,3);}
     lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看：\n'+picked.map(show).join('\n'));
@@ -634,6 +635,9 @@
     const courtNote=courts.length?courts.map(r=>{const i=recs.indexOf(r);const where=personIdx.includes(i)?'對方位＝就是對方':envIdx.includes(i)?'環境／他人位＝'+(other?'最常是對方或對方的態度':'周圍的人或現實條件'):selfIdx.includes(i)?'本人位＝你自己':'其他位＝依上下文，可能是人也可能是一種態度';return r.name+'（'+r.position+'，'+where+'）';}).join('、')+'—'+(other?'這題有另一個人，宮廷牌可以指人，但只在位置對得上時指；不推年齡長相':'這題問的是你自己，宮廷牌是你在這件事裡的角色或階段（侍者＝新手學習期、騎士＝衝、皇后＝照顧、國王＝掌控），不是另一個人'):'無，不要硬推對方年齡長相';
     lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+courtNote);
     if(other)lines.push('對方的心意只能講「現在的樣子像是…」，不能講成已確認的事實；有環境位或對方位的牌才拿來講對方，本人位的牌不是對方');
+    const obsUp=idx('obstacle').filter(i=>!/逆/.test(recs[i].direction||'')),advRev=idx('advice').filter(i=>/逆/.test(recs[i].direction||''));
+    if(obsUp.length)lines.push('阻礙位是正位牌（'+obsUp.map(i=>recs[i].name).join('、')+'）：要讀成「這件本來是好事的東西，現在成了卡點」（例如擴張太快、分心、期待太高），不能讀成順利');
+    if(advRev.length)lines.push('建議位是逆位牌（'+advRev.map(i=>recs[i].name).join('、')+'）：讀成「要避開的做法」或「這招現在用不出來」，不是叫他去做那張牌的正面意思');
     const st=idx('state')[0],oc=idx('outcome').slice(-1)[0];
     if(st!=null&&oc!=null){const ro=/逆/.test(recs[oc].direction||''),rc=/逆/.test(recs[st].direction||'');lines.push('現況與結果'+(ro===rc?'同向':'不同向')+'：'+(ro===rc?'答案可以講得篤定一點':'先講現在為什麼卡或順，再講結果為什麼轉'));}
     if(asksTiming(q))lines.push('原題問時間：權杖快、寶劍次之、聖杯慢、金幣最慢；數字小是起頭、大是收尾；大牌不定時間。');
@@ -824,7 +828,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt54',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt55',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
