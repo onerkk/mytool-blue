@@ -31,19 +31,20 @@ for(const [method,chart] of Object.entries(x.charts)){
     if(method==='lenormand'&&!/代表牌規則/.test(body))bad('lenormand significator section missing');
     if(['bazi','ziwei','vedic','astro'].includes(method)&&type==='love'&&!/夫妻|7宮|伴侶/.test(f))bad('love question but no partner palace/house');
     if(/undefined|NaN|\?宮|\?（/.test(f))bad('undefined/NaN in focus');
-    // 邊界只由 boundaryLines() 產生：每個焦點段恰好一行【本題邊界】，其他行不得再寫時間／心意／同意的規則
-    const bl=f.split('\n').filter(l=>l.startsWith('【本題邊界】'));if(bl.length!==1)bad('boundary line count '+bl.length);
+    // 邊界依方法無條件列出：每段恰好一行【本題邊界】，且不論題型都含完整的「能回答／不能做」
+    const bl=f.split('\n').filter(l=>l.startsWith('【本題邊界】'));if(bl.length!==1)bad('boundary line count '+bl.length);const B=bl[0]||'';
     const rest=f.split('\n').filter(l=>!l.startsWith('【本題邊界】')).join('\n');
-    if(/原題問時間|沒問時間|半年到一年|講成已確認的事實|意願與同意/.test(rest))bad('boundary sentence outside the boundary line');
-    if(type==='timing'&&!/原題問時間/.test(bl[0]||''))bad('timing question without timing boundary');
-    if(type!=='timing'&&!/沒問時間/.test(bl[0]||''))bad('non-timing question without no-timing boundary');
-    if(['third','love','intimacy','rebound'].includes(type)&&!/現在的樣子像是/.test(bl[0]||''))bad('other-person question without mind boundary');
-    if(type==='intimacy'&&!/意願與同意/.test(bl[0]||''))bad('intimacy question without consent boundary');
-    if(NO_PAST.includes(method)&&!/沒有回看資料/.test(bl[0]||''))bad('no-lookback method without past boundary');
-    if(type==='destiny'&&!CHART.includes(method)&&method!=='compat'&&!/看不到命定的事/.test(bl[0]||''))bad('destiny question on a non-natal method without capability boundary');
-    if(type==='destiny'&&(CHART.includes(method)||method==='compat')&&/看不到命定的事/.test(bl[0]||''))bad('natal method wrongly told it cannot see destiny');
+    if(/原題問時間|半年到一年|講成事實|意願與同意|看不到命定/.test(rest))bad('boundary sentence outside the boundary line');
+    for(const must of ['這個方法能回答','不斷定某個人存不存在','不給金額、次數或百分比','不保證事件一定發生'])if(!B.includes(must))bad('unconditional boundary missing: '+must);
+    const natal=CHART.includes(method)||method==='compat';
+    if(!natal&&!B.includes('看不到命定的事'))bad('non-natal method missing destiny boundary');
+    if(natal&&B.includes('看不到命定的事'))bad('natal method told it cannot see destiny');
+    if(!CHART.includes(method)&&!B.includes('列不出職業清單'))bad('non-vocation method missing occupation boundary');
+    if(NO_PAST.includes(method)&&!B.includes('不講他過去發生過的事'))bad('no-lookback method without past boundary');
+    if(type==='timing'&&!B.includes('原題問時間'))bad('timing question without timing technique');
+    if(type!=='timing'&&B.includes('原題問時間'))bad('timing technique on a non-timing question');
+    if(type==='intimacy'&&!B.includes('意願與同意'))bad('intimacy question without consent line');
     if(/阻礙位是正位牌|建議位是逆位牌|建議位是困難牌/.test(f))bad('heuristic that overrides the engine advice meaning');
-    if(type==='unknown'&&!/不能斷定這個人存在或不存在/.test(bl[0]||''))bad('unknown-person question without existence boundary');
     if(type==='year'&&CHART.includes(method)&&!/2028/.test(f))bad('named year not in focus');
     {const k=body.indexOf('【原句子題核對');if(k>=0){const sub=body.slice(k,body.indexOf('\n\n【',k+3));if(/[A-Za-z]{3,}/.test(sub))bad('english in sub-question check: '+sub.match(/[A-Za-z]{3,}/)[0]);}}
     if(type==='vocation'&&!/【適合的工作類型】/.test(f))bad('vocation block missing');

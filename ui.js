@@ -885,12 +885,12 @@ async function _jyPrepareCompositeAstro(birth) {
   try {
     // Idle preloading is optional; an immediate submission must load its own dependencies.
     var dependencies = [
-      ['JS/vendor/lunar.js?v=1.7.7', function(){return typeof Solar !== 'undefined';}],
-      ['JS/bazi-calendar-core.js?v=20260912engine2', function(){return !!window.BaziCalendarCore;}],
-      ['JS/solar-location.js?v=20260923final1', function(){return typeof calcTrueSolarTime === 'function';}],
-      ['JS/bazi.js?v=20260925engine1', function(){return typeof computeBazi === 'function';}],
-      ['JS/bazi_upgrade.js?v=20260925engine1', function(){return typeof enhanceBazi === 'function';}],
-      ['JS/ziwei.js?v=20261003native9', function(){return typeof computeZiwei === 'function';}]
+      ['JS/vendor/lunar.js?v=hf83873549e.7.7', function(){return typeof Solar !== 'undefined';}],
+      ['JS/bazi-calendar-core.js?v=hd151175b89', function(){return !!window.BaziCalendarCore;}],
+      ['JS/solar-location.js?v=h4ec96f83c4', function(){return typeof calcTrueSolarTime === 'function';}],
+      ['JS/bazi.js?v=hb4ceb09c13', function(){return typeof computeBazi === 'function';}],
+      ['JS/bazi_upgrade.js?v=h443df3631a', function(){return typeof enhanceBazi === 'function';}],
+      ['JS/ziwei.js?v=hd38ff23575', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
       if (!entry[1]()) await new Promise(function(resolve, reject) {
@@ -5838,7 +5838,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20261023paste64', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=h72e54458d0', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5908,7 +5908,7 @@ showAuraResult = function(){
     // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
     if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/meihua-standalone.js?v=20261023paste64', function(ok){
+      window._jyLazyScript('JS/meihua-standalone.js?v=hb98dd1154e', function(ok){
         if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
         else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
       });
@@ -5922,7 +5922,7 @@ showAuraResult = function(){
     // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20261023paste64', function(ok){
+      window._jyLazyScript('JS/bazi-standalone.js?v=h0a4a05071f', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });

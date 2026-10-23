@@ -107,7 +107,9 @@
     "test:ritual-visibility:browser": "node tests/ritual-visibility-browser-20261014.cjs",
     "test:single-paste": "node scripts/sync-recommendation-guides.cjs --check && node tests/single-paste-20261015.cjs && node tests/single-paste-ootk-20261015.cjs && node tests/single-paste-layouts-20261015.cjs",
     "test:single-paste:browser": "node tests/single-paste-browser-20261015.cjs",
-    "test:compat-real": "node scripts/sync-recommendation-guides.cjs --check && node tests/compat-real-ui-20261021.cjs"
+    "test:compat-real": "node scripts/sync-recommendation-guides.cjs --check && node tests/compat-real-ui-20261021.cjs",
+    "stamp": "node scripts/build-question-profile.cjs && node scripts/sync-recommendation-guides.cjs && node scripts/stamp-asset-versions.cjs",
+    "test:assets": "node tests/asset-versions-20261023.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",
