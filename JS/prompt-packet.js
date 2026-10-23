@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single63',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single64',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -357,7 +357,7 @@
   const DOMAINS=[
     ['love',/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手|前任|老公|老婆|男友|女友|正緣|正缘|在一起|告白|追|約會|约会|心意|真心|愛我|爱我|想我|聯絡我|联络我|回我|他對我|她對我|他跟我|她跟我|性/],
     ['business',/副業|副业|賣場|卖场|網拍|网拍|生意|經營|经营|創業|创业|開店|开店|接案|工作室|品牌|客人|客戶|客户|訂單|订单|營收|营收|營業額|营业额|進貨|进货|庫存|库存|蝦皮|虾皮|電商|电商|攤|店/],
-    ['career',/工作|事業|事业|職|职|轉職|转职|離職|离职|升遷|升迁|老闆|老板|主管|公司|面試|面试|考試|考试|學業|学业|讀書|读书/],
+    ['career',/工作|事業|事业|職|职|轉職|转职|離職|离职|升遷|升迁|老闆|老板|主管|公司|部門|上班|跳槽|績效|發展|面試|面试|考試|考试|學業|学业|讀書|读书/],
     ['wealth',/財|财|錢|钱|收入|薪|投資|投资|股|債|债|貸|贷|營業額|营业额|淨賺|净赚|存款|買房|买房|借/],
     ['health',/健康|病|身體|身体|手術|手术|醫|医|檢查|检查|睡眠|焦慮|焦虑|憂鬱|抑郁|好轉|好转|康復|康复/],
     ['move',/搬|出國|出国|移民|留學|留学|旅行|換地方|换地方|遷移|迁移/]
@@ -614,7 +614,8 @@
   const TAROT_KEY={love:['loveUp','loveRv'],business:['wealthUp','wealthRv'],career:['careerUp','careerRv'],wealth:['wealthUp','wealthRv'],health:['healthUp','healthRv'],move:['up','rv'],general:['up','rv']};
   function focusTarot(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),[ku,kr]=TAROT_KEY[domain]||TAROT_KEY.general,lines=[];
-    const meaning=r=>{const card=A(c?.cards).find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
+    const deck=A(c?.cards).length?A(c.cards):A(root.TAROT);
+    const meaning=r=>{const card=deck.find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
     const show=r=>r.position+'：'+r.name+(r.direction?r.direction:'')+'—'+meaning(r);
     const plan=c?.methodPlan||c?.tarotData?.methodPlan||null,slots=A(plan?.slots),mid=String(plan?.id||c?.spreadType||'');
     const auth=i=>{const a=String(slots[i]?.authority||''),r=String(slots[i]?.role||'');return /outcome/.test(a)?'outcome':/antecedent/.test(a)||/receding|prior|past/.test(r)?'antecedent':/^person/.test(a)?'person_aggregate':a;};
@@ -624,10 +625,19 @@
       if(mid==='zodiac'){const H={career:[9,5,1],wealth:[1,7,10],love:[6,4,10],health:[5,0,11],move:[8,3,2],general:[0,9,6]}[domain]||[0,9,6];picked=H.concat([12]).map(i=>recs[i]).filter(Boolean);}
       else if(mid==='tree_of_life'){picked=[0,5,8,9].map(i=>recs[i]).filter(Boolean);}
       else if(mid==='monthly'){picked=[recs[12],recs[0],recs[1],recs[2]].filter(Boolean);}
-      else{const want=['state','outcome','person_aggregate','obstacle','cause','enabler','advice','comparison','synthesis'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));picked=[...new Set(picked)].slice(0,7);}
+      else{const want=['state','outcome','development','synthesis','person_aggregate','obstacle','cause','enabler','advice','comparison'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));
+        // 時間線類牌陣：各段依序都列，最後一段是落點；其他牌陣挑不滿時用時間段與既有影響補，不再退回「取前三張」。
+        const hasTimeline=slots.some((sl,i)=>['timeline','stage'].includes(auth(i)));
+        if(hasTimeline){picked=recs.filter((r,i)=>['antecedent','timeline','stage','development','outcome','synthesis','state'].includes(auth(i)));}
+        else if(picked.length<3)['timeline','stage','antecedent','structural','domain'].forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));
+        picked=[...new Set(picked)].slice(0,8);}
     }
     if(!picked.length){const keyPos=/(結果|未來|結局|出路|最終)/,corePos=/(核心|目前|現況|現在|狀態|本人|你)/,advPos=/(建議|行動|該做|介入|方向|對策)/,obsPos=/(阻礙|阻力|障礙|挑戰|困難)/;const pick=re=>recs.filter(r=>re.test(String(r.position||'')));picked=[...new Set([...pick(corePos),...pick(keyPos),...pick(obsPos),...pick(advPos)])];if(!picked.length)picked=recs.slice(0,3);}
-    lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看：\n'+picked.map(show).join('\n'));
+    const role=i=>String(slots[i]?.role||''),landing=(()=>{const ix=recs.map((r,i)=>i);const t=ix.filter(i=>/terminal/.test(role(i)));if(t.length)return t[t.length-1];const o=ix.filter(i=>auth(i)==='outcome');if(o.length)return o[o.length-1];const sy=ix.filter(i=>auth(i)==='synthesis');if(sy.length)return sy[sy.length-1];const nat=ix.filter(i=>auth(i)==='development'&&!/alternative/.test(role(i)));return nat.length?nat[nat.length-1]:undefined;})();
+    if(landing!=null&&!picked.includes(recs[landing])){if(picked.length>=8)picked.pop();picked.push(recs[landing]);}
+    lines.push('本題（'+DOMAIN_LABEL[domain]+'）先看：\n'+picked.map(r=>show(r)+(landing!=null&&r===recs[landing]?'（落點，答案以這張為準）':'')).join('\n'));
+    const bounded=slots.some(sl=>/bounded/.test(String(sl.authority||''))||sl.scope)||recs.some(r=>/截至|之前|以內/.test(String(r.position||'')));
+    if(!asksTiming(q))lines.push(bounded?'牌位綁了期限的，只講到那個期限為止；其餘不給月份、年份或「半年到一年」這類區間':'牌陣沒有月份年份：沒問時間就不要自己給時間區間（「半年到一年」這種話就是編的），只講先後與走向');
     const majors=recs.filter(r=>r.suit==='major'),rev=recs.filter(r=>/逆/.test(r.direction||'')),courts=recs.filter(r=>['page','knight','queen','king'].includes(String(r.rank)));
     // 有沒有「另一個人」由引擎的問題編譯決定（knownCounterpart／knownDyad／unknownPerson），再以人物名詞補強；不靠幾個代名詞猜。
     const cq=c?.compiledQuestion||c?.tarotData?.compiledQuestion||null,cf=cq?.features||{},other=!!(c?.knownCounterpart||c?.tarotData?.knownCounterpart||cq?.knownCounterpart||cf.knownDyad||cf.unknownPerson)||/(?:對方|他|她|對象|那個人|主管|老闆|同事|工程師|朋友|男生|女生|男人|女人|先生|小姐|前任|現任|某人|學長|學姊|學弟|學妹|老師|客戶|曖昧|喜歡的人|暗戀|追求|伴侶|男友|女友|老公|老婆)/.test(String(q));
@@ -659,6 +669,7 @@
     else lines.push('本題（'+DOMAIN_LABEL[domain]+'）'+n+'張線：中心'+nm(Math.ceil(n/2))+'是重點，整條讀成一句，不逐張念。');
     lines.push(present.length?'題目對應的主題牌在牌面上：'+present.map(r=>r.name+'（'+(r.position||'第'+(recs.indexOf(r)+1)+'張')+'）').join('、')+'—它們旁邊的牌就是這件事的狀況':'題目對應的主題牌（'+({business:'魚、熊、船、花園、錨、狐狸',career:'狐狸、錨、塔、信',wealth:'魚、熊、戒指',love:'心、戒指、紳士、淑女',health:'大樹、棺材、十字架',move:'騎士、船、道路'}[domain]||'')+'）都沒出現：事情目前沒有直接落在本題上，用整條線的走向答，程度要保守');
     lines.push('雷諾曼沒有逆位；壞牌就是壞牌（棺材、十字、老鼠、鐮刀、棍子、雲），旁邊好牌只減輕不翻轉；大樹、百合、錨這些慢牌不是壞牌，是穩與慢。');
+    if(!asksTiming(q))lines.push('沒問時間就不要自己給月份、年份或區間，只講快慢與先後');
     if(asksTiming(q))lines.push('原題問時間：雷諾曼只給快慢——離代表牌或中心越近越快、越遠越慢，騎士、鸛、船、信是快牌，山、錨、大樹、棺材是慢牌；大牌陣的格數不換算月份，沒有具名取法就不給日期。');
     return lines.join('\n');
   }
@@ -828,7 +839,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt55',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt56',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
