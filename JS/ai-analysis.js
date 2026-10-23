@@ -22944,7 +22944,7 @@ function _appendFollowUpUI(container, sourceMode, insertAfterEl) {
       '<span style="font-size:.82rem;font-weight:700;color:var(--c-gold)">' + label + '</span>' +
     '</div>' +
     '<div style="font-size:.72rem;color:var(--c-text-muted);margin-bottom:.6rem">追問問題，依問題類型自動決定補幾張牌，結合原本' + desc + '一起回答。</div>' +
-    '<textarea id="tarot-followup-q" placeholder="例如：他到底是怎麼想的？大概什麼時候會有結果？" maxlength="200" style="width:100%;min-height:48px;padding:.5rem .7rem;border-radius:10px;border:1px solid rgba(' + accent + ',.2);background:rgba(0,0,0,.2);color:var(--c-text);font-size:.85rem;font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea>' +
+    '<textarea id="tarot-followup-q" placeholder="例如：他到底是怎麼想的？大概什麼時候會有結果？" maxlength="1000" style="width:100%;min-height:48px;padding:.5rem .7rem;border-radius:10px;border:1px solid rgba(' + accent + ',.2);background:rgba(0,0,0,.2);color:var(--c-text);font-size:.85rem;font-family:inherit;resize:none;outline:none;box-sizing:border-box"></textarea>' +
     '<div style="display:flex;align-items:center;justify-content:flex-end;margin-top:.4rem">' +
       '<button id="tarot-followup-btn" onclick="_triggerTarotFollowUp()" style="padding:.5rem 1.1rem;border-radius:10px;background:linear-gradient(135deg,rgba(' + accent + ',.12),rgba(' + accent + ',.06));border:1.5px solid rgba(' + accent + ',.3);color:rgba(' + accent + ',.95);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s">' + icon + ' 抽補充牌</button>' +
     '</div>';

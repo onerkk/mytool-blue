@@ -1572,7 +1572,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
         '<nav class="at-room-nav" aria-label="頁面導覽"><button type="button" class="at-back zw-in-back" onclick="_zwClose()">← 返回首頁</button><a class="at-room-shop" href="https://shopee.tw/a50h95648d?tab=shop" target="_blank" rel="noopener noreferrer">蝦皮選物 <span aria-hidden="true">↗</span></a></nav>' +
         '<div class="zw-in-head at-tool-header"><span class="at-art" data-art="ziwei" aria-hidden="true"></span><div><span class="at-eyebrow">ZI WEI · TWELVE PALACES</span><h1>紫微斗數</h1><p>以十二宮為圖，探索人生的不同面向。</p></div></div><div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 核對資料排盤</span><span><b>03</b> 探索解讀</span></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 你想問什麼？</div>' +
-          '<textarea class="zw-in-q" id="zw-q" aria-label="紫微斗數想釐清的問題（選填）" rows="2" maxlength="200" placeholder="例如：今年適合換工作嗎？留空可探索整體命盤。"></textarea></div>' +
+          '<textarea class="zw-in-q" id="zw-q" aria-label="紫微斗數想釐清的問題（選填）" rows="2" maxlength="1000" placeholder="例如：今年適合換工作嗎？留空可探索整體命盤。"></textarea></div>' +
         '<div class="zw-in-sec"><div class="zw-in-title">✦ 出生資料（國曆，不需姓名）</div>' +
           '<div class="zw-in-field"><label class="zw-in-label">國曆出生日期</label><button type="button" class="zwx-field" id="zwx-fld-date" onclick="_zwxOpenDate()">' + _zwDateInner() + '</button></div>' +
           '<div class="zw-in-field"><label class="zw-in-label">出生時辰</label><button type="button" class="zwx-field" id="zwx-fld-hh" onclick="_zwxOpenHH()">' + _zwHHInner() + '</button></div>' +

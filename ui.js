@@ -5224,7 +5224,15 @@ document.addEventListener('click',function(e){
    ═══════════════════════════════════════════════════════ */
 (function(){
   // Anti-right-click
-  document.addEventListener('contextmenu',function(e){e.preventDefault();return false;});
+  // 20261023：輸入框、可編輯區與已選取的文字一律放行長按／右鍵選單，才能複製、貼上、全選；
+  // 其餘（圖片、牌面、盤圖、按鈕）仍擋右鍵另存。Android 長按輸入框會觸發 contextmenu，舊版全擋導致無法貼上。
+  document.addEventListener('contextmenu',function(e){
+    var t=e.target;
+    var editable=t&&t.closest&&t.closest('input,textarea,select,[contenteditable],[contenteditable="true"],[data-allow-copy]');
+    var sel=window.getSelection&&String(window.getSelection()||'').trim();
+    if(editable||sel)return;
+    e.preventDefault();return false;
+  });
   
   // v43: anti-select removed — allow copy-paste
   
@@ -5830,7 +5838,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20261003native9', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20261023paste64', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });
@@ -5900,7 +5908,7 @@ showAuraResult = function(){
     // ★ v80.18：梅花獨立頁。模組未載入則即時補載 JS/meihua-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-1。
     if (typeof window._meihuaStandaloneOpen === 'function') { window._meihuaStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/meihua-standalone.js?v=20261003native9', function(ok){
+      window._jyLazyScript('JS/meihua-standalone.js?v=20261023paste64', function(ok){
         if (ok && typeof window._meihuaStandaloneOpen === 'function') window._meihuaStandaloneOpen();
         else alert('梅花獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 meihua-standalone.js，並強制重新整理一次。');
       });
@@ -5914,7 +5922,7 @@ showAuraResult = function(){
     // 八字獨立頁。模組未載入則即時補載 JS/bazi-standalone.js（避開 index.html 快取沒更新）。
     if (typeof window._baziStandaloneOpen === 'function') { window._baziStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/bazi-standalone.js?v=20261003native9', function(ok){
+      window._jyLazyScript('JS/bazi-standalone.js?v=20261023paste64', function(ok){
         if (ok && typeof window._baziStandaloneOpen === 'function') window._baziStandaloneOpen();
         else alert('八字獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 bazi-standalone.js，並強制重新整理一次。');
       });

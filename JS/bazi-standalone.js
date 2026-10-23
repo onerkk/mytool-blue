@@ -312,7 +312,7 @@
       h += '</div>';
 
       h += '<div class="bzx-section"><div class="bzx-section-title">✦ 想問什麼？（選填）</div>';
-      h += '<textarea class="bzx-q-input" id="bzx-q" aria-label="八字想釐清的問題（選填）" rows="2" maxlength="200" placeholder="留空＝整體命格；或問具體事，如：今年事業能不能換跑道？"></textarea></div>';
+      h += '<textarea class="bzx-q-input" id="bzx-q" aria-label="八字想釐清的問題（選填）" rows="2" maxlength="1000" placeholder="留空＝整體命格；或問具體事，如：今年事業能不能換跑道？"></textarea></div>';
 
       h += '<button class="bzx-cast-btn" onclick="_baziDoCast()">✦ 排 盤 ✦</button>';
     } else {

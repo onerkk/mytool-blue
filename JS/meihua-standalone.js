@@ -1132,7 +1132,7 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】一般有效解讀完成後�
     if (_mhPhase === 'input') {
       h += '<div class="at-flow-guide" aria-label="探索流程"><span><b>01</b> 整理問題</span><span><b>02</b> 選擇方式起卦</span><span><b>03</b> 探索解讀</span></div>';
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 你想問什麼？</div>';
-      h += '<textarea class="mhx-q-input" id="mhx-q" aria-label="梅花易數想釐清的問題" rows="2" maxlength="200" placeholder="例如：這個案子推得動嗎？目前卡在哪一步？">' + _mhEscape(_mhQuestion) + '</textarea></div>';
+      h += '<textarea class="mhx-q-input" id="mhx-q" aria-label="梅花易數想釐清的問題" rows="2" maxlength="1000" placeholder="例如：這個案子推得動嗎？目前卡在哪一步？">' + _mhEscape(_mhQuestion) + '</textarea></div>';
 
       h += '<div class="mhx-section"><div class="mhx-section-title">✦ 起卦方式</div><div class="mhx-method-grid">';
       h += '<button class="mhx-method-btn' + (_mhMethod==='time'?' active':'') + '" onclick="_mhSetMethod(\'time\')">時間起卦<br><span style="font-size:.58rem;opacity:.6">以當下時間</span></button>';
