@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single67',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single68',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -419,6 +419,7 @@ function jyQuestionProfile(question){
     guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
     name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
     twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q),
+    unknownPerson:/有沒有人|是否有人|有人(?:在)?(?:暗戀|喜歡|追|想|愛|注意|搞|陷害|說我|針對)|有誰|是誰在|誰(?:在)?(?:暗戀|喜歡|追|搞|針對)|哪個人|暗戀我|偷偷喜歡|有沒有.{0,6}(?:喜歡|暗戀|追)我/.test(q),
     destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
   if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
@@ -674,7 +675,8 @@ function jyQuestionProfile(question){
   function focusTarot(c,q,section){
     const d=section&&section('本次完整操作與牌籤作用')||{};const recs=A(d.records);if(!recs.length)return null;const domain=detectDomain(q),[ku,kr]=TAROT_KEY[domain]||TAROT_KEY.general,lines=[];
     const deck=A(c?.cards).length?A(c.cards):A(root.TAROT);
-    const meaning=r=>{const card=deck.find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');const m=card&&(rev?card[kr]:card[ku]);return m||r.meaning||'';};
+    // 牌義以引擎依牌位與題型挑好的為準（建議位用建議牌義、題型與牌義分類共用同一個題目輪廓），焦點段不再自己重查。
+    const meaning=r=>{if(r.meaning)return r.meaning;const card=deck.find(x=>x.id===r.id||x.n===r.name);const rev=/逆/.test(r.direction||'');return (card&&(rev?card[kr]:card[ku]))||'';};
     const show=r=>r.position+'：'+r.name+(r.direction?r.direction:'')+'—'+meaning(r);
     const plan=c?.methodPlan||c?.tarotData?.methodPlan||null,slots=A(plan?.slots),mid=String(plan?.id||c?.spreadType||'');
     const auth=i=>{const a=String(slots[i]?.authority||''),r=String(slots[i]?.role||'');return /outcome/.test(a)?'outcome':/antecedent/.test(a)||/receding|prior|past/.test(r)?'antecedent':/^person/.test(a)?'person_aggregate':a;};
@@ -684,7 +686,7 @@ function jyQuestionProfile(question){
       if(mid==='zodiac'){const H={career:[9,5,1],wealth:[1,7,10],love:[6,4,10],health:[5,0,11],move:[8,3,2],general:[0,9,6]}[domain]||[0,9,6];picked=H.concat([12]).map(i=>recs[i]).filter(Boolean);}
       else if(mid==='tree_of_life'){picked=[0,5,8,9].map(i=>recs[i]).filter(Boolean);}
       else if(mid==='monthly'){picked=[recs[12],recs[0],recs[1],recs[2]].filter(Boolean);}
-      else{const want=['state','outcome','development','synthesis','person_aggregate','obstacle','cause','enabler','advice','comparison'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));
+      else{const want=['state','interaction_force','outcome','development','synthesis','person_aggregate','obstacle','cause','enabler','advice','comparison'];want.forEach(a=>idx(a).forEach(i=>picked.push(recs[i])));
         // 時間線類牌陣：各段依序都列，最後一段是落點；其他牌陣挑不滿時用時間段與既有影響補，不再退回「取前三張」。
         const hasTimeline=slots.some((sl,i)=>['timeline','stage'].includes(auth(i)));
         if(hasTimeline){picked=recs.filter((r,i)=>['antecedent','timeline','stage','development','outcome','synthesis','state'].includes(auth(i)));}
@@ -704,9 +706,8 @@ function jyQuestionProfile(question){
     lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+courtNote);
     if(other)lines.push('有環境位或對方位的牌才拿來講對方，本人位的牌不是對方');
     const val=i=>cardValence(recs[i].id,/逆/.test(recs[i].direction||''));
-    const obsGood=idx('obstacle').filter(i=>val(i)>0),advBad=idx('advice').filter(i=>val(i)<0);
+    const obsGood=idx('obstacle').filter(i=>val(i)>0);
     if(obsGood.length)lines.push('阻礙位是順牌（'+obsGood.map(i=>recs[i].name+recs[i].direction).join('、')+'）：要讀成「這件本來是好事的東西，現在成了卡點」（例如擴張太快、分心、期待太高），不能讀成順利');
-    if(advBad.length)lines.push('建議位是困難牌（'+advBad.map(i=>recs[i].name+recs[i].direction).join('、')+'）：讀成「要避開的做法」或「要先接受的代價」，不是叫他去做那張牌的事');
     const st=idx('state')[0],oc=idx('outcome').slice(-1)[0];
     if(st!=null&&oc!=null){const vs=Math.sign(val(st)),vo=Math.sign(val(oc)),lab=v=>v>0?'偏順':v<0?'偏難':'中性';lines.push(vs===vo&&vs!==0?'現況與結果同向（都'+lab(vs)+'）：答案可以講得篤定一點':vo===0?'結果是中性牌：答案程度要保守，講條件不講定論':'現況'+lab(vs)+'、結果'+lab(vo)+'：先講現在的樣子，再講結果為什麼'+(vo>0?'轉好':'轉難'));}
     const hasPast=slots.some((sl,i)=>auth(i)==='antecedent');
@@ -847,6 +848,7 @@ function jyQuestionProfile(question){
     if(!cap.lookBack)L.push('這個方法沒有回看資料：不講他過去發生過的事，不把牌義、卦象或籤意倒推成他的經歷');
     if(ak.amount)L.push(AMOUNT_RULE);
     if(ak.mind||ak.thirdPerson)L.push('對方的心意與態度只能講「現在的樣子像是…」，不講成已確認的事實；對方的性格只用盤面或對方位那張牌講，不另外加上資料裡沒有的性格');
+    if(ak.unknownPerson)L.push('問的是「有沒有某個人」：只能說看得出或看不太出這種跡象，不能斷定這個人存在或不存在，也不能指認是誰；程度保守');
     if(ak.destiny&&!cap.natal)L.push('這個方法看不到命定的事（正緣、天生、一輩子）：只能回答這段時間的樣子與走向，正文要明講這一點；要問正緣請改用八字、紫微或合盤');
     if(ak.destiny&&cap.natal)L.push('命定題看本命的夫妻星宮或七宮與整段運限，不從單一年份或單一顆星下定論');
     if(ak.intimacy)L.push('親密關係題：只看兩人之間有沒有靠近的條件；對方的意願與同意不在盤上，不能講成對方會答應或會發生');

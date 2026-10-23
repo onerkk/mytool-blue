@@ -19,6 +19,9 @@ for(const id of Object.keys(F.METHODS)){if(id==='ootk'||id==='mathers_66')contin
   const rowsSec=body.slice(body.indexOf('【全部牌序'),body.indexOf('\n\n【',body.indexOf('【全部牌序')+3)).split('\n').slice(1);
   if(landIdx!=null&&id!=='zodiac'&&id!=='tree_of_life'&&id!=='monthly'){const lab=plan.slots[landIdx].label||String(rowsSec[landIdx]||'').split('/')[0];if(!f.includes(lab))bad.push(id+': landing slot not in focus ('+lab+')');else if(!/落點/.test(f))bad.push(id+': landing not marked');}
   if(!/不給|不要自己給時間/.test(f))bad.push(id+': no time boundary');
+  // 焦點段的牌義必須和引擎牌義表逐字一致（不得自己重查而產生矛盾）
+  {const tbl=body.slice(body.indexOf('【本站整理的RWS牌義參考'),body.indexOf('\n\n【',body.indexOf('【本站整理的RWS牌義參考')+3)).split('\n').slice(1);const engine={};tbl.forEach(l=>{const m=l.match(/^(.+?)｜(.+?)〔[^〕]*〕：(.*)$/);if(m)engine[m[1]+'｜'+m[2]]=m[3];});
+   f.split('\n').forEach(l=>{const m=l.match(/^(.+?)：(\S+?(?:正位|逆位))—(.*?)(?:（落點.*）)?$/);if(!m)return;const key=m[1]+'｜'+m[2];if(engine[key]!==undefined&&engine[key]!==m[3])bad.push(id+': focus meaning differs from engine for '+key);});}
   const mt=body.match(/〔(一般|事業)〕/g)||[];if(mt.length&&mt.every(x=>x==='〔一般〕'))bad.push(id+': career question got general meanings');
 }
 console.log('spreads checked',checked);if(bad.length)console.log(bad.join('\n'));assert.equal(bad.length,0);
