@@ -35,7 +35,8 @@ function jyQuestionProfile(question){
     how:/該怎麼|怎麼辦|怎麼做|要怎樣|怎樣才|方法|建議|如何(?:做|處理|面對|改善|準備|開始|選|溝通|調整|經營|安排)/.test(q),
     guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
     name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
-    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q)
+    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q),
+    destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
   if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};

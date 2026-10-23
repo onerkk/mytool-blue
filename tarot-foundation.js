@@ -1698,7 +1698,8 @@ function jyQuestionProfile(question){
     how:/該怎麼|怎麼辦|怎麼做|要怎樣|怎樣才|方法|建議|如何(?:做|處理|面對|改善|準備|開始|選|溝通|調整|經營|安排)/.test(q),
     guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
     name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
-    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q)
+    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q),
+    destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
   if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
@@ -1727,7 +1728,7 @@ function recommendReadingSystem(question, options) {
   var prof=jyQuestionProfile(q),ak=prof.asks;
   var f={longTerm:ak.longTerm,overall:ak.overall,event:ak.event,shortTime:ak.shortTime,timing:ak.timing,mind:ak.mind,interact:ak.interact,
     choice:!!(plan&&plan.options&&plan.options.length>=2)||ak.choice,decision:ak.decision,why:ak.why,how:ak.how,guidance:ak.guidance,name:ak.name,twoPeople:ak.twoPeople,
-    business:prof.domain==='business',money:prof.domain==='wealth',health:prof.domain==='health',work:prof.domain==='career',thirdPerson:ak.thirdPerson,vocation:ak.vocation};
+    business:prof.domain==='business',money:prof.domain==='wealth',health:prof.domain==='health',work:prof.domain==='career',thirdPerson:ak.thirdPerson,vocation:ak.vocation,destiny:ak.destiny};
   // ── 各方法擅長什麼：打分 ──
   var score={bazi:0,ziwei:0,vedic:0,astro:0,liuyao:0,liuren:0,meihua:0,yijing:0,tarot:0,lenormand:0,oracle:0,name:0,compat:0};
   var why={};function add(id,n,text){score[id]+=n;if(text&&n>0)why[id]=(why[id]?why[id]+'、':'')+text;}
@@ -1746,6 +1747,7 @@ function recommendReadingSystem(question, options) {
   if(f.how&&!f.event){add('yijing',4,'該怎麼做、進退分寸，卦爻辭最直接');add('tarot',2,'建議位');add('oracle',2,'要一個方向');}
   if(f.guidance){add('oracle',5,'要的是一句提醒與方向，靈籤最貼');add('yijing',2,'');}
   if(f.name){add('name',8,'改名取名看姓名學');}
+  if(f.destiny){add('bazi',5,'正緣、命定這類問題要看本命的夫妻星宮與運限');add('ziwei',4,'夫妻宮與大限能看這段緣分的本質');add('compat',f.interact||f.thirdPerson?4:0,'兩個人是不是對的人，合盤直接比兩張命盤');add('vedic',2,'七宮與金星');add('astro',2,'七宮與金星');['tarot','lenormand','liuyao','liuren','meihua','yijing','oracle'].forEach(function(k){add(k,-3,'');});}
   if(f.vocation){add('bazi',5,'適合哪一行要看格局與喜用五行');add('ziwei',4,'官祿宮主星直接對應職業類型');add('vedic',2,'十宮與職業代表星');add('astro',2,'天頂與十宮');}
   if(f.business){add('bazi',3,'生意做不做得起來，看財星食傷與大運');add('liuyao',2,'這門生意最近成不成，看妻財');add('lenormand',2,'生意的錢、客人、通路在大牌陣看得到');add('meihua',1,'');}
   if(f.money&&!f.business&&!f.event){add('bazi',3,'財運看財星與大運流年');add('liuyao',2,'一筆錢進不進得來看妻財');add('lenormand',1,'');}

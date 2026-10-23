@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023single66',LIMIT=12000,BYTES=28000;
+  const VERSION='20261023single67',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -50,7 +50,7 @@
     '日期限已列區間，Z為UTC、右端不含；未給時點不算剩餘日數。金額、次數及一次／持續達標分清，有完整具名取法才作象徵估計，不由符號換算收入、淨利、機率或保證事件。心意、同意、實際發生分開；親近不等於性交，須明確且可撤回的同意。醫療、法律、財務須合現實資料與專業意見。'
   ].join('\n');
   const footer='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
-  const closingReminder='【下筆前最後確認】第一句就回答，不開場白；資料有回看段才講過去，沒有就不編。手鍊只推一款、只寫一個材質名（寫成「A或B」就是違規），只說它是提醒的象徵，不說它能清理、療癒、帶來什麼力量。只深挖本題焦點裡最強的兩三條，其餘不逐條念。全文不用術語、不用粗體小標、不出現英文鍵名或資料順序。壞消息照講，程度用話講不用百分比。手鍊那段要接本題最需要照顧的那件事，不是泛泛推銷。';
+  const closingReminder='【下筆前最後確認】收尾順序固定：先一句提醒，再手鍊段，最後原樣兩行連結。第一句就回答，不開場白；資料有回看段才講過去，沒有就不編。手鍊只推一款、只寫一個材質名（寫成「A或B」就是違規），只說它是提醒的象徵，不說它能清理、療癒、帶來什麼力量。只深挖本題焦點裡最強的兩三條，其餘不逐條念。全文不用術語、不用粗體小標、不出現英文鍵名或資料順序。壞消息照講，程度用話講不用百分比。手鍊那段要接本題最需要照顧的那件事，不是泛泛推銷。';
   const commercial='解讀與行動都講完後，才接這一段。先一句提醒：以上屬傳統象徵解讀，供參考，不保證事件；醫療、法律、財務決定要配合實際資料與專業意見。\n接著用二到四句自然接續（不另起標題，不用我會選擇、這不是因為等自我解說開頭），推薦本人佩戴的一款手鍊：先點出本次解讀裡最需要照顧的一件事（例如把話說清楚、穩住別衝動、收心專注、給自己安全感、重新提起行動），再從靜月之光常備品類挑最貼那件事的材質或設計，說明它是提醒自己的象徵，連回剛才講的下一步。品類參考（傳統象徵對應，不是療效）：安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利；開口表達、把話說清—海藍寶、青金石、藍紋瑪瑙；感情柔軟、善待自己—粉晶、草莓晶、摩根石；清明決斷、靜心—白水晶、紫水晶、拉長石；行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石；轉換與放下—煙晶、月光石。只挑一款，理由必須來自本次一項有效發現，不先選商品再反推；不宣稱礦物療效、改運、復合或收益，不造庫存、價格、產地、成分與認證，不加重凶象促購。預算吃緊或不想買時，先用現有物件承載同一提醒。最後自然邀請到靜月之光挑相應設計；無有效盤面或程序停止時不做命理選材。\n'+closingReminder+'\n全文最後兩行原樣輸出：\n'+footer;
   function compactObject(v){
     if(Array.isArray(v))return v.map(compactObject);
@@ -419,7 +419,8 @@ function jyQuestionProfile(question){
     how:/該怎麼|怎麼辦|怎麼做|要怎樣|怎樣才|方法|建議|如何(?:做|處理|面對|改善|準備|開始|選|溝通|調整|經營|安排)/.test(q),
     guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
     name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
-    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q)
+    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q),
+    destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
   if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
@@ -703,11 +704,12 @@ function jyQuestionProfile(question){
     const courtNote=courts.length?courts.map(r=>{const i=recs.indexOf(r);const where=personIdx.includes(i)?'對方位＝就是對方':envIdx.includes(i)?'環境／他人位＝'+(other?'最常是對方或對方的態度':'周圍的人或現實條件'):selfIdx.includes(i)?'本人位＝你自己':'其他位＝依上下文，可能是人也可能是一種態度';return r.name+'（'+r.position+'，'+where+'）';}).join('、')+'—'+(other?'這題有另一個人，宮廷牌可以指人，但只在位置對得上時指；不推年齡長相':'這題問的是你自己，宮廷牌是你在這件事裡的角色或階段（侍者＝新手學習期、騎士＝衝、皇后＝照顧、國王＝掌控），不是另一個人'):'無，不要硬推對方年齡長相';
     lines.push('整組：大牌'+majors.length+'／'+recs.length+'張'+(majors.length*2>=recs.length?'（大牌多，事情不全在你手上）':'')+'；逆位'+rev.length+'張'+(rev.length*2>recs.length?'（逆位過半，卡住的比順的多）':'')+'；宮廷牌'+courtNote);
     if(other)lines.push('有環境位或對方位的牌才拿來講對方，本人位的牌不是對方');
-    const obsUp=idx('obstacle').filter(i=>!/逆/.test(recs[i].direction||'')),advRev=idx('advice').filter(i=>/逆/.test(recs[i].direction||''));
-    if(obsUp.length)lines.push('阻礙位是正位牌（'+obsUp.map(i=>recs[i].name).join('、')+'）：要讀成「這件本來是好事的東西，現在成了卡點」（例如擴張太快、分心、期待太高），不能讀成順利');
-    if(advRev.length)lines.push('建議位是逆位牌（'+advRev.map(i=>recs[i].name).join('、')+'）：讀成「要避開的做法」或「這招現在用不出來」，不是叫他去做那張牌的正面意思');
+    const val=i=>cardValence(recs[i].id,/逆/.test(recs[i].direction||''));
+    const obsGood=idx('obstacle').filter(i=>val(i)>0),advBad=idx('advice').filter(i=>val(i)<0);
+    if(obsGood.length)lines.push('阻礙位是順牌（'+obsGood.map(i=>recs[i].name+recs[i].direction).join('、')+'）：要讀成「這件本來是好事的東西，現在成了卡點」（例如擴張太快、分心、期待太高），不能讀成順利');
+    if(advBad.length)lines.push('建議位是困難牌（'+advBad.map(i=>recs[i].name+recs[i].direction).join('、')+'）：讀成「要避開的做法」或「要先接受的代價」，不是叫他去做那張牌的事');
     const st=idx('state')[0],oc=idx('outcome').slice(-1)[0];
-    if(st!=null&&oc!=null){const ro=/逆/.test(recs[oc].direction||''),rc=/逆/.test(recs[st].direction||'');lines.push('現況與結果'+(ro===rc?'同向':'不同向')+'：'+(ro===rc?'答案可以講得篤定一點':'先講現在為什麼卡或順，再講結果為什麼轉'));}
+    if(st!=null&&oc!=null){const vs=Math.sign(val(st)),vo=Math.sign(val(oc)),lab=v=>v>0?'偏順':v<0?'偏難':'中性';lines.push(vs===vo&&vs!==0?'現況與結果同向（都'+lab(vs)+'）：答案可以講得篤定一點':vo===0?'結果是中性牌：答案程度要保守，講條件不講定論':'現況'+lab(vs)+'、結果'+lab(vo)+'：先講現在的樣子，再講結果為什麼'+(vo>0?'轉好':'轉難'));}
     const hasPast=slots.some((sl,i)=>auth(i)==='antecedent');
     lines.push(hasPast?'過去位只講牌面指出的既有影響，不編成他經歷過的具體事件；阻礙與機制位講的是現在壓著他的東西。':'牌陣沒有過去位；阻礙位與機制位講的是現在壓著他的東西，不是他過去發生過的事，不要倒推成回憶。');
     return lines.join('\n');
@@ -818,11 +820,15 @@ function jyQuestionProfile(question){
     return L.join('\n');
   }
   /* ── 方法能力表：每種方法能回答到哪裡。所有邊界句只由 boundaryLines() 依「題目輪廓 × 能力表」產生，方法焦點函式只放盤面資料。 ── */
+  /* 牌的吉凶傾向（RWS 主流讀法，正位）：1 順、0 中性、-1 困難；逆位＝順牌受阻、困難牌緩解但未轉好、中性牌仍中性。
+     焦點段判「阻礙位是不是好牌」「現況與結果同不同向」一律用這張表，不再用正逆位代替吉凶。 */
+  const TAROT_VALENCE=[1,1,0,1,1,0,1,1,1,0,1,0,0,-1,1,-1,-1,1,-1,1,1,1,1,1,1,1,-1,1,0,1,0,-1,1,1,1,1,1,1,1,-1,-1,1,-1,0,1,1,1,1,1,1,1,0,-1,0,-1,0,-1,-1,-1,-1,0,0,0,0,1,0,1,0,-1,1,0,1,1,1,1,1,1,1];
+  const cardValence=(id,reversed)=>{const v=TAROT_VALENCE[id];if(v===undefined)return 0;return reversed?(v>0?-1:0):v;};
   const METHOD_CAPS={
-    bazi:{lookBack:true,timing:'年份用流年、月份用流月；給區間要說出是哪個字觸發'},
-    ziwei:{lookBack:true,timing:'年份用流年四化與流年命宮、月份用流月；每個時間點都要說是哪顆化曜或哪個宮觸發'},
-    vedic:{lookBack:true,timing:'用副運與次副運換手的日期當區間，再用行運土星、木星過本題宮位確認；不用流年宮數字換日期'},
-    astro:{lookBack:true,timing:'用土星、木星進出本題宮位與行運精準相位的日期當區間；月亮與內行星只定日子不定年'},
+    bazi:{natal:true,lookBack:true,timing:'年份用流年、月份用流月；給區間要說出是哪個字觸發'},
+    ziwei:{natal:true,lookBack:true,timing:'年份用流年四化與流年命宮、月份用流月；每個時間點都要說是哪顆化曜或哪個宮觸發'},
+    vedic:{natal:true,lookBack:true,timing:'用副運與次副運換手的日期當區間，再用行運土星、木星過本題宮位確認；不用流年宮數字換日期'},
+    astro:{natal:true,lookBack:true,timing:'用土星、木星進出本題宮位與行運精準相位的日期當區間；月亮與內行星只定日子不定年'},
     liuyao:{lookBack:false,timing:'用神旺相看近期，休囚看出旬或逢值逢合；空亡的爻在填實那個地支的月日、動爻化出之字出現的月日是候選，要說出是哪個字'},
     liuren:{lookBack:false,timing:'先看末傳與用神所落之支，再看沖空填空之日；課體候選日只是條件觸發'},
     meihua:{lookBack:false,timing:'只分近期／中段／後段與季節候選，不給幾個月幾週'},
@@ -833,7 +839,7 @@ function jyQuestionProfile(question){
     oracle:{lookBack:false,timing:'只有事項附記寫了早晚、先後或月份才講，而且照附記講；詩句裡的數字與季節字不是日期'},
     name:{lookBack:false,timing:null},
     personality:{lookBack:false,timing:null},
-    compat:{lookBack:false,timing:'看雙方大運、流年同步的年份，兩人同時走到相關運的年份才是時間點；不從合沖數量換算日期'}
+    compat:{natal:true,lookBack:false,timing:'看雙方大運、流年同步的年份，兩人同時走到相關運的年份才是時間點；不從合沖數量換算日期'}
   };
   function boundaryLines(m,q){
     const pf=jyQuestionProfile(q),ak=pf.asks,cap=METHOD_CAPS[m]||{lookBack:false,timing:null},L=[];
@@ -841,7 +847,9 @@ function jyQuestionProfile(question){
     else L.push(cap.lookBack?'沒問時間：可以說哪一年比較明顯，但不自己換算到月份或幾個月內':'沒問時間：不給月份、年份或「半年到一年」這類區間，只講先後與走向');
     if(!cap.lookBack)L.push('這個方法沒有回看資料：不講他過去發生過的事，不把牌義、卦象或籤意倒推成他的經歷');
     if(ak.amount)L.push(AMOUNT_RULE);
-    if(ak.mind||ak.thirdPerson)L.push('對方的心意與態度只能講「現在的樣子像是…」，不講成已確認的事實');
+    if(ak.mind||ak.thirdPerson)L.push('對方的心意與態度只能講「現在的樣子像是…」，不講成已確認的事實；對方的性格只用盤面或對方位那張牌講，不另外加上資料裡沒有的性格');
+    if(ak.destiny&&!cap.natal)L.push('這個方法看不到命定的事（正緣、天生、一輩子）：只能回答這段時間的樣子與走向，正文要明講這一點；要問正緣請改用八字、紫微或合盤');
+    if(ak.destiny&&cap.natal)L.push('命定題看本命的夫妻星宮或七宮與整段運限，不從單一年份或單一顆星下定論');
     if(ak.intimacy)L.push('親密關係題：只看兩人之間有沒有靠近的條件；對方的意願與同意不在盤上，不能講成對方會答應或會發生');
     return '【本題邊界】'+L.join('；');
   }
@@ -920,7 +928,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt58',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261023prompt59',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;

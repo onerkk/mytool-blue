@@ -3,7 +3,7 @@
 const assert=require('node:assert/strict');
 const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-packet'].forEach(env.load);const x=examples(c),P=c.JYPromptPacket;
-const Q={career:'目前的工作適合我嗎？',love:'他會跟我在一起嗎？',wealth:'明年財運會變好嗎？',timing:'我什麼時候會換工作？',amount:'下個月業績能做到多少？',third:'公司的女同事喜歡我嗎？',decision:'我該不該離職？',health:'媽媽的病會好轉嗎？',year:'2028年我適合創業嗎？',two:'我會升遷嗎？薪水會漲嗎？',rebound:'我們會復合嗎？',business:'我蝦皮水晶賣場這副業該一直堅持嗎？',vocation:'目前我正職工作真的不適合我嗎？那真正適合我命格未來發揮的是什麼工作？',intimacy:'今年會與非現任女友發生肉體關係嗎？'};
+const Q={career:'目前的工作適合我嗎？',love:'他會跟我在一起嗎？',wealth:'明年財運會變好嗎？',timing:'我什麼時候會換工作？',amount:'下個月業績能做到多少？',third:'公司的女同事喜歡我嗎？',decision:'我該不該離職？',health:'媽媽的病會好轉嗎？',year:'2028年我適合創業嗎？',two:'我會升遷嗎？薪水會漲嗎？',rebound:'我們會復合嗎？',business:'我蝦皮水晶賣場這副業該一直堅持嗎？',vocation:'目前我正職工作真的不適合我嗎？那真正適合我命格未來發揮的是什麼工作？',intimacy:'今年會與非現任女友發生肉體關係嗎？',destiny:'現任是正緣嗎？'};
 const CHART=['bazi','ziwei','vedic','astro'],CARD=['tarot','lenormand','ootk'],GUA=['liuyao','liuren','meihua','yijing'],OTHER=['name','compat','personality','oracle'];
 const NO_PAST=[...CARD,...GUA,'oracle','name','personality'];
 const problems=[];let checked=0;
@@ -40,6 +40,9 @@ for(const [method,chart] of Object.entries(x.charts)){
     if(['third','love','intimacy','rebound'].includes(type)&&!/現在的樣子像是/.test(bl[0]||''))bad('other-person question without mind boundary');
     if(type==='intimacy'&&!/意願與同意/.test(bl[0]||''))bad('intimacy question without consent boundary');
     if(NO_PAST.includes(method)&&!/沒有回看資料/.test(bl[0]||''))bad('no-lookback method without past boundary');
+    if(type==='destiny'&&!CHART.includes(method)&&method!=='compat'&&!/看不到命定的事/.test(bl[0]||''))bad('destiny question on a non-natal method without capability boundary');
+    if(type==='destiny'&&(CHART.includes(method)||method==='compat')&&/看不到命定的事/.test(bl[0]||''))bad('natal method wrongly told it cannot see destiny');
+    if(/阻礙位是正位牌|建議位是逆位牌/.test(f))bad('orientation used as valence');
     if(type==='year'&&CHART.includes(method)&&!/2028/.test(f))bad('named year not in focus');
     {const k=body.indexOf('【原句子題核對');if(k>=0){const sub=body.slice(k,body.indexOf('\n\n【',k+3));if(/[A-Za-z]{3,}/.test(sub))bad('english in sub-question check: '+sub.match(/[A-Za-z]{3,}/)[0]);}}
     if(type==='vocation'&&!/【適合的工作類型】/.test(f))bad('vocation block missing');
