@@ -23,8 +23,12 @@
     var id='jy-recommend-'+input.id,host=document.getElementById(id);
     if(!host){host=document.createElement('div');host.id=id;host.className='jy-question-recommendation';host.setAttribute('aria-live','polite');input.parentNode.insertBefore(host,input.nextSibling);}
     host.textContent='';var q=input.value.trim();host.hidden=!q;if(!q)return;
-    var rec=F.recommendSystem(q),copy=document.createElement('p');
-    copy.textContent='系統建議：'+rec.label+'。'+rec.reason+'。';host.appendChild(copy);
+    var rec=F.recommendSystem(q,{current:system}),copy=document.createElement('p');
+    if(rec.stay&&rec.stay.system===system&&rec.system===system){copy.textContent='這題用'+rec.label+'合適：'+rec.reason+'。';}
+    else if(rec.stay&&rec.stay.system===system){copy.textContent=rec.stay.reason+'；想看得更準可改用'+rec.label+'（'+rec.reason+'）。';}
+    else{copy.textContent='這題更適合'+rec.label+'：'+rec.reason+'。';}
+    host.appendChild(copy);
+    if(rec.alternatives&&rec.alternatives.length){var alt=document.createElement('p');alt.className='jy-recommend-alt';alt.textContent='也可以：'+rec.alternatives.map(function(a){return a.label+(a.reason?'（'+a.reason+'）':'');}).join('；');host.appendChild(alt);}
     if(system==='tarot'){
       var route=F.routeQuestion(q),manual=root._forcedSpread;
       var plan=manual?F.instantiateMethod(manual,route.compiledQuestion):route.methodPlan;
@@ -36,7 +40,7 @@
       host.appendChild(detail);
     }
     if(rec.birthDataRequired){var birth=document.createElement('p');birth.textContent='排盤前需填寫出生日期、時間等資料。';host.appendChild(birth);}
-    if(rec.system!==system&&targets[rec.system]){
+    if(rec.system!==system&&targets[rec.system]&&!(rec.stay&&rec.stay.system===system&&rec.system===system)){
       var button=document.createElement('button');button.type='button';button.className='btn btn-outline btn-sm';button.textContent='改用'+rec.label;
       button.addEventListener('click',function(){switchSystem(system,rec.system,q);});host.appendChild(button);
     }

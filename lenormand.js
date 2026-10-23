@@ -2269,10 +2269,12 @@ function analyzeReadingQuestion(value) {
   };
 }
 
-function recommendReadingSystem(question) {
-  var q=String(question||'').trim(), plan=analyzeReadingQuestion(q);
-  if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan};
+function recommendReadingSystem(question, options) {
+  var q=String(question||'').trim(), plan=analyzeReadingQuestion(q), opts=options||{}, current=opts.current||null;
+  if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan,alternatives:[]};
   var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var LABEL={lenormand:'雷諾曼',tarot:'塔羅',oracle:'靈籤',meihua:'梅花易數',liuyao:'六爻占卜',liuren:'大六壬',yijing:'易經占卜',ziwei:'紫微斗數',bazi:'八字',vedic:'印度占星',astro:'西洋占星',name:'姓名學',compat:'合盤',ootk:'開鑰之法',personality:'五軸'};
+  var BIRTH={bazi:true,ziwei:true,vedic:true,astro:true,compat:true,personality:true};
   var requests=[],exclusions={};
   q.split(/[，,。；;！？?\n]/).forEach(function(clause,order){
     rules.forEach(function(rule){if(rule[0]==='astro'&&/印度占星|吠陀占星|Jyotish|Vedic/i.test(clause)&&!/西洋|西方|Western/i.test(clause))return;var m=clause.match(rule[2]);if(!m)return;var before=clause.slice(0,m.index);
@@ -2284,31 +2286,73 @@ function recommendReadingSystem(question) {
   requests.sort(function(a,b){return a.order-b.order||a.at-b.at;});
   requests=requests.filter(function(r){return !exclusions[r.rule[0]];});
   var explicit=requests.length?requests[requests.length-1].rule:null;
-  var result;
+  // ── 題目性質（一題可同時具備多種）──
+  var f={
+    longTerm:/適合我|適不適合|一直|長期|長遠|一輩子|這輩子|人生|命中|天生|體質|個性|性格|本性|該走哪條路|方向|整體運勢|今年|明年|後年|運勢|流年|大運|命盤|哪一年|哪年|幾歲|未來幾年|幾年內|20\d\d/.test(q),
+    overall:/整體|各方面|全面|人生|運勢|回顧|展望|一整年|每個月|全年/.test(q),
+    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|失物|來不來|到不到|出現/.test(q),
+    shortTime:/今天|明天|這週|這幾天|這個月|下個月|幾天|幾週|週內|月內|最近|近期|這陣子/.test(q),
+    timing:/何時|什麼時候|什么时候|哪一天|幾月|多久|時機|什麼時間/.test(q),
+    mind:/心意|真心|喜歡我|愛我|想我|在乎我|對我|心裡在想|怎麼看我|有沒有感覺|曖昧|會跟我|復合|告白/.test(q),
+    interact:/我們|彼此|相處|溝通|關係|吵架|冷戰|和好|感情|婚姻|伴侶|男友|女友|老公|老婆|前任/.test(q),
+    choice:!!(plan&&plan.options&&plan.options.length>=2)||/還是|或是|或者|哪個比較|哪一個|選哪|二選一/.test(q),
+    decision:/該不該|要不要|應不應該|該繼續|該堅持|該放棄|該停|該換|值不值得|值得嗎|划算嗎/.test(q),
+    why:/為什麼|原因|怎麼會|出在哪|卡在哪|癥結/.test(q),
+    how:/該怎麼|怎麼辦|怎麼做|要怎樣|怎樣才|方法|建議|如何(?:做|處理|面對|改善|準備|開始|選|溝通|調整|經營|安排)/.test(q),
+    guidance:/提醒|指引|啟示|心態|怎麼看待|心安|祝福|方向感|一句話/.test(q),
+    name:/改名|取名|命名|名字|姓名|哪個名/.test(q),
+    twoPeople:/合盤|合不合|配不配|我們倆|跟他合|跟她合|兩個人.*(?:合|配)|速配|相配/.test(q),
+    business:/副業|賣場|網拍|生意|經營|創業|開店|接案|客人|訂單|營收|進貨|庫存|電商|店/.test(q),
+    money:/財運|財|錢(?!包)|收入|薪|投資|股|借|貸|債/.test(q),
+    health:/健康|病|身體|手術|檢查|睡眠|好轉|康復/.test(q),
+    work:/工作|職|轉職|離職|升遷|主管|老闆|公司|同事|職場/.test(q),
+    thirdPerson:/他|她|對方|那個人|同事|主管|老闆|朋友|前任|男友|女友|老公|老婆|家人|爸|媽|工程師|客戶/.test(q)
+  };
+  if(f.timing&&!f.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))f.longTerm=true;
+  // ── 各方法擅長什麼：打分 ──
+  var score={bazi:0,ziwei:0,vedic:0,astro:0,liuyao:0,liuren:0,meihua:0,yijing:0,tarot:0,lenormand:0,oracle:0,name:0,compat:0};
+  var why={};function add(id,n,text){score[id]+=n;if(text&&n>0)why[id]=(why[id]?why[id]+'、':'')+text;}
+  if(f.longTerm||f.overall){add('bazi',5,'問的是長期適不適合或整體走勢，看本命與大運流年最準');add('ziwei',4,'宮位能把這件事落到人生哪一塊');add('vedic',3,'大運與分盤能看長期週期');add('astro',3,'行運與小限能看哪一年動');}
+  if(/哪一年|哪年|幾歲|20\d\d|流年|大運|未來幾年|幾年內/.test(q)){add('bazi',3,'指定年份要看流年對本命的作用');add('ziwei',2,'流年四化能定年份');}
+  if(f.event){add('liuyao',4,'一件具體的事成不成，六爻看用神最直接');add('liuren',3,'急事、消息、來人、失物，六壬看三傳');add('lenormand',3,'具體事件與周邊條件，雷諾曼把牌連成一件事');add('meihua',2,'當下一事成不成，梅花看體用');}
+  if(f.shortTime&&(f.event||f.timing||f.decision||f.money)){add('liuyao',2,'短期有應期');add('liuren',2,'短期看三傳與候選日');add('lenormand',2,'快慢看牌的距離');add('meihua',1,'');add('bazi',-2,'');add('ziwei',-2,'');add('vedic',-2,'');add('astro',-1,'');}
+  if(f.timing){add('liuyao',3,'應期可以到月日');add('liuren',2,'有候選日');add('bazi',2,'問年份看流年');add('lenormand',1,'');}
+  if(f.mind){add('tarot',5,'對方心意與互動動機，塔羅的關係陣最能分層看');add('liuyao',3,'用神看對方的狀態與對你的態度');add('lenormand',2,'');add('bazi',-1,'');}
+  if(f.interact&&!f.longTerm){add('tarot',3,'兩人互動與拉扯');add('liuyao',1,'');}
+  if(f.interact&&f.longTerm){add('compat',5,'兩個人長期合不合，合盤看雙方命盤互動');add('bazi',2,'');add('ziwei',2,'');}
+  if(f.twoPeople){add('compat',6,'兩個人合不合，直接看合盤');}
+  if(f.choice){add('tarot',5,'兩條路比較，塔羅雙路陣各走一條');add('lenormand',3,'雙路比較陣');add('meihua',1,'');}
+  if(f.decision){add('tarot',3,'該不該做要看成因、代價與介入點');add('meihua',3,'做下去划不划算，體用生剋一眼看');add('yijing',3,'進退分寸看卦爻辭');add('liuyao',2,'');if(f.longTerm||f.business){add('bazi',3,'要不要長期堅持一件事，先看你命裡有沒有這條路');}}
+  if(f.why){add('tarot',3,'成因與阻礙有專門牌位');add('yijing',2,'處境看卦辭');add('bazi',2,'為什麼一直這樣，看本命格局');add('ziwei',2,'');}
+  if(f.how&&!f.event){add('yijing',4,'該怎麼做、進退分寸，卦爻辭最直接');add('tarot',2,'建議位');add('oracle',2,'要一個方向');}
+  if(f.guidance){add('oracle',5,'要的是一句提醒與方向，靈籤最貼');add('yijing',2,'');}
+  if(f.name){add('name',8,'改名取名看姓名學');}
+  if(f.business){add('bazi',3,'生意做不做得起來，看財星食傷與大運');add('liuyao',2,'這門生意最近成不成，看妻財');add('lenormand',2,'生意的錢、客人、通路在大牌陣看得到');add('meihua',1,'');}
+  if(f.money&&!f.business&&!f.event){add('bazi',3,'財運看財星與大運流年');add('liuyao',2,'一筆錢進不進得來看妻財');add('lenormand',1,'');}
+  if(f.health){add('bazi',3,'體質與哪一年要注意，看五行與流年');add('liuyao',3,'病占看官鬼與世爻');add('ziwei',1,'');add('vedic',1,'');}
+  if(f.work&&!f.longTerm&&!f.event&&!f.mind&&!f.choice){add('ziwei',2,'官祿宮與流年');add('bazi',2,'官殺印與大運');add('tarot',2,'');}
+  if(f.thirdPerson&&!f.mind&&!f.interact){add('liuyao',1,'');add('tarot',1,'');add('lenormand',1,'');}
+  // 無明顯性質：開放式，先用能分層整理的方法
+  var any=Object.keys(f).some(function(k){return f[k];});
+  if(!any){add('tarot',2,'開放式問題先用具名牌位整理');add('bazi',2,'想看整體先看本命');add('oracle',1,'');}
+  // 工具限制
+  if(exclusions.bazi)score.bazi=-99;Object.keys(exclusions).forEach(function(k){score[k]=-99;});
+  if(opts.noBirthData){['bazi','ziwei','vedic','astro','compat'].forEach(function(k){score[k]-=3;});}
+  var ranked=Object.keys(score).filter(function(k){return score[k]>-50;}).sort(function(a,b){return score[b]-score[a];});
+  var top=ranked[0],result;
   if(explicit)result={system:explicit[0],label:explicit[1],reason:'依你明確指定的解讀系統',explicit:true};
-  else if(/月建|月破|旬空|世應|世应|用神.*(?:起卦|銅錢|铜钱)|(?:起卦|銅錢|铜钱).*用神/.test(q))result={system:'liuyao',label:'六爻占卜',reason:'你要比較一件事的用神、月日與動變條件，適合六爻納甲'};
-  else if(/蓍草|揲蓍|大衍筮法|卦辭|卦辞|爻辭|爻辞|用九|用六|進退.*時義|进退.*时义/.test(q))result={system:'yijing',label:'易經占卜',reason:'問題著重卦爻辭的處境與進退分寸，適合周易變占'};
-  else if(/(?:時間|時間數|數字|数字|漢字|汉字).{0,5}起卦/.test(q))result={system:'meihua',label:'梅花易數',reason:'你希望用時間、數字或文字起卦，適合梅花易數'};
-  else if(/起卦|擲錢|掷钱|銅錢|铜钱/.test(q))result={system:'liuyao',label:'六爻占卜',reason:'你希望起卦看一件事，先推薦三錢六爻；也可自行選擇易經卦爻辭或梅花易數'};
-  else if(/出生|命格|一生|先天|流年|命盤/.test(q))result={system:'bazi',label:'八字／紫微',reason:'問題重點是先天傾向或長期週期，需先提供出生資料'};
-  else if(/指引|啟示|提醒|該以什麼心態/.test(q)&&!/(?:感受|內心|心理|原因)/.test(q))result={system:'oracle',label:'靈籤',reason:'你要的是一個主題的提醒與行動方向'};
-  else if(/內心|感受|心態|自我|心理|關係|暗戀|愛我|喜歡我|為什麼|抉擇|該不該/.test(q)||plan.options.length)result={system:'tarot',label:'塔羅',reason:'適合分開看處境、互動、阻力與選擇條件'};
-  else if(/聯絡|消息|包裹|合約|工作|搬家|會面|何時|進展|事情|尋物|遺失|中獎|開獎|發票|抽獎|獎金|付款|入帳|到貨|出貨|訂單|錄取|升遷/.test(q))result={system:'lenormand',label:'雷諾曼',reason:'問題聚焦具體事件、連續發展與周邊條件'};
-  else result={system:'tarot',label:'塔羅',reason:'開放式問題先以具名牌位整理重點'};
-  if(exclusions[result.system]){
-    var options=/出生|命格|一生|先天|流年|命盤/.test(q)?['bazi','ziwei','astro','vedic']:['tarot','lenormand','oracle','yijing','liuyao','meihua'];
-    var alternative=options.find(function(id){return !exclusions[id];});
-    var selected=rules.find(function(r){return r[0]===alternative;});
-    result=selected?{system:selected[0],label:selected[1],reason:'已排除你不想使用的系統，可用此法整理本題，再依資料決定解讀範圍'}:{system:null,label:'暫無推薦',reason:'適用的系統均被排除，請保留一種方法或自行選擇'};
+  else result={system:top,label:LABEL[top],reason:why[top]||'這類問題用它最直接',explicit:false};
+  // 現在正在用的工具：夠好就不要趕人走
+  var cur=current&&score[current]!=null?current:null;
+  if(cur&&!explicit){
+    var gap=score[top]-score[cur];
+    if(cur===top||gap<=1)result.stay={system:cur,label:LABEL[cur],reason:cur===top?'這題用'+LABEL[cur]+'就合適':'這題用'+LABEL[cur]+'可以，'+(why[cur]||'')};
+    else result.stay=null;
   }
-  result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.readingMode='rws_reversals';
-  q.split(/[，,。；;！？?\n]/).forEach(function(clause){
-    var m=clause.match(/Book\s*T|Golden\s*Dawn|黃金黎明|元素尊貴|RWS|正逆位/i);if(!m)return;
-    var before=clause.slice(0,m.index);if(/以前|上次|之前|曾經/.test(before))return;
-    var neg=/(?:不要(?:用|使用)?|不用|不使用|不想用|別用|排除)\s*$/.test(before),rws=/RWS|正逆位/i.test(m[0]);
-    if(!neg)result.readingMode=rws?'rws_reversals':'gd_book_t';
-  });
-  result.birthDataRequired=/^(bazi|ziwei|astro|vedic)$/.test(result.system);
+  result.alternatives=ranked.filter(function(k){return k!==result.system&&score[k]>=2;}).slice(0,2).map(function(k){return {system:k,label:LABEL[k],reason:why[k]||'',birthDataRequired:!!BIRTH[k]};});
+  result.birthDataRequired=!!BIRTH[result.system];
+  result.scores=score;result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.features=f;
+  result.readingMode=result.system==='tarot'?(/Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明/i.test(q)?'book_t':'rws_reversals'):null;
   return result;
 }
 // END SHARED QUESTION PLANNER
@@ -3193,7 +3237,7 @@ function _lnUpdateSpreadPreview() {
   var pick=_lnDetectSpread(q);
   host.textContent=pick.id?'建議：'+SPREADS[pick.id].name+'（'+SPREADS[pick.id].count+'張）・'+pick.why:pick.why;
   if(pick.id){var pd=_lnBuildSpreadDef(pick.id,q);host.textContent='建議：'+pd.name+'（'+pd.count+'張）・'+pick.why;if(pd.branches)host.textContent+='\n'+pd.branches.map(function(b,i){return (i+1)+'. '+b.question+(b.scope?'〔'+b.scope+'〕':'');}).join('\n');}
-  var sys=recommendReadingSystem(q);host.textContent+='\n系統建議：'+sys.label+'・'+sys.reason;
+  var sys=recommendReadingSystem(q,{current:'lenormand'});host.textContent+='\n'+(sys.system==='lenormand'?'這題用雷諾曼合適：'+sys.reason:(sys.stay?sys.stay.reason+'；想看得更準可改用'+sys.label+'（'+sys.reason+'）':'這題更適合'+sys.label+'：'+sys.reason))+(sys.alternatives&&sys.alternatives.length?'。也可以：'+sys.alternatives.map(function(a){return a.label;}).join('、'):'');
   if(pick.x&&pick.x.isChoice)host.textContent+='\nA：'+pick.x.choiceA+'\nB：'+pick.x.choiceB+'\n請核對這是否就是你想比較的兩條路；可直接修改上方問題。';
 }
 
