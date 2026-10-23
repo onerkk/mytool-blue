@@ -1,8 +1,8 @@
 /* Question preview only: never changes a draw or switches a system without a click. */
 (function(root){
   'use strict';
-  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro','vd-question':'vedic','ly-q':'liuyao','yj-q':'yijing'};
-  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question',vedic:'vd-question',liuyao:'ly-q',yijing:'yj-q'};
+  var fields={'f-question':'tarot','f2-question':'tarot','ln-q':'lenormand','orc-q-input':'oracle','mhx-q':'meihua','bzx-q':'bazi','zw-q':'ziwei','wx-question':'astro','vd-question':'vedic','ly-q':'liuyao','yj-q':'yijing','lr-question':'liuren','nm-question':'name','c-question':'compat'};
+  var targets={tarot:'f-question',lenormand:'ln-q',oracle:'orc-q-input',meihua:'mhx-q',bazi:'bzx-q',ziwei:'zw-q',astro:'wx-question',vedic:'vd-question',liuyao:'ly-q',yijing:'yj-q',liuren:'lr-question',name:'nm-question',compat:'c-question'};
   var pending=null;
   function populate(){
     if(!pending)return;
@@ -11,7 +11,10 @@
   }
   function switchSystem(from,to,question){
     if(typeof root._atelierChoose!=='function')return;
-    var close={lenormand:'_lenormandClose',oracle:'_oracleClose',meihua:'_meihuaClose',bazi:'_baziClose',ziwei:'_zwClose',liuyao:'_liuyaoClose',yijing:'_yijingClose'}[from];
+    var close={lenormand:'_lenormandClose',oracle:'_oracleClose',meihua:'_meihuaClose',bazi:'_baziClose',ziwei:'_zwClose',liuyao:'_liuyaoClose',yijing:'_yijingClose',liuren:'_liurenClose',name:'_nameClose'}[from];
+    if(from==='liuren'&&root.JYLiurenRoom&&typeof root.JYLiurenRoom.close==='function')root.JYLiurenRoom.close();
+    if(from==='name'&&root.JYNameRoom&&typeof root.JYNameRoom.close==='function')root.JYNameRoom.close();
+    if(from==='compat'&&root.BaziSuiteUI&&typeof root.BaziSuiteUI.close==='function')root.BaziSuiteUI.close();
     if(close&&typeof root[close]==='function')root[close]();
     if(from==='astro'&&root.JYWesternUI)root.JYWesternUI.close();
     if(from==='vedic'&&root.JYVedicUI)root.JYVedicUI.close();
@@ -28,7 +31,12 @@
     else if(rec.stay&&rec.stay.system===system){copy.textContent=rec.stay.reason+'；想看得更準可改用'+rec.label+'（'+rec.reason+'）。';}
     else{copy.textContent='這題更適合'+rec.label+'：'+rec.reason+'。';}
     host.appendChild(copy);
+    var actions=document.createElement('div');actions.className='jy-recommend-actions';
+    var makeBtn=function(sys,label,primary){var b=document.createElement('button');b.type='button';b.className='btn btn-sm '+(primary?'btn-primary':'btn-outline');b.textContent=(primary?'改用':'也可用')+label;b.addEventListener('click',function(){switchSystem(system,sys,q);});return b;};
+    if(rec.system!==system&&targets[rec.system]&&!(rec.stay&&rec.stay.system===system&&rec.system===system))actions.appendChild(makeBtn(rec.system,rec.label,true));
+    (rec.alternatives||[]).forEach(function(a){if(a.system!==system&&targets[a.system])actions.appendChild(makeBtn(a.system,a.label,false));});
     if(rec.alternatives&&rec.alternatives.length){var alt=document.createElement('p');alt.className='jy-recommend-alt';alt.textContent='也可以：'+rec.alternatives.map(function(a){return a.label+(a.reason?'（'+a.reason+'）':'');}).join('；');host.appendChild(alt);}
+    if(actions.childNodes.length)host.appendChild(actions);
     if(system==='tarot'){
       var route=F.routeQuestion(q),manual=root._forcedSpread;
       var plan=manual?F.instantiateMethod(manual,route.compiledQuestion):route.methodPlan;
@@ -40,14 +48,10 @@
       host.appendChild(detail);
     }
     if(rec.birthDataRequired){var birth=document.createElement('p');birth.textContent='排盤前需填寫出生日期、時間等資料。';host.appendChild(birth);}
-    if(rec.system!==system&&targets[rec.system]&&!(rec.stay&&rec.stay.system===system&&rec.system===system)){
-      var button=document.createElement('button');button.type='button';button.className='btn btn-outline btn-sm';button.textContent='改用'+rec.label;
-      button.addEventListener('click',function(){switchSystem(system,rec.system,q);});host.appendChild(button);
-    }
   }
   function enhance(container){populate();Object.keys(fields).forEach(function(id){var input=document.getElementById(id);if(input&&(!container||container.contains(input)))render(input);});}
   document.addEventListener('input',function(e){if(e.target&&fields[e.target.id])render(e.target);});
   document.addEventListener('focusin',function(e){if(e.target&&fields[e.target.id])render(e.target);});
   document.addEventListener('DOMContentLoaded',function(){enhance();});
-  root.JYReadingRecommender={render:render,enhance:enhance};
+  root.JYReadingRecommender={render:render,enhance:enhance,switchTo:switchSystem};
 })(window);

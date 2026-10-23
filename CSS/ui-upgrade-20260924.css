@@ -342,3 +342,8 @@ body.jy-atelier :is(button, a, summary):focus-visible {
   .jy-atelier .at-tool:hover .at-art,
   .jy-atelier .at-primary:hover { transform: none !important; }
 }
+
+/* 20261023 focus61：推薦卡的可點按鈕（主要建議＋替代方案） */
+.jy-question-recommendation .jy-recommend-actions,.ln-recommend-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.jy-question-recommendation .jy-recommend-actions .btn,.ln-recommend-actions .btn{min-height:40px;padding:6px 14px;border-radius:12px;font-size:14px}
+.jy-recommend-alt{opacity:.85;font-size:13px;margin:4px 0 0}

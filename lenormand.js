@@ -3239,6 +3239,9 @@ function _lnUpdateSpreadPreview() {
   if(pick.id){var pd=_lnBuildSpreadDef(pick.id,q);host.textContent='建議：'+pd.name+'（'+pd.count+'張）・'+pick.why;if(pd.branches)host.textContent+='\n'+pd.branches.map(function(b,i){return (i+1)+'. '+b.question+(b.scope?'〔'+b.scope+'〕':'');}).join('\n');}
   var sys=recommendReadingSystem(q,{current:'lenormand'});host.textContent+='\n'+(sys.system==='lenormand'?'這題用雷諾曼合適：'+sys.reason:(sys.stay?sys.stay.reason+'；想看得更準可改用'+sys.label+'（'+sys.reason+'）':'這題更適合'+sys.label+'：'+sys.reason))+(sys.alternatives&&sys.alternatives.length?'。也可以：'+sys.alternatives.map(function(a){return a.label;}).join('、'):'');
   if(pick.x&&pick.x.isChoice)host.textContent+='\nA：'+pick.x.choiceA+'\nB：'+pick.x.choiceB+'\n請核對這是否就是你想比較的兩條路；可直接修改上方問題。';
+  var old=host.querySelector('.ln-recommend-actions');if(old)old.remove();
+  var picks=[];if(sys.system&&sys.system!=='lenormand')picks.push([sys.system,sys.label,true]);(sys.alternatives||[]).forEach(function(a){if(a.system!=='lenormand')picks.push([a.system,a.label,false]);});
+  if(picks.length&&typeof window._atelierChoose==='function'){var wrap=document.createElement('div');wrap.className='ln-recommend-actions';picks.forEach(function(pk){var b=document.createElement('button');b.type='button';b.className='btn btn-sm '+(pk[2]?'btn-primary':'btn-outline');b.textContent=(pk[2]?'改用':'也可用')+pk[1];b.addEventListener('click',function(){var question=q;if(window.JYReadingRecommender&&typeof window.JYReadingRecommender.switchTo==='function'){window.JYReadingRecommender.switchTo('lenormand',pk[0],question);}else{window._lenormandClose&&window._lenormandClose();window._atelierChoose(pk[0]==='astro'?'western':pk[0]);}});wrap.appendChild(b);});host.appendChild(wrap);}
 }
 
 // ════ Public API ════
