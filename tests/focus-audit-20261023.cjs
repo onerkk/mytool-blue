@@ -25,7 +25,7 @@ for(const [method,chart] of Object.entries(x.charts)){
     if(['tarot'].includes(method)&&type==='third'&&!/對方/.test(f))bad('third person not handled');
     if(method==='name'&&type!=='career'&&!/沒有時間軸|不是改名題/.test(f))bad('name scope line missing');
     if(method==='personality'&&!/不推事件|不是心理測驗/.test(f))bad('personality scope missing');
-    if(['liuyao','liuren'].includes(method)&&!/用神/.test(f))bad('no use-god');
+    if(['liuyao','liuren'].includes(method)&&!/用神|引擎取用/.test(f))bad('no use-god');
     if(method==='meihua'&&!/三段讀法|時間規則/.test(f))bad('meihua stages/timing rule missing');
     if(method==='yijing'&&!/擇辭|卦辭/.test(f))bad('yijing selection missing');
     if(method==='lenormand'&&!/代表牌規則/.test(body))bad('lenormand significator section missing');
