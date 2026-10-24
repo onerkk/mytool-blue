@@ -36,9 +36,12 @@ test('移除必要牌位會降低為無效契約，不會讓模型自由補全',
 });
 
 test('換來源只允許方法規格核准的設定',()=>{
+  // 現行規格：三牌陣接受 RWS（waite_1910 為其別名）；Mathers 牌陣預設 Mathers 1888，未登記的體系一律拒絕。
   const modern=E.compileReadingSpec({question:'結果？',spreadId:'three_card',sourceProfile:'waite_1910',cards:mk(3)});
-  const mathersBad=E.compileReadingSpec({question:'結果？',spreadId:'mathers_21',sourceProfile:'waite_1910',cards:mk(21)});
+  const mathersDefault=E.compileReadingSpec({question:'結果？',spreadId:'mathers_21',cards:mk(21)});
+  const mathersBad=E.compileReadingSpec({question:'結果？',spreadId:'mathers_21',sourceProfile:'thoth_crowley',cards:mk(21)});
   assert.strictEqual(modern.validation.ok,true);
+  assert.strictEqual(mathersDefault.sourceProfile.id,'mathers_1888');
   assert.strictEqual(mathersBad.validation.ok,false);
 });
 
@@ -48,8 +51,9 @@ test('未量測屬性不會因牌多、宮廷牌多或大牌多而改變能力�
     const spec=E.METHOD_SPECS[id];
     const c=E.compileReadingSpec({question:q,spreadId:id,cards:mk(spec.expectedCardCount)});
     const m=Object.fromEntries(c.capabilityMatrix.map(x=>[x.dimensionId,x.precheckStatus]));
-    assert.strictEqual(m.cardinality,'未直接量測',id);
-    assert.strictEqual(m.exact_age,'未直接量測',id);
+    // 現行能力矩陣以代碼表示（提示詞出口另行中文化）；重點是牌數多寡不改變判定。
+    assert.strictEqual(m.cardinality,'not_measured',id);
+    assert.strictEqual(m.exact_age,'not_measured',id);
   }
 });
 

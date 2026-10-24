@@ -1,7 +1,7 @@
 /*! Reading mode, immutable draw orientation and presentation. 2026-09-06 */
 (function(root){
   'use strict';
-  var RWS='rws_reversals',GD='gd_book_t',requested='auto';
+  var RWS='rws_reversals',GD='gd_book_t',MATHERS='mathers_1888',requested='auto';
   var nativeGD=['ootk','fifteen_card'];
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function currentSpread(){return typeof getCurrentSpread==='function'?getCurrentSpread():((root.S||{}).tarot||{}).spreadType||'five_card';}
@@ -10,6 +10,8 @@
     if(nativeGD.indexOf(spread)>=0)return GD;
     if(cards&&cards.length&&cards[0].readingMode)return cards[0].readingMode;
     if(requested!=='auto')return requested;
+    // Mathers 自己的牌陣：自動模式採其 1888 原書牌義與正逆位；使用者明確選擇其他體系時照選擇。
+    if(/^mathers_/.test(String(spread||'')))return MATHERS;
     var f=root.JYTarotFoundation,q=((root.S||{}).form||{}).question||'';
     return f?f.recommendSystem(q).readingMode||RWS:RWS;
   }
@@ -17,9 +19,10 @@
   function apply(card,isUp,spread,chosenMode){
     var m=chosenMode||mode(spread);
     card.readingMode=m;card.sourceProfile=m;
-    if(m===RWS){
+    if(m===RWS||m===MATHERS){
       var original=card._legacyGoldenDawnBackup||card;
       card.up=original.up||'';card.rv=original.rv||'';card.kwUp=original.kwUp||'';card.kwRv=original.kwRv||'';
+      if(m===MATHERS){var MM=root.jyMathers1888Meanings&&root.jyMathers1888Meanings[original.n||card.n||card.name];if(MM){card.up=MM.up;card.rv=MM.rv;card.kwUp=String(MM.up).split('、').slice(0,3).join('·');card.kwRv=String(MM.rv).split('、').slice(0,3).join('·');}}
       card.isUp=isUp!==false;card.direction=card.isUp?'正位':'逆位';
       card.orientationPolicy='upright_reversed';
       delete card.gd;delete card.gdIllDignified;
@@ -29,8 +32,9 @@
     }
     return card;
   }
-  function label(card){return card&&card.readingMode===RWS?(card.isUp===false?'逆位 ↓':'正位 ↑'):'正向・Book T';}
-  function imageStyle(card){return card&&card.readingMode===RWS&&card.isUp===false?'transform:rotate(180deg);':'';}
+  function reversible(card){return card&&(card.readingMode===RWS||card.readingMode===MATHERS);}
+  function label(card){return reversible(card)?(card.isUp===false?'逆位 ↓':'正位 ↑'):'正向・Book T';}
+  function imageStyle(card){return reversible(card)&&card.isUp===false?'transform:rotate(180deg);':'';}
   function meaning(card){
     // These are existing site keywords, not an asserted answer to the question.
     var original=card._legacyGoldenDawnBackup||card;
@@ -55,7 +59,8 @@
   }
   function payload(ta,question,drawn,spread,plan,def){
     if(!Array.isArray(drawn)||!drawn.length||new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('抽牌紀錄不完整或有重複牌，請重新核對本次牌陣。');
-    if(drawn.some(function(c){return c.id==null||(c.readingMode&&c.readingMode!==RWS)||(c.isUp!=null&&typeof c.isUp!=='boolean');}))throw new Error('本次塔羅牌的系統或正逆位紀錄不一致。');
+    var pm=drawn[0]&&drawn[0].readingMode===MATHERS?MATHERS:RWS;
+    if(drawn.some(function(c){return c.id==null||(c.readingMode&&c.readingMode!==pm)||(c.isUp!=null&&typeof c.isUp!=='boolean');}))throw new Error('本次塔羅牌的系統或正逆位紀錄不一致。');
     if(plan.slots&&plan.slots.length&&plan.slots.length!==drawn.length)throw new Error('抽牌張數與已選牌位不一致，不補造缺牌解讀。');
     if(spread==='mathers_66'){
       var proc=drawn[0]&&drawn[0].drawProcedure,surprises=proc&&proc.surprises;
@@ -65,8 +70,8 @@
     if(circle&&drawn[0].drawProcedure.largeCircle&&JSON.stringify(drawn[0].drawProcedure.largeCircle.circle.map(function(p){return [p.id,p.isUp];}))!==JSON.stringify(circle.circle.map(function(p){return [p.id,p.isUp];})))throw new Error('Mathers大圓與本次主盤牌序或正逆位不一致，請核對紀錄。');
     var s=stats(drawn);
     return {mode:'tarot_only',question:question,focusType:((root.S||{}).form||{}).type||'general',tarotData:{
-      spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:RWS,sourceProfile:RWS,
-      methodPlan:plan,sourceContract:{id:RWS,label:'Rider–Waite–Smith・正逆位',reversalPolicy:'每張牌依發牌時記錄的正位／逆位解讀；逆位可呈現內在化、受阻、延遲、過度或不足，依問題與牌組選擇最有支持的讀法。'},
+      spreadType:spread,spreadZh:(def&&def.zh)||plan.label||spread,readingMode:pm,sourceProfile:pm,
+      methodPlan:plan,sourceContract:pm===MATHERS?{id:MATHERS,label:'Mathers《The Tarot》(1888)・正逆位',reversalPolicy:'依原書，每張牌依發牌時記錄的正位／逆位，採該書所列正逆牌義。'}:{id:RWS,label:'Rider–Waite–Smith・正逆位',reversalPolicy:'每張牌依發牌時記錄的正位／逆位解讀；逆位可呈現內在化、受阻、延遲、過度或不足，依問題與牌組選擇最有支持的讀法。'},
       referenceDate:ta.compiledQuestion&&ta.compiledQuestion.features&&ta.compiledQuestion.features.referenceDate||'',
       drawProcedure:circle?Object.assign({},drawn[0].drawProcedure,{largeCircleImplemented:true,largeCircle:circle}):drawn[0]&&drawn[0].drawProcedure||null,
       cards:drawn.map(function(c,i){var slot=(plan.slots||[])[i]||{},pos=((def||{}).positions||[])[i]||{};return {
@@ -107,16 +112,16 @@
     var host=root.document.getElementById('tarot-reading-controls');if(!host)return;
     var sid=currentSpread(),cards=currentCards(),fixed=nativeGD.indexOf(sid)>=0;
     var selector=host.querySelector('select');
-    if(!selector){host.innerHTML='<label for="tarot-reading-mode">讀牌方式</label><select id="tarot-reading-mode"><option value="auto">自動建議・依問題與牌陣</option><option value="rws_reversals">RWS 塔羅・正位與逆位</option><option value="gd_book_t">Golden Dawn・元素尊貴</option></select><p id="tarot-reading-help"></p>';selector=host.querySelector('select');selector.addEventListener('change',function(){
+    if(!selector){host.innerHTML='<label for="tarot-reading-mode">讀牌方式</label><select id="tarot-reading-mode"><option value="auto">自動建議・依問題與牌陣</option><option value="rws_reversals">RWS 塔羅・正位與逆位</option><option value="gd_book_t">Golden Dawn・元素尊貴</option><option value="mathers_1888">Mathers 1888・原書正逆位</option></select><p id="tarot-reading-help"></p>';selector=host.querySelector('select');selector.addEventListener('change',function(){
       if(currentCards().length){syncControls();return;}
-      requested=selector.value==='auto'?'auto':selector.value===GD?GD:RWS;
+      requested=selector.value==='auto'?'auto':selector.value===GD?GD:selector.value===MATHERS?MATHERS:RWS;
       if(root.S&&root.S.tarot)root.S.tarot.readingMode=requested;
       syncControls();
     });}
     selector.value=fixed||cards.length?mode(sid,cards):requested;selector.disabled=fixed||cards.length>0;
     var summary=root.document.getElementById('tarot-mode-summary');
-    if(summary)summary.textContent=mode(sid,cards)===RWS?'RWS・正逆位':'Golden Dawn・元素尊貴';
-    host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'沿用 Mathers 發牌與配對程序，牌義可選 RWS 或 Book T；本站為混合應用，非原書完整復刻。':'自動模式一般採 RWS 正逆位；明確指定 Book T／元素尊貴時採對應讀法。也可手動選擇，抽牌後固定本輪方式。';
+    if(summary)summary.textContent=mode(sid,cards)===RWS?'RWS・正逆位':mode(sid,cards)===MATHERS?'Mathers 1888・原書正逆位':'Golden Dawn・元素尊貴';
+    host.querySelector('p').textContent=fixed?'本牌陣採 Golden Dawn 元素尊貴；十五張為後世衍生布局，開鑰為五次操作。':cards.length?'本輪方式已確認。點牌面可放大查看方向與牌位。':/^mathers_/.test(sid)?'自動模式依 Mathers《The Tarot》(1888) 原書發牌程序、正逆位與原書牌義；也可手動改用 RWS 或 Golden Dawn。':'自動模式一般採 RWS 正逆位；明確指定 Book T／元素尊貴時採對應讀法。也可手動選擇，抽牌後固定本輪方式。';
     var sigWrap=host.querySelector('#jy-mathers-sig-wrap');
     if((sid==='mathers_21'||sid==='mathers_66')&&!sigWrap){
       sigWrap=root.document.createElement('div');sigWrap.id='jy-mathers-sig-wrap';

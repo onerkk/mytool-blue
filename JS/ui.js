@@ -6871,7 +6871,7 @@ function renderTarotSpreadDisplay() {
   if (title) title.textContent = ((def && def.zh) || '你的牌陣') + '｜Golden Dawn Book T';
 
   var cards = drawnCards || [];
-  if(cards[0]&&cards[0].readingMode==='rws_reversals'&&window.JYTarotReading){
+  if(cards[0]&&(cards[0].readingMode==='rws_reversals'||cards[0].readingMode==='mathers_1888')&&window.JYTarotReading){
     if(title)title.textContent=((def&&def.zh)||'你的牌陣')+'｜RWS 正逆位';
     el.innerHTML=window.JYTarotReading.resultHTML(cards,def);return;
   }
@@ -6941,12 +6941,12 @@ window._tarotShare = function () {
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡
     var img = (typeof getTarotCardImage === 'function' && c) ? (getTarotCardImage(c) || '') : '';
-    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: c.readingMode==='rws_reversals'&&c.isUp===false, img: img, sourceProfile:c.readingMode||'gd_book_t' };
+    return { name: (c && (c.n || c.name)) || '', pos: pos, reversed: (c.readingMode==='rws_reversals'||c.readingMode==='mathers_1888')&&c.isUp===false, img: img, sourceProfile:c.readingMode||'gd_book_t' };
   });
   JYShareCard.open('tarot', {
-    cardTitle: cards[0]&&cards[0].sourceProfile==='rws_reversals'?'RWS 正逆位塔羅':'Golden Dawn Book T 塔羅',
+    cardTitle: cards[0]&&cards[0].sourceProfile==='rws_reversals'?'RWS 正逆位塔羅':cards[0]&&cards[0].sourceProfile==='mathers_1888'?'Mathers 1888 塔羅':'Golden Dawn Book T 塔羅',
     question: (S.form && S.form.question) || '',
-    spread: (def.zh || '塔羅牌陣') + (cards[0]&&cards[0].sourceProfile==='rws_reversals'?'｜正逆位':'｜Book T'),
+    spread: (def.zh || '塔羅牌陣') + (cards[0]&&cards[0].sourceProfile==='rws_reversals'?'｜正逆位':cards[0]&&cards[0].sourceProfile==='mathers_1888'?'｜Mathers 1888':'｜Book T'),
     methodId: shareMethodId,
     significator: shareSignificator ? { name: shareSignificator.n || shareSignificator.name || '', img: typeof getTarotCardImage === 'function' ? getTarotCardImage(shareSignificator) || '' : '' } : null,
     cards: cards

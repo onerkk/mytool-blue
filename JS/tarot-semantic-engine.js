@@ -66,6 +66,14 @@
   }
 
   var SOURCE_PROFILES = {
+    mathers_1888: {
+      id: 'mathers_1888',
+      label: 'S. L. MacGregor Mathers《The Tarot》(1888)',
+      reversalPolicy: '依原書，每張牌依本次記錄的正位／逆位，採該書所列正逆牌義。',
+      imagePolicy: '以牌名、方向與牌位為可核對資料；不以後世牌圖細節覆寫原書牌義。',
+      forbiddenMixes: ['rws_reversals', 'thoth_crowley', 'etteilla'],
+      sourceContract: 'Mathers 牌陣依原書發牌程序與原書牌義；不混入 Waite 或 Book T 元素尊貴作為牌義來源。'
+    },
     gd_book_t: {
       id: 'gd_book_t',
       label: 'Golden Dawn《Book T／Liber T》',
@@ -228,7 +236,10 @@
     sourceProfile = sourceProfile || 'gd_book_t';
     var allowedSourceProfiles = (id === 'ootk' || id === 'fifteen_card')
       ? ['gd_book_t']
-      : ['gd_book_t', 'rws_reversals'];
+      : /^mathers_/.test(id)
+        ? ['mathers_1888', 'gd_book_t', 'rws_reversals']
+        : ['gd_book_t', 'rws_reversals'];
+    if (/^mathers_/.test(id)) sourceProfile = 'mathers_1888';
     return {
       id: id,
       label: label,
@@ -768,7 +779,8 @@
   }
 
   function resolveSemanticProfile(spreadId, options) {
-    var requested = text(options && options.sourceProfile) || 'gd_book_t';
+    var requested = text(options && options.sourceProfile) || (/^mathers_/.test(text(spreadId)) ? 'mathers_1888' : 'gd_book_t');
+    if (requested === 'waite_1910') requested = 'rws_reversals';
     // Preserve the caller's actual reading system. Unsupported profiles remain explicit
     // so validateContract can reject them instead of silently coercing to Book T.
     return requested;
@@ -892,6 +904,7 @@
         eventBinding: opts.eventBinding || 'QUERY_EVENT_OR_SUBEVENT_WITH_TRACE',
         stage: opts.stage || null,
         stageFunction: opts.stageFunction || null,
+        group: opts.group || null,
         metadata: clone(opts.metadata || {})
       };
       unit.joinPolicy = {
@@ -1124,23 +1137,23 @@
       var surpriseUnit=direct('surprise_triad_context','右意外牌→另置代表牌→左意外牌',[67,66],{topology:'original_unused_surprise_cards',claimPolicy:'context_member_only',metadata:{significator:'recorded_separately_in_drawProcedure',fromInitialUnusedEleven:true},forbidden:['surprise_cards_are_not_part_of_initial_66','unrecorded_significator_must_not_be_invented']});
       synthesis('arch_surprise_synthesis','三個原書時區、末輪核對與兩張意外牌共同收束',periodSummaries.concat(crossPairs,[surpriseUnit]),{eventJoin:'period_summaries_not_cross_period_single_cards',metadata:{largeCircleImplemented:true,remainingUnusedCardsNotInterpreted:true}});
     } else if (id === 'mathers_horseshoe') {
-      var groupA = direct('ordered_group', 'A 組 26 張由右往左', range(0, 26), { topology: 'ordered_group', eventBinding: 'GROUP_A_EVENT' });
-      var groupC = direct('ordered_group', 'C 組 17 張由右往左', range(26, 43), { topology: 'ordered_group', eventBinding: 'GROUP_C_EVENT' });
-      var groupE = direct('ordered_group', 'E 組 11 張由右往左', range(43, 54), { topology: 'ordered_group', eventBinding: 'GROUP_E_EVENT' });
+      var groupA = direct('ordered_group', 'A 組 26 張由右往左', range(0, 26), { topology: 'ordered_group', eventBinding: 'GROUP_A_EVENT', group: 'A' });
+      var groupC = direct('ordered_group', 'C 組 17 張由右往左', range(26, 43), { topology: 'ordered_group', eventBinding: 'GROUP_C_EVENT', group: 'C' });
+      var groupE = direct('ordered_group', 'E 組 11 張由右往左', range(43, 54), { topology: 'ordered_group', eventBinding: 'GROUP_E_EVENT', group: 'E' });
       var groupAPairs = [];
       for (var ap = 0; ap < 13; ap += 1) {
-        groupAPairs.push(direct('declared_outer_pair', 'A 配對 ' + (ap + 1) + '↔' + (26 - ap), [ap, 25 - ap], { topology: 'declared_pair', eventBinding: 'GROUP_A_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
+        groupAPairs.push(direct('declared_outer_pair', 'A 配對 ' + (ap + 1) + '↔' + (26 - ap), [ap, 25 - ap], { topology: 'declared_pair', eventBinding: 'GROUP_A_EVENT', group: 'A', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
       var groupCPairs = [];
       for (var cp = 0; cp < 8; cp += 1) {
-        groupCPairs.push(direct('declared_outer_pair', 'C 配對 ' + (cp + 1) + '↔' + (17 - cp), [26 + cp, 42 - cp], { topology: 'declared_pair', eventBinding: 'GROUP_C_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
+        groupCPairs.push(direct('declared_outer_pair', 'C 配對 ' + (cp + 1) + '↔' + (17 - cp), [26 + cp, 42 - cp], { topology: 'declared_pair', eventBinding: 'GROUP_C_EVENT', group: 'C', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
-      var centerC = direct('unpaired_sequence_member', 'C組未配對成員C9（不是結果位）', [34], { topology: 'unpaired_member', eventBinding: 'GROUP_C_EVENT', metadata:{independentResult:false} });
+      var centerC = direct('unpaired_sequence_member', 'C組未配對成員C9（不是結果位）', [34], { topology: 'unpaired_member', eventBinding: 'GROUP_C_EVENT', group: 'C', metadata:{independentResult:false} });
       var groupEPairs = [];
       for (var ep = 0; ep < 5; ep += 1) {
-        groupEPairs.push(direct('declared_outer_pair', 'E 配對 ' + (ep + 1) + '↔' + (11 - ep), [43 + ep, 53 - ep], { topology: 'declared_pair', eventBinding: 'GROUP_E_EVENT', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
+        groupEPairs.push(direct('declared_outer_pair', 'E 配對 ' + (ep + 1) + '↔' + (11 - ep), [43 + ep, 53 - ep], { topology: 'declared_pair', eventBinding: 'GROUP_E_EVENT', group: 'E', metadata:{relationKind:'semantic_pair',elementalDignity:false}, forbidden:['declared_pair_is_not_elemental_adjacency'] }));
       }
-      var centerE = direct('unpaired_sequence_member', 'E組未配對成員E6（不是結果位）', [48], { topology: 'unpaired_member', eventBinding: 'GROUP_E_EVENT', metadata:{independentResult:false} });
+      var centerE = direct('unpaired_sequence_member', 'E組未配對成員E6（不是結果位）', [48], { topology: 'unpaired_member', eventBinding: 'GROUP_E_EVENT', group: 'E', metadata:{independentResult:false} });
       var summaryA = synthesis('group_claim_synthesis', 'A 組完整命題', [groupA].concat(groupAPairs), { eventBinding: 'GROUP_A_EVENT' });
       var summaryC = synthesis('group_claim_synthesis', 'C 組完整命題', [groupC].concat(groupCPairs, [centerC]), { eventBinding: 'GROUP_C_EVENT' });
       var summaryE = synthesis('group_claim_synthesis', 'E 組完整命題', [groupE].concat(groupEPairs, [centerE]), { eventBinding: 'GROUP_E_EVENT' });
@@ -1327,6 +1340,11 @@
           sequenceGap = true;
           stopStage = stage;
           stopReason = 'Opening of the Key 操作必須依序完成；第' + stage + '次操作缺失，因此不得解讀其後已出現的操作資料。';
+        } else {
+          // 尾端缺操作與中間缺操作一樣是未完成的程序：在缺失處停止，只讀已完成的操作，不當成完整五輪。
+          stopped = true;
+          stopStage = stage;
+          stopReason = 'Opening of the Key 第' + stage + '次操作沒有紀錄，程序未完成；只讀已完成的前' + (stage - 1) + '次操作。';
         }
         break;
       }
@@ -1628,7 +1646,8 @@
     var sourceProfileId = resolveSemanticProfile(spreadId, data);
     var sourceProfile = clone(SOURCE_PROFILES[sourceProfileId] || SOURCE_PROFILES.gd_book_t);
     method.defaultSourceProfile = method.sourceProfile;
-    method.requestedSourceProfile = text(data.sourceProfile || 'gd_book_t');
+    // 請求的體系以正規化後的結果驗證（別名如 waite_1910 → rws_reversals；Mathers 牌陣未指定時為 mathers_1888）。
+    method.requestedSourceProfile = sourceProfileId;
     method.sourceProfile = sourceProfileId;
 
     var evidenceGraph = spreadId === 'ootk'
@@ -1746,6 +1765,7 @@
 
     if (method) {
       if (method.requestedSourceProfile && method.allowedSourceProfiles.indexOf(method.requestedSourceProfile) < 0) errors.push('source_profile_not_allowed:' + method.requestedSourceProfile);
+      if (/^mathers_/.test(method.id || '') && method.requestedSourceProfile && method.allowedSourceProfiles.indexOf(method.requestedSourceProfile) < 0) errors.push('mathers_source_mismatch');
       if (method.allowedSourceProfiles.indexOf(method.sourceProfile) < 0) errors.push('source_profile_not_allowed:' + method.sourceProfile);
       if (method.id !== 'ootk' && graph && graph.nodes.length !== method.expectedCardCount) {
         errors.push('card_count_mismatch:' + graph.nodes.length + '/' + method.expectedCardCount);

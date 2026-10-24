@@ -49,7 +49,7 @@ function jyQuestionProfile(question){
 // END SHARED QUESTION PROFILE
   const arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x));
   function tarot(raw){
-    const d=raw.tarotData||raw,cards=arr(d.cards),rws=d.sourceProfile==='rws_reversals'||d.readingMode==='rws_reversals';
+    const d=raw.tarotData||raw,cards=arr(d.cards),mathers=d.sourceProfile==='mathers_1888'||d.readingMode==='mathers_1888',rws=mathers||d.sourceProfile==='rws_reversals'||d.readingMode==='rws_reversals';
     if(!cards.length||new Set(cards.map(c=>c.id)).size!==cards.length||cards.some(c=>!Number.isInteger(c.id)||c.id<0||c.id>77))throw Error('塔羅發牌紀錄缺漏、重複或牌號無效。');
     const register=arr(typeof TAROT==='undefined'?root.TAROT:TAROT);
     // Topic of the site's curated RWS meaning: the room's declared focus first, then explicit question words.
@@ -59,9 +59,9 @@ function jyQuestionProfile(question){
     const topicLabel={love:'感情',career:'事業',wealth:'財務',health:'健康',spiritual:'靈性',general:'一般'}[topic];
     const records=cards.map((c,i)=>{const p=register.find(x=>x.id===c.id),slot=arr(d.methodPlan?.slots)[i]||{};if(rws&&!p)throw Error('RWS牌義表沒有此牌。');const up=c.isUp===true,dir=typeof c.isUp==='boolean',pos=c.position||c.pos||slot.label||'位置'+(i+1),advice=/建議|建议|行動|行动|該怎麼|怎麼做/.test(pos);
       // 正統牌義：Waite《塔羅圖解》原典（逐字忠譯，不疊現代題型義）；原典表未載入時才退回站內表。
-      const W=root.jyWaitePKTMeanings,wm=W&&W[p?.n||c.name||c.n];
+      const W=mathers?root.jyMathers1888Meanings:root.jyWaitePKTMeanings,wm=W&&W[p?.n||c.name||c.n];
       const meaning=rws&&dir&&p?(wm&&wm[up?'up':'rv'])||(advice&&p[up?'adviceUp':'adviceRv'])||(topic!=='general'&&p[topic+(up?'Up':'Rv')])||p[up?'up':'rv']||null:null;
-      return {index:i+1,id:c.id,name:c.name||c.n,position:pos,direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):'Book T，不套RWS逆位',keywords:rws&&dir?(wm?String(wm[up?'up':'rv']).split('、').slice(0,3):String(up?p.kwUp:p.kwRv).split('·')):[],meaning,meaningTopic:meaning?(wm?'偉特原義':advice&&p[up?'adviceUp':'adviceRv']?'建議':topicLabel):null,element:p?.el||null,binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
+      return {index:i+1,id:c.id,name:c.name||c.n,position:pos,direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):'Book T，不套RWS逆位',keywords:rws&&dir?(wm?String(wm[up?'up':'rv']).split('、').slice(0,3):String(up?p.kwUp:p.kwRv).split('·')):[],meaning,meaningTopic:meaning?(wm?(mathers?'Mathers原義':'偉特原義'):advice&&p[up?'adviceUp':'adviceRv']?'建議':topicLabel):null,element:p?.el||null,binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
     const groups={},ranks={};for(const r of records){const k=r.binding?.eventId||'QUERY_EVENT';(groups[k]||(groups[k]=[])).push(r.index);if(r.suit!=='major')(ranks[r.rank]||(ranks[r.rank]=[])).push(r.index);}
     return {records,eventGroups:Object.entries(groups).map(([eventId,positions])=>({eventId,positions})),rankEchoes:Object.entries(ranks).filter(([,p])=>p.length>1).map(([rank,positions])=>({rank,positions})),majorPositions:records.filter(r=>r.suit==='major').map(r=>r.index),courtPositions:records.filter(r=>['page','knight','queen','king'].includes(r.rank)).map(r=>r.index),methodData:copy(d.methodData),drawProcedure:copy(d.drawProcedure),policy:'逐張實際牌位、方向與議題綁定；關鍵詞不是成功率或他人心意的證明。'};
   }

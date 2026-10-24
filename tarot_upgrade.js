@@ -594,7 +594,7 @@ function getCurrentSpreadDef(){return (S.tarot&&S.tarot.dynamicSpreadDef&&S.taro
 // 6. showSpread 覆寫 — 適配所有牌陣類型
 // ══════════════════════════════════════════════════════════════════════
 function getBookTRenderData(card, index, spreadId, cards) {
-  if(card && card.readingMode==='rws_reversals' && window.JYTarotReading){
+  if(card && (card.readingMode==='rws_reversals'||card.readingMode==='mathers_1888') && window.JYTarotReading){
     return {title:window.JYTarotReading.label(card),reading:window.JYTarotReading.meaning(card),dignityLabel:'依正逆位與牌位解讀',correspondence:'',element:card.el||'',sourceProfile:'rws_reversals'};
   }
   var gd = (typeof window !== 'undefined') ? window.JYGoldenDawn : null;
@@ -672,7 +672,7 @@ function getBookTRenderData(card, index, spreadId, cards) {
       // 頂部：位置 + Golden Dawn Book T 來源
       cardsHtml += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
       cardsHtml += '<span class="tag tag-gold" style="font-size:.75rem">' + (i + 1) + '. ' + posName + '</span>';
-      cardsHtml += '<span class="tag tag-blue" style="font-size:.7rem">'+(c.readingMode==='rws_reversals'?window.JYTarotReading.label(c):'正向・Book T')+'</span>';
+      cardsHtml += '<span class="tag tag-blue" style="font-size:.7rem">'+((c.readingMode==='rws_reversals'||c.readingMode==='mathers_1888')?window.JYTarotReading.label(c):'正向・Book T')+'</span>';
       cardsHtml += '</div>';
 
       // 位置含義（如果有）
@@ -706,8 +706,8 @@ function enhanceTarot(tarot) {
   if (!tarot || !tarot.drawn || !tarot.drawn.length) return tarot;
 
   var drawn = tarot.drawn;
-  if(drawn[0].readingMode==='rws_reversals' && window.JYTarotReading){
-    tarot.readingMode=tarot.sourceProfile='rws_reversals';tarot.stats=window.JYTarotReading.stats(drawn);
+  if((drawn[0].readingMode==='rws_reversals'||drawn[0].readingMode==='mathers_1888') && window.JYTarotReading){
+    tarot.readingMode=tarot.sourceProfile=drawn[0].readingMode;tarot.stats=window.JYTarotReading.stats(drawn);
     tarot.numerology=null;tarot.bookTStructure=null;tarot.sourceContract=null;return tarot;
   }
   if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(drawn);
@@ -815,7 +815,7 @@ enhanceTarot = function(tarot) {
       h += '<div class="card" style="padding:.8rem;margin-bottom:.5rem;border-left:3px solid '+elC+'">';
       h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem">';
       h += '<span class="tag tag-gold" style="font-size:.75rem">'+(i+1)+'. '+posName.replace(/^\s*\d+\s*[.．、]\s*/, '')+'</span>';
-      h += '<span class="tag tag-blue" style="font-size:.7rem">'+(c.readingMode==='rws_reversals'?window.JYTarotReading.label(c):'正向・Book T')+'</span></div>';
+      h += '<span class="tag tag-blue" style="font-size:.7rem">'+((c.readingMode==='rws_reversals'||c.readingMode==='mathers_1888')?window.JYTarotReading.label(c):'正向・Book T')+'</span></div>';
       if (posZh && posName.indexOf(posZh) < 0) h += '<div style="font-size:.7rem;color:var(--c-text-muted);margin-bottom:.3rem">'+posZh+'</div>';
       h += '<div style="display:flex;gap:.6rem;align-items:flex-start">';
       if (imgSrc) h += '<img src="'+imgSrc+'" alt="'+c.n+'" style="'+(window.JYTarotReading?window.JYTarotReading.imageStyle(c):'')+'width:65px;height:100px;border-radius:6px;flex-shrink:0">';
@@ -987,7 +987,7 @@ enhanceTarot = function(tarot) {
           mathersPair: k===10?'中心單張':(Math.min(k+1,21-k)+'↔'+Math.max(k+1,21-k))
         }));
       }
-      out[0].drawProcedure={id:'mathers_21',description:'第二法：抽出代表牌後，先取頂牌，再由下一張起每數七張取一張；已抽牌移除，循環至21張。三排由右往左，另作首尾配對。牌義採本次選用體系，非1888原書牌義復刻。',significator:{id:sig.id,name:sig.n,policy:sigPolicy}};
+      out[0].drawProcedure={id:'mathers_21',description:'第二法：抽出代表牌後，先取頂牌，再由下一張起每數七張取一張；已抽牌移除，循環至21張。三排由右往左，另作首尾配對。牌義採本次選用體系（預設 1888 原書）。',significator:{id:sig.id,name:sig.n,policy:sigPolicy}};
       if(window.JYTarotReading)out.forEach(function(c){window.JYTarotReading.apply(c,c.isUp,spreadId);});
       if (window.JYGoldenDawn) window.JYGoldenDawn.normalizeDraw(out);
       return out;
@@ -3432,6 +3432,8 @@ enhanceTarot = function(tarot) {
   window.ootkCourtPersonRole = COURT_PERSON_ROLE;
   // GD-8 新增 export
   window.ootkMathers1888Meanings = null; // 單一來源：JYGoldenDawn / Book T
+  // Mathers 自己的牌陣（第一法馬蹄、21、66）依其《The Tarot》(1888) 原書牌義與正逆位；開鑰之法仍用 Book T。
+  window.jyMathers1888Meanings = MATHERS_1888_MEANINGS;
   // RWS 解讀的正統牌義以 Waite《塔羅圖解》原典為準（開鑰之法仍用 Book T）。
   window.jyWaitePKTMeanings = WAITE_PKT_MEANINGS;
 

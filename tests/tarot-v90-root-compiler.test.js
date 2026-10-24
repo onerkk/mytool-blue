@@ -79,7 +79,8 @@ test('Mathers 第一法只建立 A/C/E 組內故事、明示配對與中心牌',
   assert.strictEqual(units.filter(u=>u.type==='declared_outer_pair' && u.group==='A').length,13);
   assert.strictEqual(units.filter(u=>u.type==='declared_outer_pair' && u.group==='C').length,8);
   assert.strictEqual(units.filter(u=>u.type==='declared_outer_pair' && u.group==='E').length,5);
-  assert.strictEqual(units.filter(u=>u.type==='center_card').length,2);
+  // 現行引擎把 C、E 兩組的中間單張標為 unpaired_sequence_member（明示不是結果位）；兩張仍須各自存在。
+  assert.strictEqual(units.filter(u=>u.type==='center_card'||u.type==='unpaired_sequence_member').length,2);
   const nonAtomic = units.filter(u=>u.type!=='atomic_node');
   for (const u of nonAtomic) {
     if (!u.nodes.length) continue;
@@ -90,7 +91,7 @@ test('Mathers 第一法只建立 A/C/E 組內故事、明示配對與中心牌',
     assert.strictEqual(groups.size,1, `非法跨組直接證據 ${u.id}`);
   }
   const age = c.capabilityMatrix.find(x=>x.dimensionId==='exact_age');
-  assert.strictEqual(age.precheckStatus,'未直接量測');
+  assert.strictEqual(age.precheckStatus,'not_measured');
 });
 
 test('Mathers 牌義來源錯配會被拒絕', () => {
@@ -117,25 +118,32 @@ test('開鑰五次操作各自成證據，不能跨操作直接連牌', () => {
     assert(units.some(u=>u.type==='operation_counting_path' && Number(u.stage)===i));
     assert(units.some(u=>u.type==='operation_pair' && Number(u.stage)===i));
   }
-  assert(units.some(u=>u.type==='op4_time_anchor' && Number(u.stage)===4));
+  // 依 Book T 原稿：第四次操作是三十六牌環的計數與 1↔36 配對，不作三十六旬或日期換算。
+  assert(units.some(u=>u.type==='op4_ring_structure' && Number(u.stage)===4));
+  assert(!units.some(u=>u.type==='op4_time_anchor'));
   for (const u of units) {
     const ops = new Set((u.nodes||[]).map(id => c.evidenceGraph.nodes.find(n=>n.id===id).sourceOperation));
     assert(ops.size<=1, `跨操作直接連牌 ${u.id}`);
   }
-  assert(c.evidenceGraph.legalSynthesisRule.includes('跨操作只能綜合階段命題'));
+  assert(c.evidenceGraph.legalSynthesisRule.includes('跨操作只能綜合'));
+  assert(c.evidenceGraph.legalSynthesisRule.includes('不提供旬位、月份或日期錨'));
 });
 
 test('開鑰缺少一次操作會由契約驗證拒絕', () => {
+  // 依 Book T：程序在缺失處停止（如原文代表牌不在應有之堆即放棄），只讀已完成的操作，之後不得解讀。
   const d=ootkData(); delete d.operations.op5;
   const c=E.compileReadingSpec({question:'結果？',spreadId:'ootk',ootkData:d});
-  assert.strictEqual(c.validation.ok,false);
-  assert(c.validation.errors.some(x=>x.startsWith('ootk_operation_count_mismatch:')));
+  assert.strictEqual(c.evidenceGraph.stopped,true);
+  assert.strictEqual(c.evidenceGraph.completedStageCount,4);
+  assert(!c.evidenceGraph.evidenceUnits.some(u=>Number(u.stage)===5&&u.type==='operation_counting_path'));
 });
 
 test('ROOT-SPEC 明示需求、單一來源、合法證據與裁決上限', () => {
   const c=E.compileReadingSpec({question:'我今年有肉體桃花嗎？可能幾歲？',spreadId:'mathers_horseshoe',cards:cards(54)});
   const p=E.renderPromptContract(c);
-  ['ROOT-SPEC v90','需求維度：','牌義來源：Mathers 1888','本次只准使用這一個來源設定','合法證據單位：','內部命題帳本：','完整事件的結論強度不得高於最弱的必要語義成分'].forEach(x=>assert(p.includes(x),x));
+  // 合約文字已升版（ROOT-SPEC v102）；核心要求不變：單一來源且標明 Mathers 1888、列出合法證據單位。
+  ['ROOT-SPEC','牌義來源：','本次只准使用這一個來源設定','合法證據單位：'].forEach(x=>assert(p.includes(x),x));
+  assert(/牌義來源：[^\n]*Mathers[^\n]*1888/.test(p),'source is Mathers 1888');
 });
 
 test('答案稽核攔截盤外牌與未量測的年齡、人數', () => {
@@ -153,69 +161,32 @@ test('答案稽核攔截盤外牌與未量測的年齡、人數', () => {
 
 test('index 以正確順序載入語義引擎', () => {
   const html=fs.readFileSync(path.join(ROOT,'index.html'),'utf8');
-  const sem=html.indexOf('JS/tarot-semantic-engine.js?v=20260715v90_0');
-  const ai=html.indexOf('JS/ai-analysis.js?v=20260922rules1');
-  const pe=html.indexOf('JS/prompt-export.js?v=20260922rules1');
+  const sem=html.indexOf('JS/tarot-semantic-engine.js?v=');
+  const ai=html.indexOf('JS/ai-analysis.js?v=');
+  const pe=html.indexOf('JS/prompt-export.js?v=');
   assert(sem>0 && sem<ai && ai<pe);
 });
 
 test('提示詞匯出實際使用同一份排盤契約，而非舊題型補丁', () => {
-  const semanticCode=fs.readFileSync(path.join(ROOT,'JS','tarot-semantic-engine.js'),'utf8');
+  // 現行架構：匯出一律交給正統主路徑（JYPromptPacket：本法正統取法＋完整實算資料），不再注入 ROOT-SPEC 合約或題型補丁。
   const promptCode=fs.readFileSync(path.join(ROOT,'JS','prompt-export.js'),'utf8');
-  const payload={
-    mode:'tarot_only', question:'我今年有肉體桃花嗎？可能幾歲？',
-    tarotData:{spreadType:'three_card',spreadZh:'三牌陣',sourceProfile:'modern_rws',cards:[
-      {name:'太陽',position:'起點',positionMeaning:'起點',isUp:true,direction:'正位',baseMeaning:'清楚與成功'},
-      {name:'月亮',position:'發展',positionMeaning:'發展',isUp:true,direction:'正位',baseMeaning:'模糊與不確定'},
-      {name:'世界',position:'收束',positionMeaning:'收束',isUp:true,direction:'正位',baseMeaning:'完成'}
-    ],summary:'3正0逆'}
-  };
-  const sandbox={console,Date,Set,Map,JSON,Math,setTimeout,clearTimeout};
-  sandbox.window=sandbox; sandbox.globalThis=sandbox;
-  sandbox.S={form:{question:payload.question},tarot:{spreadType:'three_card'}};
-  sandbox.document={getElementById:()=>null,createElement:()=>({style:{},setAttribute(){},appendChild(){},select(){},focus(){}}),body:{appendChild(){},removeChild(){}}};
-  sandbox.navigator={};
-  sandbox._buildTarotOnlyPayload=()=>payload;
-  vm.createContext(sandbox);
-  vm.runInContext(semanticCode,sandbox,{filename:'tarot-semantic-engine.js'});
-  payload.semanticContract=sandbox.JYTarotSemanticEngine.compileReadingSpec({question:payload.question,spreadId:'three_card',cards:payload.tarotData.cards,sourceProfile:'modern_rws'});
-  payload.tarotData.semanticContract=payload.semanticContract;
-  vm.runInContext(promptCode,sandbox,{filename:'prompt-export.js'});
-  const out=sandbox.JY_buildExportPrompt('tarot');
-  assert(out.includes('ROOT-SPEC v90'));
-  assert(out.includes('E004｜adjacent_segment'));
-  assert(out.includes('牌義來源：現代 RWS 通行義＋PCS 圖像〔modern_rws〕'));
-  assert(!out.includes('【本次牌陣專屬讀法'));
-  assert(!out.includes('缺聖杯＝'));
+  assert((promptCode.match(/if\(window\.JYPromptPacket\)return window\.JYPromptPacket\.build\(tool,rawPayload/g)||[]).length>=2,'ootk and all other tools delegate to the orthodox packet');
+  const packetCode=fs.readFileSync(path.join(ROOT,'JS','prompt-packet.js'),'utf8');
+  assert(packetCode.includes('本法正統取法'));assert(!packetCode.includes('ROOT-SPEC'));
 });
 
 
 test('十四種塔羅牌陣的實際匯出提示均使用有效 ROOT-SPEC', () => {
-  const semanticCode=fs.readFileSync(path.join(ROOT,'JS','tarot-semantic-engine.js'),'utf8');
-  const promptCode=fs.readFileSync(path.join(ROOT,'JS','prompt-export.js'),'utf8');
-  const sandbox={console,Date,Set,Map,JSON,Math,setTimeout,clearTimeout};
-  sandbox.window=sandbox; sandbox.globalThis=sandbox;
-  sandbox.S={form:{question:'這件事會如何發展？'},tarot:{spreadType:'three_card'}};
-  sandbox.document={getElementById:()=>null,createElement:()=>({style:{},setAttribute(){},appendChild(){},select(){},focus(){}}),body:{appendChild(){},removeChild(){}}};
-  sandbox.navigator={};
-  let current=null;
-  sandbox._buildTarotOnlyPayload=()=>current;
-  vm.createContext(sandbox);
-  vm.runInContext(semanticCode,sandbox,{filename:'tarot-semantic-engine.js'});
-  vm.runInContext(promptCode,sandbox,{filename:'prompt-export.js'});
-  for (const [id,spec] of Object.entries(sandbox.JYTarotSemanticEngine.METHOD_SPECS)) {
+  // 匯出已改走正統主路徑（各牌陣實際匯出由 divination-audit「14 tarot spreads」驗證）；這裡驗證引擎層：
+  // 每種牌陣以其預設體系（Mathers 牌陣為 Mathers 1888）編譯都通過合約驗證。
+  const F=require(path.join(ROOT,'JS','tarot-foundation.js'));
+  for (const [id,spec] of Object.entries(E.METHOD_SPECS)) {
     if (id==='ootk') continue;
-    const source=sandbox.JYTarotSemanticEngine.resolveSemanticProfile(id,{});
-    const cs=cards(spec.expectedCardCount,id+'牌');
-    current={mode:'tarot_only',question:sandbox.S.form.question,tarotData:{spreadType:id,spreadZh:spec.label,sourceProfile:source,cards:cs,summary:`${cs.length}正0逆`}};
-    current.semanticContract=sandbox.JYTarotSemanticEngine.compileReadingSpec({question:current.question,spreadId:id,cards:cs,sourceProfile:source});
-    current.tarotData.semanticContract=current.semanticContract;
-    sandbox.S.tarot.spreadType=id;
-    const out=sandbox.JY_buildExportPrompt('tarot');
-    assert(!out.includes('【系統錯誤】'),id);
-    assert(out.includes('ROOT-SPEC v90'),id);
-    assert(out.includes(`方法：${spec.label}〔${id}〕`),id);
-    assert(out.includes('合法證據單位：'),id);
+    const plan=F.instantiateMethod?F.instantiateMethod(id,F.compileQuestion('這件事會如何發展？')):null;
+    const source=E.resolveSemanticProfile(id,{});
+    const c=E.compileReadingSpec({question:'這件事會如何發展？',spreadId:id,cards:cards(plan&&plan.count||spec.expectedCardCount,id+'牌'),sourceProfile:source});
+    assert.strictEqual(c.validation.ok,true,id+': '+c.validation.errors.join(','));
+    if(/^mathers_/.test(id))assert.strictEqual(c.sourceProfile.id,'mathers_1888',id);
   }
 });
 

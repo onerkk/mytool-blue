@@ -21791,8 +21791,9 @@ function _buildTarotOnlyPayload() {
   if(new Set(drawn.map(function(c){return c.id;})).size!==drawn.length)throw new Error('Duplicate cards in tarot draw');
   var readingModes=new Set(drawn.map(function(c){return c.readingMode||c.sourceProfile||'gd_book_t';}));
   if(readingModes.size>1)throw new Error('Mixed reading modes in one tarot draw');
-  if(drawn.some(function(c){return c.readingMode==='rws_reversals'&&typeof c.isUp!=='boolean';}))throw new Error('Missing tarot orientation');
-  if(drawn[0]&&drawn[0].readingMode==='rws_reversals'&&window.JYTarotReading){
+  var directional=function(m){return m==='rws_reversals'||m==='mathers_1888';};
+  if(drawn.some(function(c){return directional(c.readingMode)&&typeof c.isUp!=='boolean';}))throw new Error('Missing tarot orientation');
+  if(drawn[0]&&directional(drawn[0].readingMode)&&window.JYTarotReading){
     var rws=window.JYTarotReading.payload(ta,question,drawn,spreadId,methodPlan,ta.dynamicSpreadDef||ta.spreadDef||SPREAD_DEFS[spreadId]);
     rws.tarotData.referenceDate=compiled.features&&compiled.features.referenceDate||'';
 
@@ -21800,7 +21801,7 @@ function _buildTarotOnlyPayload() {
     // as every other tarot path. This is payload integrity, not a prompt instruction.
     if(semantic&&typeof semantic.compileReadingSpec==='function'){
       var rwsContract=semantic.compileReadingSpec({
-        question:question,spreadId:spreadId,cards:rws.tarotData.cards,methodPlan:methodPlan,sourceProfile:'rws_reversals',
+        question:question,spreadId:spreadId,cards:rws.tarotData.cards,methodPlan:methodPlan,sourceProfile:drawn[0].readingMode,
         knownCounterpart:compiled.knownCounterpart,
         referenceDate:compiled.features&&compiled.features.referenceDate||new Date().toISOString()
       });

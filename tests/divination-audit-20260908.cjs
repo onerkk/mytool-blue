@@ -27,7 +27,9 @@ function draw(spread,mode='rws_reversals'){
   let rng=0;c._secRand=()=>++rng%2?0.2:0.8;
   const deck=def.deckFilter==='minor_only'?c.__deck.filter(x=>x.suit!=='major'):c.__deck;
   const cards=c.JY_buildCanonicalTarotDraw(deck,spread,def,'fixture','general',question);
+  // 明確指定的體系照選擇套用；'auto' 則保留引擎預設（Mathers 牌陣預設 Mathers 1888 原書）。
   if(mode==='gd_book_t')cards.forEach(x=>c.JYTarotReading.apply(x,true,spread,mode));
+  else if(mode==='rws_reversals')cards.forEach(x=>c.JYTarotReading.apply(x,x.isUp!==false,spread,mode));
   c.S.tarot.drawn=cards;return {cards,plan,payload:c._buildTarotOnlyPayload(),prompt:c.JY_buildExportPrompt('tarot')};
 }
 test('14 tarot spreads: actual cards, directions, complete structural guide and result rules survive export',()=>{
@@ -43,6 +45,10 @@ test('14 tarot spreads: actual cards, directions, complete structural guide and 
     cases++;
   }
   assert.equal(cases,27);
+});
+test('Mathers spreads default to the 1888 book: recorded orientation and book meanings reach the export',()=>{
+  const M=c.jyMathers1888Meanings;assert(M&&Object.keys(M).length===78,'Mathers 1888 table exposed');
+  for(const id of ['mathers_21','mathers_horseshoe']){const r=draw(id,'auto');assert(r.cards.every(x=>x.readingMode==='mathers_1888'),id);assert(r.cards.some(x=>x.isUp===false),id+' keeps reversals');assert.equal(r.payload.tarotData.sourceProfile,'mathers_1888',id+' payload profile');r.cards.forEach(x=>assert.equal(x.up,M[x.n].up,id+' book meaning '+x.n));}
 });
 test('Mathers 54: physical heap order, stated 26/17/11 sizes and all 24 excluded cards are accounted for',()=>{
   const r=draw('mathers_horseshoe');

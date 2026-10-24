@@ -5423,7 +5423,7 @@ function buildMeihuaOutput(mh, type) {
   function majority(cards){ var g=gd(); return g&&g.majorityObservations ? g.majorityObservations(cards) : {suitCounts:{wand:0,cup:0,sword:0,pent:0},observations:[]}; }
 
   root.buildTarotStats=function(cards){
-    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.stats(cards);
+    if(cards&&cards[0]&&(cards[0].readingMode==='rws_reversals'||cards[0].readingMode==='mathers_1888')&&root.JYTarotReading)return root.JYTarotReading.stats(cards);
     cards=norm(cards);
     var m=majority(cards),s=m.suitCounts||{};
     return {
@@ -5436,7 +5436,7 @@ function buildMeihuaOutput(mh, type) {
   };
 
   root.buildTarotStatsHtml=function(cards){
-    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
+    if(cards&&cards[0]&&(cards[0].readingMode==='rws_reversals'||cards[0].readingMode==='mathers_1888')&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
     var s=root.buildTarotStats(cards), obs=s.insights||[];
     var h='<div class="tarot-stats"><div style="font-size:.72rem;color:var(--c-gold)">Golden Dawn Book T・元素尊貴裁決</div>';
     if(obs.length) h+='<div style="font-size:.72rem;color:var(--c-text-dim);line-height:1.6;margin-top:.35rem">'+obs.join('；')+'</div>';
@@ -5469,7 +5469,7 @@ function buildMeihuaOutput(mh, type) {
   };
 
   root.buildTarotDeepReport=function(cards,type){
-    if(cards&&cards[0]&&cards[0].readingMode==='rws_reversals'&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
+    if(cards&&cards[0]&&(cards[0].readingMode==='rws_reversals'||cards[0].readingMode==='mathers_1888')&&root.JYTarotReading)return root.JYTarotReading.statsHTML(cards);
     cards=norm(cards);
     if(!cards.length) return '';
     var cc=cards.length>=10?root.analyzeCelticCross(cards,type):null;
