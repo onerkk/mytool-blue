@@ -1,6 +1,6 @@
 /* Moon Atelier · share surface, scoped to avoid changing divination screens. */
 .jysc-bd,.jysc-bd *{box-sizing:border-box}
-.jysc-bd{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:rgba(3,8,15,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#f7f1e6;isolation:isolate}
+.jysc-bd{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px 16px;background:rgba(3,8,15,.95);font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:#f7f1e6;isolation:isolate}
 .jysc-box{width:100%;max-width:480px;max-height:calc(100dvh - 36px);overflow:auto;overscroll-behavior:contain;padding:20px;border:1px solid rgba(230,206,154,.27);border-radius:26px;background:radial-gradient(ellipse at 100% 0,rgba(78,103,125,.22),transparent 48%),#111823;box-shadow:0 24px 90px #000,0 1px 0 rgba(255,255,255,.08) inset;scrollbar-width:thin;scrollbar-color:#4c535f #111823}
 .jysc-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:17px}
 .jysc-eyebrow{display:block;color:#cbb48a;font-size:9px;letter-spacing:2px;margin:0 0 6px}

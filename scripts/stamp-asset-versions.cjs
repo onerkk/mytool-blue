@@ -6,8 +6,9 @@ const h=b=>crypto.createHash('sha1').update(b).digest('hex').slice(0,10);
 const today=new Date().toISOString().slice(0,10).replace(/-/g,'');
 // 版本格式：YYYYMMDD + 'h' + 內容雜湊。內容沒變就沿用原日期；內容變了才換成今天日期（保留專案「日期開頭」慣例）。
 const ver=(old,hash)=>{const m=/^(\d{8})h([0-9a-f]+)$/.exec(old||'');return m&&m[2]===hash?old:today+'h'+hash;};
-const REF=/((?:JS|CSS|js|css)\/[A-Za-z0-9_.\/-]+\.(?:js|css|mjs))\?v=([A-Za-z0-9_-]+)/g;
-const targets=['index.html','JS/ui.js','ui.js'];const all=new Map();let changed=0;
+const REF=/((?:JS|CSS|js|css|assets)\/[A-Za-z0-9_.\/-]+\.(?:js|css|mjs))\?v=([A-Za-z0-9_-]+)/g;
+// 動態載入資產的 JS（如分享卡樣式表）先蓋，index.html 才拿得到它們的最終雜湊。
+const targets=['JS/share-card.js','index.html','JS/ui.js','ui.js'];const all=new Map();let changed=0;
 for(const t of targets){const p=path.join(root,t);if(!fs.existsSync(p))continue;let s=fs.readFileSync(p,'utf8');
   const next=s.replace(REF,(m,file,v)=>{const fp=path.join(root,file);if(!fs.existsSync(fp))return m;const hv=ver(v,h(fs.readFileSync(fp)));all.set(file,hv);return file+'?v='+hv;});
   if(next!==s){fs.writeFileSync(p,next);changed++;}}

@@ -24,7 +24,7 @@ function mount(host,chart,options={}){
   canvas.setAttribute('aria-label','立體六壬天地盤。左右鍵轉動，上下鍵選宮，Enter查看，Home歸正。');
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setClearColor(0x060f12,1);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.18;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMappingExposure=1.04;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   host.appendChild(canvas);
   const environment=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
   const envTarget=pmrem.fromScene(environment,.055);scene.environment=envTarget.texture;scene.environmentIntensity=1.05;
@@ -153,7 +153,7 @@ function mount(host,chart,options={}){
   const dust=new THREE.Points(dustGeo,own(new THREE.PointsMaterial({size:.05,map:dustTex,transparent:true,opacity:.75,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true})));orbit.add(dust);
   // 後製：柔和的泛光讓金邊、三傳與珠寶真的發光；低解析度、低強度，手機也跑得動。
   let composer=null,bloom=null;
-  try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.42,.55,.82);composer.addPass(bloom);composer.addPass(new OutputPass());}catch{composer=null;}
+  try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.16,.32,.9);composer.addPass(bloom);composer.addPass(new OutputPass());}catch{composer=null;}
   let angle=Number(options.angle)||0,targetAngle=angle,velocity=0,pitch=Number(options.pitch)||0,targetPitch=pitch,zoom=Number(options.zoom)||1,targetZoom=zoom,idleT=0;
   let exploded=!!options.exploded,lift=exploded?1:0,selected=Number(options.selected)||0,focusKind=options.focusKind||'palace',focusIndex=Number(options.focusIndex)||0;
   let phase=4,phaseStart=performance.now(),traceStart=null,traceStep=-1,flash=0,gesture=null,tapTime=0,tapPoint=null;
@@ -197,7 +197,7 @@ function mount(host,chart,options={}){
     if(!quiet){const arr=dustGeo.attributes.position.array;for(let i=0;i<DUST;i++){arr[i*3+1]+=dt*(.05+dustSeed[i]*.06);if(arr[i*3+1]>1.35)arr[i*3+1]=.12;const a=Math.atan2(arr[i*3+2],arr[i*3])+dt*(.03+dustSeed[i]*.04),r=Math.hypot(arr[i*3],arr[i*3+2]);arr[i*3]=Math.cos(a)*r;arr[i*3+2]=Math.sin(a)*r;}dustGeo.attributes.position.needsUpdate=true;}
     dust.material.opacity=.45+.3*Math.sin(idleT*.9)*(quiet?0:1)+(phase<4?.35:0);
     sealMesh.material.opacity=.92+(quiet?0:Math.sin(idleT*1.3)*.08);
-    pose();if(composer){if(bloom)bloom.strength=.42+(phase<4?.3*(1-progress):0)+flash*.25;composer.render();}else renderer.render(scene,camera);
+    pose();if(composer){if(bloom)bloom.strength=.16+(phase<4?.1*(1-progress):0)+flash*.08;composer.render();}else renderer.render(scene,camera);
   }
   function tick(now){raf=0;if(disposed||lost||!visible||document.hidden)return;const dt=Math.min(.05,Math.max(.001,(now-(last||now-16))/1000));last=now;draw(now,dt);
     const pending=Math.abs(angle-targetAngle)>.02||Math.abs(pitch-targetPitch)>.003||Math.abs(zoom-targetZoom)>.003||Math.abs(lift-(exploded?1:0))>.003;
