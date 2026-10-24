@@ -1,7 +1,7 @@
 /* 靜月之光 · 姓名書房。獨立輸入、筆畫覆核、六法原生結果、完整提示詞。 */
 (function(root){
   'use strict';
-  var REV='20261003native9',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
+  var REV='20261024heb15a0ebde',state={mode:'single',step:0,input:{surname:'',given:'',candidates:[],birthDate:'',birthTime:'',timezoneOffset:8,strokeBasis:'kangxi',sancaiProfile:'CDI_125',numericPolicy:'glyph',purpose:'personal',question:'',baselineName:'',overrides:{}},result:null,active:0},room=null,scene=null,entrance=null,previousOverflow='',busy=false,epoch=0,ready=null,background=[];
   var h=function(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
   var el=function(id){return room&&room.querySelector('#'+id);};
   function load(file,check){if(check&&check())return Promise.resolve();return new Promise(function(resolve,reject){if(typeof root._jyLazyScript!=='function'){reject(new Error('載入工具尚未完成，請稍後重試。'));return;}root._jyLazyScript(file,function(ok){if(ok&&(!check||check()))resolve();else reject(new Error('姓名學資料載入失敗，請重新整理或檢查網路後重試。'));});});}

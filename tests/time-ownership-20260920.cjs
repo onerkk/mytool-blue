@@ -113,7 +113,7 @@ test('Mixing people, timezones or reference instants is rejected',()=>{
 test('All production entry points use this release; mirrors match; history cannot silently reuse old prompts',()=>{
  const html=read('index.html');for(const f of ['bazi.js','bazi-suite-core.js','bazi-suite.js','bazi-standalone.js','relationship-core.js','relationship-ui.js','ai-analysis.js']){require('./production-assets.cjs').assetVersion(html,'JS/'+f);}
  for(const f of ['ai-analysis.js','bazi-suite-core.js'])assert.equal(read(f),read('JS/'+f));
- assert(Number(read('sw.js').match(/jy-main-v(\d+)/)[1])>=96);assert.equal(read('sw.js'),read('JS/sw.js'));
+ assert(/const CACHE_NAME = 'jy-main-[0-9a-z]+';/.test(read('sw.js')),'service worker cache name is content-derived');assert.equal(read('sw.js'),read('JS/sw.js'));
  assert(read('JS/bazi-suite.js').includes('item.timeDataVersion!==TIME_DATA_VERSION'));
 });
 

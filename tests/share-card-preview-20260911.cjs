@@ -143,7 +143,7 @@ async function test(name, fn) { await fn(); passed++; console.log('✓ ' + name)
     const e = fixture({ holdImages: true }), bd = e.api.open('invite', {}); await settle();
     const p = e.parts(bd);
     assert.match(p.status.textContent, /正在載入預覽/); assert.equal(p.img.hidden, true);
-    p.dl.click(); assert.equal(e.downloads[0].blob, e.blobs[0].blob);
+    p.dl.click(); await settle(); assert.equal(e.downloads.length, 1); assert(e.downloads[0].blob);
     e.finishImage(e.images[0], 'load');
     assert.equal(e.parts(bd).loading, null); assert.equal(p.img.hidden, false); e.api.close();
   });
@@ -156,7 +156,7 @@ async function test(name, fn) { await fn(); passed++; console.log('✓ ' + name)
     const p = e.parts(bd);
     assert.match(p.loading.textContent, /預覽暫時無法顯示/);
     assert(!p.status.textContent.includes('正在')); assert.equal(p.stage.getAttribute('aria-busy'), 'false');
-    assert.equal(p.dl.disabled, false); p.dl.click(); assert.equal(e.downloads[0].blob, e.blobs[0].blob); e.api.close();
+    assert.equal(p.dl.disabled, false); p.dl.click(); await settle(); assert.equal(e.downloads.length, 1); assert(e.downloads[0].blob); e.api.close();
   });
   await test('Missing image events time out; a late successful image can still recover', async () => {
     const e = fixture({ holdImages: true }), bd = e.api.open('invite', {}); await settle();
@@ -190,7 +190,9 @@ async function test(name, fn) { await fn(); passed++; console.log('✓ ' + name)
       e.blobs[1].resolve(); await settle(); const currentSrc = e.parts(bd).img.src;
       staleFails ? e.blobs[0].reject() : e.blobs[0].resolve(); await settle();
       assert.equal(e.parts(bd).img.src, currentSrc); assert.equal(e.parts(bd).loading, null);
-      p.dl.click(); assert.equal(e.downloads.at(-1).blob, e.blobs[1].blob); e.api.close();
+      // 下載依最新狀態另畫高清版：放行這張新圖後，存出的就是它，不會是過期的舊卡。
+      const n = e.blobs.length; p.dl.click(); await settle(); assert(e.blobs.length > n, 'download renders from the newest state');
+      e.blobs.at(-1).resolve(); await settle(); assert.equal(e.downloads.at(-1).blob, e.blobs.at(-1).blob); assert.notEqual(e.downloads.at(-1).blob, e.blobs[0].blob); e.api.close();
     }
   });
   await test('Closing during rendering or decoding releases resources and ignores late completion', async () => {
