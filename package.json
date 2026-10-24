@@ -109,7 +109,8 @@
     "test:single-paste:browser": "node tests/single-paste-browser-20261015.cjs",
     "test:compat-real": "node scripts/sync-recommendation-guides.cjs --check && node tests/compat-real-ui-20261021.cjs",
     "stamp": "node scripts/build-question-profile.cjs && node scripts/sync-recommendation-guides.cjs && node scripts/stamp-asset-versions.cjs",
-    "test:assets": "node tests/asset-versions-20261023.cjs"
+    "test:assets": "node tests/asset-versions-20261023.cjs",
+    "build:share-templates": "python3 scripts/build-share-templates.py && node scripts/stamp-asset-versions.cjs"
   },
   "devDependencies": {
     "acorn": "^8.15.0",

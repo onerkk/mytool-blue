@@ -9,7 +9,7 @@ const ver=(old,hash)=>{const m=/^(\d{8})h([0-9a-f]+)$/.exec(old||'');return m&&m
 const REF=/((?:JS|CSS|js|css|assets)\/[A-Za-z0-9_.\/-]+\.(?:js|css|mjs))\?v=([A-Za-z0-9_-]+)/g;
 // 以變數組版本號的動態載入（例：load('JS/liuren-scene.js?v='+REV)）：變數值改為「該變數載入的全部檔案」的合併內容雜湊，
 // 任何一個被載入的檔案改了，版本就變；這些載入器先處理，index.html 才拿得到它們的最終雜湊。
-const LOADERS=['JS/liuren-room.js','JS/name-standalone.js','JS/vedic-ritual.js'];
+const LOADERS=['JS/liuren-room.js','JS/name-standalone.js','JS/vedic-ritual.js','JS/share-card.js'];
 const VAR_REF=/['"]((?:JS|CSS|assets)\/[A-Za-z0-9_.\/-]+\.(?:js|css|mjs|json))\?v=['"]\s*\+\s*([A-Za-z_$][\w$]*)/g;
 function stampLoader(rel){const p=path.join(root,rel);if(!fs.existsSync(p))return false;let s=fs.readFileSync(p,'utf8');const groups={};for(const m of s.matchAll(VAR_REF)){(groups[m[2]]||(groups[m[2]]=new Set())).add(m[1]);}
   let next=s;for(const [v,set] of Object.entries(groups)){const files=[...set].sort();const hash=h(files.map(f=>{const fp=path.join(root,f);return fs.existsSync(fp)?f+':'+h(fs.readFileSync(fp)):f;}).join('|'));
