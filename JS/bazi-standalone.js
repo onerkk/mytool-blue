@@ -688,18 +688,20 @@
   //  Public API
   // ════════════════════════════════════════════════════════
   window._baziShare = function () {
-    if(_meta && _meta.unknown){_bzxErr('時辰未知，請使用三柱提示詞；完整命盤分享需先確認時辰。');return;}
     if (!window.JYShareCard) { _bzxErr('分享元件載入中，請稍候再試一次'); return; }
+    var _unknownHour = !!(_meta && _meta.unknown);
     var b = _bazi || {}, P = b.pillars || {};
     function pil(k, label) { var p = P[k] || {}; return { label: label, gan: p.gan || '', zhi: p.zhi || '' }; }
     var cur = _currentDayun(b);
-    var dm = (b.dm || '') + (b.dmEl ? '（' + b.dmEl + '行）' : '') + ' ・ ' + (b.strongLevel || (b.strong ? '身強' : '身弱'));
+    var dm = (b.dm || '') + (b.dmEl ? '（' + b.dmEl + '行）' : '') + (_unknownHour ? '' : ' ・ ' + (b.strongLevel || (b.strong ? '身強' : '身弱')));
+    // 時辰未知：三柱照實，時柱標「未定」；強弱、喜用與大運需要時柱與起運時刻，確認時辰後才判定。
+    var hourPillar = _unknownHour ? { label: '時柱', gan: '', zhi: '', pending: true } : pil('hour', '時柱');
     JYShareCard.open('bazi', {
       question: (_meta && _meta.question) || '',
-      pillars: [pil('year', '年柱'), pil('month', '月柱'), pil('day', '日柱'), pil('hour', '時柱')],
+      pillars: [pil('year', '年柱'), pil('month', '月柱'), pil('day', '日柱'), hourPillar],
       dayMaster: dm,
-      yongShen: Array.isArray(b.fav) ? b.fav.join('、') : '',
-      dayun: cur ? ((cur.gz || '') + (cur.startDate && cur.endDateExclusive ? '（' + cur.startDate + '～' + cur.endDateExclusive + '）' : (cur.ageStart != null ? '（' + cur.ageStart + '～' + cur.ageEnd + '歲）' : ''))) : ''
+      yongShen: _unknownHour ? '確認時辰後判定' : (Array.isArray(b.fav) ? b.fav.join('、') : ''),
+      dayun: _unknownHour ? '確認時辰後計算' : (cur ? ((cur.gz || '') + (cur.startDate && cur.endDateExclusive ? '（' + cur.startDate + '～' + cur.endDateExclusive + '）' : (cur.ageStart != null ? '（' + cur.ageStart + '～' + cur.ageEnd + '歲）' : ''))) : '')
     });
   };
 
@@ -842,7 +844,7 @@
   }
 
   // ── 內嵌錯誤（取代 alert）──
-  function _bzxErr(msg){ var e=document.getElementById('bzx-err'); if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _bzxErr(msg){ var e=document.getElementById('bzx-err'); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
   function _bzxClearErr(){ var e=document.getElementById('bzx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet 基礎 ──

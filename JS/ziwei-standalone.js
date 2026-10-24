@@ -1763,8 +1763,13 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   //  複製 / 開啟 AI / 重設 / 關閉
   // ════════════════════════════════════════════════════════
   window._ziweiShare = function () {
-    if (_zwLastForm && _zwLastForm.btimeUnknown) { _zwxErr('時辰未知，尚無可分享的個人命盤'); return; }
     if (!window.JYShareCard) { _zwxErr('分享元件載入中，請稍候再試一次'); return; }
+    if (_zwLastForm && _zwLastForm.btimeUnknown) {
+      // 時辰未知：照實分享「待確認」卡，不畫十二宮（沒有時辰排不出命宮）。
+      var f0 = _zwLastForm || {}, bl = String(f0.bdate || '');
+      JYShareCard.open('ziwei', { question: f0.question || '', pending: true, birthLine: (bl ? bl + ' ・ ' : '') + '時辰未知，尚未定盤' });
+      return;
+    }
     var zw = _zwLastChart || {}, form = _zwLastForm || {};
     var palaces = zw.palaces || [];
     function byBranch(br) { for (var i = 0; i < palaces.length; i++) { if (palaces[i].branch === br) return palaces[i]; } return { branch: br, name: '', stars: [] }; }
@@ -1871,7 +1876,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   }
 
   // ── 內嵌錯誤 ──
-  function _zwxErr(msg){ var e=document.getElementById('zwx-err'); if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _zwxErr(msg){ var e=document.getElementById('zwx-err'); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
   function _zwxClearErr(){ var e=document.getElementById('zwx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet ──
