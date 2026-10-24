@@ -1,5 +1,5 @@
 /* 姓名書房 / 20261002atelier2 */
-body.nm-room-open>:not(#nm-room):not(script):not(style):not(link){visibility:hidden}
+body.nm-room-open>:not(#nm-room):not(#jysc-bd):not(#jysc-notice):not(script):not(style):not(link){visibility:hidden}
 .nm-room{--nm-gold:#dfc18a;--nm-ink:#cbd7df;--nm-paper:#f0e2c3;position:fixed;inset:0;z-index:1500;background:#0b1522;color:var(--nm-ink);overflow:hidden;font-family:var(--f-body,'Noto Sans TC',sans-serif);color-scheme:dark;isolation:isolate}
 .nm-room *{box-sizing:border-box}.nm-room button,.nm-room input,.nm-room select,.nm-room textarea{font:inherit}.nm-room button{cursor:pointer}.nm-room [hidden]{display:none!important}
 .nm-room button:focus-visible,.nm-room a:focus-visible,.nm-room summary:focus-visible{outline:2px solid #efd59d;outline-offset:4px}

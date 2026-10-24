@@ -25,5 +25,7 @@ for(const t of targets){const p=path.join(root,t);if(!fs.existsSync(p))continue;
 // ui.js changed above → its own hash in index.html must be recomputed (second pass is idempotent for others)
 {const p=path.join(root,'index.html');let s=fs.readFileSync(p,'utf8');const next=s.replace(REF,(m,file,v)=>{const fp=path.join(root,file);if(!fs.existsSync(fp))return m;const hv=ver(v,h(fs.readFileSync(fp)));all.set(file,hv);return file+'?v='+hv;});if(next!==s){fs.writeFileSync(p,next);changed++;}}
 const combined='jy-main-'+h([...all.entries()].sort().map(([f,v])=>f+v.replace(/^\d{8}h/,'')).join('|'));
+// 頁尾版本標記＝快取名稱；手機看到的 build 與 sw.js 的 CACHE_NAME 一致，就是這一版。
+{const ip=path.join(root,'index.html');let s=fs.readFileSync(ip,'utf8');const next=s.replace(/<p id="jy-build" data-build="[^"]*"([^>]*)>build [^<]*<\/p>/,'<p id="jy-build" data-build="'+combined+'"$1>build '+combined.replace('jy-main-','')+'</p>');if(next!==s){fs.writeFileSync(ip,next);changed++;}}
 for(const sw of ['sw.js','JS/sw.js']){const p=path.join(root,sw);if(!fs.existsSync(p))continue;const s=fs.readFileSync(p,'utf8');const next=s.replace(/const CACHE_NAME = '[^']*';/,"const CACHE_NAME = '"+combined+"';");if(next!==s){fs.writeFileSync(p,next);changed++;}}
 console.log('asset versions stamped: '+all.size+' references; loaders changed: '+loaderChanged+'; files changed: '+changed+'; cache '+combined);

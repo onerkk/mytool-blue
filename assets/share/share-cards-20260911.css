@@ -34,3 +34,6 @@
 @media(prefers-reduced-motion:reduce){.jysc-img,.jysc-btn{transition:none;transform:none!important}}
 
 .jy-invite-download{display:block;width:fit-content;margin-top:13px;padding:7px 0;color:#d7bd8c;font-family:inherit;font-size:.82rem;font-weight:400;line-height:1.8;text-underline-offset:5px}.jy-invite-download:hover{color:#ffe8bb}
+
+/* 分享視窗與提示永遠可見：全螢幕房間（姓名書房、大六壬等）會隱藏 body 其他子元素 */
+body>#jysc-bd,body>#jysc-notice{visibility:visible!important}
