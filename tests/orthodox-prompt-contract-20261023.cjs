@@ -16,4 +16,9 @@ for(const q of Q)for(const [m,chart] of Object.entries(x.charts)){let b;try{b=P.
 {const bz=P.build('bazi',x.charts.bazi,'目前的工作適合我嗎？');if(!bz.includes('【子女（論子息）實算】'))bad.push('bazi｜children analysis gated by question');}
 // 可讀性：任何資料段不得被攤平成大量無標籤值
 for(const [m,chart] of Object.entries(x.charts)){let b;try{b=P.build(m,chart,'我今生有幾個兒女？');}catch(e){continue;}for(const sec of b.split(/\n\n(?=【)/)){const title=(sec.match(/^【([^】]*)】/)||[])[1]||'';if(/規則|取法|成稿|一次貼上|原問題|資料閱讀|讀完資料/.test(title))continue;const segs=sec.slice(title.length+2).split(/[；\n]/).map(z=>z.trim()).filter(Boolean);if(segs.length<8)continue;const bare=segs.filter(z=>/^(是|否|未定|男|女|[0-9.]+)$/.test(z)).length;if(bare/segs.length>0.12)bad.push(m+'｜'+title.slice(0,24)+'｜unreadable flattening '+bare+'/'+segs.length);}}
+// 資料段不得夾帶站內解讀句或免責語；網址不得被截壞
+{const GLOSS=/不在狀態|停在哪張|只能給季節感|不當結論|用來補路徑|力度要打折|人被綁住|自己一個人運作|力道打折|力道特別強|事情不如他想的那樣|推進力來自|嘴上問的|身邊的力量在|事件保證|不能換算|不能挑未列|不作額外吉凶依據/;
+ const fs=require('fs');const o=JSON.parse(fs.readFileSync(require('path').join(__dirname,'..','docs/qa-single-paste27/ootk-fixture.json'),'utf8'));
+ const all=Object.entries(x.charts).map(([m,ch])=>{try{return [m,P.build(m,ch,'目前的工作適合我嗎？')];}catch(e){return null;}}).filter(Boolean).concat([['ootk-real',P.build('ootk',o,o.question)]]);
+ for(const [m,b] of all){for(const sec of b.split(/\n\n(?=【)/)){const title=(sec.match(/^【([^】]*)】/)||[])[1]||'';if(/規則|取法|成稿|一次貼上|原問題|資料閱讀|讀完資料|規則來源/.test(title))continue;const g=sec.match(GLOSS);if(g)bad.push(m+'｜'+title.slice(0,20)+'｜site gloss: '+g[0]);if(/(?<!https?):\/\/|\/\/zh\.\./.test(sec))bad.push(m+'｜'+title.slice(0,20)+'｜broken URL');}}}
 console.log('builds',n,'problems',bad.length);bad.slice(0,15).forEach(x=>console.log(x));assert.equal(bad.length,0);console.log(JSON.stringify({passed:1}));

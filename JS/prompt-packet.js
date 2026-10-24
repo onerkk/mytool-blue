@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261023orthodox74',LIMIT=12000,BYTES=28000;
+  const VERSION='20261024orthodox75',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -36,7 +36,7 @@
     personality:'依本站五軸生日模型的各軸輸入，講他的做事方式、長處與容易卡住的地方。',
     tarot:'依偉特（RWS）正統推演：依本次牌陣每個牌位的意義讀該位置的牌（正逆位依實際記錄），再依牌陣的讀法鏈把牌串成完整敘事；參看大牌、花色元素、數字與宮廷牌在整組中的比重，判吉凶、程度與建議；時間依花色與數字的傳統對應。Book T 牌組依金色黎明的元素尊貴讀。',
     lenormand:'依雷諾曼正統推演：依本次牌陣的幾何（線陣的前後、九宮與大牌陣的房屋、近遠、鏡像、騎士步與對角）把相鄰牌組合成句，以代表牌與題目主題牌為中心；快慢依牌的性質與距離判斷。',
-    ootk:'依金色黎明 Book T 開鑰之法正統推演：五輪依序以代表牌落點、計數、配對與元素尊貴，讀出事情的現況、發展、處境、時間與結局，最後合成結論。',
+    ootk:'依金色黎明 Book T 開鑰之法正統推演：不讀正逆位，牌力由相鄰牌的元素尊貴決定；五輪依序以代表牌所落之堆（第一輪四字母堆）、宮（第二輪十二宮）、星座（第三輪）、旬（第四輪三十六旬）、質點（第五輪生命之樹），連同整條計數路徑與配對敘事，讀出事情的現況、發展、處境、時間與結局，最後合成結論。',
     oracle:'依籤詩正統推演：先讀籤詩原文與典故，再依籤解與各事項附記（求財、婚姻、功名、疾病等）對應原題作答。'
   };;
   const rules=[
@@ -83,8 +83,13 @@
     const parts=str.split(/(https?:\/\/\S+)/);
     const tr=w=>{const o=ZH_BY_METHOD[zhMethod];return o&&Object.prototype.hasOwnProperty.call(o,w)?o[w]:null;};
     const tr2=w=>tr(w)||(Object.prototype.hasOwnProperty.call(ZH,w)?ZH[w]:methodLabel(w)?methodLabel(w):/-/.test(w)?w.split('-').map(x=>Object.prototype.hasOwnProperty.call(ZH,x)?ZH[x]:x).join(''):w);
-    return parts.map((seg,i)=>i%2?seg:seg.replace(/(?<![A-Za-z0-9-])[a-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*(?![A-Za-z0-9])/g,w=>w.length<3&&!/-/.test(w)?w:tr2(w))).join('').replace(/(?<![A-Za-z])(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Rahu|Ketu|Uranus|Neptune|Pluto|NorthNode|SouthNode)(?![A-Za-z])/g,w=>PLANET_ZH[w]).replace(CODE_RE,'').replace(/[：；、／]\s*(?=[；、／）\n]|$)/g,'').replace(/（\s*）/g,'').replace(/\s{2,}/g,' ');
+    // 每一段非網址文字各自翻譯與清除殘留代號；網址段原樣保留（先前整段清除會把網址裡的英文字刪掉）。
+    const fix=seg=>seg.replace(/(?<![A-Za-z0-9-])[a-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*(?![A-Za-z0-9])/g,w=>w==='to'?'到':w.length<3&&!/-/.test(w)?w:tr2(w)).replace(/(?<![A-Za-z])(Sun|Moon|Mercury|Venus|Mars|Jupiter|Saturn|Rahu|Ketu|Uranus|Neptune|Pluto|NorthNode|SouthNode)(?![A-Za-z])/g,w=>PLANET_ZH[w]).replace(CODE_RE,'').replace(/[：；、／]\s*(?=[；、／）\n]|$)/g,'').replace(/（\s*）/g,'').replace(/[ \t]{2,}/g,' ');
+    return parts.map((seg,i)=>i%2?seg:fix(seg)).join('');
   }
+  // 站內免責附註（不是古籍原文）在出口逐句移除，事實部分保留；古籍、規則區與正統取法不經過這裡。
+  const DISCLAIMER=/事件保證|不保證|不等於(?:生活)?事件|不等於已|不當(?:獨立|事件)|不得單憑|不能斷言|不能換算|不能由理論|不能挑未列|不作額外吉凶依據|不能凌駕|不以符號保證|不代表雙方已有|須與現實處境合參|不能只取其中|不能當独立票數|不預測胎兒性別/;
+  function stripDisclaimers(str){return String(str).split('\n').map(line=>line.split(/(?<=[；。])/).filter(cl=>!DISCLAIMER.test(cl)).join('').replace(/[；，]\s*$/,'')).filter((l,i,arr)=>l.trim()||!arr[i]).join('\n');}
   function zhScalar(v){if(v===true)return '是';if(v===false)return '否';if(v===null||v===undefined)return '未定';if(typeof v==='number')return String(num(v));return zhText(v);}
   function readable(v,depth){
     depth=depth||0;
@@ -124,7 +129,7 @@
     const b=[],prefix=e.label?e.label+' · ':'';
     const section=label=>data.sections.find(s=>s.label===prefix+label)?.data;
     const displayPrefix=e.label&&data.sourceCoverage?.requestedRecords>1?e.label+'／':'';
-    const add=(label,v,priority=0)=>{zhMethod=e.method;if(hasData(v))b.push({label:displayPrefix+label,value:/規則來源/.test(label)?(typeof v==='string'?v:json(v)):typeof v==='string'?zhText(v):readable(v),priority,method:e.method});};
+    const add=(label,v,priority=0)=>{zhMethod=e.method;if(hasData(v))b.push({label:displayPrefix+label,value:/規則來源/.test(label)?(typeof v==='string'?v:json(v)):stripDisclaimers(typeof v==='string'?zhText(v):readable(v)),priority,method:e.method});};
     return {e,data,b,section,add,c:e.chart,a:e.analysis};
   }
   function bazi(ctx){const{c,a,section:s,add}=ctx,core=s('四柱、節令與換日依據')||s('時辰未知的三柱')||{},st=s('旺衰、格局與制化')||{};
@@ -138,7 +143,7 @@
       const L=['強弱：'+(sa.level||'')+(sa.integratedDirection?'（'+sa.integratedDirection+'）':'')+(sa.monthSupportClass?'，月令'+sa.monthSupportClass:'')+(sa.lean?'；站內傾向'+sa.lean.direction+'（'+A(sa.lean.basis).join('、')+'）—'+sa.lean.usage:'')+(sa.conflict?'；衝突：'+sa.conflictReason:'')];
       if(A(c.tongGen?.list).length)L.push('通根：'+c.tongGen.list.join('、'));
       A(c.branchInteractions).forEach(b=>L.push('地支'+b.type+'：'+A(b.branches).join('')+'（'+A(b.pillars).map(pl).join('、')+'）'+(b.resultElement?'→'+b.resultElement:'')+(b.transformationStatus?'，'+b.transformationStatus:'')+(b.effect?'—'+b.effect:'')));
-      A(c.functionalAssessment?.combinations).forEach(x=>L.push('天干合：'+pl(x.a)+'與'+pl(x.b)+(x.stems?'（'+x.stems+'）':'')+(x.daySelf?'，日主自合—合住不化，人被綁住':'')+(x.adjacent?'，相鄰':'，不相鄰')+(x.competition?'，爭合':'')+(x.transformationCertified?'，成化':x.removalCertified?'，合去':'，合而不化')));
+      A(c.functionalAssessment?.combinations).forEach(x=>L.push('天干合：'+pl(x.a)+'與'+pl(x.b)+(x.stems?'（'+x.stems+'）':'')+(x.daySelf?'，日主自合':'')+(x.adjacent?'，相鄰':'，不相鄰')+(x.competition?'，爭合':'')+(x.transformationCertified?'，成化':x.removalCertified?'，合去':'，合而不化')));
       const fy=c.fuyiAssessment||{};if(fy.map)L.push('扶抑標記：'+Object.entries(fy.map).map(([k,v])=>k+v).join('、')+(fy.conclusion?'—'+fy.conclusion:''));
       A(fy.mechanisms).forEach(m=>L.push('通路'+(m.type||'')+'：'+(m.action||'')+(A(m.evidence).length?'（'+m.evidence.join('、')+'）':'')+(m.status?'；'+m.status:'')));
       const ms=st.classical?.monthSelection;if(ms)L.push('取格：月令取'+(ms.selectedStem||'')+(ms.selectedGod||'')+'為'+(ms.selectedPattern||'')+'格'+(A(ms.candidates).length?'；候選：'+ms.candidates.map(v=>v.stem+v.god+(v.mainQi?'（本氣）':'')+(A(v.exposed).length?'透'+v.exposed.map(z=>pl(z.pillar)).join('、'):'未透')).join('、'):''));
@@ -162,7 +167,7 @@
     add('自化：宮/星/化/方向/來源',A(core.selfHua).map(p=>row([p.palace,p.star,p.type,p.direction,p.from])).join(';'));
     add('宮干飛化：來源/來源支/星/化/去向/去向支/自化/向心',A(core.northern?.flights).map(f=>row([f.from||f.sourcePalace,f.fromBranch,f.star,f.kind,f.to||f.targetPalace,f.toBranch,f.self,f.centripetal])).join(';'));
     function layer(p){if(!p)return '';return row([p.layer||'大限',p.year??p.ageStart,p.month??p.ageEnd,p.gz||(p.gan||'')+(p.branch||''),p.mingBranch||p.branch,p.context?.age??p.age,p.decadeCandidates?.map(d=>d.ageStart+'–'+d.ageEnd+'歲'),A(p.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||''))]);}
-    add('運限表欄序','層/年或起歲/月或迄歲/干支/命宮地支/虛歲/生日跨限候選/四化星→地支。沿本命地支星位讀；各層宮職以其命宮重標，不能改成本命原坐。未列流曜不作額外吉凶依據。');
+    add('運限表欄序','層/年或起歲/月或迄歲/干支/命宮地支/虛歲/生日跨限候選/四化星→地支。各層宮職以該層命宮重標。');
     const l=s('運限疊宮')||{};add('大限',A(l.decades).map(layer).join('\n'));add('當期與所問流年：年/干支/命支/虛歲/生日跨限候選/四化→地支/小限宮',[l.annual,...A(s('明示年度流年'))].filter(Boolean).map(p=>row([p.year,p.gz,p.mingBranch,p.context?.age??p.age??'',A(p.decadeCandidates).map(d=>d.ageStart+'–'+d.ageEnd+'歲'),A(p.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||'')),p.minor?.palace?p.minor.palace+p.minor.branch:''])).join('\n'));A(s('明示年度流月')).forEach((y,yi)=>add(y.year+'年流月：月/干支/流月命支/四化→地支',A(y.months).map(m=>row([m.month,m.gz,m.mingBranch,A(m.hua).map(h=>(h.star||'')+(h.hua||'')+'→'+(h.palaceBranch||h.branch||''))])).join('\n'),2+yi));add('全部已算流月',A(l.months).map(p=>A(p.segments).length?p.segments.map(z=>interval({start:z.startsAt,end:z.endsAt})+' '+layer(z)).join('\n'):layer(p)).join('\n'),1);add('目前日小限',compactObject({minor:a.currentMinor,daily:l.daily,hourly:l.hourly}),4);add('年度缺項',s('流年輸出範圍')?.missingYears);
     {const pats=A(s('格局條件核對')?.patterns);add('實際格局與轉象（引擎已寫成句）',[...pats.map(p=>p.name+'：'+(p.status==='structural'?'結構成立':p.status==='variant-structure'?'變體成立':p.status||'')+(A(p.conditions).length?'（'+p.conditions.map(c0=>c0.label+(c0.passed?'✓':'✗')).join('、')+'）':'')),...A(core.northern?.transitions).map(t=>'轉象：'+(t.incoming?.from||'')+'宮'+(t.incoming?.star||'')+'化'+(t.incoming?.kind||'')+'飛入'+(t.incoming?.to||'')+'宮，遇生年'+(t.birthTransformation?.star||'')+(t.birthTransformation?.hua||'')+'→依「'+(t.rule||'')+'」規則，飛化改讀成生年那一化的同類象'+(t.sourceSection?'（'+t.sourceSection+'）':''))].join('\n'),2);}
   }
@@ -210,7 +215,7 @@
       const mut=A(ed.mutualHosting).map(m=>zh(m.a?.host)+'與'+zh(m.b?.host)+'互容（'+dw(m.b?.dignities)+'／'+dw(m.a?.dignities)+'）—兩顆星互相有辦法，問題能互相解');
       add('尊貴與接納（引擎已寫成句）',[(core.sect?.name?'盤別：'+core.sect.name+'；':'')+'盤主星'+zh(core.chartRuler||''),...rows,...(mut.length?['互容：'+mut.join('；')]:[])].join('\n'));}
     {const sc=core.specialConditions||{},sh=core.chartShapes||{},SOL={cazimi:'日心（有力）',combust:'燃燒（弱）','under-beams':'日光下（偏弱）',clear:'日光外'};
-      add('形狀與特殊條件（引擎已寫成句）',[A(core.patterns).length?'相位圖形：'+core.patterns.map(p=>(p.name||p.type||'')+(A(p.planets).length?'（'+p.planets.map(zh).join('、')+'）':'')).join('、'):'相位圖形：無',A(sh.matched).length?'盤形：'+sh.matched.map(m=>m.name+'—'+(m.condition||'')).join('；')+(sh.largestEmptyGap?'；最大空區在'+zh(sh.largestEmptyGap.after)+'到'+zh(sh.largestEmptyGap.before)+'之間（'+Math.round(sh.largestEmptyGap.degrees)+'度）':''):'',A(sc.unaspected).length?'無相位行星：'+sc.unaspected.map(zh).join('、')+'—自己一個人運作，不受牽制也沒人幫':'',A(sc.outOfSign).length?'跨座相位（力道打折）：'+sc.outOfSign.map(a=>zh(a.a)+a.name+zh(a.b)).join('、'):'',A(sc.nearStations).length?'近停滯（力道特別強）：'+sc.nearStations.map(zh).join('、'):'',A(sc.solar).length?'與太陽的關係：'+sc.solar.map(x=>zh(x.planet)+SOL[x.state]||x.state).join('、'):''].filter(Boolean).join('\n'),2);}
+      add('形狀與特殊條件（引擎已寫成句）',[A(core.patterns).length?'相位圖形：'+core.patterns.map(p=>(p.name||p.type||'')+(A(p.planets).length?'（'+p.planets.map(zh).join('、')+'）':'')).join('、'):'相位圖形：無',A(sh.matched).length?'盤形：'+sh.matched.map(m=>m.name+'—'+(m.condition||'')).join('；')+(sh.largestEmptyGap?'；最大空區在'+zh(sh.largestEmptyGap.after)+'到'+zh(sh.largestEmptyGap.before)+'之間（'+Math.round(sh.largestEmptyGap.degrees)+'度）':''):'',A(sc.unaspected).length?'無相位行星：'+sc.unaspected.map(zh).join('、'):'',A(sc.outOfSign).length?'跨座相位：'+sc.outOfSign.map(a=>zh(a.a)+a.name+zh(a.b)).join('、'):'',A(sc.nearStations).length?'近停滯：'+sc.nearStations.map(zh).join('、'):'',A(sc.solar).length?'與太陽的關係：'+sc.solar.map(x=>zh(x.planet)+SOL[x.state]||x.state).join('、'):''].filter(Boolean).join('\n'),2);}
     const future=s('實算行運次限與回歸')||{};for(const [k,p0]of Object.entries(future)){if(!p0)continue;const ov=A(p0.natalHouseOverlay),p=ov.length&&ov[0].progressedHouse===undefined&&p0.planets?{...p0,natalHouseOverlay:[],planets:Object.fromEntries(Object.entries(p0.planets).map(([pk,pv])=>[pk,{...pv,house:ov.find(v=>v.planet===pk)?.natalHouse??pv.house}]))}:p0;const kn=({transits:'行運',progressions:'次限推運',returnAnalysis:'太陽回歸'})[k]||k;add(kn+'時點與相位',{utc:p.utc,referenceUTC:p.referenceUTC,purpose:p.purpose,aspects:aspectRows(p.aspects),angleAspects:aspectRows(p.angleAspects),overlay:Array.isArray(p.natalOverlay)&&p.natalOverlay[0]?.a?aspectRows(p.natalOverlay):A(p.natalHouseOverlay||p.natalOverlay).map(v=>[zh(v.planet),v.progressedHouse,v.natalHouse])});add(kn+'星位'+(k==='transits'?'（宮欄＝落在本命第幾宮）':''),planetRows(p.planets,false),k==='transits'?1:2);}
     const h=(s('問事及搬遷')||{}).horary;if(h){add('卜卦取用',{significators:h.significators,selectedHouse:h.selectedHouse,querent:h.querent,quesited:h.quesited,moon:compactObject(h.moon),orbPolicy:h.orbPolicy});add('傳光集光及受阻',compactObject({translation:h.translationChecks||h.translationCandidates,collection:h.collectionChecks||h.collectionCandidates,denials:h.denialChecks||h.perfectionAndInterference,light:h.lightChecks}),1);add('卜卦實際時序',compactObject(h.timeline),3);}
   }
@@ -226,7 +231,6 @@
     const cl=s('六十四課三值判定');
     add('成立或未決課體：課/狀態/版本條件/缺項（1真0假?未定）',A(cl?.checks).filter(p=>p.status!=='not-established'&&p.established!==false).map(p=>row([p.name,p.status,A(p.variants).map(v=>[v.name,state(v.value),A(v.conditions).map(x=>[x.condition,state(x.value)])]),p.missing])).join('\n'));
     const tm=s('取用與候選日實算');add('取用與候選範圍',{selection:{mode:tm?.selection?.mode,status:tm?.selection?.status,targets:A(tm?.selection?.targets).map(p=>({kinship:p.kinship,role:p.role,placements:A(p.placements).map(v=>[v.role,v.branch||v.upper,v.earth]),transmissions:A(p.transmissions).map(v=>[v.role,v.branch])}))},window:tm?.window,status:tm?.status,candidates:tm?.candidateCount,inspected:tm?.inspectedDayCount,scales:compactObject(tm?.scales)});add('實際命中神煞',A(s('神煞實際命中與不足')?.active).map(p=>P(p,['name','location','hits'])),3);
-    add('候選日閱讀界線','候選日全集屬逐日驗算資料；本訊息不列全集，不能挑未列日期當事件應期。原課仍可完整判方向、條件與進退。');
   }
   function liuyao(ctx){const{section:s,add}=ctx,core=s('完整起卦與六爻')||{},v=s('完整作用網路與讀法')||{};
     {const cal=core.calendar||{},og=core.original||{},cg=core.changed||{};add('起卦與六爻（引擎已寫成句）',[cal.wall?'起卦 '+cal.wall:'',[cal.year,cal.month,cal.day,cal.hour].filter(Boolean).length?'四柱／日辰 '+[cal.year,cal.month,cal.day,cal.hour].filter(Boolean).join(' '):'',cal.monthBranch?'月建'+cal.monthBranch:'',A(cal.voidBranches).length?'旬空'+cal.voidBranches.join(''):''].filter(Boolean).join('，')+'；六爻值（初→上）'+A(core.values).join(',')+'，動爻'+(A(core.movingPositions).length?core.movingPositions.join('、'):'無')+'；本卦'+(og.name||'')+(og.palace?'（'+og.palace.name+'宮'+(og.palace.element||'')+'、'+(og.palace.generation||'')+'，世'+og.palace.shi+'應'+og.palace.ying+'）':'')+(core.hasChange===false||(cg.name&&cg.name===og.name&&!A(core.movingPositions).length)?'，六爻皆靜':(cg.name?'→變卦'+cg.name:'')));}
@@ -329,23 +333,22 @@
         if(!op.valid){add((opNames[key]||key)+'：未完成或無效，不補造',o.abandonReason||'程序未成立');return;}
         if(op.abandoned){add((opNames[key]||key)+'：已放棄，不補造',o.abandonReason||'');return;}
         const dom=o.domainMeaning||o.sephirahMeaning;const where=o.activePile??o.activeHouse??o.activeSign??o.activeSephirah;
-        if(key==='op1'){const match=b.expectedPile&&where?(b.expectedPile===where):null;L.push('代表牌'+name(sigId)+'落在'+pileWord(where)+(match===true?'，與問題性質相符':match===false?'；問的是'+pileWord(b.expectedPile)+'的事卻落在這裡—依Book T，事情不如他想的那樣，或他真正在意的其實是這一堆代表的事':''));}
-        else if(key==='op2'){L.push('代表牌落第'+where+'宮'+(dom?'（'+dom+'）':'')+(b.primaryHouse&&Number(where)!==Number(b.primaryHouse)?'；問的是第'+b.primaryHouse+'宮的事卻落到這裡，表示事情的推進力來自這一宮的人事':'，與問題所屬宮位相符'));}
-        else if(key==='op3'){L.push('代表牌落'+where+(dom?'（'+dom+'）':'')+(b.expectedSign&&String(where)!==String(b.expectedSign)?'；與預期星座不同，心裡的狀態和他嘴上問的不一致':''));}
-        else if(key==='op4'){L.push('三十六牌環，代表牌在第'+(o.sigPosition??'?')+'位；這一輪只能給季節感（代表牌所在星座區段），不能換算幾週幾月，沒有具名取法就不給日期');}
-        else if(key==='op5'){L.push('結局落'+where+(dom?'（'+dom+'）':'')+'：這一輪的計數路徑就是事情最後會走到哪裡');}
-        if(o.significatorInverted===true)L.push('代表牌倒置：他自己不在狀態、或事情背著他的意願走');
-        if(A(o.openingCards).length)L.push('四堆翻面初示牌：'+o.openingCards.map(pc=>pileWord(pc.pile).split('（')[0]+' '+name(cid_(pc.card))+(pc.pileDignity?.relation?'（'+relWord(pc.pileDignity.relation)+'）':'')).join('、')+'—初示牌只定四堆氣氛，不當結論');
+        if(key==='op1'){const match=b.expectedPile&&where?(b.expectedPile===where):null;L.push('代表牌'+name(sigId)+'落在'+pileWord(where)+(match===true?'，即問題所屬之堆':match===false?'；問題所屬為'+pileWord(b.expectedPile):''));}
+        else if(key==='op2'){L.push('代表牌落第'+where+'宮'+(dom?'（'+dom+'）':'')+(b.primaryHouse&&Number(where)!==Number(b.primaryHouse)?'；問題所屬為第'+b.primaryHouse+'宮':'，即問題所屬之宮'));}
+        else if(key==='op3'){L.push('代表牌落'+where+(dom?'（'+dom+'）':'')+(b.expectedSign&&String(where)!==String(b.expectedSign)?'；問題所屬星座為'+b.expectedSign:''));}
+        else if(key==='op4'){L.push('三十六牌環（對應黃道三十六旬），代表牌在第'+(o.sigPosition??'?')+'位');}
+        else if(key==='op5'){L.push('結局落'+where+(dom?'（'+dom+'）':''));}
+        if(A(o.openingCards).length)L.push('四堆翻面初示牌：'+o.openingCards.map(pc=>pileWord(pc.pile).split('（')[0]+' '+name(cid_(pc.card))+(pc.pileDignity?.relation?'（'+relWord(pc.pileDignity.relation)+'）':'')).join('、')+'');
         const path=A(o.countingPath||o.countingSteps||o.counting);const cards=A(o.activeCards);
-        if(path.length){const chain=path.map(st=>{const cid=st.cardId??st.id;const c0=cards.find(x=>x.id===cid)||dict.get(cid);const inv=c0&&(c0.ootkInverted===true||c0.physicalOrientation==='inverted');if(cid!=null){if(!pathIds.has(cid))pathIds.set(cid,new Set());pathIds.get(cid).add(key);}return name(cid)+(inv?'（倒）':'')+(core(cid)?'＝'+core(cid):'');});L.push('計數路徑：'+chain.join(' → ')+'。'+(key==='op5'?'最後一張就是結局的樣子，倒數第二張是怎麼走到那裡':'路徑是事情的走向，停在哪張就是這一輪的結論'));}
+        if(path.length){const chain=path.map(st=>{const cid=st.cardId??st.id;const c0=cards.find(x=>x.id===cid)||dict.get(cid);const inv=c0&&(c0.ootkInverted===true||c0.physicalOrientation==='inverted');if(cid!=null){if(!pathIds.has(cid))pathIds.set(cid,new Set());pathIds.get(cid).add(key);}return name(cid)+(core(cid)?'＝'+core(cid):'');});L.push('計數路徑：'+chain.join(' → '));}
         const pairs=A(o.pairs||o.pairing);const sp=pairs.find(pr=>cid_(pr.left)===sigId||cid_(pr.right)===sigId||name(cid_(pr.left))===name(sigId)||name(cid_(pr.right))===name(sigId));
-        if(sp){const l=cid_(sp.left),r=cid_(sp.right);const other=(l===sigId||name(l)===name(sigId))?r:l;L.push('代表牌與'+name(other)+'配對，關係'+relWord(sp.dignity)+'：'+(sp.dignity==='weaken'?'身邊的力量在拖他、互相抵消':sp.dignity==='strengthen'?'身邊的力量在推他、同方向':'身邊的力量平和，不加也不減')+(core(other)?'；那張牌說的是'+core(other):''));}
+        if(sp){const l=cid_(sp.left),r=cid_(sp.right);const other=(l===sigId||name(l)===name(sigId))?r:l;L.push('代表牌與'+name(other)+'配對（'+relWord(sp.dignity)+'）'+(core(other)?'：'+name(other)+'＝'+core(other):''));}
         const dg=A(o.dignities||o.elementalDignities).find(x=>cid_(x.card)===sigId||name(cid_(x.card))===name(sigId));
-        if(dg){const lc=cid_(dg.leftCard),rc=cid_(dg.rightCard);L.push('代表牌兩側：'+(lc!=null?name(lc)+'（'+relWord(dg.leftDignity)+'）':'無')+'、'+(rc!=null?name(rc)+'（'+relWord(dg.rightDignity)+'）':'無')+(dg.neutralizedByContraryFlanks===true?'，兩側相反抵銷，這一輪的力度要打折':dg.fullDignity===true?'，尊貴完整':''));}
-        const orient=pc=>pc.ootkInverted===true||pc.physicalOrientation==='inverted'?'（倒）':'';
+        if(dg){const lc=cid_(dg.leftCard),rc=cid_(dg.rightCard);L.push('代表牌兩側：'+(lc!=null?name(lc)+'（'+relWord(dg.leftDignity)+'）':'無')+'、'+(rc!=null?name(rc)+'（'+relWord(dg.rightDignity)+'）':'無')+(dg.neutralizedByContraryFlanks===true?'，兩側相反':dg.fullDignity===true?'，兩側同性':''));}
+        const orient=()=>'';
         if(cards.length)L.push('牌序（'+cards.length+'張，完整）：'+cards.map(pc=>name(pc.id)+orient(pc)).join('、'));
         const others=pairs.filter(pr=>pr!==sp).map(pr=>name(cid_(pr.left))+'＋'+name(cid_(pr.right))+'（'+relWord(pr.dignity)+'）');
-        if(others.length)L.push('其餘配對（'+others.length+'組，完整；增強的那幾組是推力、削弱的是阻力，用來補路徑沒講到的人事）：'+others.join('、'));
+        if(others.length)L.push('其餘配對（'+others.length+'組）：'+others.join('、'));
         const pathSet=new Set(path.map(st=>st.cardId??st.id));const dgs=A(o.dignities||o.elementalDignities).filter(x=>x!==dg&&pathSet.has(cid_(x.card)));
         if(dgs.length)L.push('路徑牌尊貴：'+dgs.map(x=>name(cid_(x.card))+'—左'+(cid_(x.leftCard)!=null?name(cid_(x.leftCard))+relWord(x.leftDignity):'無')+'、右'+(cid_(x.rightCard)!=null?name(cid_(x.rightCard))+relWord(x.rightDignity):'無')+(x.neutralizedByContraryFlanks===true?'（抵銷）':'')).join('；'));
         add(opNames[key]||key,L.join('\n'));
@@ -464,7 +467,7 @@ var JY_REC_PACKET = {
 /* Bounded reading packets. The chart and native analysis exports remain intact. */
 (function(root){
   'use strict';
-  const VERSION='20261023prompt66',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
+  const VERSION='20261024prompt67',LIMIT=12000,BYTES=28000,records=new Map(),byChart=new WeakMap(),arr=x=>Array.isArray(x)?x:[];
   const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o&&o[k]!==undefined&&typeof o[k]!=='function').map(k=>[k,o[k]]));
   const utf8=s=>{let n=0;for(const ch of String(s)){const c=ch.codePointAt(0);n+=c<128?1:c<2048?2:c<65536?3:4;}return n;};
   const chars=s=>Array.from(String(s)).length;
