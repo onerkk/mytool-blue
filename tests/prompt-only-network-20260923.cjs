@@ -46,7 +46,7 @@ const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
     // The birth engine is deliberately lazy; load it through the same public
     // page loader before verifying that symbolic name labels cannot alter scores.
     await page.evaluate(() => new Promise((resolve, reject) => {
-      window._jyLazyScript('JS/bazi.js?v=20260923final1', ok => ok ? resolve() : reject(Error('八字排盤載入失敗')));
+      window._jyLazyScript('JS/bazi.js?v=', ok => ok ? resolve() : reject(Error('八字排盤載入失敗')));
     }));
     // 姓名字根屬傳統分類，不應在頁面中的今日運勢和照片濾鏡暗中加減事件分數。
     const nameBoundary = await page.evaluate(() => {

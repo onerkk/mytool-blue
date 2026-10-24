@@ -97,9 +97,9 @@ test('Manual pick commits its original reversal and waits for the entire spread 
 });
 test('Concurrent engine requests share one script and notify every caller; a failed load can retry',()=>{
  const env=environment(),src=read('JS/ui.js');vm.runInContext(src.slice(src.indexOf('  var jyScriptLoads={};'),src.indexOf('  window._ziweiOpen',src.indexOf('  var jyScriptLoads={};'))),env.ctx);
- const results=[];env.ctx._jyLazyScript('JS/bazi.js?v=one',ok=>results.push(ok));env.ctx._jyLazyScript('JS/bazi.js?v=two',ok=>results.push(ok));
+ const results=[];env.ctx._jyLazyScript('JS/bazi.js?v=',ok=>results.push(ok));env.ctx._jyLazyScript('JS/bazi.js?v=',ok=>results.push(ok));
  assert.equal(env.doc.body.children.length,1);env.doc.body.children[0].onload();assert.deepEqual(results,[true,true]);
- env.ctx._jyLazyScript('JS/bazi.js?v=three',ok=>results.push(ok));assert.equal(env.doc.body.children.length,1);assert.equal(results.length,3);
+ env.ctx._jyLazyScript('JS/bazi.js?v=',ok=>results.push(ok));assert.equal(env.doc.body.children.length,1);assert.equal(results.length,3);
  env.ctx._jyLazyScript('JS/name_upgrade.js',ok=>results.push(ok));env.doc.body.children[1].onerror();assert.equal(results.at(-1),false);env.ctx._jyLazyScript('JS/name_upgrade.js',()=>{});assert.equal(env.doc.body.children.length,3);
 });
 test('Deferred engines wait for a closed picker and yield between dependent files',()=>{

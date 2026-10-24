@@ -77,3 +77,10 @@
 @media(max-height:690px){#vd-ceremony .vdr-stage{min-height:170px;max-height:230px}#vd-ceremony .vdr-copy{padding-top:6px}#vd-ceremony .vdr-copy h2{font-size:24px}#vd-ceremony .vdr-bottom{padding-top:4px}#vd-ceremony #vdr-fact{font-size:11px;min-height:25px;margin-bottom:9px}#vd-ceremony .vdr-copy .vd-kicker{margin-bottom:5px}}
 @media(prefers-reduced-motion:reduce){#vedic-page *,#vd-picker *,#vd-ceremony *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 #vedic-page[data-motion=still] *,#vd-ceremony[data-motion=still] *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+
+/* 下一步：結果頁一打開就看得到的主要動作（複製提示詞在「解讀」分頁時，第一眼仍知道怎麼做） */
+.vd-next{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;margin:14px 0 6px;padding:14px 16px;border:1px solid #d8bd8a66;border-radius:14px;background:linear-gradient(135deg,#d8bd8a14,#0b182400)}
+.vd-next>div:first-child{flex:1 1 220px;min-width:0}.vd-next p{margin:.2rem 0 0;line-height:1.6}
+.vd-next-actions{display:flex;flex-wrap:wrap;gap:10px}.vd-next-actions button{min-height:46px}
+#vd-next-status:empty{display:none}
+.vd-next-links{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:.45rem}.vd-next-links a{color:#e6cf9f;text-decoration:none;border-bottom:1px solid #e6cf9f55;font-size:.9rem;line-height:1.8}

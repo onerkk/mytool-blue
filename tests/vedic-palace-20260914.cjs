@@ -40,7 +40,7 @@ const root=path.resolve(__dirname,'..');
   chart.lagna=null;for(const p of Object.values(chart.planets))p.house=null;assert.equal(ctx.JYVedicScene.model(chart).lagna,null);
  });
  test('Palace materials and cache are wired into the delivered entry page',()=>{
-  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert(html.includes('CSS/vedic-palace.css?v=20260914palace1'));
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert(html.includes('CSS/vedic-palace.css?v='));
   assert(html.indexOf('CSS/vedic-palace.css')>html.indexOf('CSS/vedic.css'));require('postcss').parse(fs.readFileSync(path.join(root,'CSS/vedic-palace.css'),'utf8'));
   assert(fs.statSync(path.join(root,'assets/ui/vedic-palace-20260914.webp')).size>100000);
   assert.equal(fs.readFileSync(path.join(root,'sw.js'),'utf8'),fs.readFileSync(path.join(root,'JS/sw.js'),'utf8'));

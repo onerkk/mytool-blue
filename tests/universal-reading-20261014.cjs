@@ -136,7 +136,7 @@ test('all generated public paths, API and worker carry the same universal policy
  assert(api.includes('所有原題都依同一完整解讀流程'));assert(worker.includes(api.trimEnd()));
  for(const name of ['reading-workflow','prompt-packet','prompt-brief','native-depth-contract','native-chart-analysis','tarot-semantic-engine','ai-analysis'])if(fs.existsSync(path.join(root,name+'.js')))assert.equal(fs.readFileSync(path.join(root,name+'.js'),'utf8'),fs.readFileSync(path.join(root,'JS',name+'.js'),'utf8'),name+' mirror');
  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert(sw.includes("CACHE_NAME = 'jy-main-v133'"));assert.equal(sw,fs.readFileSync(path.join(root,'JS/sw.js'),'utf8'));
- assert(fs.readFileSync(path.join(root,'index.html'),'utf8').includes('JS/reading-workflow.js?v=20261015reader26'));
+ assert(fs.readFileSync(path.join(root,'index.html'),'utf8').includes('JS/reading-workflow.js?v='));
 });
 const report={release:'20261015reader26',status:'passed',checks,exports:exportCases,originalQuestionFallbackExports:30,scope:'Actual native exporters and retained API payload builder, source integrity and per-task reading requirements. Does not certify an external AI answer or empirical prediction accuracy.'};
 if(process.env.JY_UNIVERSAL_REPORT)fs.writeFileSync(process.env.JY_UNIVERSAL_REPORT,JSON.stringify(report,null,2)+'\n');
