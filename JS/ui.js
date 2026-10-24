@@ -6933,10 +6933,14 @@ window._tarotShare = function () {
     return;
   }
 
-  var def = (S.tarot && (S.tarot.dynamicSpreadDef || S.tarot.spreadDef)) || {};
-  var shareMethodId = (S.tarot && S.tarot.spreadType) || def.id || '';
+  // 以目前這次抽牌為準：抽牌完成頁就能分享，S.tarot.drawn 可能還是上一次占卜的牌。
+  var liveDef = (typeof getCurrentSpreadDef === 'function') ? getCurrentSpreadDef() : null;
+  var def = liveDef || (S.tarot && (S.tarot.dynamicSpreadDef || S.tarot.spreadDef)) || {};
+  var liveId = (typeof getCurrentSpread === 'function') ? getCurrentSpread() : '';
+  var shareMethodId = liveId || (S.tarot && S.tarot.spreadType) || def.id || '';
   var shareSignificator = shareMethodId === 'mathers_66' ? window._jyLastMathersSignificator : null;
-  var cards = ((S.tarot && S.tarot.drawn) || drawnCards || []).map(function (c, i) {
+  var liveCards = (typeof drawnCards !== 'undefined' && drawnCards && drawnCards.length) ? drawnCards : null;
+  var cards = (liveCards || (S.tarot && S.tarot.drawn) || []).map(function (c, i) {
     var pp = (def.positions && def.positions[i]) ? def.positions[i] : null;
     var pos = pp ? (pp.name || pp.zh || '') : ('第' + (i + 1) + '張');
     // v85.4：補傳 img——share-card v2.1 起繪真牌面（逆位旋轉180°）、>3張全張數入卡

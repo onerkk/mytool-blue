@@ -22,6 +22,7 @@
       document.getElementById('tarot-dock-count').textContent=count+' / '+target+' 張';
       document.getElementById('tarot-dock-step').textContent=complete?'本次牌陣已完成':pending?'本組牌已保留，等你繼續':busy?'正在收下第 '+(count+1)+' 張牌':window._deckIsShuffled?'還差 '+(target-count)+' 張':'第一步 · 靜心洗牌';
       var action=document.getElementById('tarot-dock-action');action.disabled=busy;
+      var share=document.getElementById('tarot-dock-share');if(share){share.hidden=!complete||busy;share.disabled=busy;}
       action.textContent=busy?(pending?'正在揭牌…':'正在收牌…'):complete?'取得解讀提示詞':pending?'繼續揭牌':window._deckIsShuffled?(count?'快速補滿':'快速抽牌'):'開始洗牌';
       var progress=document.getElementById('tarot-selection-progress');if(progress){progress.max=target;progress.value=count;progress.setAttribute('aria-valuetext','已選 '+count+' 張，共 '+target+' 張');}
       var path=document.getElementById('tarot-flow-path');if(path)path.querySelectorAll('li').forEach(function(li,i){var current=complete?2:window._deckIsShuffled?1:0;li.setAttribute('aria-current',i===current?'step':'false');li.classList.toggle('is-done',i<current);});

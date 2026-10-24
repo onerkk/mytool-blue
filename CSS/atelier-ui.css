@@ -506,3 +506,7 @@ body.jy-atelier{
 }
 .jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::before{transform:rotate(-20deg) translateX(-14%)}
 .jy-atelier .at-art:is([data-art=tarot],[data-art=ootk],[data-art=lenormand])::after{transform:rotate(20deg) translateX(14%)}
+
+/* 牌陣完成後的分享鍵：次要樣式，不與金色主鍵競爭 */
+#tarot-draw-dock>#tarot-dock-share{background:transparent!important;color:#f2d9aa!important;border:1px solid #dcc086aa!important;box-shadow:none!important}
+#tarot-draw-dock>#tarot-dock-share[hidden]{display:none!important}
