@@ -38,7 +38,7 @@ module.exports=[
 ['幫我回顧今年、展望明年',['year_review','zodiac'],['grand','grand_nines','nine']],
 ['我這一年每個月的運勢',['monthly','zodiac'],['grand','grand_nines']],
 ['要不要跟他告白？',['five_card','cross','either_or'],['five','seven','choice']],
-['新家的風水適合我嗎？',['minor_arcana','five_card'],['five','seven']],
+['新家的風水適合我嗎？',['minor_arcana','five_card'],['three','five','seven']],
 ['我跟老闆的關係為什麼越來越差？',['relationship','cross'],['nine','seven']],
 ['下週的提案會被接受嗎？',['three_card','five_card'],['three','five']],
 ['我應該買這間房子嗎？',['five_card','cross','minor_arcana'],['five','seven']],

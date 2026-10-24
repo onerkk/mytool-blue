@@ -2516,7 +2516,7 @@ function _lnAnalyzeQuestion(q) {
   var incompleteChoice = decision.kind === 'incomplete';
   var hypothesisChoice = decision.kind === 'hypotheses' || decision.kind === 'ambiguous';
   var isChoice = decision.kind === 'binary' && !!decision.left && !!decision.right;
-  var isDecision = !isChoice && (/(?:是不是該|是否該)(?:換|轉|離|辭|去|接|投|搬|創|開|簽|留|繼續|放棄|結|分|告白|復合)/.test(q) || /(?:投資|生意|案子|計畫|合作|合夥|這筆|這個案|這份工作|這個機會|邀約|這間公司|這個職位)[^，。]{0,8}(?:能不能|可不可以|值不值得|適不適合)/.test(q) || /(?:應該|適合|適不適合|能不能|值不值得|可以)(?:接受|答應|去|換|轉|辭|離職|跳槽|創業|開店|投資|買|賣|簽|搬|結婚|分手|告白|復合|借|貸|繼續|放棄|留|進修|合作|合夥|出國|留學)|適合我嗎|適不適合我|值得嗎|可行嗎|能做嗎/.test(q));
+  var isDecision = !isChoice && (/(?:是不是該|是否該)(?:換|轉|離|辭|去|接|投|搬|創|開|簽|留|繼續|放棄|結|分|告白|復合)/.test(q) || /(?:投資|生意|案子|計畫|合作|合夥|這筆|這個案|這份工作|這個機會|邀約|這間公司|這個職位)[^，。]{0,8}(?:能不能|可不可以|值不值得|適不適合)/.test(q) || /(?:應該|適合|適不適合|能不能|值不值得|可以)(?:接受|答應|去|換|轉|辭|離職|跳槽|創業|開店|投資|買|賣|簽|搬|結婚|分手|告白|復合|借|貸|繼續|放棄|留|進修|合作|合夥|出國|留學)|值得嗎|可行嗎|能做嗎/.test(q));
   var choiceA = isChoice ? decision.left : null, choiceB = isChoice ? decision.right : null;
 
   var yesNoPartRe = /嗎\s*$|^(?:會不會|有沒有|能不能|可不可以|是不是|是否|要不要|該不該|應不應該|適不適合|值不值得|行不行|成不成|愛不愛|喜不喜歡)/;
