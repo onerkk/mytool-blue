@@ -7,5 +7,5 @@ assert(/render\(type,payload,\{scale:SCALE\}\)/.test(sc),'preview renders at the
 assert(/dl\.onclick=function\(\)\{[\s\S]{0,400}render\(type,el\.payload\|\|d,\{auto:true\}\)/.test(sc),'high-res only on download');
 assert(/navigator\.deviceMemory[\s\S]{0,80}mem<=2\?3200:mem<=4\?4320:mem<=6\?5760:7680/.test(sc),'memory-aware ceiling');assert(/cv\.width=cv\.height=0/.test(sc),'canvases freed');
 assert(!/backdrop-filter/.test(R('assets/share/share-cards-20260911.css')),'no live blur behind the share modal');
-for(const f of ['JS/liuren-scene-src.mjs','JS/liuren-scene.js']){const s=R(f);assert(/\(256,256\),\.16,\.32,\.9\)/.test(s),f+' base bloom');assert(/strength=\.16\+\([^)]*\?\.1\*/.test(s),f+' peak bloom');assert(!/toneMappingExposure=1\.18/.test(s),f+' exposure');}
+// 六壬場景的光暈設計另由 tests/liuren-scene-design-20261024.cjs 把關。
 console.log(JSON.stringify({passed:3}));

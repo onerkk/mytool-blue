@@ -1,9 +1,5 @@
 import * as THREE from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 // Geometry is a view of the native chart. Gestures never rotate its data.
 const TAU=Math.PI*2, RAD=Math.PI/180;
@@ -22,9 +18,9 @@ function mount(host,chart,options={}){
   const canvas=renderer.domElement;
   canvas.className='lr-instrument-canvas';canvas.tabIndex=0;canvas.setAttribute('role','group');
   canvas.setAttribute('aria-label','立體六壬天地盤。左右鍵轉動，上下鍵選宮，Enter查看，Home歸正。');
-  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setClearColor(0x060f12,1);
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setClearColor(0x060f12,1);
   renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure=1.04;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMappingExposure=.95;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   host.appendChild(canvas);
   const environment=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
   const envTarget=pmrem.fromScene(environment,.055);scene.environment=envTarget.texture;scene.environmentIntensity=1.05;
@@ -33,18 +29,18 @@ function mount(host,chart,options={}){
   const orbit=new THREE.Group(),earth=new THREE.Group(),sky=new THREE.Group(),generals=new THREE.Group();
   scene.add(orbit);orbit.add(earth,sky,generals);sky.position.y=.105;generals.position.y=.165;
   // 真正的金屬與琺瑯：高金屬度、低粗糙度的金，深藍綠琺瑯帶透明漆層，玉面帶絲光。
-  const bronze=own(new THREE.MeshPhysicalMaterial({color:0xd4a85a,metalness:.96,roughness:.2,envMapIntensity:1.5,clearcoat:.35,clearcoatRoughness:.3}));
+  const bronze=own(new THREE.MeshPhysicalMaterial({color:0xd2a656,metalness:.97,roughness:.3,envMapIntensity:1.0,clearcoat:.2,clearcoatRoughness:.35}));
   const darkBronze=own(new THREE.MeshStandardMaterial({color:0x5a4a33,metalness:.9,roughness:.36,envMapIntensity:1.1}));
-  const enamel=own(new THREE.MeshPhysicalMaterial({color:0x06202a,metalness:.1,roughness:.22,clearcoat:1,clearcoatRoughness:.12,envMapIntensity:1.2,emissive:0x02131a,emissiveIntensity:.6}));
-  const jade=own(new THREE.MeshPhysicalMaterial({color:0x0f3a38,metalness:.05,roughness:.3,clearcoat:.8,clearcoatRoughness:.25,sheen:.6,sheenColor:0x7fd4c0,envMapIntensity:1.1,emissive:0x05201e,emissiveIntensity:.5}));
-  const goldLine=own(new THREE.MeshBasicMaterial({color:0xe8c88a,transparent:true,opacity:.55}));
-  const goldGlow=own(new THREE.MeshBasicMaterial({color:0xffd98a}));
-  scene.add(new THREE.HemisphereLight(0xdbe8e6,0x1a1612,1.1));
-  const key=new THREE.DirectionalLight(0xffe2b0,3.4);key.position.set(-4,6,3);key.castShadow=true;
+  const enamel=own(new THREE.MeshPhysicalMaterial({color:0x06202a,metalness:.1,roughness:.22,clearcoat:1,clearcoatRoughness:.12,envMapIntensity:1.2,emissive:0x02131a,emissiveIntensity:.22}));
+  const jade=own(new THREE.MeshPhysicalMaterial({color:0x0f3a38,metalness:.05,roughness:.3,clearcoat:.8,clearcoatRoughness:.25,sheen:.35,sheenColor:0x7fd4c0,envMapIntensity:1.0,emissive:0x05201e,emissiveIntensity:.12}));
+  const goldLine=own(new THREE.MeshBasicMaterial({color:0xe6c88c,transparent:true,opacity:.85}));
+  const goldGlow=own(new THREE.MeshStandardMaterial({color:0xf0cf86,metalness:.9,roughness:.22,emissive:0x5a3d12,emissiveIntensity:.55}));
+  scene.add(new THREE.HemisphereLight(0xdbe8e6,0x1a1612,.8));
+  const key=new THREE.DirectionalLight(0xfff0d8,2.6);key.position.set(-4,6,3);key.castShadow=true;
   key.shadow.mapSize.set(1024,1024);key.shadow.bias=-.001;key.shadow.normalBias=.025;
   Object.assign(key.shadow.camera,{left:-4,right:4,top:4,bottom:-4,near:.5,far:15});scene.add(key);
-  const rim=new THREE.DirectionalLight(0x8fd0cc,2.2);rim.position.set(4,3,-4);scene.add(rim);
-  const sweep=new THREE.PointLight(0xffd38a,1.6,9,2);sweep.position.set(0,2.6,0);scene.add(sweep);
+  const rim=new THREE.DirectionalLight(0x9ad6d0,1.5);rim.position.set(4,3,-4);scene.add(rim);
+  const sweep=new THREE.PointLight(0xffd8a0,.5,7,2);sweep.position.set(0,2.6,0);scene.add(sweep);
   const glint=new THREE.PointLight(0xf7c681,0,8,2);scene.add(glint);
   function mesh(parent,geometry,material,y=0){const m=new THREE.Mesh(own(geometry),material);m.position.y=y;m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
   function ring(parent,r,t,y,material=bronze){const m=mesh(parent,new THREE.TorusGeometry(r,t,10,128),material,y);m.rotation.x=-Math.PI/2;return m;}
@@ -84,13 +80,15 @@ function mount(host,chart,options={}){
   const upright=[],hitTargets=[],textures=[];
   const qX=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-Math.PI/2),qY=new THREE.Quaternion(),axis=new THREE.Vector3(0,1,0);
   function label(parent,value,r,b,y,w,height,color,size=83){
-    const c=document.createElement('canvas');c.width=Array.from(value).length===1?128:256;c.height=128;const ctx=c.getContext('2d');
-    ctx.font='600 '+size+'px "Noto Serif TC", "Noto Sans CJK TC", serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    // 刻字：深色內陰影＋金屬漸層＋外暈，像嵌在金屬面上的字。
-    ctx.shadowColor='rgba(0,0,0,.85)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;ctx.fillStyle='#000';ctx.fillText(value,c.width/2,70,c.width-10);
-    ctx.shadowColor=color;ctx.shadowBlur=14;ctx.shadowOffsetY=0;
-    const g=ctx.createLinearGradient(0,30,0,106);g.addColorStop(0,'#fff6dc');g.addColorStop(.45,color);g.addColorStop(1,'#9c7b45');
-    ctx.fillStyle=color==='#c9c3ac'?'#e9e2c9':g;ctx.fillText(value,c.width/2,68,c.width-10);
+    // 刻字：兩倍解析度繪製；細暗邊＋金屬漸層，只留一點貼字的落影，不加彩色外暈（外暈會讓整圈字糊成光霧）。
+    const S=2,c=document.createElement('canvas');c.width=(Array.from(value).length===1?128:256)*S;c.height=128*S;const ctx=c.getContext('2d');
+    ctx.scale(S,S);ctx.font='600 '+size+'px "Noto Serif TC", "Noto Sans CJK TC", serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    const cw=c.width/S;
+    ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=3;ctx.shadowOffsetY=1.5;ctx.fillStyle='#000';ctx.fillText(value,cw/2,69,cw-10);
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+    ctx.lineWidth=2;ctx.strokeStyle='rgba(40,28,10,.55)';ctx.strokeText(value,cw/2,68,cw-10);
+    const g=ctx.createLinearGradient(0,30,0,106);g.addColorStop(0,'#fbefcf');g.addColorStop(.5,color);g.addColorStop(1,'#8c6c3a');
+    ctx.fillStyle=color==='#c9c3ac'?'#e6dfc6':g;ctx.fillText(value,cw/2,68,cw-10);
     const texture=own(new THREE.CanvasTexture(c));texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());textures.push(texture);
     const material=own(new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
     const m=mesh(parent,new THREE.PlaneGeometry(w,height),material,y);m.position.copy(polar(r,b,y));m.castShadow=false;
@@ -141,19 +139,18 @@ function mount(host,chart,options={}){
     const delta=mod(end-start+6,12)-6;
     const points=Array.from({length:41},(_,j)=>{const t=j/40;return delta===0?polar(2.415+Math.sin(t*Math.PI)*.07,start+Math.sin(t*TAU)*.25,.225+Math.sin(t*Math.PI)*.2):polar(2.415,start+delta*t,.225+Math.sin(t*Math.PI)*.34);});
     const curve=new THREE.CatmullRomCurve3(points);paths.push(curve);
-    const line=mesh(pathGroup,new THREE.TubeGeometry(curve,48,.014,8,false),own(new THREE.MeshBasicMaterial({color:0xffdf9a,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false})));line.castShadow=false;
-    const halo=mesh(pathGroup,new THREE.TubeGeometry(curve,48,.045,8,false),own(new THREE.MeshBasicMaterial({color:0xffc86a,transparent:true,opacity:.14,blending:THREE.AdditiveBlending,depthWrite:false})));halo.castShadow=false;
+    const line=mesh(pathGroup,new THREE.TubeGeometry(curve,48,.014,8,false),own(new THREE.MeshBasicMaterial({color:0xffdf9a,transparent:true,opacity:.72,blending:THREE.AdditiveBlending,depthWrite:false})));line.castShadow=false;
+    const halo=mesh(pathGroup,new THREE.TubeGeometry(curve,48,.045,8,false),own(new THREE.MeshBasicMaterial({color:0xffc86a,transparent:true,opacity:.06,blending:THREE.AdditiveBlending,depthWrite:false})));halo.castShadow=false;
   }
   const traveler=mesh(pathGroup,new THREE.SphereGeometry(.05,14,12),own(new THREE.MeshBasicMaterial({color:0xfff2cc})));traveler.visible=false;traveler.castShadow=false;
   // 盤面上方的金塵：加法混色的細點，緩慢上升、繞盤漂移，給空氣感。
-  const DUST=260,dustPos=new Float32Array(DUST*3),dustSeed=new Float32Array(DUST);
+  const DUST=140,dustPos=new Float32Array(DUST*3),dustSeed=new Float32Array(DUST);
   for(let i=0;i<DUST;i++){const r=.9+Math.random()*1.9,a=Math.random()*TAU;dustPos[i*3]=Math.cos(a)*r;dustPos[i*3+1]=.15+Math.random()*1.1;dustPos[i*3+2]=Math.sin(a)*r;dustSeed[i]=Math.random();}
   const dustGeo=own(new THREE.BufferGeometry());dustGeo.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
   const dustTex=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const g=c.getContext('2d');const rg=g.createRadialGradient(16,16,0,16,16,16);rg.addColorStop(0,'rgba(255,236,190,1)');rg.addColorStop(.4,'rgba(255,214,140,.55)');rg.addColorStop(1,'rgba(255,200,120,0)');g.fillStyle=rg;g.fillRect(0,0,32,32);const t=own(new THREE.CanvasTexture(c));t.colorSpace=THREE.SRGBColorSpace;return t;})();
-  const dust=new THREE.Points(dustGeo,own(new THREE.PointsMaterial({size:.05,map:dustTex,transparent:true,opacity:.75,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true})));orbit.add(dust);
-  // 後製：柔和的泛光讓金邊、三傳與珠寶真的發光；低解析度、低強度，手機也跑得動。
-  let composer=null,bloom=null;
-  try{composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.16,.32,.9);composer.addPass(bloom);composer.addPass(new OutputPass());}catch{composer=null;}
+  const dust=new THREE.Points(dustGeo,own(new THREE.PointsMaterial({size:.032,map:dustTex,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true})));orbit.add(dust);
+  // 不做全畫面泛光：泛光會把金邊與刻字一起暈開。華麗感改由真實金屬反光、細金線與少量金塵呈現，畫面保持銳利。
+  const composer=null,bloom=null;
   let angle=Number(options.angle)||0,targetAngle=angle,velocity=0,pitch=Number(options.pitch)||0,targetPitch=pitch,zoom=Number(options.zoom)||1,targetZoom=zoom,idleT=0;
   let exploded=!!options.exploded,lift=exploded?1:0,selected=Number(options.selected)||0,focusKind=options.focusKind||'palace',focusIndex=Number(options.focusIndex)||0;
   let phase=4,phaseStart=performance.now(),traceStart=null,traceStep=-1,flash=0,gesture=null,tapTime=0,tapPoint=null;
@@ -192,12 +189,12 @@ function mount(host,chart,options={}){
       if(t>=1){traceStart=null;traveler.visible=false;options.onTraceEnd?.();}
       else traveler.position.copy(paths[Math.min(1,Math.floor(t*2))].getPoint(Math.min(1,t*2%1)));
     }
-    flash=Math.max(0,flash-dt*.8);glint.position.copy(polar(2,selected,1.4));glint.intensity=flash*2.6;
-    idleT+=dt;sweep.position.set(Math.cos(idleT*.5)*2.4,2.4,Math.sin(idleT*.5)*2.4);sweep.intensity=quiet?1.2:1.3+Math.sin(idleT*1.7)*.35+(phase<4?1.4*(1-progress):0);
+    flash=Math.max(0,flash-dt*.8);glint.position.copy(polar(2,selected,1.4));glint.intensity=flash*1.8;
+    idleT+=dt;sweep.position.set(Math.cos(idleT*.5)*2.4,2.4,Math.sin(idleT*.5)*2.4);sweep.intensity=quiet?.42:.48+Math.sin(idleT*1.7)*.1+(phase<4?.45*(1-progress):0);
     if(!quiet){const arr=dustGeo.attributes.position.array;for(let i=0;i<DUST;i++){arr[i*3+1]+=dt*(.05+dustSeed[i]*.06);if(arr[i*3+1]>1.35)arr[i*3+1]=.12;const a=Math.atan2(arr[i*3+2],arr[i*3])+dt*(.03+dustSeed[i]*.04),r=Math.hypot(arr[i*3],arr[i*3+2]);arr[i*3]=Math.cos(a)*r;arr[i*3+2]=Math.sin(a)*r;}dustGeo.attributes.position.needsUpdate=true;}
-    dust.material.opacity=.45+.3*Math.sin(idleT*.9)*(quiet?0:1)+(phase<4?.35:0);
+    dust.material.opacity=.24+.1*Math.sin(idleT*.9)*(quiet?0:1)+(phase<4?.14:0);
     sealMesh.material.opacity=.92+(quiet?0:Math.sin(idleT*1.3)*.08);
-    pose();if(composer){if(bloom)bloom.strength=.16+(phase<4?.1*(1-progress):0)+flash*.08;composer.render();}else renderer.render(scene,camera);
+    pose();renderer.render(scene,camera);
   }
   function tick(now){raf=0;if(disposed||lost||!visible||document.hidden)return;const dt=Math.min(.05,Math.max(.001,(now-(last||now-16))/1000));last=now;draw(now,dt);
     const pending=Math.abs(angle-targetAngle)>.02||Math.abs(pitch-targetPitch)>.003||Math.abs(zoom-targetZoom)>.003||Math.abs(lift-(exploded?1:0))>.003;
