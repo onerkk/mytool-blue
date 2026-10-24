@@ -3432,7 +3432,8 @@ enhanceTarot = function(tarot) {
   window.ootkCourtPersonRole = COURT_PERSON_ROLE;
   // GD-8 新增 export
   window.ootkMathers1888Meanings = null; // 單一來源：JYGoldenDawn / Book T
-  window.jyWaitePKTMeanings = null; // 全站固定 Golden Dawn Book T，不再暴露 Waite 牌義入口
+  // RWS 解讀的正統牌義以 Waite《塔羅圖解》原典為準（開鑰之法仍用 Book T）。
+  window.jyWaitePKTMeanings = WAITE_PKT_MEANINGS;
 
   console.log('[OOTK v95] Golden Dawn Book T Opening of the Key 已載入');
 })();

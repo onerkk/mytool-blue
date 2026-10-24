@@ -32,7 +32,7 @@ test('all fifteen real exports retain facts and distinguish arithmetic from even
     const before=JSON.stringify(chart),a=N.analyze(method,chart);
     assert.equal(a.depthContract.truthBoundary.predictionValidation,'not-performed',method);
     const text=c.JYPromptPacket.build(method,chart,'未來工作與感情該如何調整？');
-    assert(text.includes('計算通過不等於預測準確')||text.includes('計算核對不等於事件預測已驗證'),method);
+    assert(text.includes('只用本次原題與下列實算資料，不補造盤面沒有的資料'),method);
     assert.equal(c.JYPromptPacket.get(text).contentChunks.join(''),text);
     assert.equal(JSON.stringify(chart),before,method+' mutated chart');
   }
@@ -85,11 +85,9 @@ test('standalone, JSON and composite routes use the same safety and truth bounda
   try{const t=W.finish('【盤面】日主=乙\n\n'+W.footer,{method:'bazi',question:'我想自殺'});assert(!t.endsWith(W.footer));assert(t.includes('日主=乙'));}finally{c.JYPromptPacket=packet;}
 });
 test('old exported task instructions receive current rules without losing facts or repeating them',()=>{
+  // 單則貼上格式不再有「共用判讀版本」升級標記；finish() 對現行提示詞須冪等且保留盤面事實。
   const q='我的工作該怎麼調整？',current=c.JYPromptPacket.build('bazi',x.b,q);
-  const old=current.replace('【共用判讀版本】'+W.version,'【共用判讀版本】1.8.0');
-  const updated=c.JYPromptPacket.finish(old,{method:'bazi',question:q});
-  assert(updated.includes('【共用判讀版本】'+W.version));assert(updated.includes('【本次版本補充作答規則｜覆蓋舊版作答要求】'));
-  assert(updated.includes('乙酉'));assert.equal(c.JYPromptPacket.finish(updated,{method:'bazi',question:q}),updated);
-  assert.equal(c.JYPromptPacket.get(updated).version,'20261015prompt26');
+  const updated=c.JYPromptPacket.finish(current,{method:'bazi',question:q});
+  assert.equal(updated,current);assert(updated.includes('乙酉'));assert(/【本法正統取法（八字）】/.test(updated));
 });
 console.log('Reading integrity '+passed+' groups PASS');

@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261024orthodox75',LIMIT=12000,BYTES=28000;
+  const VERSION='20261024orthodox76',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -35,7 +35,7 @@
     personality:'依本站五軸生日模型的各軸輸入，講他的做事方式、長處與容易卡住的地方。',
     tarot:'依偉特（RWS）正統推演：依本次牌陣每個牌位的意義讀該位置的牌（正逆位依實際記錄），再依牌陣的讀法鏈把牌串成完整敘事；參看大牌、花色元素、數字與宮廷牌在整組中的比重，判吉凶、程度與建議；時間依花色與數字的傳統對應。Book T 牌組依金色黎明的元素尊貴讀。',
     lenormand:'依雷諾曼正統推演：依本次牌陣的幾何（線陣的前後、九宮與大牌陣的房屋、近遠、鏡像、騎士步與對角）把相鄰牌組合成句，以代表牌與題目主題牌為中心；快慢依牌的性質與距離判斷。',
-    ootk:'依金色黎明 Book T 開鑰之法正統推演：不讀正逆位，牌力由相鄰牌的元素尊貴決定；五輪依序以代表牌所落之堆（第一輪四字母堆）、宮（第二輪十二宮）、星座（第三輪）、旬（第四輪三十六旬）、質點（第五輪生命之樹），連同整條計數路徑與配對敘事，讀出事情的現況、發展、處境、時間與結局，最後合成結論。',
+    ootk:'依金色黎明 Book T 開鑰之法正統推演：不讀正逆位，牌力由相鄰牌的元素尊貴決定；五輪依序以代表牌所落之堆（第一輪四字母堆）、宮（第二輪十二宮）、星座（第三輪）、三十六牌環（第四輪，依原稿以計數與 1↔36 配對推演，不換算旬或日期）、質點（第五輪生命之樹），連同整條計數路徑與配對敘事，讀出事情的現況、發展、處境、推演與結局，最後合成結論。',
     oracle:'依籤詩正統推演：先讀籤詩原文與典故，再依籤解與各事項附記（求財、婚姻、功名、疾病等）對應原題作答。'
   };;
   const rules=[
@@ -335,7 +335,7 @@
         if(key==='op1'){const match=b.expectedPile&&where?(b.expectedPile===where):null;L.push('代表牌'+name(sigId)+'落在'+pileWord(where)+(match===true?'，即問題所屬之堆':match===false?'；問題所屬為'+pileWord(b.expectedPile):''));}
         else if(key==='op2'){L.push('代表牌落第'+where+'宮'+(dom?'（'+dom+'）':'')+(b.primaryHouse&&Number(where)!==Number(b.primaryHouse)?'；問題所屬為第'+b.primaryHouse+'宮':'，即問題所屬之宮'));}
         else if(key==='op3'){L.push('代表牌落'+where+(dom?'（'+dom+'）':'')+(b.expectedSign&&String(where)!==String(b.expectedSign)?'；問題所屬星座為'+b.expectedSign:''));}
-        else if(key==='op4'){L.push('三十六牌環（對應黃道三十六旬），代表牌在第'+(o.sigPosition??'?')+'位');}
+        else if(key==='op4'){L.push('三十六牌環，代表牌在第'+(o.sigPosition??'?')+'位');}
         else if(key==='op5'){L.push('結局落'+where+(dom?'（'+dom+'）':''));}
         if(A(o.openingCards).length)L.push('四堆翻面初示牌：'+o.openingCards.map(pc=>pileWord(pc.pile).split('（')[0]+' '+name(cid_(pc.card))+(pc.pileDignity?.relation?'（'+relWord(pc.pileDignity.relation)+'）':'')).join('、')+'');
         const path=A(o.countingPath||o.countingSteps||o.counting);const cards=A(o.activeCards);
@@ -361,7 +361,7 @@
     add(ln?'全部牌序：位置/牌號/牌名/含義/人物事件綁定（雷諾曼不分正逆）':'全部牌序：位置/牌號/牌名/方向/含義/人物事件綁定',A(d.records).map(p=>row(ln?[p.position||p.index,p.id,p.name,p.keywords||p.meaning,p.binding]:[p.position||p.index,p.id,p.name,p.direction,p.keywords||p.meaning,p.binding])).join('\n'));
     if(!ln&&A(d.records).length){const R=A(d.records),SU=[['wand','權杖','火'],['cup','聖杯','水'],['sword','寶劍','風'],['pent','錢幣','土']],majors=R.filter(r=>r.suit==='major'),rev=R.filter(r=>r.direction==='逆位'),miss=SU.filter(([k])=>!R.some(r=>r.suit===k)).map(([,n,el])=>n+'('+el+')'),at=ix=>A(ix).map(i=>R[i-1]?.position).filter(Boolean).join('、');
       add('整組牌結構（數量本身就是讀牌線索）',['大牌'+majors.length+'/'+R.length+'張'+(majors.length?'（'+majors.map(r=>r.position).join('、')+'）':''),'花色：'+SU.map(([k,n,el])=>n+'('+el+')'+R.filter(r=>r.suit===k).length).join(' ')+(miss.length&&R.length>=5?'；缺'+miss.join('、'):''),R.some(r=>r.direction==='正位'||r.direction==='逆位')?'逆位'+rev.length+'張':null,A(d.courtPositions).length?'宮廷牌在：'+at(d.courtPositions):'沒有宮廷牌',A(d.rankEchoes).length?'重複數字：'+d.rankEchoes.map(x=>(({ace:'王牌',page:'侍者',knight:'騎士',queen:'皇后',king:'國王'})[x.rank]||x.rank)+'（'+at(x.positions)+'）').join('；'):null].filter(Boolean).join('；'));
-      const mt=R.filter(r=>r.meaning);if(mt.length)add('本站整理的RWS牌義參考（〔〕內是引擎判斷的題目類別；若原題其實屬於別的類別，用該類別的意思轉述同一張牌，不可忽略）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
+      const mt=R.filter(r=>r.meaning);if(mt.length)add('RWS牌義（Waite《塔羅圖解》原典；依牌位與原題情境轉述）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
     if(e.method==='tarot'&&A(d.records).length){
       // 牌陣結構由引擎的方法登記（牌位權責＋依賴鏈）寫成句子；不靠牌位名稱猜。
       const plan=c.methodPlan||c.tarotData?.methodPlan||null,R=A(d.records),slots=A(plan?.slots),deps=A(plan?.dependencies);

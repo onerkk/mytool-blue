@@ -72,7 +72,7 @@
     "test:tarot:browser": "node tests/card-audit-mathers-browser-20260923.cjs",
     "test:share:browser": "node tests/share-mathers-browser-20260923.cjs",
     "test:reading-workflow": "node tests/reading-workflow-20260924.cjs && node tests/reading-workflow-integration-20260924.cjs",
-    "test:prompt-integrity": "node scripts/sync-recommendation-guides.cjs --check && node tests/prompt-integrity-20261010.cjs",
+    "test:prompt-integrity": "node scripts/sync-recommendation-guides.cjs --check && node tests/orthodox-prompt-contract-20261023.cjs",
     "test:question-model-regression": "node tests/question-model-regression-20260927.cjs",
     "test:causal-question": "node tests/causal-question-regression-20260927.cjs",
     "test:semantic-voice-followup": "npm run test:semantic-review-followup",

@@ -68,10 +68,12 @@ test('六合五合與三合三會只列候選不宣告成化',()=>{
 });
 
 test('六種單盤提示詞各自載入正確分析範圍',()=>{
-  const expected={chart:'不延伸具體人生事件',general:'綜合判讀',career:'職涯結構',wealth:'現金流風險',love:'親密需求',annual:'未來四個立春年度'};
-  Object.keys(expected).forEach(id=>{const p=c.BaziSuiteCore.buildSinglePrompt(id,A.chart,A.meta,'測試');assert(p.includes(expected[id]),id);assert(p.includes('已核對的八字計算事實'));if(id==='chart')assert(p.includes('不輸出人生預測'));else{assert(p.includes('深度判讀流程'));assert(p.includes('先回答，再解釋'));}assert(p.includes('不能用缺什麼就補什麼定喜用')); assert(p.endsWith('[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。'));});
+  // 套件頁面與首頁共用正統主路徑（JYPromptPacket.build）；舊的套件專用提示詞只作主路徑未載入時的備援。
+  const ui=fs.readFileSync(path.join(ROOT,'JS/bazi-suite.js'),'utf8');
+  assert(ui.includes("window.JYPromptPacket.build('bazi',x.chart"),'single-lens prompts must use the orthodox main path');
+  assert(ui.includes("window.JYPromptPacket.build('personality',profile"),'personality prompt must use the orthodox main path');
+  ['chart','general','career','wealth','love','annual'].forEach(id=>assert(new RegExp(id+":'請").test(ui),id+' lens has a default question'));
 });
-
 test('五軸人格固定產生32個唯一類型且相同命盤可重現',()=>{
   const catalog=c.BaziSuiteCore.personalityCatalog;
   assert.strictEqual(catalog.length,32);

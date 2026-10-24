@@ -44,7 +44,7 @@ test('問題編譯保留完整多維需求', () => {
   const q = E.compileQuestion('我今年有肉體桃花嗎？可能幾歲？');
   const ids = q.requestedDimensions.map(x=>x.id);
   ['event_or_state','existence','exact_age','time_scope'].forEach(id=>assert(ids.includes(id), id));
-  assert.deepStrictEqual(q.explicitScopes, ['今年']);
+  assert.deepStrictEqual(q.explicitScopes.map(x=>typeof x==='string'?x:x.surface), ['今年']);
   assert.strictEqual(q.originalQuestion, '我今年有肉體桃花嗎？可能幾歲？');
 });
 
@@ -52,13 +52,13 @@ test('所有牌陣均由同一規格編譯器建立合法契約', () => {
   for (const [id,spec] of Object.entries(E.METHOD_SPECS)) {
     const input = {question:'這件事會如何發展？', spreadId:id};
     if (id === 'ootk') input.ootkData = ootkData();
-    else input.cards = cards(spec.expectedCardCount);
+    else { const F=require(path.join(ROOT,'JS','tarot-foundation.js')); const plan=F.instantiateMethod?F.instantiateMethod(id,F.compileQuestion(input.question)):null; input.cards = cards(plan&&plan.count||spec.expectedCardCount); }
     const c = E.compileReadingSpec(input);
     assert.strictEqual(c.validation.ok, true, `${id}: ${c.validation.errors.join(',')}`);
     assert.strictEqual(c.method.id, id);
     assert(c.evidenceGraph.evidenceUnits.length > 0, id);
     assert(c.claimSchema.required.includes('doesNotEstablish'));
-    assert(c.adjudication.steps.length >= 5);
+    assert((c.adjudication.steps||c.adjudication.executionPlan?.passes||[]).length >= 5);
   }
 });
 

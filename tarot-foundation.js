@@ -46,7 +46,7 @@
   function monthBounds(year,month){var end=new Date(year,month,0).getDate();return {label:year+'年'+month+'月',start:year+'-'+pad(month,2)+'-01',end:year+'-'+pad(month,2)+'-'+pad(end,2)};}
   function addMonths(year,month,offset){var d=new Date(year,month-1+offset,1);return {year:d.getFullYear(),month:d.getMonth()+1};}
 
-  var OBSERVABLES = {
+  var OBSERVABLES = {existence:'是否存在',
     independent_subjects:'各人物／子題獨立位置', independent_options:'每個選項獨立位置', state:'現況／核心狀態', realization:'成立與否的定性裁決', trajectory:'後續發展傾向', conditional_outcome:'維持條件下的結果',
     bounded_outcome:'明示期限終點的條件性結果', threshold_outcome:'單一指標對固定門檻的跨越', comparison_outcome:'兩個獨立對象或路徑的同尺度比較', enumeration:'列出原句要求的類別／項目', attention_focus:'原句明示需要注意的部分',
     cause:'形成機制', antecedent:'前置影響', obstacle:'阻礙／限制', enabler:'助力／推動力', advice:'可介入行動',
@@ -598,7 +598,7 @@
     var relative=c.match(/^(?:相對於|比)(我|本人|他|她|現任|前任)(?:的)?(?:年齡|年紀)?(?:較|更)?(年輕|年長|同齡|大|小)/);
     if(relative)return {dimensionId:'relative_age',label:'相對年齡',attributeRole:'relative_age',subjectSurface:subject,source:text(clause),matched:relative[0],comparison:{reference:relative[1],relation:relative[2]},queryOperator:'relative_attribute'};
     var defs=[
-      {id:'exact_age',re:/^(?:幾歲|多大(?:年紀)?|年齡(?:是多少|多大|如何)?)/,label:'實際年齡',role:'age'},
+      {id:'exact_age',re:/^(?:可能|大概|大約|應該|約|會是)?(?:幾歲|多大(?:年紀)?|年齡(?:是多少|多大|如何|大概幾歲|約幾歲)?)/,label:'實際年齡',role:'age'},
       {id:'identity',re:/^(?:是誰|誰|姓名|名字|身分(?:是什麼)?|什麼人)/,label:'人物身分',role:'identity'},
       {id:'person_attribute',re:/^(?:做什麼工作|從事什麼|什麼職業|職業(?:是什麼)?|工作(?:是什麼)?)/,label:'職業',role:'occupation'},
       {id:'person_attribute',re:/^(?:長什麼樣|外貌|長相|身高|體重)/,label:'外貌／身體特徵',role:'appearance'},
@@ -1789,10 +1789,11 @@ function recommendReadingSystem(question, options) {
       var targets=measured.map(function(g){return {metric:g.metric,metricKind:g.metricKind,financialBasis:g.financialBasis,metricPeriod:g.cadence,currency:g.currency,recurrence:g.recurrence,operator:g.operator,thresholdValue:parseChineseNumber(g.thresholdSurface),thresholdSurface:g.thresholdSurface,source:g.source};});
       return {id:'R01',type:'alternative_comparison',operator:'compare',operatorText:'比較原句各達標條件',left:targets[0].source,right:targets[1].source,scale:/早|晚|先|後|時間/.test(q)?'達標先後':'達標條件',targetMeasurements:targets,source:q};
     }
-    var numeric=detectNumericThreshold(q,scopes);if(numeric)return numeric;
-    var core=cleanCore(q,scopes);
+    // 原文明確給了兩個方案（含 A：…；B：… 標籤）時，方案本身就是比較關係；方案裡的「兩週、三個月」是方案內容，不是數值門檻。
     var decision=classifyDecisionQuestion(stripSpreadDirective(q));
     if(decision.kind==='binary')return {id:'R01',type:'alternative_comparison',operator:'choose',operatorText:'比較原文兩個方案',left:decision.left,right:decision.right,scale:'suitability',source:decision.source};
+    var numeric=detectNumericThreshold(q,scopes);if(numeric)return numeric;
+    var core=cleanCore(q,scopes);
     if(/^(hypotheses|multiple|ambiguous|incomplete)$/.test(decision.kind))return null;
     var bm=core.match(/^(.{1,36}?)\s*比\s*(.{1,48}?)(?:嗎|呢|？|\?|$)/);
     if(bm){
@@ -1909,7 +1910,11 @@ function recommendReadingSystem(question, options) {
     // 年份＋多個關鍵字不等於年度總覽；只有原句確實並列多領域時才升格為 annual overview。
     if(yearScope&&intent.multiDomain)intent.annual=true;
     intent.annualSingleDomain=yearScope&&domains.length===1&&!intent.annual;
-    var relations=clauseMeta.map(function(x){return x.relation;}).filter(Boolean),relation=relations[0]||null;
+    var relations=clauseMeta.map(function(x){return x.relation;}).filter(Boolean);
+    // 方案若被分句（A：…；B：…），逐句看不到兩個方案；整句再判一次，原文明列的兩個方案就是比較關係。
+    var wholeDecision=classifyDecisionQuestion(stripSpreadDirective(text(question)));
+    if(wholeDecision.kind==='binary'&&!relations.some(function(r){return /comparison/.test(r.type);}))relations.unshift({id:'R00',type:'alternative_comparison',operator:'choose',operatorText:'比較原文兩個方案',left:wholeDecision.left,right:wholeDecision.right,scale:'suitability',source:wholeDecision.source});
+    var relation=relations[0]||null;
     var shape=buildShape(intent,relation,scopes,domains);
     var atoms=[],entities=[{id:'QUERENT',type:'querent',source:'問卜者'}],constraints=[],assumptions=[],events=[],graphRelations=[];
     var explicitThird=q.match(/^([^，。！？?]{1,20}?)(?:的)(?:今年|明年|未來|目前|現在)?(?:運勢|狀況|感情|工作|事業|健康|財運)/),actor='QUERENT';
@@ -2066,6 +2071,8 @@ function recommendReadingSystem(question, options) {
     clauseMeta.forEach(function(meta,index){
       if(meta.attribute)addDim(meta.attribute.dimensionId,meta.attribute.label,meta.clause.surface);
       else addDim('event_or_state','核心事件／狀態',meta.clause.surface);
+      // 問「有沒有某人／某事」：存在本身就是要回答的一個維度（不等於已證實存在）。
+      if(/有沒有|有没有|是否有|有無|是否會?出現|會不會出現|出現[^？?。]{0,12}(?:嗎|吗)|(?:會|还会|還會|將)?有(?!點|些|時|空|辦法|机会|機會|可能|一天)[^？?。]{1,18}(?:嗎|吗)/.test(meta.clause.surface))addDim('existence','是否存在',meta.clause.surface);
       var creq=events[index].requiredObservables||[];creq.forEach(function(id){if(id!=='state')addDim(id,OBSERVABLES[id]||id,meta.clause.surface);});
     });
     unsupported.forEach(function(id){var labels={exact_value:'精確數值／金額',cardinality:'精確人數／數量',exact_age:'實際精確年齡',identity:'具體人物身分',person_attribute:'具體人物屬性',exact_location:'具體地點',exact_date:'精確日期',probability:'精確機率／比例'};if(!dims.some(function(d){return d.id===id;}))addDim(id,labels[id]||id,q);});
