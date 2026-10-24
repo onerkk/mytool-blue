@@ -5,6 +5,8 @@ module.exports=[
 ['我什麼時候會找到新工作？',['timeline'],['five','seven','nine']],
 ['留在原公司還是跳槽到新公司？',['either_or'],['choice']],
 ['A公司和B公司哪個比較好？',['either_or'],['choice','branches']],
+// 三個以上方案：每個方案各抽一條同結構的牌線再並列比較（雷諾曼實務通行做法；九宮格是單一處境的肖像牌陣）
+['A、B、C三個方案哪個較適合？',['multi_option'],['branches']],
 ['我今年的整體運勢如何？',['zodiac','celtic_cross','year_review'],['grand','grand_nines','nine']],
 ['我該不該離職？',['five_card','cross','either_or'],['five','seven','choice']],
 ['為什麼我最近一直很累、提不起勁？',['five_card','tree_of_life','celtic_cross'],['five','nine']],

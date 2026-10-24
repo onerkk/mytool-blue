@@ -29,7 +29,9 @@
     yijing:{name:'易經占卜',en:'I CHING / THE BOOK OF CHANGES',title:'在變化中，找到分寸',sub:'讓古老的卦爻辭，照見此刻的處境。',accent:'#dfbf8e',rgb:'223,191,142',deep:'#493b2a',motif:'scroll'},
     vedic:{name:'印度占星',en:'JYOTISHA / JANMA KUNDALI',title:'讓星圖，照見自己的節奏',sub:'本命星圖 · D1 Rāśi',accent:'#e5c28b',rgb:'229,194,139',deep:'#235451',motif:'orbit'},
     western:{name:'西洋占星',en:'ASTROLOGY / YOUR CELESTIAL SIGNATURE',title:'在星辰之間，認識自己',sub:'本命星圖 · Natal Chart',accent:'#c5cff5',rgb:'197,207,245',deep:'#304066',motif:'orbit'},
-    oracle:{name:'靜月靈籤',en:'SACRED VERSE / A QUIET MOMENT',title:'給此刻，一句提醒',sub:'靜下心，讀懂籤詩留給你的話。',accent:'#e4b092',rgb:'228,176,146',deep:'#55322e',motif:'lot'}
+    oracle:{name:'靜月靈籤',en:'SACRED VERSE / A QUIET MOMENT',title:'給此刻，一句提醒',sub:'靜下心，讀懂籤詩留給你的話。',accent:'#e4b092',rgb:'228,176,146',deep:'#55322e',motif:'lot'},
+    name:{name:'姓名學',en:'NAME / FIVE GRIDS',title:'名字裡的節奏',sub:'五格三才，看見名字的結構。',accent:'#e6c79a',rgb:'230,199,154',deep:'#4a3a28',motif:'scroll',glyph:'名'},
+    liuren:{name:'大六壬',en:'DA LIU REN / HEAVEN AND EARTH',title:'天地有序，觀其變',sub:'四課三傳，看見事情的來去。',accent:'#a9c4e8',rgb:'169,196,232',deep:'#27395a',motif:'orbit'}
   };
   function str(v){return v==null?'':String(v);}
   function arr(v){return Array.isArray(v)?v:[];}
@@ -53,7 +55,7 @@
   function emblem(c,x,y,r,t){c.save();var glow=c.createRadialGradient(x,y,0,x,y,r*1.45);glow.addColorStop(0,rgba(t,.18));glow.addColorStop(1,rgba(t,0));c.fillStyle=glow;c.fillRect(x-r*1.5,y-r*1.5,r*3,r*3);ring(c,x,y,r,r*.78,-.55,t,3);ring(c,x,y,r*.81,r*.46,.6,t,1.3);orb(c,x+r*.81,y-r*.35,r*.085,t);
     if(t.motif==='moon'){c.save();c.fillStyle=t.accent;c.beginPath();c.arc(x,y,r*.61,Math.PI*.25,Math.PI*1.75,false);c.bezierCurveTo(x-r*.13,y-r*.27,x-r*.13,y+r*.27,x+r*.43,y+r*.43);c.fill();c.restore();}
     else if(t.motif==='pair'){ring(c,x-r*.23,y,r*.45,r*.57,-.4,t,12);ring(c,x+r*.23,y,r*.45,r*.57,.4,t,12);}
-    else if(t.motif==='scroll'){c.save();c.translate(x,y);c.rotate(-.12);plate(c,-r*.48,-r*.54,r*.96,r*1.08,t,7,true);c.fillStyle='#dbcca9';rr(c,-r*.39,-r*.48,r*.78,r*.96,3);c.fill();line(c,-r*.52,-r*.51,r*.52,-r*.51,t.accent,8);line(c,-r*.52,r*.51,r*.52,r*.51,t.accent,8);text(c,'易',0,0,r*.48,'#615035',500,'center',true);c.restore();}
+    else if(t.motif==='scroll'){c.save();c.translate(x,y);c.rotate(-.12);plate(c,-r*.48,-r*.54,r*.96,r*1.08,t,7,true);c.fillStyle='#dbcca9';rr(c,-r*.39,-r*.48,r*.78,r*.96,3);c.fill();line(c,-r*.52,-r*.51,r*.52,-r*.51,t.accent,8);line(c,-r*.52,r*.51,r*.52,r*.51,t.accent,8);text(c,t.glyph||'易',0,0,r*.48,'#615035',500,'center',true);c.restore();}
     else if(t.motif==='yin'){orb(c,x,y,r*.55,t);c.fillStyle='#101c24';c.beginPath();c.arc(x,y,r*.51,-Math.PI/2,Math.PI/2);c.arc(x,y+r*.255,r*.255,Math.PI/2,Math.PI*1.5,true);c.arc(x,y-r*.255,r*.255,Math.PI/2,-Math.PI/2);c.fill();c.fillStyle=t.accent;c.beginPath();c.arc(x,y+r*.255,r*.07,0,7);c.fill();c.fillStyle='#172029';c.beginPath();c.arc(x,y-r*.255,r*.07,0,7);c.fill();}
     else if(t.motif==='clover'){for(var j=0;j<3;j++){c.save();c.translate(x+(j-1)*r*.27,y);c.rotate((j-1)*.2);backArtwork(c,-r*.25,-r*.375,r*.5,r*.75,'lenormand');c.restore();}}
     else if(t.motif==='key'){ring(c,x-r*.17,y-r*.22,r*.25,r*.25,0,t,12);line(c,x,y,x+r*.36,y+r*.46,t.accent,13);line(c,x+r*.25,y+r*.32,x+r*.1,y+r*.45,t.accent,10);}
@@ -275,7 +277,18 @@
     else{text(c,v?v.hexagram+'卦 · '+v.label+' · 主讀':'本次主讀',91,894,29,GOLD,500,'left',true);paragraph(c,v?v.text:d.conclusion||'依本次卦象展開解讀。',91,941,895,31,WHITE,3,45,500,true);}
     note(c,'以卦爻辭讀進退 · '+(arr(d.moving).length?'動爻 '+d.moving.join('、'):'六爻皆靜'),t,1110);
   }
-  var RENDER={invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,liuyao:renderLiuyao,yijing:renderYijing,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
+  function renderName(c,d,t){heading(c,t,d);question(c,d,t);var cs=arr(d.chars),gs=arr(d.grids);if(!cs.length&&!gs.length){missing(c,t);return;}
+    var hide=d.showPersonal===false,n=Math.max(1,cs.length),w=Math.min(170,(948-(n-1)*18)/n),x0=540-(n*w+(n-1)*18)/2;
+    cs.forEach(function(ch,i){var x=x0+i*(w+18);plate(c,x,483,w,170,t,18,i>=0&&!hide);text(c,hide?'○':(ch.char||'—'),x+w/2,548,hide?64:84,hide?MUTED:WHITE,600,'center',true);text(c,ch.stroke!=null?'康熙 '+ch.stroke+' 畫':'',x+w/2,628,20,t.accent,400,'center');});
+    gs.slice(0,5).forEach(function(g,i){var gw=180,x=66+i*(gw+12),core=g.role==='人格';plate(c,x,675,gw,190,t,18,core);text(c,g.role||'',x+gw/2,705,23,core?GOLD:t.accent,500,'center');text(c,g.num!=null?String(g.num):'—',x+gw/2,770,62,WHITE,600,'center',true);text(c,[g.element,g.level].filter(Boolean).join('・'),x+gw/2,835,20,MUTED,400,'center',false,gw-16);});
+    var rs=[];if(d.sancai)rs.push(['三才',[d.sancai.config,d.sancai.level].filter(Boolean).join('・')+(d.sancai.profile?'（'+d.sancai.profile+'）':'')]);if(d.zodiac&&!hide)rs.push(['生肖',d.zodiac]);if(rs.length)rows(c,rs,890,t,170);
+    note(c,'名字是長期使用的提醒，數理只是其中一種看法。',t);}
+  function renderLiuren(c,d,t){heading(c,t,d);question(c,d,t);var cs=arr(d.courses),ts=arr(d.transmissions);if(!cs.length||!ts.length){missing(c,t);return;}
+    text(c,str(d.pillarLine),540,492,22,t.accent,400,'center',false,950);
+    cs.slice(0,4).forEach(function(k,i){var x=67+i*242;plate(c,x,515,220,200,t,18,i===0);text(c,'第'+(i+1)+'課',x+110,543,21,t.accent,500,'center');text(c,k.upper||'—',x+110,600,58,WHITE,600,'center',true);line(c,x+60,640,x+160,640,rgba(t,.35));text(c,k.lower||'—',x+110,672,40,MUTED,500,'center',true);text(c,k.general||'',x+110,701,18,t.accent,400,'center');});
+    rows(c,ts.slice(0,3).map(function(x){return [x.role,[x.branch,x.general,x.kinship].filter(Boolean).join('・')+(x.empty?'（旬空）':'')];}),735,t,246);
+    text(c,str(d.classLine),540,1010,22,WHITE,500,'center',false,950);note(c,'沿四課三傳，看事情怎麼起、怎麼走、走到哪裡。',t);}
+  var RENDER={name:renderName,liuren:renderLiuren,invite:renderInvite,bazi:renderBazi,baziPersonality:renderBaziPersonality,baziCompatibility:renderBaziCompatibility,ziwei:renderZiwei,tarot:renderTarot,lenormand:renderLenormand,meihua:renderMeihua,liuyao:renderLiuyao,yijing:renderYijing,ootk:renderOOTK,oracle:renderOracle,vedic:renderVedic,western:renderWestern};
   /* 解析度依裝置能力：長邊先試 8K（7680），畫布建立或寫入失敗就逐級降到 5760／4320／3200／2700。
      iOS Safari 單張畫布上限約 1,677 萬像素，Android Chrome 較高；瀏覽器不回報上限，只能實測。 */
   var probeCache={};
