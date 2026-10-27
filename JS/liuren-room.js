@@ -1,7 +1,7 @@
 /* 靜月之光 · 六壬天時之境。立體銅玉式盤、觸控手勢、分層課傳與完整匯出。 */
 (function(root){
   'use strict';
-  var REV='20261024h583c602eca',CORE_REV='20261024h0eb71f76d8',scene=null,sceneEpoch=0,room=null,ready=null,entrance=null,background=[],overflow='',epoch=0,timers=[],drag=null,suppressClick=false,statusTimer=null;
+  var REV='20261024h583c602eca',CORE_REV='20261027hadd5a3b8ef',scene=null,sceneEpoch=0,room=null,ready=null,entrance=null,background=[],overflow='',epoch=0,timers=[],drag=null,suppressClick=false,statusTimer=null;
   var state={input:{date:'',time:'',timezoneOffset:8,question:'',hourBranch:'',monthGeneral:'auto',nobleMode:'auto',dayBoundaryMode:'MIDNIGHT_00',seasonPolicy:'earth18',targetKinship:'auto',longitude:'',latitude:'',trueSolarTime:false},result:null,view:'round',tab:'chart',angle:0,tilted:false,pitch:0,zoom:1,exploded:false,tracing:false,selected:0,focusKind:'palace',focusIndex:0,notes:'',phase:4,busy:false};
   var Z=Array.from('子丑寅卯辰巳午未申酉戌亥'),COLORS={木:'#98c9ac',火:'#df9384',土:'#dbc095',金:'#dbe1e7',水:'#88b9d2'};
   function h(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}

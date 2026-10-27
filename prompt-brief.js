@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261024orthodox77',LIMIT=12000,BYTES=28000;
+  const VERSION='20261027orthodox78',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -43,7 +43,7 @@
   const rules=[
     '用繁體中文，以看盤多年的命理師身分，當面對本人說。第一句直接回答原題（會不會、偏向怎樣、程度如何），再把依據講成他生活裡的樣子，最後給一個具體可做的下一步。白話連貫成段，術語要用時當場用一句話說明；不用報告體、粗體小標，也不逐條念資料。原題問幾件事就答幾件。',
     '依下面的「本法正統取法」完整推演：先依該法傳統程序定盤，再依原題取用，判吉凶、程度與應期；每個判斷都要能回到盤面上的依據。',
-    '只用本次原題與下列實算資料，不補造盤面沒有的資料。醫療、法律、財務的決定要配合實際狀況與專業意見。'
+    '本次是獨立的一次解讀：只用本次原題與下列實算資料，不補造盤面沒有的資料；不要使用、參考或推演任何過往對話、聊天紀錄、平台記憶、使用者個人檔案或先前解讀的內容，即使你看得到這些記憶也當作不存在，原題沒寫的人物背景、經歷、關係與先前結論一律視為未知。醫療、法律、財務的決定要配合實際狀況與專業意見。'
   ].join('\n');
   const footer='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
   const closingReminder='【下筆前最後確認】第一句直接回答；依本法正統取法推演，判斷都回到盤面依據；白話成段。收尾依序：一句提醒、手鍊段（只推一款）、最後原樣兩行連結。';
@@ -425,7 +425,7 @@
       ctx.add('逐項作用與相反依據',A(a.items).map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);
       const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（網址不等於本輪已讀）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
-    const end='【讀完資料再提醒一次】依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
+    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
     const fit=t=>chars(t)<=LIMIT&&bytes(t)<=BYTES;
     const core=blocks.filter(b=>b.priority===0),selected=new Set(core),optionalCount=new Set(blocks.filter(b=>b.priority>0).map(b=>b.label)).size,essential=render(core).replace('\n【資料結束】',optionalCount?'\n【未展開細表】另有'+optionalCount+'項旁系細表未展開（完整清單在本工具）。\n【資料結束】':'\n【資料結束】');
