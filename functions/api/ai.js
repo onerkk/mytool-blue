@@ -29,7 +29,7 @@ function jyQuestionProfile(question){
     intimacy:/肉體|肉体|上床|發生關係|发生关系|性關係|性关系|做愛|做爱/.test(q),
     longTerm:/適合我|適不適合|一直|長期|長遠|一輩子|這輩子|人生|命中|天生|體質|個性|性格|本性|該走哪條路|方向|整體運勢|今年|明年|後年|運勢|流年|大運|命盤|哪一年|哪年|幾歲|未來幾年|幾年內|20\d\d/.test(q),
     overall:/整體|各方面|全面|人生|運勢|回顧|展望|一整年|每個月|全年/.test(q),
-    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|失物|來不來|到不到|出現/.test(q),
+    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|掉在|丟在|丟了|弄丟|不見了|找不到|放在哪|在哪裡|失物|來不來|到不到|出現/.test(q),
     shortTime:/今天|明天|這週|這幾天|這個月|下個月|幾天|幾週|週內|月內|最近|近期|這陣子/.test(q),
     interact:/我們|彼此|相處|溝通|關係|吵架|冷戰|和好|感情|婚姻|伴侶|男友|女友|老公|老婆|前任/.test(q),
     choice:/還是|或是|或者|哪個比較|哪一個|選哪|二選一/.test(q),
@@ -42,7 +42,8 @@ function jyQuestionProfile(question){
     unknownPerson:/有沒有人|是否有人|有人(?:在)?(?:暗戀|喜歡|追|想|愛|注意|搞|陷害|說我|針對)|有誰|是誰在|誰(?:在)?(?:暗戀|喜歡|追|搞|針對)|哪個人|暗戀我|偷偷喜歡|有沒有.{0,6}(?:喜歡|暗戀|追)我/.test(q),
     destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
-  if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
+  // 具體事件（包裹、消息、面試、簽約…）問「何時」是短期應期，不升成長期命運題。
+  if(asks.timing&&!asks.shortTime&&!asks.event&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
   return {question:q,domain:domain,cardTopic:CARD_TOPIC[domain],asks:asks};
 }

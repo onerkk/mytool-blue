@@ -1720,7 +1720,7 @@ function jyQuestionProfile(question){
 function recommendReadingSystem(question, options) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q), opts=options||{}, current=opts.current||null;
   if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan,alternatives:[]};
-  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明|偉特|韋特|韦特|托特/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花|(?:時間|数字|數字|報數|报数)起卦/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦|(?<!時間|數字|数字|報數|报数)起卦|搖卦|摇卦|金錢卦|金钱卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明|偉特|韋特|韦特|托特|開鑰|开钥|Opening\s*of\s*the\s*Key|OOTK/i],['liuren','大六壬',/大六壬|六壬/],['name','姓名學',/姓名學|姓名学|姓名筆畫|五格/],['compat','合盤',/合盤|合盘|合婚|八字合/],['oracle','靈籤',/(?:觀音|媽祖|妈祖|關帝|关帝|月老|雷雨師)?(?:靈籤|灵签|求籤|求签|籤詩|签诗|抽籤|抽签)/],['meihua','梅花易數',/梅花|(?:時間|数字|數字|報數|报数)起卦/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦|(?<!時間|數字|数字|報數|报数)起卦|搖卦|摇卦|金錢卦|金钱卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
   var LABEL={lenormand:'雷諾曼',tarot:'塔羅',oracle:'靈籤',meihua:'梅花易數',liuyao:'六爻占卜',liuren:'大六壬',yijing:'易經占卜',ziwei:'紫微斗數',bazi:'八字',vedic:'印度占星',astro:'西洋占星',name:'姓名學',compat:'合盤',ootk:'開鑰之法',personality:'五軸'};
   var BIRTH={bazi:true,ziwei:true,vedic:true,astro:true,compat:true,personality:true};
   var requests=[],exclusions={};
