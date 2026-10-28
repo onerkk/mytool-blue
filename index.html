@@ -408,7 +408,7 @@
 <script src="JS/bazi-qiongtong.js?v=20261024h26308d7d60"></script>
 <script src="JS/horary-perfection.js?v=20261024h2042a59de7"></script>
 <script src="JS/horary-light.js?v=20261024hcbe2feb770"></script>
-<script src="JS/western-completion.js?v=20261024ha847ca6fba"></script>
+<script src="JS/western-completion.js?v=20261028he12a9474c9"></script>
 </head>
 <body class="jy-atelier">
 <noscript>
@@ -1439,9 +1439,9 @@
      否則 tarot_upgrade/ui.js 的 initTarotDeck override chain 會被 tarot.js 晚載入後覆蓋，
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/recorded-audio.js?v=20261024h5618ccb860" defer></script>
-<script src="JS/reading-workflow.js?v=20261027h7f4f47f505" defer></script>
-<script src="JS/prompt-brief.js?v=20261028hacbe10bae4" defer></script>
-<script src="JS/prompt-packet.js?v=20261028h3b01f3d312" defer></script>
+<script src="JS/reading-workflow.js?v=20261028h95d8bc571d" defer></script>
+<script src="JS/prompt-brief.js?v=20261028h01dbadd20f" defer></script>
+<script src="JS/prompt-packet.js?v=20261028h29e6ed0c20" defer></script>
 <!-- v29(2026/10/21)：共用提示詞交接導引——攔 JYPromptPacket.copy 單一出口，複製成功後給「打開AI→貼上送出→追問」三步底部卡；十五種工具一次到位，不逐一改各房間。 -->
 <script src="JS/reading-handoff.js?v=20261024h90a76c4e7e" defer></script>
 <!-- walk30：全螢幕房間開啟時，背景首頁設為 inert，避免鍵盤／讀屏操作到看不見的首頁。 -->
@@ -1450,7 +1450,7 @@
 <script src="JS/motion-system.js?v=20261024h406be3c84f" defer></script>
 <!-- spread41：塔羅結果頁「本次牌陣」——發牌、依序翻開、輕觸看牌位白話說明；只讀既有抽牌資料。 -->
 <script src="JS/tarot-result-spread.js?v=20261024h6e60c66d25" defer></script>
-<script src="JS/reading-quality.js?v=20261027hb1ab2e9528" defer></script>
+<script src="JS/reading-quality.js?v=20261028hb61084e3a6" defer></script>
 <script src="JS/vedic-strength.js?v=20261024h87dae18e68" defer></script>
 <script src="JS/vedic-completion.js?v=20261024h2bcb467bb6" defer></script>
 <script src="JS/vedic-transit-rules.js?v=20261024hf369f3732f" defer></script>
@@ -1459,7 +1459,7 @@
 <script src="JS/vedic-sudarsana-bphs.js?v=20261024h9c61818bfd" defer></script>
 <script src="JS/vedic-sudarsana.js?v=20261024hff4e892216" defer></script>
 <script src="JS/liuren-completion.js?v=20261024h44fd091f92" defer></script>
-<script src="JS/western-dignities.js?v=20261024hd0b7300a5a" defer></script>
+<script src="JS/western-dignities.js?v=20261028h7d89f55fb1" defer></script>
 <script src="JS/bazi-adjudication.js?v=20261024h0f0e09bdbf" defer></script>
 <script src="JS/ziwei-school-completion.js?v=20261024h8876a32e02" defer></script>
 <script src="JS/vedic-applicability.js?v=20261024ha1a9e72433" defer></script>
@@ -1469,16 +1469,16 @@
 <script src="JS/native-rule-sources.js?v=20261024h9627fd3289" defer></script>
 <script src="JS/native-depth-contract.js?v=20261024h0fb5695221" defer></script>
 <script src="JS/oracle-register.js?v=20261024hf859a0bf45" defer></script>
-<script src="JS/native-card-analysis.js?v=20261028h1a39d71efb" defer></script>
+<script src="JS/native-card-analysis.js?v=20261028h71f7602e31" defer></script>
 <script src="JS/bazi-classical.js?v=20261024h65283b58af"></script>
 <script src="JS/bazi-functional.js?v=20261024h24972b0c12"></script>
 <script src="JS/bazi-xiaoyun.js?v=20261024h88c92729f5"></script>
 <script src="JS/engine-computation-audit.js?v=20261024hc164708293" defer></script>
 <script src="JS/bazi-child-analysis.js?v=20261024hd6a0aa6af3" defer></script>
-<script src="JS/native-chart-analysis.js?v=20261028h8cbb6de107" defer></script>
+<script src="JS/native-chart-analysis.js?v=20261028h63c388893a" defer></script>
 <script src="JS/native-analysis-view.js?v=20261024hcadd3cb3d4" defer></script>
 <script src="JS/forecast-review.js?v=20261024h99094351d5" defer></script>
-<script src="JS/tarot-foundation.js?v=20261028hf9feadfbdd" defer></script>
+<script src="JS/tarot-foundation.js?v=20261028hf820dbd8b8" defer></script>
 <script src="JS/golden-dawn-tarot.js?v=20261024hae57b58027" defer></script>
 <script src="JS/cinematic-stage.js?v=20261024h89ac194654" defer></script>
 <script src="JS/ritual-story.js?v=20261024hea1beed90e" defer></script>
@@ -1499,20 +1499,20 @@
 <script src="JS/frontend-classifier.js?v=20261024hf92b45cd55" defer></script>
 <!-- v80.16：紫微斗數專屬命盤起盤過場 + 紫微入口移除姓名欄 + talkZiweiFor 補五行局/命主身主/身宮/格局（深度資料層）。只動 ui.js 與 ai-analysis.js，其餘檔案維持 v80_15 不重複下載 -->
 <script src="JS/astro-bridge.js?v=20261024h193e538f55" defer></script>
-<script src="JS/ai-analysis.js?v=20261027h7a5e97c109" defer></script>
+<script src="JS/ai-analysis.js?v=20261028h0a7a4beacb" defer></script>
 <!-- ★ v70.5：七維度氣色面相/手相功能下架，移除 photo-upload.js 載入（塔羅/開鑰不需照片） -->
 <!-- 舊版付費 API 擴充模組不屬於本機排盤與提示詞流程。 -->
-<script src="JS/oracle.js?v=20261027hf4e44cd2e8" defer></script>
-<script src="JS/lenormand.js?v=20261028h2ebb9decb0" defer></script>
+<script src="JS/oracle.js?v=20261028hbc0b177e22" defer></script>
+<script src="JS/lenormand.js?v=20261028he064763692" defer></script>
 <!-- display3：手機靜態背景；出生選單先備妥內容再開啟，避免初始化錯誤與重複繪圖。 -->
 <script src="JS/ink-flow.js?v=20261024h2fea3fbc5f" defer></script>
 <!-- v80.22：紫微廟旺「全表校正」——引擎內建表是簡化版(168格錯129格)，改以開源 iztro(與文墨/全書一致)權威亮度表整張覆蓋；本人盤14主星廟旺已14/14對齊文墨。另含自化修正＋十二長生(v80.21) -->
-<script src="JS/meihua-standalone.js?v=20261027h2beb7cb870" defer></script>
+<script src="JS/meihua-standalone.js?v=20261028h9a1f60a1de" defer></script>
 <!-- 共用提示詞根必須先於 standalone 載入，否則八字會直接失敗、紫微會退回舊提示詞。 -->
 <script src="JS/picker-core.js?v=20261024hd03c897dbd" defer></script>
 <script src="JS/ziwei-prompt-root.js?v=20261027hb1bd5d3f1c" defer></script>
 <script src="JS/bazi-prompt-root.js?v=20261027h28c42bb277" defer></script>
-<script src="JS/ziwei-standalone.js?v=20261028h4f88ddc8e8" defer></script>
+<script src="JS/ziwei-standalone.js?v=20261028h4f55b9f639" defer></script>
 <script src="JS/bazi-standalone.js?v=20261024he4d7ca6caa" defer></script>
 <script src="JS/vedic-picker.js?v=20261024h95b894763a" defer></script>
 <script src="JS/vedic-ritual.js?v=20261024h20ca316ebf" defer></script>
@@ -1523,14 +1523,14 @@
 <!-- v87_1(2026/6/26)：恢復原版八字 UI 為預設入口；保留原自訂日期、時間、出生地點選擇器。完整合盤／人格／工具改由原版頁面的次要按鈕開啟，不再以原生 date/time 輸入覆蓋主入口。 -->
 <script src="JS/method-catalog.js?v=20261024hed7387a9d5" defer></script>
 <script src="JS/share-card.js?v=20261024h77d280616f" defer></script>
-<script src="JS/bazi-suite-core.js?v=20261027hfffa325726" defer></script>
-<script src="JS/relationship-core.js?v=20261027hde367115c4" defer></script>
+<script src="JS/bazi-suite-core.js?v=20261028h4c49dacfb3" defer></script>
+<script src="JS/relationship-core.js?v=20261028hdd59005c77" defer></script>
 <script src="JS/bazi-suite.js?v=20261024ha6ee29e6b0" defer></script>
-<script src="JS/ui.js?v=20261028hafae7650da" defer></script>
+<script src="JS/ui.js?v=20261028h14a6273321" defer></script>
 <script src="JS/reading-recommender.js?v=20261028h4b52dad056" defer></script>
 <script src="JS/name-standalone.js?v=20261024h5cbf74aec7" defer></script>
 <script src="JS/atelier-ui.js?v=20261024h062af893c6" defer></script>
-<script src="JS/liuren-room.js?v=20261027h6669e59e12" defer></script>
+<script src="JS/liuren-room.js?v=20261028h28d1cb972a" defer></script>
 <script src="JS/immersive-experience.js?v=20261024h6c0d991355" defer></script>
 <script src="JS/cinematic-ui.js?v=20261024he03cbde0ec" defer></script>
 <script src="JS/spread-picker.js?v=20261024he0a1869971" defer></script>
@@ -1597,16 +1597,16 @@
 <!-- v100_0(2026/7/18)：Golden Dawn 解牌方法根治——提示詞先注入各牌陣原生牌位、閱讀順序、合法相鄰線與綜合結構；開鑰改按五次操作原生流程；查詢圖降為漏答核對；選品改自然承接原問句。只動 prompt-export.js / index.html -->
 <!-- v101_0(2026/7/18)：Golden Dawn 原生方法協議根治——所有已登錄牌陣分別註冊單張模式、原生閱讀階段、合法結構、結果／時間權限與衝突優先序；Mathers 21／54改為序列成員而非假性獨立牌位，首尾配對與元素相鄰徹底分離；開鑰之法維持獨立五操作程序；AI資料與提示詞只讀方法計畫。動 tarot-foundation.js / tarot-semantic-engine.js / tarot_upgrade.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
 <!-- v102_0(2026/7/18)：塔羅提示詞根治為方法資料包——AI自行分析；移除ROOT-SPEC查詢圖、能力閘門、命題帳本等對外推理控制；非線性牌陣改輸出具名互動關係而非假性直線；語義引擎降為可選診斷，不再阻斷抽牌與匯出。動 tarot-foundation.js / ai-analysis.js / prompt-export.js / tests / package.json / index.html -->
-<script src="JS/prompt-export.js?v=20261028h61ea7ad116" defer></script>
+<script src="JS/prompt-export.js?v=20261028h3047a8f27f" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=20261024hf83873549e" defer></script>
 <script src="JS/bazi-calendar-core.js?v=20261024hd151175b89" defer></script>
-<script src="JS/liuyao-core.js?v=20261028h2862af923c" defer></script>
+<script src="JS/liuyao-core.js?v=20261028h917b0a295f" defer></script>
 <script src="JS/yijing-data.js?v=20261024haf8f36dde3" defer></script>
 <script src="JS/yarrow-core.js?v=20261024h3338aa24c3" defer></script>
 <script src="JS/yijing-wings.js?v=20261024hd135cd7553" defer></script>
 <script src="JS/yijing-core.js?v=20261024h7ecffc8db1" defer></script>
-<script src="JS/gua-prompt.js?v=20261027heb79fea888" defer></script>
+<script src="JS/gua-prompt.js?v=20261028he82dae316b" defer></script>
 <script src="JS/gua-scene.js?v=20261024h1e851dec4d" defer></script>
 <script src="JS/gua-audio.js?v=20261024hec8e73d699" defer></script>
 <script src="JS/gua-room.js?v=20261024h4a0e08e2ac" defer></script>
@@ -1724,7 +1724,7 @@
     <div class="jy-footer-colophon">
       <p>© 2025–2026 靜月之光</p>
       <p>命理分析僅供參考，不構成醫療、法律或財務建議。</p>
-      <p id="jy-build" data-build="jy-main-18f8fdb98e" style="opacity:.55;font-size:.75rem;letter-spacing:.5px">build 18f8fdb98e</p>
+      <p id="jy-build" data-build="jy-main-076730d64d" style="opacity:.55;font-size:.75rem;letter-spacing:.5px">build 076730d64d</p>
     </div>
   </div>
 </footer>

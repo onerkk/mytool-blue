@@ -41,7 +41,7 @@
     oracle:'依籤詩正統推演：先讀籤詩原文與典故，再依籤解與各事項附記（求財、婚姻、功名、疾病等）對應原題作答。'
   };;
   const rules=[
-    '用繁體中文，以看盤多年的命理師身分，當面對本人說。第一句直接回答原題（會不會、偏向怎樣、程度如何），再把依據講成他生活裡的樣子，最後給一個具體可做的下一步。白話連貫成段，術語要用時當場用一句話說明；不用報告體、粗體小標，也不逐條念資料。原題問幾件事就答幾件。',
+    '用繁體中文，以看盤多年的命理師身分，當面對本人說。第一句直接回答原題（會不會、偏向怎樣、程度如何；問多少就依盤面給出量級或相對區間，例如比預期多或少、約幾成，不以「無法換算確切數字」帶過），再把依據講成他生活裡的樣子，最後給一個具體可做的下一步。白話連貫成段，術語要用時當場用一句話說明；不用報告體、粗體小標，也不逐條念資料。原題問幾件事就答幾件。',
     '依下面的「本法正統取法」完整推演：先依該法傳統程序定盤，再依原題取用，判吉凶、程度與應期；每個判斷都要能回到盤面上的依據。',
     '本次是獨立的一次解讀：只用本次原題與下列實算資料，不補造盤面沒有的資料；不要使用、參考或推演任何過往對話、聊天紀錄、平台記憶、使用者個人檔案或先前解讀的內容，即使你看得到這些記憶也當作不存在，原題沒寫的人物背景、經歷、關係與先前結論一律視為未知。醫療、法律、財務的決定要配合實際狀況與專業意見。'
   ].join('\n');
@@ -382,7 +382,7 @@
     }
     if(e.method==='lenormand'&&A(d.records).length===9&&String(c.spreadType||c.lenormandData?.spreadType)==='nine'){const N=i=>d.records[i-1]?.name,g=ix=>ix.map(N).join('、');add('九宮格讀法（中心是核心；左欄已發生、中欄現在、右欄將來；上列想法意識、中列現實、下列潛在根基；四角是框住整件事的條件）','中心：'+N(5)+'；四角：'+g([1,3,7,9])+'；左欄：'+g([1,4,7])+'；中欄：'+g([2,5,8])+'；右欄：'+g([3,6,9])+'；上列：'+g([1,2,3])+'；下列：'+g([7,8,9])+'；兩條對角：'+g([1,5,9])+'／'+g([3,5,7]));}
     if(e.method==='lenormand'&&d.tableau){const tb=d.tableau,q=String(ctx.data.question||''),cellOf=id=>A(tb.cells).find(x=>x.id===id),dist=(a,b)=>{const x=cellOf(a),y=cellOf(b);return x&&y&&typeof x.row==='number'&&typeof y.row==='number'?Math.max(Math.abs(x.row-y.row),Math.abs(x.col-y.col)):null;};
-      const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/錢|钱|財|财|收入|投資|投资|生意|薪|賣場|副業|網拍|經營|開店|客人|訂單|營收|電商|店/,[34,15,3,20]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
+      const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/年終|年终|獎金|奖金|紅利|分紅|加薪|津貼|補助|退稅|錢|钱|財|财|收入|投資|投资|生意|薪|賣場|副業|網拍|經營|開店|客人|訂單|營收|電商|店/,[34,15,3,20]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
       add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));
       add('大牌陣宮位：格/宮名/落入的牌（自宮：'+(A(tb.ownHouses).join('、')||'無')+'；四角：'+A(tb.corners).join('、')+'）',A(tb.houses).map(h=>h.house+h.houseName+'宮:'+h.card).join(' '),1);}
     if(e.method==='lenormand'){
@@ -423,8 +423,8 @@
       const contextReading=e.analysis.depthContract?.requestCoverage?.caseBasis?.contextReading;
       (writers[e.method]||cards)(ctx);
       const a=e.analysis;ctx.add('資料完整度',{provisional:!!a.coverage?.provisional,computation:P(a.computationAudit,['status']),inputLimits:a.coverage?.limitations});
-      ctx.add('逐項作用與相反依據',A(a.items).map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);
-      const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（網址不等於本輪已讀）',sources.join('\n'),3);blocks.push(...ctx.b);
+      {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim())));/* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 */if(informative.length)ctx.add('逐項作用與相反依據',informative.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
+      const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
     const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;

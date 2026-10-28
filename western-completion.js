@@ -1,4 +1,4 @@
-/* 實际遷居角宮與卜卦結構。天文精確相位時刻只用來核對傳統前提，不等於事件應驗。 */
+/* 實際遷居角宮與卜卦結構。天文精確相位時刻只用來核對傳統前提，不等於事件應驗。 */
 (function(root){'use strict';
  const DAY=86400000,KEYS=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'],ANGLES=[0,60,90,120,180],norm=x=>(x%360+360)%360,diff=(a,b)=>norm(a-b+180)-180;
  const SOURCES={reception:'https://www.skyscript.co.uk/glossary/reception/',perfection:'https://www.skyscript.co.uk/tobyn3.html',void:'https://www.skyscript.co.uk/voc.html',orbs:'https://www.skyscript.co.uk/aspectorbs.html',geometry:'https://www.astro.com/swisseph/swephprg.htm'};

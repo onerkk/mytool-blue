@@ -161,7 +161,7 @@
     function add(id,domain,relative,role,evidence){if(evidence.length)frames.push({id:id,domain:domain,relative:relative,role:role,score:scoreEvidence(evidence),evidence:evidence});}
     var amount=/多少(?:錢|元|塊|萬|獎金|彩金)?|幾(?:元|塊|萬|千|百)|金額|營業額|營收(?:多少|幾)?|收入(?:多少|幾)?|獲利(?:多少|幾)?/;
     var draw=/(?:統一)?發票.{0,8}(?:開獎|對獎|中獎|中多少)|(?:開獎|對獎).{0,8}(?:發票|彩券|彩票|樂透)|中獎|獎金|彩金|頭獎|特獎|特別獎|大樂透|威力彩|今彩|樂透|彩券|彩票|刮刮樂|抽獎/;
-    var money=/(?:錢|金錢|現金|營業額|營收|收入|獲利|利潤|毛利|淨利|貨款|回款|收款|款項|薪資|薪水|工資|報酬|佣金|分紅|賠償金|租金|財運|求財|資金|回本|收益|賺錢|賺到|拿到.*錢|收到.*錢|討債|還錢|欠款|投資|股票|基金|股利|股息)/;
+    var money=/(?:年終|年終獎金|三節獎金|績效獎金|加薪|調薪|津貼|補助|退稅|錢|金錢|現金|營業額|營收|收入|獲利|利潤|毛利|淨利|貨款|回款|收款|款項|薪資|薪水|工資|報酬|佣金|分紅|賠償金|租金|財運|求財|資金|回本|收益|賺錢|賺到|拿到.*錢|收到.*錢|討債|還錢|欠款|投資|股票|基金|股利|股息)/;
     var wealth=[];evidenceHit([draw],q,140,'中獎／獎金事件',wealth);evidenceHit([money],q,120,'實際金錢得失',wealth);
     if(amount.test(q)&&(draw.test(q)||money.test(q)))wealth.push({label:'詢問金額',weight:50,match:(q.match(amount)||[''])[0]});
     if(/(?:中|得|拿|收|領|賺|獲).{0,6}(?:多少|錢|金|款|獎|收入|利潤)/.test(q))wealth.push({label:'取得金錢結果',weight:90,match:(q.match(/(?:中|得|拿|收|領|賺|獲).{0,6}(?:多少|錢|金|款|獎|收入|利潤)/)||[''])[0]});
