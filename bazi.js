@@ -5009,7 +5009,7 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   let lean=null;
   if(isNeutral){
     const basis=[];let dir=0;
-    if(deLing){dir+=2;basis.push('得令（月支'+dmMonthState+'）');}else if(deXiang){dir+=1;basis.push('得相（月支'+dmMonthState+'）');}else{dir-=2;basis.push('失令（月支'+dmMonthState+'）');}
+    if(deLing){dir+=2;basis.push('得令（月令五行'+dmMonthState+'）');}else if(deXiang){dir+=1;basis.push('得相（月令五行'+dmMonthState+'）');}else{dir-=2;basis.push('失令（月令五行'+dmMonthState+'，旺相休囚死口徑，非十二長生）');}
     if(sittingRoot){dir+=1;basis.push('日支坐根');}else{dir-=1;basis.push('日支無本氣根');}
     if(deShi){dir+=1;basis.push('透干助力'+helpCount+'位');}else{basis.push('透干助力只'+helpCount+'位');}
     if(hasFormationSupport&&!hasFormationDrain){dir+=1;basis.push('三合三會扶身');}else if(hasFormationDrain&&!hasFormationSupport){dir-=1;basis.push('三合三會洩耗');}

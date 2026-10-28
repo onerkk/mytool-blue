@@ -885,12 +885,12 @@ async function _jyPrepareCompositeAstro(birth) {
   try {
     // Idle preloading is optional; an immediate submission must load its own dependencies.
     var dependencies = [
-      ['JS/vendor/lunar.js?v=20261024hf83873549e.7.7', function(){return typeof Solar !== 'undefined';}],
+      ['JS/vendor/lunar.js?v=20261024hf83873549e', function(){return typeof Solar !== 'undefined';}],
       ['JS/bazi-calendar-core.js?v=20261024hd151175b89', function(){return !!window.BaziCalendarCore;}],
       ['JS/solar-location.js?v=20261024h4ec96f83c4', function(){return typeof calcTrueSolarTime === 'function';}],
-      ['JS/bazi.js?v=20261024hb4ceb09c13', function(){return typeof computeBazi === 'function';}],
+      ['JS/bazi.js?v=20261028h9244233b13', function(){return typeof computeBazi === 'function';}],
       ['JS/bazi_upgrade.js?v=20261024h443df3631a', function(){return typeof enhanceBazi === 'function';}],
-      ['JS/ziwei.js?v=20261024hd38ff23575', function(){return typeof computeZiwei === 'function';}]
+      ['JS/ziwei.js?v=20261028hcc5678a5c6', function(){return typeof computeZiwei === 'function';}]
     ];
     for (var entry of dependencies) {
       if (!entry[1]()) await new Promise(function(resolve, reject) {
@@ -5816,7 +5816,7 @@ showAuraResult = function(){
       var asset=new URL(src,location.href);
       // Every local lazy module uses this release, including hosts with older
       // hard-coded call-site query strings. Keep external URLs untouched.
-      if(asset.origin===location.origin&&/\/JS\/[^?#]+\.js$/.test(asset.pathname)){asset.searchParams.set('v','20261022engine55');src=asset.href;}
+      if(asset.origin===location.origin&&/\/JS\/[^?#]+\.js$/.test(asset.pathname)&&!/^\d{8}h[0-9a-f]{10}$/.test(asset.searchParams.get('v')||'')){var jyBuild=document.getElementById('jy-build');asset.searchParams.set('v',(jyBuild&&jyBuild.getAttribute('data-build'))||'20261022engine55');src=asset.href;}
       key=asset.pathname;
     }catch(e){if(cb)cb(false);return;}
     var entry=jyScriptLoads[key];
@@ -5838,7 +5838,7 @@ showAuraResult = function(){
     // ★ v80.18：紫微獨立頁。模組未載入則即時補載 JS/ziwei-standalone.js（避開 index.html 快取沒更新），絕不再掉回舊 step-0 表單。
     if (typeof window._ziweiStandaloneOpen === 'function') { window._ziweiStandaloneOpen(); return; }
     if (typeof window._jyLazyScript === 'function') {
-      window._jyLazyScript('JS/ziwei-standalone.js?v=20261027h33a8d71320', function(ok){
+      window._jyLazyScript('JS/ziwei-standalone.js?v=20261028h4f88ddc8e8', function(ok){
         if (ok && typeof window._ziweiStandaloneOpen === 'function') window._ziweiStandaloneOpen();
         else alert('紫微獨立頁載入失敗：請確認主機 JS/ 資料夾內已有 ziwei-standalone.js，並強制重新整理一次。');
       });

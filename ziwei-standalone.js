@@ -1284,7 +1284,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       L.push('引擎版本：'+zw.engineVersion+'；農曆出生：'+raw.year+'年'+(raw.isLeap?'閏':'')+raw.month+'月'+raw.day+'日。');
       L.push('【安星政策】'+(policy.yearDivide==='exact'?'立春交節瞬間換年':'農曆正月初一換年')+'；'+(policy.dayBoundaryMode==='ZI_HOUR_23'?'23:00子初換日':'00:00午夜換日')+'；閏月'+(policy.leapMonthPolicy==='SPLIT_AT_15'?'十五日後作次月':'沿用本月')+'；實際安星月='+policy.effectiveMonth+'、日='+policy.effectiveDay+'。');
       L.push('【紫微 calculationPolicy｜本盤唯一計算政策】'+JSON.stringify(policy));
-      L.push('本站預設 dayDivide=current：23:00–23:59 仍歸民用當日，00:00 換日；fixLeap=false：閏月整月沿用本月。這兩項非 iztro 預設。若本盤另選23時換日／閏月拆分，以以上實際政策為準。');
+      L.push('本站預設 dayDivide=current：23:00–23:59 仍歸民用當日，00:00 換日；fixLeap=true：閏月十五日前作本月、十六日起作次月。換日一項非 iztro 預設。若本盤另選23時換日／閏月整月沿用本月，以以上實際政策為準。');
       L.push(policy.algorithm==='zhongzhou'?'中州安星：命主按生年地支；陰男陽女天傷疾厄、天使交友，陽男陰女天傷交友、天使疾厄；旬空截空取一正星，含龍德、劫煞及年系大耗。':'通行安星：命主按命宮地支；天傷交友、天使疾厄；旬空／截空保留正副雙支。');
       L.push('身主按生年地支；解神為月解，年解另列。流月宮位採斗君；月份干支'+(policy.horoscopeDivide==='exact'?'按交節瞬間，農曆月份跨節氣時分段':'按農曆月與五虎遁')+'；小限按生年三合起宮。不同設定須重排，不能混套星位。');
       L.push('本盤四化版本：'+(policy.sihuaProfileName||policy.sihuaProfile)+'，順序祿權科忌：'+JSON.stringify(policy.sihuaTable)+'。來源：'+policy.sihuaSource);
@@ -1584,7 +1584,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
             '<button type="button" class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</button>' +
           '</div></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-sihua-profile">四化版本</label><select class="zw-in-select" id="zw-sihua-profile"><option value="IZTRO_261">現代／iztro（壬科左輔）</option><option value="QUANSHU_XINGGE">全書引表／星格（壬科天府）</option></select></div>' +
-          '<div class="zw-in-field"><label class="zw-in-label" for="zw-leap-policy">農曆閏月安宮</label><select class="zw-in-select" id="zw-leap-policy"><option value="SAME_MONTH">沿用本月</option><option value="SPLIT_AT_15">十五日後作次月</option></select></div>' +
+          '<div class="zw-in-field"><label class="zw-in-label" for="zw-leap-policy">農曆閏月安宮</label><select class="zw-in-select" id="zw-leap-policy"><option value="SPLIT_AT_15">十五日後作次月</option><option value="SAME_MONTH">整月沿用本月</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-day-policy">晚子時換日</label><select class="zw-in-select" id="zw-day-policy"><option value="MIDNIGHT_00">00:00 午夜換日</option><option value="ZI_HOUR_23">23:00 子初換日</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-algorithm">安星版本</label><select class="zw-in-select" id="zw-algorithm"><option value="default">通行星表（本站正副空曜）</option><option value="zhongzhou">中州安星</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-year-divide">生年分界</label><select class="zw-in-select" id="zw-year-divide"><option value="normal">農曆正月初一</option><option value="exact">立春交節瞬間</option></select></div>' +
@@ -1602,7 +1602,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
       document.getElementById('zw-q').value = draft.question || '';
       window._zwSetGender(_zwGender);
       document.getElementById('zw-sihua-profile').value=draft.sihuaProfile||'IZTRO_261';
-      document.getElementById('zw-leap-policy').value=draft.leapMonthPolicy||'SAME_MONTH';
+      document.getElementById('zw-leap-policy').value=draft.leapMonthPolicy||'SPLIT_AT_15';
       document.getElementById('zw-day-policy').value=draft.dayBoundaryMode||'MIDNIGHT_00';
       ['algorithm','year-divide','horoscope-divide','age-divide'].forEach(function(k){var prop={algorithm:'algorithm','year-divide':'yearDivide','horoscope-divide':'horoscopeDivide','age-divide':'ageDivide'}[k];document.getElementById('zw-'+k).value=draft[prop]||(k==='algorithm'?'default':'normal');});
     }
@@ -1729,7 +1729,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
 
     var bdate = y + '-' + (mo < 10 ? '0' : '') + mo + '-' + (d < 10 ? '0' : '') + d;
     var btime = btimeUnknown ? '' : (exact||((hh < 10 ? '0' : '') + hh + ':00'));
-    var form = {sihuaProfile:(document.getElementById('zw-sihua-profile')||{}).value||'IZTRO_261',hour:hh,minute:exact?Number(exact.split(':')[1]):null,timePrecision:exact?'minute':'shichen', type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SAME_MONTH',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
+    var form = {sihuaProfile:(document.getElementById('zw-sihua-profile')||{}).value||'IZTRO_261',hour:hh,minute:exact?Number(exact.split(':')[1]):null,timePrecision:exact?'minute':'shichen', type:'general', question: question, gender: _zwGender, bdate: bdate, btime: btime, name:'', btimeUnknown: btimeUnknown,leapMonthPolicy:(document.getElementById('zw-leap-policy')||{}).value||'SPLIT_AT_15',dayBoundaryMode:(document.getElementById('zw-day-policy')||{}).value||'MIDNIGHT_00' };
     form.algorithm=(document.getElementById('zw-algorithm')||{}).value||'default';
     form.yearDivide=(document.getElementById('zw-year-divide')||{}).value||'normal';
     form.horoscopeDivide=(document.getElementById('zw-horoscope-divide')||{}).value||'normal';

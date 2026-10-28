@@ -46,10 +46,10 @@ test('Minute boundaries remain traceable: 14:59 / 15:01, 22:59 / 23:01, midnight
  assert.equal(shichen.birthInput.civilTime,null);assert.equal(shichen.birthInput.minute,null);
 });
 test('Leap month day 15/16 follows explicit fixLeap, lunar New Year follows Taipei midnight',()=>{
- const before=cast(2023,4,5,12),after=cast(2023,4,6,12),split=cast(2023,4,6,12,0,{fixLeap:true});
+ const before=cast(2023,4,5,12),after=cast(2023,4,6,12,0,{fixLeap:false}),split=cast(2023,4,6,12,0,{fixLeap:true}),byDefault=cast(2023,4,6,12);
  assert.equal(before.birthLunar.isLeap,true);assert.equal(before.birthLunar.day,15);assert.equal(after.birthLunar.day,16);
  assert.equal(after.calculationPolicy.effectiveMonth,2);assert.equal(split.calculationPolicy.effectiveMonth,3);
- assert.equal(after.calculationPolicy.fixLeap,false);
+ assert.equal(after.calculationPolicy.fixLeap,false);assert.equal(byDefault.calculationPolicy.fixLeap,true);assert.equal(byDefault.calculationPolicy.effectiveMonth,3);
  const early=cast(1983,8,25,14,55,{referenceDate:'2026-02-16T15:59:59Z'}),late=cast(1983,8,25,14,55,{referenceDate:'2026-02-16T16:00:00Z'});
  assert.equal(early.calculationPolicy.referenceLunarYear,2025);assert.equal(late.calculationPolicy.referenceLunarYear,2026);assert.equal(late.currentAge,early.currentAge+1);
 });

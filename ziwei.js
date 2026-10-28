@@ -265,7 +265,7 @@ function computeZiwei(year,month,day,hour,gender,options){
   if(options.dayDivide!=null&&!['current','forward'].includes(options.dayDivide))throw new Error('未支援的 dayDivide。');
   if(options.fixLeap!=null&&typeof options.fixLeap!=='boolean')throw new Error('fixLeap 必須為布林值。');
   const dayBoundaryMode = options.dayBoundaryMode || (options.dayDivide==='forward'?'ZI_HOUR_23':'MIDNIGHT_00');
-  const leapMonthPolicy = options.leapMonthPolicy || (options.fixLeap===true?'SPLIT_AT_15':'SAME_MONTH');
+  const leapMonthPolicy = options.leapMonthPolicy || (options.fixLeap===false?'SAME_MONTH':'SPLIT_AT_15');
   if(options.dayDivide!=null&&options.dayDivide!==(dayBoundaryMode==='ZI_HOUR_23'?'forward':'current'))throw new Error('紫微換日政策互相矛盾。');
   if(options.fixLeap!=null&&options.fixLeap!==(leapMonthPolicy==='SPLIT_AT_15'))throw new Error('紫微閏月政策互相矛盾。');
   const yearDivide=options.yearDivide||'normal',horoscopeDivide=options.horoscopeDivide||'normal',ageDivide=options.ageDivide||'normal',algorithm=options.algorithm||'default';
@@ -352,7 +352,7 @@ function computeZiwei(year,month,day,hour,gender,options){
     yearDivide:yearDivide,horoscopeDivide:horoscopeDivide,ageDivide:ageDivide,dayDivide:dayBoundaryMode==='ZI_HOUR_23'?'forward':'current',
     algorithm:algorithm,fixLeap:leapMonthPolicy==='SPLIT_AT_15',trueSolarTime:false,
     upstreamDefaults:{dayDivide:'forward',fixLeap:true},
-    overrides:['本站午夜換日與閏月沿用本月為預設，不等同 iztro 預設。','選用23時換日時，本站先完整推進民用日期再轉農曆；跨月跨年不宣稱等同 iztro 的所有邊界行為。'],
+    overrides:['本站預設午夜換日（不等同 iztro 預設）；閏月預設十五日後作次月，與 iztro 預設相同。','選用23時換日時，本站先完整推進民用日期再轉農曆；跨月跨年不宣稱等同 iztro 的所有邊界行為。'],
     yearBoundary:yearDivide==='exact'?'LI_CHUN_INSTANT':'LUNAR_NEW_YEAR', dayBoundaryMode:dayBoundaryMode,
     leapMonthPolicy:leapMonthPolicy, effectiveMonth:effectiveMonth, effectiveDay:lunar.day,
     flowStarPolicy:flowStarPolicy,flowStarLayers:['大限','流年','流月','流日','流時'],flowStarYearBoundary:horoscopeDivide==='exact'?'LI_CHUN_INSTANT':'LUNAR_NEW_YEAR',flowStarScoreAdjustment:0,
