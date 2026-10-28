@@ -218,9 +218,12 @@
       ['官鬼',/功名|官府|丈夫|先生的|老公|盜賊|賊盜|失竊|邪祟|鬼神/,'夫／功名／拘束'],
       ['兄弟',/結拜兄弟|族兄|族弟|堂兄|堂弟|表兄|表弟|姊妹|姐妹|兄弟/,'同輩'],
       ['妻財',/妻子|老婆|妻妾|婢女|僕役|僕人|珠寶|貨財|倉庫/,'妻／財物／役使'],
+      ['妻財',/女友|女朋友|前女友|女方|女同事|女工程師|女主管|女老闆|女生|女性|女孩|女人|異性女|那位小姐|未婚妻/,'女方人物：男占女以妻財為用（婚戀通例，世應另看雙方互動）'],
+      ['官鬼',/男友|男朋友|前男友|男方|男同事|男工程師|男主管|男老闆|男生|男性|男孩|男人|異性男|未婚夫/,'男方人物：女占男以官鬼為用（婚戀通例，世應另看雙方互動）'],
       ['子孫',/女婿|姪子|姪女|侄子|侄女|外甥|門生|醫藥|藥物|藥品|僧人|和尚|道士|兵卒|忠臣|良將|六畜|禽獸|寵物|狗|貓/,'晚輩／醫藥／六畜']
     ],out=[];
     rules.forEach(function(r){var m=q.match(r[1]);if(m)out.push({relative:r[0],role:r[2],match:m[0],source:TARGET_SOURCE});});
+    if(/單身|有沒有(?:男|女)?(?:朋友|對象|伴侶|另一半)|有(?:男|女)友|有對象|死會|已婚|結婚了|名花有主|心有所屬/.test(q))out=out.map(function(x){return x.relative==='妻財'||x.relative==='官鬼'?Object.assign({},x,{role:x.role+'；問有無對象（通行斷法）：用神與他爻相合或被合住、或有生合用神之爻發動，多主心有所屬；用神獨靜無合，多主暫無對象'}):x;});
     if(/姑姨|我的姑姑|我的阿姨/.test(q))['父母','兄弟'].forEach(function(k){out.push({relative:k,role:'姑姨：章內兩處列法不同，需明示輩分',match:'姑姨',source:TARGET_SOURCE,ambiguous:true});});
     if(/姊丈|姐夫|妹夫/.test(q)){out=out.filter(function(x){return x.relative!=='兄弟';});out.push({relative:'世',role:'姊丈妹夫：作者案語以世爻取用',match:(q.match(/姊丈|姐夫|妹夫/)||[])[0],source:TARGET_SOURCE,variant:'章末作者驗例；前段兄弟通則另保留',alternative:'兄弟'});}
     return out.filter(function(x,i,a){return a.findIndex(function(y){return y.relative===x.relative&&y.role===x.role;})===i;});
