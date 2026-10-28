@@ -581,7 +581,7 @@ var JY_REC_PACKET = {
       add('本次用途、完整星位與宮位',pick(c,['input','policy','planets','houses','aspects','patterns','chartShapes','specialConditions','dispositors','sect','chartRuler','distribution','sensitivity','essentialDignities','profection','lots']));
       add('實算行運次限與回歸',pick(a,['transits','progressions','returnAnalysis']));add('問事及搬遷',pick(c,['horary','relocated']));
     }else if(kind==='liuren'){
-      add('天地盤、四課三傳與時令', {...pick(c,['time','day','monthGeneral','hourBranch','rotation','daytime','noble','xun','method','auxiliary','calculationPolicy','participants','calendarContext','clock','seasonal']),method:a.method||c.method,plate:a.plate,courses:a.courses,transmissions:a.transmissions,edges:a.edges,ganZhi:a.ganZhi,targets:a.targets});
+      add('天地盤、四課三傳與時令', {...pick(c,['time','day','monthGeneral','hourBranch','rotation','daytime','noble','xun','method','auxiliary','calculationPolicy','participants','calendarContext','clock','seasonal']),method:a.courseMethod||c.method,plate:a.plate,courses:a.courses,transmissions:a.transmissions,edges:a.edges,ganZhi:a.ganZhi,targets:a.targets});
       add('六十四課三值判定',{...pick(a.classAnalysis||c.classAnalysis,['profile','counts','missing','auxiliary','policy']),checks:checkLedger((a.classAnalysis||c.classAnalysis)?.checks)});
       add('神煞實際命中與不足',{...pick(c.shensha,['profile','complete','counts','missing','unresolvedSourceEntries','policy']),active:arr(c.shensha?.active).map(s=>pick(s,['id','name','basis','rule','index','status','location','dayEstablished','hits']))});
       add('分類問事與處境線索',a.topicRules);

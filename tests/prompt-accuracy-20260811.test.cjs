@@ -158,7 +158,7 @@ test('七維 API 以盤面為主並允許模型使用自身跨系統知識', () 
   assert(api.includes('多系統先各自成判'));
   assert(!api.includes('不能違反的證據邊界'));
   assert(!api.includes('你怎麼說話'));
-  assert(api.includes('第一句就回答原問題'));assert(api.includes('深度判讀流程'));assert(api.includes('選品規則不得影響前面的占卜判斷'));
+  assert(api.includes('第一句直接回答當事人問的事'));assert(api.includes('深度判讀契約'));assert(api.includes('選品規則不得影響前面的占卜判斷'));
   assert(!read('JS/ai-analysis.js').includes('function capLen('));
 });
 

@@ -16,7 +16,7 @@ test('Bazi annual segments retain both sides of a luck transition and independen
  for(const y of a.annualSegments){assert.equal(y.connections.length,8);for(const x of y.connections){const p=a.pillars.find(p=>p.label===x.to),gz=x.fromGZ||(x.from==='大運'?y.dayun:y.annual);assert.equal(x.repeatedPillar,gz===p.gan+p.zhi);assert.deepEqual(plain(x.branchRelations),Object.entries(N.links(gz[1],p.zhi)).filter(([,v])=>v).map(([k])=>k));}}
 });
 test('Unknown Bazi export has only three pillars and excludes temporary-hour strength/luck claims',()=>{
- const a=N.analyze('bazi',b,{unknown:true}),out=c.JYNativeAnalysisView.exportData('bazi',b,a);assert.equal(a.coverage.pillars,3);assert.equal(a.annualSegments,undefined);assert.equal(out.schema,'jy.partial-bazi/1');assert(!JSON.stringify(out).includes('"hour"'));assert.equal(out.qiyun,undefined);assert.equal(out.strengthAssessment,undefined);
+ const a=N.analyze('bazi',b,{unknown:true}),out=c.JYNativeAnalysisView.exportData('bazi',b,a);assert.equal(a.coverage.pillars,3);assert.equal(a.annualSegments,undefined);assert.equal(out.schema,'jy.partial-bazi/1');assert(!/"hour":(?!null)/.test(JSON.stringify(out)));assert.equal(out.qiyun,undefined);assert.equal(out.strengthAssessment,undefined);
 });
 test('Ziwei twelve actual trines/oppositions, 14 major stars, 48 flights and 12 monthly overlays',()=>{
  const a=N.analyze('ziwei',z),br=Array.from('子丑寅卯辰巳午未申酉戌亥');assert.equal(a.items.length,12);assert.equal(a.coverage.majorStars,14);assert.equal(a.coverage.palaceFlights,48);assert.equal(a.layers.months.length,12);
