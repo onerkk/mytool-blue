@@ -4975,11 +4975,24 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   // Seven bands remain an application-relative display model, not a classical
   // equation. One classifier is used by the UI, ordinary support lens and exports.
   // 旺、相、休囚死分開標示；有根也不再誤寫成「四支皆有根」。
-  const monthAdjustment = deLing ? 10 : deXiang ? 5 : -10;
-  const rootAdjustment = deDi ? 5 : -5;
-  const stemAdjustment = deShi ? 3 : -3;
+  // v5（2026-10-28）：月令、根氣、透干只作修正，不再把印比分數推到兩端。
+  // 舊版三項合計可拉開36分，95盤實測「太／極」占67%、中和僅8%；減半後分級依實測分位重定：
+  // 中和約四分之一，「極」只留給印比占全局四分之三以上（旺極）或印比極少且四支無根（弱極）的近從格盤。
+  const monthAdjustment = deLing ? 5 : deXiang ? 2.5 : -5;
+  const rootAdjustment = deDi ? 2.5 : -2.5;
+  const stemAdjustment = deShi ? 1.5 : -1.5;
   const _adjPts = selfPts + monthAdjustment + rootAdjustment + stemAdjustment;
-  let strongLevel = _adjPts>=42?'旺極':_adjPts>=36?'太旺':_adjPts>=30?'偏旺':_adjPts>=24?'中和':_adjPts>=18?'偏弱':_adjPts>=12?'太弱':'弱極';
+  let strongLevel = _adjPts>=48?'旺極':_adjPts>=41?'太旺':_adjPts>=32?'偏旺':_adjPts>=23?'中和':_adjPts>=14?'偏弱':_adjPts>=7?'太弱':'弱極';
+  if(strongLevel==='旺極'&&selfPts<tot*0.75)strongLevel='太旺';
+  if(strongLevel==='弱極'&&!(selfPts<=tot*0.15&&!deDi))strongLevel='太弱';
+  // 「極」只留給接近從格／專旺的盤：五行分已含月令加倍與根氣，上面又加月令、根、透干調整，
+  // 兩端容易被重複計數推到「極」。子平論從弱須日主無根、無印比扶；論專旺須官殺無力。
+  // 不符合時降一級為太弱／太旺，避免把一般身弱身強誤導成從格。
+  const officerEl=Object.keys(KE).find(e=>KE[e]===dmEl);
+  const officerPts=officerEl?(ec[officerEl]||0):0;
+  let extremeCapped=null;
+  if(strongLevel==='弱極'&&(deDi||helpCount>0)){strongLevel='太弱';extremeCapped='日主'+(deDi?'四支有根':'')+(deDi&&helpCount>0?'、':'')+(helpCount>0?'天干有印比'+helpCount+'位':'')+'，不到從弱程度，由弱極降為太弱';}
+  else if(strongLevel==='旺極'&&officerPts>=6){strongLevel='太旺';extremeCapped='官殺（'+officerEl+'）仍有'+officerPts+'分約束，不到專旺程度，由旺極降為太旺';}
   let isNeutral = strongLevel === '中和';
   let strong = ['偏旺','太旺','旺極'].includes(strongLevel);
   const rootLabels=structureFacts.dayMasterRoots.map(r=>r.label+'（'+r.qi+'）');
@@ -5018,13 +5031,13 @@ function computeBazi(year,month,day,hour,minute,gender,options){
   }
   const interactionSummary=formationEffects.length?formationEffects.map(e=>e.targetElement+e.label+'（'+e.statusCode+'）').join('、'):'無已成勢的完整三合／三會改變方向';
   const strengthAssessment = {
-    model:'JINGYUE_RELATIVE_STRENGTH_V4_ADJUDICATED', level:strongLevel,quantitativeLevel:strongLevel,isStrong:strong,isNeutral:isNeutral,
+    model:'JINGYUE_RELATIVE_STRENGTH_V5_ADJUDICATED', level:strongLevel,quantitativeLevel:strongLevel,isStrong:strong,isNeutral:isNeutral,
     integratedDirection:integratedDirection,finalStatus:strengthConflict?'REVIEW_REQUIRED':'USABLE_AS_ORDINARY_DIRECTION',monthSupportClass:monthSupportClass,
     selfSupportPoints:selfPts,adjustedPoints:_adjPts,
     components:{month:{state:dmMonthState,supportClass:monthSupportClass,points:monthAdjustment},root:{hasAnyRoot:deDi,rootedPillarCount:rootedPillarCount,rootedPillars:rootedPillars,hasRootInAllFourBranches:hasRootInAllFourBranches,allFourBranches:hasRootInAllFourBranches,sittingRoot:sittingRoot,points:rootAdjustment},exposedHelp:{count:helpCount,points:stemAdjustment},formations:{summary:interactionSummary,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none'}},
     evidence:[dm+'生於'+mZ+'月，月支五行狀態為'+dmMonthState+'（'+monthSupportClass+'）',rootLabels.length?'根氣：'+rootLabels.join('、')+'；有根柱 '+rootedPillarCount+'/4':'四支藏干無同五行根',printedHelpers.length?'透干助力：'+printedHelpers.map(s=>s.label+'（'+s.god+(s.constraints.length?'，'+s.constraints.join('、'):'')+'）').join('、'):'年、月、時干無印比透出',interactionSummary],
     structuralTensions:structuralTensions,interactionAssessment:{policy:branchInteractionAssessment?branchInteractionAssessment.policy:null,netDirection:branchInteractionAssessment?branchInteractionAssessment.netDirection:'none',groups:(branchInteractionAssessment&&branchInteractionAssessment.groups||[]).map(function(g){return {type:g.type,branches:g.branches,targetElement:g.targetElement,formationStatus:g.formationStatus,influenceStrength:g.influenceStrength,dayMasterEffect:g.dayMasterEffect};})},
-    lean:lean,
+    lean:lean,extremeCapped:extremeCapped,
     conflict:strengthConflict,conflictReason:strengthConflictReason,
     sources:['https://www.donglishuzhai.net/chapter/3719.html'],
     disclaimer:'月令、根氣、透干先由相對模型分類；完整三合／三會另經成勢裁決後只作方向性交叉核對，不使用自訂吉凶加分。七級名稱仍是本站相對模型，不等同古籍唯一旺衰定論；最終取用還須合看格局、調候、病藥與通關。'
