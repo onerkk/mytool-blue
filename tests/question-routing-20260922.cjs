@@ -68,7 +68,7 @@ test('New Tarot catalog draws unique cards with identical slot counts in layout,
 });
 test('Tarot auto mode follows explicit method; ordinary themes keep RWS and drawn mode is immutable',()=>{
  const r=drawTarot('請用Book T解讀我的工作？','action_three');assert(r.cards.every(x=>x.readingMode==='gd_book_t'&&x.isUp));
- assert.equal(F.recommendSystem('不要用 Book T，看工作').readingMode,'rws_reversals');
+ assert.notEqual(F.recommendSystem('不要用 Book T，看工作').readingMode,'gd_book_t');assert.equal(F.recommendSystem('不要用 Book T，用塔羅看工作').readingMode,'rws_reversals');
  c.S.form.question='今日提醒';assert.equal(c.JYTarotReading.mode(r.id,r.cards),'gd_book_t');
  const ordinary=drawTarot('我的工作會順利嗎？','action_three');assert(ordinary.cards.every(x=>x.readingMode==='rws_reversals'));
 });

@@ -36,7 +36,7 @@
     if(rec.system!==system&&targets[rec.system]&&!(rec.stay&&rec.stay.system===system&&rec.system===system))actions.appendChild(makeBtn(rec.system,rec.label,true));
     (rec.alternatives||[]).forEach(function(a){if(a.system!==system&&targets[a.system])actions.appendChild(makeBtn(a.system,a.label,false));});
     if(rec.alternatives&&rec.alternatives.length){var alt=document.createElement('p');alt.className='jy-recommend-alt';alt.textContent='也可以：'+rec.alternatives.map(function(a){return a.label+(a.reason?'（'+a.reason+'）':'');}).join('；');host.appendChild(alt);}
-    if(actions.childNodes.length)host.appendChild(actions);
+    if((actions.childNodes||actions.children||[]).length)host.appendChild(actions);
     if(system==='tarot'){
       var route=F.routeQuestion(q),manual=root._forcedSpread;
       var plan=manual?F.instantiateMethod(manual,route.compiledQuestion):route.methodPlan;

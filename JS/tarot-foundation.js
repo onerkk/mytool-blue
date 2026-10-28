@@ -430,6 +430,11 @@
   ]
 };
   // Explicitly registered modern layouts. Metadata feeds the picker and actual slots.
+  // 題目層的區分（實際行動、邀約、意願、適配評估、關係現況）沒有、也不該有專屬牌位；
+  // 由已有牌位回答：是否實現→行動與邀約會不會發生；雙方位／隱藏作用→意願；雙方位或比較結果→適配評估。
+  // 不這樣對應，這些題目會被永遠判為「牌陣缺位」，路由選錯陣、提示詞也多一句缺位聲明。
+  var DERIVED_OBSERVABLES={event_action:['realization'],invitation_or_arrangement:['realization'],willingness:['dyad','hidden'],evaluation_outcome:['dyad','comparison_outcome'],relationship_context:['dyad']};
+  function derivedProvides(provides){var out=(provides||[]).slice();Object.keys(DERIVED_OBSERVABLES).forEach(function(k){if(out.indexOf(k)<0&&DERIVED_OBSERVABLES[k].some(function(src){return out.indexOf(src)>=0;}))out.push(k);});return out;}
   function addModernMethod(id,label,labels,authorities,provides,overview,source){
     var slots=labels.map(function(label,i){return {label:label,authority:authorities[i],role:id+'_'+(i+1)};});
     METHODS[id]=methodDef(id,label,labels.length,slots,[],[],provides,[],source);
@@ -1693,7 +1698,7 @@ function jyQuestionProfile(question){
     intimacy:/肉體|肉体|上床|發生關係|发生关系|性關係|性关系|做愛|做爱/.test(q),
     longTerm:/適合我|適不適合|一直|長期|長遠|一輩子|這輩子|人生|命中|天生|體質|個性|性格|本性|該走哪條路|方向|整體運勢|今年|明年|後年|運勢|流年|大運|命盤|哪一年|哪年|幾歲|未來幾年|幾年內|20\d\d/.test(q),
     overall:/整體|各方面|全面|人生|運勢|回顧|展望|一整年|每個月|全年/.test(q),
-    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|失物|來不來|到不到|出現/.test(q),
+    event:/會不會|會嗎|能不能|能嗎|可以嗎|成嗎|順利嗎|達標|做到|錄取|上榜|考上|中獎|開獎|發票|到貨|出貨|包裹|入帳|付款|消息|聯絡|回覆|回我|面試|簽約|成交|過關|通過|好轉|康復|找到|找回|得回|遺失|掉了|掉在|丟在|丟了|弄丟|不見了|找不到|放在哪|在哪裡|失物|來不來|到不到|出現/.test(q),
     shortTime:/今天|明天|這週|這幾天|這個月|下個月|幾天|幾週|週內|月內|最近|近期|這陣子/.test(q),
     interact:/我們|彼此|相處|溝通|關係|吵架|冷戰|和好|感情|婚姻|伴侶|男友|女友|老公|老婆|前任/.test(q),
     choice:/還是|或是|或者|哪個比較|哪一個|選哪|二選一/.test(q),
@@ -1742,6 +1747,8 @@ function recommendReadingSystem(question, options) {
   if(/哪一年|哪年|幾歲|20\d\d|流年|大運|未來幾年|幾年內/.test(q)){add('bazi',3,'指定年份要看流年對本命的作用');add('ziwei',2,'流年四化能定年份');}
   if(f.event){add('liuyao',4,'一件具體的事成不成，六爻看用神最直接');add('liuren',3,'急事、消息、來人、失物，六壬看三傳');add('lenormand',3,'具體事件與周邊條件，雷諾曼把牌連成一件事');add('meihua',2,'當下一事成不成，梅花看體用');}
   if(f.shortTime&&(f.event||f.timing||f.decision||f.money)){add('liuyao',2,'短期有應期');add('liuren',2,'短期看三傳與候選日');add('lenormand',2,'快慢看牌的距離');add('meihua',1,'');add('bazi',-2,'');add('ziwei',-2,'');add('vedic',-2,'');add('astro',-1,'');}
+  if(/遺失|掉了|掉在|丟在|丟了|弄丟|不見了|找不到|放在哪|失物/.test(q)){add('liuren',4,'失物、方位與找回，六壬看玄武與三傳最直接');add('liuyao',2,'失物看用神旺衰與方位');}
+  if(/包裹|快遞|快递|物流|到貨|信件|來信|消息|訊息|音訊|郵件/.test(q)){add('lenormand',4,'消息、信件、包裹本是雷諾曼騎士與信的本題牌，能直接看到消息怎麼來');}
   if(f.timing){add('liuyao',3,'應期可以到月日');add('liuren',2,'有候選日');add('bazi',2,'問年份看流年');add('lenormand',1,'');}
   if(f.mind){add('tarot',5,'對方心意與互動動機，塔羅的關係陣最能分層看');add('liuyao',3,'用神看對方的狀態與對你的態度');add('lenormand',2,'');add('bazi',-1,'');}
   if(f.interact&&!f.longTerm){add('tarot',3,'兩人互動與拉扯');add('liuyao',1,'');}
@@ -1780,7 +1787,7 @@ function recommendReadingSystem(question, options) {
   result.alternatives=ranked.filter(function(k){return k!==result.system&&score[k]>=2;}).slice(0,2).map(function(k){return {system:k,label:LABEL[k],reason:why[k]||'',birthDataRequired:!!BIRTH[k]};});
   result.birthDataRequired=!!BIRTH[result.system];
   result.scores=score;result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.features=f;
-  result.readingMode=result.system==='tarot'?(/Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明/i.test(q)?'book_t':'rws_reversals'):null;
+  result.readingMode=result.system==='tarot'?(function(){var asked=function(re){var m=q.match(re);return !!m&&!/(?:不要(?:用|使用)?|不用|不使用|別用|排除)\s*$/.test(q.slice(0,m.index));};/* 值須與塔羅讀法模組一致：gd_book_t／mathers_1888／rws_reversals */return asked(/Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明/i)?'gd_book_t':asked(/Mathers|馬瑟斯|麥瑟斯/i)?'mathers_1888':'rws_reversals';})():null;
   return result;
 }
 // END SHARED QUESTION PLANNER
@@ -2236,7 +2243,7 @@ function recommendReadingSystem(question, options) {
     }
     return base;
   }
-  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base=prepareQuestionMethod(base,compiled);base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_66'){var n=i+1,period=i>=66?'意外結語':((n<=11||n>=34&&n<=44)?'過去':(n>=23&&n<=33||n>=56&&n<=66)?'現在':'未來');copy.label=i>=66?(i===66?'左側意外牌（保留11張中另抽）':'右側意外牌（保留11張中另抽）'):'第'+n+'張・'+period+'（拱形序列成員）';if(i>=66)copy.slotKind='surprise_conclusion';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.missingObservables=difference(base.requiredObservables,base.provides);if((compiled.readingQuestion||{}).mode==='multi_question'&&id!=='multi_question')base.missingObservables.push('independent_subjects');if((compiled.readingQuestion||{}).mode==='multi_option'&&id!=='multi_option')base.missingObservables.push('independent_options');base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
+  function instantiateMethod(id,compiled){var base=method(id);if(!base)return null;compiled=compiled&&compiled.queryGraph?compiled:compileQuestion((compiled&&compiled.originalQuestion)||'');base=prepareQuestionMethod(base,compiled);base.slots=bindSlots(base,compiled);var protocol=base.protocol||METHOD_PROTOCOLS[id]||null;if(protocol){base.slots=base.slots.map(function(slot,i){var copy=Object.assign({},slot||{});copy.slotMode=protocol.slotMode;copy.independentSemanticPosition=protocol.slotMode==='semantic_position'||protocol.slotMode==='qabalistic_position'||protocol.slotMode==='domain_position';if(protocol.slotMode==='sequence_member'){copy.slotKind='sequence_member';copy.independentSemanticPosition=false;if(id==='mathers_21'){var row=Math.floor(i/7)+1,pos=(i%7)+1;copy.label='第'+row+'排第'+pos+'張（序列成員；由右至左）';}else if(id==='mathers_66'){var n=i+1,period=i>=66?'意外結語':((n<=11||n>=34&&n<=44)?'過去':(n>=23&&n<=33||n>=56&&n<=66)?'現在':'未來');copy.label=i>=66?(i===66?'左側意外牌（保留11張中另抽）':'右側意外牌（保留11張中另抽）'):'第'+n+'張・'+period+'（拱形序列成員）';if(i>=66)copy.slotKind='surprise_conclusion';}else if(id==='mathers_horseshoe'){var group=i<26?'A':(i<43?'C':'E'),local=i<26?i+1:(i<43?i-25:i-42);copy.label=group+'組第'+local+'張（序列成員）';}}else if(protocol.slotMode==='triad_member'){copy.slotKind='triad_member';copy.independentSemanticPosition=false;}else{copy.slotKind='semantic_position';}return copy;});}base.requiredObservables=clone(compiled.requiredObservables||[]);base.provides=derivedProvides(base.provides);base.missingObservables=difference(base.requiredObservables,base.provides);if((compiled.readingQuestion||{}).mode==='multi_question'&&id!=='multi_question')base.missingObservables.push('independent_subjects');if((compiled.readingQuestion||{}).mode==='multi_option'&&id!=='multi_option')base.missingObservables.push('independent_options');base.coverageComplete=!base.missingObservables.length;base.questionShape=compiled.features&&compiled.features.shape;base.slotBindings=base.slots.map(function(s,i){return {index:i,authority:s.authority,role:s.role,label:s.label||s.role,slotKind:s.slotKind||'semantic_position',independentSemanticPosition:s.independentSemanticPosition!==false,binding:clone(s.binding||{eventId:'QUERY_EVENT'})};});return base;}
 
   function routeQuestion(input,options){
     options=options||{};
