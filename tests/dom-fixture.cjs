@@ -10,6 +10,7 @@ function environment(){
     // Standard DOM relocation primitives used by the chapter-based presentation.
     insertBefore(x,before){if(x===before)return x;x.remove();const i=this.children.indexOf(before);x.parentNode=this;this.children.splice(i<0?this.children.length:i,0,x);return x;}
     prepend(x){return this.insertBefore(x,this.children[0]);}
+    insertAdjacentElement(pos,x){const p=this.parentNode;if(pos==='beforebegin'&&p)return p.insertBefore(x,this);if(pos==='afterend'&&p){const i=p.children.indexOf(this);return p.insertBefore(x,p.children[i+1]);}if(pos==='afterbegin')return this.prepend(x);return this.appendChild(x);}
     get firstElementChild(){return this.children[0];}get isConnected(){return this===doc.body||this===doc.head||!!(this.parentNode&&this.parentNode.isConnected);}
     addEventListener(k,fn){(this.listeners[k]??=new Set()).add(fn);}removeEventListener(k,fn){this.listeners[k]?.delete(fn);}dispatch(k,e={}){e.target??=this;e.preventDefault??=()=>{};e.stopPropagation??=()=>{};if(typeof this['on'+k]==='function')this['on'+k](e);for(const fn of [...this.listeners[k]||[]])fn(e);}
     matches(sel){return sel.split(',').some(raw=>{const s=raw.trim();if(s.startsWith('#'))return this.id===s.slice(1);if(s.startsWith('.'))return this.classList.contains(s.slice(1));let m=s.match(/^\[([^=\]]+)(?:=["']?([^"'\]]+)["']?)?\]$/);if(m)return m[2]===undefined?this.getAttribute(m[1])!==null:this.getAttribute(m[1])===m[2];return this.tagName.toLowerCase()===s;});}

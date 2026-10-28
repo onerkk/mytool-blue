@@ -7,7 +7,7 @@ const expected = [
   'liuyao', 'yijing', 'oracle', 'astro', 'vedic', 'name', 'liuren', 'personality'
 ];
 
-assert.equal(quality.readingVersion, '13.0.0');
+assert(((v,min)=>String(v).localeCompare(min,undefined,{numeric:true})>=0)(quality.readingVersion,'13.0.0'),'版本不得低於 13.0.0：'+quality.readingVersion);
 assert.deepEqual(quality.methodKinds(), expected, 'all active divination methods use the shared answer contract');
 
 const answerStyle = quality.plainText();

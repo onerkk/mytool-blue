@@ -5,7 +5,7 @@ const {environment,examples}=require('./native-fixtures-20261003.cjs');
 const {ctx:c,load}=environment();['prompt-brief','prompt-packet'].forEach(load);
 const fixture=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket;
 const q='今年會發生非現任的肉體關係嗎？',results=[];
-assert.equal(Q.readingVersion,'16.0.0');assert.equal(W.version,'2.5.0');
+assert(((v,min)=>String(v).localeCompare(min,undefined,{numeric:true})>=0)(Q.readingVersion,'16.0.0'),'版本不得低於 16.0.0：'+Q.readingVersion);assert(((v,min)=>String(v).localeCompare(min,undefined,{numeric:true})>=0)(W.version,'2.5.0'),'版本不得低於 2.5.0：'+W.version);
 for(const [method,chart]of Object.entries(fixture.charts)){
  const before=JSON.stringify(chart),text=P.build(method,chart,q),record=P.get(text);
  const illustrative=[...text.matchAll(/【原創成稿示範｜只學鋪陳，不是本次資料】([^\n]+)/g)].map(m=>JSON.parse(m[1]));

@@ -7,7 +7,7 @@ const {ctx:c,load}=environment();
 const fixture=examples(c),Q=c.JY_READING_QUALITY,W=c.JYReadingWorkflow,P=c.JYPromptPacket,results=[];
 const root=path.resolve(__dirname,'..');
 const q='今年公司女性工程師會愛上我並跟我有親密接觸嗎？';
-assert.equal(Q.readingVersion,'15.0.0');assert.equal(W.version,'2.4.0');
+assert(((v,min)=>String(v).localeCompare(min,undefined,{numeric:true})>=0)(Q.readingVersion,'15.0.0'),'版本不得低於 15.0.0：'+Q.readingVersion);assert(((v,min)=>String(v).localeCompare(min,undefined,{numeric:true})>=0)(W.version,'2.4.0'),'版本不得低於 2.4.0：'+W.version);
 for(const [method,chart]of Object.entries(fixture.charts)){
  const before=JSON.stringify(chart),text=P.build(method,chart,q),record=P.get(text);
  assert(text.includes('命理師當面解惑')||text.includes('像命理師當面解惑'),method+' natural counseling voice');

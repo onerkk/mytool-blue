@@ -959,7 +959,7 @@ function jyQuestionProfile(question){
 function recommendReadingSystem(question, options) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q), opts=options||{}, current=opts.current||null;
   if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan,alternatives:[]};
-  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明|偉特|韋特|韦特|托特|開鑰|开钥|Opening\s*of\s*the\s*Key|OOTK/i],['liuren','大六壬',/大六壬|六壬/],['name','姓名學',/姓名學|姓名学|姓名筆畫|五格/],['compat','合盤',/合盤|合盘|合婚|八字合/],['oracle','靈籤',/(?:觀音|媽祖|妈祖|關帝|关帝|月老|雷雨師)?(?:靈籤|灵签|求籤|求签|籤詩|签诗|抽籤|抽签)/],['meihua','梅花易數',/梅花|(?:時間|数字|數字|報數|报数)起卦/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦|(?<!時間|數字|数字|報數|报数)起卦|搖卦|摇卦|金錢卦|金钱卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
   var LABEL={lenormand:'雷諾曼',tarot:'塔羅',oracle:'靈籤',meihua:'梅花易數',liuyao:'六爻占卜',liuren:'大六壬',yijing:'易經占卜',ziwei:'紫微斗數',bazi:'八字',vedic:'印度占星',astro:'西洋占星',name:'姓名學',compat:'合盤',ootk:'開鑰之法',personality:'五軸'};
   var BIRTH={bazi:true,ziwei:true,vedic:true,astro:true,compat:true,personality:true};
   var requests=[],exclusions={};
@@ -986,6 +986,8 @@ function recommendReadingSystem(question, options) {
   if(/哪一年|哪年|幾歲|20\d\d|流年|大運|未來幾年|幾年內/.test(q)){add('bazi',3,'指定年份要看流年對本命的作用');add('ziwei',2,'流年四化能定年份');}
   if(f.event){add('liuyao',4,'一件具體的事成不成，六爻看用神最直接');add('liuren',3,'急事、消息、來人、失物，六壬看三傳');add('lenormand',3,'具體事件與周邊條件，雷諾曼把牌連成一件事');add('meihua',2,'當下一事成不成，梅花看體用');}
   if(f.shortTime&&(f.event||f.timing||f.decision||f.money)){add('liuyao',2,'短期有應期');add('liuren',2,'短期看三傳與候選日');add('lenormand',2,'快慢看牌的距離');add('meihua',1,'');add('bazi',-2,'');add('ziwei',-2,'');add('vedic',-2,'');add('astro',-1,'');}
+  if(/遺失|掉了|掉在|丟在|丟了|弄丟|不見了|找不到|放在哪|失物/.test(q)){add('liuren',4,'失物、方位與找回，六壬看玄武與三傳最直接');add('liuyao',2,'失物看用神旺衰與方位');}
+  if(/包裹|快遞|快递|物流|到貨|信件|來信|消息|訊息|音訊|郵件/.test(q)){add('lenormand',4,'消息、信件、包裹本是雷諾曼騎士與信的本題牌，能直接看到消息怎麼來');}
   if(f.timing){add('liuyao',3,'應期可以到月日');add('liuren',2,'有候選日');add('bazi',2,'問年份看流年');add('lenormand',1,'');}
   if(f.mind){add('tarot',5,'對方心意與互動動機，塔羅的關係陣最能分層看');add('liuyao',3,'用神看對方的狀態與對你的態度');add('lenormand',2,'');add('bazi',-1,'');}
   if(f.interact&&!f.longTerm){add('tarot',3,'兩人互動與拉扯');add('liuyao',1,'');}
@@ -1024,6 +1026,6 @@ function recommendReadingSystem(question, options) {
   result.alternatives=ranked.filter(function(k){return k!==result.system&&score[k]>=2;}).slice(0,2).map(function(k){return {system:k,label:LABEL[k],reason:why[k]||'',birthDataRequired:!!BIRTH[k]};});
   result.birthDataRequired=!!BIRTH[result.system];
   result.scores=score;result.excludedSystems=Object.keys(exclusions);result.plan=plan;result.features=f;
-  result.readingMode=result.system==='tarot'?(/Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明/i.test(q)?'book_t':'rws_reversals'):null;
+  result.readingMode=result.system==='tarot'?(function(){var asked=function(re){var m=q.match(re);return !!m&&!/(?:不要(?:用|使用)?|不用|不使用|別用|排除)\s*$/.test(q.slice(0,m.index));};/* 值須與塔羅讀法模組一致：gd_book_t／mathers_1888／rws_reversals */return asked(/Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明/i)?'gd_book_t':asked(/Mathers|馬瑟斯|麥瑟斯/i)?'mathers_1888':'rws_reversals';})():null;
   return result;
 }
