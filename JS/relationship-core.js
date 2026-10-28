@@ -1230,7 +1230,7 @@ var JY_READING_RELATIONSHIP = "【白話優先】【像命理師當面解惑】�
     var bz=root.JY_BAZI_PROMPT_ROOT,zw=root.JY_ZIWEI_PROMPT_ROOT;
     if(!bz||!zw||!root.BaziSuiteCore)throw new Error('合盤提示詞核心未載入。');
     pair.birthTimeAudit=verifyBirthTimes(comp,pair);
-    if(root.JYPromptPacket)return root.JYPromptPacket.buildMany([{method:'compat',chart:comp,label:'八字雙向'},{method:'compat',chart:pair,label:'紫微雙向'}],question||'請分析双方支持、磨合與運限');
+    if(root.JYPromptPacket)return root.JYPromptPacket.buildMany([{method:'compat',chart:comp,label:'八字雙向'},{method:'compat',chart:pair,label:'紫微雙向'}],question||'請分析雙方支持、磨合與運限');
     var s=comp.scenario;
     var lines=[
       '你是一位能分別運用子平八字與紫微斗數、再整合雙人關係的資深解盤者。使用繁體中文、白話而深入；先回答問題，再解釋依據與條件。',
@@ -1260,7 +1260,10 @@ var JY_READING_RELATIONSHIP = "【白話優先】【像命理師當面解惑】�
       '【本題成稿落點】直接說主判、雙方需要衝突、支持與牽制、運限影響、可先試的協議；每段判斷後補理由，不朗讀盤面。無互動紀錄的循環是待核假設，不替B斷言感受。四化逐筆核來源方、干、星、化、受方、落宮；錯引則撤回受影響結論。',
       bz.brandTailLines('compatibility').join('\n')
     ];
-    return globalThis.JYReadingWorkflow.finish(lines.join('\n\n'),{methods:['compat','bazi','ziwei'],question:question});
+    var legacy=globalThis.JYReadingWorkflow.finish(lines.join('\n\n'),{methods:['compat','bazi','ziwei'],question:question});
+    // 備援路徑只在一次貼上元件未載入時使用；超過可貼上的長度就停下並請使用者重新整理，不交出貼不進 AI 的超長文字。
+    if(String(legacy).length>150000)throw new Error('合盤提示詞元件未完整載入，請重新整理頁面後再複製。');
+    return legacy;
   }
   root.JYRelationshipCore=Object.freeze({version:VERSION,calculatePerson:calculatePerson,createZiweiPair:createZiweiPair,dataBlock:dataBlock,buildPrompt:buildPrompt,verifyBirthTimes:verifyBirthTimes,projectionGroups:projectionGroups,focusPalaces:clone(FOCUS)});
 })(typeof window!=='undefined'?window:globalThis);

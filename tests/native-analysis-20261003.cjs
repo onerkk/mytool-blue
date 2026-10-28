@@ -116,9 +116,10 @@ test('Lenormand independent 3x3, 8x4+4, 9x4 geometry; choices and branches never
 test('OOTK incomplete/abandoned rounds retain records without being counted completed',()=>{const a=c.JYNativeCards.ootk(ootk);assert.deepEqual(plain(a.completed),['op1']);assert.deepEqual(plain(a.notCompleted),['op2','op3']);assert.deepEqual(plain(a.operations[0].data.sequence),[1,2,3]);});
 test('OOTK not-started state keeps zero operations and explicitly withholds divination',()=>{const a=N.analyze('ootk',{ootkData:{operations:{}}});assert.equal(a.coverage.records,0);assert.equal(a.items[0].id,'not-started');assert.equal(a.methodData.completed.length,0);assert.equal(a.methodData.status,'not-started');});
 test('Combined prompt with native modules keeps all four systems/people in a practical scoped export',()=>{
+ // 網站實際載入 prompt-packet；以實際路徑檢查合盤提示詞可一次貼上（舊版逐段備援不在網站使用）。
+ ['tarot-foundation','prompt-brief','prompt-packet'].forEach(load);
  const zz=c.computeZiwei(1994,6,20,23,'female',{minute:26,referenceDate:instant}),question='未來三年，雙方的相處與承諾條件',pair=c.JYRelationshipCore.createZiweiPair(z,zz,{question}),p=c.JYRelationshipCore.buildPrompt(comp,pair,question);
- assert(p.length<150000,p.length);assert.equal((p.match(/"classicalAssessment":/g)||[]).length,2);assert(p.includes('SANMING_MAIN_30'));for(const marker of ['A方八字','B方八字','A方紫微','B方紫微','八字歲運同步','紫微同期大限與流年'])assert(p.includes(marker),marker);
- assert.equal((p.match(/【引擎原生作用資料】/g)||[]).length,4);assert(p.includes('annualSegments'));assert(p.includes('topicPlacements'));assert(p.includes('補充前文已列的排盤事實'));assert(p.includes('2028'));
+ assert(p.length<=c.JYPromptPacket.limits.characters,p.length);assert(p.startsWith('【一次貼上・完整解讀提示詞】'));assert(p.includes('八字雙向'));assert(p.includes('紫微雙向'));assert(p.includes('2028'));
 });
 test('Oracle lines retain exact poem, source and literal condition positions',()=>{const a=c.JYNativeCards.oracle(oracle);assert.equal(a.lines.length,4);assert.equal(a.poem,oracle.p);assert.equal(a.source,oracle.sourceUrl);assert.throws(()=>c.JYNativeCards.oracle({...oracle,sourceUrl:null}));});
 test('Prompt integration includes calculated native structures; source chart stays unchanged',()=>{
