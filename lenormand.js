@@ -2309,7 +2309,8 @@ function jyQuestionProfile(question){
     unknownPerson:/有沒有人|是否有人|有人(?:在)?(?:暗戀|喜歡|追|想|愛|注意|搞|陷害|說我|針對)|有誰|是誰在|誰(?:在)?(?:暗戀|喜歡|追|搞|針對)|哪個人|暗戀我|偷偷喜歡|有沒有.{0,6}(?:喜歡|暗戀|追)我/.test(q),
     destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
-  if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
+  // 具體事件（包裹、消息、面試、簽約…）問「何時」是短期應期，不升成長期命運題。
+  if(asks.timing&&!asks.shortTime&&!asks.event&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
   return {question:q,domain:domain,cardTopic:CARD_TOPIC[domain],asks:asks};
 }
@@ -2317,7 +2318,7 @@ function jyQuestionProfile(question){
 function recommendReadingSystem(question, options) {
   var q=String(question||'').trim(), plan=analyzeReadingQuestion(q), opts=options||{}, current=opts.current||null;
   if(!q)return {system:null,label:'',reason:'輸入問題後推薦',plan:plan,alternatives:[]};
-  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
+  var rules=[['lenormand','雷諾曼',/雷諾曼|雷诺曼|lenormand/i],['tarot','塔羅',/塔羅|塔罗|tarot|RWS|Book\s*T|Golden\s*Dawn|黃金黎明|黄金黎明|偉特|韋特|韦特|托特/i],['oracle','靈籤',/靈籤|灵签|求籤|求签|籤詩|签诗/],['meihua','梅花易數',/梅花|(?:時間|数字|數字|報數|报数)起卦/],['liuyao','六爻占卜',/六爻|六卦|納甲|纳甲|文王卦|(?<!時間|數字|数字|報數|报数)起卦|搖卦|摇卦|金錢卦|金钱卦/],['yijing','易經占卜',/易經|易经|周易|卦爻辭|卦爻辞|蓍草|揲蓍|大衍筮法/],['ziwei','紫微斗數',/紫微/],['bazi','八字',/八字|四柱|大運|大运/],['vedic','印度占星',/印度占星|吠陀占星|Jyotish|Vedic/i],['astro','西洋占星',/西洋占星|西方占星|Western astrology|星盤|星盘|占星|行星|上升星座/i]];
   var LABEL={lenormand:'雷諾曼',tarot:'塔羅',oracle:'靈籤',meihua:'梅花易數',liuyao:'六爻占卜',liuren:'大六壬',yijing:'易經占卜',ziwei:'紫微斗數',bazi:'八字',vedic:'印度占星',astro:'西洋占星',name:'姓名學',compat:'合盤',ootk:'開鑰之法',personality:'五軸'};
   var BIRTH={bazi:true,ziwei:true,vedic:true,astro:true,compat:true,personality:true};
   var requests=[],exclusions={};

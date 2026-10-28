@@ -38,7 +38,8 @@ function jyQuestionProfile(question){
     unknownPerson:/有沒有人|是否有人|有人(?:在)?(?:暗戀|喜歡|追|想|愛|注意|搞|陷害|說我|針對)|有誰|是誰在|誰(?:在)?(?:暗戀|喜歡|追|搞|針對)|哪個人|暗戀我|偷偷喜歡|有沒有.{0,6}(?:喜歡|暗戀|追)我/.test(q),
     destiny:/正緣|正缘|命中註定|命中注定|註定|注定|宿命|天生|這輩子|这辈子|一輩子|一辈子|姻緣|姻缘|真命天子|真命天女|靈魂伴侶|灵魂伴侣|命定|天注定|有沒有緣|有没有缘|是不是對的人|對的人嗎/.test(q)
   };
-  if(asks.timing&&!asks.shortTime&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
+  // 具體事件（包裹、消息、面試、簽約…）問「何時」是短期應期，不升成長期命運題。
+  if(asks.timing&&!asks.shortTime&&!asks.event&&!/幾月|哪一天|幾天|幾週/.test(q))asks.longTerm=true;
   var CARD_TOPIC={love:'love',career:'career',business:'wealth',wealth:'wealth',health:'health',move:'general',general:'general'};
   return {question:q,domain:domain,cardTopic:CARD_TOPIC[domain],asks:asks};
 }
