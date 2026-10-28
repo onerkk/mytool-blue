@@ -426,7 +426,7 @@
       {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim())));/* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 */if(informative.length)ctx.add('逐項作用與相反依據',informative.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
       const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
-    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
+    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
     const fit=t=>chars(t)<=LIMIT&&bytes(t)<=BYTES;
     const core=blocks.filter(b=>b.priority===0),selected=new Set(core),optionalCount=new Set(blocks.filter(b=>b.priority>0).map(b=>b.label)).size,essential=render(core).replace('\n【資料結束】',optionalCount?'\n【未展開細表】另有'+optionalCount+'項旁系細表未展開（完整清單在本工具）。\n【資料結束】':'\n【資料結束】');
@@ -517,7 +517,10 @@ var JY_REC_PACKET = {
     const match=String(question).match(/((?:19|20|21)\d{2})\s*(?:年)?\s*(?:至|到|～|~|—|–|-)\s*((?:19|20|21)\d{2})/);
     const explicit=Array.from(String(question).matchAll(/(?:19|20|21)\d{2}/g),m=>Number(m[0]));
     if(match)return {from:Math.min(+match[1],+match[2]),to:Math.max(+match[1],+match[2]),basis:'question-explicit-range'};
-    if(explicit.length)return {years:explicit,basis:'question-explicit-years'};
+    // 「今年年底前…明年…2027年？」：相對年份與明寫年份要合併，不能只取明寫的那一年。
+    const refYear=new Date(reference||Date.now()).getUTCFullYear(),q0=String(question),relative=[];
+    if(/去年/.test(q0))relative.push(refYear-1);if(/今年|年底前|年底|本年/.test(q0))relative.push(refYear);if(/明年/.test(q0))relative.push(refYear+1);if(/後年/.test(q0))relative.push(refYear+2);
+    if(explicit.length||relative.length)return {years:[...new Set(explicit.concat(relative))].sort((a,b)=>a-b),basis:explicit.length&&relative.length?'question-explicit-and-relative-years':explicit.length?'question-explicit-years':'question-relative-years'};
     if(scope?.allDecades||/(?:所有|全部|每步|每個|每一|一生|終身).{0,8}(?:大限|大運|運限|流年)|(?:大限|大運|運限).{0,8}(?:全部|逐年|每年)/.test(question))return {all:true,...(scope?.allDecades&&!scope.annualRequested?{onlyDecades:true}:{}),basis:'question-all-calculated-periods'};
     const date=new Date(reference||Date.now()),year=date.getUTCFullYear(),h=String(question).match(/(?:未來|往後|接下來|近)\s*([一二兩三四五六七八九十\d]+)\s*年/),numbers={一:1,二:2,兩:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10},n=h?(Number(h[1])||numbers[h[1]]||3):3;return {from:year,to:year+n,startUTC:date.toISOString(),basis:h?'question-relative-year-window':'default-reference-next-three-years'};
   }
