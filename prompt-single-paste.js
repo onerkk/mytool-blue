@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261111lean81',LIMIT=12000,BYTES=28000;
+  const VERSION='20261111lean82',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -16,7 +16,7 @@
   const bytes=x=>typeof TextEncoder==='function'?new TextEncoder().encode(String(x)).length:unescape(encodeURIComponent(String(x))).length;
   const json=x=>JSON.stringify(x,(_,v)=>typeof v==='number'?num(v):v);
   function txt(v){if(v==null)return '未定';if(v===true)return '是';if(v===false)return '否';if(typeof v==='number')return String(num(v));if(typeof v==='string')return v;if(Array.isArray(v))return v.map(txt).join('、');return typeof readable==='function'?'（'+readable(v,2)+'）':json(v);}
-  function stamp(x){if(x==null)return '未定';const d=new Date(x);return Number.isFinite(+d)?d.toISOString().replace('.000Z','Z'):String(x);}
+  function stamp(x){if(x==null)return '未定';const d=new Date(x);return Number.isFinite(+d)?d.toISOString().replace(/\.\d{3}Z$/,'Z'):String(x);}
   const interval=x=>x?stamp(x.start??x.startsAt)+'→'+stamp(x.endExclusive??x.end??x.endsAt):'未定';
   const state=x=>x==null?'?':x?1:0;
   const hasData=x=>x!==null&&x!==undefined&&x!==''&&(!Array.isArray(x)||x.length>0)&&(!(typeof x==='object'&&!Array.isArray(x))||Object.keys(x).length>0);
@@ -183,7 +183,7 @@
     add('上升月宿、五支曆、角色星',['上升星宿'+(nakOf(vl.longitude)||'?'),pc?'五支曆：'+[lm.tithi?.name&&((lm.tithi.paksha||'')+' '+lm.tithi.name).trim(),lm.nakshatra?.name&&'月宿'+String(lm.nakshatra.name).replace(/\s+/g,'')+(lm.nakshatra.pada||''),lm.yoga?.name&&'Yoga '+lm.yoga.name,lm.karana?.name&&'Karana '+lm.karana.name].filter(Boolean).join('、'):null,kr.length?'角色星：'+kr.map(k=>k.role+zh(k.planet)+(k.tied?'(同度待核)':'')).join(' '):null].filter(Boolean).join('\n'),1);
     add('十二宮：宮/座/主/主落宮/占曜/受照/SAV',A(core.houses).map(h=>row([h.house,h.signName||signs[h.sign],zh(h.lord),h.lordHouse,A(h.occupants).map(zh),A(h.aspectedBy).map(zh),h.sav])).join('\n'));
     add('星座相位與定位（座序0牡羊；行星相位已逐宮列於受照欄）',A(core.aspects?.rasi).map(p=>zh(p.from)+'→'+A(p.toSigns).join(',')).join(';')+'\n同座距角='+A(core.aspects?.conjunctions).map(p=>A(p.planets).map(zh).join('–')+':'+num(p.separation)).join(';')+'\n定位鏈='+A(core.dispositors).map(p=>A(p.chain).map(zh).join('→')).join(';'));
-    add('20分盤：D/升座；九曜座依日月水金火木土羅計，0牡羊起',A(s('二十分盤')).map(v=>row([v.division,v.lagna?.sign,keys.slice(0,9).map(k=>v.planets?.[k]?.sign)])).join('\n'));
+    {const S1='牡金雙蟹獅處秤蠍射摩瓶魚',g=i=>Number.isInteger(i)&&S1[i]||'?';add('20分盤：D/上升星座/九曜星座（依序日月水金火木土羅計；星座取首字：牡金雙蟹獅處秤蠍射摩瓶魚）',A(s('二十分盤')).map(v=>'D'+v.division+'/'+g(v.lagna?.sign)+'/'+keys.slice(0,9).map(k=>g(v.planets?.[k]?.sign)).join('')).join('\n'));}
     const str=s('六力與Bhava力量');add('力量（不是吉凶）：曜/總/門檻/足額/Ishta/Kashta',A(str?.strength?.planets).map(p=>row([zh(p.planet),p.totalVirupas,p.minimumVirupas,p.meetsMinimum,p.ishtaKashta?.ishta,p.ishtaKashta?.kashta])).join('\n'));add('十二宮力',A(str?.bhavaStrength?.houses).map(p=>[p.house,num(p.totalVirupas)]));
     const y=s('格局與落陷抵消')||{},formed=briefChecks([...(y.yogas||[]),...A(y.specialRules?.checks),...A(y.additional?.checks)]);
     add('實際成立項：名稱/狀態（同源只列一次）',[...new Map(formed.map(p=>[p.name+'|'+p.status,row([p.name,p.status])])).values()].join(';'));
@@ -198,10 +198,10 @@
     add('已算行運：曜/座/度/順逆/月宮/升宮/BAV/SAV',ts.map(p=>row([zh(p.planet),p.signName||signs[p.sign],p.degree,p.retrograde==null?null:p.retrograde?'逆':'順',p.fromMoon,p.fromLagna,p.bav,p.sav])).join('\n'));
     const sat=ts.find(p=>p.planet==='Saturn'),jup=ts.find(p=>p.planet==='Jupiter');
     if(sat?.fromMoon)add('土星與木星對出生月亮（行運常用判讀）','土星在月亮起算第'+sat.fromMoon+'宮'+({12:'：七年半考驗期第一段（Sade Sati 起）',1:'：七年半考驗期第二段（壓在月亮上，最重）',2:'：七年半考驗期第三段（收尾）',4:'：月亮第四宮土星（Kantaka／Ardhashtama，家宅與心安）',8:'：月亮第八宮土星（Ashtama，突變與暗中阻礙）'}[sat.fromMoon]||'：不在七年半與第四、八宮週期')+(jup?.fromMoon?'；木星在月亮起算第'+jup.fromMoon+'宮'+([2,5,7,9,11].includes(jup.fromMoon)?'（傳統有利位，仍看阻擋表）':'（非傳統有利位）'):''),1);
-    const tr=s('行運逐項核算');add('行運阻擋：曜/月宮/有利/阻宮/阻曜/狀態',A(tr?.vedha).map(p=>row([zh(p.planet),p.fromMoon,p.auspiciousHouse,p.vedhaHouse,A(p.blockers).map(zh),p.status])).join('\n'),1);
+    const tr=s('行運逐項核算');add('行運阻擋：曜/月宮/有利/阻宮/阻曜/狀態（不在有利宮時阻宮標—）',A(tr?.vedha).map(p=>row([zh(p.planet),p.fromMoon,p.auspiciousHouse,p.vedhaHouse??'—',A(p.blockers).map(zh),p.status])).join('\n'),1);
     const av=s('八分法所有分盤');add('AV原表：D/SAV/BAV日/月/水/金/火/木/土；SAV逗號分隔，BAV各12個位數逐字對牡羊至雙魚',Object.entries(av?.vargas||{}).map(([d,v])=>'D'+d+'/'+v.sav.join(',')+'/'+keys.slice(0,7).map(k=>A(v.bav?.[k]).join('')).join('/')).join('\n'));
-    const t=s('本次歲時完整核算');if(t){add('本次年度範圍',{status:t.status,window:t.window,muntha:t.muntha,yearLord:P(t.ruleLedger?.yearLord,['status','winner','alternatives','tier']),annualLagna:t.annual?.lagna});add('年度星位',planetRows(t.annual?.planets,false),2);add('當期月與細段',[t.currentMonth,t.currentSixtyHour].filter(Boolean).map(p=>({kind:p.kind,window:p.window,lagna:p.chart?.lagna,planets:planetRows(p.chart?.planets,false),lord:P(p.monthLord||p.ruleLedger?.yearLord,['status','winner','alternatives','tier'])})),4);}
-    const sc=s('Sudarsana三重年運月運細運');add('三重年運',{status:sc?.status,yearOfLife:sc?.yearOfLife,yearHouse:sc?.yearHouse,window:sc?.window,limits:sc?.limits},4);
+    const t=s('本次歲時完整核算');if(t){add('本次年度範圍',{status:t.status,muntha:t.muntha,yearLord:P(t.ruleLedger?.yearLord,['status','winner','alternatives','tier']),annualLagna:P(t.annual?.lagna,['signName','degree']),interval:interval(t.window)});add('年度星位',planetRows(t.annual?.planets,false),2);add('當期月與細段',[t.currentMonth,t.currentSixtyHour].filter(Boolean).map(p=>({kind:p.kind,interval:interval(p.window),lagna:P(p.chart?.lagna,['signName','degree']),planets:planetRows(p.chart?.planets,false),lord:P(p.monthLord||p.ruleLedger?.yearLord,['status','winner','alternatives','tier'])})),4);}
+    const sc=s('Sudarsana三重年運月運細運');add('三重年運',sc?{status:sc.status,yearOfLife:sc.yearOfLife,yearHouse:sc.yearHouse,interval:interval(sc.window)}:null,4);
     {const SIGN=['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'],AN={AL:'上升象（AL）',UL:'婚姻象（UL）'};
       const vg=s('Jaimini與特殊點')?.vargas||{};
       add('Arudha 象點（Jaimini；依 PVR 算法）',Object.entries(vg).map(([d,v])=>{const ar=v.arudhas||{};
