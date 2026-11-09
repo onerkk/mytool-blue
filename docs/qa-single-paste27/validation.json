@@ -11,8 +11,8 @@
     {
       "name": "ziwei real exporter",
       "status": "passed",
-      "characters": 8042,
-      "bytes": 20406,
+      "characters": 7934,
+      "bytes": 20214,
       "notExpanded": []
     },
     {
@@ -32,8 +32,8 @@
     {
       "name": "liuren real exporter",
       "status": "passed",
-      "characters": 4810,
-      "bytes": 11868,
+      "characters": 4828,
+      "bytes": 11960,
       "notExpanded": [
         "實際命中神煞"
       ]
@@ -71,8 +71,8 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 5562,
-      "bytes": 13052,
+      "characters": 5325,
+      "bytes": 12705,
       "notExpanded": []
     },
     {
@@ -123,13 +123,13 @@
     {
       "name": "two charts share one instruction block and retain both entire palace tables",
       "status": "passed",
-      "characters": 11414
+      "characters": 11304
     },
     {
       "name": "eighty explicit annual rows are never replaced by a top-N sample",
       "status": "passed",
       "years": 80,
-      "characters": 10202
+      "characters": 10094
     },
     {
       "name": "provided Yijing cast retains selected text and all six moving statuses",
