@@ -4799,6 +4799,7 @@ function assessBaziSpecialRules(pillars) {
 }
 
 function computeBazi(year,month,day,hour,minute,gender,options){
+  if(typeof jyInstallLunarMemo==='function')jyInstallLunarMemo();
   options=Object.assign({timezoneOffset:8},options||{});
   minute=minute==null?0:minute;
   const second=options.second==null?0:options.second;

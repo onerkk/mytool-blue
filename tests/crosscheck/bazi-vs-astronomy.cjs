@@ -9,7 +9,7 @@ function termNear(t,dir){ // nearest 節 (lon ≡ 15 mod 30) before(dir=-1)/afte
   const start=new Date(t.getTime()+(dir>0?0:-33*864e5));const r=A.SearchSunLongitude(target,start,34);return r.date;}
 const diff={},ex={};const note=(k,i)=>{diff[k]=(diff[k]||0)+1;if(!ex[k])ex[k]=i;};
 let n=0,near=0,qn=0,maxq=0;
-for(let i=0;i<170;i++){
+for(let i=0;i<1500;i++){
  const y=1925+Math.floor(rnd()*110),m=1+Math.floor(rnd()*12),d=1+Math.floor(rnd()*28),h=Math.floor(rnd()*23),mi=Math.floor(rnd()*60),g=rnd()<.5?'male':'female';
  const t=new Date(Date.UTC(y,m-1,d,h-8,mi));const lon=sunLon(t);
  const dist=Math.min(((lon-15)%30+30)%30,30-((lon-15)%30+30)%30); if(dist<0.003){near++;continue;} // within ~4 min of a 節

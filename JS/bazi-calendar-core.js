@@ -112,3 +112,27 @@
     formatParts:formatParts
   };
 })(typeof window!=='undefined'?window:this);
+
+/* 節氣／朔望計算快取（2026-11-11）：lunar-javascript 每建立一個農曆物件就重算整年節氣，
+   八字排一張盤約 1.2 秒，其中近七成耗在這裡。以下只對「單一數值參數的純函式」加快取，結果逐位元相同。 */
+(function(root){
+  'use strict';
+  function install(){
+    var S=root.ShouXingUtil||(root.Lunar&&root.Lunar.ShouXingUtil);
+    if(!S||S.__jyMemo)return !!(S&&S.__jyMemo);
+    ['qiAccurate','qiAccurate2','calcQi','calcShuo','qiHigh','shuoHigh','saLonT','msaLonT'].forEach(function(k){
+      var f=S[k];if(typeof f!=='function'||f.length!==1)return;
+      var m=new Map();
+      S[k]=function(x){
+        if(arguments.length!==1||typeof x!=='number')return f.apply(S,arguments);
+        var v=m.get(x);
+        if(v===undefined){v=f.call(S,x);if(m.size>20000)m.clear();m.set(x,v);}
+        return v;
+      };
+    });
+    try{Object.defineProperty(S,'__jyMemo',{value:true});}catch(e){S.__jyMemo=true;}
+    return true;
+  }
+  root.jyInstallLunarMemo=install;
+  install();
+})(typeof window!=='undefined'?window:typeof globalThis!=='undefined'?globalThis:this);
