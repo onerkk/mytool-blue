@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261111lean83',LIMIT=12000,BYTES=28000;
+  const VERSION='20261111lean84',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -367,7 +367,7 @@
     add(ln?'全部牌序：位置/牌號/牌名/含義/人物事件綁定（雷諾曼不分正逆）':'全部牌序：位置/牌號/牌名/方向/含義/人物事件綁定',A(d.records).map(p=>row(ln?[p.position||p.index,p.id,p.name,p.keywords||p.meaning,p.binding??'—']:[p.position||p.index,p.id,p.name,p.direction,p.keywords||p.meaning,p.binding??'—'])).join('\n'));
     if(!ln&&A(d.records).length){const R=A(d.records),SU=[['wand','權杖','火'],['cup','聖杯','水'],['sword','寶劍','風'],['pent','錢幣','土']],majors=R.filter(r=>r.suit==='major'),rev=R.filter(r=>r.direction==='逆位'),miss=SU.filter(([k])=>!R.some(r=>r.suit===k)).map(([,n,el])=>n+'('+el+')'),at=ix=>A(ix).map(i=>R[i-1]?.position).filter(Boolean).join('、');
       add('整組牌結構（數量本身就是讀牌線索）',['大牌'+majors.length+'/'+R.length+'張'+(majors.length?'（'+majors.map(r=>r.position).join('、')+'）':''),'花色：'+SU.map(([k,n,el])=>n+'('+el+')'+R.filter(r=>r.suit===k).length).join(' ')+(miss.length&&R.length>=5?'；缺'+miss.join('、'):''),R.some(r=>r.direction==='正位'||r.direction==='逆位')?'逆位'+rev.length+'張':null,A(d.courtPositions).length?'宮廷牌在：'+at(d.courtPositions):'沒有宮廷牌',A(d.rankEchoes).length?'重複數字：'+d.rankEchoes.map(x=>(({ace:'王牌',page:'侍者',knight:'騎士',queen:'皇后',king:'國王'})[x.rank]||x.rank)+'（'+at(x.positions)+'）').join('；'):null].filter(Boolean).join('；'));
-      const mt=R.filter(r=>r.meaning);if(mt.length)add(mt.some(r=>r.meaningTopic==='Mathers原義')?'牌義（Mathers《The Tarot》1888 原書；依牌位與原題情境轉述）':'RWS牌義（Waite《塔羅圖解》原典；依牌位與原題情境轉述）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
+      const mt=R.filter(r=>r.meaning);if(mt.length)add(mt.some(r=>r.meaningTopic==='Mathers原義')?'牌義（Mathers《The Tarot》1888 原書；依牌位與原題情境轉述）':(mt.every(r=>r.meaningTopic==='偉特原義')?'RWS牌義（Waite《塔羅圖解》原典；依牌位與原題情境轉述）':mt.some(r=>r.meaningTopic==='偉特原義')?'RWS牌義（標〔偉特原義〕者為 Waite《塔羅圖解》原典，其餘為站內依題型整理；依牌位與原題情境轉述）':'RWS牌義（站內依題型整理的偉特系牌義；依牌位與原題情境轉述）'),mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}
     if(e.method==='tarot'&&A(d.records).length){
       // 牌陣結構由引擎的方法登記（牌位權責＋依賴鏈）寫成句子；不靠牌位名稱猜。
       const plan=c.methodPlan||c.tarotData?.methodPlan||null,R=A(d.records),slots=A(plan?.slots),deps=A(plan?.dependencies);
@@ -391,7 +391,7 @@
     if(e.method==='lenormand'){
       const R=A(d.records),N=i=>R[i-1]?.name||('第'+i+'張'),g=c.declaredGender||d.declaredGender,pr=c.personRep||d.personRep,cf=c.customFocus||d.customFocus;
       const inSpread=id=>R.find(r=>r.id===id);
-      add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是他現在的處境':'，本次未抽到，整個牌陣直接當成他的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
+      add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是本人現在的處境':'，本次未抽到，整個牌陣直接當成本人的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
       const paths=A(d.paths),mirror=A(d.mirror),knights=A(d.knights),spread=String(c.spreadType||d.spreadType||''),md=c.methodData||d.methodData||{};
       const pairNames=list=>list.map(m=>N(m.a)+'↔'+N(m.b)).join('、');
       if(spread==='two'&&R.length===2){add('雙牌讀法（引擎幾何）','主題'+N(1)+'，修飾'+N(2)+'：第二張形容第一張，讀成一句「'+N(1)+'，而且是'+N(2)+'那種」；沒有中心、沒有鏡像，不要讀成線。');}
