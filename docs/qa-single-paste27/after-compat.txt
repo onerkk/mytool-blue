@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"compat","delivery":"single-message","build":"20261110depth80"}
+{"schema":"jy.native-analysis/1","method":"compat","delivery":"single-message","build":"20261111lean81"}
 
 【原問題】
 "完整分析原局與2026至2029年的工作、關係與取捨"

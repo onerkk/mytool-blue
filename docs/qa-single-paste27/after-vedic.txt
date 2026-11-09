@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"vedic","delivery":"single-message","build":"20261110depth80"}
+{"schema":"jy.native-analysis/1","method":"vedic","delivery":"single-message","build":"20261111lean81"}
 
 【原問題】
 "完整分析原局與2026至2029年的工作、關係與取捨"
@@ -240,9 +240,7 @@ D10行星象：日象在雙子；月象在摩羯（例外規則）；火象在�
 項目：十二宮力量 · Raman/Sripathi；所見：9宮 10.01 Rupa；4宮 9.56 Rupa；8宮 8.73 Rupa；1宮 8.67 Rupa；7宮 8.16 Rupa；3宮 8.15 Rupa；10宮 7.73 Rupa；6宮 7.63 Rupa；2宮 7.53 Rupa；11宮 6.70 Rupa；5宮 5.74 Rupa；12宮 5.27 Rupa；支持：宮中心、宮主、方向與逐曜照射分列；九曜宮界比例另列；提醒：與D1整宮的主題、宮主及運期合參；宮位強度不直接換算吉凶
 項目：八分法 · 原表、兩階段消減及Pinda；所見：太陽 167；月亮 159；火星 94；水星 91；木星 43；金星 126；土星 135；支持：PVR七曜八參照；每個分盤重算，原SAV仍為337；提醒：原表與消減表用途分開
 項目：出生五支曆 · 日月交界與日出換日；所見：Dwitiya；Dhriti；Garaja；Purva Bhadrapada；Thursday；支持：UTC半開區間；Vaara依前次日出的具名當地日期；提醒：出生時刻或日出不足時保留缺項，不用假設值下定論
-項目：Sudarsana三重年／月／細運；所見：第44生命年／第8宮運；20分盤各核上升、月亮、太陽三參照；支持：年、月與細運依各次實際起始UTC的盤位；全量作用保留於引擎JSON
 項目：BPHS七分盤性質與三輪作用；所見：已算；支持：本命及各次ENTRY獨立BPHS原始力實算；主文與變體分列；提醒：PVR20盤及BPHS D1分開；名義時計未偽造
-項目：其他具名運期 · 適用條件與當期位置；所見：阿什托塔里大運：已算／月亮；：已算／水星；：已算／11；：已算／8；：已算／6；：已算／3；：已算／2；：已算／10；：已算／6；Shodashottari：已算／計都；Dwadashottari：已算／火星；Panchottari：已算／金星；Shatabdika：已算／土星；ChaturashitiSama：已算／太陽；DwisaptatiSama：已算／水星；ShatTrimshatSama：已算／水星；Ashtottari28：已算／月亮；支持：原始JSON保留所有模型的大副運實算區間；提醒：不同模型不是獨立票數；條件運先核適用規則
 項目：二十分盤 · Arudha、Argala與Narayana；所見：20分盤；八Karaka及特殊點另列；支持：各分盤用自己的位置及具名D1種子宮主；提醒：同度、同力未決保留；副星是傳統數學點
 項目：額外格局與落陷取消；所見：Amala、Kaahala、Bheri、Mridanga、Brahma；支持：每項都有盤面、條件及版本；取消後仍保留原落陷、近日與力量條件
 項目：年度／當期月／2.5°段原生盤面；所見：恆星太陽實際求根、20分盤、Harsha、Pancha／Dwadasa力量、歲月主、36Sahams、16格局與年度大副運；支持：年、12月及144段界線實算；當期月與段另完整重排，年度運期依各具名曆法；提醒：定義與原例不一致保留並列表；邊界表不冒稱所有段內盤面已預算

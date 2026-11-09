@@ -4,38 +4,36 @@
     {
       "name": "bazi real exporter",
       "status": "passed",
-      "characters": 7041,
-      "bytes": 17591,
+      "characters": 7040,
+      "bytes": 17590,
       "notExpanded": []
     },
     {
       "name": "ziwei real exporter",
       "status": "passed",
-      "characters": 10624,
-      "bytes": 27642,
-      "notExpanded": [
-        "逐項作用與相反依據"
-      ]
+      "characters": 8042,
+      "bytes": 20406,
+      "notExpanded": []
     },
     {
       "name": "astro real exporter",
       "status": "passed",
-      "characters": 7718,
-      "bytes": 17174,
+      "characters": 7717,
+      "bytes": 17173,
       "notExpanded": []
     },
     {
       "name": "vedic real exporter",
       "status": "passed",
-      "characters": 11393,
-      "bytes": 22904,
+      "characters": 11002,
+      "bytes": 22020,
       "notExpanded": []
     },
     {
       "name": "liuren real exporter",
       "status": "passed",
-      "characters": 4811,
-      "bytes": 11869,
+      "characters": 4810,
+      "bytes": 11868,
       "notExpanded": [
         "實際命中神煞"
       ]
@@ -43,29 +41,29 @@
     {
       "name": "liuyao real exporter",
       "status": "passed",
-      "characters": 3783,
-      "bytes": 9997,
+      "characters": 3782,
+      "bytes": 9996,
       "notExpanded": []
     },
     {
       "name": "yijing real exporter",
       "status": "passed",
-      "characters": 3603,
-      "bytes": 9657,
+      "characters": 3602,
+      "bytes": 9656,
       "notExpanded": []
     },
     {
       "name": "meihua real exporter",
       "status": "passed",
-      "characters": 3098,
-      "bytes": 8572,
+      "characters": 3097,
+      "bytes": 8571,
       "notExpanded": []
     },
     {
       "name": "name real exporter",
       "status": "passed",
-      "characters": 5924,
-      "bytes": 15401,
+      "characters": 5923,
+      "bytes": 15400,
       "notExpanded": [
         "方法矩陣"
       ]
@@ -73,49 +71,49 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 5563,
-      "bytes": 13053,
+      "characters": 5562,
+      "bytes": 13052,
       "notExpanded": []
     },
     {
       "name": "personality real exporter",
       "status": "passed",
-      "characters": 2298,
-      "bytes": 6280,
+      "characters": 2297,
+      "bytes": 6279,
       "notExpanded": []
     },
     {
       "name": "tarot real exporter",
       "status": "passed",
-      "characters": 2453,
-      "bytes": 6497,
+      "characters": 2452,
+      "bytes": 6496,
       "notExpanded": []
     },
     {
       "name": "lenormand real exporter",
       "status": "passed",
-      "characters": 2572,
-      "bytes": 6822,
+      "characters": 2571,
+      "bytes": 6821,
       "notExpanded": []
     },
     {
       "name": "ootk real exporter",
       "status": "passed",
-      "characters": 2226,
-      "bytes": 6042,
+      "characters": 2225,
+      "bytes": 6041,
       "notExpanded": []
     },
     {
       "name": "oracle real exporter",
       "status": "passed",
-      "characters": 2715,
-      "bytes": 7372,
+      "characters": 2714,
+      "bytes": 7371,
       "notExpanded": []
     },
     {
       "name": "provided financial question retains both outcomes and exact wording",
       "status": "passed",
-      "characters": 9948
+      "characters": 11611
     },
     {
       "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
@@ -125,24 +123,24 @@
     {
       "name": "two charts share one instruction block and retain both entire palace tables",
       "status": "passed",
-      "characters": 11468
+      "characters": 11414
     },
     {
       "name": "eighty explicit annual rows are never replaced by a top-N sample",
       "status": "passed",
       "years": 80,
-      "characters": 10069
+      "characters": 10202
     },
     {
       "name": "provided Yijing cast retains selected text and all six moving statuses",
       "status": "passed",
-      "characters": 3665
+      "characters": 3664
     },
     {
       "name": "full production OOTK preserves every active order, counting step and pair",
       "status": "passed",
       "operations": 5,
-      "characters": 6611
+      "characters": 6610
     },
     {
       "name": "Unicode or oversized old exports fail before clipboard and never split",
