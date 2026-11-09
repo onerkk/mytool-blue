@@ -34,8 +34,8 @@
     {
       "name": "liuren real exporter",
       "status": "passed",
-      "characters": 4792,
-      "bytes": 11812,
+      "characters": 4811,
+      "bytes": 11869,
       "notExpanded": [
         "實際命中神煞"
       ]
@@ -50,8 +50,8 @@
     {
       "name": "yijing real exporter",
       "status": "passed",
-      "characters": 3509,
-      "bytes": 9375,
+      "characters": 3603,
+      "bytes": 9657,
       "notExpanded": []
     },
     {
@@ -64,8 +64,8 @@
     {
       "name": "name real exporter",
       "status": "passed",
-      "characters": 5839,
-      "bytes": 15146,
+      "characters": 5924,
+      "bytes": 15401,
       "notExpanded": [
         "方法矩陣"
       ]
@@ -108,14 +108,14 @@
     {
       "name": "oracle real exporter",
       "status": "passed",
-      "characters": 2647,
-      "bytes": 7168,
+      "characters": 2715,
+      "bytes": 7372,
       "notExpanded": []
     },
     {
       "name": "provided financial question retains both outcomes and exact wording",
       "status": "passed",
-      "characters": 12000
+      "characters": 9948
     },
     {
       "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
@@ -136,7 +136,7 @@
     {
       "name": "provided Yijing cast retains selected text and all six moving statuses",
       "status": "passed",
-      "characters": 3571
+      "characters": 3665
     },
     {
       "name": "full production OOTK preserves every active order, counting step and pair",
