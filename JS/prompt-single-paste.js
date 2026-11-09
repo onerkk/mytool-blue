@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261111lean82',LIMIT=12000,BYTES=28000;
+  const VERSION='20261111lean83',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -282,7 +282,7 @@
     add('雙向十神：對方柱/天干/十神/藏干',Object.entries(c.directionalTenGods||{}).map(([k,vs])=>k+':'+A(vs).map(v=>row([v.partnerPillar,v.partnerStem,v.tenGod,v.hidden])).join(';')).join('\n'));
     add('雙方日主與夫妻宮',{dayMasters:c.dayMasters,spousePalace:c.spousePalace});
     const SR={generate:'甲生乙',receive:'乙生甲',control:'甲剋乙',controlled:'乙剋甲',same:'同五行'},PL={year:'年',month:'月',day:'日',hour:'時'};
-    add('跨盤天干作用：甲柱/乙柱/甲干/乙干/作用',A(c.stemRelations).map(v=>row([PL[v.aPillar]||v.aPillar,PL[v.bPillar]||v.bPillar,v.aStem,v.bStem,v.typeCode==='STEM_COMBINATION'?'五合(化'+(v.candidateElement||'?')+'候選，未必成化)':v.type==='同干'?'同干':(SR[v.relation]||v.relation)])).join('\n'));
+    add('跨盤天干作用：甲柱/乙柱/甲干/乙干/作用',A(c.stemRelations).map(v=>row([PL[v.aPillar]||v.aPillar,PL[v.bPillar]||v.bPillar,v.aStem,v.bStem,v.typeCode==='STEM_COMBINATION'?'五合(化'+(v.candidateElement||'?')+'候選，未必成化)':v.type==='同干'?'同干':(v.typeCode==='STEM_CLASH'?'相沖・':'')+(SR[v.relation]||v.relation)])).join('\n'));
     if(c.elementComplement)add('五行互補（站內相對權重，偏強五行是否落在對方喜忌）',{甲偏強:c.elementComplement.dominantA,乙偏強:c.elementComplement.dominantB,乙可助甲:c.elementComplement.partnerMaySupportA,甲可助乙:c.elementComplement.partnerMaySupportB,乙加重甲負擔:c.elementComplement.partnerMayLoadA,甲加重乙負擔:c.elementComplement.partnerMayLoadB},1);
     add('跨盤地支作用：類型/甲柱/乙柱/甲支/乙支/成化狀態（只有合局才論成化，其餘標—）',A(c.branchRelations).map(v=>row([v.type,v.aPillar,v.bPillar,v.aBranch,v.bBranch,v.transformationStatus??'—'])).join('\n'));
     add('跨盤三合三會與其他組合',{groups:A(c.groupRelations).map(v=>P(v,['type','branches','element','participants','transformationStatus','interpretationScope'])),overlays:compactObject(c.overlays),directions:compactObject(c.directions),projectionGroups:compactObject(c.projectionGroups)},2);
@@ -364,7 +364,7 @@
     }
     add('牌陣與程序',{method:c.methodPlan?.method||c.methodPlan?.id||c.tarotData?.methodPlan?.id,sourceProfile:c.sourceProfile||c.tarotData?.sourceProfile,spread:c.spreadType||c.spread||c.lenormandData?.spreadType||c.tarotData?.spreadZh||c.tarotData?.spreadType,drawProcedure:d.drawProcedure,eventGroups:d.eventGroups,commonContext:d.commonContext});
     const ln=e.method==='lenormand';// 雷諾曼沒有逆位，不印「方向?」讓AI誤以為缺資料
-    add(ln?'全部牌序：位置/牌號/牌名/含義/人物事件綁定（雷諾曼不分正逆）':'全部牌序：位置/牌號/牌名/方向/含義/人物事件綁定',A(d.records).map(p=>row(ln?[p.position||p.index,p.id,p.name,p.keywords||p.meaning,p.binding]:[p.position||p.index,p.id,p.name,p.direction,p.keywords||p.meaning,p.binding])).join('\n'));
+    add(ln?'全部牌序：位置/牌號/牌名/含義/人物事件綁定（雷諾曼不分正逆）':'全部牌序：位置/牌號/牌名/方向/含義/人物事件綁定',A(d.records).map(p=>row(ln?[p.position||p.index,p.id,p.name,p.keywords||p.meaning,p.binding??'—']:[p.position||p.index,p.id,p.name,p.direction,p.keywords||p.meaning,p.binding??'—'])).join('\n'));
     if(!ln&&A(d.records).length){const R=A(d.records),SU=[['wand','權杖','火'],['cup','聖杯','水'],['sword','寶劍','風'],['pent','錢幣','土']],majors=R.filter(r=>r.suit==='major'),rev=R.filter(r=>r.direction==='逆位'),miss=SU.filter(([k])=>!R.some(r=>r.suit===k)).map(([,n,el])=>n+'('+el+')'),at=ix=>A(ix).map(i=>R[i-1]?.position).filter(Boolean).join('、');
       add('整組牌結構（數量本身就是讀牌線索）',['大牌'+majors.length+'/'+R.length+'張'+(majors.length?'（'+majors.map(r=>r.position).join('、')+'）':''),'花色：'+SU.map(([k,n,el])=>n+'('+el+')'+R.filter(r=>r.suit===k).length).join(' ')+(miss.length&&R.length>=5?'；缺'+miss.join('、'):''),R.some(r=>r.direction==='正位'||r.direction==='逆位')?'逆位'+rev.length+'張':null,A(d.courtPositions).length?'宮廷牌在：'+at(d.courtPositions):'沒有宮廷牌',A(d.rankEchoes).length?'重複數字：'+d.rankEchoes.map(x=>(({ace:'王牌',page:'侍者',knight:'騎士',queen:'皇后',king:'國王'})[x.rank]||x.rank)+'（'+at(x.positions)+'）').join('；'):null].filter(Boolean).join('；'));
       const mt=R.filter(r=>r.meaning);if(mt.length)add(mt.some(r=>r.meaningTopic==='Mathers原義')?'牌義（Mathers《The Tarot》1888 原書；依牌位與原題情境轉述）':'RWS牌義（Waite《塔羅圖解》原典；依牌位與原題情境轉述）',mt.map(r=>r.position+'｜'+r.name+r.direction+(r.meaningTopic?'〔'+r.meaningTopic+'〕':'')+'：'+r.meaning).join('\n'),1);}

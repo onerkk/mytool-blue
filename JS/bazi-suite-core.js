@@ -1111,7 +1111,9 @@ return function timeScope(question,referenceYear){
         if (ck) {
           out.push({type:'天干五合', typeCode:'STEM_COMBINATION', aPillar:a.key, bPillar:b.key, aStem:a.gan, bStem:b.gan, candidateElement:ck, transformationStatus:'待審', description:'A'+a.label+a.gan+'與B'+b.label+b.gan+'構成天干五合，傳統化神候選'+ck+'；只確認配對，不直接判定合化。'});
         } else if (same || rel.type !== 'neutral') {
-          out.push({type:same?'同干':'天干生剋', typeCode:same?'SAME_STEM':'STEM_ELEMENT_RELATION', aPillar:a.key, bPillar:b.key, aStem:a.gan, bStem:b.gan, relation:rel.type, description:'A'+a.label+a.gan+'與B'+b.label+b.gan+'：'+rel.label+'。'});
+          var clash=!same&&['甲庚','乙辛','丙壬','丁癸'].some(function(k){return (k[0]===a.gan&&k[1]===b.gan)||(k[1]===a.gan&&k[0]===b.gan);});
+          /* 2026-11-11：天干四沖（甲庚、乙辛、丙壬、丁癸）原本只併在「天干生剋」，合婚看干沖是常用取法，獨立成類；戊己居中不沖。 */
+          out.push({type:same?'同干':clash?'天干相沖':'天干生剋', typeCode:same?'SAME_STEM':clash?'STEM_CLASH':'STEM_ELEMENT_RELATION', aPillar:a.key, bPillar:b.key, aStem:a.gan, bStem:b.gan, relation:rel.type, description:'A'+a.label+a.gan+'與B'+b.label+b.gan+'：'+(clash?a.gan+b.gan+'相沖，':'')+rel.label+'。'});
         }
       });
     });

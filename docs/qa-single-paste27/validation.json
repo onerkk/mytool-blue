@@ -71,8 +71,8 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 5325,
-      "bytes": 12705,
+      "characters": 5328,
+      "bytes": 12714,
       "notExpanded": []
     },
     {
@@ -85,15 +85,15 @@
     {
       "name": "tarot real exporter",
       "status": "passed",
-      "characters": 2452,
-      "bytes": 6496,
+      "characters": 2468,
+      "bytes": 6548,
       "notExpanded": []
     },
     {
       "name": "lenormand real exporter",
       "status": "passed",
       "characters": 2571,
-      "bytes": 6821,
+      "bytes": 6839,
       "notExpanded": []
     },
     {

@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"compat","delivery":"single-message","build":"20261111lean82"}
+{"schema":"jy.native-analysis/1","method":"compat","delivery":"single-message","build":"20261111lean83"}
 
 【原問題】
 "完整分析原局與2026至2029年的工作、關係與取捨"
@@ -57,7 +57,7 @@
 年/月/癸/庚/乙生甲
 年/日/癸/戊/五合(化火候選，未必成化)
 年/時/癸/壬/同五行
-月/年/庚/甲/甲剋乙
+月/年/庚/甲/相沖・甲剋乙
 月/月/庚/庚/同干
 月/日/庚/戊/乙生甲
 月/時/庚/壬/甲生乙
