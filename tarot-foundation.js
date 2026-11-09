@@ -824,7 +824,7 @@ function analyzeReadingQuestion(value) {
       {id:'safety',terms:['安不安全','安全']},
       {id:'effectiveness',terms:['有沒有效','有效']},
       {id:'quality',terms:['好不好','好','差不差','差']},
-      {id:'partner_fit',terms:['是不是正緣','是否正緣','正緣','合不合適','適不適合交往','適不適合結婚']}
+      {id:'partner_fit',terms:['是不是正緣','是否正緣','正緣','是不是對的人','是否對的人','對的人','真命天子','真命天女','命定的人','合不合適','適不適合交往','適不適合結婚']}
     ]
   };
   // Preserve lexical polysemy as data instead of silently forcing a single reading.
