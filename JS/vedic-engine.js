@@ -320,7 +320,7 @@
           {key:'lagnaLordExalted',label:'命主落擢升星座',passed:ps[l1].dignity.exaltedSign}]});
       for(const h of [1,4,7,10])for(const t of [1,5,9]){
         const a=lord(h),b=lord(t);if(h===t)continue;
-        if(a===b){if(!yogakaraka.some(x=>x.planet===a))yogakaraka.push({planet:a,houses:[h,t]});}
+        if(a===b){/* 2026-11-12：Yogakaraka 只認同一星兼掌四／七／十宮之一與五／九宮之一；命宮不算在內，否則雙子、處女、射手、雙魚的命主會被誤列（古典只有金牛、巨蟹、獅子、天秤、摩羯、水瓶六個上升有） */if(h!==1&&t!==1&&!yogakaraka.some(x=>x.planet===a))yogakaraka.push({planet:a,houses:[h,t]});}
         else if(linked(a,b)){const old=raja.find(x=>x.planets.includes(a)&&x.planets.includes(b));if(old)old.housePairs.push([h,t]);else raja.push({planets:[a,b],housePairs:[[h,t]]});}
       }
       for(const [h,name] of [[6,'Harsha'],[8,'Sarala'],[12,'Vimala']])record(name,name,ps[lord(h)].house===h,[lord(h)],h+'宮主落回'+h+'宮；本版採 PVR 狹義，不混用三凶宮互落的廣義名稱');

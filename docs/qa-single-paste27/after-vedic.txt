@@ -100,7 +100,7 @@ D60/射/蠍雙金蠍秤牡秤射雙
 12／316.4186
 
 【實際成立項：名稱/狀態（同源只列一次）】
-Bhadra（五大行星格局）/結構成立;Vesi/結構成立;Vosi/結構成立;Ubhayachara/結構成立;Vipareeta（困難宮主互涉）/結構成立;Yogakaraka（兼掌角宮與三分宮）/結構成立;Daama/結構成立;Amala/結構成立;Kaahala/結構成立;Bheri/結構成立;Mridanga/結構成立;Brahma/結構成立
+Bhadra（五大行星格局）/結構成立;Vesi/結構成立;Vosi/結構成立;Ubhayachara/結構成立;Vipareeta（困難宮主互涉）/結構成立;Daama/結構成立;Amala/結構成立;Kaahala/結構成立;Bheri/結構成立;Mridanga/結構成立;Brahma/結構成立
 
 【落陷救應：曜/是否抵消/實際規則與通過值（仍保留原強弱及近日）】
 火/是/Phala7.26/29、是、Phala7.27-mutual-kendra-translation、否、Phala7.28-dispositor-aspect、否、Phala7.30-lagna-kendra、否
