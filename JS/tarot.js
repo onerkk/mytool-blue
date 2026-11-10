@@ -349,7 +349,7 @@ function calcMhTime(){
     if(typeof Lunar==='undefined'||!Lunar.Solar) throw new Error('Lunar.Solar 尚未載入');
     const solar=Lunar.Solar.fromYmd(y,mo,d);
     const lunar=solar.getLunar();
-    lunarY=lunar.getYear(); lunarM=lunar.getMonth(); lunarD=lunar.getDay();
+    lunarY=lunar.getYear(); lunarM=Math.abs(lunar.getMonth()); /* 閏月回傳負數，取絕對值沿用本月數（與 meihua-standalone 一致） */ lunarD=lunar.getDay();
   } catch(e){
     alert('梅花時間起卦需要精準農曆轉換；請確認網路可載入 lunar-javascript 後重試。');
     console.error('[梅花時間起卦] 農曆轉換失敗，已停止:', e);
@@ -378,7 +378,7 @@ function calcMhTime(){
     const extra=document.createElement('div');
     extra.className='mt-sm text-xs text-dim';
     extra.innerHTML=`<p>起卦時間：${y}/${mo}/${d} ${h}:${String(mi).padStart(2,'0')} ｜ 農曆：${lunarM}月${lunarD}日 ｜ 時辰：第${shichen}辰</p>
-      <p>上卦數：${upNum}(${['坤','乾','兌','離','震','巽','坎','艮'][upNum-1]||'?'}) ｜ 下卦數：${loNum}(${['坤','乾','兌','離','震','巽','坎','艮'][loNum-1]||'?'}) ｜ 動爻：${dongNum}</p>`;
+      <p>上卦數：${upNum}(${['乾','兌','離','震','巽','坎','艮','坤'][upNum-1]||'?'}) ｜ 下卦數：${loNum}(${['乾','兌','離','震','巽','坎','艮','坤'][loNum-1]||'?'}) ｜ 動爻：${dongNum}</p>`;
     info.appendChild(extra);
   }
 }

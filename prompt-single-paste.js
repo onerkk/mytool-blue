@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261111lean84',LIMIT=12000,BYTES=28000;
+  const VERSION='20261112lean85',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -426,7 +426,7 @@
       const contextReading=e.analysis.depthContract?.requestCoverage?.caseBasis?.contextReading;
       (writers[e.method]||cards)(ctx);
       const a=e.analysis;ctx.add('資料完整度',{provisional:!!a.coverage?.provisional,computation:P(a.computationAudit,['status']),inputLimits:a.coverage?.limitations});
-      {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 */if(informative.length)ctx.add('逐項作用與相反依據',informative.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
+      {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):informative;if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
       const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
     const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法推演，先定答案與程度，再用白話講出依據。\n\n【解讀要講到的層次】\n第一句答完後，像命理師當面談一樣把下面幾層講到；盤面有依據的才講，哪一層盤面看不出來就直說，不硬湊，輕重依盤面、不必平均。他這個人與眼前處境：現在卡在哪、真正在意的是什麼。這件事的成因：出在自己、對方、環境還是時機。走向：最可能與次可能的發展各靠什麼條件成立；好的不灌水，凶象直說，並講明嚴重到什麼程度、有沒有救應。時間：依本法應期取法給出時段，並說明是從盤面哪裡來的。牽涉他人時：對方的狀態、心意與兩人實際的互動。做法：兩三件具體的事，包含現在該做的、該避開的、不如預期時的退路。最後補一兩項他沒問、但盤面明顯且與此事相關的提醒。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercial);
