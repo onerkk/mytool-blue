@@ -43,9 +43,10 @@
 
 ## 使用指引（2026-11-12）
 - 盤點：JS/guide.js 是 2026-03 的舊教學（七維度、照片、站內 AI 解讀等已下架內容），首次自動彈出在 2026-05-29 被關掉；等於目前沒有符合現行流程的新手指引。另有 jy-intro.js（開場動畫）、tool-guide.js（工具卡下方說明）、immersive-experience.js、ritual-*.js、各法 scene。
-- 新增 JS/first-guide.js：①首次進站四步動畫說明（選方式→寫問題→看盤面→複製貼到 AI），localStorage `_jy_first_guide_v1`；②第一次看到「複製提示詞」按鈕時光圈＋泡泡（`_jy_copy_coach_v1`）；③按複製後顯示「下一步去哪貼」與 Gemini／ChatGPT／Claude 連結，前三次（`_jy_copy_after_v1`）。左下「?」改開新指引（覆寫 window._showGuide）。
+- 新增 JS/first-guide.js：①首次進站四步動畫說明（選方式→寫問題→看盤面→複製貼到 AI），localStorage `_jy_first_guide_v1`；②第一次看到「複製提示詞」按鈕時光圈＋泡泡（`_jy_copy_coach_v1`）；③複製按鈕在畫面下方時顯示浮動按鈕「複製提示詞在下面，帶我過去」。（原本做的「複製後下一步」面板已移除：結果頁本來就有「提示詞已複製・接下來三步」與 AI 捷徑，重複了。）左下「?」改開新指引（覆寫 window._showGuide）。
 - 測試方式：playwright（python 已裝，`python3 -m playwright install chromium`）把檔案注入線上頁面截圖，腳本在 tests/crosscheck/first-guide-visual.py。
-- 未做：十四種工具逐一走完流程檢查每一步有無說明；各法沉浸動畫逐一評估；舊 guide.js 內容未刪（已不會被開啟）。
+- 2026-11-12 塔羅全流程實測（tests/crosscheck/ui-walkthrough.py，playwright 開線上站）：輸入問題→確認視窗→洗牌儀式（三段，有引路人、手勢、音效、可跳過）→選牌→揭牌儀式→牌陣頁→結果頁；每一步都有說明文字，沉浸感足夠。結果頁的複製按鈕在約 1500px 處（第二個畫面以下），已用浮動按鈕補上。複製成功後剪貼簿 3674 字、結尾含蝦皮連結。
+- 未做：其餘十三種工具逐一走完流程；各法沉浸動畫逐一評估；舊 guide.js 內容未刪（已不會被開啟）。
 
 ## 已發現、尚未處理
 00. tests/vedic-palace-20260914.cjs 需要 postcss，但 postcss 從未進過版本庫的 node_modules（非本輪造成）；`npm ci` 後應可跑，待確認。

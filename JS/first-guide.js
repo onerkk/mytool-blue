@@ -1,14 +1,14 @@
 /* 靜月之光・第一次使用指引 v1（2026-11-12）
  * 1) 首次進站：四步動畫說明整個流程（選方式 → 寫問題／資料 → 看盤面 → 複製提示詞貼到 AI）。
  * 2) 第一次看到「複製提示詞」按鈕：光圈＋提示泡泡指給使用者看。
- * 3) 按下複製後：告訴他下一步去哪裡貼上（前三次顯示）。
+ * 3) 複製按鈕在畫面下方時：浮動按鈕告訴他在下面，點了帶過去。（複製後的下一步說明沿用結果頁原有的。）
  * 左下角「?」說明鈕改開這份新指引（舊教學內容已過時）。
  * 只用 transform／opacity 動畫；尊重 prefers-reduced-motion；全部狀態存在 localStorage，讀寫失敗不影響使用。
  */
 (function(){
   'use strict';
   if(window._jyFirstGuideLoaded)return;window._jyFirstGuideLoaded=true;
-  var K_SEEN='_jy_first_guide_v1',K_COACH='_jy_copy_coach_v1',K_AFTER='_jy_copy_after_v1';
+  var K_SEEN='_jy_first_guide_v1',K_COACH='_jy_copy_coach_v1';
   function get(k){try{return localStorage.getItem(k);}catch(_){return null;}}
   function set(k,v){try{localStorage.setItem(k,v);}catch(_){}}
   function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
@@ -55,14 +55,9 @@
     '@keyframes jyCoach{0%{box-shadow:0 0 0 0 rgba(241,223,166,.55)}100%{box-shadow:0 0 0 16px rgba(241,223,166,0)}}',
     '.jy-coach-tip{position:fixed;z-index:9986;max-width:300px;background:#f4e7bd;color:#1b1505;border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);transition:all .3s}',
     '.jy-coach-tip.on{opacity:1;transform:none}.jy-coach-tip b{font-weight:700}.jy-coach-tip button{margin-top:6px;background:#1b1505;color:#f4e7bd;border:0;border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer}',
-    /* 複製後下一步 */
     '.jy-coach-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:9984;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
     '.jy-coach-pill.on{opacity:1;transform:translate(-50%,0);animation:jyPill 1.8s ease-in-out infinite}@keyframes jyPill{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}',
-    '.jy-after{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,30px);z-index:9987;width:calc(100% - 28px);max-width:430px;background:linear-gradient(180deg,#171a2a,#0d0e17);border:1px solid rgba(212,175,55,.4);border-radius:16px;padding:14px 16px;color:#e9e6dc;box-shadow:0 14px 44px rgba(0,0,0,.6);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);pointer-events:none}',
-    '.jy-after.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}.jy-after h4{margin:0 0 6px;font-size:.98rem;color:#f4e7bd}.jy-after ol{margin:0 0 10px;padding-left:1.2em;font-size:.86rem;line-height:1.75}',
-    '.jy-after-links{display:flex;gap:8px}.jy-after-links a{flex:1;text-align:center;padding:10px 4px;border-radius:10px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.35);color:#f4e7bd;font-size:.84rem;text-decoration:none}',
-    '.jy-after-x{position:absolute;top:6px;right:8px;background:none;border:0;color:rgba(233,230,220,.6);font-size:1.1rem;padding:6px;cursor:pointer}',
-    '@media (prefers-reduced-motion:reduce){.jy-fg *,.jy-coach-ring,.jy-after{animation:none!important;transition:none!important}.fg-type{width:11em}.fg-row{transform:none;opacity:1}}'
+    '@media (prefers-reduced-motion:reduce){.jy-fg *,.jy-coach-ring,.jy-coach-pill{animation:none!important;transition:none!important}.fg-type{width:11em}.fg-row{transform:none;opacity:1}}'
   ].join('');
   document.head.appendChild(css);
 
@@ -115,7 +110,7 @@
   else window.addEventListener('load',function(){setTimeout(function(){maybeOpen(0);},1400);});
 
   // ── 複製提示詞按鈕：第一次出現時指給使用者看 ──
-  function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-after,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀)/.test(t)&&!/診斷/.test(t)&&t.length<=24;}
+  function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀)/.test(t)&&!/診斷/.test(t)&&t.length<=24;}
   function visible(b){var r=b.getBoundingClientRect();return r.width>40&&r.height>20&&r.top>60&&r.bottom<innerHeight-10;}
   var ring=null,tip=null,target=null;
   function clearCoach(done){if(ring&&ring.parentNode)ring.parentNode.removeChild(ring);if(tip&&tip.parentNode)tip.parentNode.removeChild(tip);ring=tip=target=null;if(done)set(K_COACH,'1');}
@@ -143,19 +138,9 @@
   try{new MutationObserver(queue).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});}catch(_){}
   window.addEventListener('scroll',queue,{passive:true});window.addEventListener('resize',queue);
 
-  // ── 按下複製後：下一步去哪裡貼 ──
-  var after=null;
-  function showAfter(){
-    var n=parseInt(get(K_AFTER)||'0',10)||0;if(n>=3||after)return;set(K_AFTER,String(n+1));
-    after=el('div','jy-after','<button type="button" class="jy-after-x" aria-label="關閉">×</button><h4>已複製，接下來這樣做</h4><ol><li>打開你常用的 AI（下面任選一個）</li><li>在輸入框<b>長按 → 貼上</b></li><li>送出，等它寫完整份解讀</li></ol><div class="jy-after-links"><a href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini</a><a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a><a href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a></div>');
-    document.body.appendChild(after);requestAnimationFrame(function(){if(after)after.classList.add('on');});
-    function shut(){if(!after)return;var a=after;after=null;a.classList.remove('on');setTimeout(function(){if(a.parentNode)a.parentNode.removeChild(a);},400);}
-    after.querySelector('.jy-after-x').addEventListener('click',shut);
-    after.addEventListener('click',function(e){if(e.target&&e.target.tagName==='A')setTimeout(shut,300);});
-    setTimeout(shut,20000);
-  }
+  // 按下複製後的「下一步」說明，結果頁原本就有（提示詞已複製・接下來三步），這裡不重複顯示。
   document.addEventListener('click',function(e){
     var b=e.target&&e.target.closest?e.target.closest('button,a,[role=button]'):null;if(!b||!isCopyBtn(b))return;
-    clearCoach(true);hidePill();setTimeout(showAfter,500);
+    clearCoach(true);hidePill();
   },true);
 })();
