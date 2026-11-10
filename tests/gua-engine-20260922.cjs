@@ -59,7 +59,7 @@ test('4096 組：本變卦逐爻互換、所有動爻保留、擇辭與原文完
 });
 test('朱子考變占原例：一爻、五爻、三爻前後十及乾坤二用',()=>{
   for(const [name,moves,to]of [['屯',[1],'比'],['乾',[2],'同人'],['大有',[3],'睽'],['觀',[4],'否'],['坤',[5],'比'],['歸妹',[6],'睽']]){let r=yi(values(name,moves));assert.equal(r.changed.name,to);assert.equal(r.reading.selections[0].number,byName[name].number);}
-  let r=yi(values('艮',[1,3,4,5,6]));assert.equal(r.changed.name,'隨');assert.equal(r.reading.selections[0].label,'六二');assert.equal(r.reading.selections[0].text,'系小子，失丈夫。');
+  let r=yi(values('艮',[1,3,4,5,6]));assert.equal(r.changed.name,'隨');assert.equal(r.reading.selections[0].label,'六二');assert.equal(r.reading.selections[0].text,'係小子，失丈夫。');
   for(const [name,moves,to,side]of [['乾',[1,2,3],'否','original'],['乾',[1,5,6],'恆','original'],['乾',[2,3,4],'益','changed'],['乾',[4,5,6],'泰','changed'],['坤',[1,2,3],'泰','original'],['坤',[1,5,6],'益','original'],['坤',[2,3,4],'恆','changed'],['坤',[4,5,6],'否','changed']]){r=yi(values(name,moves));assert.equal(r.changed.name,to);assert.equal(r.reading.selections[0].side,side);}
   assert.equal(yi([9,9,9,9,9,9]).reading.selections[0].label,'用九');assert.equal(yi([6,6,6,6,6,6]).reading.selections[0].label,'用六');
 });
