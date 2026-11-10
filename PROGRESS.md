@@ -41,6 +41,12 @@
 - 吠陀仍是最長的提示詞（平均約 10700），下一步可再整理「逐項作用」裡的稽核說明文字與 Arudha 的 D9 段。
 - 未做：五輪、五軸取法未補；尚未拿真實 AI 回答驗證深度（需使用者貼到 Gemini 回傳）。
 
+## 使用指引（2026-11-12）
+- 盤點：JS/guide.js 是 2026-03 的舊教學（七維度、照片、站內 AI 解讀等已下架內容），首次自動彈出在 2026-05-29 被關掉；等於目前沒有符合現行流程的新手指引。另有 jy-intro.js（開場動畫）、tool-guide.js（工具卡下方說明）、immersive-experience.js、ritual-*.js、各法 scene。
+- 新增 JS/first-guide.js：①首次進站四步動畫說明（選方式→寫問題→看盤面→複製貼到 AI），localStorage `_jy_first_guide_v1`；②第一次看到「複製提示詞」按鈕時光圈＋泡泡（`_jy_copy_coach_v1`）；③按複製後顯示「下一步去哪貼」與 Gemini／ChatGPT／Claude 連結，前三次（`_jy_copy_after_v1`）。左下「?」改開新指引（覆寫 window._showGuide）。
+- 測試方式：playwright（python 已裝，`python3 -m playwright install chromium`）把檔案注入線上頁面截圖，腳本在 tests/crosscheck/first-guide-visual.py。
+- 未做：十四種工具逐一走完流程檢查每一步有無說明；各法沉浸動畫逐一評估；舊 guide.js 內容未刪（已不會被開啟）。
+
 ## 已發現、尚未處理
 00. tests/vedic-palace-20260914.cjs 需要 postcss，但 postcss 從未進過版本庫的 node_modules（非本輪造成）；`npm ci` 後應可跑，待確認。
 0. （已處理 2026-11-12）tests/meihua-v80-41-prompt-root.test.js 斷言的是已移除的站內規則層、本來就失敗且未列入 package.json，已刪除。
