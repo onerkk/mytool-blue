@@ -15,7 +15,7 @@
 
   var css=el('style');css.id='jy-fg-style';
   css.textContent=[
-    '.jy-fg{position:fixed;inset:0;z-index:9990;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,5,10,.72);opacity:0;transition:opacity .35s;pointer-events:none;-webkit-tap-highlight-color:transparent}',
+    '.jy-fg{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:flex-end;justify-content:center;background:rgba(4,5,10,.72);opacity:0;transition:opacity .35s;pointer-events:none;-webkit-tap-highlight-color:transparent}',
     '.jy-fg.on{opacity:1;pointer-events:auto}',
     '.jy-fg-sheet{width:100%;max-width:460px;background:linear-gradient(180deg,#141624,#0b0c14);border:1px solid rgba(212,175,55,.28);border-bottom:0;border-radius:22px 22px 0 0;padding:18px 20px calc(18px + env(safe-area-inset-bottom));transform:translateY(40px);transition:transform .45s cubic-bezier(.16,1,.3,1);box-shadow:0 -18px 60px rgba(0,0,0,.6);color:#e9e6dc;font-family:inherit}',
     '.jy-fg.on .jy-fg-sheet{transform:none}',
@@ -51,11 +51,11 @@
     '@keyframes fgPulse{0%,60%,100%{transform:none;box-shadow:none}20%{transform:scale(1.09);box-shadow:0 0 0 6px rgba(212,175,55,.16)}}',
     '.fg-arrow{color:#d4af37;font-size:1rem}',
     /* 複製按鈕提示 */
-    '.jy-coach-ring{position:fixed;z-index:9985;border-radius:16px;border:2px solid #f1dfa6;pointer-events:none;animation:jyCoach 1.5s ease-out infinite}',
+    '.jy-coach-ring{position:fixed;z-index:2147482990;border-radius:16px;border:2px solid #f1dfa6;pointer-events:none;animation:jyCoach 1.5s ease-out infinite}',
     '@keyframes jyCoach{0%{box-shadow:0 0 0 0 rgba(241,223,166,.55)}100%{box-shadow:0 0 0 16px rgba(241,223,166,0)}}',
-    '.jy-coach-tip{position:fixed;z-index:9986;max-width:300px;background:#f4e7bd;color:#1b1505;border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);transition:all .3s}',
+    '.jy-coach-tip{position:fixed;z-index:2147482991;max-width:300px;background:#f4e7bd;color:#1b1505;border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);transition:all .3s}',
     '.jy-coach-tip.on{opacity:1;transform:none}.jy-coach-tip b{font-weight:700}.jy-coach-tip button{margin-top:6px;background:#1b1505;color:#f4e7bd;border:0;border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer}',
-    '.jy-coach-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:9984;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
+    '.jy-coach-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:2147482989;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
     '.jy-coach-pill.on{opacity:1;transform:translate(-50%,0);animation:jyPill 1.8s ease-in-out infinite}@keyframes jyPill{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}',
     '@media (prefers-reduced-motion:reduce){.jy-fg *,.jy-coach-ring,.jy-coach-pill{animation:none!important;transition:none!important}.fg-type{width:11em}.fg-row{transform:none;opacity:1}}'
   ].join('');
@@ -136,7 +136,8 @@
     if(below)showPill(below);else hidePill();}
   function queue(){if(!scanT)scanT=setTimeout(scan,350);}
   try{new MutationObserver(queue).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});}catch(_){}
-  window.addEventListener('scroll',queue,{passive:true});window.addEventListener('resize',queue);
+  // 八字、紫微等工具是在自己的捲動容器裡捲，scroll 不會冒泡到 window，所以用 capture 收。
+  document.addEventListener('scroll',queue,{passive:true,capture:true});window.addEventListener('resize',queue);
 
   // 按下複製後的「下一步」說明，結果頁原本就有（提示詞已複製・接下來三步），這裡不重複顯示。
   document.addEventListener('click',function(e){
