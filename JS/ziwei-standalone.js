@@ -1583,6 +1583,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
             '<button type="button" class="zw-in-pill" id="zw-g-m" onclick="_zwSetGender(\'male\')">男</button>' +
             '<button type="button" class="zw-in-pill" id="zw-g-f" onclick="_zwSetGender(\'female\')">女</button>' +
           '</div></div>' +
+          '<details class="zw-in-adv" id="zw-in-adv" style="margin:14px 0 4px;border:1px solid rgba(212,175,55,.22);border-radius:14px;padding:4px 14px 6px;background:rgba(255,255,255,.02)"><summary style="cursor:pointer;padding:12px 0;color:#e7c966;font-size:.95rem;list-style-position:inside">進階設定：流派與口徑<span style="display:block;margin-top:4px;color:rgba(233,230,220,.62);font-size:.8rem">不熟可以不用改，已選好通行的設定。</span></summary>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-sihua-profile">四化版本</label><select class="zw-in-select" id="zw-sihua-profile"><option value="IZTRO_261">現代／iztro（壬科左輔）</option><option value="QUANSHU_XINGGE">全書引表／星格（壬科天府）</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-leap-policy">農曆閏月安宮</label><select class="zw-in-select" id="zw-leap-policy"><option value="SPLIT_AT_15">十五日後作次月</option><option value="SAME_MONTH">整月沿用本月</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-day-policy">晚子時換日</label><select class="zw-in-select" id="zw-day-policy"><option value="MIDNIGHT_00">00:00 午夜換日</option><option value="ZI_HOUR_23">23:00 子初換日</option></select></div>' +
@@ -1590,7 +1591,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-year-divide">生年分界</label><select class="zw-in-select" id="zw-year-divide"><option value="normal">農曆正月初一</option><option value="exact">立春交節瞬間</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-horoscope-divide">運限年月分界</label><select class="zw-in-select" id="zw-horoscope-divide"><option value="normal">農曆年與農曆月</option><option value="exact">立春年界與節氣月干支</option></select></div>' +
           '<div class="zw-in-field"><label class="zw-in-label" for="zw-age-divide">歲數與小限分界</label><select class="zw-in-select" id="zw-age-divide"><option value="normal">正月初一增歲</option><option value="birthday">農曆生日增歲</option></select></div>' +
-          '<p class="zw-in-hint">設定會影響排盤並隨命盤保留；生日法採生日當日增歲，閏月生日在無閏月年份採同名月份。</p>' +
+          '<p class="zw-in-hint">設定會影響排盤並隨命盤保留；生日法採生日當日增歲，閏月生日在無閏月年份採同名月份。</p>'+ '</details>' +
           '<div class="zwx-err" id="zwx-err"></div>' +
           '<div class="zw-in-hint">紫微以時辰定盤；不知道時辰可先整理問題與出生資料，確認後再解讀個人命盤。</div>' +
         '</div>' +
