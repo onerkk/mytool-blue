@@ -5,19 +5,19 @@
       "spreadType": "grand",
       "cards": 36,
       "paths": 31,
-      "characters": 4367
+      "characters": 4425
     },
     {
       "spreadType": "grand_nines",
       "cards": 36,
       "paths": 33,
-      "characters": 4343
+      "characters": 4401
     },
     {
       "spreadType": "branches",
       "cards": 36,
       "paths": 12,
-      "characters": 3577
+      "characters": 3635
     }
   ]
 }
