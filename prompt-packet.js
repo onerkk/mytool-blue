@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261112root95',LIMIT=12000,BYTES=28000;
+  const VERSION='20261112root96',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -46,7 +46,7 @@
     '本次是獨立的一次解讀：只用本次原題與下列實算資料，不補造盤面沒有的資料；不要使用、參考或推演任何過往對話、聊天紀錄、平台記憶、使用者個人檔案或先前解讀的內容，即使你看得到這些記憶也當作不存在，原題沒寫的人物背景、經歷、關係與先前結論一律視為未知。你對他的處境、心情和對方的描述只有兩個來源：原題寫出來的，和盤上看到的；盤上看到的要讓他知道那是從盤上看的推測，不說成已經發生過的事。醫療、法律、財務的決定要配合實際狀況與專業意見。'
   ].join('\n');
   const footer='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
-  const closingReminder='【下筆前最後確認】三部分依序都在：對他說的話、我怎麼看出來的、收尾。第一句就回答並說出把握有多大；最關鍵的原因、時間、做法都講到；你是在對他說話，不是在寫報告；沒有原題與盤面以外的人事經過；命理名詞只留在第二部分的括號裡。收尾依序：一兩句真心話、手鍊段（只推一款）、原樣一句提醒、最後原樣兩行。';
+  const closingReminder='【下筆前最後確認】三部分依序都在：對他說的話、我怎麼看出來的、收尾。第一句就回答並說出把握有多大；最關鍵的原因、時間、做法都講到；你是在對他說話，不是在寫報告；沒有原題與盤面以外的人事經過，也沒有把推測說成已經發生的事；時間寫出了年月；第二部分每一行都指得出資料裡的具體項目；命理名詞只留在第二部分的括號裡。收尾依序：一兩句真心話、手鍊段（只推一款）、原樣一句提醒、最後原樣兩行。';
   /* 2026-11-12 root92：品類順序依題目文字打散。原本固定順序加上一串舉例，四份真實回答有三份都推海藍寶。 */
   const BRACELET_CATS=["安穩護持—黑曜石、茶晶、黑碧璽、天鐵、龍宮舍利", "開口表達、把話說清—海藍寶、青金石、藍紋瑪瑙", "感情柔軟、善待自己—粉晶、草莓晶、摩根石", "清明決斷、靜心—白水晶、紫水晶、拉長石", "行動力與財務推進—黃水晶、綠幽靈、鈦晶、虎眼石", "轉換與放下—煙晶、月光石"];
   const shuffledCats=q=>{let h=2166136261;const t=String(q||'');for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}const a=BRACELET_CATS.slice();for(let i=a.length-1;i>0;i--){h=(Math.imul(h,1664525)+1013904223)>>>0;const j=h%(i+1);const x=a[i];a[i]=a[j];a[j]=x;}return a.join('；');};
@@ -194,6 +194,7 @@
       const mk=x=>x&&x.lord?nm(x.lord)+(PL[x.lord]?'（在第'+PL[x.lord].house+'宮'+sgn(PL[x.lord])+(rules(x.lord).length?'，掌第'+rules(x.lord).join('、')+'宮':'')+'）':'')+(x.start&&x.end?'，'+stamp(x.start).slice(0,10)+'至'+stamp(x.end).slice(0,10):''):'';
       const now=Date.parse(vi.reference||'')||null,sub=now&&A(dasha.maha?.children).find(z=>z.start<=now&&now<z.end)||dasha.antar||dasha.antara||null;
       if(dasha.maha?.lord)lines.push('現行大運主：'+mk(dasha.maha)+(sub?.lord?'；現行副運主：'+mk(sub):'')+'。');
+      {const all=A(c.dasha?.periods),ix=all.findIndex(z=>z.lord===dasha.maha?.lord&&z.start===dasha.maha?.start),nx=ix>=0?all.slice(ix+1,ix+4):[];/* 問「什麼時候」的題目要看後面幾步大運，原本只有現行與下一步。 */if(nx.length)lines.push('之後三步大運：'+nx.map(mk).join('；')+'。');}
       if(lines.length)add('本命九曜與現行運（引擎已寫成句）',lines.join('\n'));
       if(HS.length)add('十二宮（引擎已寫成句）',HS.map(h=>'第'+h.house+'宮'+(h.signName||signs[h.sign])+'：宮主'+nm(h.lord)+'落第'+h.lordHouse+'宮；宮內'+(A(h.occupants).length?A(h.occupants).map(nm).join('、'):'無星')+'；'+(A(h.aspectedBy).length?'受'+A(h.aspectedBy).map(nm).join('、')+'照':'無星照')+(h.sav!=null?'；SAV '+h.sav:'')).join('\n'));}
     const pc=core.panchanga||c.panchanga,lm=pc?.limbs||{},kr=A(core.karakas||c.karakas);
@@ -476,7 +477,7 @@
       {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 *//* 牌卡類（塔羅、雷諾曼、五輪）：這一段若沒有佐證或反證，內容只是把前面牌序表與牌義表的牌義再抄一次，不送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):(['tarot','lenormand','ootk','mathers','yijing','name','compat'].includes(e.method)&&!informative.some(p=>hasData(p.support)||hasData(p.caution)))?[]:informative;/* 2026-11-12：這幾種方法的逐項段在沒有佐證或反證時，只是把前面的牌義、爻辭或「見上表」再寫一次（已逐一看過內容），不送；五軸人格的逐項段是各軸的實際判定，保留。 */if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
       const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
-    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序三部分）】\n一、對他說的話（主體，約八百到一千二百字）。先叫他，第一句就回答他問的事，並說出把握有多大（問數量就給量級或區間）。接著講為什麼會這樣，這裡要把他最可能想錯、或錯怪自己的地方講開。再講接下來最可能怎麼走、另一種可能要靠什麼條件，以及大概什麼時候——只講最關鍵的一兩個時間，用一般人說日子的方式講。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。最後幫他想兩三件做得到的事：現在先做什麼、先別做什麼、事情不如意時怎麼退。原題問了幾件事，每一件都要答到；同一個判斷只講一次。\n二、我怎麼看出來的（三到五行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，名詞放在括號裡。不把資料抄一遍。\n三、收尾。照下面的成稿收尾寫，缺了就不算寫完。內容多時寧可把前兩部分寫精簡，也不能停在半路。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question));
+    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序三部分）】\n一、對他說的話（主體，約八百到一千二百字）。先叫他，第一句就回答他問的事，並說出把握有多大（問數量就給量級或區間）。接著講為什麼會這樣，這裡要把他最可能想錯、或錯怪自己的地方講開；說到他的近況或心情時用推測的口氣，並讓他知道那是從盤上看的，原題沒寫的近況不當成已經發生的事來講。再講接下來最可能怎麼走、另一種可能要靠什麼條件，以及大概什麼時候——只講最關鍵的一兩個時間，寫出西元年與月份，不只說明年、後年。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。最後幫他想兩三件做得到的事：現在先做什麼、先別做什麼、事情不如意時怎麼退。原題問了幾件事，每一件都要答到；同一個判斷只講一次。\n二、我怎麼看出來的（三到五行，每行各自成行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，括號裡寫出資料中對應的那一項——是哪顆星、哪一宮、哪一爻、哪張牌或哪段運期，連同它的狀態或起訖年月。第一部分講的每個原因，這裡都要找得到對應的一行；在資料裡指不出具體項目的說法，兩部分都不要寫。不把資料抄一遍。\n三、收尾。照下面的成稿收尾寫，缺了就不算寫完。內容多時寧可把前兩部分寫精簡，也不能停在半路。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question));
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
     const fit=t=>chars(t)<=LIMIT&&bytes(t)<=BYTES;
     const core=blocks.filter(b=>b.priority===0),selected=new Set(core),optionalCount=new Set(blocks.filter(b=>b.priority>0).map(b=>b.label)).size,essential=render(core).replace('\n【資料結束】',optionalCount?'\n【未展開細表】另有'+optionalCount+'項旁系細表未展開（完整清單在本工具）。\n【資料結束】':'\n【資料結束】');
