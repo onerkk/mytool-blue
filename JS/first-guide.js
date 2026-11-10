@@ -56,6 +56,8 @@
     '.jy-coach-tip{position:fixed;z-index:9986;max-width:300px;background:#f4e7bd;color:#1b1505;border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);transition:all .3s}',
     '.jy-coach-tip.on{opacity:1;transform:none}.jy-coach-tip b{font-weight:700}.jy-coach-tip button{margin-top:6px;background:#1b1505;color:#f4e7bd;border:0;border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer}',
     /* 複製後下一步 */
+    '.jy-coach-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:9984;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
+    '.jy-coach-pill.on{opacity:1;transform:translate(-50%,0);animation:jyPill 1.8s ease-in-out infinite}@keyframes jyPill{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}',
     '.jy-after{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translate(-50%,30px);z-index:9987;width:calc(100% - 28px);max-width:430px;background:linear-gradient(180deg,#171a2a,#0d0e17);border:1px solid rgba(212,175,55,.4);border-radius:16px;padding:14px 16px;color:#e9e6dc;box-shadow:0 14px 44px rgba(0,0,0,.6);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);pointer-events:none}',
     '.jy-after.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}.jy-after h4{margin:0 0 6px;font-size:.98rem;color:#f4e7bd}.jy-after ol{margin:0 0 10px;padding-left:1.2em;font-size:.86rem;line-height:1.75}',
     '.jy-after-links{display:flex;gap:8px}.jy-after-links a{flex:1;text-align:center;padding:10px 4px;border-radius:10px;background:rgba(212,175,55,.14);border:1px solid rgba(212,175,55,.35);color:#f4e7bd;font-size:.84rem;text-decoration:none}',
@@ -113,23 +115,30 @@
   else window.addEventListener('load',function(){setTimeout(function(){maybeOpen(0);},1400);});
 
   // ── 複製提示詞按鈕：第一次出現時指給使用者看 ──
-  function isCopyBtn(b){var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀)/.test(t)&&t.length<=24;}
+  function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-after,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀)/.test(t)&&!/診斷/.test(t)&&t.length<=24;}
   function visible(b){var r=b.getBoundingClientRect();return r.width>40&&r.height>20&&r.top>60&&r.bottom<innerHeight-10;}
   var ring=null,tip=null,target=null;
   function clearCoach(done){if(ring&&ring.parentNode)ring.parentNode.removeChild(ring);if(tip&&tip.parentNode)tip.parentNode.removeChild(tip);ring=tip=target=null;if(done)set(K_COACH,'1');}
-  function place(){if(!target||!document.body.contains(target)||!visible(target)){clearCoach(false);return;}var r=target.getBoundingClientRect();
+  function place(){if(!target||!target.isConnected||!visible(target)){clearCoach(false);return;}var r=target.getBoundingClientRect();
     ring.style.cssText='left:'+(r.left-5)+'px;top:'+(r.top-5)+'px;width:'+(r.width+10)+'px;height:'+(r.height+10)+'px';
     var w=Math.min(300,innerWidth-24),left=Math.max(12,Math.min(innerWidth-w-12,r.left+r.width/2-w/2));tip.style.width=w+'px';tip.style.left=left+'px';
     var th=tip.offsetHeight||90;tip.style.top=(r.top-th-14>70?r.top-th-14:r.bottom+14)+'px';}
   function coach(b){
     if(get(K_COACH)||target||wrap)return;target=b;
     ring=el('div','jy-coach-ring');tip=el('div','jy-coach-tip','<b>最後一步在這裡</b><br>按這顆複製，再貼到 ChatGPT、Gemini 或 Claude 送出，就能看到完整的白話解讀。<br><button type="button">知道了</button>');
-    document.body.appendChild(ring);document.body.appendChild(tip);place();requestAnimationFrame(function(){if(tip)tip.classList.add('on');});
+    document.body.appendChild(ring);document.body.appendChild(tip);place();if(!tip)return;requestAnimationFrame(function(){if(tip)tip.classList.add('on');});
     tip.querySelector('button').addEventListener('click',function(){clearCoach(true);});
   }
+  // 複製按鈕常在結果頁下方兩三個畫面：還沒滑到時，先用浮動按鈕告訴他在下面，點了直接帶過去。
+  var pill=null;
+  function hidePill(){if(pill&&pill.parentNode)pill.parentNode.removeChild(pill);pill=null;}
+  function showPill(b){if(pill)return;pill=el('button','jy-coach-pill','複製提示詞在下面，帶我過去 ↓');pill.type='button';document.body.appendChild(pill);requestAnimationFrame(function(){if(pill)pill.classList.add('on');});
+    pill.addEventListener('click',function(){hidePill();try{b.scrollIntoView({block:'center',behavior:'smooth'});}catch(_){b.scrollIntoView();}setTimeout(queue,700);});}
   var scanT=null;
-  function scan(){scanT=null;if(wrap)return;if(target){place();return;}if(get(K_COACH))return;
-    var bs=document.querySelectorAll('button,a,[role=button]');for(var i=0;i<bs.length;i++){if(isCopyBtn(bs[i])&&visible(bs[i])){coach(bs[i]);return;}}}
+  function scan(){scanT=null;if(wrap)return;if(target){place();return;}if(get(K_COACH)){hidePill();return;}
+    var bs=document.querySelectorAll('button,a,[role=button]'),below=null;
+    for(var i=0;i<bs.length;i++){if(!isCopyBtn(bs[i]))continue;var r=bs[i].getBoundingClientRect();if(r.width<40||r.height<20)continue;if(visible(bs[i])){hidePill();coach(bs[i]);return;}if(r.top>=innerHeight-10&&!below)below=bs[i];}
+    if(below)showPill(below);else hidePill();}
   function queue(){if(!scanT)scanT=setTimeout(scan,350);}
   try{new MutationObserver(queue).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style']});}catch(_){}
   window.addEventListener('scroll',queue,{passive:true});window.addEventListener('resize',queue);
@@ -147,6 +156,6 @@
   }
   document.addEventListener('click',function(e){
     var b=e.target&&e.target.closest?e.target.closest('button,a,[role=button]'):null;if(!b||!isCopyBtn(b))return;
-    clearCoach(true);setTimeout(showAfter,500);
+    clearCoach(true);hidePill();setTimeout(showAfter,500);
   },true);
 })();
