@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261112root93',LIMIT=12000,BYTES=28000;
+  const VERSION='20261112root94',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -182,10 +182,22 @@
   function vedic(ctx){const{c,a,section:s,add}=ctx,core=s('D1九曜與掌宮相位')||{};
     const vi=core.input||c.input||{},vp=core.policy||c.policy||{},vl=core.lagna||{};
     add('定盤：出生UTC/參照UTC/緯經/民用日期時間時區/歲長/歲差制與度/交點/宮制/上升座度/時辰未知',row([stamp(vi.utc),stamp(vi.reference),[vi.latitude,vi.longitude],vi.civil?[vi.civil.date,vi.civil.time,vi.civil.timezone]:null,vi.yearDays,vp.ayanamsa,vp.ayanamsaDegrees,vp.node,vp.houses,[vl.sign,vl.degree],!!a.coverage?.provisional]));
-    add('D1：曜/星座/度/宮/順逆/尊貴/近日/星宿與分段(宿主)',planetRows(core.planets||c.planets));
+    /* 2026-11-12：吠陀原本九張代碼表、沒有任何句子段，是最容易被讀錯的一種。本命九曜與十二宮改用句子寫（內容與原表相同：星座、度、宮、順逆、尊貴、近日、星宿、掌宮、同宮；宮主落點、宮內星、受照、SAV）。 */
+    {const PL=core.planets||c.planets||{},nm=k=>PL[k]?.name||zh(k),HS=A(core.houses),D=n=>Number.isFinite(n)?(Math.round(n*10)/10)+'°':'',dasha=c.dasha?.current||{};
+      const rules=k=>HS.filter(h=>h.lord===k).map(h=>h.house),sgn=p=>p?.signName||signs[p?.sign]||'';
+      const one=k=>{const p=PL[k];if(!p)return '';const r=rules(k),co=keys.filter(o=>o!==k&&PL[o]&&PL[o].sign===p.sign&&PL[o].house===p.house).map(nm),nk=p.nakshatra;
+        return nm(k)+'在'+sgn(p)+D(p.degree)+'、第'+p.house+'宮'+(p.retrograde?'，逆行':'')+(p.dignity?.label?'，'+p.dignity.label:'')+(p.solar?.combust?'，近日受燃':'')+(r.length?'，掌第'+r.join('、')+'宮':'')+(co.length?'，與'+co.join('、')+'同宮':'')+(nk?.name?'，星宿'+String(nk.name).replace(/\s+/g,'')+(nk.pada?'第'+nk.pada+'段':'')+(nk.lord?'（宿主'+nm(nk.lord)+'）':''):'');};
+      const ll=HS.find(h=>h.house===1)?.lord,lines=[];
+      if(vl&&(vl.signName||Number.isInteger(vl.sign)))lines.push('上升在'+sgn(vl)+D(vl.degree)+(ll&&PL[ll]?'；上升主'+nm(ll)+'落第'+PL[ll].house+'宮'+sgn(PL[ll])+(PL[ll].dignity?.label?'（'+PL[ll].dignity.label+'）':''):'')+'。');
+      keys.forEach(k=>{const t=one(k);if(t)lines.push(t+'。');});
+      const mk=x=>x&&x.lord?nm(x.lord)+(PL[x.lord]?'（在第'+PL[x.lord].house+'宮'+sgn(PL[x.lord])+(rules(x.lord).length?'，掌第'+rules(x.lord).join('、')+'宮':'')+'）':'')+(x.start&&x.end?'，'+stamp(x.start).slice(0,10)+'至'+stamp(x.end).slice(0,10):''):'';
+      const now=Date.parse(vi.reference||'')||null,sub=now&&A(dasha.maha?.children).find(z=>z.start<=now&&now<z.end)||dasha.antar||dasha.antara||null;
+      if(dasha.maha?.lord)lines.push('現行大運主：'+mk(dasha.maha)+(sub?.lord?'；現行副運主：'+mk(sub):'')+'。');
+      if(lines.length)add('本命九曜與現行運（引擎已寫成句）',lines.join('\n'));
+      if(HS.length)add('十二宮（引擎已寫成句）',HS.map(h=>'第'+h.house+'宮'+(h.signName||signs[h.sign])+'：宮主'+nm(h.lord)+'落第'+h.lordHouse+'宮；宮內'+(A(h.occupants).length?A(h.occupants).map(nm).join('、'):'無星')+'；'+(A(h.aspectedBy).length?'受'+A(h.aspectedBy).map(nm).join('、')+'照':'無星照')+(h.sav!=null?'；SAV '+h.sav:'')).join('\n'));}
     const pc=core.panchanga||c.panchanga,lm=pc?.limbs||{},kr=A(core.karakas||c.karakas);
     add('上升月宿、五支曆、角色星',['上升星宿'+(nakOf(vl.longitude)||'?'),pc?'五支曆：'+[lm.tithi?.name&&((lm.tithi.paksha||'')+' '+lm.tithi.name).trim(),lm.nakshatra?.name&&'月宿'+String(lm.nakshatra.name).replace(/\s+/g,'')+(lm.nakshatra.pada||''),lm.yoga?.name&&'Yoga '+lm.yoga.name,lm.karana?.name&&'Karana '+lm.karana.name].filter(Boolean).join('、'):null,kr.length?'角色星：'+kr.map(k=>k.role+zh(k.planet)+(k.tied?'(同度待核)':'')).join(' '):null].filter(Boolean).join('\n'),1);
-    add('十二宮：宮/座/主/主落宮/占曜/受照/SAV',A(core.houses).map(h=>row([h.house,h.signName||signs[h.sign],zh(h.lord),h.lordHouse,A(h.occupants).map(zh),A(h.aspectedBy).map(zh),h.sav])).join('\n'));
+
     add('星座相位與定位（座序0牡羊；行星相位已逐宮列於受照欄）',A(core.aspects?.rasi).map(p=>zh(p.from)+'→'+A(p.toSigns).join(',')).join(';')+'\n同座距角='+A(core.aspects?.conjunctions).map(p=>A(p.planets).map(zh).join('–')+':'+num(p.separation)).join(';')+'\n定位鏈='+A(core.dispositors).map(p=>A(p.chain).map(zh).join('→')).join(';'));
     {const S1='牡金雙蟹獅處秤蠍射摩瓶魚',g=i=>Number.isInteger(i)&&S1[i]||'?';add('20分盤：D/上升星座/九曜星座（依序日月水金火木土羅計；星座取首字：牡金雙蟹獅處秤蠍射摩瓶魚）',A(s('二十分盤')).map(v=>'D'+v.division+'/'+g(v.lagna?.sign)+'/'+keys.slice(0,9).map(k=>g(v.planets?.[k]?.sign)).join('')).join('\n'));}
     const str=s('六力與Bhava力量');add('力量（不是吉凶）：曜/總/門檻/足額/Ishta/Kashta',A(str?.strength?.planets).map(p=>row([zh(p.planet),p.totalVirupas,p.minimumVirupas,p.meetsMinimum,p.ishtaKashta?.ishta,p.ishtaKashta?.kashta])).join('\n'));add('十二宮力',A(str?.bhavaStrength?.houses).map(p=>[p.house,num(p.totalVirupas)]));
@@ -299,6 +311,20 @@
     add('雙方角色與精度',{scenario:c.scenario,uncertainty:c.uncertainty});
     add('出生時間核對',compactObject(c.birthTimeAudit),3);
     for(const k of ['personA','personB']){const p=c[k];if(!p)continue;add((k==='personA'?'甲方':'乙方')+'原局',{...P(p,['name','gender','pillars','dayMaster','strength','favorable','unfavorable','uncertainty','birthInput','birthLunar','sihua']),kongwang:p.auxiliary?.kongwang||undefined,palaces:p.palaces?A(p.palaces).map(v=>P(v,['name','branch','stars'])):undefined,roots:A(p.functionalAssessment?.rootContext).filter(v=>v.hasRoot&&v.stem===p.dayMaster).map(v=>({stem:v.stem,roots:A(v.roots).map(z=>P(z,['pillar','branch','stem','mainQi','rootKind','clashedBy']))})),seasonal:P(p.seasonalAssessment,['conclusion'])});}
+    /* 2026-11-12：合盤原本沒有句子段，定調的幾件事（彼此是對方的什麼十神、日柱干支關係、喜忌能否互補、哪些作用落在日柱）散在三張代碼表裡。先寫成句子，細表仍附後。 */
+    {const pa=c.personA||{},pb=c.personB||{},sp=c.spousePalace||{},ec=c.elementComplement||{},PLZ={year:'年',month:'月',day:'日',hour:'時'},lines=[];
+      const SRZ={generate:'甲方日主生乙方日主',receive:'乙方日主生甲方日主',control:'甲方日主剋乙方日主',controlled:'乙方日主剋甲方日主',same:'雙方日主同五行'};
+      const dtg=Object.entries(c.directionalTenGods||{}),dayGod=vs=>A(vs).find(v=>v.partnerPillar==='day'||v.partnerPillar==='日'||v.partnerPillar==='日柱')?.tenGod;
+      if(pa.dayMaster&&pb.dayMaster)lines.push('甲方日主'+pa.dayMaster+(pa.dayMasterElement||'')+(pa.strength?'（'+pa.strength+'）':'')+'，乙方日主'+pb.dayMaster+(pb.dayMasterElement||'')+(pb.strength?'（'+pb.strength+'）':'')+(sp.stemRelation?'；'+(SRZ[sp.stemRelation.type]||'')+(sp.stemRelation.label?'（'+sp.stemRelation.label+'）':''):'')+'。');
+      const g=dtg.map(([k,vs])=>{const t=dayGod(vs);return t?zhText(k)+'：對方日主是'+t:'';}).filter(Boolean);if(g.length)lines.push('十神定位（'+g.join('；')+'）。');
+      if(sp.aDayPillar&&sp.bDayPillar)lines.push('日柱（夫妻宮）：甲方'+sp.aDayPillar+'、乙方'+sp.bDayPillar+'；日支之間'+(A(sp.branchRelations).length?A(sp.branchRelations).map(v=>v.type||v.label||v).join('、'):'沒有合沖刑害破')+'。');
+      const onDay=[...A(c.stemRelations).filter(v=>(v.aPillar==='day'||v.bPillar==='day')&&v.type&&v.type!=='天干生剋').map(v=>v.type+'（甲'+(PLZ[v.aPillar]||v.aPillar)+'柱'+v.aStem+'—乙'+(PLZ[v.bPillar]||v.bPillar)+'柱'+v.bStem+'）'),...A(c.branchRelations).filter(v=>v.aPillar==='day'||v.bPillar==='day').map(v=>v.type+'（甲'+(PLZ[v.aPillar]||v.aPillar)+'支'+v.aBranch+'—乙'+(PLZ[v.bPillar]||v.bPillar)+'支'+v.bBranch+'）')];
+      lines.push('牽動到日柱的跨盤作用：'+(onDay.length?onDay.join('、'):'沒有')+'。');
+      const cnt={};[...A(c.stemRelations),...A(c.branchRelations)].forEach(v=>{if(v.type&&v.type!=='天干生剋'&&v.type!=='同干'&&v.type!=='同支重疊')cnt[v.type]=(cnt[v.type]||0)+1;});
+      if(Object.keys(cnt).length)lines.push('全部跨盤合沖刑害計數：'+Object.entries(cnt).map(([k,n])=>k+n+'組').join('、')+'。');
+      const el=(a,t)=>A(a).length?t+A(a).join('、'):'';const comp=[el(ec.partnerMaySupportA,'乙方偏強而甲方喜用的五行：'),el(ec.partnerMaySupportB,'甲方偏強而乙方喜用的五行：'),el(ec.partnerMayLoadA,'乙方偏強而甲方所忌的五行：'),el(ec.partnerMayLoadB,'甲方偏強而乙方所忌的五行：')].filter(Boolean);
+      lines.push('喜忌互補：'+(comp.length?comp.join('；'):'雙方偏強的五行都不在對方的喜忌清單裡')+'。');
+      if(lines.length)add('合盤重點（引擎已寫成句；細表附後供核對）',lines.join('\n'));}
     add('雙向十神：對方柱/天干/十神/藏干',Object.entries(c.directionalTenGods||{}).map(([k,vs])=>k+':'+A(vs).map(v=>row([v.partnerPillar,v.partnerStem,v.tenGod,v.hidden])).join(';')).join('\n'));
     add('雙方日主與夫妻宮',{dayMasters:c.dayMasters,spousePalace:c.spousePalace});
     const SR={generate:'甲生乙',receive:'乙生甲',control:'甲剋乙',controlled:'乙剋甲',same:'同五行'},PL={year:'年',month:'月',day:'日',hour:'時'};

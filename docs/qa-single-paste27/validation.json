@@ -25,8 +25,8 @@
     {
       "name": "vedic real exporter",
       "status": "passed",
-      "characters": 9766,
-      "bytes": 20168,
+      "characters": 10114,
+      "bytes": 21462,
       "notExpanded": []
     },
     {
@@ -71,8 +71,8 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 5775,
-      "bytes": 14047,
+      "characters": 6122,
+      "bytes": 15056,
       "notExpanded": []
     },
     {
@@ -113,7 +113,7 @@
     {
       "name": "provided financial question retains both outcomes and exact wording",
       "status": "passed",
-      "characters": 10375
+      "characters": 10723
     },
     {
       "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
