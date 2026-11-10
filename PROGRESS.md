@@ -45,6 +45,7 @@
 ## 發布檢查（每次推送後必做）
 - 2026-11-10 曾有兩次 GitHub Pages 發布被取消（Actions「pages build and deployment」conclusion=cancelled），線上停在舊版而我誤報已上線。
 - 推送後：①查 Actions 最新一筆 run 為 success（GET /repos/onerkk/mytool-blue/actions/runs?per_page=1）；②用 curl 抓線上一個「這次有改的檔」與本機 cmp 完全相同才算上線；不要只 grep 關鍵字。③失敗就推一個空 commit 重觸發。
+- 2026-11-12 根因：GitHub Pages 發布不時卡在 syncing_files 逾時 10 分鐘（run 失敗或被取消）。.gitignore 原為 UTF-16 編碼，git 讀不懂，node_modules（5654 檔，佔全站檔案數七成，網站完全沒用到）一直被提交並發布。已把 .gitignore 改成 UTF-8、node_modules 移出版本庫。新環境 clone 後要先跑 `npm ci` 才能跑測試。
 - 另有 Cloudflare Pages 同步部署（mytool-blue.pages.dev），jingyue.uk 實際吃 GitHub Pages。
 
 ## 下一段順序
