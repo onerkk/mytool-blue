@@ -96,6 +96,25 @@
     stage.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;},{passive:true});
     stage.addEventListener('touchend',function(e){if(x0==null)return;var dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)<50)return;if(dx<0&&idx<STEPS.length-1){idx++;render();}else if(dx>0&&idx>0){idx--;render();}},{passive:true});
   }
+  // ── 漏填欄位：框起來並捲到眼前（各工具驗證失敗時呼叫 window.jyMarkField(欄位或 id)）──
+  window.jyMarkField=function(x){
+    try{
+      var el=typeof x==='string'?document.getElementById(x):x;if(!el)return;
+      var t=el;
+      if(t.type==='hidden'||t.offsetParent===null){
+        t=null;var id=el.id||'';
+        var cand=id?document.querySelector('[data-target="'+id+'"],[data-input="'+id+'"],[aria-controls="'+id+'"],label[for="'+id+'"]'):null;
+        if(cand&&cand.offsetParent!==null)t=cand;
+        var p=el.parentElement,depth=0;
+        while(!t&&p&&depth<4){var b=p.querySelector('button,select,input:not([type=hidden]),textarea');if(b&&b.offsetParent!==null&&p.querySelectorAll('button,select,input:not([type=hidden]),textarea').length<=3){t=b;break;}if(p.offsetParent!==null&&depth>=1){t=p;break;}p=p.parentElement;depth++;}
+      }
+      if(!t)return;
+      t.style.outline='2px solid #e8a33c';t.style.outlineOffset='3px';t.style.boxShadow='0 0 0 6px rgba(232,163,60,.18)';
+      setTimeout(function(){try{t.scrollIntoView({behavior:'smooth',block:'center'});}catch(_){}},350);
+      var clear=function(){t.style.outline='';t.style.outlineOffset='';t.style.boxShadow='';t.removeEventListener('click',clear);t.removeEventListener('input',clear);};
+      t.addEventListener('click',clear);t.addEventListener('input',clear);setTimeout(clear,12000);
+    }catch(_){}
+  };
   window._jyFirstGuide=open;
   // 「?」說明鈕與舊入口一律開新指引
   window._showGuide=open;

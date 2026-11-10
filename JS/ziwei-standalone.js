@@ -1877,7 +1877,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   }
 
   // ── 內嵌錯誤 ──
-  function _zwxErr(msg){ var e=document.getElementById('zwx-err'); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _zwxErr(msg){ try{ var _fid=/性別/.test(msg)?'zw-g-m':/日期/.test(msg)?'zwx-fld-date':/時分/.test(msg)?'zw-exact-time':/時辰/.test(msg)?'zwx-fld-hh':''; if(_fid&&window.jyMarkField){ var _fe=document.getElementById(_fid); window.jyMarkField(_fid==='zw-g-m'&&_fe&&_fe.parentElement?_fe.parentElement:_fe); } }catch(_z){} var e=document.getElementById('zwx-err'); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
   function _zwxClearErr(){ var e=document.getElementById('zwx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet ──

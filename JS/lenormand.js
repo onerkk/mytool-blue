@@ -3366,7 +3366,7 @@ window._lnDoDraw = function() {
     if(window.JYRitual && window.JYRitual.isActive())return;
   var qEl = document.getElementById('ln-q');
   _lnQuestion = qEl ? qEl.value.trim() : '';
-  if (!_lnQuestion) { alert('請先輸入一個明確問題。時間範圍只有在你需要限定期限時才必填。'); return; }
+  if (!_lnQuestion) { if(window.jyMarkField)window.jyMarkField('ln-q'); alert('請先輸入一個明確問題。時間範圍只有在你需要限定期限時才必填。'); return; }
   // v5.0：自動與手動選陣都走同一套問題驗證與適配檢查。
   _lnAutoPick = null;
   _lnResolved = _lnSpread;
