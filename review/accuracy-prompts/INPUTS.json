@@ -1,6 +1,6 @@
 {
   "kind": "modified JS builders in Node VM; synthetic fixed inputs, not browser E2E",
-  "generatedAt": "2026-11-09T23:03:02.391Z",
+  "generatedAt": "2026-11-10T06:34:46.120Z",
   "entries": [
     {
       "name": "01-tarot",
@@ -49,7 +49,7 @@
           "note": "Book T 要求第一次操作的主要線索能正確指出所問之事；程式不能代替問卜者完成這項確認。"
         },
         "operations": {
-          "castTimestamp": "2026-11-09T23:03:02.408Z",
+          "castTimestamp": "2026-11-10T06:34:46.137Z",
           "significatorId": 35,
           "significator": {
             "id": 35,

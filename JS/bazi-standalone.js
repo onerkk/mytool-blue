@@ -844,7 +844,8 @@
   }
 
   // ── 內嵌錯誤（取代 alert）──
-  function _bzxErr(msg){ var e=document.getElementById('bzx-err'); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
+  function _bzxMarkField(msg){ /* 2026-11-12：漏填時把那一欄框起來並捲到眼前，提示消失後使用者仍看得到要補哪裡 */ try{ var id=/日期/.test(msg)?'bzx-fld-date':/時間|時辰/.test(msg)?'bzx-fld-time':/地點/.test(msg)?'bzx-fld-city':''; var f=id&&document.getElementById(id); if(!f) return; f.style.outline='2px solid #e8a33c'; f.style.outlineOffset='3px'; f.style.boxShadow='0 0 0 6px rgba(232,163,60,.18)'; setTimeout(function(){ try{ if(f.offsetParent!==null) f.scrollIntoView({behavior:'smooth',block:'center'}); }catch(x){} },450); var clear=function(){ f.style.outline='';f.style.outlineOffset='';f.style.boxShadow=''; f.removeEventListener('click',clear); }; f.addEventListener('click',clear); setTimeout(clear,12000); }catch(z){} }
+  function _bzxErr(msg){ var e=document.getElementById('bzx-err'); _bzxMarkField(msg); if(e&&e.offsetParent===null&&window.JYShareCard&&window.JYShareCard.notice){ window.JYShareCard.notice('⚠ '+msg); return; } if(e){ e.textContent='⚠ '+msg; e.classList.add('show'); try{e.scrollIntoView({behavior:'smooth',block:'center'});}catch(x){} } else { try{alert(msg);}catch(z){} } }
   function _bzxClearErr(){ var e=document.getElementById('bzx-err'); if(e) e.classList.remove('show'); }
 
   // ── 底部 sheet 基礎 ──
