@@ -3,163 +3,163 @@
   "cases": [
     {
       "seed": 0,
-      "characters": 7318,
-      "bytes": 19944
+      "characters": 7675,
+      "bytes": 21017
     },
     {
       "seed": 1,
-      "characters": 7295,
-      "bytes": 19835
+      "characters": 7652,
+      "bytes": 20908
     },
     {
       "seed": 2,
-      "characters": 7004,
-      "bytes": 19002
+      "characters": 7361,
+      "bytes": 20075
     },
     {
       "seed": 3,
-      "characters": 7369,
-      "bytes": 20031
+      "characters": 7726,
+      "bytes": 21104
     },
     {
       "seed": 4,
-      "characters": 7286,
-      "bytes": 19762
+      "characters": 7643,
+      "bytes": 20835
     },
     {
       "seed": 5,
-      "characters": 7246,
-      "bytes": 19704
+      "characters": 7603,
+      "bytes": 20777
     },
     {
       "seed": 6,
-      "characters": 7111,
-      "bytes": 19333
+      "characters": 7468,
+      "bytes": 20406
     },
     {
       "seed": 7,
-      "characters": 6911,
-      "bytes": 18761
+      "characters": 7268,
+      "bytes": 19834
     },
     {
       "seed": 8,
-      "characters": 7013,
-      "bytes": 19045
+      "characters": 7370,
+      "bytes": 20118
     },
     {
       "seed": 9,
-      "characters": 7045,
-      "bytes": 19161
+      "characters": 7402,
+      "bytes": 20234
     },
     {
       "seed": 10,
-      "characters": 7130,
-      "bytes": 19406
+      "characters": 7487,
+      "bytes": 20479
     },
     {
       "seed": 11,
-      "characters": 7123,
-      "bytes": 19345
+      "characters": 7480,
+      "bytes": 20418
     },
     {
       "seed": 12,
-      "characters": 7167,
-      "bytes": 19471
+      "characters": 7524,
+      "bytes": 20544
     },
     {
       "seed": 13,
-      "characters": 7083,
-      "bytes": 19229
+      "characters": 7440,
+      "bytes": 20302
     },
     {
       "seed": 14,
-      "characters": 7174,
-      "bytes": 19536
+      "characters": 7531,
+      "bytes": 20609
     },
     {
       "seed": 15,
-      "characters": 7072,
-      "bytes": 19204
+      "characters": 7429,
+      "bytes": 20277
     },
     {
       "seed": 16,
-      "characters": 7025,
-      "bytes": 19085
+      "characters": 7382,
+      "bytes": 20158
     },
     {
       "seed": 17,
-      "characters": 6989,
-      "bytes": 18973
+      "characters": 7346,
+      "bytes": 20046
     },
     {
       "seed": 18,
-      "characters": 7032,
-      "bytes": 19118
+      "characters": 7389,
+      "bytes": 20191
     },
     {
       "seed": 19,
-      "characters": 7238,
-      "bytes": 19676
+      "characters": 7595,
+      "bytes": 20749
     },
     {
       "seed": 20,
-      "characters": 6717,
-      "bytes": 18205
+      "characters": 7074,
+      "bytes": 19278
     },
     {
       "seed": 21,
-      "characters": 7161,
-      "bytes": 19427
+      "characters": 7518,
+      "bytes": 20500
     },
     {
       "seed": 22,
-      "characters": 7254,
-      "bytes": 19712
+      "characters": 7611,
+      "bytes": 20785
     },
     {
       "seed": 23,
-      "characters": 6761,
-      "bytes": 18343
+      "characters": 7118,
+      "bytes": 19416
     },
     {
       "seed": 24,
-      "characters": 7388,
-      "bytes": 20074
+      "characters": 7745,
+      "bytes": 21147
     },
     {
       "seed": 25,
-      "characters": 7183,
-      "bytes": 19497
+      "characters": 7540,
+      "bytes": 20570
     },
     {
       "seed": 26,
-      "characters": 7282,
-      "bytes": 19788
+      "characters": 7639,
+      "bytes": 20861
     },
     {
       "seed": 27,
-      "characters": 7267,
-      "bytes": 19777
+      "characters": 7624,
+      "bytes": 20850
     },
     {
       "seed": 28,
-      "characters": 7343,
-      "bytes": 19935
+      "characters": 7700,
+      "bytes": 21008
     },
     {
       "seed": 29,
-      "characters": 7545,
-      "bytes": 20555
+      "characters": 7902,
+      "bytes": 21628
     },
     {
       "seed": 30,
-      "characters": 7247,
-      "bytes": 19697
+      "characters": 7604,
+      "bytes": 20770
     },
     {
       "seed": 31,
-      "characters": 7293,
-      "bytes": 19857
+      "characters": 7650,
+      "bytes": 20930
     }
   ],
   "failures": [],
