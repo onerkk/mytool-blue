@@ -1572,14 +1572,16 @@ return function timeScope(question,referenceYear){
     var outward=(gc.食神+gc.傷官+gc.偏財+gc.正財), inward=(gc.偏印+gc.正印+gc.比肩+gc.劫財);
     var structured=(gc.正官+gc.七殺+gc.正印+gc.偏印), free=(gc.食神+gc.傷官+gc.比肩+gc.劫財);
     var relational=(gc.正財+gc.偏財+gc.正官+gc.正印+gc.比肩), selfLed=(gc.劫財+gc.傷官+gc.七殺+gc.偏印);
-    var resilient=!!(chart&&(chart.strong===true||['中和','偏強','身強','太強'].indexOf(chart.strongLevel)>=0));
-    var adaptive=yin>yang || safeArray(chart&&chart.branchInteractions).length>=2;
+    var resilient=!!(chart&&(chart.strong===true||['中和','偏旺','太旺','旺極'].indexOf(chart.strongLevel)>=0));
+    /* 2026-11-12：原條件「地支作用≥2項」有九成以上的盤都成立，這一軸幾乎人人都是變通。改為比較變動性作用（沖刑破害）與結合性作用（合會）：變動多於結合為變通，反之為穩態；相等時才看陰陽干數。 */
+    var _bi=safeArray(chart&&chart.branchInteractions),dynCount=_bi.filter(function(x){return /沖|刑|破|害/.test(String(x&&x.type||''));}).length,staCount=_bi.filter(function(x){return /合|會/.test(String(x&&x.type||''));}).length;
+    var adaptive=dynCount>staCount || (dynCount===staCount && yin>yang);
     return [
       {key:'energy',left:'內省',right:'外放',rightSelected:outward>inward,inputs:{outward:outward,inward:inward,comparison:'>'},evidence:'輸出／財星訊號 '+outward+'，印比訊號 '+inward},
       {key:'order',left:'自主',right:'秩序',rightSelected:structured>=free,inputs:{structured:structured,free:free,comparison:'>='},evidence:'官印訊號 '+structured+'，食傷比劫訊號 '+free},
       {key:'relation',left:'獨行',right:'協作',rightSelected:relational>selfLed,inputs:{relational:relational,selfLed:selfLed,comparison:'>'},evidence:'關係導向訊號 '+relational+'，自我驅動訊號 '+selfLed},
-      {key:'pressure',left:'敏感',right:'韌行',rightSelected:resilient,inputs:{strong:chart.strong,strongLevel:chart.strongLevel,acceptedLevels:['中和','偏強','身強','太強']},evidence:'旺衰候選 '+safeText(chart&&chart.strongLevel,'未判定')},
-      {key:'rhythm',left:'穩態',right:'變通',rightSelected:adaptive,inputs:{yin:yin,yang:yang,branchInteractions:safeArray(chart.branchInteractions).length,operator:'yin>yang OR branchInteractions>=2'},evidence:'陰干數 '+yin+'、陽干數 '+yang+'；原局作用 '+safeArray(chart&&chart.branchInteractions).length+' 項'}
+      {key:'pressure',left:'敏感',right:'韌行',rightSelected:resilient,inputs:{strong:chart.strong,strongLevel:chart.strongLevel,acceptedLevels:['中和','偏旺','太旺','旺極']},evidence:'旺衰候選 '+safeText(chart&&chart.strongLevel,'未判定')},
+      {key:'rhythm',left:'穩態',right:'變通',rightSelected:adaptive,inputs:{yin:yin,yang:yang,branchInteractions:_bi.length,dynamicInteractions:dynCount,stabilizingInteractions:staCount,operator:'dynamic>stabilizing OR (equal AND yin>yang)'},evidence:'沖刑破害 '+dynCount+' 項、合會 '+staCount+' 項；陰干數 '+yin+'、陽干數 '+yang}
     ];
   }
 
