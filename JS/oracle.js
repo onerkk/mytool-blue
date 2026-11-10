@@ -2162,8 +2162,9 @@ else if(_phase==='shengjia'){
 }
 else if(_phase==='poem'){
 var _aiPrompt=_buildOraclePrompt(_poem,_qText);
-if(window.JYNativeAnalysis)h+=window.JYNativeAnalysis.render('oracle',_poem);
+/* 2026-11-12：籤詩放最前面。原本先出現「盤面作用分析」的摺疊清單，求了半天第一眼卻看不到籤，籤詩要往下捲一個半畫面。 */
 h+=_oracleResultHTML({poem:_poem,numberLabel:'第'+(CN[_poem.n]||_poem.n)+'籤',question:_qText,confirmed:_holy>=3,hasPrompt:!!_aiPrompt,art:IMG.cardWm});
+if(window.JYNativeAnalysis)h+=window.JYNativeAnalysis.render('oracle',_poem);
 }
 
 h+='</div>';w.innerHTML=h;if(window.JYFoley){window.JYFoley.prepare(['wood','stems','paper']);window.JYFoley.sync();}

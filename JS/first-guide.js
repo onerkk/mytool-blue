@@ -55,7 +55,7 @@
     '@keyframes jyCoach{0%{box-shadow:0 0 0 0 rgba(241,223,166,.55)}100%{box-shadow:0 0 0 16px rgba(241,223,166,0)}}',
     '.jy-coach-tip{position:fixed;z-index:2147482991;max-width:300px;background:#f4e7bd;color:#1b1505;border-radius:12px;padding:10px 12px;font-size:.84rem;line-height:1.55;box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;transform:translateY(6px);transition:all .3s}',
     '.jy-coach-tip.on{opacity:1;transform:none}.jy-coach-tip b{font-weight:700}.jy-coach-tip button{margin-top:6px;background:#1b1505;color:#f4e7bd;border:0;border-radius:8px;padding:6px 12px;font-size:.78rem;cursor:pointer}',
-    '.jy-coach-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:2147482989;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
+    '.jy-coach-pill{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,20px);z-index:2147482989;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;border:0;border-radius:999px;padding:12px 20px;font-size:.92rem;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.55);opacity:0;transition:all .35s;cursor:pointer;white-space:nowrap}',
     '.jy-coach-pill.on{opacity:1;transform:translate(-50%,0);animation:jyPill 1.8s ease-in-out infinite}@keyframes jyPill{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-5px)}}',
     '@media (prefers-reduced-motion:reduce){.jy-fg *,.jy-coach-ring,.jy-coach-pill{animation:none!important;transition:none!important}.fg-type{width:11em}.fg-row{transform:none;opacity:1}}'
   ].join('');
@@ -125,6 +125,19 @@
     if(document.hidden||introBusy()||document.querySelector('.jy-gov.v')){if(tries<60)setTimeout(function(){maybeOpen(tries+1);},1000);return;}
     open();
   }
+  // 首頁放一個隨時可重看的入口（原本的「?」說明鈕早已停用，看過一次就找不到說明了）。
+  function addReopen(){
+    if(document.querySelector('.jy-fg-reopen'))return;
+    var anchor=document.querySelector('#home-cta-btn');if(!anchor||!anchor.parentNode)return;
+    var link=document.querySelector('.at-text-link');
+    var b=el('button','jy-fg-reopen','第一次用？30 秒看懂怎麼玩');b.type='button';
+    b.style.cssText='display:block;margin:10px auto 0;background:none;border:0;color:#e7c966;font-size:.86rem;letter-spacing:.04em;text-decoration:underline;text-underline-offset:4px;padding:8px 10px;cursor:pointer';
+    b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();open();});
+    var host=(link&&link.parentNode)||anchor.parentNode;
+    if(link&&link.nextSibling)host.insertBefore(b,link.nextSibling);else host.appendChild(b);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(addReopen,800);});else setTimeout(addReopen,800);
+  window.addEventListener('load',function(){setTimeout(addReopen,1500);});
   if(document.readyState==='complete')setTimeout(function(){maybeOpen(0);},1400);
   else window.addEventListener('load',function(){setTimeout(function(){maybeOpen(0);},1400);});
 

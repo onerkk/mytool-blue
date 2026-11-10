@@ -16,7 +16,7 @@ async def main():
           if([...r.querySelectorAll('button')].some(e=>/複製/.test(e.innerText)&&e.offsetParent))return 'DONE';
           const b=[...r.querySelectorAll('button')].filter(e=>e.offsetParent&&!e.disabled&&/求籤|擲杯|擲筊|搖籤|查看籤詩|結束|看籤|解籤/.test(e.innerText.replace(/\\s/g,''))&&!/返回/.test(e.innerText));
           if(!b.length)return '';const x=b[b.length-1];const t=x.innerText.replace(/\\s/g,'');x.scrollIntoView({block:'center'});x.click();return t}'''
-        while time.time()-t0<215:
+        while time.time()-t0<225:
             r=await pg.evaluate(STEP)
             if r: log.append(r)
             if r=='DONE': done=True;break
@@ -25,7 +25,10 @@ async def main():
         for x in log: counts[x]=counts.get(x,0)+1
         print('done',done,'secs',round(time.time()-t0),'counts',json.dumps(counts,ensure_ascii=False))
         print('seq',' '.join(log)[:900])
+        await pg.wait_for_timeout(2500)
         await pg.screenshot(path='/tmp/x/OR_end.png')
+        top=await pg.evaluate("()=>{const r=document.getElementById('oracle-screen');const f=x=>{const e=[...r.querySelectorAll('button,h1,h2,h3')].find(e=>e.offsetParent&&x.test(e.innerText||''));return e?Math.round(e.getBoundingClientRect().top+r.scrollTop):null};return {st:r.scrollTop,poem:f(/橫讀/),analysis:f(/盤面作用分析/),copy:f(/複製解籤內容/),pill:!!document.querySelector('.jy-coach-pill.on')}}")
+        print('layout',top)
         info=await pg.evaluate('''()=>{const r=document.getElementById('oracle-screen');const b=[...r.querySelectorAll('button,a')].filter(e=>e.offsetParent&&e.getBoundingClientRect().width>40).map(e=>e.innerText.trim().replace(/\\n/g,' ').slice(0,16)+'@'+Math.round(e.getBoundingClientRect().top+r.scrollTop));return {sh:r.scrollHeight,b:b.slice(0,14),pill:!!document.querySelector('.jy-coach-pill.on'),ring:!!document.querySelector('.jy-coach-ring'),locked:Object.keys(localStorage).filter(k=>/oracle_today_lock/.test(k)).length,txt:(r.innerText||'').replace(/\\s+/g,' ').slice(0,160)}}''')
         print('info',json.dumps(info,ensure_ascii=False)[:900]);print('errors',errs[:3]);await b.close()
 asyncio.run(main())
