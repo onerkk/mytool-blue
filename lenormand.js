@@ -2348,7 +2348,7 @@ function recommendReadingSystem(question, options) {
     business:prof.domain==='business',money:prof.domain==='wealth',health:prof.domain==='health',work:prof.domain==='career',thirdPerson:ak.thirdPerson,vocation:ak.vocation,destiny:ak.destiny};
   // ── 各方法擅長什麼：打分 ──
   var score={bazi:0,ziwei:0,vedic:0,astro:0,liuyao:0,liuren:0,meihua:0,yijing:0,tarot:0,lenormand:0,oracle:0,name:0,compat:0};
-  var why={};function add(id,n,text){score[id]+=n;if(text&&n>0)why[id]=(why[id]?why[id]+'、':'')+text;}
+  var why={},whyWeight={};/* 理由只留分量最重的一條；原本用頓號把多條硬接在一起，讀起來不通。 */function add(id,n,text){score[id]+=n;if(text&&n>0&&(!why[id]||n>whyWeight[id])){why[id]=text;whyWeight[id]=n;}}
   if(f.longTerm||f.overall){add('bazi',5,'問的是長期適不適合或整體走勢，看本命與大運流年最準');add('ziwei',4,'宮位能把這件事落到人生哪一塊');add('vedic',3,'大運與分盤能看長期週期');add('astro',3,'行運與小限能看哪一年動');}
   if(/哪一年|哪年|幾歲|20\d\d|流年|大運|未來幾年|幾年內/.test(q)){add('bazi',3,'指定年份要看流年對本命的作用');add('ziwei',2,'流年四化能定年份');}
   if(f.event){add('liuyao',4,'一件具體的事成不成，六爻看用神最直接');add('liuren',3,'急事、消息、來人、失物，六壬看三傳');add('lenormand',3,'具體事件與周邊條件，雷諾曼把牌連成一件事');add('meihua',2,'當下一事成不成，梅花看體用');}

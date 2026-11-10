@@ -11,6 +11,7 @@ async def main(acts,seen=True):
         c=await b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,locale='zh-TW',timezone_id='Asia/Taipei',permissions=['clipboard-read','clipboard-write'])
         if seen: await c.add_init_script("try{localStorage.setItem('_jy_first_guide_v1','1')}catch(e){}")
         pg=await c.new_page();errs=[]
+        await pg.route('**/JS/bazi-suite.js*',lambda route:route.fulfill(path='/home/claude/mytool-blue/JS/bazi-suite.js',content_type='application/javascript'))
         await pg.route('**/JS/gua-room.js*',lambda route:route.fulfill(path='/home/claude/mytool-blue/JS/gua-room.js',content_type='application/javascript'))
         await pg.route('**/JS/lenormand.js*',lambda route:route.fulfill(path='/home/claude/mytool-blue/JS/lenormand.js',content_type='application/javascript'))
         await pg.route('**/JS/vedic-standalone.js*',lambda route:route.fulfill(path='/home/claude/mytool-blue/JS/vedic-standalone.js',content_type='application/javascript'))
