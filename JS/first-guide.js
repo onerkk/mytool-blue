@@ -131,6 +131,8 @@
   // ── 複製提示詞按鈕：第一次出現時指給使用者看 ──
   function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀|解籤)/.test(t)&&!/診斷|手動|查看|無法/.test(t)&&t.length<=24;}
   function visible(b){var r=b.getBoundingClientRect();return r.width>40&&r.height>20&&r.top>60&&r.bottom<innerHeight-10;}
+  // 六壬、姓名等工具的房間層級比任何 z-index 都高（最上層的固定層／dialog），提示放在 body 會被蓋住；所以放進按鈕所在的最外層固定容器裡。
+  function hostOf(b){var h=null,n=b&&b.parentElement;while(n&&n!==document.body&&n!==document.documentElement){var tag=n.tagName,cs=null;try{cs=getComputedStyle(n);}catch(_){}if((tag==='DIALOG'&&n.open)||n.hasAttribute('popover')||(cs&&cs.position==='fixed'))h=n;n=n.parentElement;}return h||document.body;}
   var ring=null,tip=null,target=null;
   function clearCoach(done){if(ring&&ring.parentNode)ring.parentNode.removeChild(ring);if(tip&&tip.parentNode)tip.parentNode.removeChild(tip);ring=tip=target=null;if(done)set(K_COACH,'1');}
   function place(){if(!target||!target.isConnected||!visible(target)){clearCoach(false);return;}var r=target.getBoundingClientRect();
@@ -140,13 +142,13 @@
   function coach(b){
     if(get(K_COACH)||target||wrap)return;target=b;
     ring=el('div','jy-coach-ring');tip=el('div','jy-coach-tip','<b>最後一步在這裡</b><br>按這顆複製，再貼到 ChatGPT、Gemini 或 Claude 送出，就能看到完整的白話解讀。<br><button type="button">知道了</button>');
-    document.body.appendChild(ring);document.body.appendChild(tip);place();if(!tip)return;requestAnimationFrame(function(){if(tip)tip.classList.add('on');});
+    var host=hostOf(b);host.appendChild(ring);host.appendChild(tip);place();if(!tip)return;requestAnimationFrame(function(){if(tip)tip.classList.add('on');});
     tip.querySelector('button').addEventListener('click',function(){clearCoach(true);});
   }
   // 複製按鈕常在結果頁下方兩三個畫面：還沒滑到時，先用浮動按鈕告訴他在下面，點了直接帶過去。
   var pill=null;
   function hidePill(){if(pill&&pill.parentNode)pill.parentNode.removeChild(pill);pill=null;}
-  function showPill(b){if(pill)return;pill=el('button','jy-coach-pill','複製提示詞在下面，帶我過去 ↓');pill.type='button';document.body.appendChild(pill);requestAnimationFrame(function(){if(pill)pill.classList.add('on');});
+  function showPill(b){if(pill)return;pill=el('button','jy-coach-pill','複製提示詞在下面，帶我過去 ↓');pill.type='button';hostOf(b).appendChild(pill);requestAnimationFrame(function(){if(pill)pill.classList.add('on');});
     pill.addEventListener('click',function(){hidePill();try{b.scrollIntoView({block:'center',behavior:'smooth'});}catch(_){b.scrollIntoView();}setTimeout(queue,700);});}
   var scanT=null;
   function scan(){scanT=null;if(wrap)return;if(target){place();return;}if(get(K_COACH)){hidePill();return;}
