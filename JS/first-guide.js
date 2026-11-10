@@ -110,7 +110,7 @@
   else window.addEventListener('load',function(){setTimeout(function(){maybeOpen(0);},1400);});
 
   // ── 複製提示詞按鈕：第一次出現時指給使用者看 ──
-  function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀)/.test(t)&&!/診斷/.test(t)&&t.length<=24;}
+  function isCopyBtn(b){if(b.closest&&b.closest('.jy-coach-pill,.jy-coach-tip,.jy-fg'))return false;var t=(b.innerText||b.textContent||'').replace(/\s/g,'');return /複製/.test(t)&&/(提示詞|AI|解讀|解籤)/.test(t)&&!/診斷|手動|查看|無法/.test(t)&&t.length<=24;}
   function visible(b){var r=b.getBoundingClientRect();return r.width>40&&r.height>20&&r.top>60&&r.bottom<innerHeight-10;}
   var ring=null,tip=null,target=null;
   function clearCoach(done){if(ring&&ring.parentNode)ring.parentNode.removeChild(ring);if(tip&&tip.parentNode)tip.parentNode.removeChild(tip);ring=tip=target=null;if(done)set(K_COACH,'1');}
