@@ -1,0 +1,3 @@
+const {environment}=require('../native-fixtures-20261003.cjs');const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-packet'].forEach(env.load);const LN=c.JYLenormand;
+const qs=['她未來會愛上我嗎','他現在心裡在想什麼','我喜歡的人對我有感覺嗎','他有沒有別的對象','前任會回來找我嗎','他會主動聯絡我嗎','我跟他有機會在一起嗎','我們的關係接下來會怎樣','這段感情的問題出在哪','老公最近怪怪的是不是有事瞞我','我該選A公司還是B公司','考研究所還是直接工作','該留在台北還是回老家','我該不該離婚','這間房子該不該買','我該不該跟他告白','我適合換工作嗎','這份工作值得做下去嗎','這個月業績會達標嗎','面試會上嗎','年底前能升職嗎','為什麼我一直存不到錢','我的財運卡在哪','投資這檔股票好嗎','接下來三個月的財運','今年整體運勢','下半年的感情運','什麼時候會遇到正緣','我掉的錢包找得回來嗎','我媽的手術會順利嗎','我要怎麼走出失戀','我跟主管的關係要怎麼改善','我最近很迷惘不知道人生方向','創業會成功嗎','我今年適合生小孩嗎'];
+for(const q of qs){let r;try{r=LN.recommend(q);}catch(e){r={id:'ERR',why:e.message.slice(0,60)};}console.log(q,'→',r.id,'｜',String(r.why).slice(0,46));}

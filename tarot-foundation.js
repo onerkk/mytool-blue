@@ -520,7 +520,7 @@
     var decisionInfo=classifyDecisionQuestion(stripSpreadDirective(q));
     var choice=decisionInfo.kind==='binary';
     // 單一行動的取捨（該不該離職／要不要告白／適合創業嗎／能不能投資）：需要成因、代價與介入點，不是一句是非。
-    var decision=decisionInfo.kind!=='binary'&&decisionInfo.kind!=='multiple'&&(/(?:應該|適合|適不適合|能不能|可以|值不值得|值得|是否該|是不是該)(?:接受|答應|去|換|轉|辭|離|離職|換工作|跳槽|創業|開店|投資|買|賣|簽|搬|結婚|分手|告白|復合|借|貸|繼續|放棄|留|進修|報名|合作|合夥|開始|出國|留學|接)/.test(q)||/(?:適合|適不適合)(?:我)?(?:創業|投資|開店|轉職|換工作|做|走|往|當|從事|結婚|搬|留學|出國)/.test(q)||/(?:適合我嗎|適不適合我|值得嗎|划算嗎|該接嗎|該做嗎|能做嗎|可行嗎)/.test(q)||/(?:投資|生意|案子|計畫|合作|合夥|這筆|這個案|這份工作|這個機會|邀約|offer|這間公司|這個職位)[^，。]{0,8}(?:能不能|可不可以|值不值得|適不適合)(?:做|進行|接|投|進|參與|去|答應)?/.test(q));
+    var decision=decisionInfo.kind!=='binary'&&decisionInfo.kind!=='multiple'&&(/(?:應該|適合|適不適合|能不能|可以|值不值得|值得|是否該|是不是該)(?:接受|答應|去|換|轉|辭|離|離職|換工作|跳槽|創業|開店|投資|買|賣|簽|搬|結婚|分手|告白|復合|借|貸|繼續|放棄|留|進修|報名|合作|合夥|開始|出國|留學|接)/.test(q)||/(?:適合|適不適合)(?:我)?(?:創業|投資|開店|轉職|換工作|做|走|往|當|從事|結婚|搬|留學|出國)/.test(q)||/(?:適合我嗎|適不適合我|值得嗎|划算嗎|該接嗎|該做嗎|能做嗎|可行嗎)/.test(q)||/(?:值不值得|值得|還要不要|該不該)(?:我)?(?:再)?(?:做下去|走下去|待下去|等下去|撐下去|堅持|繼續)/.test(q)||/(?:投資|生意|案子|計畫|合作|合夥|這筆|這個案|這份工作|這個機會|邀約|offer|這間公司|這個職位)[^，。]{0,8}(?:能不能|可不可以|值不值得|適不適合)(?:做|進行|接|投|進|參與|去|答應)?/.test(q));
     var timing=/什麼時候|何時|幾時|哪一天|幾月|多久|要等|時間點|when\b|how long|what date|which month/i.test(q)||(analyzeReadingQuestion(q).clauses||[]).some(function(f){return (f.languageNotes||[]).some(function(n){return n.type==='suspected_timing_typo';});});
     var advice=/該先開口|該做什麼|該從哪|怎麼改善|如何處理|怎麼做|怎麼辦|如何改善|建議|策略|方法|該怎麼|要怎麼|該如何|怎樣才能|怎麼才能|(?:怎麼|如何)(?:走出|面對|挽回|調整|經營|修復|放下|開始|準備)|下一步|應如何|怎麼找|如何找|what should|what can i do|advice|strategy/i.test(q);
     var hidden=/忽略|盲點|隱藏|背後|未察覺|不知道的|隱瞞|瞞著|瞞我|說謊|騙我|欺騙|出軌|外遇|第三者|暗中|偷偷|搞我|陷害|overlook|hidden influence|blind spot/i.test(q);
@@ -716,6 +716,12 @@ function classifyDecisionQuestion(question) {
     var action = clean(takeOrWait[1], false);
     return action ? result('binary', action, '暫不採取「' + action + '」，維持目前安排', '比較採取這個行動與暫不採取，沒有新增其他方案。') : result('incomplete');
   }
+  // 受詞在前的口語：「這間房子該不該買」「這份工作要不要接」，與「該不該買這間房子」是同一種取捨。
+  var topicFirst = !matches.length && q.match(/^((?:這|那)[^，,]{1,12}?)(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*([^，,？?嗎呢]{1,10})[嗎呢]?$/);
+  if (topicFirst) {
+    var topicAction = clean(topicFirst[2] + topicFirst[1], false);
+    if (topicAction) return result('binary', topicAction, '暫不採取「' + topicAction + '」，維持目前安排', '比較採取這個行動與暫不採取，沒有新增其他方案。');
+  }
   var left = '', right = '';
   if (matches.length === 1) {
     left = clean(q.slice(0, matches[0].at), true); right = clean(q.slice(matches[0].at + matches[0].value.length), false);
@@ -724,7 +730,7 @@ function classifyDecisionQuestion(question) {
     if (decisionCue && /(?:選|考慮)[^，,]+[，,][^，,]+$/.test(q.slice(0, matches[0].at).replace(/[，,\s]+$/, ''))) return result('multiple');
     // 「她還是喜歡我嗎」means "still", not A=her, B=likes me.
     if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
-    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
+    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|考|報考|出國|留學|升學|就業|進修|回(?:到|去|來)?|待在|住在|結婚|嫁|娶|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     // Polarity alternatives are one outcome proposition, not two hypotheses or two user choices:
     // 「會聯絡還是不聯絡」「喜歡還是不喜歡」「能成功還是不能成功」.

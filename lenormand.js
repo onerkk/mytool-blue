@@ -1314,6 +1314,12 @@ function classifyDecisionQuestion(question) {
     var action = clean(takeOrWait[1], false);
     return action ? result('binary', action, '暫不採取「' + action + '」，維持目前安排', '比較採取這個行動與暫不採取，沒有新增其他方案。') : result('incomplete');
   }
+  // 受詞在前的口語：「這間房子該不該買」「這份工作要不要接」，與「該不該買這間房子」是同一種取捨。
+  var topicFirst = !matches.length && q.match(/^((?:這|那)[^，,]{1,12}?)(?:我|我們)?(?:到底)?(?:該不該|要不要|應不應該)\s*([^，,？?嗎呢]{1,10})[嗎呢]?$/);
+  if (topicFirst) {
+    var topicAction = clean(topicFirst[2] + topicFirst[1], false);
+    if (topicAction) return result('binary', topicAction, '暫不採取「' + topicAction + '」，維持目前安排', '比較採取這個行動與暫不採取，沒有新增其他方案。');
+  }
   var left = '', right = '';
   if (matches.length === 1) {
     left = clean(q.slice(0, matches[0].at), true); right = clean(q.slice(matches[0].at + matches[0].value.length), false);
@@ -1322,7 +1328,7 @@ function classifyDecisionQuestion(question) {
     if (decisionCue && /(?:選|考慮)[^，,]+[，,][^，,]+$/.test(q.slice(0, matches[0].at).replace(/[，,\s]+$/, ''))) return result('multiple');
     // 「她還是喜歡我嗎」means "still", not A=her, B=likes me.
     if (/^(?:他|她|你|我|它|對方|我們|他們|她們)(?:現在|最近|今年|明年)?$/.test(left)) return result('none', null, null, '「還是」在這裡表示仍然如此，不是兩個方案。');
-    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
+    var actionStart = /^(?:先|暫時|繼續|直接|主動|全職|兼職|考|報考|出國|留學|升學|就業|進修|回(?:到|去|來)?|待在|住在|結婚|嫁|娶|留在|留下|留職|離職|離開|辭職|轉職|換到|換去|換|轉到|轉去|調到|調去|接受|拒絕|搬到|搬去|搬家|移居|買|賣|租|投資|創業|接案|加入|報名|就讀|讀|念|告白|分手|復合|維持|放棄|聯絡|等待|去|不去|不買|不賣|不投資|暫不|跟.{1,12}告白)/;
     var labels = /^[AB甲乙](?:公司|方案|選項)?$/i.test(left) && /^[AB甲乙](?:公司|方案|選項)?$/i.test(right);
     // Polarity alternatives are one outcome proposition, not two hypotheses or two user choices:
     // 「會聯絡還是不聯絡」「喜歡還是不喜歡」「能成功還是不能成功」.
