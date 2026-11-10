@@ -186,7 +186,7 @@
     s.timer=setTimeout(function(){try{finish(s);}catch(e){s.busy=false;error(s,e);}},s.mode==='yarrow'?3700:1650);
   }
   function start(s){
-    if(s.busy||s.phase!=='input')return;remember(s);s.question=s.question.trim();if(!s.question)throw new Error('先寫下你想釐清的一件事，再開始起卦。');
+    if(s.busy||s.phase!=='input')return;remember(s);s.question=s.question.trim();if(!s.question){try{var _q=document.getElementById('ly-q')||document.getElementById('yj-q');if(_q&&_q.offsetParent===null)_q=document.getElementById('yj-q');if(_q&&window.jyMarkField)window.jyMarkField(_q);}catch(_e){}throw new Error('先寫下你想釐清的一件事，再開始起卦。');}
     if(s.mode==='manual'&&s.manual.some(function(v){return !Number.isInteger(v)||v<6||v>9;}))throw new Error('請完整填入初爻至上爻的六次結果。');
     if(root.JYFoley)root.JYFoley.unlock(sounds(s));
     s.date=calendar(s);s.error='';s.values=s.mode==='manual'?s.manual.slice():[];s.records=[];s.part=[];s.lastChange=null;s.phase='casting';
