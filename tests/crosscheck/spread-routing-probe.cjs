@@ -1,0 +1,8 @@
+const {environment}=require('../native-fixtures-20261003.cjs');const env=environment(),c=env.ctx;['tarot-foundation','prompt-brief','prompt-packet'].forEach(env.load);
+const TF=c.JYTarotFoundation,LN=c.JYLenormand;console.log('TF',Object.keys(TF).join(','));console.log('LN',Object.keys(LN).join(','));
+const qs=['她未來會愛上我嗎','我跟現在的男友交往三年了，明年適合結婚嗎？他是對的人嗎？','前任會回來找我嗎','他現在心裡在想什麼','我該選A公司還是B公司','我適合換工作嗎','這個月業績會達標嗎','為什麼我一直存不到錢','我跟主管的關係要怎麼改善','今年整體運勢','我掉的錢包找得回來嗎','下半年的感情運','我該不該離婚','面試會上嗎','創業會成功嗎','我最近很迷惘不知道人生方向','他有沒有別的對象','什麼時候會遇到正緣','我媽的手術會順利嗎','我們分手的原因是什麼','接下來三個月的財運','跟合夥人拆夥好嗎','考研究所還是直接工作','我要怎麼走出失戀','這間房子該不該買'];
+const pick=o=>{if(!o)return o;const s=o.spread||o.recommended||o.primary||o;return [s.id||s.spreadId||s.key,s.name||s.label,s.count||(s.positions&&s.positions.length),(s.positions||[]).map(p=>p.name||p.label||p).slice(0,10).join('｜')].join(' / ');};
+const show=(o,d=0)=>JSON.stringify(o,(k,v)=>k==='questionPlan'||k==='plan'||k==='compiled'||k==='question'?undefined:v);
+const M=TF.METHODS;const ml=Array.isArray(M)?M:Object.values(M);console.log('METHODS',ml.length);for(const m of ml)console.log(' ',m.id,'|',m.name||m.label,'|',(m.positions||[]).length||m.count,'|',(m.positions||[]).map(p=>p.name||p.label||p.role||p.id).join('、').slice(0,120));
+for(const q of qs.concat(['我喜歡的人對我有感覺嗎','我跟他有機會在一起嗎','我們的關係接下來會怎樣','他會主動聯絡我嗎','我該繼續等他還是放手','這段感情的問題出在哪','我該不該跟他告白','老公最近怪怪的是不是有事瞞我','我跟同事吵架了怎麼和好','這份工作值得做下去嗎','年底前能升職嗎','投資這檔股票好嗎','我的財運卡在哪','該留在台北還是回老家','我今年適合生小孩嗎'])){let t;try{t=TF.routeQuestion(q);}catch(e){t={spreadId:'ERR',reason:e.message.slice(0,60)};}
+ console.log(q,'→',t.spreadId,'｜',String(t.reason).slice(0,60));}
