@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"lenormand","delivery":"single-message","build":"20261112root94"}
+{"schema":"jy.native-analysis/1","method":"lenormand","delivery":"single-message","build":"20261112root95"}
 
 【原問題】
 "完整分析原局與2026至2029年的工作、關係與取捨"
@@ -38,11 +38,6 @@
 
 【九宮格鏡像與騎士步（引擎幾何）】
 鏡像成對（隔著中心對照）：牌1↔牌3、牌1↔牌7、牌2↔牌8、牌3↔牌9、牌4↔牌6、牌7↔牌9；騎士步（隔格相望，較遠的影響）：牌1↔牌6、牌1↔牌8、牌2↔牌9、牌2↔牌7、牌3↔牌4、牌3↔牌8、牌4↔牌9、牌6↔牌7。先讀中心與四正，再用鏡像補因果，騎士步只在改變結論時用。
-
-【資料完整度】
-暫定：否
-計算：
-  狀態：已核
 
 【規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）】
 https://prismavisions.com/pages/lenormand-the-grand-tableau

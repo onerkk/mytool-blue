@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261112root94',LIMIT=12000,BYTES=28000;
+  const VERSION='20261112root95',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -471,8 +471,8 @@
       ctx.add('本法正統取法（'+(isMathers?'Mathers 塔羅':(names[e.method]||e.method))+'）',(isMathers?guides.mathers:guides[e.method])||'依本法正統程序推演。');
       const contextReading=e.analysis.depthContract?.requestCoverage?.caseBasis?.contextReading;
       (writers[e.method]||cards)(ctx);
-      const a=e.analysis;ctx.add('資料完整度',{provisional:!!a.coverage?.provisional,computation:P(a.computationAudit,['status']),inputLimits:a.coverage?.limitations});
-      {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 *//* 牌卡類（塔羅、雷諾曼、五輪）：這一段若沒有佐證或反證，內容只是把前面牌序表與牌義表的牌義再抄一次，不送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):(['tarot','lenormand','ootk','mathers'].includes(e.method)&&!informative.some(p=>hasData(p.support)||hasData(p.caution)))?[]:informative;if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
+      const a=e.analysis;/* 2026-11-12：資料正常時這一段只有「暫定：否／已核」，沒有資訊；只有暫定、未核或輸入有缺時才送。 */{const prov=!!a.coverage?.provisional,st=a.computationAudit?.status,lim=a.coverage?.limitations;if(prov||hasData(lim)||(st&&!/^(verified|ok|pass|passed|已核)$/i.test(String(st))))ctx.add('資料完整度',{provisional:prov,computation:P(a.computationAudit,['status']),inputLimits:lim});}
+      {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 *//* 牌卡類（塔羅、雷諾曼、五輪）：這一段若沒有佐證或反證，內容只是把前面牌序表與牌義表的牌義再抄一次，不送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):(['tarot','lenormand','ootk','mathers','yijing','name','compat'].includes(e.method)&&!informative.some(p=>hasData(p.support)||hasData(p.caution)))?[]:informative;/* 2026-11-12：這幾種方法的逐項段在沒有佐證或反證時，只是把前面的牌義、爻辭或「見上表」再寫一次（已逐一看過內容），不送；五軸人格的逐項段是各軸的實際判定，保留。 */if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
       const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
     }
     const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序三部分）】\n一、對他說的話（主體，約八百到一千二百字）。先叫他，第一句就回答他問的事，並說出把握有多大（問數量就給量級或區間）。接著講為什麼會這樣，這裡要把他最可能想錯、或錯怪自己的地方講開。再講接下來最可能怎麼走、另一種可能要靠什麼條件，以及大概什麼時候——只講最關鍵的一兩個時間，用一般人說日子的方式講。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。最後幫他想兩三件做得到的事：現在先做什麼、先別做什麼、事情不如意時怎麼退。原題問了幾件事，每一件都要答到；同一個判斷只講一次。\n二、我怎麼看出來的（三到五行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，名詞放在括號裡。不把資料抄一遍。\n三、收尾。照下面的成稿收尾寫，缺了就不算寫完。內容多時寧可把前兩部分寫精簡，也不能停在半路。\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question));

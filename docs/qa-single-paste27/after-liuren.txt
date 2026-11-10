@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"liuren","delivery":"single-message","build":"20261112root94"}
+{"schema":"jy.native-analysis/1","method":"liuren","delivery":"single-message","build":"20261112root95"}
 
 【原問題】
 "完整分析原局與2026至2029年的工作、關係與取捨"
@@ -84,11 +84,6 @@
 狀態：已算
 候選：990
 已檢查日數：1188
-
-【資料完整度】
-暫定：否
-計算：
-  狀態：已核
 
 【逐項作用與相反依據】
 項目：初傳 · 卯太常；所見：官鬼；死；與日干受克；提醒：旬空：仍需核對填沖出旬、月破、神克將：內戰、傳克日干

@@ -1,6 +1,6 @@
 【一次貼上・完整解讀提示詞】
 
-{"schema":"jy.native-analysis/1","method":"ootk","delivery":"single-message","build":"20261112root94"}
+{"schema":"jy.native-analysis/1","method":"ootk","delivery":"single-message","build":"20261112root95"}
 
 【原問題】
 "我的工作接下來會如何發展？"
@@ -122,11 +122,6 @@
 
 【跨輪重現的牌（出現兩輪以上）】
 聖杯二（第1輪、第4輪）＝陰陽力量結合的和諧
-
-【資料完整度】
-暫定：否
-計算：
-  狀態：已核
 
 【規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）】
 https://sacred-texts.com/oto/lib78.htm
