@@ -11,7 +11,7 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
  * 效能：單一 WebGL 畫布、無後製；開場量幾十格，太慢就自動關掉陰影並降低解析度。
  */
 const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),mix=(a,b,t)=>a+(b-a)*t,ease=t=>{t=clamp(t);return t*t*(3-2*t);},easeOut=t=>1-Math.pow(1-clamp(t),3);
-const CW=.7,CL=1.2,CT=.011,N=78;
+const CW=.7,CL=1.2,CT=.011;
 function cardGeometry(){
   const s=new T.Shape(),w=CW/2,h=CL/2,r=.055;
   s.moveTo(-w+r,-h);s.lineTo(w-r,-h);s.quadraticCurveTo(w,-h,w,-h+r);s.lineTo(w,h-r);s.quadraticCurveTo(w,h,w-r,h);s.lineTo(-w+r,h);s.quadraticCurveTo(-w,h,-w,h-r);s.lineTo(-w,-h+r);s.quadraticCurveTo(-w,-h,-w+r,-h);
@@ -31,7 +31,7 @@ const LAYOUTS={
   celtic_cross:[[-.95,0],[-.95,0,1],[-.95,1.1],[-2.1,0],[-.95,-1.1],[.2,0],[1.55,1.65],[1.55,.55],[1.55,-.55],[1.55,-1.65]]
 };
 export function create(host,opts){
-  opts=opts||{};const res=new Set(),keep=x=>(res.add(x),x);
+  opts=opts||{};const res=new Set(),keep=x=>(res.add(x),x),N=Math.max(12,opts.count||78),third=Math.floor(N/3);
   const renderer=new T.WebGLRenderer({alpha:true,antialias:true});
   {const gl=renderer.getContext&&renderer.getContext();if(!gl||(gl.isContextLost&&gl.isContextLost())){try{renderer.dispose();}catch(_){}throw new Error('webgl-unavailable');}}
   let pr=Math.min(window.devicePixelRatio||1,1.6);renderer.setPixelRatio(pr);renderer.setClearColor(0x000000,0);renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;
@@ -77,20 +77,21 @@ export function create(host,opts){
   const view=(px,py,pz,lx,ly,lz)=>{camTo.pos.set(px,py,pz);camTo.look.set(lx,ly,lz);};
   const remaining=()=>order.filter(i=>cards[i].picked<0);
   const arcTo=(c,x,y,z,h,d)=>{c.ax=c.x;c.ay=c.y;c.az=c.z;c.bx=x;c.by=y;c.bz=z;c.arc=h;c.arcT=now+(c.delay||0);c.arcD=d;c.tx=x;c.ty=y;c.tz=z;};
-  function label(text){const c=document.createElement('canvas');c.width=512;c.height=96;const g=c.getContext('2d');g.font='500 46px "Noto Serif TC","Songti TC",serif';g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(236,210,150,.95)';{let s2=String(text||'').replace(/^\s*\d+\s*[\.、．]\s*/,'');if(s2.length>7)s2=s2.slice(0,6)+'…';g.fillText(s2,256,50);}const t=keep(new T.CanvasTexture(c));t.colorSpace=T.SRGBColorSpace;const m=new T.Mesh(keep(new T.PlaneGeometry(1.3,.245)),keep(new T.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,opacity:0})));m.rotation.x=-Math.PI/2;scene.add(m);return m;}
+  function label(text){const c=document.createElement('canvas');c.width=512;c.height=160;const g=c.getContext('2d');g.textAlign='center';g.textBaseline='middle';g.fillStyle='rgba(236,210,150,.96)';{const s2=String(text||'').replace(/^\s*\d+\s*[\.、．]\s*/,'');if(s2.length<=7){g.font='500 50px "Noto Serif TC","Songti TC",serif';g.fillText(s2,256,52);}else{g.font='500 40px "Noto Serif TC","Songti TC",serif';const h=Math.ceil(Math.min(s2.length,22)/2);g.fillText(s2.slice(0,h),256,44);g.fillText(s2.slice(h,22),256,100);}}const t=keep(new T.CanvasTexture(c));t.colorSpace=T.SRGBColorSpace;const m=new T.Mesh(keep(new T.PlaneGeometry(1.3,.406)),keep(new T.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,opacity:0})));m.rotation.x=-Math.PI/2;scene.add(m);return m;}
+  let layoutCols=0;
   function layoutSlots(n,id,names){labels.forEach(l=>scene.remove(l));labels=[];let raw=LAYOUTS[id]&&LAYOUTS[id].length===n?LAYOUTS[id]:null;
-    if(!raw){raw=[];const cols=n<=5?n:Math.ceil(n/2),rows=Math.ceil(n/cols);for(let i=0;i<n;i++){const r=Math.floor(i/cols),inRow=r===rows-1?n-cols*(rows-1):cols,c=i%cols;raw.push([(c-(inRow-1)/2)*1.12,(r-(rows-1)/2)*1.12]);}}
+    if(!raw){raw=[];const cols=layoutCols||(n<=5?n:n<=10?Math.ceil(n/2):9),rows=Math.ceil(n/cols);for(let i=0;i<n;i++){const r=Math.floor(i/cols),inRow=r===rows-1?n-cols*(rows-1):cols,c=i%cols;raw.push([(c-(inRow-1)/2)*1.12,(r-(rows-1)/2)*1.12]);}}
     let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;for(const p of raw){minx=Math.min(minx,p[0]-.5);maxx=Math.max(maxx,p[0]+.5);miny=Math.min(miny,p[1]-.5);maxy=Math.max(maxy,p[1]+.5);}
-    const sc=Math.min(1.25,4.5/((maxx-minx)*CW),3.5/((maxy-miny)*(CL+.2))),cx=(minx+maxx)/2,cy=(miny+maxy)/2;
+    const sc=Math.min(1.25,3.75/((maxx-minx)*CW),(n>10?4.0:3.5)/((maxy-miny)*(CL+.2))),cx=(minx+maxx)/2,cy=(miny+maxy)/2;
     slots=raw.map((p,i)=>({x:(p[0]-cx)*CW*sc*1.06,z:2.05+(p[1]-cy)*(CL+.2)*sc,s:sc,cross:!!p[2]}));
-    slots.forEach((s,i)=>{const l=label(names&&names[i]||'');l.scale.setScalar(s.s);l.position.set(s.x,.004,s.z+(s.cross?CW:CL)*s.s/2+.17*s.s);labels.push(l);});}
+    slots.forEach((s,i)=>{if(n>10||!(names&&names[i]))return;const l=label(names[i]);l.userData.slot=i;l.scale.setScalar(s.s);l.position.set(s.x,.004,s.z+(s.cross?CW:CL)*s.s/2+.25*s.s);labels.push(l);});}
   function ribbonTarget(idx){const cnt=remaining().length,u=idx-scroll,x=u*.4;return {x,y:CT/2+.002+idx*.0021,z:-.55+x*x*.03,ry:-x*.07,vis:Math.abs(u)<11};}
   function setMode(m,info){mode=m;t0=now;info=info||{};
     if(m==='stack'){cards.forEach((c,i)=>{c.tx=0;c.tz=.2;c.ty=CT/2+i*CT;c.try_=0;c.trz=0;c.k=8;c.ts=1.25;});view(0,6.6,6.2,0,.2,.2);}
     else if(m==='wash'){let sd=11;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};cards.forEach((c,i)=>{const a=rnd()*6.283,r=Math.sqrt(rnd())*2.5;c.delay=i*.006;c.vx=0;c.vz=0;c.vr=0;c.ts=1.15;c.spread={x:Math.cos(a)*r*1.05,z:.3+Math.sin(a)*r*.8,ry:(rnd()-.5)*5};c.ty=CT/2+((i*31)%N)*.0022;});view(0,10.5,3.4,0,0,.3);hand=null;handPrev=null;lastTouch=now;}
     else if(m==='gather'){cards.forEach((c,i)=>{const j=(i*29)%N;c.stackIndex=j;c.delay=0;c.ts=1.25;});view(0,6.6,6.2,0,.2,.2);}
     else if(m==='cut'){view(0,6.2,6.6,-.6,.2,.2);}
-    else if(m==='ribbon'){layoutSlots(info.count||3,info.id,info.names);scroll=(N-1)/2;scrollV=0;const rem=remaining();rem.forEach((ci,idx)=>{const c=cards[ci];c.delay=idx*.014;c.ts=1.5;c.k=7;c.spreadAt=now+.35+idx*.014;});view(0,5.6,6.6,0,.1,1.0);}
+    else if(m==='ribbon'){layoutCols=info.cols||0;layoutSlots(info.count||3,info.id,info.names);scroll=(N-1)/2;scrollV=0;const rem=remaining();rem.forEach((ci,idx)=>{const c=cards[ci];c.delay=idx*.014;c.ts=1.5;c.k=7;c.spreadAt=now+.35+idx*.014;});view(0,5.6,6.6,0,.1,1.0);}
     else if(m==='reveal'){view(0,8.2,5.6,0,.1,2.05);labels.forEach(l=>{l.userData.show=1;});}
     start();}
   const ray=new T.Raycaster(),v2=new T.Vector2(),tmp=new T.Vector3(),plane=new T.Plane(new T.Vector3(0,1,0),0);
@@ -112,13 +113,15 @@ export function create(host,opts){
         c.scale=mix(c.scale,c.ts,.12);}
     }else{
       if(mode==='gather'){for(const c of cards){const j=c.stackIndex||0,loose=e<.75;c.tx=loose?(c.h-.5)*.5:0;c.tz=.2+(loose?((c.h*7)%1-.5)*.5:0);c.ty=CT/2+j*CT;c.try_=loose?(c.h-.5)*1.2:0;c.k=loose?5:11;}}
-      else if(mode==='cut'){for(const c of cards){const j=c.stackIndex||0,pile=j>=52?0:j>=26?1:2,inP=j-(2-pile)*26;
-          // 0～.7 秒上三分之一放左；.5～1.2 秒中間三分之一放更左；1.6 秒後反著疊回去（原本最下面的那疊變成最上面）
-          const px=pile===0?-1.15:pile===1?-2.3:0,st=pile===0?.05:pile===1?.55:9,back=pile===1?1.75:pile===0?2.25:9,nj=pile===2?inP+52:pile===0?inP+26:inP;
-          if(e<st){c.tx=0;c.ty=CT/2+j*CT;}else if(e<back){const u=ease((e-st)/.6);c.tx=px*u;c.ty=mix(CT/2+j*CT,CT/2+inP*CT,u)+Math.sin(u*Math.PI)*.55;}
-          else{const u=ease((e-back)/.6);c.tx=px*(1-u);c.ty=mix(CT/2+inP*CT,CT/2+(pile===1?inP:inP+26)*CT,u)+Math.sin(u*Math.PI)*.6;}
-          if(pile===2&&e>1.75){const u=ease((e-1.75)/.5);c.ty=CT/2+mix(j,inP+52,u)*CT+Math.sin(u*Math.PI)*.0;}
-          if(e>2.9){c.stackFinal=pile===1?inP:pile===0?inP+26:inP+52;c.ty=CT/2+c.stackFinal*CT;c.tx=0;}
+      else if(mode==='cut'){for(const c of cards){const j=c.stackIndex||0,pile=j>=2*third?0:j>=third?1:2,inP=j-(pile===0?2*third:pile===1?third:0),fin=pile===1?inP:pile===0?inP+third:inP+(N-third);
+          // 上面那疊抬起放左；中間那疊再放更左；然後反著疊回去（原本最下面的那疊變成最上面）。牌抬起來走弧線，不互相穿過。
+          const px=pile===0?-1.15:pile===1?-2.3:0,st=pile===0?.05:pile===1?.6:9,back=pile===1?1.75:pile===0?2.3:9;
+          if(pile===2){const u=ease((e-1.75)/.55);c.tx=e>1.75?mix(0,-2.3,u):0;c.ty=CT/2+(e>1.75?mix(j,inP+third,u):j)*CT+(e>1.75?Math.sin(u*Math.PI)*.6:0);if(e>2.35){const w=ease((e-2.35)/.55);c.tx=mix(-2.3,0,w);c.ty=CT/2+mix(inP+third,fin,w)*CT+Math.sin(w*Math.PI)*.6;}}
+          else if(e<st){c.tx=0;c.ty=CT/2+j*CT;}
+          else if(e<back){const u=ease((e-st)/.6);c.tx=px*u;c.ty=mix(CT/2+j*CT,CT/2+inP*CT,u)+Math.sin(u*Math.PI)*.55;}
+          else if(pile===0){const u=ease((e-back)/.55);c.tx=mix(px,-2.3,u);c.ty=CT/2+mix(inP,inP+third,u)*CT+Math.sin(u*Math.PI)*.6;if(e>2.9){const w=ease((e-2.9)/.55);c.tx=mix(-2.3,0,w);c.ty=CT/2+mix(inP+third,fin,w)*CT+Math.sin(w*Math.PI)*.6;}}
+          else{c.tx=px;c.ty=CT/2+inP*CT;if(e>2.9){const w=ease((e-2.9)/.55);c.tx=mix(px,0,w);c.ty=CT/2+inP*CT+Math.sin(w*Math.PI)*.5;}}
+          if(e>3.5){c.tx=0;c.ty=CT/2+fin*CT;}
           c.tz=.2;c.try_=0;c.k=16;}}
       else if(mode==='ribbon'||mode==='reveal'){scroll+=scrollV*dt;scrollV*=Math.pow(.02,dt);const rem=remaining();scroll=clamp(scroll,3,Math.max(3,rem.length-4));
         rem.forEach((ci,idx)=>{const c=cards[ci],p=ribbonTarget(idx);if(c.spreadAt&&now<c.spreadAt){c.tx=-3.2;c.tz=-.35;c.ty=CT/2+(rem.length-idx)*CT;c.try_=.5;c.m.visible=true;return;}c.spreadAt=0;c.lift=mix(c.lift,ci===hover?1:0,1-Math.pow(.0005,dt));c.tx=p.x;c.ty=p.y+c.lift*.14;c.tz=p.z+c.lift*.3;c.try_=p.ry;c.m.visible=p.vis;c.k=8;});}
@@ -148,7 +151,7 @@ export function create(host,opts){
     remainingCount(){return remaining().length;},
     // 選中的牌先往使用者這邊抽出來，再沿弧線放到牌陣上它的位置（牌背朝上）
     take(pos,slot,cardIndex){const rem=remaining();const ci=cardIndex!=null&&cards[cardIndex]&&cards[cardIndex].picked<0?cardIndex:rem[clamp(pos,0,rem.length-1)|0];const c=cards[ci],s=slots[slot]||{x:0,z:2,s:1};c.picked=slot;c.lift=0;c.m.visible=true;c.delay=0;c.ts=s.s;c.try_=s.cross?Math.PI/2:0;c.k=9;
-      const ox=c.x,oz=c.z;c.x=ox;c.z=oz;arcTo(c,ox,c.y+.05,oz+.75,.08,.22);setTimeout(()=>{if(disposed)return;c.delay=0;arcTo(c,s.x,CT/2+.002+(s.cross?CT*1.5:0),s.z,.75,.62);const l=labels[slot];if(l)l.userData.show=1;},230);return ci;},
+      const ox=c.x,oz=c.z;c.x=ox;c.z=oz;arcTo(c,ox,c.y+.05,oz+.75,.08,.22);setTimeout(()=>{if(disposed)return;c.delay=0;arcTo(c,s.x,CT/2+.002+(s.cross?CT*1.5:0),s.z,.75,.62);const l=labels.find(x=>x.userData.slot===slot);if(l)l.userData.show=1;},230);return ci;},
     // 翻開：掀起、沿長邊翻面、落下；逆位的牌頭朝使用者
     reveal(slot,url,upright,done){const c=cards.find(x=>x.picked===slot),s=slots[slot]||{};if(!c){if(done)done();return;}
       const fin=tex=>{if(disposed)return;if(tex){tex.colorSpace=T.SRGBColorSpace;tex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());keep(tex);const mats=c.m.material.slice();mats[1]=keep(new T.MeshStandardMaterial({map:tex,roughness:.58,metalness:.02}));c.m.material=mats;}

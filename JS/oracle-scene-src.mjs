@@ -61,17 +61,17 @@ export function create(host){
   mesh(new T.LatheGeometry(prof,44),std(0xffffff,.5,.12,{map:bandTex,side:T.DoubleSide}),tube);
   for(const y of[.14,1.05,2.02]){const r=mesh(new T.TorusGeometry(.62,.035,10,44),std(0xd0a04a,.28,.9),tube);r.rotation.x=Math.PI/2;r.position.y=y;}
   const tubeShadow=blob(2.1,2.1);
-  const N=38,stickGeo=keep(new T.BoxGeometry(.05,2.5,.018)),tipGeo=keep(new T.BoxGeometry(.056,.3,.022));
+  const N=38,stickGeo=keep(new T.BoxGeometry(.05,2.5,.018)),lotGeo=keep(new T.BoxGeometry(.12,2.5,.02)),tipGeo=keep(new T.BoxGeometry(.056,.3,.022));
   const sticks=new T.InstancedMesh(stickGeo,std(0xb98a4e,.62,.02),N),tips=new T.InstancedMesh(tipGeo,std(0xd9ad52,.3,.85),N);tube.add(sticks,tips);
   const sd=[],dummy=new T.Object3D();for(let i=0;i<N;i++){const a=i*2.399963,r=.07+.4*Math.sqrt((i+.5)/N);sd.push({x:Math.cos(a)*r,z:Math.sin(a)*r,tx:(Math.sin(i*1.7))*.09,tz:(Math.cos(i*2.3))*.09,ry:i*.9,h:(i%5)*.05,ph:i*1.3});}
   const layoutSticks=(jit,t)=>{for(let i=0;i<N;i++){const d=sd[i],j=jit?Math.sin(t*24+d.ph)*.07*jit:0;dummy.position.set(d.x,1.42+d.h+j,d.z);dummy.rotation.set(d.tz+(jit?Math.sin(t*19+d.ph)*.03*jit:0),d.ry,d.tx);dummy.updateMatrix();sticks.setMatrixAt(i,dummy.matrix);dummy.position.y+=1.1;dummy.updateMatrix();tips.setMatrixAt(i,dummy.matrix);}sticks.instanceMatrix.needsUpdate=true;tips.instanceMatrix.needsUpdate=true;};
   layoutSticks(0,0);
   // 被抽出來的那一支：籤身、金頭、寫著籤號的一面
-  const lot=new T.Group();scene.add(lot);mesh(stickGeo,std(0xc79a5a,.55,.02),lot);const lotTip=mesh(tipGeo,std(0xe3b95c,.26,.9),lot);lotTip.position.y=1.1;
+  const lot=new T.Group();scene.add(lot);mesh(lotGeo,std(0xd8b06a,.5,.02),lot);const lotTip=mesh(tipGeo,std(0xe3b95c,.26,.9),lot);lotTip.position.y=1.1;
   const lc=document.createElement('canvas');lc.width=64;lc.height=512;const lotTex=keep(new T.CanvasTexture(lc));lotTex.colorSpace=T.SRGBColorSpace;
-  const lotFace=mesh(new T.PlaneGeometry(.047,1.9),keep(new T.MeshBasicMaterial({map:lotTex,transparent:true})),lot);lotFace.position.set(0,-.05,.0096);
+  const lotFace=mesh(new T.PlaneGeometry(.11,2.3),keep(new T.MeshBasicMaterial({map:lotTex,transparent:true})),lot);lotFace.position.set(0,-.05,.0106);lotTip.scale.set(2.3,1,1.1);
   const lotShadow=blob(.5,2.7);lot.visible=false;lotShadow.visible=false;
-  const writeLot=text=>{const g=lc.getContext('2d');g.clearRect(0,0,64,512);g.fillStyle='#5a1208';g.font='600 46px "Noto Serif TC",serif';g.textAlign='center';g.textBaseline='middle';const ch=String(text||'').split('');const step=Math.min(64,440/Math.max(1,ch.length));ch.forEach((c,i)=>g.fillText(c,32,256-(ch.length-1)*step/2+i*step));lotTex.needsUpdate=true;};
+  const writeLot=text=>{const g=lc.getContext('2d');g.clearRect(0,0,64,512);g.fillStyle='#5a1208';g.font='700 54px "Noto Serif TC",serif';g.textAlign='center';g.textBaseline='middle';const ch=String(text||'').split('');const step=Math.min(64,440/Math.max(1,ch.length));ch.forEach((c,i)=>g.fillText(c,32,256-(ch.length-1)*step/2+i*step));lotTex.needsUpdate=true;};
 
   // ── 金色火花（聖筊、出籤、三聖筊時才出現）──
   const PN=140,pPos=new Float32Array(PN*3),pVel=new Float32Array(PN*3),pLife=new Float32Array(PN);
@@ -84,7 +84,7 @@ export function create(host){
   const cam={pos:new T.Vector3(0,3.4,8.6),look:new T.Vector3(0,.6,0)},camTo={pos:new T.Vector3(0,3.4,8.6),look:new T.Vector3(0,.6,0)};
   const view=(px,py,pz,lx,ly,lz)=>{camTo.pos.set(px,py,pz);camTo.look.set(lx,ly,lz);};
   const J=jiao.map((g,i)=>({g,sx:i?1:-1,p:new T.Vector3(i?.75:-.75,restY(false),1.3),q:restQuat(false,i?.5:-.4),from:new T.Vector3(),w:new T.Vector3(),mode:'rest',flatUp:false,land:new T.Vector3(),q0:new T.Quaternion(),q1:new T.Quaternion(),tl:0}));
-  const tubeHome=new T.Vector3(0,0,-.3),tubeAside=new T.Vector3(-2.5,0,-1.3);
+  const tubeHome=new T.Vector3(0,0,-.3),tubeAside=new T.Vector3(-1.55,0,-1.25);
   const st={tube:tubeHome.clone(),tubeTo:tubeHome.clone(),tubeShow:1,jiaoShow:0,lot:'hidden',lotT:0};
   function setPhase(p,info){
     phase=p;t0=now;info=info||{};
@@ -94,12 +94,12 @@ export function create(host){
       const r=info.result;setTimeout(()=>{shake=1;if(r==='holy'){holyPulse=1;burst(0,.2,1.2,90,3.4);}else if(r==='dark'){dim=1;}else if(r==='laugh'){rock=1;}},430);}
     else if(p==='shake'){st.tubeTo.copy(tubeHome);st.jiaoShow=0;st.lot='hidden';view(0,3.0,6.6,0,.5,-.2);}
     else if(p==='rise'){st.tubeTo.copy(tubeHome);st.jiaoShow=0;st.lot='rise';st.lotT=now;writeLot(info.label);view(0,3.3,6.0,0,1.3,-.1);setTimeout(()=>burst(0,3.2,-.2,46,2.2),1050);}
-    else if(p==='drawn'){st.tubeTo.copy(tubeAside);st.jiaoShow=1;if(st.lot!=='table'){st.lot='fly';st.lotT=now;}if(info.label)writeLot(info.label);J.forEach((j,i)=>{if(j.mode!=='rest'){j.mode='rest';}j.p.set(i?1.75:-1.75,restY(j.flatUp),1.75);j.q.copy(restQuat(j.flatUp,i?.6:-.5));});view(0,4.6,5.6,0,-.7,.9);}
+    else if(p==='drawn'){st.tubeTo.copy(tubeAside);st.jiaoShow=1;if(st.lot!=='table'){st.lot='fly';st.lotT=now;}if(info.label)writeLot(info.label);J.forEach((j,i)=>{if(j.mode!=='rest'){j.mode='rest';}j.p.set(i?1.2:-1.2,restY(j.flatUp),1.9);j.q.copy(restQuat(j.flatUp,i?.6:-.5));});view(0,4.6,5.6,0,-.7,.9);}
     else if(p==='finale'){holyPulse=1.8;burst(0,.3,1,140,4.6);view(0,5.2,6.8,0,.6,.6);}
     else if(p==='rest'){view(0,3.4,8.6,0,.6,0);}
     start();
   }
-  function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;camera.fov=W/H<.7?44:36;frameK=Math.max(1,Math.min(2.6,1.02/(W/H)));camera.updateProjectionMatrix();}
+  function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;camera.fov=W/H<.7?44:36;frameK=Math.max(1,Math.min(2.2,.78/(W/H)));camera.updateProjectionMatrix();}
   const tmp=new T.Vector3(),qa=new T.Quaternion(),e3=new T.Euler();
   function frame(ms){
     raf=0;if(disposed||!running)return;const t=ms/1000,dt=Math.min(.05,Math.max(.001,t-(now||t)));now=t;const el=t-t0;

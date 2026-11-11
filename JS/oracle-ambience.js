@@ -13,7 +13,7 @@
   css.textContent=[
     /* 靜態場景底：一張圖加一層壓暗，不做任何濾鏡、混合或持續動畫 */
     '#oracle-screen{background:#0d0503 url('+BG+') center/cover no-repeat!important}',
-    '#oracle-screen .orc-temple-overlay{display:block!important;position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(8,3,1,.72) 0%,rgba(8,3,1,.28) 26%,rgba(8,3,1,.4) 60%,rgba(6,2,1,.9) 100%)!important;pointer-events:none}',
+    '#oracle-screen .orc-temple-overlay{display:block!important;position:fixed;inset:0;z-index:-2;background:linear-gradient(180deg,rgba(8,3,1,.6) 0%,rgba(8,3,1,.12) 24%,rgba(8,3,1,.3) 58%,rgba(6,2,1,.9) 100%)!important;pointer-events:none}',
     '#oracle-screen[data-oracle-phase="intro"] .orc-temple-overlay,#oracle-screen[data-oracle-phase="guide"] .orc-temple-overlay,#oracle-screen[data-oracle-phase="poem"] .orc-temple-overlay{background:rgba(8,5,8,.9)!important}',
     '#oracle-screen .orc-dragon-phase{background-image:none!important;background-color:transparent!important}',
     '#oracle-screen .orc-dragon-overlay,#oracle-screen .orc-v63-ritual-overlay{background:transparent!important}',
