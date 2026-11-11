@@ -10,9 +10,11 @@
   var VER=(function(){try{var s=document.currentScript&&document.currentScript.src||'';var m=s.match(/[?&]v=([^&]+)/);return m?m[1]:'1';}catch(_){return '1';}})();
   var css=document.createElement('style');css.id='jy-tar3d-style';
   css.textContent=[
-    '.tar3d{position:fixed;inset:0;z-index:2147483000;background:#05070f;color:#f1e8d2;font-family:var(--f-display,"Noto Serif TC",serif);opacity:0;transition:opacity .45s;-webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:contain}',
+    '.tar3d{position:fixed;inset:0;z-index:2147483000;background:#05070f url(assets/ui/ritual-moon-sanctum.webp) center top/cover no-repeat;color:#f1e8d2;font-family:var(--f-display,"Noto Serif TC",serif);opacity:0;transition:opacity .45s;-webkit-tap-highlight-color:transparent;touch-action:none;overscroll-behavior:contain}',
     '.tar3d.on{opacity:1}',
+    '.tar3d::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,7,15,.5) 0%,rgba(5,7,15,.18) 22%,rgba(5,7,15,.55) 46%,rgba(5,7,15,.9) 100%);pointer-events:none}',
     '.tar3d-host{position:absolute;inset:0}.tar3d-canvas{display:block;width:100%;height:100%;touch-action:none}',
+    '.tar3d-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 85% at 50% 55%,rgba(0,0,0,0) 52%,rgba(2,3,8,.62) 100%)}',
     '.tar3d-top{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:linear-gradient(180deg,rgba(5,7,15,.86),rgba(5,7,15,0));pointer-events:none}',
     '.tar3d-top button{pointer-events:auto;background:rgba(18,24,44,.8);border:1px solid rgba(214,178,96,.4);color:#f1e8d2;border-radius:999px;padding:8px 14px;font-size:.86rem}',
     '.tar3d-title{font-size:.82rem;letter-spacing:.3em;color:#d6b260}',
@@ -35,7 +37,7 @@
 
   function open(opts){
     var layer=document.createElement('div');layer.className='tar3d';layer.setAttribute('role','dialog');layer.setAttribute('aria-label','塔羅牌桌');
-    layer.innerHTML='<div class="tar3d-host"></div><div class="tar3d-top"><button type="button" class="tar3d-back">← 返回</button><span class="tar3d-title">月下牌桌</span><span style="width:64px"></span></div><div class="tar3d-hud"><div class="tar3d-line"></div><div class="tar3d-sub"></div><div class="tar3d-dots"></div><button type="button" class="tar3d-btn"></button></div>';
+    layer.innerHTML='<div class="tar3d-host"></div><div class="tar3d-vig"></div><div class="tar3d-top"><button type="button" class="tar3d-back">← 返回</button><span class="tar3d-title">月下牌桌</span><span style="width:64px"></span></div><div class="tar3d-hud"><div class="tar3d-line"></div><div class="tar3d-sub"></div><div class="tar3d-dots"></div><button type="button" class="tar3d-btn"></button></div>';
     document.body.appendChild(layer);
     var $=function(s){return layer.querySelector(s);},line=$('.tar3d-line'),sub=$('.tar3d-sub'),btn=$('.tar3d-btn'),dots=$('.tar3d-dots');
     var S={layer:layer,scene:null,opts:opts,shuffled:false,busy:false,count:spreadCount(),closed:false,act:null,timers:[]};
@@ -57,13 +59,14 @@
     window.addEventListener('deviceorientation',function(e){if(S.closed||!S.scene||e.gamma==null)return;S.scene.tilt(e.gamma/30,((e.beta||45)-45)/34);});
 
     // 一、牌疊在桌上，等他伸手
-    S.scene.mode('stack');say('靜下來，把問題放在心裡。','準備好了，就把牌洗開。');dots.innerHTML='';button('把牌洗開',startWash);
-    function startWash(){S.scene.mode('wash');buzz(20);say('用手指在桌上畫圈，把牌攪開。','洗到你覺得夠了為止。');button('洗好了',finishWash,true);later(function(){btn.disabled=false;},1500);later(finishWash,12000);}
-    function finishWash(){if(S.scene.state!=='wash')return;button(null);say('把牌收攏。','');S.scene.mode('gather');buzz(15);
-      later(function(){say('切成三疊，再疊回去。','');S.scene.mode('cut');buzz([15,90,15,90,15]);},1100);
-      later(function(){S.shuffled=true;try{if(opts&&typeof opts.onComplete==='function')opts.onComplete();}catch(e){}later(spread,250);},3050);}
+    S.scene.mode('stack');say('靜下來，把問題放在心裡。','準備好了，就把牌在桌上攤開來洗。');dots.innerHTML='';button('把牌攤開',startWash);
+    function startWash(){S.scene.mode('wash');buzz(20);say('手放上去，把牌推開、攪亂。','你推到哪裡，哪裡的牌就會動；洗到你覺得夠了為止。');button('洗好了',finishWash,true);later(function(){btn.disabled=false;},2200);later(finishWash,20000);}
+    function finishWash(){if(S.scene.state!=='wash')return;button(null);say('把牌攏回來，敲齊。','');S.scene.mode('gather');buzz(15);
+      later(function(){say('切牌：分成三疊，再反著疊回去。','');S.scene.mode('cut');buzz([15,480,15,900,20,400,20]);},1500);
+      later(function(){S.shuffled=true;try{if(opts&&typeof opts.onComplete==='function')opts.onComplete();}catch(e){}later(spread,200);},4800);}
     // 二、展成一道弧，選牌
-    function spread(){S.count=spreadCount();S.scene.mode('ribbon',{count:S.count});paintDots();say('左右滑動看牌，輕點你有感覺的那一張。','要選 '+S.count+' 張');button('替我抽完',quick);buzz(25);
+    function spread(){S.count=spreadCount();var def=null,names=[];try{def=typeof getCurrentSpreadDef==='function'?getCurrentSpreadDef():null;names=(def&&def.positions||[]).map(function(p){return p&&p.name||'';});}catch(_){}
+      S.scene.mode('ribbon',{count:S.count,id:def&&def.id,names:names});S.names=names;paintDots();say('牌一路推開了。左右滑動，輕點你有感覺的那一張。','依序放到牌陣上，要選 '+S.count+' 張');button('替我抽完',quick);buzz(25);
       if(drawn().length>=S.count)later(revealAll,600);}
     function domPick(pos,total,done){
       var list=deckCards(),before=drawn().length;if(!list.length)return done(false);
@@ -74,17 +77,17 @@
       if(S.busy||S.closed||!S.shuffled||drawn().length>=S.count)return;S.busy=true;var total=S.scene.remainingCount();
       domPick(pos,total,function(ok,slot){
         if(!ok){S.busy=false;say('這一張沒有選到，再點一次。','要選 '+S.count+' 張');return;}
-        S.scene.take(pos,slot,ci);buzz(22);paintDots();var k=drawn().length;say(k<S.count?'再選下一張。':'牌選好了。','已選 '+k+' / '+S.count);
+        S.scene.take(pos,slot,ci);buzz(22);paintDots();var k=drawn().length,nm=(S.names&&S.names[slot])||'';say(k<S.count?'再選下一張。':'牌選好了。',(nm?'這一張放在「'+nm+'」　':'')+'已選 '+k+' / '+S.count);
         later(function(){S.busy=false;if(drawn().length>=S.count)revealAll();},520);
       });
     }
     function quick(){if(S.busy||S.closed)return;button(null);(function next(){if(S.closed)return;if(drawn().length>=S.count)return;var total=S.scene.remainingCount(),pos=Math.floor(((Date.now()%997)/997)*total);S.busy=false;onPick(pos,null);later(next,760);})();}
     // 三、逐張翻開
     var revealing=false;
-    function revealAll(){if(revealing||S.closed)return;revealing=true;button(null);S.scene.mode('reveal');S.scene.focusSlots();say('牌位已滿。','一張一張翻開。');
+    function revealAll(){if(revealing||S.closed)return;revealing=true;button(null);S.scene.mode('reveal');say('牌陣擺好了。','照順序，一張一張翻開。');
       var d=drawn(),i=0;(function step(){if(S.closed)return;if(i>=S.count||i>=d.length){say('牌都翻開了。','');button('看完整牌陣與解讀',close);return;}
         var c=d[i],url='';try{url=typeof getTarotCardImage==='function'?getTarotCardImage(c):'';}catch(_){}
-        var idx=i;later(function(){say((c&&c.n)||'',(c&&c.isUp===false)?'逆位':'正位');buzz(c&&c.isUp===false?[20,40,20]:30);},420);
+        var idx=i;later(function(){say((c&&c.n)||'',((S.names&&S.names[idx])?S.names[idx]+'　':'')+((c&&c.isUp===false)?'逆位':'正位'));buzz(c&&c.isUp===false?[20,40,20]:30);},420);
         S.scene.reveal(i,url,!(c&&c.isUp===false),function(){i=idx+1;later(step,620);});})();}
     return true;
   }
