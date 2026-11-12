@@ -18,6 +18,9 @@
     '.pil3d-title{font-size:.82rem;letter-spacing:.3em;color:#d6b260}',
     '.pil3d-hud{position:absolute;left:0;right:0;bottom:0;padding:30px 18px calc(18px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(5,7,15,0),rgba(5,7,15,.92) 48%);text-align:center;pointer-events:none}',
     '.pil3d-line{font-size:1.04rem;line-height:1.6;min-height:1.6em;color:#f4e7bd}.pil3d-sub{font-size:.84rem;color:rgba(241,232,210,.74);margin-top:4px;min-height:1.3em}',
+    /* 八字與合盤的結果頁很長（合盤約一萬二千像素），捲動時出現整塊空白與卡頓：毛玻璃在 Android 上每一格都要重算，改成不用；畫面外的區塊不繪製。 */
+    '#bzs-screen *,#bzx-screen *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}',
+    '#bzs-screen details,#bzs-screen section,#bzs-screen article,#bzs-screen table,#bzx-screen details,#bzx-screen section,#bzx-screen article{content-visibility:auto;contain-intrinsic-size:auto 420px}',
     '.pil3d-btn{pointer-events:auto;display:block;width:100%;max-width:420px;margin:14px auto 0;padding:14px;border-radius:14px;border:0;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;font-size:1rem;font-weight:700;letter-spacing:.06em}'
   ].join('');
   document.head.appendChild(css);
@@ -26,10 +29,10 @@
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   var loading=false,failed=false,origPlay=null,active=null,NAMES=['年柱','月柱','日柱','時柱'],MEAN=['祖上與早年','父母與成長的環境','你自己與伴侶','子女與晚年'];
   function load(){if(window.JYPillarSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/pillar-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
-  function open(opts,settle){
-    opts=opts||{};var vals=(opts.sealValues||[]).slice(0,4);
-    var layer=document.createElement('div');layer.className='pil3d';layer.setAttribute('role','dialog');layer.setAttribute('aria-label','四柱殿');
-    layer.innerHTML='<div class="pil3d-host"></div><div class="pil3d-vig"></div><div class="pil3d-top"><button type="button" class="pil3d-back">← 返回</button><span class="pil3d-title">四柱殿</span><span style="width:64px"></span></div><div class="pil3d-hud"><div class="pil3d-line"></div><div class="pil3d-sub"></div><button type="button" class="pil3d-btn"></button></div>';
+  function open(opts,settle,kind){
+    opts=opts||{};var pair=kind==='compat'&&opts.pairPillars&&opts.pairPillars.length===2,vals=(opts.sealValues||[]).slice(0,4),groups=pair?[{name:'甲方',pillars:opts.pairPillars[0]},{name:'乙方',pillars:opts.pairPillars[1]}]:[{name:'',pillars:vals}],total=pair?8:4;
+    var layer=document.createElement('div');layer.className='pil3d';layer.setAttribute('role','dialog');layer.setAttribute('aria-label',pair?'雙盤殿':'四柱殿');if(pair)layer.style.backgroundImage='url(assets/ui/celestial-atlas.webp)';
+    layer.innerHTML='<div class="pil3d-host"></div><div class="pil3d-vig"></div><div class="pil3d-top"><button type="button" class="pil3d-back">← 返回</button><span class="pil3d-title">'+(pair?'雙盤殿':'四柱殿')+'</span><span style="width:64px"></span></div><div class="pil3d-hud"><div class="pil3d-line"></div><div class="pil3d-sub"></div><button type="button" class="pil3d-btn"></button></div>';
     document.body.appendChild(layer);
     var $=function(s){return layer.querySelector(s);},line=$('.pil3d-line'),sub=$('.pil3d-sub'),btn=$('.pil3d-btn'),S={closed:false,done:false,scene:null,timers:[]};
     function later(fn,ms){var t=setTimeout(function(){if(!S.closed)fn();},ms);S.timers.push(t);}
@@ -41,21 +44,21 @@
       settle({finished:!!finished});
     }
     $('.pil3d-back').addEventListener('click',function(){close(false);});
-    try{S.scene=window.JYPillarSceneModule.create($('.pil3d-host'),{pillars:vals,
-      onLight:function(i,n){buzz([25,40,60]);snd('wood',.8);snd('stems',.5,.25);var v=vals[i]||'';say(NAMES[i]+(v&&v!=='未定'?'：'+v:''),MEAN[i]+(n<4?'　還有 '+(4-n)+' 根':''));if(n>=4){btn.style.display='none';}},
-      onAllLit:function(){S.done=true;buzz([40,60,40,60,120]);snd('bamboo',.6);later(function(){say('四柱立齊了。','年、月、日、時，合起來就是你的命盤。');btn.style.display='';btn.textContent='看我的命盤';btn.onclick=function(){close(true);};},1500);}});
-      S.scene.onLost(function(){failed=true;S.closed=true;S.timers.forEach(clearTimeout);try{S.scene.dispose();}catch(_){}if(layer.parentNode)layer.parentNode.removeChild(layer);if(active===S)active=null;var r=origPlay.call(window.JYRitual,'bazi',opts);if(r&&typeof r.then==='function')r.then(settle,function(){settle({finished:false});});else settle({finished:true});});}
+    try{S.scene=window.JYPillarSceneModule.create($('.pil3d-host'),{groups:groups,
+      onLight:function(i,n,p){buzz([25,40,60]);snd('wood',.8);snd('stems',.5,.25);p=p||{};var k=p.pi==null?i%4:p.pi,v=p.val||'',who=pair?(p.gi?'乙方 ':'甲方 '):'';say(who+NAMES[k]+(v&&v!=='未定'?'：'+v:''),MEAN[k]+(n<total?'　還有 '+(total-n)+' 根':''));if(n>=total){btn.style.display='none';}},
+      onAllLit:function(){S.done=true;buzz([40,60,40,60,120]);snd('bamboo',.6);later(function(){if(pair)say('兩個人的四柱都立起來了。','同一根柱連起來看：日柱對日柱，是你們兩個人本身。');else say('四柱立齊了。','年、月、日、時，合起來就是你的命盤。');btn.style.display='';btn.textContent=pair?'看我們的合盤':'看我的命盤';btn.onclick=function(){close(true);};},1500);}});
+      S.scene.onLost(function(){failed=true;S.closed=true;S.timers.forEach(clearTimeout);try{S.scene.dispose();}catch(_){}if(layer.parentNode)layer.parentNode.removeChild(layer);if(active===S)active=null;var r=origPlay.call(window.JYRitual,kind||'bazi',opts);if(r&&r.finished&&typeof r.finished.then==='function')r.finished.then(function(v){settle({finished:!!v});},function(){settle({finished:false});});else settle({finished:true});});}
     catch(e){S.closed=true;if(layer.parentNode)layer.parentNode.removeChild(layer);return false;}
     active=S;requestAnimationFrame(function(){layer.classList.add('on');});
     window.addEventListener('deviceorientation',function(e){if(S.closed||!S.scene||e.gamma==null)return;S.scene.tilt(e.gamma/30,((e.beta||45)-45)/34);});
-    say('四根柱還暗著。','一根一根點它，把你的年、月、日、時立起來。');btn.textContent='替我點亮';btn.onclick=function(){btn.style.display='none';(function next(){if(S.closed||S.done)return;var i=S.scene.next();if(i>=0)later(next,1250);})();};
+    if(pair)say('前排是甲方，後排是乙方。','一根一根點，把兩個人的年、月、日、時立起來。');else say('四根柱還暗著。','一根一根點它，把你的年、月、日、時立起來。');btn.textContent='替我點亮';btn.onclick=function(){btn.style.display='none';(function next(){if(S.closed||S.done)return;var i=S.scene.next();if(i>=0)later(next,pair?900:1250);})();};
     return true;
   }
   function patch(){
     if(origPlay||!window.JYRitual||typeof window.JYRitual.play!=='function')return;
     origPlay=window.JYRitual.play;
     window.JYRitual.play=function(kind,opts){
-      if(kind==='bazi'&&window.JYPillarSceneModule&&!failed&&!active){var settle,p=new Promise(function(res){settle=res;});if(open(opts,settle))return p;}
+      if((kind==='bazi'||(kind==='compat'&&opts&&opts.pairPillars))&&window.JYPillarSceneModule&&!failed&&!active){/* 原本的 play 回傳一個帶 finished（Promise<布林>）的物件，呼叫端寫的是 await play(...).finished，所以這裡回傳同樣的形狀。 */var settle,fin=new Promise(function(res){settle=function(v){res(!!(v&&v.finished));};});if(open(opts,settle,kind))return {finished:fin};}
       return origPlay.apply(this,arguments);
     };
   }

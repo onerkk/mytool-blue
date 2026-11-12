@@ -240,7 +240,7 @@
       var za=JYRelationshipCore.calculatePerson(inputA,referenceDate),zb=JYRelationshipCore.calculatePerson(inputB,referenceDate);
       var pair=JYRelationshipCore.createZiweiPair(za,zb,{scenarioId:state.scenario,question:q});
       var prompt=JYRelationshipCore.buildPrompt(comp,pair,q);
-      if(window.JYRitual&&!(await window.JYRitual.play('compat',{question:q,sealValues:[A.chart.pillars.day,B.chart.pillars.day].map(function(p){return (p.gan||'')+(p.zhi||'');})}).finished))return;
+      if(window.JYRitual&&!(await window.JYRitual.play('compat',{question:q,sealValues:[A.chart.pillars.day,B.chart.pillars.day].map(function(p){return (p.gan||'')+(p.zhi||'');}),pairPillars:[A,B].map(function(P){return ['year','month','day','hour'].map(function(k){var p=P.chart.pillars[k]||{};return k==='hour'&&P.meta&&P.meta.unknown?'未定':(p.gan||'')+(p.zhi||'');});})}).finished))return;
       if(epoch!==castEpoch)return;
       state.compat={chartA:A.chart,chartB:B.chart,metaA:A.meta,metaB:B.meta,comp:comp,ziwei:pair};state.prompt=prompt;
       state.exportData={kind:'bazi-ziwei-compatibility',version:JYRelationshipCore.version,timeDataVersion:TIME_DATA_VERSION,birthTimeAudit:pair.birthTimeAudit,referenceDate:referenceDate,metaA:A.meta,metaB:B.meta,bazi:{birthFacts:{personA:BaziSuiteCore.verifiedBirthFacts(A.chart,A.meta),personB:BaziSuiteCore.verifiedBirthFacts(B.chart,B.meta)},personA:BaziSuiteCore.buildChartDataBlock(A.chart,A.meta),personB:BaziSuiteCore.buildChartDataBlock(B.chart,B.meta),compatibility:comp},ziwei:pair,prompt:prompt};
