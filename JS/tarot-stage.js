@@ -42,8 +42,8 @@
   function snd(key,vol,delay){try{if(window.JYFoley&&window.JYFoley.play)window.JYFoley.play(key,{scope:'table3d',volume:vol==null?.7:vol,delay:delay||0,throttle:60});}catch(_){}}
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   var loading=false,failed=false,origPlay=null,stage=null;
-  // 開鑰之法接牌桌的程式已寫好，但 2026-11-12 的自動測試沒能走到它的洗牌那一步（卡在選代表牌），沒有驗證過就不啟用，以免像八字那次一樣把流程弄斷。驗證後改成 true。
-  var OOTK_ON_TABLE=false;
+  // 開鑰之法接牌桌：2026-11-12 已用瀏覽器走完（選代表牌→確認朝向→牌桌洗牌切牌→「開始五輪」→原本的五輪畫面出現），啟用。
+  var OOTK_ON_TABLE=true;
   function load(){if(window.JYTarotSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/tarot-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
 
   // ── 兩種牌各自的接法 ──

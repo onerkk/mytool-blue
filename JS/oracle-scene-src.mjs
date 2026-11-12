@@ -46,6 +46,13 @@ export function create(host){
   const glow=mesh(new T.PlaneGeometry(1,1),keep(new T.MeshBasicMaterial({map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:0})));glow.rotation.x=-Math.PI/2;glow.position.set(0,.02,1);
   for(const f of flames){const g2=mesh(new T.PlaneGeometry(1.5,1.5),keep(new T.MeshBasicMaterial({map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.55})));g2.position.copy(f.position);f.userData.halo=g2;}
 
+  // ── 香爐：黃銅爐身、三炷香（香頭有火點）、往上飄的煙。稟告時鏡頭從遠處推近到這裡。
+  const censer=new T.Group();censer.position.set(0,0,-1.75);scene.add(censer);
+  {const prof=[[0,0],[.34,0],[.4,.06],[.3,.14],[.46,.3],[.56,.52],[.6,.6],[.52,.62],[.46,.56],[0,.5]].map(p=>new T.Vector2(p[0],p[1]));const bowl=mesh(new T.LatheGeometry(prof,36),std(0xb38a3e,.34,.9),censer);for(const a of[0,2.094,4.189]){const leg=mesh(new T.SphereGeometry(.08,10,8),std(0xb38a3e,.34,.9),censer);leg.position.set(Math.cos(a)*.3,.02,Math.sin(a)*.3);}
+    const ash=mesh(new T.CircleGeometry(.47,28),std(0x8d8478,.95,0),censer);ash.rotation.x=-Math.PI/2;ash.position.y=.565;}
+  const embers=[];for(const dx of[-.14,0,.14]){const st=mesh(new T.CylinderGeometry(.012,.012,1.15,6),std(0x7a3b22,.8,0),censer);st.position.set(dx,1.12,0);st.rotation.z=-dx*.5;const e=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xff7a3a,transparent:true,depthWrite:false,blending:T.AdditiveBlending})));e.scale.setScalar(.2);e.position.set(dx-dx*.28,1.7,0);censer.add(e);embers.push(e);}
+  const smokeTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,4,64,64,62);r.addColorStop(0,'rgba(232,226,214,.5)');r.addColorStop(1,'rgba(232,226,214,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return keep(new T.CanvasTexture(c));})();
+  const smoke=[];for(let i=0;i<16;i++){const s=new T.Sprite(keep(new T.SpriteMaterial({map:smokeTex,transparent:true,depthWrite:false,opacity:0})));scene.add(s);smoke.push({s,ph:i/16,dx:((i*37)%10-5)/14,sw:.6+((i*13)%7)/10});}
   // ── 筊：一面平、一面凸的新月形。用半個橢球加一片平底，再把兩端往內彎成月牙 ──
   const jiaoGeo=(()=>{const dome=new T.SphereGeometry(1,30,14,0,Math.PI*2,0,Math.PI/2),flat=new T.CircleGeometry(1,30);flat.rotateX(Math.PI/2);
     const bend=g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++){let x=p.getX(i)*.74,y=p.getY(i)*.24,z=p.getZ(i)*.36;const taper=1-Math.pow(Math.abs(x)/.74,2.8)*.5;z*=Math.max(.42,taper);y*=Math.max(.5,taper);z+=x*x*.4;/* 筊：兩端收圓不收尖、身體加厚、彎度放緩 */p.setXYZ(i,x,y,z);}g.computeVertexNormals();return g;};
@@ -101,6 +108,7 @@ export function create(host){
     else if(p==='drawn'){st.tubeTo.copy(tubeAside);st.jiaoShow=1;if(st.lot!=='table'){st.lot='fly';st.lotT=now;}if(info.label)writeLot(info.label);J.forEach((j,i)=>{if(j.mode!=='rest'){j.mode='rest';}j.p.set(i?1.2:-1.2,restY(j.flatUp),1.9);j.q.copy(restQuat(j.flatUp,i?.6:-.5));});view(0,4.6,5.6,0,-.7,.9);}
     else if(p==='finale'){holyPulse=1.8;burst(0,.3,1,140,4.6);view(0,5.2,6.8,0,.6,.6);}
     else if(p==='rest'){view(0,3.4,8.6,0,.6,0);}
+    else if(p==='pray'){st.tubeTo.copy(tubeAside);st.tube.copy(tubeAside);st.jiaoShow=0;st.lot='hidden';cam.pos.set(0,4.6,12.5);cam.look.set(0,1.2,-1);view(0,2.5,4.4,0,1.25,-1.6);}
     start();
   }
   function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;camera.fov=W/H<.7?44:36;frameK=Math.max(1,Math.min(2.2,.78/(W/H)));camera.updateProjectionMatrix();}
@@ -111,6 +119,8 @@ export function create(host){
     const f1=.82+.18*Math.sin(t*9.1)+.08*Math.sin(t*23.3),f2=.82+.18*Math.sin(t*7.7+1.3)+.08*Math.sin(t*19.9);
     const dm=1-dim*.72;candleL.intensity=26*f1*dm;candleR.intensity=26*f2*dm;key.intensity=1.5*dm;flames[0].scale.y=1.9*(.9+.2*f1);flames[1].scale.y=1.9*(.9+.2*f2);flames.forEach((f,i)=>{f.userData.halo.material.opacity=.45*(i?f2:f1)*dm;f.userData.halo.quaternion.copy(camera.quaternion);});
     dim=Math.max(0,dim-dt*.45);holyPulse=Math.max(0,holyPulse-dt*.7);holy.intensity=holyPulse*70;glow.material.opacity=Math.min(1,holyPulse)*.9;glow.scale.setScalar(2+ (1.8-Math.min(1.8,holyPulse))*5);
+    for(const e of embers){e.material.opacity=.75+.25*Math.sin(t*5+e.position.x*20);}
+    for(const sm of smoke){const u=(t*.11*sm.sw+sm.ph)%1;sm.s.position.set(censer.position.x+sm.dx*u*2.2+Math.sin(t*.7+sm.ph*9)*.18*u,1.75+u*4.6,censer.position.z+Math.cos(t*.5+sm.ph*7)*.14*u);sm.s.scale.setScalar(.25+u*1.7);sm.s.material.opacity=Math.sin(u*Math.PI)*.34;}
     // 鏡頭
     cam.pos.lerp(camTo.pos,1-Math.pow(.02,dt));cam.look.lerp(camTo.look,1-Math.pow(.02,dt));shake=Math.max(0,shake-dt*3.2);
     tmp.copy(cam.pos).sub(cam.look).multiplyScalar(frameK).add(cam.look);camera.position.set(tmp.x+gx*.35+Math.sin(t*61)*.07*shake,tmp.y+gy*.2+Math.cos(t*53)*.06*shake,tmp.z);camera.lookAt(cam.look);

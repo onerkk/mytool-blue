@@ -31,12 +31,18 @@
     '#oracle-screen.orc-3d .orc-rise-wrap{visibility:hidden!important;height:44vh!important}',
     '#oracle-screen.orc-3d .orc-qiantong-shake-wrap *,#oracle-screen.orc-3d .orc-rise-wrap *{animation:none!important}',
     '#oracle-screen.orc-3d[data-oracle-phase="allowAsk"] .orc-center-phase{padding-top:40vh}',
+    /* 稟告：改在立體供桌前上香，不再跳出另一個平面過場 */
+    '.orc3d-cap{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:34px 20px calc(22px + env(safe-area-inset-bottom));text-align:center;background:linear-gradient(180deg,rgba(8,3,1,0),rgba(8,3,1,.92) 50%);color:#f4e7bd;font-family:var(--f-display,"Noto Serif TC",serif)}',
+    '.orc3d-cap::before{content:"";display:block;width:86px;height:1px;margin:0 auto 14px;background:linear-gradient(90deg,rgba(214,178,96,0),rgba(214,178,96,.9),rgba(214,178,96,0))}',
+    '.orc3d-cap p{margin:0;font-size:1.04rem;line-height:1.7;letter-spacing:.05em;transition:opacity .25s;text-shadow:0 2px 14px rgba(0,0,0,.8)}.orc3d-cap small{display:block;margin-top:4px;font-size:.84rem;color:rgba(244,231,189,.74)}',
+    '.orc3d-cap button{display:block;width:100%;max-width:420px;margin:16px auto 0;padding:14px;border-radius:14px;border:0;background:linear-gradient(180deg,#f6e7b4 0%,#dcbb66 55%,#c39a40 100%);color:#1b1505;font-size:1rem;font-weight:700;letter-spacing:.06em;box-shadow:0 10px 26px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.55);transition:opacity .3s}.orc3d-cap button[disabled]{opacity:.35}',
+    '#oracle-screen.orc-3d[data-oracle-phase="praying"] .orc-body{visibility:hidden}',
     '.orc-gesture-hint{display:block;margin:.7rem auto 0;font-size:.8rem;letter-spacing:.14em;color:rgba(244,231,189,.8);text-align:center}'
   ].join('');
   document.head.appendChild(css);
 
   function buzz(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(_){}}
-  var wrap=null,host=null,scene=null,loading=false,failed=false,lastPhase='',seenLand=null,RITUAL={allowAsk:1,allowThrowing:1,throwing:1,shaking:1,rising:1,drawn:1,shengjia:1};
+  var wrap=null,host=null,scene=null,loading=false,failed=false,lastPhase='',seenLand=null,RITUAL={praying:1,allowAsk:1,allowThrowing:1,throwing:1,shaking:1,rising:1,drawn:1,shengjia:1};
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   function load(cb){
     if(window.JYOracleSceneModule)return cb(true);if(failed||!webgl())return cb(false);
@@ -55,7 +61,7 @@
   function fallback(){failed=true;try{if(scene)scene.dispose();}catch(_){}scene=null;if(host&&host.parentNode)host.parentNode.removeChild(host);host=null;if(wrap)wrap.classList.remove('orc-3d');}
   function txt(sel){var e=wrap&&wrap.querySelector(sel);return e?(e.textContent||'').replace(/\s/g,''):'';}
   function sync(){
-    if(!wrap)return;var ph=wrap.getAttribute('data-oracle-phase')||'',visible=wrap.style.display!=='none';
+    if(!wrap)return;patchRitual();var ph=wrap.getAttribute('data-oracle-phase')||'',visible=wrap.style.display!=='none';
     if(visible&&RITUAL[ph]&&!scene&&!failed)mount();
     if(scene){
       if(host&&host.parentNode!==wrap)wrap.insertBefore(host,wrap.firstChild);
@@ -63,7 +69,8 @@
       if(!on){if(lastPhase!=='off'){lastPhase='off';setTimeout(function(){if(lastPhase==='off'&&scene)scene.stop();},600);}}
       else{
         if(ph!==lastPhase){lastPhase=ph;seenLand=null;scene.start();
-          if(ph==='allowAsk'){scene.phase('ask');}
+          if(ph==='praying'){scene.phase('pray');}
+          else if(ph==='allowAsk'){scene.phase('ask');}
           else if(ph==='allowThrowing'||ph==='throwing'){scene.phase('toss');buzz(35);}
           else if(ph==='shaking'){scene.phase('shake');buzz([40,70,40,70,40,70,40]);}
           else if(ph==='rising'){scene.phase('rise',{label:txt('.orc-stick-label')});buzz([12,60,30]);}
@@ -98,9 +105,33 @@
   });
   window.addEventListener('deviceorientation',function(e){if(!scene||e.gamma==null)return;scene.tilt(e.gamma/28,((e.beta||45)-45)/32);});
 
+  // 攔下靈籤開場的平面過場：改成在供桌前上香稟告，同一個場景一路走到擲筊。
+  var origPlay=null,praying=null;
+  function patchRitual(){
+    if(origPlay||!window.JYRitual||typeof window.JYRitual.play!=='function')return;
+    origPlay=window.JYRitual.play;
+    window.JYRitual.play=function(kind,opts){
+      if(kind!=='oracle'||failed||!webgl()||praying)return origPlay.apply(this,arguments);
+      var self=this,args=arguments,settle,fin=new Promise(function(res){settle=res;});opts=opts||{};
+      load(function(ok){
+        if(!ok||!wrap){var r=origPlay.apply(self,args);if(r&&r.finished&&r.finished.then)r.finished.then(settle,function(){settle(false);});else settle(true);return;}
+        mount();sync();
+        var cap=document.createElement('div');cap.className='orc3d-cap';cap.innerHTML='<p></p><small></small><button type="button" disabled>稟告完畢</button>';wrap.appendChild(cap);
+        var P=cap.querySelector('p'),S=cap.querySelector('small'),B=cap.querySelector('button'),done=false,timers=[];praying=cap;
+        function say(a,b){P.textContent=a;S.textContent=b||'';}
+        function end(okay){if(done)return;done=true;timers.forEach(clearTimeout);if(cap.parentNode)cap.parentNode.removeChild(cap);praying=null;try{if(okay){if(typeof opts.onComplete==='function')opts.onComplete();}else if(typeof opts.onCancel==='function')opts.onCancel();}catch(_){}settle(!!okay);}
+        say('點香，站到神明面前。','');buzz(20);
+        timers.push(setTimeout(function(){say('在心裡稟告：你是誰、住哪裡、想問什麼事。','一次只問一件事。');},2600));
+        timers.push(setTimeout(function(){B.disabled=false;},3600));
+        B.addEventListener('click',function(){buzz([20,40,30]);end(true);});
+        var watch=setInterval(function(){if(done){clearInterval(watch);return;}var ph=wrap.getAttribute('data-oracle-phase');if(ph!=='praying'||wrap.style.display==='none'){clearInterval(watch);end(false);}},400);
+      });
+      return {finished:fin};
+    };
+  }
   var syncT=0;function queue(){if(syncT)return;syncT=setTimeout(function(){syncT=0;sync();},30);}
   function attach(){
-    wrap=document.getElementById('oracle-screen');if(!wrap)return false;sync();
+    wrap=document.getElementById('oracle-screen');if(!wrap)return false;patchRitual();sync();
     try{new MutationObserver(queue).observe(wrap,{childList:true,subtree:true,attributes:true,attributeFilter:['data-oracle-phase','style']});}catch(_){}
     return true;
   }
