@@ -37,7 +37,10 @@
   function snd(key,vol,delay){try{if(window.JYFoley&&window.JYFoley.play)window.JYFoley.play(key,{scope:'pillar3d',volume:vol==null?.7:vol,delay:delay||0,throttle:60});}catch(_){}}
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   var loading=false,failed=false,origPlay=null,active=null,NAMES=['年柱','月柱','日柱','時柱'],MEAN=['祖上與早年','父母與成長的環境','你自己與伴侶','子女與晚年'];
-  function load(){if(window.JYPillarSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/pillar-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
+  var SCENES_V='f3cfde0f2f0f';
+  // 四個立體場景合併在 JS/jy-scenes.js；全站只載一次，各舞台共用同一個載入狀態。
+  function jyScenes(cb){var w=window;if(w._jyScenesState==='ok')return cb(true);if(w._jyScenesState==='fail')return cb(false);(w._jyScenesWait=w._jyScenesWait||[]).push(cb);if(w._jyScenesState==='loading')return;w._jyScenesState='loading';var s=document.createElement('script');s.src='JS/jy-scenes.js?v='+SCENES_V;s.async=true;var done=function(ok){w._jyScenesState=ok?'ok':'fail';var q=w._jyScenesWait||[];w._jyScenesWait=[];q.forEach(function(f){try{f(ok);}catch(_){}});};s.onload=function(){done(true);};s.onerror=function(){done(false);};document.head.appendChild(s);}
+  function load(){if(window.JYPillarSceneModule||loading||failed||!webgl())return;loading=true;jyScenes(function(ok){loading=false;if(!ok||!window.JYPillarSceneModule)failed=true;});}
   function open(opts,settle,kind){
     opts=opts||{};var pair=kind==='compat'&&opts.pairPillars&&opts.pairPillars.length===2,vals=(opts.sealValues||[]).slice(0,4),groups=pair?[{name:'甲方',pillars:opts.pairPillars[0]},{name:'乙方',pillars:opts.pairPillars[1]}]:[{name:'',pillars:vals}],total=pair?8:4;
     var layer=document.createElement('div');layer.className='pil3d';layer.setAttribute('role','dialog');layer.setAttribute('aria-label',pair?'雙盤殿':'四柱殿');if(pair)layer.style.backgroundImage='url(assets/ui/celestial-atlas.webp)';

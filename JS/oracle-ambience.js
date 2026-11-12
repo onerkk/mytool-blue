@@ -44,10 +44,12 @@
   function buzz(p){try{if(navigator.vibrate)navigator.vibrate(p);}catch(_){}}
   var wrap=null,host=null,scene=null,loading=false,failed=false,lastPhase='',seenLand=null,RITUAL={praying:1,allowAsk:1,allowThrowing:1,throwing:1,shaking:1,rising:1,drawn:1,shengjia:1};
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
+  var SCENES_V='f3cfde0f2f0f';
+  // 四個立體場景合併在 JS/jy-scenes.js；全站只載一次，各舞台共用同一個載入狀態。
+  function jyScenes(cb){var w=window;if(w._jyScenesState==='ok')return cb(true);if(w._jyScenesState==='fail')return cb(false);(w._jyScenesWait=w._jyScenesWait||[]).push(cb);if(w._jyScenesState==='loading')return;w._jyScenesState='loading';var s=document.createElement('script');s.src='JS/jy-scenes.js?v='+SCENES_V;s.async=true;var done=function(ok){w._jyScenesState=ok?'ok':'fail';var q=w._jyScenesWait||[];w._jyScenesWait=[];q.forEach(function(f){try{f(ok);}catch(_){}});};s.onload=function(){done(true);};s.onerror=function(){done(false);};document.head.appendChild(s);}
   function load(cb){
     if(window.JYOracleSceneModule)return cb(true);if(failed||!webgl())return cb(false);
-    if(loading)return;loading=true;var s=document.createElement('script');s.src='JS/oracle-scene.js?v='+encodeURIComponent(VER);s.async=true;
-    s.onload=function(){loading=false;cb(!!window.JYOracleSceneModule);};s.onerror=function(){loading=false;failed=true;cb(false);};document.head.appendChild(s);
+    jyScenes(function(ok){if(!ok||!window.JYOracleSceneModule)failed=true;cb(!!(ok&&window.JYOracleSceneModule));});
   }
   function mount(){
     if(scene||failed||!wrap)return;

@@ -21,6 +21,8 @@ export function create(host,opts){
   const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,2,64,64,62);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.3,'rgba(255,255,255,.45)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return keep(new T.CanvasTexture(c));})();
   const goldM=keep(new T.MeshStandardMaterial({color:0xc9a04f,roughness:.3,metalness:.92})),stone=keep(new T.MeshStandardMaterial({color:0x141a2a,roughness:.7,metalness:.25}));
   const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+  // 真實石材：Poly Haven 大理石貼圖（CC0），用在紫微石臺與梅花盤身
+  {const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,3);return keep(t);};tl.load('assets/3d/tex/marble_01_diffuse.jpg',t=>{if(disposed)return;t.colorSpace=T.SRGBColorSpace;stone.map=rp(t);stone.color.setHex(0x59607a);stone.needsUpdate=true;});tl.load('assets/3d/tex/marble_01_rough.jpg',t=>{if(disposed)return;stone.roughnessMap=rp(t);stone.roughness=1;stone.needsUpdate=true;});}
   // 夜空裡的星
   {const n=420,p=new Float32Array(n*3);let sd=9;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};for(let i=0;i<n;i++){const a=rnd()*6.283,h=2+rnd()*14,r=14+rnd()*10;p[i*3]=Math.cos(a)*r;p[i*3+1]=h;p[i*3+2]=-Math.abs(Math.sin(a)*r)-4;}const g=keep(new T.BufferGeometry());g.setAttribute('position',new T.BufferAttribute(p,3));const pts=new T.Points(g,keep(new T.PointsMaterial({color:0xdfe6ff,size:.16,map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.9})));scene.add(pts);}
   // 光裡的浮塵與一道斜光：讓空間有空氣感

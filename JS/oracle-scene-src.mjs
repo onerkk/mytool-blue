@@ -69,7 +69,8 @@ export function create(host){
   const band=document.createElement('canvas');band.width=512;band.height=256;{const g=band.getContext('2d');g.fillStyle='#3a1c0d';g.fillRect(0,0,512,256);g.strokeStyle='#c99a45';g.lineWidth=5;for(let i=0;i<8;i++){const x=i*64+32;g.beginPath();g.arc(x,128,22,Math.PI*.1,Math.PI*1.75);g.stroke();g.beginPath();g.arc(x+14,118,9,0,Math.PI*1.6);g.stroke();}g.lineWidth=3;g.strokeRect(0,40,512,176);}
   const bandTex=keep(new T.CanvasTexture(band));bandTex.wrapS=T.RepeatWrapping;bandTex.colorSpace=T.SRGBColorSpace;
   const prof=[[.0,0],[.56,0],[.6,.05],[.58,.2],[.6,1.9],[.66,2.0],[.66,2.08],[.56,2.08],[.52,1.96],[.5,.16],[.0,.16]].map(p=>new T.Vector2(p[0],p[1]));
-  mesh(new T.LatheGeometry(prof,44),std(0xffffff,.5,.12,{map:bandTex,side:T.DoubleSide}),tube);
+  const tubeMat=std(0xffffff,.5,.12,{map:bandTex,side:T.DoubleSide});mesh(new T.LatheGeometry(prof,44),tubeMat,tube);
+  {const tl=new T.TextureLoader();tl.load('assets/3d/tex/dark_wood_rough.jpg',t=>{if(disposed)return;t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(2,2);tubeMat.roughnessMap=keep(t);tubeMat.roughness=1;tubeMat.needsUpdate=true;});}
   for(const y of[.14,1.05,2.02]){const r=mesh(new T.TorusGeometry(.62,.035,10,44),std(0xd0a04a,.28,.9),tube);r.rotation.x=Math.PI/2;r.position.y=y;}
   const tubeShadow=blob(2.1,2.1);
   const N=38,stickGeo=keep(new T.BoxGeometry(.05,2.5,.018)),lotGeo=keep(new T.BoxGeometry(.12,2.5,.02)),tipGeo=keep(new T.BoxGeometry(.056,.3,.022));

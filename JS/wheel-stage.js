@@ -11,7 +11,10 @@
   function snd(key,vol,delay){try{if(window.JYFoley&&window.JYFoley.play)window.JYFoley.play(key,{scope:'wheel3d',volume:vol==null?.7:vol,delay:delay||0,throttle:60});}catch(_){}}
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   var loading=false,failed=false,origPlay=null,active=null;
-  function load(){if(window.JYWheelSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/wheel-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
+  var SCENES_V='f3cfde0f2f0f';
+  // 四個立體場景合併在 JS/jy-scenes.js；全站只載一次，各舞台共用同一個載入狀態。
+  function jyScenes(cb){var w=window;if(w._jyScenesState==='ok')return cb(true);if(w._jyScenesState==='fail')return cb(false);(w._jyScenesWait=w._jyScenesWait||[]).push(cb);if(w._jyScenesState==='loading')return;w._jyScenesState='loading';var s=document.createElement('script');s.src='JS/jy-scenes.js?v='+SCENES_V;s.async=true;var done=function(ok){w._jyScenesState=ok?'ok':'fail';var q=w._jyScenesWait||[];w._jyScenesWait=[];q.forEach(function(f){try{f(ok);}catch(_){}});};s.onload=function(){done(true);};s.onerror=function(){done(false);};document.head.appendChild(s);}
+  function load(){if(window.JYWheelSceneModule||loading||failed||!webgl())return;loading=true;jyScenes(function(ok){loading=false;if(!ok||!window.JYWheelSceneModule)failed=true;});}
   var TXT={ziwei:{title:'紫微星盤',bg:'assets/ui/ritual-celestial-observatory.webp',intro:['十二宮還暗著。','點一下，讓星落進你的宮位。'],auto:'替我排完',done:['十二宮都亮了。','命宮在紫色那一格，其餘十一宮繞著它。'],go:'看我的命盤'},
            meihua:{title:'梅花卦盤',bg:'assets/ui/ritual-moon-garden.webp',intro:['花還在落。','點一下，依你起的數，把卦一爻一爻立起來。'],auto:'替我起完',done:['卦成了。','上卦、下卦，加上變動的那一爻。'],go:'看卦象'}};
   function open(kind,opts,settle){

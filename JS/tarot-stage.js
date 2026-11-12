@@ -44,7 +44,10 @@
   var loading=false,failed=false,origPlay=null,stage=null;
   // 開鑰之法接牌桌：2026-11-12 已用瀏覽器走完（選代表牌→確認朝向→牌桌洗牌切牌→「開始五輪」→原本的五輪畫面出現），啟用。
   var OOTK_ON_TABLE=true;
-  function load(){if(window.JYTarotSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/tarot-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
+  var SCENES_V='f3cfde0f2f0f';
+  // 四個立體場景合併在 JS/jy-scenes.js；全站只載一次，各舞台共用同一個載入狀態。
+  function jyScenes(cb){var w=window;if(w._jyScenesState==='ok')return cb(true);if(w._jyScenesState==='fail')return cb(false);(w._jyScenesWait=w._jyScenesWait||[]).push(cb);if(w._jyScenesState==='loading')return;w._jyScenesState='loading';var s=document.createElement('script');s.src='JS/jy-scenes.js?v='+SCENES_V;s.async=true;var done=function(ok){w._jyScenesState=ok?'ok':'fail';var q=w._jyScenesWait||[];w._jyScenesWait=[];q.forEach(function(f){try{f(ok);}catch(_){}});};s.onload=function(){done(true);};s.onerror=function(){done(false);};document.head.appendChild(s);}
+  function load(){if(window.JYTarotSceneModule||loading||failed||!webgl())return;loading=true;jyScenes(function(ok){loading=false;if(!ok||!window.JYTarotSceneModule)failed=true;});}
 
   // ── 兩種牌各自的接法 ──
   function tarotKit(opts){
