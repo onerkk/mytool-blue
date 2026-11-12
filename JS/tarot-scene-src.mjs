@@ -109,7 +109,10 @@ export function create(host,opts){
     candleGroups.forEach((cg,i)=>{const c=src.clone();c.position.set(0,0,0);c.scale.setScalar(2.35);c.rotation.y=i?2.1:.4;cg.add(c);const u=cg.userData;u.st.visible=false;u.cd.visible=false;u.fl.position.set(0,.83*2.35+.1,0);u.hl.position.set(0,.83*2.35+.1,0);});},undefined,()=>{});
   // 一雙手：WebXR Input Profiles 的 generic-hand（MIT）。洗牌時手跟著手指走，收牌、切牌、開牌時做對應的動作。
   const hands=[null,null],handState=[{x:-6,y:1.2,z:5,tx:-6,ty:1.2,tz:5,yaw:0},{x:6,y:1.2,z:5,tx:6,ty:1.2,tz:5,yaw:0}],skin=keep(new T.MeshStandardMaterial({color:0xe7c2a4,roughness:.62,metalness:0}));
-  ['left','right'].forEach((side,i)=>{gltf.load('assets/3d/hands/'+side+'.glb',g=>{if(disposed)return;const holder=new T.Group(),inner=g.scene;inner.traverse(o=>{if(o.isMesh||o.isSkinnedMesh){o.material=skin;o.castShadow=true;o.frustumCulled=false;if(o.geometry)res.add(o.geometry);}});
+  // 2026-11-12：使用者實機錄影後指出這雙手「超級假」。確實如此：這個模型是給 VR 手把用的通用手，單一膚色、沒有皮膚貼圖、手指僵直張開，我又把它放得太大。
+  // 不像真的手比沒有手更出戲，所以停用；觸控螢幕上推牌的本來就是使用者自己的手指。要再加，必須是有皮膚貼圖、能彎手指的寫實模型。
+  const SHOW_HANDS=false;
+  if(SHOW_HANDS)['left','right'].forEach((side,i)=>{gltf.load('assets/3d/hands/'+side+'.glb',g=>{if(disposed)return;const holder=new T.Group(),inner=g.scene;inner.traverse(o=>{if(o.isMesh||o.isSkinnedMesh){o.material=skin;o.castShadow=true;o.frustumCulled=false;if(o.geometry)res.add(o.geometry);}});
       inner.scale.setScalar(10.5);inner.quaternion.copy(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),(i?-1:1)*Math.PI/2).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),Math.PI/2)));inner.position.y=.62;/* 模型原點在手腕中心，轉平後手掌大半在原點下方；往上墊，讓手掌底面落在握點 */holder.add(inner);holder.position.set(handState[i].x,handState[i].y,handState[i].z);scene.add(holder);hands[i]=holder;},undefined,()=>{});});
   const ghost=[{x:-1,z:.3},{x:1,z:.3}];
   const handTo=(i,x,y,z,yaw)=>{const h=handState[i];h.tx=x;h.ty=y;h.tz=z;h.yaw=yaw||0;};
