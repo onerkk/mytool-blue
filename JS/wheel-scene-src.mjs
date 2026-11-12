@@ -15,7 +15,7 @@ export function create(host,opts){
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   const el=renderer.domElement;el.className='pil3d-canvas';host.appendChild(el);let onLost=null;el.addEventListener('webglcontextlost',e=>{e.preventDefault();if(onLost)onLost();});
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(40,1,.1,90);
-  {const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.2;keep(env.texture);pm.dispose();}
+  {const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.48;keep(env.texture);pm.dispose();}
   scene.add(new T.HemisphereLight(kind==='ziwei'?0xc6c8ff:0xffe6ee,0x08060e,.5));
   const key=new T.SpotLight(0xfff1dc,78,36,.72,.6,1.3);key.position.set(-2.6,10.5,6);key.target.position.set(0,.3,0);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.bias=-.0006;key.shadow.radius=5;scene.add(key,key.target);
   const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,2,64,64,62);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.3,'rgba(255,255,255,.45)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return keep(new T.CanvasTexture(c));})();
@@ -23,6 +23,9 @@ export function create(host,opts){
   const aniso=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   // 夜空裡的星
   {const n=420,p=new Float32Array(n*3);let sd=9;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};for(let i=0;i<n;i++){const a=rnd()*6.283,h=2+rnd()*14,r=14+rnd()*10;p[i*3]=Math.cos(a)*r;p[i*3+1]=h;p[i*3+2]=-Math.abs(Math.sin(a)*r)-4;}const g=keep(new T.BufferGeometry());g.setAttribute('position',new T.BufferAttribute(p,3));const pts=new T.Points(g,keep(new T.PointsMaterial({color:0xdfe6ff,size:.16,map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.9})));scene.add(pts);}
+  // 光裡的浮塵與一道斜光：讓空間有空氣感
+  const dust=(()=>{const n=150,p=new Float32Array(n*3);let sd=17;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};for(let i=0;i<n;i++){p[i*3]=(rnd()-.5)*9;p[i*3+1]=.3+rnd()*5.5;p[i*3+2]=(rnd()-.5)*8;}const g=keep(new T.BufferGeometry());g.setAttribute('position',new T.BufferAttribute(p,3));const m=new T.Points(g,keep(new T.PointsMaterial({color:0xffe6c0,size:.05,map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.55})));scene.add(m);return m;})();
+  const shaft=(()=>{const c=document.createElement('canvas');c.width=64;c.height=256;const g=c.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'rgba(255,236,200,.55)');gr.addColorStop(1,'rgba(255,236,200,0)');g.fillStyle=gr;g.fillRect(0,0,64,256);const t=keep(new T.CanvasTexture(c));const m=new T.Mesh(keep(new T.CylinderGeometry(.5,3.4,11,28,1,true)),keep(new T.MeshBasicMaterial({map:t,transparent:true,opacity:.07,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide})));m.position.set(-1.2,5.2,1.6);m.rotation.z=-.16;m.rotation.x=.2;scene.add(m);return m;})();
   const items=[],motes=[];let hud=null;
   let now=0,raf=0,running=false,disposed=false,W=1,H=1,frameK=1,gx=0,gy=0,frames=0,slow=0,degraded=false,shake=0,doneAt=-1,stepIndex=0,spin=0;
   const cam={pos:new T.Vector3(0,8.4,8.2),look:new T.Vector3(0,.2,.2)},camTo={pos:cam.pos.clone(),look:cam.look.clone()},tmp=new T.Vector3();
@@ -80,6 +83,7 @@ export function create(host,opts){
   function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;frameK=Math.max(1,Math.min(2,(kind==='ziwei'?.78:.74)/(W/H)));camera.updateProjectionMatrix();}
   function frame(ms){raf=0;if(disposed||!running)return;const t=ms/1000,dt=Math.min(.05,Math.max(.001,t-(now||t)));now=t;
     if(!degraded&&frames<140){frames++;if(frames>20&&dt>.034)slow++;if(frames===140&&slow>55){degraded=true;renderer.shadowMap.enabled=false;key.castShadow=false;renderer.setPixelRatio(1);resize();renderer.render(scene,camera);scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.needsUpdate=true;});});}}
+    dust.rotation.y=t*.025;dust.position.y=Math.sin(t*.23)*.12;shaft.material.opacity=.06+.015*Math.sin(t*.6);
     shake=Math.max(0,shake-dt*3);cam.pos.lerp(camTo.pos,1-Math.pow(.05,dt));cam.look.lerp(camTo.look,1-Math.pow(.05,dt));tmp.copy(cam.pos).sub(cam.look).multiplyScalar(frameK).add(cam.look);camera.position.set(tmp.x+gx*.4+Math.sin(t*57)*.04*shake,tmp.y+Math.cos(t*49)*.04*shake,tmp.z+gy*.3);camera.lookAt(cam.look);
     for(const it of items){if(it.litAt<0)continue;const u=ease((now-it.litAt)/.9);it.face.emissiveIntensity=1.45*u*(.93+.07*Math.sin(t*3+it.x));it.lamp.intensity=(it.isMing?9:5.5)*u;it.m.position.y=(kind==='ziwei'?.08:.07)+Math.sin(clamp((now-it.litAt)/.5)*Math.PI)*.14+(it.isMing?.06*u:0);}
     for(let i=motes.length-1;i>=0;i--){const m=motes[i],u=(now-m.t0)/m.d;if(u<0)continue;if(u>=1){scene.remove(m.s);motes.splice(i,1);continue;}const k=u*u;m.s.position.set(mix(m.x,m.tx,k),mix(m.y,m.ty,k),mix(m.z,m.tz,k));m.s.material.opacity=Math.sin(u*Math.PI)*.95+.05;m.s.scale.setScalar(.35+.5*(1-u));}

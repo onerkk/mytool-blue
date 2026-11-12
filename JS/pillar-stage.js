@@ -21,6 +21,15 @@
     /* 八字與合盤的結果頁很長（合盤約一萬二千像素），捲動時出現整塊空白與卡頓：毛玻璃在 Android 上每一格都要重算，改成不用；畫面外的區塊不繪製。 */
     ':is(#bzs-screen,#bzx-screen,#zw-result,#zw-input,#mhx-screen,#ln-screen,#oracle-screen,#liuyao-screen,#yijing-screen,#western-page,#vedic-page,#nm-room,#lr-room) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}',
     '#bzs-screen details,#bzs-screen section,#bzs-screen article,#bzs-screen table,#bzx-screen details,#bzx-screen section,#bzx-screen article{content-visibility:auto;contain-intrinsic-size:auto 420px}',
+    /* 2026-11-12 精緻化：文字換句時淡出淡入、金色細線與標題飾紋、按鈕的光澤掃過；都只動 opacity 與 transform */
+    '.pil3d-line,.pil3d-sub{transition:opacity .22s ease,transform .22s ease}.pil3d-line.sw,.pil3d-sub.sw{opacity:0;transform:translateY(5px)}',
+    '.pil3d-line{letter-spacing:.04em;text-shadow:0 2px 14px rgba(0,0,0,.75)}.pil3d-sub{letter-spacing:.03em;text-shadow:0 1px 10px rgba(0,0,0,.8)}',
+    '.pil3d-hud::before{content:"";display:block;width:86px;height:1px;margin:0 auto 14px;background:linear-gradient(90deg,rgba(214,178,96,0),rgba(214,178,96,.9),rgba(214,178,96,0))}',
+    '.pil3d-title::before{content:"✦";margin-right:.9em;font-size:.7em;opacity:.8}.pil3d-title::after{content:"✦";margin-left:.6em;font-size:.7em;opacity:.8}',
+    '.pil3d-btn{position:relative;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.55);background:linear-gradient(180deg,#f6e7b4 0%,#dcbb66 55%,#c39a40 100%)!important}',
+    '.pil3d-btn::after{content:"";position:absolute;top:0;bottom:0;left:0;width:38%;background:linear-gradient(100deg,rgba(255,255,255,0),rgba(255,255,255,.5),rgba(255,255,255,0));transform:translateX(-140%) skewX(-18deg);animation:pil3dShine 4.6s ease-in-out infinite}',
+    '@keyframes pil3dShine{0%,62%{transform:translateX(-140%) skewX(-18deg)}100%{transform:translateX(380%) skewX(-18deg)}}',
+    '@media (prefers-reduced-motion:reduce){.pil3d-btn::after{animation:none}.pil3d-line,.pil3d-sub{transition:none}}',
     '.pil3d-btn{pointer-events:auto;display:block;width:100%;max-width:420px;margin:14px auto 0;padding:14px;border-radius:14px;border:0;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;font-size:1rem;font-weight:700;letter-spacing:.06em}'
   ].join('');
   document.head.appendChild(css);
@@ -36,7 +45,7 @@
     document.body.appendChild(layer);
     var $=function(s){return layer.querySelector(s);},line=$('.pil3d-line'),sub=$('.pil3d-sub'),btn=$('.pil3d-btn'),S={closed:false,done:false,scene:null,timers:[]};
     function later(fn,ms){var t=setTimeout(function(){if(!S.closed)fn();},ms);S.timers.push(t);}
-    function say(a,b){line.textContent=a||'';sub.textContent=b||'';}
+    function say(a,b){a=a||'';b=b||'';if(S.sayA===a&&S.sayB===b)return;S.sayA=a;S.sayB=b;line.classList.add('sw');sub.classList.add('sw');clearTimeout(S.sayT);S.sayT=setTimeout(function(){line.textContent=S.sayA;sub.textContent=S.sayB;line.classList.remove('sw');sub.classList.remove('sw');},170);}
     function close(finished){
       if(S.closed)return;S.closed=true;S.timers.forEach(clearTimeout);layer.classList.remove('on');if(active===S)active=null;
       setTimeout(function(){try{if(S.scene)S.scene.dispose();}catch(_){}if(layer.parentNode)layer.parentNode.removeChild(layer);},460);

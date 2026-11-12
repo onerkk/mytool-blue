@@ -20,7 +20,8 @@
     '#oracle-screen .orc-v63-ritual{background-image:none!important}',
     '#oracle-screen .orc-center-phase,#oracle-screen .orc-pray-phase{background:transparent!important}',
     /* 立體場景層 */
-    '.orc3d-host{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .5s}',
+    /* 廟景直接放在場景這一層的底下：原本設在 #oracle-screen 上的背景圖看不到（被別的樣式蓋掉） */
+    '.orc3d-host{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .5s;background:linear-gradient(180deg,rgba(8,3,1,.55) 0%,rgba(8,3,1,.1) 26%,rgba(8,3,1,.35) 58%,rgba(6,2,1,.92) 100%),url('+BG+') center top/cover no-repeat}',
     '.orc3d-host.on{opacity:1}',
     '.orc3d-canvas{display:block;width:100%;height:100%}',
     /* 立體場景啟用時：原本的平面筊、籤筒、籤隱藏，只留下它們佔的位置當作看場景的窗 */

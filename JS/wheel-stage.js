@@ -20,7 +20,7 @@
     document.body.appendChild(layer);
     var $=function(s){return layer.querySelector(s);},line=$('.pil3d-line'),sub=$('.pil3d-sub'),btn=$('.pil3d-btn'),S={closed:false,done:false,scene:null,timers:[]};$('.pil3d-title').textContent=X.title;
     function later(fn,ms){var t=setTimeout(function(){if(!S.closed)fn();},ms);S.timers.push(t);}
-    function say(a,b){line.textContent=a||'';sub.textContent=b||'';}
+    function say(a,b){a=a||'';b=b||'';if(S.sayA===a&&S.sayB===b)return;S.sayA=a;S.sayB=b;line.classList.add('sw');sub.classList.add('sw');clearTimeout(S.sayT);S.sayT=setTimeout(function(){line.textContent=S.sayA;sub.textContent=S.sayB;line.classList.remove('sw');sub.classList.remove('sw');},170);}
     function close(finished){
       if(S.closed)return;S.closed=true;S.timers.forEach(clearTimeout);layer.classList.remove('on');if(active===S)active=null;
       setTimeout(function(){try{if(S.scene)S.scene.dispose();}catch(_){}if(layer.parentNode)layer.parentNode.removeChild(layer);},460);

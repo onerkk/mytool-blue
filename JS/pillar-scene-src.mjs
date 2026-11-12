@@ -19,7 +19,7 @@ export function create(host,opts){
   renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
   const el=renderer.domElement;el.className='pil3d-canvas';host.appendChild(el);let onLost=null;el.addEventListener('webglcontextlost',e=>{e.preventDefault();if(onLost)onLost();});
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(40,1,.1,80);
-  {const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.2;keep(env.texture);pm.dispose();}
+  {const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.48;keep(env.texture);pm.dispose();}
   scene.add(new T.HemisphereLight(0xbfd0ff,0x08060e,.42));
   const key=new T.SpotLight(0xfff1dc,70,34,.7,.6,1.3);key.position.set(-2.4,10,6);key.target.position.set(0,1,0);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.bias=-.0006;key.shadow.radius=5;scene.add(key,key.target);
   const serif='"Noto Serif TC","Songti TC","PMingLiU",serif';
@@ -40,7 +40,7 @@ export function create(host,opts){
   if(pair){const step=new T.Mesh(keep(new T.BoxGeometry(4.6,.62,1.3)),keep(new T.MeshStandardMaterial({color:0x141a2a,roughness:.6,metalness:.3})));step.position.set(0,.31,-1.3);step.receiveShadow=true;step.castShadow=true;scene.add(step);const edge=new T.Mesh(keep(new T.BoxGeometry(4.66,.06,1.36)),keep(new T.MeshStandardMaterial({color:0xc9a04f,roughness:.3,metalness:.9})));edge.position.set(0,.63,-1.3);scene.add(edge);}
   // ── 四根柱：墨玉柱身、金框、柱頂寫年月日時；柱面的干支一開始是暗的，點亮才燒出來 ──
   const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,2,64,64,62);r.addColorStop(0,'rgba(255,240,200,1)');r.addColorStop(.3,'rgba(255,200,116,.5)');r.addColorStop(1,'rgba(255,170,80,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return keep(new T.CanvasTexture(c));})();
-  const PW=.92,PH=2.5,PD=.3,geo=keep(new T.BoxGeometry(PW,PH,PD)),side=keep(new T.MeshStandardMaterial({color:0x10171c,roughness:.38,metalness:.35})),capMat=keep(new T.MeshStandardMaterial({color:0xc9a04f,roughness:.3,metalness:.9}));
+  const PW=.92,PH=2.5,PD=.3,geo=keep(new T.BoxGeometry(PW,PH,PD)),side=keep(new T.MeshPhysicalMaterial({color:0x0f2019,roughness:.3,metalness:.15,clearcoat:.8,clearcoatRoughness:.2}))/* 墨玉：深綠帶一層亮面 */,capMat=keep(new T.MeshStandardMaterial({color:0xc9a04f,roughness:.3,metalness:.9}));
   const pillars=[];
   for(const sp of specs){const i=sp.i,x=sp.x,z=sp.z,v=sp.val||'',tag=(sp.owner?sp.owner+'・':'')+NAMES[i]+'柱';
     const bc=document.createElement('canvas');bc.width=368;bc.height=1000;{const g=bc.getContext('2d'),gr=g.createLinearGradient(0,0,0,1000);gr.addColorStop(0,'#16262a');gr.addColorStop(.5,'#0d181c');gr.addColorStop(1,'#091013');g.fillStyle=gr;g.fillRect(0,0,368,1000);g.strokeStyle='rgba(216,180,98,.95)';g.lineWidth=8;g.strokeRect(14,14,340,972);g.lineWidth=2;g.strokeRect(30,30,308,940);g.fillStyle='rgba(224,190,112,.95)';g.font='500 '+(tag.length>3?46:58)+'px '+serif;g.textAlign='center';g.textBaseline='middle';g.fillText(tag,184,96);g.strokeStyle='rgba(216,180,98,.6)';g.beginPath();g.moveTo(70,150);g.lineTo(298,150);g.stroke();
@@ -54,6 +54,9 @@ export function create(host,opts){
     const beam=new T.Mesh(keep(new T.CylinderGeometry(.34,.5,7,20,1,true)),keep(new T.MeshBasicMaterial({map:glowTex,color:0xffd58a,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide})));beam.position.y=PH/2+3.4;m.add(beam);
     const halo=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xffcf80,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending})));halo.scale.set(3.2,3.2,1);halo.position.set(0,.1,.3);m.add(halo);
     pillars.push({m,face,lamp,beam,halo,x,z,lit:0,litAt:-1,rise:0,branch:ZHI.indexOf(v[1]||''),bx:x,sc:sp.sc,lift:sp.lift,gi:sp.gi,pi:i,val:v});}
+  // 光裡的浮塵與一道斜光：讓空間有空氣感
+  const dust=(()=>{const n=150,p=new Float32Array(n*3);let sd=17;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647;};for(let i=0;i<n;i++){p[i*3]=(rnd()-.5)*9;p[i*3+1]=.3+rnd()*5.5;p[i*3+2]=(rnd()-.5)*8;}const g=keep(new T.BufferGeometry());g.setAttribute('position',new T.BufferAttribute(p,3));const m=new T.Points(g,keep(new T.PointsMaterial({color:0xffe6c0,size:.05,map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.55})));scene.add(m);return m;})();
+  const shaft=(()=>{const c=document.createElement('canvas');c.width=64;c.height=256;const g=c.getContext('2d'),gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'rgba(255,236,200,.55)');gr.addColorStop(1,'rgba(255,236,200,0)');g.fillStyle=gr;g.fillRect(0,0,64,256);const t=keep(new T.CanvasTexture(c));const m=new T.Mesh(keep(new T.CylinderGeometry(.5,3.4,11,28,1,true)),keep(new T.MeshBasicMaterial({map:t,transparent:true,opacity:.07,depthWrite:false,blending:T.AdditiveBlending,side:T.DoubleSide})));m.position.set(-1.2,5.2,1.6);m.rotation.z=-.16;m.rotation.x=.2;scene.add(m);return m;})();
   // 中央的日主：四柱亮齊後才出現
   const orb=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xfff0c8,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending})));orb.position.set(0,3.5,.1);orb.scale.set(.1,.1,1);scene.add(orb);
   const orbLight=new T.PointLight(0xffe2a8,0,12,1.4);orbLight.position.copy(orb.position);scene.add(orbLight);
@@ -64,6 +67,7 @@ export function create(host,opts){
   function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;frameK=Math.max(1,Math.min(2,.72/(W/H)));camera.updateProjectionMatrix();}
   function frame(ms){raf=0;if(disposed||!running)return;const t=ms/1000,dt=Math.min(.05,Math.max(.001,t-(now||t)));now=t;
     if(!degraded&&frames<140){frames++;if(frames>20&&dt>.034)slow++;if(frames===140&&slow>55){degraded=true;renderer.shadowMap.enabled=false;key.castShadow=false;renderer.setPixelRatio(1);resize();renderer.render(scene,camera);scene.traverse(o=>{if(o.material)(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.needsUpdate=true;});});}}
+    dust.rotation.y=t*.025;dust.position.y=Math.sin(t*.23)*.12;shaft.material.opacity=.06+.015*Math.sin(t*.6);
     spin=mix(spin,spinTo,1-Math.pow(.04,dt));disc.rotation.y=spin+t*.02;shake=Math.max(0,shake-dt*3);
     cam.pos.lerp(camTo.pos,1-Math.pow(.04,dt));cam.look.lerp(camTo.look,1-Math.pow(.04,dt));tmp.copy(cam.pos).sub(cam.look).multiplyScalar(frameK).add(cam.look);camera.position.set(tmp.x+gx*.4+Math.sin(t*57)*.04*shake,tmp.y+gy*.25+Math.cos(t*49)*.04*shake,tmp.z);camera.lookAt(cam.look);
     let all=true;for(const p of pillars){if(p.litAt<0){all=false;p.m.position.y=mix(p.m.position.y,p.lift+(PH/2-1.25)*p.sc,.1);p.halo.material.opacity=.1+.08*Math.sin(t*2.4+p.x);continue;}

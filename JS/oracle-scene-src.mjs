@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 /* 靜月靈籤・立體廟案（2026-11-12 全新製作）
  * 用真的立體模型取代原本的平面圖片：一張供桌、兩片筊、一個裝滿籤的籤筒，全程同一個鏡頭、同一張畫布。
  * 這裡只負責「演」：筊象、抽到哪一支籤、要不要重求，全部由 oracle.js 原本的規則決定，再把結果交給這裡演出來。
@@ -15,6 +16,7 @@ export function create(host){
   const el=renderer.domElement;el.className='orc3d-canvas';el.setAttribute('aria-hidden','true');host.appendChild(el);
   let onLost=null;el.addEventListener('webglcontextlost',e=>{e.preventDefault();if(onLost)onLost();});
   const scene=new T.Scene();
+  {const pm=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pm.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=.42;keep(env.texture);pm.dispose();}renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.02;
   const camera=new T.PerspectiveCamera(36,1,.1,60);
   const std=(color,rough,metal,extra={})=>keep(new T.MeshStandardMaterial({color,roughness:rough,metalness:metal,...extra}));
   const mesh=(g,m,p=scene)=>{const a=new T.Mesh(keep(g),m);p.add(a);return a;};
@@ -33,7 +35,7 @@ export function create(host){
   // 真實材質：Poly Haven 的大理石／深色木材貼圖（CC0）
   {const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,2);return keep(t);};tl.load('assets/3d/tex/dark_wood_diffuse.jpg',t=>{if(disposed)return;t.colorSpace=T.SRGBColorSpace;table.material.map=rp(t);table.material.color.setHex(0xb08a6a);table.material.needsUpdate=true;});tl.load('assets/3d/tex/dark_wood_rough.jpg',t=>{if(disposed)return;table.material.roughnessMap=rp(t);table.material.roughness=1;table.material.needsUpdate=true;});}
   const trim=mesh(new T.BoxGeometry(9.6,.09,.09),std(0xc79a4a,.32,.85));trim.position.set(0,-.02,2.83);
-  const cloth=mesh(new T.PlaneGeometry(5.2,3.4),std(0x6e1410,.82,.02));cloth.rotation.x=-Math.PI/2;cloth.position.set(0,.004,.5);
+  const cloth=mesh(new T.PlaneGeometry(5.2,3.4),std(0x4a0d0a,.9,.0));cloth.rotation.x=-Math.PI/2;cloth.position.set(0,.004,.5);
   const clothEdge=mesh(new T.RingGeometry(0,1,4),std(0xc79a4a,.4,.7));clothEdge.visible=false;
   // 兩支蠟燭（看得到的燭身與火焰）
   const flames=[];for(const sx of[-1,1]){const base=mesh(new T.CylinderGeometry(.2,.26,.12,20),std(0xb8893c,.35,.85));base.position.set(sx*3.1,.06,-.9);const body=mesh(new T.CylinderGeometry(.13,.14,1,18),std(0x9c1a14,.5,.05));body.position.set(sx*3.1,.62,-.9);const fl=mesh(new T.SphereGeometry(.09,12,10),keep(new T.MeshBasicMaterial({color:0xffd27a})));fl.scale.set(1,1.9,1);fl.position.set(sx*3.1,1.26,-.9);flames.push(fl);}
@@ -46,9 +48,9 @@ export function create(host){
 
   // ── 筊：一面平、一面凸的新月形。用半個橢球加一片平底，再把兩端往內彎成月牙 ──
   const jiaoGeo=(()=>{const dome=new T.SphereGeometry(1,30,14,0,Math.PI*2,0,Math.PI/2),flat=new T.CircleGeometry(1,30);flat.rotateX(Math.PI/2);
-    const bend=g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++){let x=p.getX(i)*.74,y=p.getY(i)*.2,z=p.getZ(i)*.3;const taper=1-Math.pow(Math.abs(x)/.74,2.2)*.72;z*=Math.max(.18,taper);y*=Math.max(.25,taper);z+=x*x*.62;p.setXYZ(i,x,y,z);}g.computeVertexNormals();return g;};
+    const bend=g=>{const p=g.attributes.position;for(let i=0;i<p.count;i++){let x=p.getX(i)*.74,y=p.getY(i)*.24,z=p.getZ(i)*.36;const taper=1-Math.pow(Math.abs(x)/.74,2.8)*.5;z*=Math.max(.42,taper);y*=Math.max(.5,taper);z+=x*x*.4;/* 筊：兩端收圓不收尖、身體加厚、彎度放緩 */p.setXYZ(i,x,y,z);}g.computeVertexNormals();return g;};
     return {dome:keep(bend(dome)),flat:keep(bend(flat))};})();
-  const lacquer=std(0x9a1810,.3,.08),lacquerFlat=std(0xb5281b,.42,.05);
+  const lacquer=keep(new T.MeshPhysicalMaterial({color:0x8f1610,roughness:.26,metalness:.05,clearcoat:1,clearcoatRoughness:.14})),lacquerFlat=keep(new T.MeshPhysicalMaterial({color:0xa82418,roughness:.38,metalness:.03,clearcoat:.6,clearcoatRoughness:.25}));
   const makeJiao=()=>{const g=new T.Group();mesh(jiaoGeo.dome,lacquer,g);mesh(jiaoGeo.flat,lacquerFlat,g);const s=blob(1.9,.9);scene.add(s);g.userData.shadow=s;scene.add(g);return g;};
   const jiao=[makeJiao(),makeJiao()];
   // 凸面朝上＝原樣；平面朝上＝翻過來
