@@ -1189,8 +1189,19 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
   ];
   var RING_NAMES = ['命','財','官','遷','福','田','子','夫','兄','疾','友','父'];
 
-  function showLoading(done) {
+  // 2026-11-12：過場改成立體十二宮盤，把已排好的宮名與十四主星交給它，宮面上亮的是真實命盤。
+  function _ritualPalaces(zw) {
+    try {
+      var MAJOR = '紫微 天機 太陽 武曲 天同 廉貞 天府 太陰 貪狼 巨門 天相 天梁 七殺 破軍'.split(' ');
+      return (zw && zw.palaces || []).map(function (p) {
+        var names = (p.stars || []).map(function (st) { return typeof st === 'string' ? st : (st && (st.name || st.star || st.zh)) || ''; });
+        return { branch: p.branch, name: p.name || '', stars: names.filter(function (n) { return MAJOR.indexOf(n) >= 0; }) };
+      });
+    } catch (e) { return []; }
+  }
+  function showLoading(done, zw) {
     if (window.JYRitual) return window.JYRitual.play('ziwei', {
+      palaces: _ritualPalaces(zw),
       onComplete: done,
       onCancel: function(){var input=document.getElementById('zw-input');if(input)input.style.display='block';}
     });
@@ -1757,7 +1768,7 @@ var JY_READING_ZIWEI_FALLBACK = "【白話優先】【像命理師當面解惑�
     }
 
     var inp = document.getElementById('zw-input'); if (inp) inp.style.display = 'none';
-    showLoading(function () { showResult(zw, form); });
+    showLoading(function () { showResult(zw, form); }, zw);
   };
 
   // ════════════════════════════════════════════════════════

@@ -1208,8 +1208,9 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】一般有效解讀完成後�
   // ════════════════════════════════════════════════════════
   //  起卦過場動畫（太極 + 八卦環）
   // ════════════════════════════════════════════════════════
-  function _showLoading(done) {
+  function _showLoading(done, nums) {
     if (window.JYRitual) return window.JYRitual.play('meihua', {
+      nums: nums ? { up: nums.up, lo: nums.lo, dong: nums.dong } : null, /* 2026-11-12：交給立體卦盤演出上卦、下卦與動爻 */
       onComplete: done,
       onCancel: function(){}
     });
@@ -1647,7 +1648,7 @@ var JY_REC_MEIHUA = "【本題延伸手鍊建議】一般有效解讀完成後�
         console.error('[meihua] cast error', e);
         alert('起卦計算發生問題，請重試或改用另一種起卦方式。');
       }
-    });
+    }, nums);
   }
   window._mhDoCast = function () {
     if(window.JYRitual && window.JYRitual.isActive())return;

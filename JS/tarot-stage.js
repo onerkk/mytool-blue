@@ -33,6 +33,8 @@
   function snd(key,vol,delay){try{if(window.JYFoley&&window.JYFoley.play)window.JYFoley.play(key,{scope:'table3d',volume:vol==null?.7:vol,delay:delay||0,throttle:60});}catch(_){}}
   function webgl(){try{var c=document.createElement('canvas');return !!(window.WebGLRenderingContext&&(c.getContext('webgl2')||c.getContext('webgl')));}catch(_){return false;}}
   var loading=false,failed=false,origPlay=null,stage=null;
+  // 開鑰之法接牌桌的程式已寫好，但 2026-11-12 的自動測試沒能走到它的洗牌那一步（卡在選代表牌），沒有驗證過就不啟用，以免像八字那次一樣把流程弄斷。驗證後改成 true。
+  var OOTK_ON_TABLE=false;
   function load(){if(window.JYTarotSceneModule||loading||failed||!webgl())return;loading=true;var s=document.createElement('script');s.src='JS/tarot-scene.js?v='+encodeURIComponent(VER);s.async=true;s.onload=function(){loading=false;};s.onerror=function(){loading=false;failed=true;};document.head.appendChild(s);}
 
   // ── 兩種牌各自的接法 ──
@@ -57,6 +59,8 @@
       card:function(i){var c=cards[i]||{};return {url:c.image||'',name:c.name||'',upright:true,showOrientation:false};}};
   }
 
+  // 開鑰之法：原本的過場只是進五輪之前的洗牌儀式，抽牌與五輪由它自己的畫面處理；這裡演完洗牌與切牌就交回去。
+  function ootkKit(opts){return {title:'月下牌桌・開鑰之法',deck:78,back:'assets/cards/bright-20261011/tarot/back.webp',bg:'assets/ui/ritual-moon-sanctum.webp',preset:true,shuffleOnly:true,need:function(){return 0;},spread:function(){return {};},onShuffled:function(){},onCancel:function(){if(opts&&typeof opts.onCancel==='function')opts.onCancel();},onFinish:function(){if(opts&&typeof opts.onComplete==='function')opts.onComplete();},count:function(){return 0;},pick:function(p,t,done){done(false);},card:function(){return {};}};}
   function open(kit){
     var layer=document.createElement('div');layer.className='tar3d';layer.setAttribute('role','dialog');layer.setAttribute('aria-label',kit.title);if(kit.bg)layer.style.backgroundImage='url('+kit.bg+')';
     layer.innerHTML='<div class="tar3d-host"></div><div class="tar3d-vig"></div><div class="tar3d-top"><button type="button" class="tar3d-back">← 返回</button><span class="tar3d-title"></span><span style="width:64px"></span></div><div class="tar3d-hud"><div class="tar3d-line"></div><div class="tar3d-sub"></div><div class="tar3d-dots"></div><button type="button" class="tar3d-btn"></button></div>';
@@ -88,7 +92,7 @@
     function startWash(){S.scene.mode('wash');buzz(20);snd('shuffle',.75);say('手放上去，把牌推開、攪亂。','你推到哪裡，哪裡的牌就會動；洗到你覺得夠了為止。');button('洗好了',finishWash,true);later(function(){btn.disabled=false;},2200);later(finishWash,20000);}
     function finishWash(){if(S.scene.state!=='wash')return;button(null);say('把牌攏回來，敲齊。','');S.scene.mode('gather');buzz(15);snd('card',.6);snd('card',.7,.85);
       later(function(){say('切牌：分成三疊，再反著疊回去。','');S.scene.mode('cut');buzz([15,480,15,900,20,400,20]);snd('card',.6,.5);snd('card',.6,1.05);snd('card',.65,2.2);snd('card',.7,2.8);snd('card',.75,3.35);},1500);
-      later(function(){S.shuffled=true;try{kit.onShuffled();}catch(e){}later(spread,200);},5300);}
+      later(function(){S.shuffled=true;try{kit.onShuffled();}catch(e){}if(kit.shuffleOnly){S.scene.mode('stack');say('牌洗好、切好了。','接下來，從代表牌開始走五輪。');later(function(){S.finished=true;button('開始五輪',close);},700);}else later(spread,200);},5300);}
     // 二、一路推開成弧，選牌
     function spread(){S.count=kit.need();var sp=kit.spread()||{};S.names=sp.names||[];S.scene.mode('ribbon',{count:S.count,id:sp.id,names:S.names,cols:sp.cols});snd('shuffle',.6);paintDots();
       say('牌一路推開了。左右滑動，輕點你有感覺的那一張。',(S.count>10?'一張一張發到牌陣上，共 ':'依序放到牌陣上，要選 ')+S.count+' 張');button(S.count>10?'替我發完':'替我抽完',quick);buzz(25);
@@ -123,11 +127,12 @@
       if(kind==='tarot'){
         if(stage&&!stage.closed){var o=opts||{};setTimeout(function(){try{if(typeof o.onComplete==='function')o.onComplete();}catch(_){}},0);return;}
         if(opts&&opts.variant==='shuffle'&&ready){var k=tarotKit(opts);k.fallback=function(){origPlay.apply(self,args);};if(open(k))return;}
+      }else if(OOTK_ON_TABLE&&kind==='ootk'&&ready&&!(stage&&!stage.closed)){var k3=ootkKit(opts||{});k3.fallback=function(){origPlay.apply(self,args);};if(open(k3))return;
       }else if(kind==='lenormand'&&ready&&opts&&opts.cards&&opts.cards.length){var k2=lenormandKit(opts);k2.fallback=function(){origPlay.apply(self,args);};if(open(k2))return;}
       return origPlay.apply(this,arguments);
     };
   }
   function shown(e){return !!(e&&e.getClientRects&&e.getClientRects().length&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden');}
-  function near(){return shown(document.getElementById('tarot-dock-action'))||shown(document.getElementById('ln-screen'));}
+  function near(){return shown(document.getElementById('tarot-dock-action'))||shown(document.getElementById('ln-screen'))||shown(document.getElementById('ootk-sig-overlay'))||shown(document.getElementById('btn-tool-go'));}
   var poll=setInterval(function(){patch();if(near())load();if(origPlay&&(window.JYTarotSceneModule||failed))clearInterval(poll);},700);
 })();

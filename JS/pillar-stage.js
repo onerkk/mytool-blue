@@ -19,7 +19,7 @@
     '.pil3d-hud{position:absolute;left:0;right:0;bottom:0;padding:30px 18px calc(18px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(5,7,15,0),rgba(5,7,15,.92) 48%);text-align:center;pointer-events:none}',
     '.pil3d-line{font-size:1.04rem;line-height:1.6;min-height:1.6em;color:#f4e7bd}.pil3d-sub{font-size:.84rem;color:rgba(241,232,210,.74);margin-top:4px;min-height:1.3em}',
     /* 八字與合盤的結果頁很長（合盤約一萬二千像素），捲動時出現整塊空白與卡頓：毛玻璃在 Android 上每一格都要重算，改成不用；畫面外的區塊不繪製。 */
-    '#bzs-screen *,#bzx-screen *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}',
+    ':is(#bzs-screen,#bzx-screen,#zw-result,#zw-input,#mhx-screen,#ln-screen,#oracle-screen,#liuyao-screen,#yijing-screen,#western-page,#vedic-page,#nm-room,#lr-room) *{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}',
     '#bzs-screen details,#bzs-screen section,#bzs-screen article,#bzs-screen table,#bzx-screen details,#bzx-screen section,#bzx-screen article{content-visibility:auto;contain-intrinsic-size:auto 420px}',
     '.pil3d-btn{pointer-events:auto;display:block;width:100%;max-width:420px;margin:14px auto 0;padding:14px;border-radius:14px;border:0;background:linear-gradient(135deg,#f1dfa6,#c79f45);color:#1b1505;font-size:1rem;font-weight:700;letter-spacing:.06em}'
   ].join('');
