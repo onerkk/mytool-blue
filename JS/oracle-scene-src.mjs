@@ -30,6 +30,8 @@ export function create(host){
   const wood=document.createElement('canvas');wood.width=512;wood.height=512;{const g=wood.getContext('2d');const gr=g.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#2a140a');gr.addColorStop(1,'#3b1d0e');g.fillStyle=gr;g.fillRect(0,0,512,512);for(let i=0;i<150;i++){g.strokeStyle='rgba('+(60+i%40)+','+(28+i%18)+',12,'+(.08+(i%7)*.02)+')';g.lineWidth=1+(i%3);g.beginPath();const y=(i*37)%512;g.moveTo(0,y);g.bezierCurveTo(140,y+((i*13)%22)-11,360,y-((i*7)%20)+10,512,y+((i*5)%14)-7);g.stroke();}}
   const woodTex=keep(new T.CanvasTexture(wood));woodTex.wrapS=woodTex.wrapT=T.RepeatWrapping;woodTex.repeat.set(2,1.4);woodTex.colorSpace=T.SRGBColorSpace;
   const table=mesh(new T.BoxGeometry(9.5,.5,5.6),std(0xffffff,.58,.08,{map:woodTex}));table.position.set(0,-.25,0);
+  // 真實材質：Poly Haven 的大理石／深色木材貼圖（CC0）
+  {const tl=new T.TextureLoader(),rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(3,2);return keep(t);};tl.load('assets/3d/tex/dark_wood_diffuse.jpg',t=>{if(disposed)return;t.colorSpace=T.SRGBColorSpace;table.material.map=rp(t);table.material.color.setHex(0xb08a6a);table.material.needsUpdate=true;});tl.load('assets/3d/tex/dark_wood_rough.jpg',t=>{if(disposed)return;table.material.roughnessMap=rp(t);table.material.roughness=1;table.material.needsUpdate=true;});}
   const trim=mesh(new T.BoxGeometry(9.6,.09,.09),std(0xc79a4a,.32,.85));trim.position.set(0,-.02,2.83);
   const cloth=mesh(new T.PlaneGeometry(5.2,3.4),std(0x6e1410,.82,.02));cloth.rotation.x=-Math.PI/2;cloth.position.set(0,.004,.5);
   const clothEdge=mesh(new T.RingGeometry(0,1,4),std(0xc79a4a,.4,.7));clothEdge.visible=false;

@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 /* 靜月塔羅・立體牌桌 第二版（2026-11-12）
  * 第一版被使用者退回：牌桌只是一片藍色平面、牌很小、洗牌是牌自己繞圈，動作不像真的在讀牌。
  * 這一版照實際讀牌的手順做，每一步牌走的都是真的會走的路：
@@ -56,13 +57,15 @@ export function create(host,opts){
     g.strokeStyle=au(.22);g.lineWidth=2;g.beginPath();g.arc(C,C,120,0,7);g.stroke();g.beginPath();g.arc(C,C,330,0,7);g.stroke();}
   const clothTex=keep(new T.CanvasTexture(tc));clothTex.colorSpace=T.SRGBColorSpace;clothTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
   const R=5.2,table=new T.Mesh(keep(new T.CircleGeometry(R,96)),keep(new T.MeshStandardMaterial({map:clothTex,roughness:.96,metalness:0})));table.rotation.x=-Math.PI/2;table.receiveShadow=true;scene.add(table);
+  // 真實布料：Poly Haven 的織品法線與粗糙度貼圖（CC0），讓桌布有織紋的起伏，不再是一張平的圖。
+  {const rp=t=>{t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(7,7);t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return keep(t);};loader.load('assets/3d/tex/fabric_pattern_07_nor_gl.jpg',t=>{if(disposed)return;table.material.normalMap=rp(t);table.material.normalScale=new T.Vector2(.55,.55);table.material.needsUpdate=true;});loader.load('assets/3d/tex/fabric_pattern_07_rough.jpg',t=>{if(disposed)return;table.material.roughnessMap=rp(t);table.material.needsUpdate=true;});}
   const rim=new T.Mesh(keep(new T.TorusGeometry(R+.03,.075,14,120)),keep(new T.MeshStandardMaterial({color:0xc9a04f,roughness:.3,metalness:.92})));rim.rotation.x=Math.PI/2;rim.position.y=-.03;scene.add(rim);
   const skirt=new T.Mesh(keep(new T.CylinderGeometry(R+.02,R-.25,1.6,96,1,true)),keep(new T.MeshStandardMaterial({color:0x0b1026,roughness:.9,side:T.DoubleSide})));skirt.position.y=-.86;scene.add(skirt);
   // 燭臺與燭火（放在桌子後緣兩側）
   const glowTex=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d'),r=g.createRadialGradient(64,64,2,64,64,62);r.addColorStop(0,'rgba(255,238,196,1)');r.addColorStop(.3,'rgba(255,196,110,.5)');r.addColorStop(1,'rgba(255,170,80,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return keep(new T.CanvasTexture(c));})();
   const brass=keep(new T.MeshStandardMaterial({color:0xb98f45,roughness:.32,metalness:.9})),wax=keep(new T.MeshStandardMaterial({color:0xefe6d2,roughness:.55})),flames=[];
-  for(const sx of[-1,1]){const g=new T.Group();g.position.set(sx*3.6,0,-2.6);scene.add(g);const prof=[[0,0],[.34,0],[.36,.05],[.12,.1],[.07,.5],[.13,.56],[.2,.6],[.2,.64],[0,.64]].map(p=>new T.Vector2(p[0],p[1]));const st=new T.Mesh(keep(new T.LatheGeometry(prof,28)),brass);st.castShadow=true;g.add(st);const cd=new T.Mesh(keep(new T.CylinderGeometry(.085,.09,.62,16)),wax);cd.position.y=.95;g.add(cd);
-    const fl=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xffd58a,transparent:true,depthWrite:false,blending:T.AdditiveBlending})));fl.position.y=1.36;fl.scale.set(.5,.8,1);g.add(fl);const hl=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xffb060,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.4})));hl.position.y=1.36;hl.scale.set(2.6,2.6,1);g.add(hl);flames.push({fl,hl});}
+  const candleGroups=[];for(const sx of[-1,1]){const g=new T.Group();g.position.set(sx*3.6,0,-2.6);scene.add(g);candleGroups.push(g);const prof=[[0,0],[.34,0],[.36,.05],[.12,.1],[.07,.5],[.13,.56],[.2,.6],[.2,.64],[0,.64]].map(p=>new T.Vector2(p[0],p[1]));const st=new T.Mesh(keep(new T.LatheGeometry(prof,28)),brass);st.castShadow=true;g.add(st);const cd=new T.Mesh(keep(new T.CylinderGeometry(.085,.09,.62,16)),wax);cd.position.y=.95;g.add(cd);
+    const fl=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xffd58a,transparent:true,depthWrite:false,blending:T.AdditiveBlending})));fl.position.y=1.36;fl.scale.set(.5,.8,1);g.add(fl);const hl=new T.Sprite(keep(new T.SpriteMaterial({map:glowTex,color:0xffb060,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:.4})));hl.position.y=1.36;hl.scale.set(2.6,2.6,1);g.add(hl);flames.push({fl,hl});g.userData={st,cd,fl,hl};}
   const halo=new T.Mesh(keep(new T.PlaneGeometry(1,1)),keep(new T.MeshBasicMaterial({map:glowTex,transparent:true,depthWrite:false,blending:T.AdditiveBlending,opacity:0})));halo.rotation.x=-Math.PI/2;scene.add(halo);
   // ── 牌：圓角、有厚度；上面牌背、下面牌面（翻開時才貼上真正抽到的那張）、側邊燙金 ──
   const backTex=keep(loader.load(opts.back||'assets/cards/bright-20261011/tarot/back.webp'));backTex.colorSpace=T.SRGBColorSpace;backTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
@@ -99,6 +102,26 @@ export function create(host,opts){
   function hit(cx,cy){const r=el.getBoundingClientRect();v2.set(((cx-r.left)/r.width)*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(v2,camera);const list=cards.filter(c=>c.picked<0&&c.m.visible).map(c=>c.m),h=ray.intersectObjects(list,false);if(h.length)return h[0].object.userData.i;
     let best=-1,bd=1e9;for(const c of cards){if(c.picked>=0||!c.m.visible)continue;tmp.copy(c.m.position).project(camera);const sx=(tmp.x*.5+.5)*r.width+r.left,sy=(-tmp.y*.5+.5)*r.height+r.top,dy=Math.abs(sy-cy);if(dy>r.height*.1)continue;const d=Math.abs(sx-cx)+dy*.4;if(d<bd){bd=d;best=c.i;}}return bd<r.width*.18?best:-1;}
   function push(hx,hz,dx,dz,rad,str){for(const c of cards){const ex=c.x-hx,ez=c.z-hz,d2=ex*ex+ez*ez;if(d2>rad*rad)continue;const f=(1-Math.sqrt(d2)/rad)*str;c.vx+=dx*f;c.vz+=dz*f;c.vr+=(ex*dz-ez*dx)*f*2.4+(c.h-.5)*f*Math.hypot(dx,dz)*3;}}
+  // ── 真實模型 ──
+  const gltf=new GLTFLoader();
+  // 黃銅燭臺：Poly Haven「Brass Candleholders」（CC0）。載到之後換掉程式畫的燭臺，燭火移到真燭芯的位置。
+  gltf.load('assets/3d/candle/brass_candleholders.gltf',g=>{if(disposed)return;const src=g.scene.getObjectByName('brass_candleholder_03')||g.scene.children[0];if(!src)return;g.scene.traverse(o=>{if(o.isMesh){o.castShadow=true;if(o.material){res.add(o.material);['map','normalMap','roughnessMap','metalnessMap','aoMap'].forEach(k=>{if(o.material[k])res.add(o.material[k]);});}if(o.geometry)res.add(o.geometry);}});
+    candleGroups.forEach((cg,i)=>{const c=src.clone();c.position.set(0,0,0);c.scale.setScalar(2.35);c.rotation.y=i?2.1:.4;cg.add(c);const u=cg.userData;u.st.visible=false;u.cd.visible=false;u.fl.position.set(0,.83*2.35+.1,0);u.hl.position.set(0,.83*2.35+.1,0);});},undefined,()=>{});
+  // 一雙手：WebXR Input Profiles 的 generic-hand（MIT）。洗牌時手跟著手指走，收牌、切牌、開牌時做對應的動作。
+  const hands=[null,null],handState=[{x:-6,y:1.2,z:5,tx:-6,ty:1.2,tz:5,yaw:0},{x:6,y:1.2,z:5,tx:6,ty:1.2,tz:5,yaw:0}],skin=keep(new T.MeshStandardMaterial({color:0xe7c2a4,roughness:.62,metalness:0}));
+  ['left','right'].forEach((side,i)=>{gltf.load('assets/3d/hands/'+side+'.glb',g=>{if(disposed)return;const holder=new T.Group(),inner=g.scene;inner.traverse(o=>{if(o.isMesh||o.isSkinnedMesh){o.material=skin;o.castShadow=true;o.frustumCulled=false;if(o.geometry)res.add(o.geometry);}});
+      inner.scale.setScalar(10.5);inner.quaternion.copy(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,0,1),(i?-1:1)*Math.PI/2).multiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(1,0,0),Math.PI/2)));inner.position.y=.62;/* 模型原點在手腕中心，轉平後手掌大半在原點下方；往上墊，讓手掌底面落在握點 */holder.add(inner);holder.position.set(handState[i].x,handState[i].y,handState[i].z);scene.add(holder);hands[i]=holder;},undefined,()=>{});});
+  const ghost=[{x:-1,z:.3},{x:1,z:.3}];
+  const handTo=(i,x,y,z,yaw)=>{const h=handState[i];h.tx=x;h.ty=y;h.tz=z;h.yaw=yaw||0;};
+  const handAway=i=>handTo(i,i?5.5:-5.5,1.4,5.2,0);
+  function cutHandX(e){if(e<.65)return mix(0,-1.15,ease((e-.05)/.6));if(e<1.2)return mix(0,-2.3,ease((e-.6)/.6));if(e<1.75)return -2.3;if(e<2.3)return mix(0,-2.3,ease((e-1.75)/.55));if(e<2.9)return mix(-1.15,-2.3,ease((e-2.3)/.55));return mix(-2.3,0,ease((e-2.9)/.55));}
+  function driveHands(e,dt){
+    if(mode==='wash'){const touching=now-lastTouch<1.1;if(touching&&handPrev){handTo(1,handPrev.x+.1,.14,handPrev.z+.55,-.15);handTo(0,ghost[0].x,.14,ghost[0].z+.55,.2);}else{handTo(0,ghost[0].x,.14,ghost[0].z+.55,.25);handTo(1,ghost[1].x,.14,ghost[1].z+.55,-.25);}}
+    else if(mode==='gather'){const k=ease(e/.9);handTo(0,mix(-3,-.7,k),.14,.95,.7);handTo(1,mix(3,.7,k),.14,.95,-.7);}
+    else if(mode==='cut'){const lifting=(e>.05&&e<1.2)||(e>1.75&&e<3.45);handTo(1,cutHandX(e)+.1,lifting?.95:.5,.95,-.1);handAway(0);if(e>3.5){handAway(0);handAway(1);}}
+    else if(mode==='ribbon'){const u=(e-.3)/1.5;if(u>0&&u<1){handTo(1,mix(-3.0,3.1,ease(u)),.16,.35+Math.pow(mix(-3,3.1,ease(u)),2)*.03,-.2);handAway(0);}else{handAway(0);handAway(1);}}
+    else{handAway(0);handAway(1);}
+    for(let i=0;i<2;i++){const h=handState[i],k=1-Math.pow(.0012,dt);h.x=mix(h.x,h.tx,k);h.y=mix(h.y,h.ty,k);h.z=mix(h.z,h.tz,k);if(hands[i]){hands[i].position.set(h.x,h.y,h.z);hands[i].rotation.y=mix(hands[i].rotation.y,h.yaw,k);}}}
   function resize(){const r=host.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);renderer.setSize(W,H,false);camera.aspect=W/H;frameK=Math.max(1,Math.min(2.1,.74/(W/H)));camera.updateProjectionMatrix();}
   function frame(ms){raf=0;if(disposed||!running)return;const t=ms/1000,dt=Math.min(.05,Math.max(.001,t-(now||t)));now=t;const e=t-t0;
     if(!degraded&&frames<140){frames++;if(frames>20&&dt>.034)slow++;if(frames===140&&slow>55){degraded=true;renderer.shadowMap.enabled=false;key.castShadow=false;pr=1;renderer.setPixelRatio(1);resize();renderer.render(scene,camera);scene.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.needsUpdate=true;});}});}}
@@ -107,7 +130,7 @@ export function create(host,opts){
     cam.pos.lerp(camTo.pos,1-Math.pow(.035,dt));cam.look.lerp(camTo.look,1-Math.pow(.035,dt));tmp.copy(cam.pos).sub(cam.look).multiplyScalar(frameK).add(cam.look);camera.position.set(tmp.x+gx*.35,tmp.y,tmp.z+gy*.25);camera.lookAt(cam.look);
     if(mode==='wash'){
       // 沒有人碰時，兩隻看不見的手在桌上各畫一個圈代為洗牌；有人碰就完全交給他的手
-      if(now-lastTouch>1.1){for(const s of[-1,1]){const a=t*1.9*s+(s>0?0:2.4),hx=s*1.05+Math.cos(a)*1.25,hz=.3+Math.sin(a)*1.0,dx=-Math.sin(a)*1.25*1.9*s*dt,dz=Math.cos(a)*1.0*1.9*s*dt;push(hx,hz,dx,dz,1.25,16);}}
+      if(now-lastTouch>1.1){for(const s of[-1,1]){const a=t*1.9*s+(s>0?0:2.4),hx=s*1.05+Math.cos(a)*1.25,hz=.3+Math.sin(a)*1.0;ghost[s>0?1:0].x=hx;ghost[s>0?1:0].z=hz;const dx=-Math.sin(a)*1.25*1.9*s*dt,dz=Math.cos(a)*1.0*1.9*s*dt;push(hx,hz,dx,dz,1.25,16);}}
       for(const c of cards){if(e<c.delay+.9&&c.spread){const k=easeOut((e-c.delay)/.9);if(e>=c.delay){c.x=mix(0,c.spread.x,k);c.z=mix(.2,c.spread.z,k);c.ry=mix(0,c.spread.ry,k);c.y=mix(c.y,c.ty,.2);}}
         else{c.x+=c.vx*dt;c.z+=c.vz*dt;c.ry+=c.vr*dt;const fr=Math.pow(.012,dt);c.vx*=fr;c.vz*=fr;c.vr*=Math.pow(.02,dt);const d=Math.hypot(c.x,c.z-.3);if(d>3.3){const q=(d-3.3)*5*dt;c.vx-=(c.x/d)*q*8;c.vz-=((c.z-.3)/d)*q*8;}c.y=mix(c.y,c.ty,.25);}
         c.scale=mix(c.scale,c.ts,.12);}
@@ -130,6 +153,7 @@ export function create(host,opts){
         else{const k=1-Math.pow(.5,dt*c.k*2.2);c.x=mix(c.x,c.tx,k);c.y=mix(c.y,c.ty,k);c.z=mix(c.z,c.tz,k);}
         const kr=1-Math.pow(.5,dt*c.k*2.2);c.ry=mix(c.ry,c.try_,kr);c.rz=mix(c.rz,c.trz,1-Math.pow(.5,dt*13));c.scale=mix(c.scale,c.ts,1-Math.pow(.5,dt*9));}
     }
+    driveHands(e,dt);
     for(const c of cards){c.m.position.set(c.x,c.y,c.z);c.m.rotation.set(0,c.ry,c.rz,'YXZ');c.m.scale.setScalar(c.scale);}
     for(const l of labels){l.material.opacity=mix(l.material.opacity,l.userData.show?1:0,.08);}
     renderer.render(scene,camera);raf=requestAnimationFrame(frame);}
