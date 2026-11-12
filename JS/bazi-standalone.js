@@ -406,8 +406,9 @@
   // ════════════════════════════════════════════════════════
   //  過場動畫（天干環 + 太極）
   // ════════════════════════════════════════════════════════
-  function _showLoading(done) {
+  function _showLoading(done, sealValues) {
     if (window.JYRitual) return window.JYRitual.play('bazi', {
+      sealValues: sealValues || null,
       onComplete: done,
       onCancel: function(){}
     });
@@ -639,7 +640,18 @@
   }
 
   // 真正執行：真太陽時校正 → computeBazi → enhanceBazi → buildBaziPrompt
+  // 2026-11-12：過場改成立體四柱殿後，柱上要刻真正的干支，所以先把四柱算出來交給過場；正式排盤仍在過場結束後照原流程重算，結果相同。
+  function _sealPillars(y, m, d, hh, mm, unknown, city) {
+    try {
+      var sY = y, sM = m, sD = d, sHH = hh, sMM = mm, si = null;
+      if (typeof calcTrueSolarTime === 'function') { si = calcTrueSolarTime(y, m, d, hh, mm, city.lng, city.tz, city.tzid); if (si) { sY = si.year; sM = si.month; sD = si.day; sHH = si.hour; sMM = si.minute; } }
+      var b = computeBazi(sY, sM, sD, sHH, sMM, _gender, {second:(si&&si.second)||0,trueSolarTimeApplied:!!si,birthInstant:si&&si.utcTimestamp,civilTimeStatus:si&&si.civilTimeStatus,timezoneId:city.tzid||null,timezoneOffset:city.tz,longitude:city.lng,dayBoundaryMode:_dayBoundaryMode});
+      if (!b || !b.pillars) return null;
+      return ['year','month','day','hour'].map(function (k) { var p = b.pillars[k] || {}; return k === 'hour' && unknown ? '未定' : (p.gan || '') + (p.zhi || ''); });
+    } catch (e) { return null; }
+  }
   function _castWith(y, m, d, hh, mm, unknown, city, question) {
+    var _seal = _sealPillars(y, m, d, hh, mm, unknown, city);
     _showLoading(function () {
       try {
         // 真太陽時校正（含經度時差＋均時差）→ 餵 computeBazi
@@ -674,7 +686,7 @@
         console.error('[bazi] cast error', e);
         _bzxErr('排盤計算發生問題，請重試或更換出生資料');
       }
-    });
+    }, _seal);
   }
 
   // ════════════════════════════════════════════════════════
