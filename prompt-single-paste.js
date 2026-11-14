@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261114vary107',LIMIT=12000,BYTES=28000;
+  const VERSION='20261115vary108',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -320,7 +320,7 @@
     const WS={旺:'當令最強',相:'有力',休:'退氣',囚:'受困',死:'無力'};
     const L=[];
     if(an.tiYong)L.push('體用：'+an.tiYong.rel+'（'+(an.tiYong.judge||'')+'）—'+(an.tiYong.desc||'')+'；體卦'+(an.wangShuai?.ti?.level?WS[an.wangShuai.ti.level]||an.wangShuai.ti.level:'')+'、用卦'+(an.wangShuai?.yo?.level?WS[an.wangShuai.yo.level]||an.wangShuai.yo.level:'')+'（本節令'+(an.wangShuai?.ti?.monthZhi||'')+'月）');
-    if(nb.situation)L.push('處境：'+nb.situation);if(nb.coreTension)L.push('張力：'+nb.coreTension);if(nb.trend)L.push('走向：'+nb.trend);if(nb.risk&&nb.risk!==nb.trend)L.push('風險：'+nb.risk);
+    if(nb.situation)L.push('處境：'+nb.situation);if(nb.coreTension)L.push('張力：'+nb.coreTension);if(nb.trend)L.push('走向：'+nb.trend);/* vary108：這一欄常是吉象的結論（如「變卦比和體：結局吉」），掛「風險」會誤導；已包含在走向裡就不重複，吉象改標「結局」。 */if(nb.risk&&nb.risk!==nb.trend&&!String(nb.trend||'').includes(String(nb.risk)))L.push((/凶|損|克體|剋體|耗|阻|難/.test(nb.risk)?'風險：':'結局：')+nb.risk);
     if(an.eventNature)L.push('事情的性質（本卦五行取象）：'+(an.eventNature.label||'')+'—'+A(an.eventNature.events).join('、')+'；節奏'+(an.eventNature.speed||'')+(an.eventNature.timing?'；對應季節候選：'+an.eventNature.timing:''));
     if(tm.label||tm.windowLabel)L.push('應期：'+(tm.label||tm.windowLabel||'')+(tm.label&&(tm.range||tm.windowLabel)?'（'+(tm.range||tm.windowLabel)+'）':'')+(tm.note?'；'+tm.note:''));
     if(yq.jiTxt||yq.layerTxt)L.push('應期候選（卦氣）：'+[yq.layerTxt,yq.jiTxt,yq.baiTxt].filter(Boolean).join('；'));
