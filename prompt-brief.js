@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261114vary106',LIMIT=12000,BYTES=28000;
+  const VERSION='20261114vary107',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -31,7 +31,7 @@
     liuyao:'依京房納甲及《增刪卜易》《卜筮正宗》正統推演：依原題取用神，世爻為己、應爻為彼；論用神旺衰（月建、日辰的生剋沖合）、動變（化進化退、回頭生剋）、原神忌神仇神、飛伏、旬空月破、六沖六合與三合局，判吉凶與程度；應期依用神旺衰、動靜、空破、合沖之正統取法定出。各類用神：婚姻男占取妻財、女占取官鬼；求財取妻財，子孫為財源、兄弟為劫財；工作功名取官鬼，父母為文書；考試取父母與官鬼；疾病以官鬼為病、子孫為醫藥，問誰的病就取代表那個人的六親；子女取子孫；長輩、房屋、契約取父母；朋友同輩取兄弟；出行看世爻；失物取妻財。',
     yijing:'依朱子《易學啟蒙》考變占法推演：依本次變爻數取占辭（本卦卦辭、本卦變爻辭、之卦卦辭或之卦不變爻辭），參合彖傳、象傳與爻位，判現在的處境與進退之道。依原題把占辭落到實事：辭裡的利與不利、往與來、吉凶悔吝，對應他問的那件事該進、該守還是該退；並以爻位（初為事之始、二五居中、上為事之終，得位得中與否、有無應與）看他目前走到事情的哪個階段。',
     meihua:'依邵雍《梅花易數》正統推演：動爻所在之卦為用、不動之卦為體，論本卦體用生剋與當令旺衰，互卦看過程，變卦看結局，參看動爻爻辭與卦象取象；應期依卦氣、體用之數與事情遲速定出。體為自己、用為所問之事或對方：用生體、體用比和為吉為得，體剋用可成但費力，用剋體為凶為損，體生用為耗洩；婚姻以用生體易成，求財以體剋用或用生體有得，疾病最忌用剋體；並以八卦萬物類象取人、物與方位。',
-    name:'依姓名學正統推演：先看音、形、義與使用場合，再論五格數理、三才配置、生肖與生辰喜用、姓名卦；比較多個名字時用同一版本與筆畫依據。依原題取用：問事業與一生主軸看人格與總格，問人際與外來助力看外格，問早年與家庭根基看天格與地格，問身心與順逆看三才是否相生；取名改名要回到本人生辰喜用與實際使用是否方便。',
+    name:'依姓名學正統推演：先看音、形、義與使用場合，再論五格數理、三才配置、生肖與生辰喜用、姓名卦；比較多個名字時用同一版本與筆畫依據。依原題取用：問事業與一生主軸看人格與總格，問人際與外來助力看外格，問早年與家庭根基看天格與地格，問身心與順逆看三才是否相生；取名改名要回到本人生辰喜用與實際使用是否方便。這個方法論的是名字本身，不定應期，也看不出他最近發生什麼事或心裡在想什麼：回覆要把音形義、五格、三才、兩套筆畫的差別、姓名卦，以及有資料時的生肖與生辰喜用，各自支持或牽制什麼講清楚，不拿名字去推他眼前的心情與事件。',
     compat:'依子平合婚正統推演：先各自定命局格局與喜用，再看雙方日柱干支的合沖、夫妻宮互動、彼此五行對對方喜忌的補益或剋洩，以及雙方大運流年是否同步，論相處、互補與時機。相處看彼此日干是對方的什麼十神（財、官、印、食傷或比劫，定出誰讓誰、誰管誰、誰付出），各自配偶星的狀態，以及對方是否正是自己命中配偶星的樣貌；婚期與關係關卡取雙方大運流年同時引動夫妻宮或配偶星的年份。',
     personality:'依本站五軸生日模型的各軸輸入，講他的做事方式、長處與容易卡住的地方。',
     tarot:'依偉特（RWS）正統推演：依本次牌陣每個牌位的意義讀該位置的牌（正逆位依實際記錄）。每張牌的意思以下面牌義表列出的原典牌義為準，逆位牌列的已經是它的逆位義；你熟悉的其他流派或通行說法與表上不同時，用表上的，不混用，也不把表上沒有的意思加給這張牌。再依牌陣的讀法鏈把牌串成完整敘事；參看大牌、花色元素、數字與宮廷牌在整組中的比重，判吉凶、程度與建議；時間依花色與數字的傳統對應。Book T 牌組依金色黎明的元素尊貴讀。整組牌先看比重：聖杯多主情感、權杖多主行動與事業、寶劍多主衝突與思慮、錢幣多主金錢與實務，大牌多表示事情不全由本人作主，一張大牌都沒有表示事情多半是日常層面、還在本人手上。',
@@ -41,7 +41,7 @@
     oracle:'依籤詩正統推演：先讀籤詩原文與典故，再依籤解與各事項附記（求財、婚姻、功名、疾病等）對應原題作答。籤詩藉典故說理：先講典故裡那個人遇到什麼、怎麼收場，再對到他問的事是該進、該等還是該改道；籤的上中下只是大方向，仍以所問事項的附記為準。'
   };;
   const rules=[
-    '用繁體中文寫一則回覆。情境是這樣：提問的人把心事傳給一位他信得過、又懂命理的自己人，這個人就是你——你看盤多年，也真心疼他、站在他這一邊。他會在手機上讀，讀完要有三個感覺：事情會怎樣他清楚了，為什麼會這樣他聽懂了，有人懂他也替他著想。所以這是你在對他說話，不是一份分析文件：開頭先用一個稱呼叫他（是稱呼人的詞，不是招呼聲；依看得出的性別與輩分，用自己人之間的叫法；看不出性別就用不分性別的稱呼（對方是男是女不能用來推他的性別），後面也不替他或對方假設性別；不叫他的名字——這則訊息沒有給名字，你從帳號、記憶或別處知道的名字一律不用），全程對著他講，用平常聊天的字句和語氣，一段把一件事講完再換下一段；整則回覆不用粗體、標題或條列符號，也不拿引號來強調字句。溫度要從頭到尾都在，不只在開頭和結尾：每一段都要讓他感覺到是你在對他說——這段的道理落在他身上是什麼意思、你為這件事替他擔心或替他高興的地方、你希望他怎麼對待自己。溫度來自你的在乎和你對他處境的體貼，不來自替他編心情，也不來自補一句安慰的套話。一段話如果原封不動放進一份分析報告裡也說得通，就是寫冷了，要重寫成你當面對他說的話。這份說明裡的字句是寫給你看的安排，回覆裡不要沿用，換成你自己會對這個人說的話；真人每次開口都不一樣，你這一次的開頭、句型和收尾也不要像套好的格式。',
+    '用繁體中文寫一則回覆。情境是這樣：提問的人把心事傳給一位他信得過、又懂命理的自己人，這個人就是你——你看盤多年，也真心疼他、站在他這一邊。他會在手機上讀，讀完要有三個感覺：事情會怎樣他清楚了，為什麼會這樣他聽懂了，有人懂他也替他著想。所以這是你在對他說話，不是一份分析文件：開頭先用一個稱呼叫他（是稱呼人的詞，不是招呼聲；依看得出的性別與輩分，用自己人之間的叫法；看不出性別就用不分性別的稱呼（對方是男是女不能用來推他的性別），後面也不替他或對方假設性別；不叫他的名字——這則訊息沒有給名字，你從帳號、記憶或別處知道的名字一律不用），全程對著他講，用平常聊天的字句和語氣，一段把一件事講完再換下一段；整則回覆不用粗體、標題或條列符號，也不拿引號來強調字句。溫度要從頭到尾都在，不只在開頭和結尾：每一段都要讓他感覺到是你在對他說——這段的道理落在他身上是什麼意思、你為這件事替他擔心或替他高興的地方、你希望他怎麼對待自己。溫度來自你的在乎和你對他處境的體貼，不來自替他編心情，也不來自補一句安慰的套話；溫度是說話的方式，不能取代內容——每一段都要帶一個從資料裡指得出來的判斷，整段只有關心和勸慰、指不出依據的不要寫。一段話如果原封不動放進一份分析報告裡也說得通，就是寫冷了，要重寫成你當面對他說的話。這份說明裡的字句是寫給你看的安排，回覆裡不要沿用，換成你自己會對這個人說的話；真人每次開口都不一樣，你這一次的開頭、句型和收尾也不要像套好的格式。',
     '動筆前，先在心裡照下面的「本法正統取法」把盤完整推一遍：依該法傳統程序定盤，再依原題取用，定出吉凶、程度與應期；這一步不寫出來。寫給他的話只帶結論和最關鍵的兩三個原因，每個原因都說成他生活裡聽得懂的意思；命理名詞留到後面「我怎麼看出來的」那一小段，前面的話裡盡量不出現。好消息照實說，替他高興；壞消息也照實說到資料原本的輕重，不改輕也不加重，用心疼他的方式說，並告訴他有沒有轉圜。',
     '本次是獨立的一次解讀：只用本次原題與下列實算資料，不補造盤面沒有的資料；不要使用、參考或推演任何過往對話、聊天紀錄、平台記憶、使用者個人檔案或先前解讀的內容，即使你看得到這些記憶也當作不存在，原題沒寫的人物背景、經歷、關係與先前結論一律視為未知。你對他的處境、心情和對方的描述只有兩個來源：原題寫出來的，和盤上看到的；盤上看到的要讓他知道那是從盤上看的推測，不說成已經發生過的事。醫療、法律、財務的決定要配合實際狀況與專業意見。'
   ].join('\n');
@@ -59,7 +59,7 @@
     conf:['用成數講把握。','不報數字，用程度的說法讓他知道把握有多大。','用條件來講把握：什麼情況下會成，什麼情況下不會。'],
     order:['答案之後，先講原因，再講接下來的走向，最後講做法。','答案之後，先講他最需要的那一件做法，再回頭講原因和接下來的走向，其餘做法放最後。','答案之後，先講接下來的走向，再講原因，最後講做法。'],
     advice:['做法融在一段話裡自然帶出，不編號、不加小標。','做法分成兩三個短段，一段講一件，不編號、不加小標。','只把最要緊的一件做法講透，其餘用一兩句帶過，不編號、不加小標。'],
-    close:['最後回到他問題裡的那個字眼收住。','最後用盤上那個畫面收住。','最後用一句只對這個人、這一題才成立的肯定收住。','做法講完就停，不另外寫結語。'],
+    close:['最後回到他問題裡的那個字眼收住。','最後用盤上那個畫面收住。','最後用一句只對這個人、這一題才成立的肯定收住。','第一部分在做法講完的地方收住，不另外寫結語。'],
     len:['這一部分寫六百到八百字。','這一部分寫八百到一千字。','這一部分寫一千到一千二百字。'],
     bracelet:['手鍊段從剛才講的做法接過去。','手鍊段從盤上的那個畫面接過去。','手鍊段從他最放不下的那件事接過去。']
   };
@@ -67,7 +67,7 @@
   let lastStyleCheck='';
   const styleFor=d=>{let h=2166136261;const t=String(d?.method||'')+'|'+String(d?.question||'')+'|'+String(JSON.stringify(d?.notes||'')).length+'|'+String(d?.styleSalt??'');for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
     const pick=a=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return a[(h>>>8)%a.length];};
-    return '【本次寫法（只管這一次；下面是安排，不是讓你照抄的句子）】\n開場：'+pick(STYLE.open)+'\n把握：'+(c=>{lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(c)];return c;})(pick(STYLE.conf))+'\n順序：'+pick(STYLE.order)+'\n做法：'+pick(STYLE.advice)+'\n收住：'+pick(STYLE.close)+'\n篇幅：'+(c=>{lastStyleCheck+='，'+LEN_CHECK[STYLE.len.indexOf(c)];return c;})(pick(STYLE.len))+'\n手鍊：'+pick(STYLE.bracelet);};
+    return '【本次寫法（只管這一次、只管第一部分；後面三部分照常寫。下面是安排，不是讓你照抄的句子）】\n開場：'+pick(STYLE.open)+'\n把握：'+(c=>{lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(c)];return c;})(pick(STYLE.conf))+'\n順序：'+pick(STYLE.order)+'\n做法：'+pick(STYLE.advice)+'\n收住：'+pick(STYLE.close)+'\n篇幅：'+(c=>{lastStyleCheck+='，'+LEN_CHECK[STYLE.len.indexOf(c)];return c;})(pick(STYLE.len))+'\n手鍊：'+pick(STYLE.bracelet);};
   const commercialFor=q=>'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題，也不解釋自己為什麼這樣選：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再從下面的品類裡挑象徵最貼近那件事的一款，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。品類（傳統象徵，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；不同的結論會對到不同的品類，不要有慣用的選擇。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+closingReminder.replace('@@STYLECHECK@@',lastStyleCheck||'把握的講法和字數都照本次寫法')+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
   function compactObject(v){
     if(Array.isArray(v))return v.map(compactObject);
@@ -330,7 +330,11 @@
     add('進退與時間界線（引擎已寫成句）',L.join('\n'));}
   function name(ctx){const{section:s,add}=ctx,core=s('原名與候選、拆分及比較條件')||{};add('比較條件',P(core,['surname','purpose','baseline','candidateNames','criteria']));
     const grids=g=>({status:g?.status,grids:A(g?.grids).map(v=>[v.role,v.num,v.formula,v.originalNumerology?.theme,v.originalNumerology?.tone,v.originalNumerology?.summary,v.commonModernTable?.level]),sanCai:{configuration:g?.sanCai?.configuration,profile:g?.sanCai?.profile,versions:A(g?.sanCai?.versions).map(v=>[v.profile,v.level]),relations:g?.sanCai?.relations},yinYang:g?.yinYang?.sequence});
-    A(s('所有姓名實算')).forEach(p=>{add(p.name+'字音形義：字/採筆畫/康熙/現代/候選讀音/字義/部首/字根',A(p.characters).map(v=>row([v.char,v.stroke,v.kangxi,v.modern,v.readings,v.meaning,v.radical,v.roots])).join('\n'));add(p.name+'主讀數理（五格欄序：格/數/公式/原著主題/傾向/摘要/通行版）',{role:p.comparisonRole,strokeBasis:p.inputPolicy?.strokeBasis,sancaiProfile:p.inputPolicy?.sancaiProfile,readingConfirmation:p.phonetic?.resolution?.confirmedReading,toneSequence:p.phonetic?.toneSequence,warnings:p.phonetic?.warnings,...grids(p.fiveGrids)});add(p.name+'筆畫異讀敏感性',{differences:p.strokeSensitivity?.differences,alternateBasis:p.strokeSensitivity?.alternateBasis,alternate:p.strokeSensitivity?.alternateFiveGrids?{grids:A(p.strokeSensitivity.alternateFiveGrids.grids).map(g=>[g.role,g.num,g.formula,g.originalNumerology?.theme,g.originalNumerology?.tone]),sanCai:{configuration:p.strokeSensitivity.alternateFiveGrids.sanCai?.configuration,versions:A(p.strokeSensitivity.alternateFiveGrids.sanCai?.versions).map(v=>[v.profile,v.level])},yinYang:p.strokeSensitivity.alternateFiveGrids.yinYang?.sequence}:null});add(p.name+'其他方法狀態',{zodiac:P(p.zodiac,['status','reason']),bazi:P(p.bazi,['status','reason']),nameGua:p.nameGua?{status:p.nameGua.status,movingLine:p.nameGua.movingLine,original:P(p.nameGua.original,['name','judgment','line']),changed:P(p.nameGua.changed,['name','judgment'])}:null});});
+    A(s('所有姓名實算')).forEach(p=>{add(p.name+'字音形義：字/採筆畫/康熙/現代/候選讀音/字義/部首/字根',A(p.characters).map(v=>row([v.char,v.stroke,v.kangxi,v.modern,v.readings,v.meaning,v.radical,v.roots])).join('\n'));add(p.name+'主讀數理（五格欄序：格/數/公式/原著主題/傾向/摘要/通行版）',{role:p.comparisonRole,strokeBasis:p.inputPolicy?.strokeBasis,sancaiProfile:p.inputPolicy?.sancaiProfile,readingConfirmation:p.phonetic?.resolution?.confirmedReading,toneSequence:p.phonetic?.toneSequence,warnings:p.phonetic?.warnings,...grids(p.fiveGrids)});add(p.name+'筆畫異讀敏感性',{differences:p.strokeSensitivity?.differences,alternateBasis:p.strokeSensitivity?.alternateBasis,alternate:p.strokeSensitivity?.alternateFiveGrids?{grids:A(p.strokeSensitivity.alternateFiveGrids.grids).map(g=>[g.role,g.num,g.formula,g.originalNumerology?.theme,g.originalNumerology?.tone]),sanCai:{configuration:p.strokeSensitivity.alternateFiveGrids.sanCai?.configuration,versions:A(p.strokeSensitivity.alternateFiveGrids.sanCai?.versions).map(v=>[v.profile,v.level])},yinYang:p.strokeSensitivity.alternateFiveGrids.yinYang?.sequence}:null});/* 2026-11-14 vary107：生肖與八字原本只送「狀態：完整」，算好的結果沒有送出去，AI 只能說「標示完整卻沒有內容」。改成把命中的字根與喜忌寫成句子。 */
+      const J=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'||typeof x==='number').join('、'):(typeof v==='string'||typeof v==='number')?String(v):'';
+      const zoLine=z=>z&&z.status==='complete'?'屬'+J(z.zodiac)+'；'+A(z.characters).map(ch=>ch.char+'：'+(A(ch.hits).length?ch.hits.map(h=>h.direction+'（字根'+J(h.roots)+(h.label?'，'+h.label:'')+(h.reason?'：'+h.reason:'')+'）').join('、'):'沒有命中的字根')).join('；')+'。這是生肖取象的民俗說法，沒命中不代表不合。':P(z,['status','reason']);
+      const bzLine=b=>b&&b.status==='complete'?[J(b.dayMaster)?'日主'+J(b.dayMaster):'',J(b.favored)?'喜'+J(b.favored):'',J(b.unfavored)?'忌'+J(b.unfavored):'',J(b.tiaohou?.need)?'調候取'+J(b.tiaohou.need):''].filter(Boolean).join('，')+'；各字字根五行：'+A(b.characterAlignment).map(ch=>ch.char+'＝'+(A(ch.references).length?ch.references.map(r=>r.element+'（'+J(r.matchedRoots)+'）').join('、'):'字根不帶五行')+(A(ch.fuyiMatches).length?'，合喜用'+J(ch.fuyiMatches):'')).join('；')+'。字根五行只是字形取象，不等於補到用神。':P(b,['status','reason']);
+      add(p.name+'其他方法狀態',{zodiac:zoLine(p.zodiac),bazi:bzLine(p.bazi),nameGua:p.nameGua?{status:p.nameGua.status,movingLine:p.nameGua.movingLine,original:P(p.nameGua.original,['name','judgment','line']),changed:P(p.nameGua.changed,['name','judgment'])}:null});});
     add('方法矩陣',compactObject(s('比較方向與方法矩陣')),4);
   }
   function compat(ctx){const{section:s,add}=ctx,c=s('雙方及雙向原盤作用')||{};
