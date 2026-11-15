@@ -4,15 +4,15 @@
     {
       "name": "bazi real exporter",
       "status": "passed",
-      "characters": 10555,
-      "bytes": 27867,
+      "characters": 10557,
+      "bytes": 27871,
       "notExpanded": []
     },
     {
       "name": "ziwei real exporter",
       "status": "passed",
-      "characters": 10328,
-      "bytes": 27520,
+      "characters": 10352,
+      "bytes": 27590,
       "notExpanded": [
         "2029年流月：月/干支/流月命支/四化→地支",
         "逐項作用與相反依據"
@@ -21,15 +21,15 @@
     {
       "name": "astro real exporter",
       "status": "passed",
-      "characters": 11186,
-      "bytes": 27236,
+      "characters": 11194,
+      "bytes": 27258,
       "notExpanded": []
     },
     {
       "name": "vedic real exporter",
       "status": "passed",
-      "characters": 11554,
-      "bytes": 25706,
+      "characters": 11565,
+      "bytes": 25737,
       "notExpanded": [
         "Arudha 象點（Jaimini；依 PVR 算法）",
         "逐項作用與相反依據"
@@ -38,8 +38,8 @@
     {
       "name": "liuren real exporter",
       "status": "passed",
-      "characters": 7888,
-      "bytes": 21082,
+      "characters": 8135,
+      "bytes": 21815,
       "notExpanded": [
         "實際命中神煞"
       ]
@@ -47,29 +47,29 @@
     {
       "name": "liuyao real exporter",
       "status": "passed",
-      "characters": 6013,
-      "bytes": 16669,
+      "characters": 6287,
+      "bytes": 17483,
       "notExpanded": []
     },
     {
       "name": "yijing real exporter",
       "status": "passed",
-      "characters": 5770,
-      "bytes": 16156,
+      "characters": 6030,
+      "bytes": 16928,
       "notExpanded": []
     },
     {
       "name": "meihua real exporter",
       "status": "passed",
-      "characters": 5349,
-      "bytes": 15309,
+      "characters": 5561,
+      "bytes": 15937,
       "notExpanded": []
     },
     {
       "name": "name real exporter",
       "status": "passed",
-      "characters": 8293,
-      "bytes": 22500,
+      "characters": 8308,
+      "bytes": 22543,
       "notExpanded": [
         "方法矩陣"
       ]
@@ -77,49 +77,49 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 7910,
-      "bytes": 20428,
+      "characters": 7922,
+      "bytes": 20462,
       "notExpanded": []
     },
     {
       "name": "personality real exporter",
       "status": "passed",
-      "characters": 4730,
-      "bytes": 13546,
+      "characters": 4726,
+      "bytes": 13532,
       "notExpanded": []
     },
     {
       "name": "tarot real exporter",
       "status": "passed",
-      "characters": 4845,
-      "bytes": 13677,
+      "characters": 5044,
+      "bytes": 14266,
       "notExpanded": []
     },
     {
       "name": "lenormand real exporter",
       "status": "passed",
-      "characters": 4886,
-      "bytes": 13764,
+      "characters": 4958,
+      "bytes": 13978,
       "notExpanded": []
     },
     {
       "name": "ootk real exporter",
       "status": "passed",
-      "characters": 4601,
-      "bytes": 13135,
+      "characters": 4765,
+      "bytes": 13619,
       "notExpanded": []
     },
     {
       "name": "oracle real exporter",
       "status": "passed",
-      "characters": 5034,
-      "bytes": 14311,
+      "characters": 5069,
+      "bytes": 14414,
       "notExpanded": []
     },
     {
       "name": "provided financial question retains both outcomes and exact wording",
       "status": "passed",
-      "characters": 10907
+      "characters": 10935
     },
     {
       "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
@@ -129,24 +129,24 @@
     {
       "name": "two charts share one instruction block and retain both entire palace tables",
       "status": "passed",
-      "characters": 10505
+      "characters": 10524
     },
     {
       "name": "eighty explicit annual rows are never replaced by a top-N sample",
       "status": "passed",
       "years": 80,
-      "characters": 10635
+      "characters": 10638
     },
     {
       "name": "provided Yijing cast retains selected text and all six moving statuses",
       "status": "passed",
-      "characters": 5816
+      "characters": 5842
     },
     {
       "name": "full production OOTK preserves every active order, counting step and pair",
       "status": "passed",
       "operations": 5,
-      "characters": 8976
+      "characters": 9180
     },
     {
       "name": "Unicode or oversized old exports fail before clipboard and never split",
