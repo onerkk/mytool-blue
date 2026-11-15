@@ -4,15 +4,15 @@
     {
       "name": "bazi real exporter",
       "status": "passed",
-      "characters": 9813,
-      "bytes": 25647,
+      "characters": 9850,
+      "bytes": 25758,
       "notExpanded": []
     },
     {
       "name": "ziwei real exporter",
       "status": "passed",
-      "characters": 10109,
-      "bytes": 26739,
+      "characters": 10146,
+      "bytes": 26850,
       "notExpanded": [
         "逐項作用與相反依據"
       ]
@@ -20,15 +20,15 @@
     {
       "name": "astro real exporter",
       "status": "passed",
-      "characters": 9792,
-      "bytes": 23378,
+      "characters": 10342,
+      "bytes": 24710,
       "notExpanded": []
     },
     {
       "name": "vedic real exporter",
       "status": "passed",
-      "characters": 11793,
-      "bytes": 26165,
+      "characters": 11830,
+      "bytes": 26276,
       "notExpanded": [
         "逐項作用與相反依據"
       ]
@@ -75,15 +75,15 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 7534,
-      "bytes": 19300,
+      "characters": 7571,
+      "bytes": 19411,
       "notExpanded": []
     },
     {
       "name": "personality real exporter",
       "status": "passed",
-      "characters": 4388,
-      "bytes": 12520,
+      "characters": 4425,
+      "bytes": 12631,
       "notExpanded": []
     },
     {
@@ -117,7 +117,7 @@
     {
       "name": "provided financial question retains both outcomes and exact wording",
       "status": "passed",
-      "characters": 10208
+      "characters": 10245
     },
     {
       "name": "Vedic all twenty AV tables round-trip exactly; rescue checks remain explicit",
@@ -127,13 +127,13 @@
     {
       "name": "two charts share one instruction block and retain both entire palace tables",
       "status": "passed",
-      "characters": 10557
+      "characters": 10479
     },
     {
       "name": "eighty explicit annual rows are never replaced by a top-N sample",
       "status": "passed",
       "years": 80,
-      "characters": 10949
+      "characters": 10701
     },
     {
       "name": "provided Yijing cast retains selected text and all six moving statuses",

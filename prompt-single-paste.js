@@ -3,7 +3,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261116deep114',LIMIT=12000,BYTES=28000;
+  const VERSION='20261116deep115',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -72,12 +72,14 @@
      傳統論命本來就先「驗盤」：先講盤上寫明的性情與已經過去的運期，對得上再往下論。這裡把這一步加回來，但只准講盤上指得出的、只講領域與性質、不編具體事件。 */
   const NATAL=new Set(['bazi','ziwei','vedic','astro','compat','personality']);
   const verifyFor=m=>'【先讓他對照（屬於第一部分，寫在答案之後、原因之前，約兩百字，不算在篇幅裡）】\n'+(NATAL.has(m)?
-    '論命先驗盤：從命盤直接講三件他一聽就知道對不對的事，不用推測的口氣——他做事和做選擇的習慣；他在所問這件事上一向強在哪、老是卡在哪；已經過去的運期（資料裡有年份的大限、大運、流年、主副運）哪一兩段在所問的領域特別順或特別吃力，寫出西元年。換一張盤照樣說得通的話不寫；只講領域和性質，不編具體事件。請他自己對照，對不上的以他的實際經歷為準。這三件在第二部分各有一行依據。':
+    '論命先驗盤：從命盤直接講三件他一聽就知道對不對的事，不用推測的口氣——他做事和做選擇的習慣；他在所問這件事上一向強在哪、老是卡在哪；已經過去的運期（資料裡有年份的大限、大運、流年、主副運）哪一兩段在所問的領域特別順或特別吃力，寫出西元年；資料裡沒有已經過去的運期時，明說這份資料對照不了過去的年份，不自己配年份。換一張盤照樣說得通的話不寫；只講領域和性質，不編具體事件。請他自己對照，對不上的以他的實際經歷為準。這三件在第二部分各有一行依據。':
     '斷事先斷現況：從盤上直接講兩三件這件事目前的實際狀態，不用推測的口氣——事情現在卡在哪一環、主動權在誰手上、對方或環境目前是靠近、觀望還是抗拒。換一盤照樣說得通的話不寫；只講狀態，不編具體事件。請他自己對照，對不上的以他的實際情況為準。這幾件在第二部分各有一行依據。');
   const styleFor=d=>{let h=2166136261;const t=String(d?.method||'')+'|'+String(d?.question||'')+'|'+String(JSON.stringify(d?.notes||'')).length+'|'+String(d?.styleSalt??'');for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
     const pick=a=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return a[(h>>>8)%a.length];};
     return '【本次寫法（只管這一次、只管第一部分；後面三部分照常寫。下面是安排，不是讓你照抄的句子）】\n開場：'+pick(STYLE.open)+'\n把握：'+(c=>{lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(c)];return c;})(pick(STYLE.conf))+'\n順序：'+pick(STYLE.order)+'\n做法：'+pick(STYLE.advice)+'\n收住：'+pick(STYLE.close)+'\n篇幅：'+(c=>{lastStyleCheck+='，'+LEN_CHECK[STYLE.len.indexOf(c)];return c;})(pick(STYLE.len))+'\n手鍊：'+pick(STYLE.bracelet);};
-  const commercialFor=(q,m)=>'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再照下面的選材依據從盤上定出一個五行，從那個五行的材質裡選一款，用一句話講出是盤上哪一項讓你定這個五行，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。選材依據：'+(BRACELET_BASIS[m]||THEME_BASIS)+'。五行配材質（五行配色是傳統取象，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；五行由盤面決定，不由你的習慣決定，同一個五行裡有幾款時挑最貼近那件要照顧的事的。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+closingReminder.replace('@@STYLECHECK@@',lastStyleCheck||'把握的講法和字數都照本次寫法')+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
+  const ASK_BRACELET=/手鍊|手串|手珠|水晶|礦石|天鐵|舍利|佩戴|配戴|戴什麼/;
+  const WHOLE_BASIS={bazi:BRACELET_BASIS.bazi,compat:BRACELET_BASIS.compat,ziwei:'取命宮主星的五行（紫微、天府、天梁屬土，天機、貪狼屬木，太陽、廉貞屬火，武曲、七殺屬金，天同、太陰、巨門、天相、破軍屬水；空宮用借來的對宮主星）；命宮見化忌或煞星時，改取能生扶命宮主星的五行',vedic:'取上升主星的五行（'+SEVEN+'）；上升主星受損時改取能生扶它的五行',astro:'取上升主星的五行（'+SEVEN+'）；上升主星受剋相位重或失勢時改取能生扶它的五行'};
+  const commercialFor=(q,m)=>(ASK_BRACELET.test(String(q||''))?'原題問的就是適合他的手鍊，所以這一題的答案就是選材：第一部分一開始就講出選哪一款、盤上憑什麼定這個五行，前面「手鍊留到第三部分才講」那一句這一題不適用；第三部分只用兩三句收尾，不換成別款。\n':'')+'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再照下面的選材依據從盤上定出一個五行，從那個五行的材質裡選一款，用一句話講出是盤上哪一項讓你定這個五行，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。選材依據：'+((ASK_BRACELET.test(String(q||''))&&WHOLE_BASIS[m])||BRACELET_BASIS[m]||THEME_BASIS)+'。五行配材質（五行配色是傳統取象，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；五行由盤面決定，不由你的習慣決定，同一個五行裡有幾款時挑最貼近那件要照顧的事的。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+closingReminder.replace('@@STYLECHECK@@',lastStyleCheck||'把握的講法和字數都照本次寫法')+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
   function compactObject(v){
     if(Array.isArray(v))return v.map(compactObject);
     if(!v||typeof v!=='object')return v;
@@ -286,7 +288,13 @@
   function astro(ctx){const{c,a,section:s,add}=ctx,core=s('本次用途、完整星位與宮位')||{};
     add('輸入與宮制',{input:core.input,policy:P(core.policy,['zodiac','houseSystem','chartType','node','orbs','minorOrbs']),unknown:!!a.coverage?.provisional});
     const lt=core.lots;if(lt?.fortune)add('福點與精神點（Lot of Fortune／Spirit）',['福點','精神點'].map((n,i)=>{const x=i?lt.spirit:lt.fortune;return n+'在'+x.signName+num(x.degree)+'度第'+x.house+'宮，主星'+zh(x.lord)+'（'+x.formula+'）';}).join('；')+'。福點看身體與財物際遇，精神點看心志與作為。',1);
-    const pf=core.profection;if(pf)add('年度小限（整宮制）','滿'+pf.age+'歲：小限到第'+pf.house+'宮'+pf.signName+'，年主星'+zh(pf.lord)+(pf.lordNatal?'（本命在'+pf.lordNatal.signName+'第'+pf.lordNatal.house+'宮）':'')+'；'+interval(pf.window)+'。年主星的行運、相位與回歸盤狀態是這一年的主軸。');add('全部星位：曜/座/度/宮/順逆/尊貴',planetRows(core.planets));add('宮頭與四角',compactObject(core.houses));add('本命相位',aspectRows(core.aspects));
+    const pf=core.profection;if(pf)add('年度小限（整宮制）','滿'+pf.age+'歲：小限到第'+pf.house+'宮'+pf.signName+'，年主星'+zh(pf.lord)+(pf.lordNatal?'（本命在'+pf.lordNatal.signName+'第'+pf.lordNatal.house+'宮）':'')+'；'+interval(pf.window)+'。年主星的行運、相位與回歸盤狀態是這一年的主軸。');
+    /* deep115：過去十年的年度小限寫成句子，供「先讓他對照」用（原本西洋占星沒有任何過去運期，Gemini 自己編了年份）。 */
+    if(pf&&Number.isInteger(pf.age)&&Number.isInteger(pf.sign)&&core.planets&&!Array.isArray(core.planets)){const SG=['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'],RU=['Mars','Venus','Mercury','Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn','Saturn','Jupiter'],y0=Number(String(pf.window?.start||'').slice(0,4)),mo=Number(String(pf.window?.start||'').slice(5,7)),rowsP=[];
+      for(let k=10;k>=1;k--){const age=pf.age-k;if(age<0||!y0)continue;const sg=((pf.sign-k)%12+12)%12,h=((pf.house-1-k)%12+12)%12+1,L=RU[sg],n=core.planets[L];
+        rowsP.push((y0-k)+'年'+mo+'月到'+(y0-k+1)+'年'+mo+'月（滿'+age+'歲）：小限在第'+h+'宮'+SG[sg]+'，年主星'+zh(L)+(n?'（本命在'+n.signName+'第'+n.house+'宮'+(n.dignity?.name&&!/^無/.test(n.dignity.name)?'，'+n.dignity.name:'')+'）':''));}
+      if(rowsP.length)add('過去十年的年度小限（引擎已寫成句；供對照過去用）',rowsP.join('\n'),1);}
+    add('全部星位：曜/座/度/宮/順逆/尊貴',planetRows(core.planets));add('宮頭與四角',compactObject(core.houses));add('本命相位',aspectRows(core.aspects));
     {const DW={sign:'入廟',exaltation:'擢升',triplicity:'三分主',term:'界主',face:'面主'},dw=l=>A(l).map(k=>DW[k]||k).join('、');
       const ed=core.essentialDignities||{},sol=A(core.specialConditions?.solar||core.conditions?.solar),solOf=k=>sol.find(x=>x.planet===k),SOL={cazimi:'日心（被太陽抱住，傳統反而視為有力）',combust:'燃燒（被太陽燒掉，弱）','under-beams':'日光下（偏弱）',clear:''};
       const rows=A(ed.planets).map(p=>zh(p.planet)+'：'+(A(p.held).length?'持有'+dw(p.held):'無本質尊貴')+(p.detriment?'、失勢':'')+(p.fall?'、落陷':'')+(p.peregrine?'、游離（沒根，靠接納）':'')+(solOf(p.planet)&&SOL[solOf(p.planet).state]?'、'+SOL[solOf(p.planet).state]:'')+'；所在度數由'+zh(p.signLord)+'（座）'+(p.exaltationLord?'、'+zh(p.exaltationLord)+'（擢）':'')+'、'+zh(p.triplicityLord)+'（三分）、'+zh(p.termLord)+'（界）、'+zh(p.faceLord)+'（面）管');
