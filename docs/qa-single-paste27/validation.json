@@ -4,8 +4,8 @@
     {
       "name": "bazi real exporter",
       "status": "passed",
-      "characters": 9786,
-      "bytes": 25566,
+      "characters": 9813,
+      "bytes": 25647,
       "notExpanded": []
     },
     {
@@ -75,8 +75,8 @@
     {
       "name": "compat real exporter",
       "status": "passed",
-      "characters": 7530,
-      "bytes": 19288,
+      "characters": 7534,
+      "bytes": 19300,
       "notExpanded": []
     },
     {
@@ -127,7 +127,7 @@
     {
       "name": "two charts share one instruction block and retain both entire palace tables",
       "status": "passed",
-      "characters": 10553
+      "characters": 10557
     },
     {
       "name": "eighty explicit annual rows are never replaced by a top-N sample",
