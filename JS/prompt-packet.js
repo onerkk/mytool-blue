@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261115vary110',LIMIT=12000,BYTES=28000;
+  const VERSION='20261115vary111',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -204,7 +204,7 @@
     {const PL=core.planets||c.planets||{},nm=k=>PL[k]?.name||zh(k),HS=A(core.houses),D=n=>Number.isFinite(n)?(Math.round(n*10)/10)+'°':'',dasha=c.dasha?.current||{};
       const rules=k=>HS.filter(h=>h.lord===k).map(h=>h.house),sgn=p=>p?.signName||signs[p?.sign]||'';
       const one=k=>{const p=PL[k];if(!p)return '';const r=rules(k),co=keys.filter(o=>o!==k&&PL[o]&&PL[o].sign===p.sign&&PL[o].house===p.house).map(nm),nk=p.nakshatra;
-        return nm(k)+'在'+sgn(p)+D(p.degree)+'、第'+p.house+'宮'+(p.retrograde?'，逆行':'')+(p.dignity?.label?'，'+p.dignity.label:'')+(p.solar?.combust?'，近日受燃':'')+(r.length?'，掌第'+r.join('、')+'宮':'')+(co.length?'，與'+co.join('、')+'同宮':'')+(nk?.name?'，星宿'+String(nk.name).replace(/\s+/g,'')+(nk.pada?'第'+nk.pada+'段':'')+(nk.lord?'（宿主'+nm(nk.lord)+'）':''):'');};
+        return nm(k)+'在'+sgn(p)+D(p.degree)+'、第'+p.house+'宮'+(p.retrograde?'，逆行':'')+(p.dignity?.label?'，'+p.dignity.label:'')+(p.solar?.combust?'，被太陽燃燒（這顆星受損，不是太陽受損）':'')+(r.length?'，掌第'+r.join('、')+'宮':'')+(co.length?'，與'+co.join('、')+'同宮':'')+(nk?.name?'，星宿'+String(nk.name).replace(/\s+/g,'')+(nk.pada?'第'+nk.pada+'段':'')+(nk.lord?'（宿主'+nm(nk.lord)+'）':''):'');};
       const ll=HS.find(h=>h.house===1)?.lord,lines=[];
       if(vl&&(vl.signName||Number.isInteger(vl.sign)))lines.push('上升在'+sgn(vl)+D(vl.degree)+(ll&&PL[ll]?'；上升主'+nm(ll)+'落第'+PL[ll].house+'宮'+sgn(PL[ll])+(PL[ll].dignity?.label?'（'+PL[ll].dignity.label+'）':''):'')+'。');
       keys.forEach(k=>{const t=one(k);if(t)lines.push(t+'。');});
@@ -505,7 +505,18 @@
       (writers[e.method]||cards)(ctx);
       const a=e.analysis;/* 2026-11-12：資料正常時這一段只有「暫定：否／已核」，沒有資訊；只有暫定、未核或輸入有缺時才送。 */{const prov=!!a.coverage?.provisional,st=a.computationAudit?.status,lim=a.coverage?.limitations;if(prov||hasData(lim)||(st&&!/^(verified|ok|pass|passed|已核)$/i.test(String(st))))ctx.add('資料完整度',{provisional:prov,computation:P(a.computationAudit,['status']),inputLimits:lim});}
       {const informative=A(a.items).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 *//* 牌卡類（塔羅、雷諾曼、五輪）：這一段若沒有佐證或反證，內容只是把前面牌序表與牌義表的牌義再抄一次，不送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):(['tarot','lenormand','ootk','mathers','yijing','name','compat'].includes(e.method)&&!informative.some(p=>hasData(p.support)||hasData(p.caution)))?[]:informative;/* 2026-11-12：這幾種方法的逐項段在沒有佐證或反證時，只是把前面的牌義、爻辭或「見上表」再寫一次（已逐一看過內容），不送；五軸人格的逐項段是各軸的實際判定，保留。 */if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
-      const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);blocks.push(...ctx.b);
+      const sources=[...new Set(A(a.sources).map(x=>x.url).filter(Boolean))];ctx.add('規則來源（供你自行查證；回答裡不要引用、提及或附上這些網址）',sources.join('\n'),3);
+      /* 2026-11-15 vary111：印度占星的資料段有二十幾張表，Gemini 在事業題讀錯主星、把副運當成二十年、依據行直接貼資料。
+         與原題無關的表（事業題裡的火星婚姻位置、當月細段、二十張分盤等）只會稀釋重點；改成依原題只送相關的。題目要求全部時不篩。 */
+      if(e.method==='vedic'){const q=String(data.question||'')+' '+String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get&&globalThis.JYKnownFacts.get())||'');
+        if(!/所有|全部|完整|逐年|二十分盤|20分盤/.test(q)){const love=/感情|戀|愛|喜歡|曖昧|桃花|交往|男友|女友|老公|老婆|丈夫|妻|婚|正緣|伴侶|對象|復合|分手|前任/.test(q),near=/這個月|本月|這幾天|最近|近期|這週|這星期|今天|這陣子|下個月/.test(q),year=near||/今年|明年|這一年|年度|年底|年初|\d{4}/.test(q);
+          const VG=[[/工作|事業|職|軍|升|官|公司|創業|生意/,['D10']],[/財|錢|收入|薪|投資|俸|賺/,['D2','D11']],[/子女|小孩|孩子|懷孕|生育/,['D7']],[/父|母|爸|媽|家人/,['D12']],[/病|健康|身體|手術/,['D6','D30']],[/房|車|不動產|搬/,['D4','D16']],[/考|學業|念書|讀書/,['D24']],[/修行|信仰|靈性/,['D20']]];
+          const keepV=new Set(['D1','D9']);VG.forEach(v=>{if(v[0].test(q))v[1].forEach(x=>keepV.add(x));});if(keepV.size===2)keepV.add('D10');
+          for(let i=ctx.b.length-1;i>=0;i--){const L=ctx.b[i].label;
+            if(/火星婚姻位置/.test(L)&&!love||/多運法適用性/.test(L)||/當期月與細段/.test(L)&&!near||/年度星位|三重年運/.test(L)&&!year||/Arudha/.test(L)&&!(love||/名聲|形象|地位|別人怎麼看/.test(q)))ctx.b.splice(i,1);
+            else if(/^([^·／]*[·／] ?)?20分盤/.test(L)&&typeof ctx.b[i].value==='string'){const rows=ctx.b[i].value.split('\n').filter(r=>keepV.has(r.split('/')[0]));if(rows.length)ctx.b[i]={...ctx.b[i],label:L.replace('20分盤','與本題相關的分盤'),value:rows.join('\n')};}
+            else if(/AV原表/.test(L)&&typeof ctx.b[i].value==='string'){const rows=ctx.b[i].value.split('\n').filter(r=>keepV.has(r.split('/')[0]));if(rows.length)ctx.b[i]={...ctx.b[i],value:rows.join('\n')};}}}}
+      blocks.push(...ctx.b);
     }
     const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序四部分，缺一部分就不算寫完）】\n一、對他說的話（主體）。這一部分每一次的寫法都不同，這一次照下面「本次寫法」的安排。不論怎麼安排，這幾樣都要講到：他問的事的答案與把握（問數量就給量級或區間）；最關鍵的兩三個原因，其中要把他最可能想錯、或錯怪自己的地方講開；接下來最可能怎麼走、另一種可能要靠什麼條件；他做得到的事，裡面要有馬上能做的、暫時別碰的、和行不通時的退路。時間：資料裡有時間依據才講，只講最關鍵的一兩個，並寫出西元年與月份；資料裡沒有可以換算成日期的依據（包括這個方法本身不定時間）就直說看不出時間，不自己配年份或月份。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。說到他的近況或心情時用推測的口氣，並讓他知道那是從盤上看的，原題沒寫的近況不當成已經發生的事來講。原題問了幾件事，每一件都要答到；同一個判斷只講一次；手鍊留到第三部分才講，這裡不提。\n二、我怎麼看出來的（三到五行，每行各自成行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，括號裡寫出資料中對應的那一項——是哪顆星、哪一宮、哪一爻、哪張牌或哪段運期，連同它的狀態或起訖年月。第一部分講的每個原因，這裡都要找得到對應的一行；在資料裡指不出具體項目的說法，兩部分都不要寫。其中要有一行寫盤上最不利於你結論的那一點（真的找不到才省略），第一句說的把握程度要把這一點算進去。不把資料抄一遍。\n三、手鍊段（二到四句，自成一段）。照下面的成稿收尾寫。這一段是整則回覆一定要有的部分，內容多時寧可把前兩部分寫精簡，也不能省略或停在半路。\n四、最後三行，照成稿收尾末尾指定的文字原樣輸出。\n\n'+styleFor(data)+'\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question));
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
