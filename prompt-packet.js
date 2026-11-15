@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261116deep117',LIMIT=12000,BYTES=28000;
+  const VERSION='20261116deep118',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -51,7 +51,7 @@
   /* 2026-11-16 deep112：使用者要求手鍊必須真的從命盤推出來。改成五行配色（傳統取象）：程式依方法告訴 AI 從盤上取哪一個五行，再從該五行的材質裡選，並要它講出盤面依據。 */
   const BRACELET_CATS=["木（綠）—綠幽靈", "火（紫、粉、紅）—紫水晶、粉晶、草莓晶、摩根石", "土（黃、褐）—黃水晶、虎眼石、茶晶、煙晶", "金（白、金、鐵）—白水晶、鈦晶、月光石、天鐵", "水（黑、藍、海）—黑曜石、黑碧璽、海藍寶、青金石、藍紋瑪瑙、拉長石、龍宮舍利"];
   const THEME_BASIS='這個方法沒有五行可取，依這次最需要照顧的那件事的性質取：要穩、要守取土，要決斷、要護身取金，要沉靜、要放下取水，要重新開始、要生長取木，要熱度、要表達取火',SEVEN='太陽、火星屬火，月亮、水星屬水，木星屬木，金星屬金，土星屬土，羅睺與計都隨它們的定位星';
-  const BRACELET_BASIS={bazi:'取你依本盤旺衰、格局與調候定出的喜用神五行，並在第二部分寫出喜用是怎麼定的；喜用不只一個時，取所問之事最需要的那一個',compat:'取你依提問者本人命局定出的喜用神五行',ziwei:'取所問宮位主星的五行（紫微、天府、天梁屬土，天機、貪狼屬木，太陽、廉貞屬火，武曲、七殺屬金，天同、太陰、巨門、天相、破軍屬水；空宮用借來的對宮主星）',vedic:'取所問宮位宮主星的五行（'+SEVEN+'）',astro:'取所問宮位宮主星的五行（'+SEVEN+'）',liuren:'取能生日干的五行',liuyao:'取能生用神的五行',meihua:'取能生體卦的五行',tarot:'取整組牌裡最少或沒有出現的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）；一樣多時取結果位那張牌的元素',ootk:'取代表牌的元素所缺的助力：看最後一輪結局牌的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）',mathers:'取整組牌裡最少或沒有出現的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）',name:'資料裡有生辰喜用時取喜用五行；沒有時，'+THEME_BASIS};
+  const BRACELET_BASIS={bazi:'取你依本盤旺衰、格局與調候定出的喜用神五行，並在第二部分寫出喜用是怎麼定的；喜用不只一個時，取其中正好是所問之事那個十神的五行（問感情，男取財、女取官殺；問錢取財；問工作取官殺；問學業取印；問表現與作品取食傷），都不是時取格局最先要的那一個',compat:'取你依提問者本人命局定出的喜用神五行',ziwei:'取所問宮位主星的五行（紫微、天府、天梁屬土，天機、貪狼屬木，太陽、廉貞屬火，武曲、七殺屬金，天同、太陰、巨門、天相、破軍屬水；空宮用借來的對宮主星）',vedic:'取所問宮位宮主星的五行（'+SEVEN+'）',astro:'取所問宮位宮主星的五行（'+SEVEN+'）',liuren:'取能生日干的五行',liuyao:'取能生用神的五行',meihua:'取能生體卦的五行',tarot:'取整組牌裡最少或沒有出現的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）；一樣多時取結果位那張牌的元素',ootk:'取代表牌的元素所缺的助力：看最後一輪結局牌的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）',mathers:'取整組牌裡最少或沒有出現的元素（權杖火、聖杯水、錢幣土、寶劍風，風配金）',name:'資料裡有生辰喜用時取喜用五行；沒有時，'+THEME_BASIS};
   const shuffledCats=q=>{let h=2166136261;const t=String(q||'');for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}const a=BRACELET_CATS.slice();for(let i=a.length-1;i>0;i--){h=(Math.imul(h,1664525)+1013904223)>>>0;const j=h%(i+1);const x=a[i];a[i]=a[j];a[j]=x;}return a.join('；');};
   const CLOSING_NOTICE='以上屬傳統象徵解讀，供參考，不保證事件；醫療、法律、財務決定要配合實際資料與專業意見。';
   /* 2026-11-12 vary101：使用者指出回覆「太固定、不像真人講話有變化」。根因是提示詞把每一段的內容、順序、甚至收尾那句話都寫死，模型每次都照同一副骨架填；
