@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261116deep112',LIMIT=12000,BYTES=28000;
+  const VERSION='20261116deep113',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -166,6 +166,21 @@
   }
   function bazi(ctx){const{c,a,section:s,add}=ctx,core=s('四柱、節令與換日依據')||s('時辰未知的三柱')||{},st=s('旺衰、格局與制化')||{};
     add('定盤設定',{gender:core.gender||c.gender||null,calendar:P(c.calculationPolicy,['birthInstant','dayBoundaryMode','annualBoundary','trueSolarTimeApplied','timezoneOffset','referenceInstant']),qiyun:a.coverage?.provisional?null:P(c.qiyun,['startAgeText','startUtc','direction','referenceJieDate']),commander:P(c.renyuan,['gan','elapsedDaysAfterJie']),unknown:!!a.coverage?.provisional});
+    /* deep113：走過的大運與近十年流年寫成句子（十神、與原局四支的沖合、是否屬喜忌），供「先讓他對照」用。 */
+    {const G='甲乙丙丁戊己庚辛壬癸',Z='子丑寅卯辰巳午未申酉戌亥',GE='木木火火土土金金水水',MAIN={子:'癸',丑:'己',寅:'甲',卯:'乙',辰:'戊',巳:'丙',午:'丁',未:'己',申:'庚',酉:'辛',戌:'戊',亥:'壬'},SH={木:'火',火:'土',土:'金',金:'水',水:'木'},KE={木:'土',土:'水',水:'火',火:'金',金:'木'},CH={子:'午',午:'子',丑:'未',未:'丑',寅:'申',申:'寅',卯:'酉',酉:'卯',辰:'戌',戌:'辰',巳:'亥',亥:'巳'},HE={子:'丑',丑:'子',寅:'亥',亥:'寅',卯:'戌',戌:'卯',辰:'酉',酉:'辰',巳:'申',申:'巳',午:'未',未:'午'};
+      const dm=core.dm||c.dm||'',di=G.indexOf(dm),el=g=>GE[G.indexOf(g)]||'';
+      const god=g=>{const i=G.indexOf(g);if(di<0||i<0)return '';const a=el(dm),b=el(g),same=(di%2)===(i%2);return a===b?(same?'比肩':'劫財'):SH[a]===b?(same?'食神':'傷官'):KE[a]===b?(same?'偏財':'正財'):KE[b]===a?(same?'七殺':'正官'):(same?'偏印':'正印');};
+      const nat=A(core.pillars||a.pillars).map(p=>({label:String(p.label||'').replace(/柱$/,''),zhi:p.zhi})).filter(p=>p.zhi);
+      const J=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'):[],fav=J(c.fav),unf=J(c.unfav);
+      const tag=e=>fav.includes(e)?'喜':unf.includes(e)?'忌':'';
+      const one=gz=>{const g=gz[0],z=gz[1],hit=nat.filter(p=>CH[p.zhi]===z).map(p=>'沖'+p.label+'支'+p.zhi).concat(nat.filter(p=>HE[p.zhi]===z).map(p=>'合'+p.label+'支'+p.zhi));
+        return gz+'：天干'+g+'（'+el(g)+tag(el(g))+'）是'+god(g)+'，地支'+z+'本氣'+MAIN[z]+'（'+el(MAIN[z])+tag(el(MAIN[z]))+'）是'+god(MAIN[z])+(hit.length?'，'+hit.join('、'):'');};
+      const cyc=A(c.qiyun?.cycles),cur=Number(String(c.calculationPolicy?.referenceInstant||'').slice(0,4))||new Date().getFullYear(),by=Number(String(c.qiyun?.startDate||'').slice(0,4))-(Number(c.qiyun?.age)||0);
+      if(di>=0&&!a.coverage?.provisional&&cyc.length){const L=[],past=cyc.filter(k=>k.startYear<=cur&&/^[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]$/.test(k.gz||''));
+        if(past.length)L.push('走過的大運（含現行）：'+past.map(k=>k.startYear+'到'+k.endYear+'年 '+one(k.gz)).join('；')+'。');
+        const ys=[];for(let y=cur-10;y<cur;y++){const gz=G[((y-4)%10+10)%10]+Z[((y-4)%12+12)%12],k=cyc.find(q=>y>=q.startYear&&y<=q.endYear);ys.push(y+'年（'+(k?k.gz+'運':'')+'）'+one(gz));}
+        L.push('近十年流年：'+ys.join('；')+'。'+(fav.length||unf.length?'括號裡標「喜」「忌」的是對照本命喜忌。':''));
+        add('走過的大運與近十年流年（引擎已寫成句；供對照過去用）',L.join('\n'),1);}}
     add('四柱：柱/干支/十神/藏干十神氣/長生/納音',A(core.pillars||a.pillars).map(p=>row([p.label,(p.gan||'')+(p.zhi||''),p.god,A(p.hidden).map(h=>h.stem+h.god+'('+h.qi+')'),p.lifeStage,p.nayin])).join('\n'));
     if(a.coverage?.provisional)return;
     const gz=x=>x&&x.gan?x.gan+x.zhi+(x.nayin?'('+x.nayin+')':''):null,kw=core.kongwang||c.kongwang;
@@ -232,6 +247,12 @@
       if(dasha.maha?.lord)lines.push('現行大運主：'+mk(dasha.maha)+(sub?.lord?'；現行副運主：'+mk(sub):'')+'。');
       {const all=A(c.dasha?.periods),ix=all.findIndex(z=>z.lord===dasha.maha?.lord&&z.start===dasha.maha?.start),nx=ix>=0?all.slice(ix+1,ix+4):[];/* 問「什麼時候」的題目要看後面幾步大運，原本只有現行與下一步。 */if(nx.length)lines.push('之後三步大運：'+nx.map(mk).join('；')+'。');}
       if(lines.length)add('本命九曜與現行運（引擎已寫成句）',lines.join('\n'));
+      /* deep113：已經走過的主運與近十年副運寫成句子，供「先讓他對照」用。 */
+      if(now){const all=A(c.dasha?.periods),birth=Number(c.dasha?.birth)||0,past=all.filter(z=>z.end>birth&&z.start<=now),L=[];
+        if(past.length)L.push('走過的主運（含現行）：'+past.map(z=>mk({lord:z.lord,start:Math.max(z.start,z.visibleStart||birth||z.start),end:z.end})).join('；')+'。');
+        const from=now-10*365.2425*864e5,subs=[];past.forEach(z=>A(z.children).forEach(ch=>{if(ch.end>from&&ch.start<=now)subs.push(nm(z.lord)+'主運－'+nm(ch.lord)+'副運'+(PL[ch.lord]?'（'+nm(ch.lord)+'在第'+PL[ch.lord].house+'宮'+(rules(ch.lord).length?'，掌第'+rules(ch.lord).join('、')+'宮':'')+'）':'')+'，'+stamp(ch.start).slice(0,7)+'至'+stamp(ch.end).slice(0,7));}));
+        if(subs.length)L.push('近十年的副運：'+subs.join('；')+'。');
+        if(L.length)add('走過的運期（引擎已寫成句；供對照過去用）',L.join('\n'),1);}
       if(HS.length)add('十二宮（引擎已寫成句）',HS.map(h=>'第'+h.house+'宮'+(h.signName||signs[h.sign])+'：宮主'+nm(h.lord)+'落第'+h.lordHouse+'宮；宮內'+(A(h.occupants).length?A(h.occupants).map(nm).join('、'):'無星')+'；'+(A(h.aspectedBy).length?'受'+A(h.aspectedBy).map(nm).join('、')+'照':'無星照')+(h.sav!=null?'；SAV '+h.sav:'')).join('\n'));}
     const pc=core.panchanga||c.panchanga,lm=pc?.limbs||{},kr=A(core.karakas||c.karakas);
     add('上升月宿、五支曆、角色星',['上升星宿'+(nakOf(vl.longitude)||'?'),pc?'五支曆：'+[lm.tithi?.name&&((lm.tithi.paksha||'')+' '+lm.tithi.name).trim(),lm.nakshatra?.name&&'月宿'+String(lm.nakshatra.name).replace(/\s+/g,'')+(lm.nakshatra.pada||''),lm.yoga?.name&&'Yoga '+lm.yoga.name,lm.karana?.name&&'Karana '+lm.karana.name].filter(Boolean).join('、'):null,kr.length?'角色星：'+kr.map(k=>k.role+zh(k.planet)+(k.tied?'(同度待核)':'')).join(' '):null].filter(Boolean).join('\n'),1);
@@ -538,7 +559,7 @@
       if(e.method==='ziwei'&&!/月|何時|什麼時候|幾時|時間點|所有|全部|完整|逐/.test(String(data.question||'')))for(let i=ctx.b.length-1;i>=0;i--)if(/流月/.test(ctx.b[i].label))ctx.b.splice(i,1);
       blocks.push(...ctx.b);
     }
-    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序四部分，缺一部分就不算寫完）】\n一、對他說的話（主體）。這一部分每一次的寫法都不同，這一次照下面「本次寫法」的安排。不論怎麼安排，這幾樣都要講到：他問的事的答案與把握（問數量就給量級或區間）；最關鍵的兩三個原因，其中要把他最可能想錯、或錯怪自己的地方講開；接下來最可能怎麼走、另一種可能要靠什麼條件；他做得到的事，裡面要有馬上能做的、暫時別碰的、和行不通時的退路。時間：資料裡有時間依據才講，只講最關鍵的一兩個，並寫出西元年與月份；資料裡沒有可以換算成日期的依據（包括這個方法本身不定時間）就直說看不出時間，不自己配年份或月份。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。除了「先讓他對照」那一段之外，說到他的心情或最近發生的事時用推測的口氣，並讓他知道那是從盤上看的，原題沒寫的事件不當成已經發生的事來講。原題問了幾件事，每一件都要答到；同一個判斷只講一次；手鍊留到第三部分才講，這裡不提。\n二、我怎麼看出來的（四到七行，每行各自成行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，括號裡寫出資料中對應的那一項——是哪顆星、哪一宮、哪一爻、哪張牌或哪段運期，連同它的狀態或起訖年月。第一部分講的每個原因，這裡都要找得到對應的一行；在資料裡指不出具體項目的說法，兩部分都不要寫。其中要有一行寫盤上最不利於你結論的那一點（真的找不到才省略），第一句說的把握程度要把這一點算進去。不把資料抄一遍。\n三、手鍊段（二到四句，自成一段）。照下面的成稿收尾寫。這一段是整則回覆一定要有的部分，內容多時寧可把前兩部分寫精簡，也不能省略或停在半路。\n四、最後三行，照成稿收尾末尾指定的文字原樣輸出。\n\n'+styleFor(data)+'\n\n'+verifyFor(data.method)+'\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question,data.method));
+    const end='【讀完資料再提醒一次】只依本則訊息的原題與實算資料，不用任何過往對話或記憶；寫完先自查：凡原題沒寫的職業、工時班別、副業、賣場、商品、家人或住處等個人細節，一律刪掉，不得出現在回答裡；依本法正統取法在心裡推演完，先定答案與程度，再開口。\n\n【這則回覆的樣子（依序四部分，缺一部分就不算寫完）】\n一、對他說的話（主體）。這一部分每一次的寫法都不同，這一次照下面「本次寫法」的安排。不論怎麼安排，這幾樣都要講到：他問的事的答案與把握（問數量就給量級或區間）；最關鍵的兩三個原因，其中要把他最可能想錯、或錯怪自己的地方講開；接下來最可能怎麼走、另一種可能要靠什麼條件；他做得到的事，裡面要有馬上能做的、暫時別碰的、和行不通時的退路；建議他往哪個方向走（做哪一類事、找哪一類人、往哪裡去）時，那個方向要是盤上某一項的取象推出來的，並在第二部分寫出是哪一項，推不出來就明說盤上定不出方向，不給人人適用的建議。時間：資料裡有時間依據才講，只講最關鍵的一兩個，並寫出西元年與月份；資料裡沒有可以換算成日期的依據（包括這個方法本身不定時間）就直說看不出時間，不自己配年份或月份。牽涉到另一個人時，講那個人的狀態和你們之間的互動；盤上看不出來的就明說看不出來。除了「先讓他對照」那一段之外，說到他的心情或最近發生的事時用推測的口氣，並讓他知道那是從盤上看的，原題沒寫的事件不當成已經發生的事來講。原題問了幾件事，每一件都要答到；同一個判斷只講一次；手鍊留到第三部分才講，這裡不提。\n二、我怎麼看出來的（四到七行，每行各自成行）。用一句自然的話帶出這一段，讓他知道想核對再看。每行一個真正撐住結論的盤面重點：先寫白話的意思，括號裡寫出資料中對應的那一項——是哪顆星、哪一宮、哪一爻、哪張牌或哪段運期，連同它的狀態或起訖年月。第一部分講的每個原因，這裡都要找得到對應的一行；在資料裡指不出具體項目的說法，兩部分都不要寫。其中要有一行寫盤上最不利於你結論的那一點（真的找不到才省略），第一句說的把握程度要把這一點算進去。不把資料抄一遍。\n三、手鍊段（二到四句，自成一段）。照下面的成稿收尾寫。這一段是整則回覆一定要有的部分，內容多時寧可把前兩部分寫精簡，也不能省略或停在半路。\n四、最後三行，照成稿收尾末尾指定的文字原樣輸出。\n\n'+styleFor(data)+'\n\n'+verifyFor(data.method)+'\n\n【成稿收尾】\n'+(safe?'原題明示眼前安全風險，先給安全支持；本題暫停手鍊、導購與賣場收尾，不用命理承諾安全。':commercialFor(data.question,data.method));
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
     const fit=t=>chars(t)<=LIMIT&&bytes(t)<=BYTES;
     const core=blocks.filter(b=>b.priority===0),selected=new Set(core),optionalCount=new Set(blocks.filter(b=>b.priority>0).map(b=>b.label)).size,essential=render(core).replace('\n【資料結束】',optionalCount?'\n【未展開細表】另有'+optionalCount+'項旁系細表未展開（完整清單在本工具）。\n【資料結束】':'\n【資料結束】');
