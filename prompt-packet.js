@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261118bazi122',LIMIT=12000,BYTES=28000;
+  const VERSION='20261118astro123',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -84,7 +84,7 @@
     return '【本次寫法（只管這一次、只管第一部分；後面三部分照常寫。下面是安排，不是讓你照抄的句子）】\n稱呼：'+pick(STYLE.address)+'\n開場：'+pick(STYLE.open)+'\n把握：'+(c=>{lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(c)];return c;})(pick(STYLE.conf))+'\n順序：'+pick(STYLE.order)+'\n做法：'+pick(STYLE.advice)+'\n收住：'+pick(STYLE.close)+'\n篇幅：'+(c=>{lastStyleCheck+='，'+LEN_CHECK[STYLE.len.indexOf(c)];return c;})(pick(STYLE.len))+'\n手鍊：'+pick(STYLE.bracelet);};
   const ASK_BRACELET=/手鍊|手串|手珠|水晶|礦石|天鐵|舍利|佩戴|配戴|戴什麼/;
   const WHOLE_BASIS={bazi:BRACELET_BASIS.bazi,compat:BRACELET_BASIS.compat,ziwei:'取命宮主星的五行（紫微、天府、天梁屬土，天機、貪狼屬木，太陽、廉貞屬火，武曲、七殺屬金，天同、太陰、巨門、天相、破軍屬水；空宮用借來的對宮主星）',vedic:'取上升主星的五行（'+SEVEN+'）',astro:'取上升主星的五行（'+SEVEN+'）'};
-  const commercialFor=(q,m)=>(ASK_BRACELET.test(String(q||''))?'原題問的就是適合他的手鍊，所以這一題的答案就是選材：第一部分一開始就講出選哪一款、盤上憑什麼定這個五行，前面「手鍊留到第三部分才講」那一句這一題不適用；第三部分只用兩三句收尾，不換成別款。\n':'')+'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再照下面的選材依據從盤上定出一個五行，從那個五行的材質裡選一款，用一句話講出是盤上哪一項讓你定這個五行，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。選材依據：'+(((ASK_BRACELET.test(String(q||''))||(m==='ziwei'&&/^完整命盤$/.test(String(q).trim())))&&WHOLE_BASIS[m])||BRACELET_BASIS[m]||THEME_BASIS)+'。五行配材質（五行配色是傳統取象，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；五行照選材依據直接取，不另外加減判斷，換一個人來照同一張盤也要取到同一個五行，同一個五行裡有幾款時挑最貼近那件要照顧的事的。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+(['ziwei','bazi'].includes(m)?'依本包可核對的盤面寫；全年、流月與指定時點各守其精度。':closingReminder.replace('@@STYLECHECK@@',lastStyleCheck||'把握的講法和字數都照本次寫法'))+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
+  const commercialFor=(q,m,natalWestern=false)=>(ASK_BRACELET.test(String(q||''))?'原題問的就是適合他的手鍊，所以這一題的答案就是選材：第一部分一開始就講出選哪一款、盤上憑什麼定這個五行，前面「手鍊留到第三部分才講」那一句這一題不適用；第三部分只用兩三句收尾，不換成別款。\n':'')+'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再照下面的選材依據從盤上定出一個五行，從那個五行的材質裡選一款，用一句話講出是盤上哪一項讓你定這個五行，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。選材依據：'+(((ASK_BRACELET.test(String(q||''))||(m==='ziwei'&&/^完整命盤$/.test(String(q).trim())))&&WHOLE_BASIS[m])||BRACELET_BASIS[m]||THEME_BASIS)+'。五行配材質（五行配色是傳統取象，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；五行照選材依據直接取，不另外加減判斷，換一個人來照同一張盤也要取到同一個五行，同一個五行裡有幾款時挑最貼近那件要照顧的事的。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+((natalWestern||['ziwei','bazi'].includes(m))?'依本包可核對的盤面寫；全年、流月與指定時點各守其精度。':closingReminder.replace('@@STYLECHECK@@',lastStyleCheck||'把握的講法和字數都照本次寫法'))+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
   function compactObject(v){
     if(Array.isArray(v))return v.map(compactObject);
     if(!v||typeof v!=='object')return v;
@@ -350,8 +350,55 @@
         const gr=A(ar.graha).map(r=>zh(r.planet)+'象在'+(SIGN[r.sign]||'?')+(r.exception?'（例外規則）':'')).join('；');
         return 'D'+d+'：'+bh+(gr?'\nD'+d+'行星象：'+gr:'');}).join('\n'),5);}
   }
+  function westernNatalSummary(core,add){
+    const ps=core.planets||{}, unknown=core.sensitivity?.unknownTime;
+    const asc=core.houses?.angles?.ASC;
+    function position(key){
+      const p=ps[key];
+      return p&&root.JYWestern.zh(key)+'在'+p.signName+(p.house?'第'+p.house+'宮':'')+(p.retrograde?'（逆行）':'');
+    }
+    if(!root.JYWestern||!ps.Sun||!ps.Moon)return;
+    const main=[position('Sun'),position('Moon')];
+    if(!unknown&&Number.isFinite(asc)){
+      main.push('上升'+signs[Math.floor(asc/30)]+'座',core.chartRuler&&ps[core.chartRuler]?'命主星'+position(core.chartRuler):null);
+    }
+    if(unknown)main.push('出生時刻未知；星位為參照時刻，宮位與四角未定');
+    add('本命核心落點',main.filter(Boolean).join('；'));
+    const distribution=core.distribution;
+    if(distribution){
+      const format=group=>Object.entries(group||{}).map(([key,n])=>key+n).join('、');
+      const lines=[format(distribution.elements),format(distribution.modalities)];
+      if(!unknown&&core.houses){
+        const houses=new Array(12).fill(0);
+        root.JYWestern.KEYS.forEach(k=>{const h=ps[k]?.house;if(h>=1&&h<=12)houses[h-1]++;});
+        const peak=Math.max(...houses);
+        if(peak>0)lines.push('最多行星：'+houses.flatMap((n,i)=>n===peak?['第'+(i+1)+'宮×'+n]:[]).join('、'));
+      }
+      add('十顆行星分布（交點與角點不計）',lines.filter(Boolean).join('；'));
+    }
+    const groups=[['自我與目標','Sun'],['情緒與安全感','Moon'],['思維與溝通','Mercury'],
+      ['關係與親密','Venus'],['行動與衝突','Mars'],['責任與成長','Saturn']];
+    const aspects=A(core.aspects).slice().sort((a,b)=>a.orb-b.orb);
+    const rows=groups.map(([theme,key])=>{
+      const seen=new Set(),matches=[];
+      for(const a of aspects){
+        if(a.a!==key&&a.b!==key)continue;
+        const other=a.a===key?a.b:a.a, axis=other.endsWith('Node')?'交點軸':other;
+        if(seen.has(axis))continue;
+        seen.add(axis);
+        matches.push(root.JYWestern.zh(key)+a.name+(axis==='交點軸'&&a.angle===90?axis:root.JYWestern.zh(other))+'（'+num(a.orb)+'°）');
+        if(matches.length===2)break;
+      }
+      return theme+'：'+(matches.join('、')||position(key)||'未列');
+    });
+    add('本命主題索引（每題最緊兩項；重複列出的相位只算一次）',rows.join('\n'));
+  }
   function astro(ctx){const{c,a,section:s,add}=ctx,core=s('本次用途、完整星位與宮位')||{};
     add('輸入與宮制',{input:core.input,policy:P(core.policy,['zodiac','houseSystem','chartType','node','orbs','minorOrbs']),unknown:!!a.coverage?.provisional});
+    if(core.input?.chartPurpose==='natal'){
+      westernNatalSummary(core,add);
+      add('本命相位收錄口徑','行星依本盤相位容許度；涉及月交點或上升、天頂時採3度。本包未列黑月莉莉絲或太陽弧。');
+    }
     const lt=core.lots;if(lt?.fortune)add('福點與精神點（Lot of Fortune／Spirit）',['福點','精神點'].map((n,i)=>{const x=i?lt.spirit:lt.fortune;return n+'在'+x.signName+num(x.degree)+'度第'+x.house+'宮，主星'+zh(x.lord)+'（'+x.formula+'）';}).join('；')+'。福點看身體與財物際遇，精神點看心志與作為。',1);
     const pf=core.profection;if(pf)add('年度小限（整宮制）','滿'+pf.age+'歲：小限到第'+pf.house+'宮'+pf.signName+'，年主星'+zh(pf.lord)+(pf.lordNatal?'（本命在'+pf.lordNatal.signName+'第'+pf.lordNatal.house+'宮）':'')+'；'+interval(pf.window)+'。年主星的行運、相位與回歸盤狀態是這一年的主軸。');
     /* deep115：過去十年的年度小限寫成句子，供「先讓他對照」用（原本西洋占星沒有任何過去運期，Gemini 自己編了年份）。 */
@@ -368,7 +415,7 @@
       add('尊貴與接納（引擎已寫成句）',[(core.sect?.name?'盤別：'+core.sect.name+'；':'')+'盤主星'+zh(core.chartRuler||''),...rows,...(mut.length?['互容：'+mut.join('；')]:[])].join('\n'));}
     {const sc=core.specialConditions||{},sh=core.chartShapes||{},SOL={cazimi:'日心（有力）',combust:'燃燒（弱）','under-beams':'日光下（偏弱）',clear:'日光外'};
       add('形狀與特殊條件（引擎已寫成句）',[A(core.patterns).length?'相位圖形：'+core.patterns.map(p=>(p.name||p.type||'')+(A(p.planets).length?'（'+p.planets.map(zh).join('、')+'）':'')).join('、'):'相位圖形：無',A(sh.matched).length?'盤形：'+sh.matched.map(m=>m.name+'—'+(m.condition||'')).join('；')+(sh.largestEmptyGap?'；最大空區在'+zh(sh.largestEmptyGap.after)+'到'+zh(sh.largestEmptyGap.before)+'之間（'+Math.round(sh.largestEmptyGap.degrees)+'度）':''):'',A(sc.unaspected).length?'無相位行星：'+sc.unaspected.map(zh).join('、'):'',A(sc.outOfSign).length?'跨座相位：'+sc.outOfSign.map(a=>zh(a.a)+a.name+zh(a.b)).join('、'):'',A(sc.nearStations).length?'近停滯：'+sc.nearStations.map(zh).join('、'):'',A(sc.solar).length?'與太陽的關係：'+sc.solar.map(x=>zh(x.planet)+SOL[x.state]||x.state).join('、'):''].filter(Boolean).join('\n'),2);}
-    const future=s('實算行運次限與回歸')||{};for(const [k,p0]of Object.entries(future)){if(!p0)continue;const ov=A(p0.natalHouseOverlay),p=ov.length&&ov[0].progressedHouse===undefined&&p0.planets?{...p0,natalHouseOverlay:[],planets:Object.fromEntries(Object.entries(p0.planets).map(([pk,pv])=>[pk,{...pv,house:ov.find(v=>v.planet===pk)?.natalHouse??pv.house}]))}:p0;const kn=({transits:'行運',progressions:'次限推運',returnAnalysis:'太陽回歸'})[k]||k;add(kn+'時點與相位',{utc:p.utc,referenceUTC:p.referenceUTC,purpose:p.purpose,aspects:aspectRows(p.aspects),angleAspects:aspectRows(p.angleAspects),overlay:Array.isArray(p.natalOverlay)&&p.natalOverlay[0]?.a?aspectRows(p.natalOverlay):A(p.natalHouseOverlay||p.natalOverlay).map(v=>[zh(v.planet),v.progressedHouse,v.natalHouse])});add(kn+'星位'+(k==='transits'?'（宮欄＝落在本命第幾宮）':''),planetRows(p.planets,false),k==='transits'?1:2);}
+    const future=s('實算行運次限與回歸')||{};for(const [k,p0]of Object.entries(future)){if(!p0)continue;const ov=A(p0.natalHouseOverlay),p=ov.length&&ov[0].progressedHouse===undefined&&p0.planets?{...p0,natalHouseOverlay:[],planets:Object.fromEntries(Object.entries(p0.planets).map(([pk,pv])=>[pk,{...pv,house:ov.find(v=>v.planet===pk)?.natalHouse??pv.house}]))}:p0;const kn=({transits:'行運',progressions:'次限推運',returnAnalysis:'太陽回歸'})[k]||k;add(kn+'時點與相位'+(k==='transits'?'（行運星／本命點）':k==='progressions'?'（推運星／本命點；世界時為推運星曆日）':''),{utc:p.utc,referenceUTC:p.referenceUTC,purpose:p.purpose,aspects:aspectRows(p.aspects),angleAspects:aspectRows(p.angleAspects),overlay:Array.isArray(p.natalOverlay)&&p.natalOverlay[0]?.a?aspectRows(p.natalOverlay):A(p.natalHouseOverlay||p.natalOverlay).map(v=>[zh(v.planet),v.progressedHouse,v.natalHouse])});add(kn+'星位'+(k==='transits'?'（宮欄＝落在本命第幾宮）':''),planetRows(p.planets,false),k==='transits'?1:2);}
     const h=(s('問事及搬遷')||{}).horary;if(h){add('卜卦取用',{significators:h.significators,selectedHouse:h.selectedHouse,querent:h.querent,quesited:h.quesited,moon:compactObject(h.moon),orbPolicy:h.orbPolicy});add('傳光集光及受阻',compactObject({translation:h.translationChecks||h.translationCandidates,collection:h.collectionChecks||h.collectionCandidates,denials:h.denialChecks||h.perfectionAndInterference,light:h.lightChecks}),1);add('卜卦實際時序',compactObject(h.timeline),3);}
   }
   function liuren(ctx){const{c,a,section:s,add}=ctx,core=s('天地盤、四課三傳與時令')||{};
@@ -605,7 +652,8 @@
   const plans=new Map();
   function compile(entries,data){
     const safe=root.JYReadingWorkflow?.careContext?.(data.question,data.notes)?.level==='safety-first';
-    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',(()=>{let f='';try{f=String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get())||'');}catch(_){}return f?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(f):'';})(), '【解讀與查證規則】\n'+(['ziwei','bazi'].includes(data.method)?[rules[0],data.method==='bazi'?baziEvidence:ziweiEvidence,rules[2]]:rules).join('\n'),
+    const natalWestern=data.method==='astro'&&entries.length===1&&entries[0].chart?.input?.chartPurpose==='natal';
+    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',(()=>{let f='';try{f=String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get())||'');}catch(_){}return f?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(f):'';})(), '【解讀與查證規則】\n'+(natalWestern?[rules[0],'以本包實算位置與相位為準；問句中的期待不是依據。按相位緊密度、相關星體及主題脈絡衡量，不將條目數換算成機率。',rules[2]]:['ziwei','bazi'].includes(data.method)?[rules[0],data.method==='bazi'?baziEvidence:ziweiEvidence,rules[2]]:rules).join('\n'),
       '【資料閱讀方式】\n以下是本次實算資料。表格依標題欄序還原，?是未定；不需要附件。'].filter(Boolean);
     const blocks=[];const add=(label,v,priority=0)=>{zhMethod=data.method;if(hasData(v))blocks.push({label,value:typeof v==='string'?zhText(v):readable(v),priority,method:'shared'});};
     const tasks=data.requestCoverage?.[0]?.coverage?.requirements?.tasks;if(A(tasks).length>1){const GW={general:'這個子題本身',direction:'方向／會不會',compare:'比較',comparison:'比較',timing:'時間',amount:'數量金額',count:'數量',rate:'比率',state:'現況',yesno:'是否',reason:'原因',cause:'原因',person:'人物',enumeration:'列出有哪些',advice:'該怎麼做',choice:'選哪一個',location:'在哪裡',vocation:'適合做什麼'},OW0=root.JYTarotFoundation?.OBSERVABLES||{},OW=Object.assign({},OW0,{existence:'有沒有',independent_subjects:'每個人、每件事分開講',independent_options:'每個選項分開講',state:'現在的狀況',realization:'會不會成',trajectory:'接下來怎麼走',conditional_outcome:'照現況下去的結果',bounded_outcome:'到他說的期限時會怎樣',threshold_outcome:'過不過得了那個門檻',comparison_outcome:'兩邊用同一把尺比',enumeration:'逐項列出',attention_focus:'最該注意什麼',cause:'為什麼會這樣',antecedent:'之前的影響',obstacle:'卡住的地方',enabler:'幫得上忙的力量',advice:'可以怎麼做',dyad:'兩個人各自的狀態與互動',temporal_sequence:'先後順序',annual_overview:'整年各方面',domain_coverage:'各方面分開講',hidden:'檯面下的因素',external:'外在條件',location:'在哪裡的線索',structural_depth:'更深一層的原因',narrative:'來龍去脈',exhaustive:'完整走一遍',willingness:'對方的意願',event_action:'實際會不會行動',invitation_or_arrangement:'邀約與安排',participant_structure:'牽涉哪些人',reported_event:'他提到的那件事',causal_layers:'背景、原因與結果',evaluation_outcome:'這個人或這件事適不適合他',relationship_context:'關係現況',option_set:'有哪些選項',decision_criteria:'用什麼標準選',action_guidance:'下一步怎麼做',threshold_timing:'什麼時候達到',recurrence_context:'會不會再發生',count:'數量',amount:'金額',rate:'比率',timing:'時間',comparison:'比較',person:'對方',reason:'原因'}),zhOnly=v=>/[A-Za-z]/.test(String(v||''))?null:v;add('原句子題核對（每一題都要各自答）',tasks.map((t,i)=>'子題'+(i+1)+(Number.isInteger(A(t.sourceSpan)[0])&&Number.isInteger(A(t.sourceSpan)[1])?'「'+String(data.question||'').slice(t.sourceSpan[0],t.sourceSpan[1]+1).trim()+'」':'')+(['general','direction','yesno','state'].includes(t.goal)||!GW[t.goal]?'':'：重點在'+GW[t.goal])+(A(t.requiredObservables).map(x=>OW[x]||zhOnly(x)).filter(Boolean).length?'；要講到'+[...new Set(t.requiredObservables.map(x=>OW[x]||zhOnly(x)).filter(Boolean))].join('、'):'')+(A(t.measurement).length?'，量化條件：'+t.measurement.join('、'):'')).join('\n'));}
@@ -647,7 +695,11 @@
       if(e.method==='ziwei'&&!/月|何時|什麼時候|幾時|時間點|所有|全部|完整|逐/.test(String(data.question||'')))for(let i=ctx.b.length-1;i>=0;i--)if(/流月/.test(ctx.b[i].label))ctx.b.splice(i,1);
       blocks.push(...ctx.b);
     }
-    const end=data.method==='bazi' ? [
+    const end=natalWestern ? [
+      '【這則回覆的樣子】親切稱呼開場，分短段直接答原題。全盤從日月上升及命主星出發，把人格、情緒、親密關係、工作行動與壓力成長講成生活情境。單題只選有關的宮位、宮主與相位。用本人能對照的傾向來寫，勿把經歷、伴侶想法或健康狀況說成已知。',
+      '【我怎麼看出來的】白話說明關鍵組合和反證。主題索引只供導讀，以完整落點與相位表核對。交點兩端或同一相位出現在多宮，不算獨立佐證。先說本命，再依原題選用實際列出的行運、次限、回歸或年度小限。單一觀察時刻不能確定整月應期；次限星曆時刻與現實參照日期分開。未列的點位、太陽弧與指定日期不可外推。',
+      safe?'先提供安全支持，暫停商品段及賣場收尾。':commercialFor(data.question,data.method,true)
+    ].join('\n\n') : data.method==='bazi' ? [
       '【這則回覆的樣子】用親切稱呼，以繁體中文分短段說明。完整命盤先說日主和月令在生活上的主線，再談事業、財、感情、身心與家庭，以及當前大運與流年。具體問題先答所問。僅將過去的象徵傾向供本人核對。健康只作生活提醒，勿由命盤推斷病症或壽命。',
       '【我怎麼看出來的】挑最重要的兩三處，交代本命、格局或歲運層次及相反線索。貼鄰和隔柱分開；半會、虛拱不等於成局。只引用本包展開的運、年、月；節氣月不能直接當成國曆月。缺日期就停在已知層級，交運年按實際區間分段。只給定性把握，不算機率。',
       safe?'先提供安全支持，暫停商品段及賣場收尾。':commercialFor(data.question,data.method)
