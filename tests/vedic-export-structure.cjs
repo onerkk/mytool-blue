@@ -1,0 +1,25 @@
+'use strict';
+const assert=require('node:assert/strict');
+const env=require('./native-fixtures-20261003.cjs').environment(),c=env.ctx;
+['prompt-brief','prompt-packet'].forEach(env.load);
+const input={utc:'1983-08-25T06:55:00Z',reference:'2026-11-18T04:00:00Z',
+  latitude:22.9999,longitude:120.2269,civil:{date:'1983-08-25',time:'14:55',timezone:'Asia/Taipei'}};
+const v=c.JYVedic.compute(input), E=c.JYVedic;
+const exportText=chart=>c.JYPromptPacket.build('vedic',chart,'請分析命盤與當前節奏');
+const t=exportText(v);
+const ref={Sun:[127,54],Moon:[326,11],Mars:[103,50],Mercury:[154,22],Jupiter:[218,32],Venus:[127,44],Saturn:[186,26],Rahu:[57,43],Ketu:[237,43]};
+for(const [key,[deg,min]] of Object.entries(ref))assert.ok(Math.abs(v.planets[key].longitude-deg-min/60)<1/60,key);
+assert.ok(Math.abs(v.lagna.longitude-252-16/60)<1/60);
+assert.equal(v.planets.Moon.nakshatra.pada,2);
+for(const word of ['上升射手','月亮水瓶第3宮','太陽獅子第9宮','326.19801°','365.2425','2028-03-17','次副運'])assert.ok(t.includes(word),word);
+assert.doesNotMatch(t,/各數一遍|每一句都用肯定句/);
+assert.match(c.JYPromptPacket.build('vedic',v,'請看 D7 分盤'),/\nD7\//);
+const d=E.dasha(v.planets.Moon.longitude,input.utc,input.reference,365.25);
+assert.ok(Math.abs((d.current.maha.end-v.dasha.current.maha.end)/3600000-8)<0.1);
+const edge=E.nakshatra(360-1e-12);
+assert.equal(edge.index,0);assert.equal(edge.pada,1);assert.ok(edge.fraction<1e-9);
+const uncertain=E.compute({...input,unknownTime:true,utc:'1983-08-25T04:00:00Z',civil:{...input.civil,time:'12:00'}});
+const u=exportText(uncertain);
+assert.ok(u.includes('時辰未定的解讀範圍'));
+assert.doesNotMatch(u,/第null宮|走過的主運|現行副運主|當期次副運明細/);
+console.log('PASS same-clock D1, alternate year length, zodiac wrap, unknown-time export.');

@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261118astro123',LIMIT=12000,BYTES=28000;
+  const VERSION='20261118vedic124',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -299,7 +299,32 @@
   }
   function vedic(ctx){const{c,a,section:s,add}=ctx,core=s('D1九曜與掌宮相位')||{};
     const vi=core.input||c.input||{},vp=core.policy||c.policy||{},vl=core.lagna||{};
-    add('定盤：出生UTC/參照UTC/緯經/民用日期時間時區/歲長/歲差制與度/交點/宮制/上升座度/時辰未知',row([stamp(vi.utc),stamp(vi.reference),[vi.latitude,vi.longitude],vi.civil?[vi.civil.date,vi.civil.time,vi.civil.timezone]:null,vi.yearDays,vp.ayanamsa,vp.ayanamsaDegrees,vp.node,vp.houses,[vl.sign,vl.degree],!!a.coverage?.provisional]));
+    const unknown=!!(vi.unknownTime||a.coverage?.provisional);
+    const ps=core.planets||c.planets||{}, moon=ps.Moon, sun=ps.Sun, star=moon?.nakshatra;
+    add('定盤：出生UTC／參照UTC／緯經／民用日期時間時區／大運歲長／歲差制與度／交點／宮制／上升／時辰未知',row([
+      stamp(vi.utc),stamp(vi.reference),[vi.latitude,vi.longitude],vi.civil?[vi.civil.date,vi.civil.time,vi.civil.timezone]:null,
+      vi.yearDays,vp.ayanamsa,vp.ayanamsaDegrees,vp.node,vp.houses,unknown?null:vl.signName,unknown]));
+    const placement=p=>p&&p.signName+(unknown||!p.house?'':'第'+p.house+'宮');
+    const summary=[!unknown&&vl.signName&&'上升'+vl.signName,moon&&'月亮'+placement(moon),
+      star&&'月宿 '+star.name+' 第'+star.pada+'足（宿主'+(ps[star.lord]?.name||zh(star.lord))+'）',sun&&'太陽'+placement(sun)];
+    add(unknown?'出生時刻未確認：參照時刻落點':'D1核心落點（恆星黃道）',summary.filter(Boolean).join('；'));
+    const longitudes=keys.slice(0,9).filter(k=>Number.isFinite(ps[k]?.longitude)).map(k=>ps[k].name+' '+ps[k].longitude.toFixed(5)+'°');
+    if(!unknown&&Number.isFinite(vl.longitude))longitudes.unshift('上升 '+vl.longitude.toFixed(5)+'°');
+    add('黃經核對（已扣本盤歲差，從牡羊0度起算）',longitudes.join('、'));
+    const sensitivity=core.sensitivity||c.sensitivity||{};
+    if(sensitivity.sampled){
+      const changes=A(sensitivity.changes).filter(x=>['Moon/nakshatra','Moon/pada','Moon/D1','Lagna/D1'].includes(x.key));
+      add('出生時間取樣：變動項',changes.map(x=>x.key+'：'+x.alternatives.join('、')).join('；')||'取樣中的月宿、足與本命星座未見變動。');
+    }
+    if(unknown){
+      add('時辰未定的解讀範圍','九曜黃經僅代表參照時刻。上升、宮位、分盤上升與交運日期未定；月宿及足以所列取樣範圍核對。');
+      add('參照時刻分盤星座（不定宮位）',A(s('二十分盤')).map(v=>'D'+v.division+' '+keys.slice(0,9).map(k=>zh(k)+(v.planets?.[k]?.signName||'未定')).join('、')).join('\n'),2);
+      const transits=c.transits?.planets||{};
+      add('參照日行運星位（不定本命宮位）',Object.entries(transits).map(([key,p])=>zh(key)+' '+p.signName+' '+num(p.degree)+'°').join('、'));
+      return;
+    }
+    if(c.dasha?.firstLord&&Number.isFinite(c.dasha.balanceYears))add('維姆紹塔里起運依據',
+      '依未四捨五入的出生月亮黃經定位月宿。出生時'+zh(c.dasha.firstLord)+'主運餘'+num(c.dasha.balanceYears)+'運年，每運年'+c.dasha.yearDays+'日；以下主副運日期採世界時。');
     /* 2026-11-12：吠陀原本九張代碼表、沒有任何句子段，是最容易被讀錯的一種。本命九曜與十二宮改用句子寫（內容與原表相同：星座、度、宮、順逆、尊貴、近日、星宿、掌宮、同宮；宮主落點、宮內星、受照、SAV）。 */
     {const PL=core.planets||c.planets||{},nm=k=>PL[k]?.name||zh(k),HS=A(core.houses),D=n=>Number.isFinite(n)?(Math.round(n*10)/10)+'°':'',dasha=c.dasha?.current||{};
       const rules=k=>HS.filter(h=>h.lord===k).map(h=>h.house),sgn=p=>p?.signName||signs[p?.sign]||'';
@@ -321,7 +346,7 @@
         if(L.length)add('走過的運期（引擎已寫成句；供對照過去用）',L.join('\n'),1);}
       if(HS.length)add('十二宮（引擎已寫成句）',HS.map(h=>'第'+h.house+'宮'+(h.signName||signs[h.sign])+'：宮主'+nm(h.lord)+'落第'+h.lordHouse+'宮；宮內'+(A(h.occupants).length?A(h.occupants).map(nm).join('、'):'無星')+'；'+(A(h.aspectedBy).length?'受'+A(h.aspectedBy).map(nm).join('、')+'照':'無星照')+(h.sav!=null?'；SAV '+h.sav:'')).join('\n'));}
     const pc=core.panchanga||c.panchanga,lm=pc?.limbs||{},kr=A(core.karakas||c.karakas);
-    add('上升月宿、五支曆、角色星',['上升星宿'+(nakOf(vl.longitude)||'?'),pc?'五支曆：'+[lm.tithi?.name&&((lm.tithi.paksha||'')+' '+lm.tithi.name).trim(),lm.nakshatra?.name&&'月宿'+String(lm.nakshatra.name).replace(/\s+/g,'')+(lm.nakshatra.pada||''),lm.yoga?.name&&'Yoga '+lm.yoga.name,lm.karana?.name&&'Karana '+lm.karana.name].filter(Boolean).join('、'):null,kr.length?'角色星：'+kr.map(k=>k.role+zh(k.planet)+(k.tied?'(同度待核)':'')).join(' '):null].filter(Boolean).join('\n'),1);
+    add('上升月宿、五支曆、角色星',['上升星宿'+(nakOf(vl.longitude)||'?'),pc?'五支曆：'+[lm.vaara?.name&&'曜日 '+lm.vaara.name,lm.tithi?.name&&((lm.tithi.paksha||'')+' '+lm.tithi.name).trim(),lm.nakshatra?.name&&'月宿'+String(lm.nakshatra.name).replace(/\s+/g,'')+(lm.nakshatra.pada||''),lm.yoga?.name&&'Yoga '+lm.yoga.name,lm.karana?.name&&'Karana '+lm.karana.name].filter(Boolean).join('、'):null,kr.length?'角色星：'+kr.map(k=>k.role+zh(k.planet)+(k.tied?'(同度待核)':'')).join(' '):null].filter(Boolean).join('\n'),1);
 
     add('星座相位與定位（座序0牡羊；行星相位已逐宮列於受照欄）',A(core.aspects?.rasi).map(p=>zh(p.from)+'→'+A(p.toSigns).join(',')).join(';')+'\n同座距角='+A(core.aspects?.conjunctions).map(p=>A(p.planets).map(zh).join('–')+':'+num(p.separation)).join(';')+'\n定位鏈='+A(core.dispositors).map(p=>A(p.chain).map(zh).join('→')).join(';'));
     {const S1='牡金雙蟹獅處秤蠍射摩瓶魚',g=i=>Number.isInteger(i)&&S1[i]||'?';add('20分盤：D/上升星座/九曜星座（依序日月水金火木土羅計；星座取首字：牡金雙蟹獅處秤蠍射摩瓶魚）',A(s('二十分盤')).map(v=>'D'+v.division+'/'+g(v.lagna?.sign)+'/'+keys.slice(0,9).map(k=>g(v.planets?.[k]?.sign)).join('')).join('\n'));}
@@ -653,7 +678,7 @@
   function compile(entries,data){
     const safe=root.JYReadingWorkflow?.careContext?.(data.question,data.notes)?.level==='safety-first';
     const natalWestern=data.method==='astro'&&entries.length===1&&entries[0].chart?.input?.chartPurpose==='natal';
-    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',(()=>{let f='';try{f=String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get())||'');}catch(_){}return f?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(f):'';})(), '【解讀與查證規則】\n'+(natalWestern?[rules[0],'以本包實算位置與相位為準；問句中的期待不是依據。按相位緊密度、相關星體及主題脈絡衡量，不將條目數換算成機率。',rules[2]]:['ziwei','bazi'].includes(data.method)?[rules[0],data.method==='bazi'?baziEvidence:ziweiEvidence,rules[2]]:rules).join('\n'),
+    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',(()=>{let f='';try{f=String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get())||'');}catch(_){}return f?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(f):'';})(), '【解讀與查證規則】\n'+(data.method==='vedic'?[rules[0],'只用已列盤面；以月宿、宮位與運期的實際關係衡量正反依據，不按條目數換算機率，不把題目的期待當事實。',rules[2]]:natalWestern?[rules[0],'以本包實算位置與相位為準；問句中的期待不是依據。按相位緊密度、相關星體及主題脈絡衡量，不將條目數換算成機率。',rules[2]]:['ziwei','bazi'].includes(data.method)?[rules[0],data.method==='bazi'?baziEvidence:ziweiEvidence,rules[2]]:rules).join('\n'),
       '【資料閱讀方式】\n以下是本次實算資料。表格依標題欄序還原，?是未定；不需要附件。'].filter(Boolean);
     const blocks=[];const add=(label,v,priority=0)=>{zhMethod=data.method;if(hasData(v))blocks.push({label,value:typeof v==='string'?zhText(v):readable(v),priority,method:'shared'});};
     const tasks=data.requestCoverage?.[0]?.coverage?.requirements?.tasks;if(A(tasks).length>1){const GW={general:'這個子題本身',direction:'方向／會不會',compare:'比較',comparison:'比較',timing:'時間',amount:'數量金額',count:'數量',rate:'比率',state:'現況',yesno:'是否',reason:'原因',cause:'原因',person:'人物',enumeration:'列出有哪些',advice:'該怎麼做',choice:'選哪一個',location:'在哪裡',vocation:'適合做什麼'},OW0=root.JYTarotFoundation?.OBSERVABLES||{},OW=Object.assign({},OW0,{existence:'有沒有',independent_subjects:'每個人、每件事分開講',independent_options:'每個選項分開講',state:'現在的狀況',realization:'會不會成',trajectory:'接下來怎麼走',conditional_outcome:'照現況下去的結果',bounded_outcome:'到他說的期限時會怎樣',threshold_outcome:'過不過得了那個門檻',comparison_outcome:'兩邊用同一把尺比',enumeration:'逐項列出',attention_focus:'最該注意什麼',cause:'為什麼會這樣',antecedent:'之前的影響',obstacle:'卡住的地方',enabler:'幫得上忙的力量',advice:'可以怎麼做',dyad:'兩個人各自的狀態與互動',temporal_sequence:'先後順序',annual_overview:'整年各方面',domain_coverage:'各方面分開講',hidden:'檯面下的因素',external:'外在條件',location:'在哪裡的線索',structural_depth:'更深一層的原因',narrative:'來龍去脈',exhaustive:'完整走一遍',willingness:'對方的意願',event_action:'實際會不會行動',invitation_or_arrangement:'邀約與安排',participant_structure:'牽涉哪些人',reported_event:'他提到的那件事',causal_layers:'背景、原因與結果',evaluation_outcome:'這個人或這件事適不適合他',relationship_context:'關係現況',option_set:'有哪些選項',decision_criteria:'用什麼標準選',action_guidance:'下一步怎麼做',threshold_timing:'什麼時候達到',recurrence_context:'會不會再發生',count:'數量',amount:'金額',rate:'比率',timing:'時間',comparison:'比較',person:'對方',reason:'原因'}),zhOnly=v=>/[A-Za-z]/.test(String(v||''))?null:v;add('原句子題核對（每一題都要各自答）',tasks.map((t,i)=>'子題'+(i+1)+(Number.isInteger(A(t.sourceSpan)[0])&&Number.isInteger(A(t.sourceSpan)[1])?'「'+String(data.question||'').slice(t.sourceSpan[0],t.sourceSpan[1]+1).trim()+'」':'')+(['general','direction','yesno','state'].includes(t.goal)||!GW[t.goal]?'':'：重點在'+GW[t.goal])+(A(t.requiredObservables).map(x=>OW[x]||zhOnly(x)).filter(Boolean).length?'；要講到'+[...new Set(t.requiredObservables.map(x=>OW[x]||zhOnly(x)).filter(Boolean))].join('、'):'')+(A(t.measurement).length?'，量化條件：'+t.measurement.join('、'):'')).join('\n'));}
@@ -687,7 +712,7 @@
       if(e.method==='vedic'){const q=String(data.question||'')+' '+String((typeof globalThis!=='undefined'&&globalThis.JYKnownFacts&&globalThis.JYKnownFacts.get&&globalThis.JYKnownFacts.get())||'');
         if(!/所有|全部|完整|逐年|二十分盤|20分盤/.test(q)){const love=/感情|戀|愛|喜歡|曖昧|桃花|交往|男友|女友|老公|老婆|丈夫|妻|婚|正緣|伴侶|對象|復合|分手|前任/.test(q),near=/這個月|本月|這幾天|最近|近期|這週|這星期|今天|這陣子|下個月/.test(q),year=near||/今年|明年|這一年|年度|年底|年初|\d{4}/.test(q);
           const VG=[[/工作|事業|職|軍|升|官|公司|創業|生意/,['D10']],[/財|錢|收入|薪|投資|俸|賺/,['D2','D11']],[/子女|小孩|孩子|懷孕|生育/,['D7']],[/父|母|爸|媽|家人/,['D12']],[/病|健康|身體|手術/,['D6','D30']],[/房|車|不動產|搬/,['D4','D16']],[/考|學業|念書|讀書/,['D24']],[/修行|信仰|靈性/,['D20']]];
-          const keepV=new Set(['D1','D9']);VG.forEach(v=>{if(v[0].test(q))v[1].forEach(x=>keepV.add(x));});if(keepV.size===2)keepV.add('D10');
+          const keepV=new Set(['D1','D9']);for(const match of q.matchAll(/D\s*(\d{1,2})(?!\d)/gi))keepV.add('D'+Number(match[1]));VG.forEach(v=>{if(v[0].test(q))v[1].forEach(x=>keepV.add(x));});if(keepV.size===2)keepV.add('D10');
           for(let i=ctx.b.length-1;i>=0;i--){const L=ctx.b[i].label;
             if(/火星婚姻位置/.test(L)&&!love||/多運法適用性/.test(L)||/當期月與細段/.test(L)&&!near||/年度星位|三重年運/.test(L)&&!year||/Arudha/.test(L)&&!(love||/名聲|形象|地位|別人怎麼看/.test(q)))ctx.b.splice(i,1);
             else if(/^([^·／]*[·／] ?)?20分盤/.test(L)&&typeof ctx.b[i].value==='string'){const rows=ctx.b[i].value.split('\n').filter(r=>keepV.has(r.split('/')[0]));if(rows.length)ctx.b[i]={...ctx.b[i],label:L.replace('20分盤','與本題相關的分盤'),value:rows.join('\n')};}
@@ -695,7 +720,11 @@
       if(e.method==='ziwei'&&!/月|何時|什麼時候|幾時|時間點|所有|全部|完整|逐/.test(String(data.question||'')))for(let i=ctx.b.length-1;i>=0;i--)if(/流月/.test(ctx.b[i].label))ctx.b.splice(i,1);
       blocks.push(...ctx.b);
     }
-    const end=natalWestern ? [
+    const end=data.method==='vedic' ? [
+      '【這則回覆的樣子】用繁體中文親切稱呼，直接答所問。全盤先用上升、月宿與太陽說明性格及情緒需求，再連到事業、行動、關係與當前節奏。月宿、足與宿主分開說明。用生活例子呈現傾向，讓本人自行核對，不猜已發生的事件。',
+      '【我怎麼看出來的】以D1及相關宮主為主，僅用本包展開的分盤、格局、主運／副運／次副運與行運交叉核對。說明主運的長期主題與副運的階段條件。力量足額、落陷救應及吉凶是不同問題；同源證據不重複計算。只在已列區間內談趨勢，勿把交運日當事件日期。時辰未定時不作依賴宮位的判斷或選材。',
+      safe?'先提供安全支持，暫停商品段及賣場收尾。':entries.some(e=>e.chart?.input?.unknownTime)?'出生時刻未定，省略依宮主選材；文末保留提醒。\n'+CLOSING_NOTICE+'\n'+footer:commercialFor(data.question,data.method,true)
+    ].join('\n\n') : natalWestern ? [
       '【這則回覆的樣子】親切稱呼開場，分短段直接答原題。全盤從日月上升及命主星出發，把人格、情緒、親密關係、工作行動與壓力成長講成生活情境。單題只選有關的宮位、宮主與相位。用本人能對照的傾向來寫，勿把經歷、伴侶想法或健康狀況說成已知。',
       '【我怎麼看出來的】白話說明關鍵組合和反證。主題索引只供導讀，以完整落點與相位表核對。交點兩端或同一相位出現在多宮，不算獨立佐證。先說本命，再依原題選用實際列出的行運、次限、回歸或年度小限。單一觀察時刻不能確定整月應期；次限星曆時刻與現實參照日期分開。未列的點位、太陽弧與指定日期不可外推。',
       safe?'先提供安全支持，暫停商品段及賣場收尾。':commercialFor(data.question,data.method,true)

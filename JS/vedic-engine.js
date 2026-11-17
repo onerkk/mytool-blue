@@ -39,7 +39,7 @@
   function zh(k){return NAMES[KEYS.indexOf(k)]||k;}
   function partFloor(x){const n=Math.round(x);return Math.abs(x-n)<1e-11?n:Math.floor(x);}
   function placement(lon){lon=norm(finite(lon,'黃經'));let sign=Math.floor(lon/30);return {longitude:lon,sign,signName:SIGNS[sign],degree:lon-sign*30};}
-  function nakshatra(lon){finite(lon,'月宿黃經');const x=norm(lon)*27/360,idx=partFloor(x)%27;return {index:idx,name:NAKS[idx],pada:mod(partFloor(norm(lon)*108/360),4)+1,lord:ORDER[idx%9],fraction:Math.max(0,Math.min(1,x-idx))};}
+  function nakshatra(lon){finite(lon,'月宿黃經');const x=norm(lon)*27/360,bin=partFloor(x),idx=bin%27;return {index:idx,name:NAKS[idx],pada:mod(partFloor(norm(lon)*108/360),4)+1,lord:ORDER[idx%9],fraction:Math.max(0,Math.min(1,x-bin))};}
   function varga(lon,d){
     if(!VARGAS[d])throw Error('尚未定義的分盤');
     const p=placement(lon),s=p.sign,odd=s%2===0,k=Math.min(d-1,partFloor(p.degree*d/30));let sign=s;
@@ -370,6 +370,7 @@
     for(let i=0;i<=count;i++){const ms=start+i*step,a=astronomy(new Date(ms),input.latitude,input.longitude,input.ayanamsa),keys=unknown?KEYS:KEYS.concat('Lagna');
       keys.forEach(k=>Object.keys(VARGAS).forEach(d=>{const lon=k==='Lagna'?a.ascendant:a.planets[k].sidereal,key=k+'/D'+d,s=varga(lon,+d).sign;let set=changes.get(key);if(!set){set=new Set();changes.set(key,set);}set.add(s);}));
       const n=nakshatra(a.planets.Moon.sidereal);let set=changes.get('Moon/nakshatra');if(!set){set=new Set();changes.set('Moon/nakshatra',set);}set.add(n.name);
+      let quarters=changes.get('Moon/pada');if(!quarters){quarters=new Set();changes.set('Moon/pada',quarters);}quarters.add(n.name+' '+n.pada);
       if(!unknown){const ds=dasha(a.planets.Moon.sidereal,new Date(ms),input.reference,input.yearDays);firstEndMin=Math.min(firstEndMin,ds.periods[0].end);firstEndMax=Math.max(firstEndMax,ds.periods[0].end);firstLords.add(ds.firstLord);currentLords.add(ds.current?[ds.current.maha.lord,ds.current.antar.lord,ds.current.pratyantar.lord].join('/'):'before-birth');}
     }
     return {minutes,sampled:true,sampledStart:new Date(start).toISOString(),sampledEnd:new Date(end).toISOString(),sampleStepSeconds:step/1000,changes:[...changes].filter(([,s])=>s.size>1).map(([key,s])=>({key,alternatives:[...s]})),dashaTiming:unknown?null:{firstEndMin,firstEndMax,firstLords:[...firstLords],currentLords:[...currentLords],sampleCount:count+1,note:'出生時間區間的取樣結果；跨月宿時第一運主可能改變，日期範圍須與 firstLords 一起讀'},note:unknown?'時間未知：不排上升、宮位、分盤宮位與確定運期；行星以中午作觀察錨並附當地全日取樣變化':'出生時間區間取樣：變動項請按出生紀錄核對；分盤不固定等同未來事件'};
