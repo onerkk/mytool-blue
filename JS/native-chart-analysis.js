@@ -14,9 +14,9 @@
   function bazi(c,options={}){
     const unknown=!!(options.unknown||c?.birthTimeUnknown),keys=unknown?KEYS.slice(0,3):KEYS;
     check(c?.pillars&&keys.every(k=>GAN.includes(c.pillars[k]?.gan)&&ZHI.includes(c.pillars[k]?.zhi)),'八字可確認柱缺漏');
-    const pillars=keys.map(k=>{const p=c.pillars[k];return {pillar:k,label:LABELS[KEYS.indexOf(k)],gan:p.gan,zhi:p.zhi,god:tenGod(c.dm,p.gan),element:GE[GAN.indexOf(p.gan)],hidden:HIDDEN[p.zhi].map((g,n)=>({stem:g,god:tenGod(c.dm,g),element:GE[GAN.indexOf(g)],qi:n===0?'本氣':'其他藏氣'})),lifeStage:c.cs?.[k],nayin:c.nayinAll?.[k]};});
+    const pillars=keys.map(k=>{const p=c.pillars[k];return {pillar:k,label:LABELS[KEYS.indexOf(k)],gan:p.gan,zhi:p.zhi,god:tenGod(c.dm,p.gan),element:GE[GAN.indexOf(p.gan)],hidden:HIDDEN[p.zhi].map((g,n)=>({stem:g,god:tenGod(c.dm,g),element:GE[GAN.indexOf(g)],qi:['本氣','中氣','餘氣'][n]})),lifeStage:c.cs?.[k],nayin:c.nayinAll?.[k]};});
     const children=root.JYBaziChildren?.compute(c,options)||null;
-    const items=pillars.map(p=>item('pillar-'+p.pillar,p.label,p.gan+p.zhi+'；透干'+p.god+'，藏干'+p.hidden.map(h=>h.stem+h.god).join('、'),[p]));
+    const items=pillars.map(p=>item('pillar-'+p.pillar,p.label,p.gan+p.zhi+'；'+(p.pillar==='day'?'日主'+p.gan:'透干'+p.god)+'，藏干'+p.hidden.map(h=>h.stem+h.god).join('、'),[p]));
     if(unknown)return result('bazi',items,{pillars:3,annualSegments:0,provisional:true},{pillars,children,unavailable:['出生時柱','完整旺衰喜忌與精確交運','節氣或換日當天的日期歧義']});
     const exposed=pillars.filter(p=>p.pillar!=='day').map(p=>({place:p.label+'天干',god:p.god,stem:p.gan})),hidden=pillars.flatMap(p=>p.hidden.map(h=>({...h,place:p.label+'藏'+h.stem}))),all=exposed.concat(hidden);
     for(const [id,label,gods]of [['resources','財務與資源',['正財','偏財']],['career','工作與責任',['正官','七殺','食神','傷官']],['learning','學習與支持',['正印','偏印','食神','傷官']],['relationships','伴侶與相處',['正財','偏財','正官','七殺']],['collaboration','合作與人際',['比肩','劫財','正官','正印']],['expression','表達與成果',['食神','傷官','正印','偏印']]]){

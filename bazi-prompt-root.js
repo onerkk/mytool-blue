@@ -20,7 +20,7 @@
   function stage(stem,branch){if(!(stem in START)||!B.includes(branch))return null;return STAGES[mod(B.indexOf(branch)-START[stem])];}
   function placements(c,dm,keys){return keys.flatMap(k=>{
     const p=c.pillars[k],row=(s,visible,qi)=>({id:k+(visible?'-stem':'-hidden-'+s),pillar:k,branch:p.zhi,stem:s,element:el(s),god:god(dm,s),visible,qi});
-    return (k==='day'?[]:[row(p.gan,true,null)]).concat(H[p.zhi].map((s,i)=>row(s,false,i===0?'main':'residual')));
+    return (k==='day'?[]:[row(p.gan,true,null)]).concat(H[p.zhi].map((s,i)=>row(s,false,['main','middle','residual'][i])));
   });}
   // Original poems mix sons, births and historical survival wording. Preserve
   // those units; never silently rename their number as total biological children.
