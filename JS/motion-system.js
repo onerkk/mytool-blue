@@ -66,15 +66,23 @@
       mark.style.setProperty('--beat', (i * 16) + 'ms');
       marks.appendChild(mark);
     }
+    // Raise the scene after the room opens, including rooms using a native modal.
+    var topLayer = typeof veil.showPopover === 'function';
+    if (topLayer) veil.setAttribute('popover', 'manual');
     doc.body.appendChild(veil);
+    if (topLayer) {
+      root.requestAnimationFrame(function () {
+        if (currentVeil === veil && veil.isConnected) veil.showPopover();
+      });
+    }
     function finish() {
       veil.remove();
       if (currentVeil === veil) currentVeil = null;
     }
     var timeline = veil.animate([{opacity:0}, {opacity:1,offset:.20},
-      {opacity:1,offset:.72}, {opacity:0}], {duration:1050, easing:'linear'});
+      {opacity:1,offset:.72}, {opacity:0}], {duration:1850, easing:'linear'});
     timeline.onfinish = timeline.oncancel = finish;
-    root.setTimeout(finish, 1350);
+    root.setTimeout(finish, 2200);
   }
   doc.addEventListener('click', function (e) {
     var el = e.target && e.target.closest && e.target.closest(DOOR);

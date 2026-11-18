@@ -136,11 +136,11 @@
  @keyframes jy-light-travel{0%{transform:translateX(-4%)}100%{transform:translateX(7%)}}
  .jr-dialog[data-motion=full] .jr-seal[aria-pressed=true]::after{content:"";position:absolute;pointer-events:none;inset:2px;border:1px solid var(--jr-light);border-radius:inherit;animation:jy-imprint .65s ease-out both}
  @keyframes jy-imprint{from{opacity:.85;transform:scale(.88)}to{opacity:0;transform:scale(1.12)}}
- .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-coins>div{animation:jy-coin-arc .76s calc(var(--i) * 70ms) cubic-bezier(.25,.5,.35,1) both}
- @keyframes jy-coin-arc{0%{translate:0 0;rotate:x 0deg}44%{translate:0 -28px;rotate:x 215deg}85%{translate:0 2px;rotate:x 355deg}100%{translate:0 0;rotate:x 360deg}}
+ .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-coins>div{animation:jy-coin-arc 1.16s calc(var(--i) * 70ms) cubic-bezier(.25,.5,.35,1) both}
+ @keyframes jy-coin-arc{0%{translate:0 0;rotate:x 0deg}42%{translate:calc((var(--i) - 1) * 13px) -74px;rotate:x 380deg}80%{translate:0 4px;rotate:x 698deg}90%{translate:0 -9px;rotate:x 725deg}100%{translate:0 0;rotate:x 720deg}}
  .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-stalks i:nth-child(odd){animation:jy-gather-stems .85s ease-in-out}
- .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-stalks i:nth-child(even){animation:jy-gather-stems .85s ease-in-out;--split:14px}
- @keyframes jy-gather-stems{45%,65%{translate:var(--split,-14px) -5px}}
+ .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-stalks i:nth-child(even){animation:jy-gather-stems .85s ease-in-out;--split:39px}
+ @keyframes jy-gather-stems{45%,65%{translate:var(--split,-39px) -16px}}
  .bzs-axis .bzs-dot{animation:jy-axis-mark .64s cubic-bezier(.17,.75,.2,1) backwards}
  @keyframes jy-axis-mark{from{opacity:.15;scale:.4}72%{scale:1.16}to{opacity:1;scale:1}}
  .wx-ceremony-chapters span.on,.vdr-modal[data-motion=full] .vdr-phases span[data-active=true],.lr-ceremony-path li.is-current{animation:jy-chapter-light .78s ease-out}
@@ -148,3 +148,15 @@
  .jx-palace.is-related,.jx-pillar[aria-pressed=true]{animation:jy-selection .5s ease-out}
  @keyframes jy-selection{from{outline:1px solid #e7c591;outline-offset:4px}to{outline:1px solid transparent;outline-offset:0}}
 }
+
+.jy-veil.jy-portal{margin:0;padding:0;border:0;max-width:none;max-height:none}
+.jy-veil.jy-portal::backdrop{pointer-events:none;background:transparent}
+.jy-portal .jy-instrument{scale:1.45;margin:42px 0}
+.jy-atelier .jy-portal .jy-room-icon{width:104px;height:104px}
+.jy-portal .jy-room-landscape{animation-duration:1.85s}
+.jy-portal[data-instrument=fan] .jy-marks i,.jy-portal[data-instrument=spread] .jy-marks i{
+  width:42px;height:70px;margin:-35px -21px;background:#211927 url('../assets/ui/tarot-back-moon-gold.jpg') center/cover;box-shadow:0 4px 9px #0009}
+.jy-portal[data-instrument=spread] .jy-marks i{width:30px;height:40px;margin:-20px -15px}
+.jy-portal[data-instrument=coin] .jy-marks i{width:34px;height:34px;margin:-17px;--place:rotate(var(--turn)) translateY(-72px);
+  background:radial-gradient(circle,#594323 18%,#bc9459 22%,#e8c983 68%,#81592f 72%);box-shadow:inset 0 0 0 2px #c2a16a,0 4px 8px #000a}
+@media(max-height:450px){.jy-portal .jy-instrument{scale:1;margin:0}}

@@ -66,7 +66,7 @@
       if(s.scene&&s.sceneKind!==kind){s.scene.dispose();s.scene=null;}
       if(!s.scene){s.scene=root.JYGuaScene.create(host,kind);s.sceneKind=kind;}else s.scene.attach(host);
       s.scene.update({kind:s.kind,values:s.values,part:s.part,record:s.records[s.records.length-1]||null,change:s.part.length?s.lastChange:null,reduced:reduced()});
-    }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用靜態器物畫面，起卦照常進行。';}
+    }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用平面器物，起卦方式相同。';}
   }
   function settings(s){
     var h='<details class="gw-options"><summary>起卦時間'+(s.kind==='liuyao'?'與取用設定':'設定')+'</summary><div class="gw-settings"><label class="gw-check"><input type="checkbox" data-field="custom"'+(s.custom?' checked':'')+'>使用指定起卦時間</label><label>起卦時間（所選 UTC 時差的當地時間）<input type="datetime-local" data-field="time" step="1" min="1900-01-01T00:00" max="2100-12-31T23:59:59" value="'+esc(s.time)+'"'+(!s.custom?' disabled':'')+'></label><div class="gw-time-pair"><label>UTC 時差（台灣 +8）<input type="number" data-field="offset" min="-12" max="14" step="0.25" value="'+esc(s.offset)+'"></label>';

@@ -13,6 +13,13 @@ Element.prototype.animate = function () { return this.track = {}; };
 for (const file of ['method-catalog','motion-system']) {
   vm.runInContext(fs.readFileSync(path.join(root,'JS',file+'.js'),'utf8'),ctx);
 }
+const frames = [];
+ctx.requestAnimationFrame = cb => frames.push(cb);
+Element.prototype.showPopover = function () {
+  assert.equal(this.getAttribute('popover'), 'manual');
+  assert.ok(this.isConnected);
+  this.shownAboveRoom = true;
+};
 let previous;
 for (const [route,,,label] of ctx.JYMethodCatalog) {
   const door = doc.createElement('button');
@@ -21,6 +28,8 @@ for (const [route,,,label] of ctx.JYMethodCatalog) {
   ctx.JYMotion.bloom(door);
   const portal = doc.querySelector('.jy-portal');
   assert.ok(portal,route);
+  frames.shift()();
+  assert.ok(portal.shownAboveRoom, route);
   if (previous) assert.equal(previous.isConnected,false,'replace prior scene');
   assert.equal(portal.querySelector('.jy-room-icon').getAttribute('data-art'),route);
   assert.ok(portal.querySelector('.jy-marks').children.length >= 2);
