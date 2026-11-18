@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
   if (!root.document || !root.Element) return;
-  var doc = root.document, VERSION = '20261021compat48';
+  var doc = root.document, VERSION = '20261119rooms126';
   var mq = root.matchMedia ? root.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function reduced() { return !!(mq && mq.matches); }
   var canAnimate = typeof Element.prototype.animate === 'function';
@@ -18,41 +18,63 @@
     if (/走進月下神殿/.test(s)) return '月下神殿';
     return s.replace(/^\d+/, '').slice(0, 10);
   }
+  // Each doorway carries its instrument into the room. Marks are scenery only.
+  var doors = {
+    tarot: ['fan', 5, '#d8ae75', 'moon-sanctum'],
+    ootk: ['gate', 5, '#e0c58d', 'moon-sanctum'],
+    lenormand: ['spread', 9, '#91c5ae', 'moon-garden'],
+    bazi: ['pillar', 4, '#dfa774', 'celestial-observatory'],
+    compat: ['pair', 2, '#e2a9b7', 'celestial-observatory'],
+    ziwei: ['orbit', 12, '#bda6ed', 'celestial-observatory'],
+    meihua: ['petal', 5, '#e9a5b1', 'moon-garden'],
+    oracle: ['stick', 7, '#e0a778', 'moon-garden'],
+    vedic: ['orbit', 9, '#f2c36c', 'vedic-palace-20260914'],
+    western: ['dial', 12, '#a2ccea', 'western-observatory-20260914'],
+    liuyao: ['coin', 3, '#d1b574', 'moon-garden'],
+    yijing: ['stalk', 12, '#c0b68e', 'moon-garden'],
+    name: ['scroll', 2, '#cec3a3', 'moon-sanctum'],
+    liuren: ['plate', 4, '#9ccabf', 'celestial-observatory']
+  };
+  var currentVeil;
   function bloom(el) {
     if (reduced() || !canAnimate) return;
-    var r = el.getBoundingClientRect(), vw = root.innerWidth, vh = root.innerHeight;
+    var kind = el.getAttribute('data-tool') || 'tarot', profile = doors[kind];
+    if (!profile) return;
+    var r = el.getBoundingClientRect();
     if (!r.width || !r.height) return;
+    if (currentVeil) currentVeil.remove();
     var veil = doc.createElement('div');
-    veil.className = 'jy-veil'; veil.setAttribute('aria-hidden', 'true');
-    veil.innerHTML = '<div class="jy-veil-moon"></div><div class="jy-veil-title"></div>';
-    veil.querySelector('.jy-veil-title').textContent = doorTitle(el);
+    currentVeil = veil;
+    veil.className = 'jy-veil jy-portal';
+    veil.dataset.instrument = profile[0];
+    veil.setAttribute('aria-hidden', 'true');
+    var file = profile[3].includes('20260914') ? profile[3] : 'ritual-' + profile[3];
+    veil.style.setProperty('--room-art', 'url("assets/ui/' + file + '.webp")');
+    veil.style.setProperty('--metal', profile[2]);
+    veil.style.setProperty('--origin', (r.left + r.width / 2) + 'px ' + (r.top + r.height / 2) + 'px');
+    veil.innerHTML = '<div class="jy-room-landscape"></div><div class="jy-instrument"><div class="jy-marks"></div><span class="at-art jy-room-icon"></span></div><div class="jy-room-title"></div>';
+    veil.querySelector('.jy-room-icon').setAttribute('data-art', kind);
+    veil.querySelector('.jy-room-title').textContent = doorTitle(el);
+    var marks = veil.querySelector('.jy-marks'), count = profile[1];
+    for (var i = 0; i < count; i++) {
+      var mark = doc.createElement('i');
+      mark.style.setProperty('--turn', (360 * i / count) + 'deg');
+      mark.style.setProperty('--fan', ((i - (count - 1) / 2) * 10) + 'deg');
+      mark.style.setProperty('--offset', ((i - (count - 1) / 2) * 19) + 'px');
+      mark.style.setProperty('--col', ((i % 3 - 1) * 33) + 'px');
+      mark.style.setProperty('--row', ((Math.floor(i / 3) - 1) * 42) + 'px');
+      mark.style.setProperty('--beat', (i * 16) + 'ms');
+      marks.appendChild(mark);
+    }
     doc.body.appendChild(veil);
-    var from = 'translate(' + r.left + 'px,' + r.top + 'px) scale(' + (r.width / vw) + ',' + (r.height / vh) + ')';
-    // 整段等速；緩動放在每一段的起始關鍵影格（整段套前傾曲線會把擴展、停留、淡出全擠到前 50ms）。
-    var EXPAND = 'cubic-bezier(.16,1,.3,1)', SOFT = 'cubic-bezier(.4,0,.2,1)', SPRING = 'cubic-bezier(.34,1.56,.64,1)';
-    var a = veil.animate([
-      { transform: from, opacity: 0, borderRadius: '22px', offset: 0, easing: EXPAND },
-      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.40, easing: 'linear' },
-      { transform: 'translate(0,0) scale(1,1)', borderRadius: '0px', opacity: 1, offset: 0.64, easing: SOFT },
-      { transform: 'translate(0,0) scale(1.04,1.04)', borderRadius: '0px', opacity: 0, offset: 1 }
-    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
-    var moon = veil.querySelector('.jy-veil-moon'), title = veil.querySelector('.jy-veil-title');
-    moon.animate([
-      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0, easing: 'linear' },
-      { opacity: 0, transform: 'scale(.6) rotate(-18deg)', offset: 0.24, easing: SPRING },
-      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.52, easing: 'linear' },
-      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.66, easing: SOFT },
-      { opacity: 0, transform: 'scale(1.16) rotate(6deg)', offset: 1 }
-    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
-    title.animate([
-      { opacity: 0, letterSpacing: '.62em', offset: 0, easing: 'linear' },
-      { opacity: 0, letterSpacing: '.62em', offset: 0.32, easing: EXPAND },
-      { opacity: 1, letterSpacing: '.32em', offset: 0.56, easing: 'linear' },
-      { opacity: 1, letterSpacing: '.32em', offset: 0.68, easing: SOFT },
-      { opacity: 0, letterSpacing: '.3em', offset: 1 }
-    ], { duration: 1100, easing: 'linear', fill: 'forwards' });
-    var done = function () { if (veil.isConnected) veil.remove(); };
-    a.onfinish = done; setTimeout(done, 1700);
+    function finish() {
+      veil.remove();
+      if (currentVeil === veil) currentVeil = null;
+    }
+    var timeline = veil.animate([{opacity:0}, {opacity:1,offset:.20},
+      {opacity:1,offset:.72}, {opacity:0}], {duration:1050, easing:'linear'});
+    timeline.onfinish = timeline.oncancel = finish;
+    root.setTimeout(finish, 1350);
   }
   doc.addEventListener('click', function (e) {
     var el = e.target && e.target.closest && e.target.closest(DOOR);
@@ -419,7 +441,7 @@
       if (!c.isConnected || built.has(c)) return;
       var g = guard(c); if (g.v !== 'ok') { built.add(c); release(parts(c)); return; }
       shapes.add(g.sk); recent[g.tk] = Date.now();
-      if (inView(c)) { var go = function () { if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); }; go(); }
+      if (inView(c)) { var go = function () { if (!c.isConnected || reduced()) { release(parts(c)); return; } if (ritualOpen()) { setTimeout(go, 200); return; } requestAnimationFrame(function () { assemble(c); }); }; go(); }
       else { release(parts(c)); if (waiting) waiting.observe(c); }
     });
   }

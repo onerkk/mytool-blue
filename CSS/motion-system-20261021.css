@@ -91,3 +91,60 @@
 @media (prefers-reduced-motion:reduce){
   .gw-progress-row.is-new .gw-yao i,.gw-room .gw-hex-card.jy-draw .gw-hex-line,#oracle-screen .or-poem-column.jy-draw .or-poem-line{animation:none!important;clip-path:none!important;filter:none!important}
 }
+
+/* An illustrated room opens around its instrument; every track ends before navigation settles. */
+.jy-veil.jy-portal{inset:0;width:100%;height:100%;border-radius:0;display:grid;place-content:center;justify-items:center;
+ background:#0c1019;color:var(--metal);box-shadow:none;isolation:isolate}
+.jy-portal::before{display:none}
+.jy-room-landscape{position:absolute;inset:-4%;z-index:-1;background:linear-gradient(180deg,#07121c55,#10152166 45%,#070d16dd),var(--room-art) center 48%/cover;
+ transform-origin:var(--origin);animation:jy-room-enter 1.05s cubic-bezier(.2,.7,.25,1) both}
+@keyframes jy-room-enter{from{transform:scale(1.19)}to{transform:scale(1)}}
+.jy-instrument{position:relative;width:170px;height:170px;display:grid;place-items:center}
+.jy-instrument::before,.jy-instrument::after{content:"";position:absolute;border-radius:50%;inset:0;border:1px solid currentColor;opacity:.55;
+ animation:jy-bezel .85s ease-out both}
+.jy-instrument::after{inset:9px;border-style:dotted;animation-direction:reverse;opacity:.35}
+@keyframes jy-bezel{from{transform:scale(.77) rotate(-24deg)}to{transform:scale(1) rotate(0)}}
+.jy-atelier .jy-portal .jy-room-icon{position:relative;width:72px;height:72px;filter:drop-shadow(0 3px 7px #000);animation:jy-icon .9s both}
+@keyframes jy-icon{0%,18%{opacity:0;transform:scale(.78)}65%,100%{opacity:1;transform:none}}
+.jy-room-title{font:600 clamp(18px,4vw,26px)/1.5 var(--f-display,serif);letter-spacing:.18em;color:#fff3d8;margin-top:16px;text-shadow:0 2px 10px #000}
+.jy-marks{position:absolute;inset:0}
+.jy-marks i{position:absolute;top:50%;left:50%;width:5px;height:5px;border:1px solid currentColor;border-radius:50%;
+ background:var(--metal);box-shadow:0 0 7px currentColor;transform:var(--place,rotate(var(--turn)) translateY(-73px));
+ animation:jy-inlay .58s var(--beat) cubic-bezier(.18,.76,.2,1) backwards}
+@keyframes jy-inlay{from{opacity:0;transform:rotate(-15deg) scale(.36)}to{opacity:1}}
+.jy-portal:is([data-instrument=fan],[data-instrument=spread]) i{width:27px;height:39px;margin:-19px -13px;border-radius:3px;background:linear-gradient(135deg,#33283b,#131320);box-shadow:inset 0 0 0 3px #202335,inset 0 0 0 4px currentColor}
+.jy-portal[data-instrument=fan] i{--place:rotate(var(--fan)) translateY(-46px);transform-origin:center 60px}
+.jy-portal[data-instrument=spread] i{--place:translate(var(--col),var(--row))}
+.jy-portal[data-instrument=gate] i,.jy-portal[data-instrument=plate] i{width:96px;height:96px;margin:-48px;border-radius:4px;background:none;box-shadow:none;--place:rotate(var(--fan)) scale(.95)}
+.jy-portal[data-instrument=gate] i{border-radius:48px 48px 4px 4px;--place:translateX(var(--offset)) rotateY(var(--fan))}
+.jy-portal:is([data-instrument=pillar],[data-instrument=stick],[data-instrument=stalk],[data-instrument=scroll]) i{width:5px;height:76px;margin:-38px -2px;border-radius:3px;background:linear-gradient(90deg,#302a22,currentColor);box-shadow:0 3px 8px #0008;--place:rotate(var(--fan)) translateY(-14px)}
+.jy-portal[data-instrument=pillar] i{width:14px;--place:translateX(var(--offset))}
+.jy-portal[data-instrument=scroll] i{width:10px;--place:translateX(calc(var(--offset) * 5))}
+.jy-portal[data-instrument=pair] i,.jy-portal[data-instrument=coin] i{width:64px;height:64px;margin:-32px;background:transparent;box-shadow:inset 0 0 0 3px #211e1b,inset 0 0 0 4px currentColor;--place:translateX(calc(var(--offset) * 2))}
+.jy-portal[data-instrument=coin] i{width:26px;height:26px;margin:-13px;--place:rotate(var(--turn)) translateY(-58px)}
+.jy-portal[data-instrument=petal] i{width:22px;height:34px;margin:-17px -11px;border-radius:70% 30% 60% 40%;background:linear-gradient(145deg,currentColor,transparent);--place:rotate(var(--turn)) translateY(-47px)}
+.jy-portal[data-instrument=dial] i{width:2px;height:11px;border-radius:0}
+@media(max-height:420px){.jy-instrument{scale:.82}.jy-room-title{margin-top:-6px}}
+@media(prefers-reduced-motion:reduce){.jy-veil.jy-portal{display:none}}
+
+/* The light follows committed actions: a held instrument, revealed cards or lit seals. */
+@media(prefers-reduced-motion:no-preference){
+ .jr-dialog[data-motion=full] .jr-world::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:conic-gradient(from 154deg at 65% -12%,transparent 0deg,var(--jr-glow) 8deg,transparent 12deg,var(--jr-glow) 18deg,transparent 23deg);
+  opacity:calc(.06 + var(--ritual-charge,0) * .19);transform:translateX(calc(var(--ritual-charge,0) * -4%));transition:opacity .24s,transform .24s}
+ .jr-dialog[data-motion=full][data-shot=orbit] .jr-world::after{animation:jy-light-travel 1.8s ease-in-out both}
+ @keyframes jy-light-travel{0%{transform:translateX(-4%)}100%{transform:translateX(7%)}}
+ .jr-dialog[data-motion=full] .jr-seal[aria-pressed=true]::after{content:"";position:absolute;pointer-events:none;inset:2px;border:1px solid var(--jr-light);border-radius:inherit;animation:jy-imprint .65s ease-out both}
+ @keyframes jy-imprint{from{opacity:.85;transform:scale(.88)}to{opacity:0;transform:scale(1.12)}}
+ .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-coins>div{animation:jy-coin-arc .76s calc(var(--i) * 70ms) cubic-bezier(.25,.5,.35,1) both}
+ @keyframes jy-coin-arc{0%{translate:0 0;rotate:x 0deg}44%{translate:0 -28px;rotate:x 215deg}85%{translate:0 2px;rotate:x 355deg}100%{translate:0 0;rotate:x 360deg}}
+ .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-stalks i:nth-child(odd){animation:jy-gather-stems .85s ease-in-out}
+ .gw-scene[data-casting=true][data-render=fallback] .gw-fallback-stalks i:nth-child(even){animation:jy-gather-stems .85s ease-in-out;--split:14px}
+ @keyframes jy-gather-stems{45%,65%{translate:var(--split,-14px) -5px}}
+ .bzs-axis .bzs-dot{animation:jy-axis-mark .64s cubic-bezier(.17,.75,.2,1) backwards}
+ @keyframes jy-axis-mark{from{opacity:.15;scale:.4}72%{scale:1.16}to{opacity:1;scale:1}}
+ .wx-ceremony-chapters span.on,.vdr-modal[data-motion=full] .vdr-phases span[data-active=true],.lr-ceremony-path li.is-current{animation:jy-chapter-light .78s ease-out}
+ @keyframes jy-chapter-light{from{text-shadow:0 0 12px #fff5bf;color:#fff4d8}to{text-shadow:0 0 0 transparent}}
+ .jx-palace.is-related,.jx-pillar[aria-pressed=true]{animation:jy-selection .5s ease-out}
+ @keyframes jy-selection{from{outline:1px solid #e7c591;outline-offset:4px}to{outline:1px solid transparent;outline-offset:0}}
+}

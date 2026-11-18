@@ -136,7 +136,7 @@
     function schedule(fn,ms){var id=root.setTimeout(function(){if(!settled)fn();},ms);timers.push(id);return id;}
     function showProgress(value,label){
       var percentage=Math.round(Math.max(0,Math.min(1,value))*100),response=dialog.querySelector('.jr-response');
-      response.style.setProperty('--response',percentage+'%');response.querySelector('.jr-response-value').textContent=percentage+'%';
+      dialog.style.setProperty('--ritual-charge',String(percentage/100));response.style.setProperty('--response',percentage+'%');response.querySelector('.jr-response-value').textContent=percentage+'%';
       response.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',String(percentage));
       if(label)response.querySelector('.jr-response-label').textContent=label;
     }

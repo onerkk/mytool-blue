@@ -50,7 +50,7 @@
     var message=grass?(ch?'本次 '+ch.total+' 策 · 歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策':'五十策虛一，以四十九策候一卦。'):(last?'第 '+s.values.length+' 爻 · '+last.coins.map(function(c){return c==='back'?'背':'字';}).join('　')+' · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]):'三枚銅錢，六次落定一件心事。');
     if(grass&&last&&!ch)message='第 '+s.values.length+' 爻已成 · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]);
     if(s.busy)message=grass?'本次 '+s.lastChange.total+' 策 · 分二掛一，揲四歸餘。':'三錢入盤，靜候落定。';
-    var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-render="fallback" role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
+    var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-casting="'+(s.busy?'true':'false')+'" data-render="fallback" role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
     if(grass){h+='<div class="gw-fallback-scroll">周 易</div><div class="gw-fallback-stalks">';for(var i=0;i<31;i++)h+='<i style="--i:'+i+'"></i>';h+='</div>';}
     else{h+='<div class="gw-fallback-tray"></div><div class="gw-fallback-coins">';for(var j=0;j<3;j++)h+='<div style="--i:'+j+'">'+coinSVG(s.id+'-fallback-'+j,!!(last&&last.coins[j]==='back'))+'</div>';h+='</div>';}
     h+='</div></div><p class="gw-scene-instruction">輕拖器物，換個角度看見細節</p><p class="gw-stage-summary">'+message+'</p>'+(s.mode==='yarrow'&&s.phase==='casting'?yarrowProgress(s):'')+'<div class="gw-ceremony-tools">';

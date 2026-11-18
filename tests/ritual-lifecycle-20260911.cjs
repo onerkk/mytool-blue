@@ -128,7 +128,7 @@ if(require.main===module)(async()=>{
  });
  await test('Bazi, Meihua and Ziwei continuations run after completion only; Ziwei cancel restores the form',()=>{
   for(const [file,name,kind] of [['bazi-standalone','_showLoading','bazi'],['meihua-standalone','_showLoading','meihua'],['ziwei-standalone','showLoading','ziwei']]){
-   const e=fixture();load(e,'ritual-ateliers');vm.runInContext(actual('JS/'+file+'.js',name),e.ctx);const input=add(e,'div','zw-input');input.style.display='none';let done=0;e.ctx[name](()=>done++);assert(e.ctx.JYRitual.isActive(kind));assert.equal(done,0);e.doc.querySelector('.jr-skip').click();assert.equal(done,1);e.ctx[name](()=>done++);e.doc.querySelector('.jr-cancel').click();assert.equal(done,1);if(kind==='ziwei')assert.equal(input.style.display,'block');
+   const e=fixture();load(e,'ritual-ateliers');if(kind==='ziwei')vm.runInContext(actual('JS/'+file+'.js','_ritualPalaces'),e.ctx);vm.runInContext(actual('JS/'+file+'.js',name),e.ctx);const input=add(e,'div','zw-input');input.style.display='none';let done=0;e.ctx[name](()=>done++);assert(e.ctx.JYRitual.isActive(kind));assert.equal(done,0);e.doc.querySelector('.jr-skip').click();assert.equal(done,1);e.ctx[name](()=>done++);e.doc.querySelector('.jr-cancel').click();assert.equal(done,1);if(kind==='ziwei')assert.equal(input.style.display,'block');
   }
  });
  await test('Compatibility commits its real calculation and history only after completion; cancel leaves both empty',async()=>{
