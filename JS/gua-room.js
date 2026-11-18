@@ -47,13 +47,14 @@
   }
   function stage(s){
     var grass=isYarrow(s),last=s.records[s.records.length-1],ch=s.part.length?s.lastChange:null;
+    var handCast=s.phase==='casting'&&!grass;
     var message=grass?(ch?'本次 '+ch.total+' 策 · 歸餘 '+ch.removed+' 策 · 留下 '+ch.remaining+' 策':'五十策虛一，以四十九策候一卦。'):(last?'第 '+s.values.length+' 爻 · '+last.coins.map(function(c){return c==='back'?'背':'字';}).join('　')+' · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]):'三枚銅錢，六次落定一件心事。');
     if(grass&&last&&!ch)message='第 '+s.values.length+' 爻已成 · '+last.value+' '+({6:'老陰',7:'少陽',8:'少陰',9:'老陽'}[last.value]);
     if(s.busy)message=grass?'本次 '+s.lastChange.total+' 策 · 分二掛一，揲四歸餘。':'三錢入盤，靜候落定。';
-    var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-casting="'+(s.busy?'true':'false')+'" data-render="fallback" role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
+    var h='<div class="gw-stage-side"><div class="gw-stage-heading">'+(grass?'蓍 草 ・ 靜 心 書 齋':'銅 錢 ・ 靜 觀 六 爻')+'</div><div class="gw-scene" data-casting="'+(s.busy?'true':'false')+'" data-render="fallback" '+(handCast&&!s.busy?'data-hand-ready ':'')+'role="img" aria-label="'+(grass?'立體蓍草、古卷與漆木書案':'立體方孔銅錢與青銅卦盤')+'"><div class="gw-scene-fallback" aria-hidden="true">';
     if(grass){h+='<div class="gw-fallback-scroll">周 易</div><div class="gw-fallback-stalks">';for(var i=0;i<31;i++)h+='<i style="--i:'+i+'"></i>';h+='</div>';}
     else{h+='<div class="gw-fallback-tray"></div><div class="gw-fallback-coins">';for(var j=0;j<3;j++)h+='<div style="--i:'+j+'">'+coinSVG(s.id+'-fallback-'+j,!!(last&&last.coins[j]==='back'))+'</div>';h+='</div>';}
-    h+='</div></div><p class="gw-scene-instruction">輕拖器物，換個角度看見細節</p><p class="gw-stage-summary">'+message+'</p>'+(s.mode==='yarrow'&&s.phase==='casting'?yarrowProgress(s):'')+'<div class="gw-ceremony-tools">';
+    h+='</div></div><p class="gw-scene-instruction">'+(handCast?'按住盤面向上提起三枚銅錢，鬆手擲出；也可按下方按鈕。':'輕拖器物，換個角度看見細節')+'</p><p class="gw-stage-summary">'+message+'</p>'+(s.mode==='yarrow'&&s.phase==='casting'?yarrowProgress(s):'')+'<div class="gw-ceremony-tools">';
     if(root.JYFoley)h+=root.JYFoley.controls(grass?'stems':'coins','gua-'+s.kind);
     if(s.busy)h+='<button type="button" data-action="skip">略過動畫</button>';
     h+='</div><div class="gw-method-note"><span>'+ (grass?'大衍蓍法':s.kind==='liuyao'?'三錢納甲':'三錢取象')+'</span><p>'+(grass?'分二、掛一、揲四、歸餘。三變成一爻，以卦爻辭讀懂此刻的進退。':(s.kind==='liuyao'?'銅錢定陰陽，六爻成一卦。以世應、六親與月日，辨一件事的推進與阻力。':'三枚銅錢取六爻；解讀仍依周易卦爻辭，與六爻納甲分開。'))+'</p></div></div>';return h;
@@ -66,7 +67,7 @@
       if(s.scene&&s.sceneKind!==kind){s.scene.dispose();s.scene=null;}
       if(!s.scene){s.scene=root.JYGuaScene.create(host,kind);s.sceneKind=kind;}else s.scene.attach(host);
       s.scene.update({kind:s.kind,values:s.values,part:s.part,record:s.records[s.records.length-1]||null,change:s.part.length?s.lastChange:null,reduced:reduced()});
-    }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用平面器物，起卦方式相同。';}
+    }catch(e){if(s.scene)s.scene.dispose();s.scene=null;host.dataset.render='fallback';if(s.phase!=='casting'||isYarrow(s))host.closest('.gw-stage-side').querySelector('.gw-scene-instruction').textContent='目前使用平面器物，起卦方式相同。';}
   }
   function settings(s){
     var h='<details class="gw-options"><summary>起卦時間'+(s.kind==='liuyao'?'與取用設定':'設定')+'</summary><div class="gw-settings"><label class="gw-check"><input type="checkbox" data-field="custom"'+(s.custom?' checked':'')+'>使用指定起卦時間</label><label>起卦時間（所選 UTC 時差的當地時間）<input type="datetime-local" data-field="time" step="1" min="1900-01-01T00:00" max="2100-12-31T23:59:59" value="'+esc(s.time)+'"'+(!s.custom?' disabled':'')+'></label><div class="gw-time-pair"><label>UTC 時差（台灣 +8）<input type="number" data-field="offset" min="-12" max="14" step="0.25" value="'+esc(s.offset)+'"></label>';
@@ -138,6 +139,7 @@
     h+=s.phase==='result'?resultPanel(s):'<div class="gw-main">'+(s.phase==='input'?inputPanel(s):castingPanel(s))+stage(s)+'</div>';
     h+='<footer class="gw-footer">JINGYUE · THE MOON ATELIER<br>把問題留在此刻，把選擇握在自己手裡。</footer></div>';w.innerHTML=h;w.scrollTop=scroll;
     syncScene(s);
+    bindHandCast(s,w.querySelector('.gw-scene'));
     if(root.JYFoley)root.JYFoley.sync();
     if(s.phase==='input'&&root.JYReadingRecommender)root.JYReadingRecommender.enhance(w);
   }
@@ -172,7 +174,61 @@
     s.part.push(ch);s.lastChange=ch;s.commit=s.part.length===3;
     if(s.commit){var record=root.JYYarrowCore.record(s.part);s.records.push(record);s.values.push(record.value);}
   }
-  function toss(s){
+  function bindHandCast(s,host){
+    if(!host||!host.hasAttribute('data-hand-ready'))return;
+    var grip=null;
+    function position(e){
+      var x=Math.max(-host.clientWidth*.18,Math.min(host.clientWidth*.18,e.clientX-grip.x));
+      var lift=Math.max(0,Math.min(host.clientHeight*.36,grip.y-e.clientY));
+      return {x:x,lift:lift};
+    }
+    function cancel(){
+      grip=null;
+      delete host.dataset.grip;
+      host.style.removeProperty('--hand-x');
+      host.style.removeProperty('--hand-y');
+    }
+    host.addEventListener('pointerdown',function(e){
+      if(grip||!e.isPrimary||e.button!==0)return;
+      e.stopPropagation();
+      host.setPointerCapture(e.pointerId);
+      grip={id:e.pointerId,x:e.clientX,y:e.clientY};
+      host.dataset.grip='held';
+    },true);
+    host.addEventListener('pointermove',function(e){
+      if(!grip||e.pointerId!==grip.id)return;
+      var point=position(e);
+      host.style.setProperty('--hand-x',point.x+'px');
+      host.style.setProperty('--hand-y',-point.lift+'px');
+    });
+    host.addEventListener('pointerup',function(e){
+      if(!grip||e.pointerId!==grip.id)return;
+      var point=position(e);
+      cancel();
+      if(point.lift>=18){
+        try{toss(s,point);}catch(err){error(s,err);}
+      }
+    });
+    host.addEventListener('pointercancel',cancel);
+    host.addEventListener('lostpointercapture',cancel);
+  }
+  function releaseCoins(s,point){
+    var host=s.root.querySelector('.gw-scene');
+    host.dataset.grip='released';
+    host.querySelectorAll('.gw-fallback-coins>div').forEach(function(coin,i){
+      var x=point.x+(1-i)*host.clientWidth*.19;
+      var travel=(i-1)*12, peak=-point.lift-18;
+      function pose(dx,dy,spin){return 'translate('+dx+'px,'+dy+'px) rotateX('+spin+'deg)';}
+      if(coin.animate)s.animations.push(coin.animate([
+        {transform:pose(x,-point.lift,0)},
+        {transform:pose(x*.8+travel,peak,200),offset:.25},
+        {transform:pose(0,0,686),offset:.78},
+        {transform:pose(travel*.18,-8,708),offset:.89},
+        {transform:pose(0,0,720)}
+      ],{duration:1230,delay:i*70,fill:'both',easing:'ease-in-out'}));
+    });
+  }
+  function toss(s,point){
     if(s.busy||s.phase!=='casting')return;if(s.values.length===6){finish(s);return;}
     if(root.JYFoley)root.JYFoley.unlock(sounds(s));
     s.commit=true;
@@ -180,7 +236,7 @@
     s.busy=true;s.error='';render(s);
     if(reduced()){finish(s);cue(s,s.mode==='coins'?'coins':'stems',{volume:.75});return;}
     frameStage(s);
-    if(s.scene){s.scene.animate();}
+    if(point){releaseCoins(s,point);}else if(s.scene){s.scene.animate();}
     if(s.mode==='coins'){[0,1,2].forEach(function(i){cue(s,'coins',{delay:.99+i*.07,volume:.62,offset:.09,duration:.48,pan:(i-1)*.3,throttle:0});});}
     else yarrowTimeline(s);
     s.timer=setTimeout(function(){try{finish(s);}catch(e){s.busy=false;error(s,e);}},s.mode==='yarrow'?3700:1650);

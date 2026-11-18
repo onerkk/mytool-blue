@@ -271,3 +271,12 @@ button.gw-hex-line:hover,button.gw-hex-line[aria-pressed=true]{border-color:#cbb
  .gw-room[data-phase=casting] .gw-actions .gw-quiet{min-height:48px;padding:7px 4px;font-size:.7rem;line-height:1.35}
  .gw-room[data-phase=casting] .gw-shell{padding-bottom:95px}
 }
+
+/* A captured finger gathers, lifts and releases the same three recorded coins. */
+.gw-scene[data-hand-ready]{touch-action:none;cursor:grab}
+.gw-scene[data-grip]{cursor:grabbing}
+.gw-scene[data-grip] canvas{visibility:hidden}
+.gw-scene[data-grip] .gw-scene-fallback{display:block}
+.gw-scene[data-grip=held] .gw-fallback-coins>div{transform:translate(calc(var(--hand-x,0px) + (1 - var(--i))*76%),var(--hand-y,0px)) rotateZ(calc((var(--i) - 1)*14deg))}
+.gw-room .gw-scene[data-grip=released] .gw-fallback-coins>div{animation:none}
+.gw-scene[data-hand-ready]+.gw-scene-instruction{font-size:.78rem;color:#ead7af}
