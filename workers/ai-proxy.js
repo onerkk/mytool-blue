@@ -53,7 +53,11 @@ function jyQuestionProfile(question){
 // END SHARED QUESTION PROFILE
   const arr=x=>Array.isArray(x)?x:[],copy=x=>x==null?null:JSON.parse(JSON.stringify(x));
   function tarot(raw){
-    const d=raw.tarotData||raw,cards=arr(d.cards),mathers=d.sourceProfile==='mathers_1888'||d.readingMode==='mathers_1888',rws=mathers||d.sourceProfile==='rws_reversals'||d.readingMode==='rws_reversals';
+    const d=raw.tarotData||raw,cards=arr(d.cards);
+    const spread=d.spreadType||d.methodPlan?.id||'';
+    const sourceProfile=d.sourceProfile||d.readingMode||raw.sourceProfile||raw.readingMode||cards[0]?.readingMode||cards[0]?.sourceProfile||
+      (spread==='fifteen_card'?'gd_book_t':/^mathers_/.test(spread)?'mathers_1888':'unspecified');
+    const mathers=sourceProfile==='mathers_1888',rws=mathers||sourceProfile==='rws_reversals';
     if(!cards.length||new Set(cards.map(c=>c.id)).size!==cards.length||cards.some(c=>!Number.isInteger(c.id)||c.id<0||c.id>77))throw Error('塔羅發牌紀錄缺漏、重複或牌號無效。');
     const register=arr(typeof TAROT==='undefined'?root.TAROT:TAROT);
     // Topic of the site's curated RWS meaning: the room's declared focus first, then explicit question words.
@@ -62,12 +66,19 @@ function jyQuestionProfile(question){
     const topic=ftTopic||(/靈性|灵性|修行|冥想/.test(q)?'spiritual':jyQuestionProfile(q).cardTopic);
     const topicLabel={love:'感情',career:'事業',wealth:'財務',health:'健康',spiritual:'靈性',general:'一般'}[topic];
     const records=cards.map((c,i)=>{const p=register.find(x=>x.id===c.id),slot=arr(d.methodPlan?.slots)[i]||{};if(rws&&!p)throw Error('RWS牌義表沒有此牌。');const up=c.isUp===true,dir=typeof c.isUp==='boolean',pos=c.position||c.pos||slot.label||'位置'+(i+1),advice=/建議|建议|行動|行动|該怎麼|怎麼做/.test(pos);
-      // 正統牌義：Waite《塔羅圖解》原典（逐字忠譯，不疊現代題型義）；原典表未載入時才退回站內表。
-      const W=mathers?root.jyMathers1888Meanings:root.jyWaitePKTMeanings,wm=W&&W[p?.n||c.name||c.n];
-      const meaning=rws&&dir&&p?(wm&&wm[up?'up':'rv'])||(advice&&p[up?'adviceUp':'adviceRv'])||(topic!=='general'&&p[topic+(up?'Up':'Rv')])||p[up?'up':'rv']||null:null;
-      return {index:i+1,id:c.id,name:c.name||c.n,position:pos,direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):'Book T，不套RWS逆位',keywords:rws&&dir?(wm?String(wm[up?'up':'rv']).split('、').slice(0,3):String(up?p.kwUp:p.kwRv).split('·')):[],meaning,meaningTopic:meaning?(wm?(mathers?'Mathers原義':'偉特原義'):advice&&p[up?'adviceUp':'adviceRv']?'建議':topicLabel):null,element:p?.el||null,binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
+      const edition=mathers?root.jyMathers1888Meanings:root.jyWaitePKTMeanings;
+      const editionMeaning=dir?edition?.[p?.n||c.name||c.n]?.[up?'up':'rv']:null;
+      const book=sourceProfile==='gd_book_t'&&p?root.JYGoldenDawn?.profile?.(p):null;
+      // The local RWS register can fill a missing Waite entry only within the RWS tradition.
+      const original=p?._legacyGoldenDawnBackup||p;
+      const curated=sourceProfile==='rws_reversals'&&dir&&p&&
+        ((advice&&p[up?'adviceUp':'adviceRv'])||(topic!=='general'&&p[topic+(up?'Up':'Rv')])||original[up?'up':'rv']);
+      const meaning=book?.sourceCore||(rws&&editionMeaning)||curated||null;
+      const meaningTopic=book?'金色黎明本義':rws&&editionMeaning?(mathers?'Mathers原義':'偉特原義'):curated?(advice&&p[up?'adviceUp':'adviceRv']?'建議':topicLabel):null;
+      const keywords=rws&&editionMeaning?editionMeaning.split('、').slice(0,3):curated?String(up?original.kwUp:original.kwRv).split('·'):[];
+      return {index:i+1,id:c.id,name:c.name||c.n||p?.n,position:pos,direction:rws?(c.isUp===true?'正位':c.isUp===false?'逆位':'方向未記錄'):sourceProfile==='gd_book_t'?'Book T，不套RWS逆位':'牌義版本未記錄',keywords,meaning,meaningTopic,element:book?.element||p?.el||null,binding:copy(c.binding||c.slotBinding||slot.binding),suit:c.suit||p?.suit,rank:c.rank||p?.rank,number:p?.num};});
     const groups={},ranks={};for(const r of records){const k=r.binding?.eventId||'QUERY_EVENT';(groups[k]||(groups[k]=[])).push(r.index);if(r.suit!=='major')(ranks[r.rank]||(ranks[r.rank]=[])).push(r.index);}
-    return {records,eventGroups:Object.entries(groups).map(([eventId,positions])=>({eventId,positions})),rankEchoes:Object.entries(ranks).filter(([,p])=>p.length>1).map(([rank,positions])=>({rank,positions})),majorPositions:records.filter(r=>r.suit==='major').map(r=>r.index),courtPositions:records.filter(r=>['page','knight','queen','king'].includes(r.rank)).map(r=>r.index),methodData:copy(d.methodData),drawProcedure:copy(d.drawProcedure),policy:'逐張實際牌位、方向與議題綁定；關鍵詞不是成功率或他人心意的證明。'};
+    return {sourceProfile,records,eventGroups:Object.entries(groups).map(([eventId,positions])=>({eventId,positions})),rankEchoes:Object.entries(ranks).filter(([,p])=>p.length>1).map(([rank,positions])=>({rank,positions})),majorPositions:records.filter(r=>r.suit==='major').map(r=>r.index),courtPositions:records.filter(r=>['page','knight','queen','king'].includes(r.rank)).map(r=>r.index),methodData:copy(d.methodData),drawProcedure:copy(d.drawProcedure),policy:'逐張實際牌位、方向與議題綁定；關鍵詞不是成功率或他人心意的證明。'};
   }
   function lenormand(raw){
     const d=raw.lenormandData||raw,cards=arr(d.cards||d.drawn),ids=cards.map(c=>c.id??c.n);
@@ -917,8 +928,10 @@ function jyQuestionProfile(question){
         {condition:'實際人力或必要崗位不足',consider:'先請主管調度、替補或減量；不把所有責任壓給本人，也不以命理要求硬撐'}];
     }else if(/照顧|照护|照護|接送|看顧/.test(text)){
       checks.push({id:'care-handover',question:'誰需要照顧、誰能接手，替代安排是否已確認？',state:'requires-real-world-check'});
-    }else if(/合作|共同|合夥|合伙|退出|解約|辞職|辭職|離職/.test(text)){
+    }else if(/退出|解約|辞職|辭職|離職|結束.{0,4}(?:合作|合夥|合伙)/.test(text)){
       checks.push({id:'shared-obligation',question:'退出或改變安排會影響誰；承諾、交接與代替方案是否落實？',state:'requires-real-world-check'});
+    }else if(/合作|合夥|合伙/.test(text)){
+      checks.push({id:'shared-agreement',question:'對方是否已回應邀約；雙方對分工、條件和下一步有沒有共識？',state:'requires-real-world-check'});
     }
     if(emotion&&direction)checks.push({id:'direction',question:'今天的負荷、持續的不快樂與長期想要的生活，哪一項最需要先處理？',state:'requires-real-world-check'});
     var typo=/請教.{0,4}休息/.test(q)&&/上班/.test(q)?{surface:'請教休息',tentative:'可能指請假休息',confirmed:false}:null;
@@ -938,7 +951,7 @@ function jyQuestionProfile(question){
     var aspects=[],houses=[],divisions=[1,9],allDivisions=/(?:所有|全部|完整十六|16|十六|二十|20).{0,8}分盤/.test(q);
     function add(id,why,hs,ds){aspects.push({id:id,reason:why,houses:hs||[]});houses=houses.concat(hs||[]);divisions=divisions.concat(ds||[]);}
     if(domains.includes('finance'))add('finance','原句問金額、財務、收入或財務負擔',[2,11,6,8,12],[2]);
-    if(domains.includes('career')||domains.includes('commerce'))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
+    if(domains.includes('career')||domains.includes('commerce')||/轉調|調職|調任|轉任|留任|留在原部門|換部門|內部轉職/.test(q))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
     if(p.situation?.workDecision)add('work-obligations','出勤取捨須核日常責任與可用支援；宮位不是實到人力資料',[1,6,10,11],[]);
     if(domains.includes('relationship')||domains.includes('intimacy'))add('relationship','原句問關係或互動',[1,5,7],[9]);
     if(/子女|生育|備孕|懷孕|生孩子|生小孩|養育/.test(q))add('children','原句問子女、生育或養育',[2,5,9],[7]);

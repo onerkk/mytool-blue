@@ -22,7 +22,7 @@
     if(m===RWS||m===MATHERS){
       var original=card._legacyGoldenDawnBackup||card;
       card.up=original.up||'';card.rv=original.rv||'';card.kwUp=original.kwUp||'';card.kwRv=original.kwRv||'';
-      if(m===MATHERS){var MM=root.jyMathers1888Meanings&&root.jyMathers1888Meanings[original.n||card.n||card.name];if(MM){card.up=MM.up;card.rv=MM.rv;card.kwUp=String(MM.up).split('、').slice(0,3).join('·');card.kwRv=String(MM.rv).split('、').slice(0,3).join('·');}}
+      if(m===MATHERS){card.up=card.rv=card.kwUp=card.kwRv='';var MM=root.jyMathers1888Meanings&&root.jyMathers1888Meanings[original.n||card.n||card.name];if(MM){card.up=MM.up;card.rv=MM.rv;card.kwUp=String(MM.up).split('、').slice(0,3).join('·');card.kwRv=String(MM.rv).split('、').slice(0,3).join('·');}}
       card.isUp=isUp!==false;card.direction=card.isUp?'正位':'逆位';
       card.orientationPolicy='upright_reversed';
       delete card.gd;delete card.gdIllDignified;
@@ -37,6 +37,10 @@
   function imageStyle(card){return reversible(card)&&card.isUp===false?'transform:rotate(180deg);':'';}
   function meaning(card){
     // These are existing site keywords, not an asserted answer to the question.
+    if(card.readingMode===MATHERS){
+      var source=root.jyMathers1888Meanings&&root.jyMathers1888Meanings[card.n||card.name];
+      return source&&source[card.isUp===false?'rv':'up']||'本次未載入此牌的 Mathers 原義';
+    }
     var original=card._legacyGoldenDawnBackup||card;
     return (card.isUp===false?original.rv:original.up)||'依本次牌位、牌面方向與全盤關係解讀';
   }
@@ -49,9 +53,9 @@
   function stats(cards){
     var suits={major:0,wand:0,cup:0,sword:0,pent:0},rv=0,courts=0;
     cards.forEach(function(c){if(suits[c.suit]!=null)suits[c.suit]++;if(c.isUp===false)rv++;if(/king|queen|knight|page/.test(c.rank||''))courts++;});
-    return {total:cards.length,suitCounts:suits,majorCount:suits.major,courtCount:courts,upCount:cards.length-rv,rvCount:rv,upRatio:cards.length?Math.round((cards.length-rv)/cards.length*100):0,rvRatio:cards.length?Math.round(rv/cards.length*100):0,insights:[],sourceProfile:RWS};
+    return {total:cards.length,suitCounts:suits,majorCount:suits.major,courtCount:courts,upCount:cards.length-rv,rvCount:rv,upRatio:cards.length?Math.round((cards.length-rv)/cards.length*100):0,rvRatio:cards.length?Math.round(rv/cards.length*100):0,insights:[],sourceProfile:cards[0]&&cards[0].readingMode||RWS};
   }
-  function statsHTML(cards){var s=stats(cards);return '<div class="jy-reading-summary"><b>RWS 塔羅・正逆位</b><p>正位 '+s.upCount+' 張　／　逆位 '+s.rvCount+' 張</p><p>點牌面可放大。正逆位需結合牌位與整體牌組解讀。</p></div>';}
+  function statsHTML(cards){var s=stats(cards);return '<div class="jy-reading-summary"><b>'+(s.sourceProfile===MATHERS?'Mathers 1888':'RWS 塔羅')+'・正逆位</b><p>正位 '+s.upCount+' 張　／　逆位 '+s.rvCount+' 張</p><p>點牌面可放大。正逆位需結合牌位與整體牌組解讀。</p></div>';}
   function resultHTML(cards,def){
     var h=statsHTML(cards);
     cards.forEach(function(c,i){var pos=def&&def.positions&&def.positions[i]||{},name=String(pos.name||c.pos||'').replace(/^\s*\d+\s*[.．、]\s*/,'');h+='<article class="jy-reading-result"><div class="jy-reading-face">'+face(c)+'</div><div><b>'+(i+1)+'. '+esc(name)+'</b>'+(pos.zh&&name.indexOf(pos.zh)<0?'<p>'+esc(pos.zh)+'</p>':'')+'<p>'+esc(c.n)+'・'+esc(label(c))+'</p><small>牌義參考：'+esc(meaning(c))+'</small></div></article>';});
@@ -75,10 +79,10 @@
       referenceDate:ta.compiledQuestion&&ta.compiledQuestion.features&&ta.compiledQuestion.features.referenceDate||'',
       drawProcedure:circle?Object.assign({},drawn[0].drawProcedure,{largeCircleImplemented:true,largeCircle:circle}):drawn[0]&&drawn[0].drawProcedure||null,
       cards:drawn.map(function(c,i){var slot=(plan.slots||[])[i]||{},pos=((def||{}).positions||[])[i]||{};return {
-        id:c.id,name:c.n||c.name||'',isUp:c.isUp!==false,direction:c.isUp===false?'逆位':'正位',sourceProfile:RWS,
+        id:c.id,name:c.n||c.name||'',isUp:c.isUp!==false,direction:c.isUp===false?'逆位':'正位',sourceProfile:pm,
         position:slot.label||pos.name||c.pos||('位置'+(i+1)),positionMeaning:slot.label||pos.zh||c.pos||'',
         suit:c.suit,rank:c.rank||'',image:typeof getTarotCardImage==='function'?getTarotCardImage(c):'',
-        // Core facts only: AI uses its own RWS knowledge, without legacy Book T meanings.
+        // The source is recorded both on the spread and each drawn card.
         binding:slot.binding||{eventId:'QUERY_EVENT'},slotKind:slot.slotKind||'semantic_position'
       };}),preStats:{upCount:s.upCount,reversedCount:s.rvCount,suitCounts:s.suitCounts}
     }};
@@ -94,7 +98,7 @@
     '對尚未發生的事給出有條件的傾向，區分當事人已提供的事實與象徵推測；涉及他人內心、年齡或應期時，說明資料實際支持的範圍。只拿到牌名而看不到牌圖時，勿聲稱已檢視本次圖像細節。'
   ].join('\n');}
   function formatData(td){
-    var L=['牌陣：'+td.spreadZh+'（'+td.cards.length+' 張）','讀牌體系：Rider–Waite–Smith・使用正逆位','下列牌名、順序與方向為本次實際抽牌紀錄：'];
+    var L=['牌陣：'+td.spreadZh+'（'+td.cards.length+' 張）','讀牌體系：'+(td.sourceContract&&td.sourceContract.label||(td.sourceProfile===MATHERS?'Mathers 1888・正逆位':'Rider–Waite–Smith・正逆位')),'下列牌名、順序與方向為本次實際抽牌紀錄：'];
     td.cards.forEach(function(c,i){L.push((i+1)+'. '+c.position+'：'+c.name+'【'+c.direction+'】');});
     if(td.drawProcedure){L.push('【本次發牌程序】'+td.drawProcedure.description);if(td.drawProcedure.significator)L.push('代表牌：'+td.drawProcedure.significator.name+'；選牌方式：'+td.drawProcedure.significator.policy);if(td.drawProcedure.surprises){L.push('保留牌另抽：右側「'+td.drawProcedure.surprises.right.name+'」、左側「'+td.drawProcedure.surprises.left.name+'」；初次留11張、另抽2張後仍未使用'+td.drawProcedure.remainingUnusedCount+'張。');}}
     if(td.methodPlan&&td.methodPlan.branches){L.push('抽牌前固定的分題：');td.methodPlan.branches.forEach(function(b,i){L.push((i+1)+'. '+b.question+(b.scope?'；範圍：'+b.scope:''));});}

@@ -13,8 +13,9 @@
   var SPIRITS = ['青龍','朱雀','勾陳','螣蛇','白虎','玄武'];
   var SPIRIT_START = [0,0,1,1,2,3,4,4,5,5];
   var LABELS = ['初爻','二爻','三爻','四爻','五爻','上爻'];
-  function relationDirection(source, relationName) {
-    return ({'比和':source+'與爻同氣','生':source+'生爻','克':source+'克爻','受生':'爻生'+source,'受克':'爻克'+source})[relationName]||source+'關係未明';
+  function relationDirection(source, relationName, target) {
+    target=target||'爻';
+    return ({'比和':source+'與'+target+'同氣','生':source+'生'+target,'克':source+'克'+target,'受生':target+'生'+source,'受克':target+'克'+source})[relationName]||source+'關係未明';
   }
   // Numeric bit 0 is the bottom line, bit 2 the top of a trigram.
   var TRIGRAMS = [
@@ -448,7 +449,7 @@
     result.interpretation=interpretation(result,input);
     return freeze(result);
   }
-  var api={version:'1.4.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,voidBranches:voidBranches,branchLinks:branchLinks,
+  var api={version:'1.4.0',hexagram:hexagram,najia:najia,relative:relative,relation:relation,relationDirection:relationDirection,voidBranches:voidBranches,branchLinks:branchLinks,
     fromCoins:fromCoins,toss:toss,localTimeAt:localTimeAt,calendar:calendar,calculate:calculate,focusFor:focusFor,resolveQuestionIntent:resolveQuestionIntent,canonicalTargets:canonicalTargets,calendarSegments:calendarSegments,
     assessLine:assessLine,lifeStage:lifeStage,parseWindow:parseWindow,interpretation:interpretation,trigramData:copy(TRIGRAMS),labels:LABELS.slice()};
   root.JYLiuyaoCore=freeze(api);

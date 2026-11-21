@@ -9,7 +9,11 @@ for(const id of ['mathers_21','mathers_horseshoe']){
   const compiled=F.compileQuestion(q,{referenceDate:'2026-10-24T00:00:00Z'}),plan=F.instantiateMethod(id,compiled);
   const drawn=Array.from({length:plan.count},(_,i)=>R.apply(Object.assign({},c.TAROT[(i*7+3)%78]),i%3!==1,id));
   assert(drawn.every(x=>x.readingMode==='mathers_1888'),id+' default mode');assert(drawn.some(x=>x.isUp===false),id+' reversals kept');
-  const body=P.build('tarot',R.payload({spreadType:id,drawn,methodPlan:plan,compiledQuestion:compiled},q,drawn,id,plan,c.SPREAD_DEFS&&c.SPREAD_DEFS[id]),q);
+  const draw=R.payload({spreadType:id,drawn,methodPlan:plan,compiledQuestion:compiled},q,drawn,id,plan,c.SPREAD_DEFS&&c.SPREAD_DEFS[id]);
+  assert(draw.tarotData.cards.every(card=>card.sourceProfile==='mathers_1888'));
+  assert(R.statsHTML(drawn).includes('Mathers 1888'));assert(R.formatData(draw.tarotData).includes('Mathers'));
+  assert.equal(R.meaning(drawn[1]),M[drawn[1].n].rv);
+  const body=P.build('tarot',draw,q);
   assert(body.includes('【牌義（Mathers《The Tarot》1888 原書'),id+' book meaning header');assert(body.includes('【本法正統取法（Mathers 塔羅）】'),id+' orthodox procedure');
   const first=drawn[0];assert(body.includes(first.isUp?M[first.n].up:M[first.n].rv),id+' exact book meaning');
 }

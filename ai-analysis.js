@@ -442,8 +442,10 @@
         {condition:'實際人力或必要崗位不足',consider:'先請主管調度、替補或減量；不把所有責任壓給本人，也不以命理要求硬撐'}];
     }else if(/照顧|照护|照護|接送|看顧/.test(text)){
       checks.push({id:'care-handover',question:'誰需要照顧、誰能接手，替代安排是否已確認？',state:'requires-real-world-check'});
-    }else if(/合作|共同|合夥|合伙|退出|解約|辞職|辭職|離職/.test(text)){
+    }else if(/退出|解約|辞職|辭職|離職|結束.{0,4}(?:合作|合夥|合伙)/.test(text)){
       checks.push({id:'shared-obligation',question:'退出或改變安排會影響誰；承諾、交接與代替方案是否落實？',state:'requires-real-world-check'});
+    }else if(/合作|合夥|合伙/.test(text)){
+      checks.push({id:'shared-agreement',question:'對方是否已回應邀約；雙方對分工、條件和下一步有沒有共識？',state:'requires-real-world-check'});
     }
     if(emotion&&direction)checks.push({id:'direction',question:'今天的負荷、持續的不快樂與長期想要的生活，哪一項最需要先處理？',state:'requires-real-world-check'});
     var typo=/請教.{0,4}休息/.test(q)&&/上班/.test(q)?{surface:'請教休息',tentative:'可能指請假休息',confirmed:false}:null;
@@ -463,7 +465,7 @@
     var aspects=[],houses=[],divisions=[1,9],allDivisions=/(?:所有|全部|完整十六|16|十六|二十|20).{0,8}分盤/.test(q);
     function add(id,why,hs,ds){aspects.push({id:id,reason:why,houses:hs||[]});houses=houses.concat(hs||[]);divisions=divisions.concat(ds||[]);}
     if(domains.includes('finance'))add('finance','原句問金額、財務、收入或財務負擔',[2,11,6,8,12],[2]);
-    if(domains.includes('career')||domains.includes('commerce'))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
+    if(domains.includes('career')||domains.includes('commerce')||/轉調|調職|調任|轉任|留任|留在原部門|換部門|內部轉職/.test(q))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
     if(p.situation?.workDecision)add('work-obligations','出勤取捨須核日常責任與可用支援；宮位不是實到人力資料',[1,6,10,11],[]);
     if(domains.includes('relationship')||domains.includes('intimacy'))add('relationship','原句問關係或互動',[1,5,7],[9]);
     if(/子女|生育|備孕|懷孕|生孩子|生小孩|養育/.test(q))add('children','原句問子女、生育或養育',[2,5,9],[7]);
