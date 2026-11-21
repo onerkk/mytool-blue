@@ -139,4 +139,24 @@ const override = packet.build('tarot', fixtures.tarot, '我該怎麼做？', { k
 assert.equal(reads, 1);
 assert.match(block(override, '原題補充'), /我已收到書面通知/);
 assert.ok(!override.includes('今天有同事可以交接'));
+const familyQuestion = '我該留在原部門還是申請轉調？我看重晚上能照顧家人。';
+const familyNotes = '原部門已確認固定日班，新部門還沒提供輪班時段，也還沒開出薪資。';
+const jobCheck = packet.build('ziwei', fixtures.z, familyQuestion, { knownFacts: familyNotes });
+const conditions = block(jobCheck, '作答前核對本人給的條件');
+assert.ok(conditions.includes('本人表明的取捨標準：我看重晚上能照顧家人'));
+assert.ok(conditions.includes('本人自述的現況：原部門已確認固定日班'));
+assert.ok(conditions.includes('尚待確認或取得：新部門還沒提供輪班時段，也還沒開出薪資'));
+assert.ok(jobCheck.indexOf('【作答前核對本人給的條件】') > jobCheck.indexOf('【資料結束】'));
+const inQuestion = packet.build('tarot', fixtures.tarot, familyNotes + familyQuestion, { knownFacts: '' });
+assert.match(block(inQuestion, '作答前核對本人給的條件'), /本人自述的現況：原部門已確認固定日班/);
+assert.match(block(inQuestion, '作答前核對本人給的條件'), /尚待確認或取得：新部門還沒提供輪班時段，也還沒開出薪資/);
+const justAsking = packet.build('tarot', fixtures.tarot, '新部門是否已確認固定日班？', { knownFacts: '' });
+assert.ok(!block(justAsking, '作答前核對本人給的條件'));
+const terms = packet.build('oracle', fixtures.oracle, '我該接哪一筆訂單？', {
+  knownFacts: 'A 的報價是 20,000 元，B 尚未報價。假如 B 降價，我才會簽約。'
+});
+assert.match(block(terms, '作答前核對本人給的條件'), /本人自述的現況：A 的報價是 20,000 元/);
+assert.match(block(terms, '作答前核對本人給的條件'), /尚待確認或取得：B 尚未報價/);
+assert.match(block(terms, '作答前核對本人給的條件'), /提到的假設或轉述，按原語氣：假如 B 降價，我才會簽約/);
+assert.ok(!block(override, '作答前核對本人給的條件'));
 console.log('Verified 15 reading paths, question fidelity, source profiles, chart roles, civil years and dated triggers.');

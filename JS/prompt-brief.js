@@ -4,7 +4,7 @@
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261121evidence126',LIMIT=12000,BYTES=28000;
+  const VERSION='20261121evidence127',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -783,6 +783,44 @@
     return [metric,m.recurrence?.required?'分清單次和持續達標':'',m.ambiguity?'營收與淨額的口徑須分開核對':''].filter(Boolean).join('，');
   }
 
+  // Repeat only explicit decision inputs near the answer instructions. A missing offer
+  // and a confirmed arrangement can occur in the same sentence and belong to different people.
+  function statedConditions(question,notes){
+    const rows=[];
+    const pending=/(?:還沒|尚未|仍未|沒有|未曾|未)(?:有|能)?(?:提供|告知|確認|確定|查到|公布|說明|報價|開出|得知|取得|談妥)|尚不清楚|不確定|不知道|不詳|未知|待(?:定|確認|查證)/;
+    const reported=/如果|假設|假如|若是|聽說|據說|傳聞|他說|她說|「|」|[“”"]/;
+    const questionFacts=[];
+    for(const sentence of String(question||'').match(/[^。！？!?；;\n]+[。！？!?；;]?/gu)||[]){
+      if(reported.test(sentence))continue;
+      for(const piece of sentence.split(/，|,(?!\d)/u)){
+        const clause=piece.trim().replace(/[。；;]$/u,'');
+        if(/[？?]|是否|有沒有|會不會|能不能|要不要|該不該|嗎$|哪(?:一|個|些|種)/.test(clause))continue;
+        if(pending.test(clause)||/已(?:經|確認|確定|收到|簽訂|拿到)|(?:目前|現在)(?:是|有|只有)|(?:是|採)固定/.test(clause))questionFacts.push(clause);
+      }
+    }
+    const sentences=[...new Set([...String(notes||'').split(/[。！？!?；;\n]+/u),...questionFacts])];
+    for(const sentence of sentences){
+      const quote=sentence.trim();
+      if(!quote)continue;
+      if(reported.test(quote)){rows.push({kind:'提到的假設或轉述，按原語氣',text:quote});continue;}
+      for(const clause of quote.split(/，|,(?!\d)/u)){
+        const part=clause.trim();
+        if(!part)continue;
+        const kind=pending.test(part)?'尚待確認或取得':/希望|打算|期待|想要|看重|重視/.test(part)?'本人表明的期待':'本人自述的現況';
+        const last=rows[rows.length-1];
+        if(last?.kind===kind&&/^(?:也|而且|並且|以及)/.test(part))last.text+='，'+part;
+        else if(!rows.some(r=>r.kind===kind&&r.text===part))rows.push({kind,text:part});
+      }
+    }
+    if(!rows.some(r=>r.kind==='尚待確認或取得'))return '';
+    const wants=String(question||'').split(/[。！？!?；;\n，]+/u).map(x=>x.trim()).filter(x=>/^我(?:最|特別|比較)?(?:看重|在意|重視)|^我的(?:底線|首要條件)/.test(x));
+    const shown=[...wants.map(text=>({kind:'本人表明的取捨標準',text})),...rows];
+    const lines=shown.map(r=>r.kind+'：'+r.text).join('\n');
+    // The complete original statement stays in the header, irrespective of this recap.
+    if(chars(lines)>520)return '';
+    return '【作答前核對本人給的條件】\n'+lines+'\n先按每句的對象與原意比較。某一方的未知條件保持未知。從已知的安排推不到生活結果時，就交代還缺哪一項；不要把推測寫成當事人做得到或做不到。說明問清哪一件事會改變建議。';
+  }
+
   function asksForOccupation(question){
     return /(?:適合|適合我|能做|可以做|選擇|推薦|改做|想做|考慮).{0,8}(?:什麼|哪些|哪種|哪一種|哪個|哪一行).{0,6}(?:工作|職業|行業|副業|生意|發展|做)|(?:做什麼|哪一行|哪種行業|哪些行業|哪種職業|哪些職業)|(?:工作|職業|行業|副業).{0,8}(?:有哪些選擇|有哪些方向|有什麼選擇|有什麼方向|推薦哪)/.test(String(question||''));
   }
@@ -894,6 +932,7 @@
       '【這則回覆的樣子】第一部分對他說話。把原題每一件事答到，講最關鍵的兩三個原因、成立條件和可能的另一條路。陪他看清眼前能做的事、暫緩的事與退路。問選擇時先比較他提出的選項，用同一個取捨標準，分清照現況與採取行動後的差別。資料能區分才排先後，否則點出問清哪件事會改變選擇；他請你想選項時才提出新選項。對照段挑只有這份資料才說得出的重點。問數量要有依據才給範圍。替他講開可能錯怪自己的地方，不替他編心情。時間只寫資料能支持的精度，年度就談年，有月界才寫月，運期起訖不能當事件發生日。原題沒說的職業、個人經歷與別人的心意，留給他對照。單一問題只答所問。',
       '第二部分用一句自然的話帶出「我怎麼看出來的」，每行用生活語言講一件事，括號標出讀者能在本包找到的宮位、牌位、卦爻、詩句或算式。行數依切題依據多寡，有一條就解釋透一條。反證要說明哪一點會讓主要判斷改變；資料沒有相反線索就省略。同一判斷只說一次，重點讓他聽得懂。依本次寫法安排第一部分，再接第二部分及適用的收尾。',
       styleFor(data,!safe&&!unknownHouse), verifyFor(data.method),
+      !safe&&statedConditions(data.question,data.knownFacts),
       safe?(root.JYReadingWorkflow?.prepareDeliveryText?.(safetyClose,{question:data.question,notes:caseNotes,methods:entries.map(e=>e.method)})||safetyClose):unknownHouse?'時辰未定，省略依宮主選材。文末保留提醒。\n'+CLOSING_NOTICE+'\n'+footer:'【成稿收尾】\n'+commercialFor(data.question,data.sourceCoverage?.requestedRecords>1&&!entries.some(e=>e.method==='compat')?'combined':data.method)
     ].filter(Boolean).join('\n\n');
     const render=bs=>header.join('\n\n')+'\n\n'+bs.map(b=>'【'+b.label+'】\n'+b.value).join('\n\n')+'\n【資料結束】\n\n'+end;
