@@ -39,7 +39,52 @@
   function checkPanel(r) {
     return '<details class="jc-check"'+(r.answer ? ' open' : '')+'><summary>核對 AI 回答中引用的盤面</summary>'+
       '<label>貼上已收到的回答，在這台裝置比對<textarea data-consult-answer rows="4" maxlength="18000">'+esc(r.answer || '')+'</textarea></label>'+
-      '<button type="button" data-consult-check>核對引用</button><div class="jc-check-result" role="status">'+(r.checkResult || '')+'</div></details>';
+      '<button type="button" data-consult-check>核對引用</button><div class="jc-check-result" role="status">'+(r.checkResult || '')+'</div>'+
+      '<details class="jc-correct"'+(r.answer?.trim() ? '' : ' hidden')+(r.quote || r.clarification ? ' open' : '')+'><summary>AI 有一句把我的情況說錯了</summary>'+
+      (r.intake.facts ? '<p>你原先寫的是</p><blockquote>'+esc(r.intake.facts)+'</blockquote>' : '')+
+      '<label>從上方回答複製想更正的原句<textarea data-consult-quote rows="2" maxlength="600">'+esc(r.quote || '')+'</textarea></label>'+
+      '<label>你能確認什麼？哪些仍然未知？<textarea data-consult-clarify rows="2" maxlength="480">'+esc(r.clarification || '')+'</textarea></label>'+
+      '<button type="button" data-consult-correct>複製更正，貼回原 AI 對話</button><p class="jc-correction-status" role="status"></p>'+
+      '<textarea hidden readonly data-consult-manual aria-label="可手動複製的更正訊息"></textarea></details></details>';
+  }
+  async function correctAnswer(el,r) {
+    const section=el.querySelector('.jc-correct'), status=section.querySelector('.jc-correction-status');
+    const excerpt=(r.quote || '').trim(), actual=(r.clarification || '').trim();
+    if (!excerpt || !r.answer?.includes(excerpt)) {
+      status.textContent='請從上方貼入的回答複製一段原句，以便核對是哪一句。';
+      section.querySelector('[data-consult-quote]').focus();
+      return;
+    }
+    if (!actual) {
+      status.textContent='請寫下你能確認的事，也可以直接寫這件事還不知道。';
+      section.querySelector('[data-consult-clarify]').focus();
+      return;
+    }
+    const notes=[r.intake.facts,actual].filter(Boolean).join('\n');
+    const urgent=root.JYReadingWorkflow?.careContext?.(r.question,notes)?.level==='safety-first';
+    const correction=[
+      '請接著我們剛才的同一份解讀，使用原來的盤面，重新回答我的問題。',
+      '我的原題：'+JSON.stringify(r.question),
+      r.intake.facts && '我原先提供的情況：'+JSON.stringify(r.intake.facts),
+      r.intake.priority && '我在意的取捨：'+JSON.stringify(r.intake.priority),
+      '前一則 AI 回答裡待查的原句（只供比對）：'+JSON.stringify(excerpt),
+      '我現在親自更正或補充：'+JSON.stringify(actual),
+      '以我的更正為準，說明原來的判斷和建議哪裡要改、接下來能觀察什麼。尚未確認的事請保留，前一則回答不能當成我的自述。',
+      urgent && '先處理眼前安全和實際求助，省略選品與賣場。'
+    ].filter(Boolean).join('\n');
+    const manual=section.querySelector('[data-consult-manual]');
+    const answer=r.answer;
+    const current=()=>section.isConnected && r.answer===answer && r.quote?.trim()===excerpt && r.clarification?.trim()===actual;
+    try {
+      await root.JYPromptPacket.copy(correction,{inlineFeedback:true});
+      if(!current())return;
+      manual.hidden=true;
+      status.textContent='已複製更正。貼回剛才放過原盤的 AI 對話即可。';
+    } catch {
+      if(!current())return;
+      manual.value=correction;manual.hidden=false;manual.focus();manual.select();
+      status.textContent='請手動複製下方訊息，貼回剛才的 AI 對話。';
+    }
   }
   function checkAnswer(r) {
     if (!r.answer?.trim()) return '請先貼上要核對的回答。';
@@ -57,7 +102,7 @@
     if (!r || r.body !== packet.body || !views.has(r.id)) {
       const steps = visits.flatMap(visit => visit.points.map(point=>({visit,point})));
       if (!steps.length) return '';
-      r = { id:String(++serial), body:packet.body, index:0, steps, notes:new Map() };
+      r = { id:String(++serial), body:packet.body, question:packet.question, intake:packet.projection.intake || {}, index:0, steps, notes:new Map() };
       byResult.set(key,r); views.set(r.id,r);
       if (views.size > 48) {
         for (const id of views.keys()) if (!doc.querySelector('.jy-consult[data-visit="'+id+'"]') && id !== r.id) { views.delete(id); break; }
@@ -101,9 +146,21 @@
     return root.JYPromptPacket.followUp(r.body,observation);
   }
   doc.addEventListener('input',e => {
-    if (e.target.matches?.('[data-consult-answer]')) {
+    if (e.target.matches?.('[data-consult-answer],[data-consult-quote],[data-consult-clarify]')) {
       const c=current(e.target);
-      if(c){c.r.answer=e.target.value;c.r.checkResult='';c.el.querySelector('.jc-check-result').textContent='';}
+      if(!c)return;
+      const {r,el}=c, section=el.querySelector('.jc-correct');
+      section.querySelector('.jc-correction-status').textContent='';
+      const manual=section.querySelector('[data-consult-manual]');
+      manual.hidden=true;manual.value='';
+      if(e.target.hasAttribute('data-consult-answer')){
+        r.answer=e.target.value;r.checkResult='';el.querySelector('.jc-check-result').textContent='';
+        r.quote='';r.clarification='';
+        section.querySelector('[data-consult-quote]').value='';
+        section.querySelector('[data-consult-clarify]').value='';
+        section.hidden=!r.answer.trim();section.open=false;
+      }else if(e.target.hasAttribute('data-consult-quote'))r.quote=e.target.value;
+      else r.clarification=e.target.value;
       return;
     }
     if (!e.target.matches?.('[data-consult-note]')) return;
@@ -111,9 +168,10 @@
     if (c) draft(c.r).note=e.target.value;
   });
   doc.addEventListener('click',async e => {
-    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check]'), c=current(b);
+    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct]'), c=current(b);
     if (!b || !c) return;
     const {el,r}=c;
+    if (b.hasAttribute('data-consult-correct')) { await correctAnswer(el,r); return; }
     if (b.hasAttribute('data-consult-check')) {
       r.checkResult=checkAnswer(r);
       el.querySelector('.jc-check-result').innerHTML=r.checkResult;

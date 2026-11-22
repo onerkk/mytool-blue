@@ -36,3 +36,6 @@
 .jc-check textarea{display:block;box-sizing:border-box;width:100%;margin:.3rem 0;padding:.6rem;color:#fff;background:#151923;border:1px solid var(--jc-edge);border-radius:8px;font:inherit}
 .jc-check button{min-height:44px;background:transparent;color:var(--jc-light);border:1px solid var(--jc-edge);border-radius:8px;padding:.35rem .8rem}
 .jc-check-result:not(:empty){margin-top:.55rem;overflow-wrap:anywhere}.jc-check-result ul{padding-inline-start:1.2rem}.jc-check-result q{display:block;color:#ceced1}
+.jc-correct{margin-top:.75rem;border-top:1px solid #ffffff25;padding-top:.65rem}
+.jc-correct blockquote{margin:.3rem 0 .7rem;padding-inline-start:.75rem;border-inline-start:2px solid var(--jc-edge);white-space:pre-wrap;overflow-wrap:anywhere}
+.jc-correct p{margin:.4rem 0}.jc-correct [hidden],.jc-check .jc-correct[hidden],.jc-correction-status:empty{display:none}

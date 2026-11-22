@@ -280,19 +280,54 @@ async function run(browser,kind){
     if(mode==='feature'){
       await review(page,kind,row,currentQuestion);
       const table=page.locator('.jy-consult:visible').first(), check=table.locator('.jc-check');
-      await check.locator('summary').click();
+      await check.locator(':scope > summary').click();
       const answer=check.locator('[data-consult-answer]');
       await answer.fill('你可以先核對下週的會議時間。');
       await check.locator('[data-consult-check]').click();
-      assert.match(await check.locator('[role=status]').innerText(),/沒有可直接比對/);
+      assert.match(await check.locator('.jc-check-result').innerText(),/沒有可直接比對/);
       if(tool==='liuren'){
         const branch=(await table.locator('.jc-interpret').innerText()).includes('子')?'丑':'子';
         await answer.fill('初傳為'+branch+'。');
         await check.locator('[data-consult-check]').click();
-        assert.match(await check.locator('[role=status]').innerText(),/比對了|本盤記錄/);
+        assert.match(await check.locator('.jc-check-result').innerText(),/比對了|本盤記錄/);
       }
       assert.equal(await page.locator('#jy-handoff:visible,#jy-memory-tip:visible').count(),0,'follow-up uses a single inline delivery status');
       row.localAnswerCheck=true;
+      const claim='你已經知道這件事的結果了。', extra='只有 AI 說過的另一句，不要複製。';
+      const actual='我還沒收到結果，週四才能當面確認。';
+      await answer.fill(claim+extra);
+      const adjust=check.locator('.jc-correct');
+      await adjust.locator('summary').click();
+      const quote=adjust.locator('[data-consult-quote]'), clarification=adjust.locator('[data-consult-clarify]');
+      await quote.fill('沒有出現在這份回答的原句。');await clarification.fill(actual);
+      const correct=adjust.locator('[data-consult-correct]');await correct.click();
+      assert.match(await adjust.locator('[role=status]').innerText(),/請從上方/);
+      await quote.fill(claim);
+      if(variant==='stop')await page.evaluate(()=>{navigator.clipboard.writeText=async()=>{throw Error('clipboard unavailable');};});
+      await correct.focus();await correct.press('Enter');
+      const manual=adjust.locator('[data-consult-manual]');
+      let revision;
+      if(variant==='stop'){
+        await manual.waitFor({state:'visible'});revision=await manual.inputValue();
+      }else{
+        await adjust.locator('[role=status]').filter({hasText:'已複製更正'}).waitFor();
+        revision=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
+      }
+      assert.ok(revision.includes(currentQuestion)&&revision.includes(claim)&&revision.includes(actual)&&!revision.includes(extra));
+      if(variant==='intake')assert.ok(revision.includes('下次會議已留了五分鐘')&&revision.includes('我想先說明成果'));
+      assert.equal(await page.evaluate(claim=>Object.values(localStorage).some(v=>v.includes(claim)),claim),false);
+      if(variant==='intake'){
+        await page.evaluate(()=>{navigator.clipboard.writeText=()=>new Promise((_,reject)=>{window.__rejectConsultCopy=reject;});});
+        await correct.click();await page.waitForFunction(()=>typeof window.__rejectConsultCopy==='function');
+      }
+      await answer.fill('另一份回答。');
+      if(variant==='intake'){
+        await page.evaluate(()=>window.__rejectConsultCopy(Error('declined after editing')));
+        await page.waitForFunction(()=>document.querySelector('[data-consult-manual]').hidden);
+        assert.equal(await adjust.locator('[role=status]').textContent(),'','late clipboard rejection must not restore the older quote');
+      }
+      assert.equal(await quote.inputValue(),'');assert.equal(await clarification.inputValue(),'');assert.equal(await manual.inputValue(),'');
+      row.personalCorrection=true;
 
       if(variant==='partial'||variant==='stop'){
         const details=await page.locator('.jy-consult:visible .jc-reading').innerText();
