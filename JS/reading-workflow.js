@@ -848,12 +848,28 @@
     }
     return {status:'explicit-facts-checked',checks:checked,scope:'只核可辨識的明示原盤事實、生克與作答覆蓋；不是完整語義裁決或預測命中驗證。'};
   }
+  function writingIssues(answer) {
+    const lines=String(answer||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
+    const issues=[], counts=new Map();
+    const label=lines.find(line=>/^(?:\*\*)?(?:稱呼|開場)[：:]/.test(line));
+    if(label)issues.push({code:'EDITORIAL_LABEL',message:'回答把寫稿用的稱呼或開場標籤印出來了。請直接對提問的人說話。',excerpt:label.slice(0,120)});
+    for(const line of lines){
+      if(Array.from(line).length<12 || /^[>`]/.test(line))continue;
+      const count=(counts.get(line)||0)+1;
+      if(count===3){
+        issues.push({code:'REPEATED_PASSAGE',message:'同一段文字出現至少三次。請合併重複處，用這段空間回答原題的依據與可行做法。',excerpt:line.slice(0,120)});
+        break;
+      }
+      counts.set(line,count);
+    }
+    return issues;
+  }
   function checkChartText(sourcePrompt, answer) {
     var issues=[];
     var report=reviewFacts({sourcePrompt:sourcePrompt,answer:answer},function(code,severity,message,excerpt){
-      if(severity==='error') issues.push({code:code,message:message,excerpt:excerpt||''});
+      if(severity==='error'&&!issues.some(i=>i.code===code&&i.message===message)) issues.push({code:code,message:message,excerpt:excerpt||''});
     });
-    return {checks:report.checks,status:report.status,issues:issues};
+    return {checks:report.checks,status:report.status,issues:issues,writing:writingIssues(answer)};
   }
   function reviewOOTK(options){
     var source=String(options.sourcePrompt||''),answer=String(options.answer||''),issues=[];
@@ -911,6 +927,7 @@
     function issue(code,severity,message,excerpt){if(!issues.some(function(i){return i.code===code;}))issues.push({code:code,severity:severity,message:message,excerpt:excerpt||''});}
     if(!answer){issue('EMPTY_ANSWER','error','請貼上實際答案。');return {version:VERSION,status:'needs_revision',issues:issues,semanticVerification:'not_performed'};}
     var factVerification=reviewFacts(options,issue);
+    writingIssues(answer).forEach(function(hit){issue(hit.code,'revision',hit.message,hit.excerpt);});
     var nativeFacts=readVerificationFacts(options).facts?.charts||[];
     var readableFacts=nativeFacts.some(function(c){return Object.keys(c.pillars||{}).length>=3||Object.keys(c.planets||{}).length>0||(c.cards||[]).length>0||(c.palaces||[]).length>0||(c.transmissions||[]).length>0||!!c.original||!!c.body||(c.names||[]).length>0||(c.completed||[]).length>0||(c.axes||[]).length>0||!!c.poem;});
     var blanketRefusal=/(?:命理|本法|本方法|這份資料|這個問題|本題|整題|全部).{0,18}(?:不能解讀|無法解讀|無法回答|不能回答|無法作答|沒有辦法判讀)|(?:不能|無法).{0,8}(?:對這個問題|對本題).{0,8}(?:解讀|回答|判讀)/.test(answer);

@@ -126,4 +126,13 @@ group('十五種問法的明示盤面錯引可在本機核對，假設與白話�
   assert.equal(work.checkChartText(tarot,'愚者（正位）。').checks,1);
   assert.equal(work.checkChartText(tarot,'愚者（正位）。').issues.length,0);
 });
+group('同一段只重複兩次、引文與正常寫法不當成機械迴圈',()=>{
+  const work=c.JYReadingWorkflow,body=api.build('tarot',f.tarot,question);
+  const line='我們應該等到週四的會議，才會知道實際結果。';
+  const review=text=>work.checkChartText(body,text);
+  const loop=review(['開場：朋友',line,line,line,'愚者（逆位）。','愚者（逆位）。'].join('\n'));
+  assert.deepEqual(plain(loop.writing.map(p=>p.code)),['EDITORIAL_LABEL','REPEATED_PASSAGE']);
+  assert.equal(loop.issues.length,1);
+  assert.equal(review([line,line,'> '+line,'> '+line,'> '+line].join('\n')).writing.length,0);
+});
 console.log('Consultation regression groups:',checked);

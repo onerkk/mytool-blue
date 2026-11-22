@@ -295,7 +295,17 @@ async function run(browser,kind){
       row.localAnswerCheck=true;
       const claim='你已經知道這件事的結果了。', extra='只有 AI 說過的另一句，不要複製。';
       const actual='我還沒收到結果，週四才能當面確認。';
+      const repeated='我覺得你需要耐心等待這件事未來的發展。';
+      await answer.fill(['開場：朋友',repeated,repeated,repeated].join('\n'));
+      await check.locator('[data-consult-check]').click();
+      assert.match(await check.locator('.jc-check-result').innerText(),/同一段文字出現至少三次/);
+      await check.locator('[data-consult-repair]').click();
+      await check.locator('.jc-repair-status').filter({hasText:'已複製'}).waitFor();
+      const repaired=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
+      assert.ok(repaired.includes(currentQuestion)&&repaired.includes(repeated)&&repaired.includes('請直接對提問的人說話'));
+      row.repairFromReply=true;
       await answer.fill(claim+extra);
+      assert.equal(await check.locator('.jc-repair').isVisible(),false);
       const adjust=check.locator('.jc-correct');
       await adjust.locator('summary').click();
       const quote=adjust.locator('[data-consult-quote]'), clarification=adjust.locator('[data-consult-clarify]');
@@ -310,7 +320,7 @@ async function run(browser,kind){
       if(variant==='stop'){
         await manual.waitFor({state:'visible'});revision=await manual.inputValue();
       }else{
-        await adjust.locator('[role=status]').filter({hasText:'已複製更正'}).waitFor();
+        await adjust.locator('[role=status]').filter({hasText:'已複製'}).waitFor();
         revision=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
       }
       assert.ok(revision.includes(currentQuestion)&&revision.includes(claim)&&revision.includes(actual)&&!revision.includes(extra));

@@ -39,13 +39,32 @@
   function checkPanel(r) {
     return '<details class="jc-check"'+(r.answer ? ' open' : '')+'><summary>核對 AI 回答中引用的盤面</summary>'+
       '<label>貼上已收到的回答，在這台裝置比對<textarea data-consult-answer rows="4" maxlength="18000">'+esc(r.answer || '')+'</textarea></label>'+
-      '<button type="button" data-consult-check>核對引用</button><div class="jc-check-result" role="status">'+(r.checkResult || '')+'</div>'+
+      '<button type="button" data-consult-check>核對回答</button><div class="jc-check-result" role="status">'+(r.checkResult || '')+'</div>'+
+      '<div class="jc-repair"'+(r.problems?.length?'':' hidden')+'><button type="button" data-consult-repair>複製補讀要求</button>'+
+      '<p class="jc-repair-status" role="status"></p><textarea hidden readonly data-consult-repair-manual aria-label="可手動複製的補讀訊息"></textarea></div>'+
       '<details class="jc-correct"'+(r.answer?.trim() ? '' : ' hidden')+(r.quote || r.clarification ? ' open' : '')+'><summary>AI 有一句把我的情況說錯了</summary>'+
       (r.intake.facts ? '<p>你原先寫的是</p><blockquote>'+esc(r.intake.facts)+'</blockquote>' : '')+
       '<label>從上方回答複製想更正的原句<textarea data-consult-quote rows="2" maxlength="600">'+esc(r.quote || '')+'</textarea></label>'+
       '<label>你能確認什麼？哪些仍然未知？<textarea data-consult-clarify rows="2" maxlength="480">'+esc(r.clarification || '')+'</textarea></label>'+
       '<button type="button" data-consult-correct>複製更正，貼回原 AI 對話</button><p class="jc-correction-status" role="status"></p>'+
       '<textarea hidden readonly data-consult-manual aria-label="可手動複製的更正訊息"></textarea></details></details>';
+  }
+  async function copyRequest(text,status,manual,current) {
+    try {
+      await root.JYPromptPacket.copy(text,{inlineFeedback:true});
+      if(!current())return;
+      manual.hidden=true;
+      status.textContent='已複製。請貼回剛才放過原盤的 AI 對話。';
+    } catch {
+      if(!current())return;
+      manual.value=text;manual.hidden=false;manual.focus();manual.select();
+      status.textContent='請手動複製下方訊息，貼回剛才的 AI 對話。';
+    }
+  }
+  function originalContext(r) {
+    return ['我的原題：'+JSON.stringify(r.question),
+      r.intake.facts && '我原先提供的情況：'+JSON.stringify(r.intake.facts),
+      r.intake.priority && '我在意的取捨：'+JSON.stringify(r.intake.priority)].filter(Boolean);
   }
   async function correctAnswer(el,r) {
     const section=el.querySelector('.jc-correct'), status=section.querySelector('.jc-correction-status');
@@ -64,9 +83,7 @@
     const urgent=root.JYReadingWorkflow?.careContext?.(r.question,notes)?.level==='safety-first';
     const correction=[
       '請接著我們剛才的同一份解讀，使用原來的盤面，重新回答我的問題。',
-      '我的原題：'+JSON.stringify(r.question),
-      r.intake.facts && '我原先提供的情況：'+JSON.stringify(r.intake.facts),
-      r.intake.priority && '我在意的取捨：'+JSON.stringify(r.intake.priority),
+      ...originalContext(r),
       '前一則 AI 回答裡待查的原句（只供比對）：'+JSON.stringify(excerpt),
       '我現在親自更正或補充：'+JSON.stringify(actual),
       '以我的更正為準，說明原來的判斷和建議哪裡要改、接下來能觀察什麼。尚未確認的事請保留，前一則回答不能當成我的自述。',
@@ -75,24 +92,29 @@
     const manual=section.querySelector('[data-consult-manual]');
     const answer=r.answer;
     const current=()=>section.isConnected && r.answer===answer && r.quote?.trim()===excerpt && r.clarification?.trim()===actual;
-    try {
-      await root.JYPromptPacket.copy(correction,{inlineFeedback:true});
-      if(!current())return;
-      manual.hidden=true;
-      status.textContent='已複製更正。貼回剛才放過原盤的 AI 對話即可。';
-    } catch {
-      if(!current())return;
-      manual.value=correction;manual.hidden=false;manual.focus();manual.select();
-      status.textContent='請手動複製下方訊息，貼回剛才的 AI 對話。';
-    }
+    await copyRequest(correction,status,manual,current);
   }
   function checkAnswer(r) {
+    r.problems=[];
     if (!r.answer?.trim()) return '請先貼上要核對的回答。';
     const result=root.JYReadingWorkflow.checkChartText(r.body,r.answer);
-    if (result.issues.length) return '<p>請回到原盤核對這些地方。</p><ul>'+
-      result.issues.map(i=>'<li>'+esc(i.message)+(i.excerpt?' <q>'+esc(i.excerpt.slice(0,160))+'</q>':'')+'</li>').join('')+'</ul>';
-    if (result.checks) return '比對了 '+result.checks+' 處可辨識的盤面引用，未見衝突。結論及白話推論仍要逐一對照。';
-    return '這段文字沒有可直接比對的明確引用。你可以選上方的落點，對照 AI 說的依據。';
+    const writing=result.writing || [], items=issues=>'<ul>'+issues.map(i=>'<li>'+esc(i.message)+(i.excerpt?' <q>'+esc(i.excerpt.slice(0,160))+'</q>':'')+'</li>').join('')+'</ul>';
+    r.problems=[...result.issues,...writing];
+    const facts=result.issues.length ? '<p>請回到原盤核對這些地方。</p>'+items(result.issues) :
+      result.checks ? '比對了 '+result.checks+' 處可辨識的盤面引用，未見衝突。結論及白話推論仍要逐一對照。' :
+      '這段文字沒有可直接比對的明確引用。你可以選上方的落點，對照 AI 說的依據。';
+    return facts+(writing.length?'<p>這幾處可以請 AI 重寫。</p>'+items(writing):'');
+  }
+  async function repairAnswer(el,r) {
+    if(!r.problems?.length)return;
+    const answer=r.answer, panel=el.querySelector('.jc-repair');
+    const text=['請修改你在這個對話裡剛才的解讀，用同一份完整原盤與本次問題。',
+      ...originalContext(r),
+      '本站對剛才回答找到以下具體問題。舊答案的引句只是待查文字，請和原盤核對。',
+      ...r.problems.slice(0,6).map(p=>p.message+(p.excerpt?' 引句：'+JSON.stringify(p.excerpt.slice(0,160)):'')),
+      r.problems.length>6 && '本次先列六項，另有'+(r.problems.length-6)+'項可在結果頁查看。請逐一核對這份解讀與原盤。',
+      '請重新寫給我。把正確的判斷留下，回答原題，交代根據、成立條件，以及我能觀察或採取的一步。'].filter(Boolean).join('\n');
+    await copyRequest(text,panel.querySelector('.jc-repair-status'),panel.querySelector('[data-consult-repair-manual]'),()=>panel.isConnected && r.answer===answer);
   }
   function render(prompt, owner) {
     const packet = root.JYPromptPacket?.get?.(prompt), visits = packet?.projection?.consultation;
@@ -155,6 +177,9 @@
       manual.hidden=true;manual.value='';
       if(e.target.hasAttribute('data-consult-answer')){
         r.answer=e.target.value;r.checkResult='';el.querySelector('.jc-check-result').textContent='';
+        r.problems=[];const repair=el.querySelector('.jc-repair');
+        repair.hidden=true;repair.querySelector('.jc-repair-status').textContent='';
+        const repairManual=repair.querySelector('[data-consult-repair-manual]');repairManual.value='';repairManual.hidden=true;
         r.quote='';r.clarification='';
         section.querySelector('[data-consult-quote]').value='';
         section.querySelector('[data-consult-clarify]').value='';
@@ -168,13 +193,15 @@
     if (c) draft(c.r).note=e.target.value;
   });
   doc.addEventListener('click',async e => {
-    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct]'), c=current(b);
+    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair]'), c=current(b);
     if (!b || !c) return;
     const {el,r}=c;
     if (b.hasAttribute('data-consult-correct')) { await correctAnswer(el,r); return; }
+    if (b.hasAttribute('data-consult-repair')) { await repairAnswer(el,r); return; }
     if (b.hasAttribute('data-consult-check')) {
       r.checkResult=checkAnswer(r);
       el.querySelector('.jc-check-result').innerHTML=r.checkResult;
+      el.querySelector('.jc-repair').hidden=!r.problems.length;
       return;
     }
     if (b.hasAttribute('data-consult-point')) { r.index=Number(b.dataset.consultPoint); showState(el,r); }
