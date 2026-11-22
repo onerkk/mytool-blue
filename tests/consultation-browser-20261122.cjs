@@ -16,6 +16,8 @@ const types = {'.html':'text/html','.js':'application/javascript','.mjs':'applic
 const rooms = {tarot:'#step-tarot',ootk:'#step-tarot',bazi:'#bazi-screen',ziwei:'#zw-result',compat:'#bzs-screen',personality:'#bzs-screen',meihua:'#meihua-screen',oracle:'#oracle-screen',vedic:'#vedic-page',western:'#western-page',liuyao:'#liuyao-screen',yijing:'#yijing-screen',name:'#nm-room',liuren:'#lr-room',lenormand:'#lenormand-screen'};
 const confirmed = {tarot:'#tarot-ai-wrap .jy-ex-card',ootk:'.ootk-record',bazi:'.bzx-pillars',ziwei:'.zw-ai',compat:'#pair-ziwei-result',personality:'.bzs-type',meihua:'.mhx-ai-card',oracle:'.or-result',vedic:'#vd-result-title',western:'.wx-result-title',liuyao:'.gw-result',yijing:'.gw-result',name:'.nm-result-title',liuren:'.lr-workspace',lenormand:'.ln-spread-board'};
 const q = '未來三個月這份工作的合作條件如何，哪些變化需要留意？';
+const datedQuestion='我想約合作方試做小量包裝。十月八日至十五日，盤上哪兩個候選日值得聯絡？請各配對原來的觸發條件。';
+const nameQuestion='陳弘林和陳沐洪哪個適合自我介紹？我在意第一次聽就能寫對。';
 const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
 function visible(page, selector) { return page.locator(selector).filter({visible:true}).first(); }
 async function reachable(page,target, timeout=13000){
@@ -143,7 +145,7 @@ async function go(page,kind,variant){
     await assign(page,{[p+'-date']:'1983-08-25',[p+'-time']:'14:55',[p+'-reference']:'2026-10-02',[p+'-question']:q});
     await page.locator('#'+p+'-submit').click();
   } else if(kind==='liuren'){
-    await page.locator('#lr-question').fill(q);await page.locator('#lr-date').fill('2026-10-01');await page.locator('#lr-time').fill('22:06');
+    await page.locator('#lr-question').fill(variant==='dates'?datedQuestion:q);await page.locator('#lr-date').fill('2026-10-01');await page.locator('#lr-time').fill('22:06');
     await page.locator('#lr-cast').click();
   } else if(kind==='name'){
     if(variant==='compare')await page.locator('[data-nm-mode="compare"]').click();
@@ -151,7 +153,7 @@ async function go(page,kind,variant){
     if(variant==='compare'){
       await page.locator('#nm-baseline-name').fill('陳政軒');await page.locator('#nm-candidates').fill('弘林\n沐洪');
     }else await page.locator('#nm-given').fill('弘林');
-    await page.locator('#nm-question').fill(q);
+    await page.locator('#nm-question').fill(variant==='compare'?nameQuestion:q);
     await page.locator('#nm-prepare').click();await page.locator('#nm-review-form').waitFor();await page.locator('#nm-analyze').click();
   } else if(kind==='oracle'){
     await page.locator('#orc-q-input').fill(q);await page.locator('[onclick="_oracleShowGuide()"]').click();await page.locator('[onclick="_oracleStartPray()"]').click();
@@ -235,7 +237,7 @@ async function run(browser,kind){
     const home=page.locator('.at-tools button[data-tool]');await home.first().waitFor();row.portals=await home.count();assert.equal(row.portals,14);
     await visible(page,'.at-tools button[data-tool="'+(tool==='personality'?'compat':tool)+'"]').click();row.entered=true;
     await go(page,tool,variant);row.result=true;
-    let currentQuestion=q;
+    let currentQuestion=variant==='dates'?datedQuestion:variant==='compare'?nameQuestion:q;
     if(variant==='edit'){
       const region=page.locator('.jy-consult:visible').first();
       await region.locator('.jc-observe summary').click();
@@ -280,6 +282,25 @@ async function run(browser,kind){
     if(mode==='feature'){
       await review(page,kind,row,currentQuestion);
       const table=page.locator('.jy-consult:visible').first(), check=table.locator('.jc-check');
+      const source=table.locator('.jc-source');await source.locator('summary').click();
+      const native=source.locator('select'), sourceText=source.locator('.jc-source-text');
+      if(variant==='dates'){
+        assert.match(await native.locator('option:checked').innerText(),/應期候選日.*全列4日/);
+        const raw=await sourceText.innerText();
+        const days=raw.split('\n').filter(line=>line.includes('｜')).flatMap(line=>line.split('｜')[0].split('、'));
+        assert.deepEqual(days.sort(),['2026-10-08','2026-10-09','2026-10-12','2026-10-15']);
+        assert.match(raw,/2026-10-08[^\n]+日合用神/);assert.match(raw,/2026-10-15[^\n]+用神值日/);
+        await source.scrollIntoViewIfNeeded();await page.screenshot({path:path.join(artifacts,'liuren-candidate-dates-390.png')});
+      }
+      if(variant==='compare')assert.match(await native.locator('option:checked').innerText(),/陳弘林字音形義/);
+      const count=await native.locator('option').count();
+      await native.selectOption(String(count-1));
+      const tableLabel=await native.locator('option:checked').innerText(), tableValue=await sourceText.textContent();
+      await source.locator('[data-consult-source-copy]').click();
+      await source.locator('[role=status]').filter({hasText:'已複製'}).waitFor();
+      const cited=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
+      assert.ok(tableValue&&cited.includes('【'+tableLabel+'】\n'+tableValue)&&cited.includes(currentQuestion));
+      row.nativeSourceReadback=true;
       await check.locator(':scope > summary').click();
       const answer=check.locator('[data-consult-answer]');
       await answer.fill('你可以先核對下週的會議時間。');

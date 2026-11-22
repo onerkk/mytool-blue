@@ -40,3 +40,10 @@
 .jc-correct blockquote{margin:.3rem 0 .7rem;padding-inline-start:.75rem;border-inline-start:2px solid var(--jc-edge);white-space:pre-wrap;overflow-wrap:anywhere}
 .jc-correct p,.jc-repair p{margin:.4rem 0}.jc-check [hidden],.jc-correction-status:empty,.jc-repair-status:empty{display:none}
 .jc-repair{margin:.5rem 0}
+.jc-source{margin:.8rem 1rem;border-top:1px solid #ffffff28;padding-top:.65rem;line-height:1.6}
+.jc-source summary{width:fit-content;color:var(--jc-light);cursor:pointer}
+.jc-source label,.jc-source select,.jc-source textarea{display:block;width:100%;box-sizing:border-box}
+.jc-source label{margin:.65rem 0}.jc-source select,.jc-source textarea{background:#151923;color:#f6f2ea;border:1px solid var(--jc-edge);border-radius:7px;font:inherit;padding:.45rem}
+.jc-source-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:clamp(16rem,45vh,24rem);overflow:auto;padding:.55rem .7rem;border-inline-start:2px solid var(--jc-edge)}
+.jc-source button{min-height:44px;margin:.7rem 0 0;border:1px solid var(--jc-edge);border-radius:8px;color:var(--jc-light);background:transparent;padding:.35rem .8rem}
+.jc-source [hidden],.jc-source-status:empty{display:none}

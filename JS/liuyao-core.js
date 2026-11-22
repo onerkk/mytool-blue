@@ -327,7 +327,10 @@
     if(!date.instant||!Number.isFinite(Date.parse(date.instant)))return {status:'missing-cast-instant',dates:[]};
     var wall=localTimeAt(Date.parse(date.instant),date.timezoneOffset==null?8:date.timezoneOffset),today=Date.UTC(wall.year,wall.month-1,wall.day),end=null,start=today,why='';
     function civil(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s))throw new Error('應期範圍請使用 YYYY-MM-DD');var ms=Date.parse(s+'T00:00:00Z');if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,10)!==s)throw new Error('應期日期無效');return ms;}
+    var calendarCore=root.BaziCalendarCore||(typeof module!=='undefined'&&module.exports?require('./bazi-calendar-core.js').BaziCalendarCore:null);
+    var stated=explicit?null:calendarCore?.questionDateRange(question,wall.year);
     if(explicit){start=explicit.start?civil(explicit.start):today;end=civil(explicit.end);why='明示日期範圍';}
+    else if(stated){start=civil(stated.startDate);end=civil(stated.endDate);why='原題明示的日期範圍';}
     else{var q=String(question||''),m=q.match(/(?:未來|接下來|今起|這)\s*(\d{1,3})[天日]/);if(m&&Number(m[1])>0){end=today+(Number(m[1])-1)*86400000;why=m[0];}
       else if((m=q.match(/(?:未來|接下來|這)\s*([一二兩三四1-4])(?:個)?(?:週|星期)/))){var weeks={'一':1,'二':2,'兩':2,'三':3,'四':4}[m[1]]||Number(m[1]);end=today+(weeks*7-1)*86400000;why=m[0];}
       else if(/下個月|下月/.test(q)){start=Date.UTC(wall.year,wall.month,1);end=Date.UTC(wall.year,wall.month+1,0);why='下個民用月';}

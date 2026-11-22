@@ -20,6 +20,8 @@ group('十五種原生結果逐案追問，原盤、原始匯出、本人回應�
     const {body, v} = visit(kind,chart,question,records);
     assert.equal(v.method,kind);
     assert.ok(v.points.length && v.points.every(p => p.label && p.detail && p.reading),kind);
+    const references=api.get(body).projection.referenceSections;
+    assert.ok(references.length&&references.every(s=>body.includes('【'+s.label+'】\n'+s.value)),kind);
     const p = v.points[0], observed = '和實際情況不同';
     const selection = { source:v.source||v.title, location:p.label, evidence:p.detail, experience:observed, note:'會議當天有安排我說明。' };
     const follow = api.followUp(body,selection), result = api.get(follow);
@@ -87,6 +89,42 @@ group('未知時辰可看的取樣與三柱，保留不可用的宮位',()=>{
   }
   const b=visit('bazi',f.b,question,{unknown:true}).v.points;
   assert.ok(b[0].visual.kind==='limit' && !b.some(p=>p.label==='時柱'));
+});
+
+group('大六壬及六爻從原題辨認國曆窗口，逐日排除題外候選',()=>{
+  const castDay='2026-10-01', clock={instant:'2026-10-01T14:06:00Z',timezoneOffset:8};
+  const questions=[
+    ['十月八日至十五日','2026-10-08','2026-10-15'],
+    ['10/8～10/15','2026-10-08','2026-10-15'],
+    ['10月8到15之間','2026-10-08','2026-10-15'],
+    ['2026-10-08 至 2026-10-15','2026-10-08','2026-10-15'],
+    ['二〇二六年十月八日到十月十五號','2026-10-08','2026-10-15'],
+    ['今年十二月廿八日至一月三日','2026-12-28','2027-01-03'],
+    ['明年一月一號至二號','2027-01-01','2027-01-02']
+  ];
+  for(const [text,start,end] of questions){
+    const q='想在'+text+'聯絡，哪幾天可以考慮？', lr=c.JYLiurenCompletion.windowFor(q,castDay), ly=c.JYLiuyaoCore.parseWindow(q,clock);
+    assert.equal(lr.startDate,start,text);assert.equal(lr.endDateInclusive,end,text);
+    assert.equal(ly.start,start,text);assert.equal(ly.end,end,text);
+  }
+  for(const q of ['2027年二月三十日至三月二日','十月十五日至八日','農曆十月八日至十五日','農曆正月初八至十五日','十月八日至十二日及十月十四日至十八日']){
+    assert.throws(()=>c.JYLiurenCompletion.windowFor(q,castDay),/日期|國曆/);
+    assert.throws(()=>c.JYLiuyaoCore.parseWindow(q,clock),/日期|國曆/);
+  }
+  assert.equal(c.JYLiurenCompletion.windowFor('今年會怎樣',castDay).source,'question-year');
+  assert.equal(c.JYLiuyaoCore.parseWindow('我能合作嗎？',clock).status,'unspecified');
+  const standalone=require('../JS/liuyao-core.js');
+  assert.equal(standalone.parseWindow('10/8 到 10/15',clock).start,'2026-10-08');
+  assert.equal(standalone.parseWindow('未來3天',clock).end,'2026-10-03');
+  const override=c.JYLiurenCompletion.windowFor('十月八日至十五日',castDay,{startDate:'2026-10-09',endDate:'2026-10-10'});
+  assert.equal(override.calendarDays,2);
+  const q='我想約合作方試做小量包裝。十月八日至十五日，盤上哪兩個候選日值得聯絡？請各配對原來的觸發條件。';
+  const chart=c.JYLiurenCore.calculate({question:q,date:castDay,time:'22:06'});
+  assert.equal(chart.timing.window.calendarDays,8);
+  assert.deepEqual(plain(chart.timing.candidates.map(d=>d.date)),['2026-10-08','2026-10-09','2026-10-12','2026-10-15']);
+  const {body}=visit('liuren',chart,q);
+  const table=api.get(body).projection.referenceSections.find(s=>s.label.includes('應期候選日'));
+  assert.match(table.label,/全列4日/);assert.match(table.value,/2026-10-15[^\n]+用神值日/);
 });
 
 group('開鑰的停止程序、雷諾曼牌路與姓名候選依據',()=>{

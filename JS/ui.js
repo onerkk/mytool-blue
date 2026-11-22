@@ -886,7 +886,7 @@ async function _jyPrepareCompositeAstro(birth) {
     // Idle preloading is optional; an immediate submission must load its own dependencies.
     var dependencies = [
       ['JS/vendor/lunar.js?v=20261024hf83873549e', function(){return typeof Solar !== 'undefined';}],
-      ['JS/bazi-calendar-core.js?v=20261109hf07dc390be', function(){return !!window.BaziCalendarCore;}],
+      ['JS/bazi-calendar-core.js?v=20261122h526567406b', function(){return !!window.BaziCalendarCore;}],
       ['JS/solar-location.js?v=20261024h4ec96f83c4', function(){return typeof calcTrueSolarTime === 'function';}],
       ['JS/bazi.js?v=20261109hd224547d79', function(){return typeof computeBazi === 'function';}],
       ['JS/bazi_upgrade.js?v=20261024h443df3631a', function(){return typeof enhanceBazi === 'function';}],

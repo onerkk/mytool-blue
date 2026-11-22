@@ -10,6 +10,50 @@
   function parts(s){return {year:s.getYear(),month:s.getMonth(),day:s.getDay(),hour:s.getHour(),minute:s.getMinute(),second:s.getSecond()};}
   function pseudoUtc(p){return Date.UTC(p.year,p.month-1,p.day,p.hour||0,p.minute||0,p.second||0);}
   function formatParts(p){return p.year+'-'+pad2(p.month)+'-'+pad2(p.day)+' '+pad2(p.hour||0)+':'+pad2(p.minute||0)+':'+pad2(p.second||0);}
+  const numeral='[0-9零〇○一二兩三四五六七八九十廿卅]+';
+  const yearMark='(?:[0-9零〇○一二三四五六七八九]{4}年|今年|明年|後年|去年)';
+  const chineseDate='(?:'+yearMark+'\\s*)?(?:閏)?(?:'+numeral+'|正|臘|冬)月\\s*初?'+numeral+'(?:日|號)?';
+  const numericDate='(?:\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}|\\d{1,2}/\\d{1,2})';
+  const fullDate='(?:'+chineseDate+'|'+numericDate+')';
+  const endDay='初?'+numeral+'(?:[日號]|(?=\\s*(?:[，,。?？!！、)）]|之間|期間|$)))';
+  const dateRangePattern='(?<![0-9零〇○一二兩三四五六七八九十廿卅/])('+fullDate+')\\s*(?:至|到|[-~～—–])\\s*('+fullDate+'|'+endDay+')(?![0-9])';
+
+  function dateNumber(text){
+    const digits=String(text).replace(/[零〇○一二兩三四五六七八九]/g,ch=>String('零一二三四五六七八九'.indexOf(ch==='兩'?'二':/[〇○]/.test(ch)?'零':ch)));
+    if(/^\d+$/.test(digits))return Number(digits);
+    const tens=digits.replace('廿','2十').replace('卅','3十').match(/^(\d)?十(\d)?$/);
+    return tens?Number(tens[1]||1)*10+Number(tens[2]||0):NaN;
+  }
+  const chineseDateParts=new RegExp('^(?:('+yearMark+')\\s*)?(?:('+numeral+')月\\s*)?('+numeral+')(?:日|號)?$');
+  function dateParts(text,castYear){
+    const numeric=text.match(/^(?:(\d{4})[-/])?(\d{1,2})[-/](\d{1,2})$/);
+    if(numeric)return {year:numeric[1]?Number(numeric[1]):null,month:Number(numeric[2]),day:Number(numeric[3])};
+    const [,mark,month,day]=text.match(chineseDateParts);
+    const relative={去年:-1,今年:0,明年:1,後年:2};
+    const year=!mark?null:Object.hasOwn(relative,mark)?castYear+relative[mark]:dateNumber(mark.slice(0,-1));
+    return {year,month:month?dateNumber(month):null,day:dateNumber(day)};
+  }
+  function civilLabel(year,month,day){
+    const d=new Date(Date.UTC(year,month-1,day));
+    if(d.getUTCFullYear()!==year||d.getUTCMonth()+1!==month||d.getUTCDate()!==day)throw Error('原題的國曆日期不存在，請核對年月日。');
+    return year+'-'+pad2(month)+'-'+pad2(day);
+  }
+  // A month/day without a year is anchored to the local cast year. Only an
+  // explicitly earlier end month can carry an undated endpoint across New Year.
+  function questionDateRange(question,castYear){
+    const q=String(question||'').normalize('NFKC'), matches=Array.from(q.matchAll(new RegExp(dateRangePattern,'g')));
+    if(!matches.length)return null;
+    if(matches.length>1)throw Error('原題有多段日期，請指定這次要查的一段國曆日期。');
+    const match=matches[0], clause=q.slice(0,match.index).split(/[。！？；\n]/).pop();
+    const calendars=clause.match(/農曆|陰曆|舊曆|國曆|陽曆|西曆|公曆|民國/g)||[];
+    if(['農曆','陰曆','舊曆','民國'].includes(calendars.pop())||/[閏初]|[正臘冬]月/.test(match[0]))throw Error('請將原題的日期換成西元國曆年月日，才能核對這段應期。');
+    const from=dateParts(match[1],castYear), to=dateParts(match[2],castYear);
+    const endMonth=to.month??from.month, crossesYear=endMonth<from.month?1:0;
+    const startYear=from.year??(to.year==null?castYear:to.year-crossesYear);
+    const startDate=civilLabel(startYear,from.month,from.day), endDate=civilLabel(to.year??(startYear+crossesYear),endMonth,to.day);
+    if(endDate<startDate)throw Error('原題的結束日期早於開始日期，請核對日期順序。');
+    return {startDate,endDate};
+  }
   function splitGz(gz){return {gan:String(gz||'').charAt(0),zhi:String(gz||'').charAt(1)};}
   function hasEngine(){return typeof root.Solar!=='undefined'&&root.Solar&&typeof root.Solar.fromYmdHms==='function';}
   function validateInput(input){
@@ -109,7 +153,7 @@
   root.BaziCalendarCore={
     version:'1.2.0',engine:'lunar-javascript',engineVersion:'1.7.7',
     hasEngine:hasEngine,calculateChart:calculateChart,calculateYun:calculateYun,getLiChun:getLiChun,
-    formatParts:formatParts
+    formatParts:formatParts,questionDateRange:questionDateRange
   };
 })(typeof window!=='undefined'?window:this);
 

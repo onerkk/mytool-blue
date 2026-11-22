@@ -398,7 +398,7 @@
 <style>.jy-question-recommendation{margin-top:.75rem;padding:.75rem;border:1px solid rgba(201,168,76,.3);border-radius:12px;font-size:.8rem;line-height:1.65;white-space:pre-line;overflow-wrap:anywhere}.jy-question-recommendation p{margin:0 0 .4rem}.jy-question-recommendation[hidden]{display:none}</style>
 <!-- v20260925-ln21：雷諾曼語義架構 v21：型別問題 IR、指涉／依賴圖、決策與假設分離、量測能力契約、fail-closed 歧義處理與 property/metamorphic 回歸；選陣只讀語義拓撲，不靠單題補丁。 -->
 <!-- v20260925-ln19：雷諾曼 v19.0 語義量測與路由根治——「今天／今日」僅作時間錨，不再誤判為日常提醒；補齊中獎／獎金／營業額等精確金額語義、條件式得財兩階段解析、量測能力 metadata、答案粒度稽核；why+how 留在同一事件五張線，隱含心念／身分與精確時間改由足夠脈絡牌陣處理。只修引擎與路由，不以提示詞關鍵字硬指定牌義。 -->
-<link rel="stylesheet" href="CSS/consultation.css?v=20261122h33d95302f5">
+<link rel="stylesheet" href="CSS/consultation.css?v=20261122hede9eed131">
 <link rel="stylesheet" href="CSS/native-analysis.css?v=20261024h9145e3afe6">
 <link rel="stylesheet" href="CSS/card-spread-20261014.css?v=20261024hcc1647c518">
 <link rel="stylesheet" href="CSS/depth-polish-20261021.css?v=20261024h8046e6b0f2">
@@ -1441,8 +1441,8 @@
      導致 detectSpreadType 永遠失效、所有牌陣都跑 10 張凱爾特十字 -->
 <script src="JS/recorded-audio.js?v=20261024h5618ccb860" defer></script>
 <script src="JS/reading-workflow.js?v=20261122hcbc984c892" defer></script>
-<script src="JS/prompt-brief.js?v=20261122h1f3a96da9b" defer></script>
-<script src="JS/prompt-packet.js?v=20261122h8365d5e2dc" defer></script>
+<script src="JS/prompt-brief.js?v=20261122hfb10af9ec1" defer></script>
+<script src="JS/prompt-packet.js?v=20261122ha643fb8f06" defer></script>
 <!-- v29(2026/10/21)：共用提示詞交接導引——攔 JYPromptPacket.copy 單一出口，複製成功後給「打開AI→貼上送出→追問」三步底部卡；十五種工具一次到位，不逐一改各房間。 -->
 <script src="JS/reading-handoff.js?v=20261121h640f2edc2a" defer></script>
 <!-- walk30：全螢幕房間開啟時，背景首頁設為 inert，避免鍵盤／讀屏操作到看不見的首頁。 -->
@@ -1459,7 +1459,7 @@
 <script src="JS/vedic-tajaka.js?v=20261024h863b1ed563" defer></script>
 <script src="JS/vedic-sudarsana-bphs.js?v=20261024h9c61818bfd" defer></script>
 <script src="JS/vedic-sudarsana.js?v=20261024hff4e892216" defer></script>
-<script src="JS/liuren-completion.js?v=20261110h3904b7e777" defer></script>
+<script src="JS/liuren-completion.js?v=20261122he40268e9c8" defer></script>
 <script src="JS/western-dignities.js?v=20261028h7d89f55fb1" defer></script>
 <script src="JS/bazi-adjudication.js?v=20261024h0f0e09bdbf" defer></script>
 <script src="JS/ziwei-school-completion.js?v=20261024h8876a32e02" defer></script>
@@ -1527,7 +1527,7 @@
 <script src="JS/bazi-suite-core.js?v=20261122ha6e7b70e6a" defer></script>
 <script src="JS/relationship-core.js?v=20261122hb7ac5e1e05" defer></script>
 <script src="JS/bazi-suite.js?v=20261122h78662880c8" defer></script>
-<script src="JS/ui.js?v=20261122h53e8b10545" defer></script>
+<script src="JS/ui.js?v=20261122h79743eb2e2" defer></script>
 <script src="JS/reading-recommender.js?v=20261028h4b52dad056" defer></script>
 <script src="JS/name-standalone.js?v=20261121hb215cef774" defer></script>
 <script src="JS/atelier-ui.js?v=20261024h062af893c6" defer></script>
@@ -1542,7 +1542,7 @@
 <script src="JS/tarot-stage.js?v=20261112hbb2e8ba012" defer></script>
 <script src="JS/pillar-stage.js?v=20261112hb1b06e3800" defer></script>
 <script src="JS/wheel-stage.js?v=20261112hc4d8f0a06c" defer></script>
-<script src="JS/consultation-view.js?v=20261122h1e332b7ca8" defer></script>
+<script src="JS/consultation-view.js?v=20261122hb3bbed5b4b" defer></script>
 <script src="JS/known-facts.js?v=20261122h088f092b30" defer></script>
 <script src="JS/render_upgrade.js?v=20261024h26d8be775b" defer></script>
 <!-- ★ v70 複製模式引擎：必須最後載入。不進混淆。 -->
@@ -1608,8 +1608,8 @@
 <script src="JS/prompt-export.js?v=20261122hd8c6e80531" defer></script>
 <!-- ★ v80.14：精準農曆轉換庫；紫微與梅花時間起卦未載入時會停止，不用粗估。 -->
 <script src="JS/vendor/lunar.js?v=20261024hf83873549e" defer></script>
-<script src="JS/bazi-calendar-core.js?v=20261109hf07dc390be" defer></script>
-<script src="JS/liuyao-core.js?v=20261121h98cf057e53" defer></script>
+<script src="JS/bazi-calendar-core.js?v=20261122h526567406b" defer></script>
+<script src="JS/liuyao-core.js?v=20261122he84cfaab79" defer></script>
 <script src="JS/yijing-data.js?v=20261110h376405145a" defer></script>
 <script src="JS/yarrow-core.js?v=20261024h3338aa24c3" defer></script>
 <script src="JS/yijing-wings.js?v=20261024hd135cd7553" defer></script>
@@ -1732,7 +1732,7 @@
     <div class="jy-footer-colophon">
       <p>© 2025–2026 靜月之光</p>
       <p>命理分析僅供參考，不構成醫療、法律或財務建議。</p>
-      <p id="jy-build" data-build="jy-main-b8a66a99da" style="opacity:.55;font-size:.75rem;letter-spacing:.5px">build b8a66a99da</p>
+      <p id="jy-build" data-build="jy-main-d2e509897c" style="opacity:.55;font-size:.75rem;letter-spacing:.5px">build d2e509897c</p>
     </div>
   </div>
 </footer>

@@ -344,6 +344,7 @@
   // 同一個英文字在不同方法裡意思不同時，以方法專屬對照優先（例：zodiac 在占星是黃道、在姓名學是生肖）。
   const ZH_BY_METHOD={astro:{zodiac:'黃道',sign:'星座',house:'宮'},vedic:{zodiac:'黃道'},name:{zodiac:'生肖'},bazi:{sign:'記號'},liuren:{earth:'地盤',sky:'天盤',general:'天將'},liuyao:{hidden:'伏神','hidden-only':'用神不上卦、只見伏神',flightRelation:'飛伏關係'}};
   const PLANET_ZH={Sun:'太陽',Moon:'月亮',Mercury:'水星',Venus:'金星',Mars:'火星',Jupiter:'木星',Saturn:'土星',Rahu:'羅睺',Ketu:'計都',Uranus:'天王星',Neptune:'海王星',Pluto:'冥王星',NorthNode:'北交點',SouthNode:'南交點'};
+  ZH['question-date-range']='原題明示的日期範圍';
   let zhMethod='';
   const zhWord=w=>{const o=ZH_BY_METHOD[zhMethod];if(o&&Object.prototype.hasOwnProperty.call(o,w))return o[w];return Object.prototype.hasOwnProperty.call(ZH,w)?ZH[w]:methodLabel(w)||w;};
   function zhText(str){
@@ -1216,6 +1217,10 @@
     let result=build();
     if(!fit(result)){const error=new Error('單次貼上範圍說明超過長度預算；未複製不完整資料。');error.code='SINGLE_PROMPT_SCOPE_OVER_BUDGET';throw error;}
     const plan={version:VERSION,mode:'single-message',limits:{characters:LIMIT,utf8Bytes:BYTES},characters:chars(result),utf8Bytes:bytes(result),coreBlocks:core.map(b=>b.label),includedBlocks:kept.map(b=>b.label),notExpanded:pending.map(b=>b.label),completeCore:true,originalQuestionPreserved:true,sourceChartMutated:false,consultation:visits,intake:{facts:data.knownFacts||'',priority:data.priority||''},usesReferences:false,requiresAttachment:false,guaranteedExternalPlatformLimit:false};
+    // Keep the same rendered data sections available to the reader, including dates
+    // or source text the external model may skip. Unexpanded sections have no entry.
+    plan.referenceSections=kept.filter(b=>b.method!=='shared'&&!/本法正統取法|規則來源|行業取象表/.test(b.label))
+      .map(b=>({label:b.label,value:b.value}));
     plans.set(result,plan);if(plans.size>40)plans.delete(plans.keys().next().value);return result;
   }
   root.JYSinglePaste=Object.freeze({version:VERSION,limits:{characters:LIMIT,utf8Bytes:BYTES},compile,observationText,get:text=>plans.get(String(text))||null,chars,bytes,guides});

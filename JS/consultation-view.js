@@ -36,6 +36,34 @@
     if (step.visit.method === 'lenormand') return step.point.detail;
     return step.point.label.split(' · ')[0];
   }
+  function initialSource(question,rows) {
+    const cues=[
+      [/候選日|應期|哪.{0,4}[日天]|幾號/,/應期候選日/],
+      [/試聽|聽.{0,10}寫|讀音|唸法/,/字音形義/],
+      [/伏財|伏神|飛伏/,/飛伏|伏神|用神/],
+      [/卦辭|哪一段|取辭/,/主讀|取用卦爻辭|本卦與之卦取辭/],
+      [/試講|第一輪|首輪/,/第一輪|第1輪/],
+      [/分盤|D\d+/i,/分盤/]
+    ];
+    for(const [query,title] of cues){
+      if(!query.test(question))continue;
+      const names=rows.filter(row=>title.test(row.label));
+      const named=names.find(row=>{
+        const name=row.label.split('／').at(-1).match(/^(.+?)字音形義/);
+        return name && question.includes(name[1]);
+      });
+      if(names.length)return rows.indexOf(named || names[0]);
+    }
+    return 0;
+  }
+  function sourcePanel(r) {
+    if(!r.sources.length)return '';
+    return '<details class="jc-source"><summary>查這一盤的原文</summary>'+
+      '<label>本次完整提示詞裡的資料<select data-consult-source>'+r.sources.map((s,i)=>'<option value="'+i+'"'+(i===r.sourceIndex?' selected':'')+'>'+esc(s.label)+'</option>').join('')+'</select></label>'+
+      '<div class="jc-source-text" tabindex="0" aria-label="所選原盤資料">'+esc(r.sources[r.sourceIndex].value)+'</div>'+
+      '<button type="button" data-consult-source-copy>複製這段原文追問</button><p class="jc-source-status" role="status"></p>'+
+      '<textarea hidden readonly data-consult-source-manual aria-label="可手動複製的原盤追問"></textarea></details>';
+  }
   function checkPanel(r) {
     return '<details class="jc-check"'+(r.answer ? ' open' : '')+'><summary>核對 AI 回答中引用的盤面</summary>'+
       '<label>貼上已收到的回答，在這台裝置比對<textarea data-consult-answer rows="4" maxlength="18000">'+esc(r.answer || '')+'</textarea></label>'+
@@ -124,7 +152,9 @@
     if (!r || r.body !== packet.body || !views.has(r.id)) {
       const steps = visits.flatMap(visit => visit.points.map(point=>({visit,point})));
       if (!steps.length) return '';
-      r = { id:String(++serial), body:packet.body, question:packet.question, intake:packet.projection.intake || {}, index:0, steps, notes:new Map() };
+      const sources=(packet.projection.referenceSections || []).filter(s=>packet.body.includes('【'+s.label+'】\n'+s.value));
+      r = { id:String(++serial), body:packet.body, question:packet.question, intake:packet.projection.intake || {}, index:0, steps, notes:new Map(),
+        sources,sourceIndex:initialSource(packet.question,sources) };
       byResult.set(key,r); views.set(r.id,r);
       if (views.size > 48) {
         for (const id of views.keys()) if (!doc.querySelector('.jy-consult[data-visit="'+id+'"]') && id !== r.id) { views.delete(id); break; }
@@ -143,7 +173,7 @@
       '<details class="jc-observe"' + (active.choice || active.note ? ' open':'') + '><summary>拿這一處和自己的情況對照</summary><fieldset><legend>這一處跟你的經驗合得上嗎？</legend>' +
       '<div class="jc-responses">' + verdicts.map((v,i) => '<button type="button" data-consult-choice="'+i+'" aria-pressed="'+(active.choice===v)+'">'+v+'</button>').join('') + '</div>' +
       '<label>你想讓解讀知道的細節（選填）<textarea data-consult-note rows="2" maxlength="240">' + esc(active.note || '') + '</textarea></label></fieldset>' +
-      '<button type="button" data-consult-copy>複製這個落點的追問</button><span class="jc-message" role="status"></span></details>'+(root.JYReadingWorkflow?.checkChartText?checkPanel(r):'')+'</section>';
+      '<button type="button" data-consult-copy>複製這個落點的追問</button><span class="jc-message" role="status"></span></details>'+sourcePanel(r)+(root.JYReadingWorkflow?.checkChartText?checkPanel(r):'')+'</section>';
   }
   function current(target) {
     const el = target?.closest?.('.jy-consult'), r = el && views.get(el.dataset.visit);
@@ -167,6 +197,17 @@
     const observation = { source:visit.source || visit.title, location:point.label, evidence:point.detail, experience:d.choice || '', note:d.note.trim() };
     return root.JYPromptPacket.followUp(r.body,observation);
   }
+  doc.addEventListener('change',e=>{
+    if(!e.target.matches?.('[data-consult-source]'))return;
+    const c=current(e.target), i=Number(e.target.value);
+    if(!c?.r.sources[i])return;
+    c.r.sourceIndex=i;
+    const panel=c.el.querySelector('.jc-source');
+    const body=panel.querySelector('.jc-source-text');
+    body.textContent=c.r.sources[i].value;body.scrollTop=0;
+    panel.querySelector('.jc-source-status').textContent='';
+    const manual=panel.querySelector('[data-consult-source-manual]');manual.value='';manual.hidden=true;
+  });
   doc.addEventListener('input',e => {
     if (e.target.matches?.('[data-consult-answer],[data-consult-quote],[data-consult-clarify]')) {
       const c=current(e.target);
@@ -193,9 +234,17 @@
     if (c) draft(c.r).note=e.target.value;
   });
   doc.addEventListener('click',async e => {
-    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair]'), c=current(b);
+    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair],[data-consult-source-copy]'), c=current(b);
     if (!b || !c) return;
     const {el,r}=c;
+    if (b.hasAttribute('data-consult-source-copy')) {
+      const source=r.sources[r.sourceIndex], panel=el.querySelector('.jc-source');
+      if(!source)return;
+      const text=['請接續原對話的同一份盤。',...originalContext(r),'我想讀懂原盤裡的這一段：',
+        '【'+source.label+'】',source.value,'請先說這段能回答我的哪一部分、還缺哪個現實條件，再告訴我可以怎麼做。'].join('\n');
+      await copyRequest(text,panel.querySelector('.jc-source-status'),panel.querySelector('[data-consult-source-manual]'),()=>panel.isConnected && r.sources[r.sourceIndex]===source);
+      return;
+    }
     if (b.hasAttribute('data-consult-correct')) { await correctAnswer(el,r); return; }
     if (b.hasAttribute('data-consult-repair')) { await repairAnswer(el,r); return; }
     if (b.hasAttribute('data-consult-check')) {

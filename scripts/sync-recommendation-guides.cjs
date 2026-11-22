@@ -40,7 +40,7 @@ const readingTargets=[
   ['functions/api/ai.js','SYSTEM_METHODS',q.methodKinds().flatMap(k=>q.methodLines(k)).join('\n')],
   ['functions/api/ai.js','SYSTEM_READING_STYLE',q.plainText()+'\n'+q.narrativePolicy()+'\n'+q.truthPolicy()]
 ];
-const mirrors=['native-rule-sources.js','native-chart-analysis.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','ziwei-standalone.js','relationship-core.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
+const mirrors=['liuren-completion.js','native-rule-sources.js','native-chart-analysis.js','ui.js','tarot-foundation.js','tarot_upgrade.js','spread-picker.js','bazi-prompt-root.js','ziwei-prompt-root.js','ziwei-standalone.js','relationship-core.js','meihua-standalone.js','lenormand.js','oracle.js','prompt-export.js','ai-analysis.js','bazi-suite-core.js'];
 let failed=false,updated=0;
 function persist(file,next){
   const full=path.join(root,file),old=fs.existsSync(full)?fs.readFileSync(full,'utf8'):null;

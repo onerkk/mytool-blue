@@ -49,7 +49,9 @@
  }
  function windowFor(question,date,supplied){
    const q=String(question||''),yr=Number(date.slice(0,4));let start=date,end=new Date(Date.parse(date+'T12:00:00Z')+59*DAY).toISOString().slice(0,10),source='default60-calendar-days';
+   const stated=supplied?null:root.BaziCalendarCore?.questionDateRange(q,yr);
    if(supplied){start=supplied.startDate||supplied.start||start;end=supplied.endDate||supplied.end||end;source='explicit-window';}
+   else if(stated){start=stated.startDate;end=stated.endDate;source='question-date-range';}
    else {const range=q.match(/(20\d{2})\s*(?:年)?\s*(?:至|到|—|-|～|~)\s*(20\d{2})/),year=q.match(/(20\d{2})年/);if(range){start=range[1]+'-01-01';end=range[2]+'-12-31';source='question-year-range';}else if(/明年/.test(q)){start=(yr+1)+'-01-01';end=(yr+1)+'-12-31';source='question-next-year';}else if(/今年/.test(q)||year){const y=year?Number(year[1]):yr;start=y+'-01-01';end=y+'-12-31';source='question-year';}}
    if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end))throw Error('應期範圍須為完整日期');
    for(const value of [start,end]){const n=Date.parse(value+'T00:00:00Z');if(!Number.isFinite(n)||new Date(n).toISOString().slice(0,10)!==value)throw Error('應期日期無效');}
