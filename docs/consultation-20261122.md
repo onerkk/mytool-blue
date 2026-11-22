@@ -8,6 +8,8 @@
 
 在提問時，可以分別填寫已經發生的事與最在意的取捨。兩欄會隨本題進入解讀。結果頁會顯示本次使用的牌位、卦爻、宮位、原句或雙方作用。選一處之後，可以標記與自己的經驗相符、不符或尚待確認，也可以補上具體經過。複製追問時保留原題、同一份盤、選擇的依據及自己的回應。原始匯出和其他牌位的筆記各自保留。
 
+在手機上向左滑過牌、卦或命盤圖像，就能讀下一處，向右滑可回到上一處。也可點按上一處、下一處，或用鍵盤方向鍵切換。塔羅會翻出抽牌時看到的同一幅插畫及正逆位，雷諾曼依原牌路攤開牌面。卦象依原盤由初爻往上顯現，星盤在有確定宮位時移動指標，另換分盤時重新定位。每次切換都一起更新圖像、位置、原文和本人的筆記。系統開啟減少動態時會直接顯示結果。只有一處可讀的盤保持單頁。[查看手機滑動實錄](qa-consultation/mobile-reading.webp)
+
 每種方法也能展開「查這一盤的原文」，查看本次完整提示詞收錄的資料，或選一段連同原題追問。問大六壬候選日時，預先選取逐日觸發條件。比較名字的聽寫時，預先選取題內候選名字的讀音與字義。若外部 AI 漏答一個日期或唸錯一個字，在結果頁就能回頭核對原文。
 
 若已收到 AI 的回答，可在結果頁貼入文字，由瀏覽器核對能辨認的明確引用。程式會列出說錯的位置與原盤數值。它只比對有限的明示句型。遇到假設、其他人的盤或自由轉述，要回到原盤閱讀。貼回的回答只留在目前頁面的記憶體。
@@ -44,7 +46,7 @@
 
 從大六壬手機表單輸入「十月八日至十五日，盤上哪兩個候選日值得聯絡」，起課日為 2026 年 10 月 1 日。修正前，單從題目取得的範圍會落到預設六十天，帶出 10 月 3 日等題外日期；直接傳入起訖日的測例沒能重現這個錯誤。現在大六壬與六爻共用國曆日期辨識，可以處理國字、阿拉伯數字和跨年區間。這一課只檢查八個曆日，有觸發條件的日期為 8、9、12、15 日；其中 8 日有日合用神，15 日有用神值日。這張表能核對每個條件，對方是否願意接受試單仍需本人確認。[查看候選日的手機實測畫面](qa-consultation/mobile-liuren-dates.png)
 
-2026 年 11 月 22 日台灣時間 16:25 從正式站依版本網址取回 146 個 JavaScript 與 CSS 檔，SHA-256 全數符合 `86d7505` 的本機檔案。頁尾為 `b8a66a99da`。首頁 HTML 的逐行差異只有主機服務插入的 Cloudflare 流量統計程式。手機自動操作在 Chromium 模擬視窗執行，另在正式站瀏覽器走過完整梅花易數起卦流程。
+2026 年 11 月 22 日台灣時間 21:57，從正式站依版本網址取回 146 個 JavaScript 與 CSS 檔，SHA-256 全數符合功能版本 `3e96716`。正式站頁尾為 `jy-main-d2e509897c`。24 組手機操作與邊界案例在 390 × 844 的 Chromium 視窗通過，沒有未處理的頁面錯誤。另從正式站首頁分別走過梅花易數起卦和上述大六壬日期案例，實際核對四個候選日及追問內容。
 
 | 重跑方式 | 涵蓋內容 |
 | --- | --- |
@@ -62,6 +64,7 @@
 - [台東東海龍門天聖宮第一籤原文與分類](https://donghaimazu.com/post/fortune-sticks/fs01/)
 - [Swiss Ephemeris 天文計算介面與座標說明](https://www.astro.com/swisseph/swephprg.htm)
 - [Nielsen Norman Group 的操作狀態與回饋設計](https://www.nngroup.com/articles/visibility-system-status/)
+- [W3C 對滑動等手勢提供單點替代操作的說明](https://www.w3.org/WAI/WCAG22/Understanding/pointer-gestures.html)
 - [OpenAI 的任務評估與配對比較方法](https://developers.openai.com/api/docs/guides/evaluation-best-practices)
 - [前版的跨引擎修正、出處與模型實答紀錄](reading-evidence-20261121.md)
 
@@ -74,3 +77,9 @@
 - [《六壬大全》卷一的三傳次序](https://zh.wikisource.org/wiki/六壬大全_(四庫全書本)/卷01)
 - [Brihat Parashara Hora Shastra 各分盤譯本](https://vedic-astro.s3.amazonaws.com/books/bhrihat_parasara_hora_shastra.pdf)
 - [Unicode Han Database 的字形筆畫及讀音欄位](https://www.unicode.org/reports/tr38/)
+
+逐題覆核時也對照了以下讀法。例如尾款題的月建、日辰與飛神各有位置，讀者可以分別核對是誰生誰。雷諾曼則要保留牌的位置，兩端的鏡像與緊鄰的兩張牌有不同的讀法。
+
+- [《增刪卜易》飛伏神章](https://zh.wikisource.org/zh-hant/增刪卜易#飛伏神章第二十八)
+- [《子平真詮評註》所載月令取用及其例外](https://www.ncc.com.tw/books/goods.php?id=402)
+- [Labyrinthos 的雷諾曼中心牌、牌序與鏡像示範](https://labyrinthos.co/blogs/learn-tarot-with-labyrinthos-academy/how-to-read-five-card-and-seven-card-lenormand-spreads)

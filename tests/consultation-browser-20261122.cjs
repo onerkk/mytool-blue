@@ -179,6 +179,19 @@ async function go(page,kind,variant){
   }
   await reachable(page,confirmed[kind],24000);
 }
+async function swipePiece(page,piece,dx,dy){
+  await piece.evaluate(el=>el.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const box=await piece.boundingBox(),x=Math.round(box.x+box.width/2),y=Math.round(box.y+box.height/2);
+  assert(await piece.evaluate((el,p)=>el.contains(document.elementFromPoint(p.x,p.y)),{x,y}),'the chart piece must be touchable at its visible center');
+  const input=await page.context().newCDPSession(page);
+  try{
+    await input.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y}]});
+    await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+Math.round(dx/2),y:y+Math.round(dy/2)}]});
+    await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx,y:y+dy}]});
+    await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }finally{await input.detach();}
+}
 async function review(page,kind,row,expectedQuestion=q){
   const region=page.locator('.jy-consult:visible').first();
   await reachable(page,region,6500);
@@ -186,6 +199,32 @@ async function review(page,kind,row,expectedQuestion=q){
   const bounds=await region.evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,viewport:innerWidth,inert:!!el.closest('[inert]'),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};});
   row.bounds=bounds;assert(!bounds.inert&&bounds.left>=-1&&bounds.right<=391&&bounds.viewport===390&&bounds.scrollWidth<=bounds.clientWidth+2,'mobile consult fits view and is interactive');
   const points=region.locator('[data-consult-point]:visible');row.points=await points.count();assert(row.points>0,'chart-specific points');
+  const pager=region.locator('.jc-pager'), reading=region.locator('.jc-reading'), piece=reading.locator('.jc-piece');
+  if(row.points>1){
+    const selected=i=>region.locator('[data-consult-point="'+i+'"][aria-pressed="true"]').waitFor({state:'attached'});
+    const back=pager.getByRole('button',{name:'上一處'}),next=pager.getByRole('button',{name:'下一處'});
+    await reading.press('Home');assert(await back.isDisabled());
+    await next.click();await selected(1);
+    await reading.press('End');assert(await next.isDisabled());await reading.press('Home');
+    await points.first().press('ArrowRight');assert(await points.nth(1).evaluate(el=>document.activeElement===el));
+    await back.click();assert.equal(await pager.locator('span').innerText(),'1 / '+row.points);
+    await swipePiece(page,piece,-36,0);await selected(1);
+    await swipePiece(page,piece,36,0);await selected(0);
+    await swipePiece(page,piece,0,-46);await selected(0);
+    row.touchAndKeyboardNavigation=true;
+  }else{assert.equal(await pager.count(),0);row.singleEvidence=true;}
+  if(!process.env.JY_QA_FULL_MOTION)assert.equal(await piece.locator('*').evaluateAll(nodes=>nodes.some(el=>getComputedStyle(el).animationName!=='none')),false);
+  const graphic=await piece.evaluate(el=>{
+    const selector='.jc-face,.jc-fan img,.jc-hex i,.jc-ring b,.jc-glyph';
+    const first=el.querySelector(selector);
+    return first?{name:getComputedStyle(first).animationName,face:!!first.closest('.jc-face'),hex:!!first.closest('.jc-hex'),dial:!!first.closest('.jc-ring'),fan:!!first.closest('.jc-fan'),theme:el.dataset.kind}:null;
+  });
+  if(graphic && process.env.JY_QA_FULL_MOTION){
+    const expected=graphic.hex?'jc-draw-line':graphic.dial?'jc-find-sector':graphic.face?'jc-turn-card':graphic.fan?'jc-lay-card':['slip','pillar'].includes(graphic.theme)?'jc-unroll':'jc-lay-card';
+    assert.equal(graphic.name,expected);row.nativeMotion=expected;
+  }
+  const cardArt=await piece.locator('img').evaluateAll(nodes=>nodes.map(el=>el.getAttribute('src')));
+  if(cardArt.length){assert(cardArt.every(src=>/^assets\/cards\/bright-20261011\/(tarot|lenormand)\/\d{2}\.webp$/.test(src)),'match the illustration used at the draw');row.sameDeck=true;}
   const point=points.nth(row.points>1?1:0);row.point=(await point.innerText()).replace(/\s+/g,' ').trim();
   await point.focus();assert(await point.evaluate(e=>document.activeElement===e),'point accepts keyboard focus');await point.press('Enter');
   assert.equal(await point.getAttribute('aria-pressed'),'true');row.keyboardPoint=true;
@@ -226,7 +265,7 @@ async function review(page,kind,row,expectedQuestion=q){
 async function run(browser,kind){
   const [tool,variant]=kind.split('-');
   const row={kind,portal:tool==='personality'?'compat → 人格':tool,mode,result:false,status:'failed'};
-  const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,reducedMotion:'reduce',locale:'zh-TW',timezoneId:'Asia/Taipei',serviceWorkers:'block',acceptDownloads:true});
+  const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1,reducedMotion:process.env.JY_QA_FULL_MOTION?'no-preference':'reduce',locale:'zh-TW',timezoneId:'Asia/Taipei',serviceWorkers:'block',acceptDownloads:true});
   const page=await c.newPage(),errors=[];page.setDefaultTimeout(6500);page.on('pageerror',err=>errors.push(err.message));
   page.on('dialog',dialog=>dialog.accept());
   if(variant==='liveclip')await c.grantPermissions(['clipboard-read','clipboard-write'],{origin});

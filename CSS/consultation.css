@@ -10,8 +10,12 @@
 .jy-consult .jc-question{color:#e6e2dc;font-size:1rem;margin:.35rem 0 0;line-height:1.55;overflow-wrap:anywhere}
 .jy-consult .jc-reading{display:grid;grid-template-columns:clamp(76px,20%,130px) minmax(0,1fr);gap:1rem;align-items:center;margin:0 1rem;padding:.95rem 0;border-block:1px solid #ffffff28}
 .jc-interpret{min-width:0}.jy-consult .jc-fact,.jy-consult .jc-guide{color:#f6f2ea;font-size:1rem;line-height:1.65;margin:.35rem 0 0;overflow-wrap:anywhere;white-space:pre-line}.jy-consult .jc-guide{color:#ceced1;font-size:.94rem}
-.jc-piece{display:grid;place-items:center;min-height:100px;perspective:420px;position:relative;color:var(--jc-light)}.jc-piece>*{animation:jc-place .46s cubic-bezier(.18,.72,.28,1) both}
-@keyframes jc-place{from{opacity:.15;transform:translateY(9px) rotateY(-25deg)}to{opacity:1;transform:none}}
+.jc-piece{display:grid;place-items:center;min-height:100px;perspective:420px;position:relative;color:var(--jc-light)}
+.jc-reading[tabindex] .jc-piece{touch-action:pan-y pinch-zoom;user-select:none;cursor:grab}.jc-reading[tabindex] .jc-piece:active{cursor:grabbing}
+.jc-reading{--jc-shift:18px;--jc-turn:-58deg}.jc-reading[data-direction=previous]{--jc-shift:-18px;--jc-turn:58deg}
+.jc-pager{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin:.45rem 1rem 0}
+.jc-pager span{font-variant-numeric:tabular-nums;font-size:.88rem;color:#d8d1c6}.jy-consult .jc-pager button{color:var(--jc-light);background:transparent;border-color:var(--jc-edge)}
+.jy-consult .jc-pager button:disabled{opacity:.4;cursor:default}
 .jc-piece .jc-face{display:block;width:auto;max-width:100%;height:104px;object-fit:contain;border-radius:4px;filter:drop-shadow(1px 4px 6px #0009)}.jc-piece .jc-reversed{rotate:180deg}
 .jc-fan{display:flex;justify-content:center;width:100%;align-items:center}.jc-fan img{display:block;width:49%;max-height:102px;object-fit:contain;filter:drop-shadow(1px 3px 3px #0009);border-radius:3px}.jc-fan img+img{margin-left:-25%}.jc-fan img:first-child{rotate:-9deg}.jc-fan img:last-child{rotate:9deg}
 .jc-hex{width:80%;max-width:72px;display:grid;gap:5px}.jc-hex i{height:6px;background:var(--jc-light);border-radius:1px}.jc-hex i.broken{background:linear-gradient(to right,var(--jc-light) 43%,transparent 43% 57%,var(--jc-light) 57%)}.jc-hex i.selected{--jc-light:#f3ae69;outline:1px solid #f3ae69;outline-offset:2px}
@@ -25,7 +29,19 @@
 .jy-consult [data-consult-copy]{border-color:var(--jc-edge);color:var(--jc-light);margin-bottom:.6rem}.jc-message{display:block;color:#e7e2d6;font-size:.88rem;line-height:1.5}.jy-consult :focus-visible,.jy-facts-wrap :focus-visible{outline:2px solid #ffe6a6;outline-offset:2px}
 .jy-facts-wrap{width:100%;margin-top:.6rem;padding:0 .7rem;border:1px solid #ad977652;border-radius:9px;background:#101620}.jy-facts-wrap[open]{padding-bottom:.7rem}.jy-facts-wrap small{color:#c0c4d0;font-size:.88rem;line-height:1.5}
 @media(max-width:430px){.jy-consult .jc-reading{grid-template-columns:70px minmax(0,1fr);gap:.7rem;margin:0 .8rem}.jy-consult header,.jc-stations,.jc-observe{padding-inline:.8rem}.jc-glyph{font-size:.96rem}.jc-piece .jc-face{height:88px}}
-@media(prefers-reduced-motion:reduce){.jc-piece>*{animation:none}}
+@media(prefers-reduced-motion:no-preference){
+  .jc-face{animation:jc-turn-card .42s ease-out both}
+  .jc-fan img{animation:jc-lay-card .27s ease-out calc(var(--order)*55ms) both}
+  .jc-hex i{transform-origin:center;animation:jc-draw-line .19s ease-out calc(var(--order)*42ms) both}
+  .jc-ring b{animation:jc-find-sector .42s ease-in-out both}
+  .jc-glyph{animation:jc-lay-card .3s ease-out both}
+  .jc-piece[data-kind=slip] .jc-glyph,.jc-piece[data-kind=pillar] .jc-glyph{animation:jc-unroll .38s ease-out both}
+}
+@keyframes jc-turn-card{from{opacity:.25;transform:translateX(var(--jc-shift)) rotateY(var(--jc-turn))}to{opacity:1;transform:none}}
+@keyframes jc-lay-card{from{opacity:.2;transform:translateX(var(--jc-shift)) translateY(5px)}to{opacity:1;transform:none}}
+@keyframes jc-draw-line{from{opacity:.3;transform:scaleX(.12)}to{opacity:1;transform:none}}
+@keyframes jc-find-sector{from{transform:rotate(var(--from-angle))}to{transform:rotate(var(--angle))}}
+@keyframes jc-unroll{from{opacity:.5;clip-path:inset(0 0 85% 0)}to{opacity:1;clip-path:inset(0)}}
 
 .jy-consult .jc-context{margin:.1rem 1rem .6rem;font-size:.92rem;color:var(--jc-light)}
 .jc-context summary{cursor:pointer;width:fit-content}.jc-context dl{margin:.4rem 0;padding:.55rem .8rem;border-inline-start:2px solid var(--jc-edge)}

@@ -5,29 +5,34 @@
   const doc = root.document, byResult = new WeakMap(), views = new Map();
   let serial = 0;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const lenormand = 'rider clover ship house tree clouds snake coffin bouquet scythe whip birds child fox bear stars stork dog tower garden mountain crossroads mice heart ring book letter man woman lily sun moon key fish anchor cross'.split(' ');
   const verdicts = ['和我的經驗相符','和實際情況不同','這一點還不確定'];
   function imagePath(id, isTarot) {
-    if (!Number.isInteger(id)) return '';
-    if (isTarot) return id >= 0 && id < 78 ? 'tarot_img/' + String(id).padStart(2,'0') + '.webp' : '';
-    return lenormand[id - 1] ? 'ln-cards/ln-' + String(id).padStart(2,'0') + '-' + lenormand[id - 1] + '.png' : '';
+    if (!Number.isInteger(id) || (isTarot ? id<0||id>77 : id<1||id>36)) return '';
+    const existing=isTarot?root.getTarotCardImage?.({id}):root.JYLenormand?.imageFor?.(id);
+    return existing || 'assets/cards/bright-20261011/'+(isTarot?'tarot':'lenormand')+'/'+String(id).padStart(2,'0')+'.webp';
   }
-  function art(point, visit) {
+  function art(point, visit, previous) {
     const v = point.visual || {};
     if (v.kind === 'limit') return '<span class="jc-paper-seal">待核</span>';
-    if (v.edition === 'rws_reversals' && imagePath(v.face,true)) return '<img class="jc-face' + (v.reversed?' jc-reversed':'') + '" src="' + imagePath(v.face,true) + '" alt="">';
-    if (v.faces?.length) return '<span class="jc-fan">' + v.faces.map(id => imagePath(id,false)).filter(Boolean).map(src => '<img src="' + src + '" alt="">').join('') + '</span>';
-    if (v.lines?.length === 6) return '<span class="jc-hex">' + v.lines.map((yang,i) => '<i class="' + (yang?'solid':'broken') + (v.position === i+1?' selected':'') + '"></i>').reverse().join('') + '</span>';
+    const face=v.edition==='rws_reversals'?imagePath(v.face,true):'';
+    if (face) return '<img class="jc-face' + (v.reversed?' jc-reversed':'') + '" draggable="false" src="' + esc(face) + '" alt="">';
+    if (v.faces?.length) return '<span class="jc-fan">' + v.faces.map(id => imagePath(id,false)).filter(Boolean).map((src,i) => '<img style="--order:'+i+'" draggable="false" src="' + esc(src) + '" alt="">').join('') + '</span>';
+    if (v.lines?.length === 6) return '<span class="jc-hex">' + v.lines.map((yang,i) => '<i style="--order:'+i+'" class="' + (yang?'solid':'broken') + (v.position === i+1?' selected':'') + '"></i>').reverse().join('') + '</span>';
     const mark = esc(v.mark || point.label.split('・')[0]);
     if (visit.theme === 'sky' || visit.theme === 'plate') {
       const sector = Number.isInteger(v.sector) && v.sector >= 0 && v.sector < 12 ? v.sector : null;
-      return '<span class="jc-dial"><span class="jc-ring">' + (sector === null ? '' : '<b style="--angle:' + sector*30 + 'deg"></b>') + '</span><em>' + mark + '</em></span>';
+      const prior=previous?.visual?.sector;
+      const changesDivision=visit.method==='vedic' && [previous?.visual?.mark,v.mark].some(mark=>/^D\d+$/.test(mark||''));
+      const known=!changesDivision && Number.isInteger(prior) && prior>=0 && prior<12 && sector!==null;
+      const distance=known?((sector-prior+18)%12)-6:0;
+      const marker=sector===null?'':'<b style="--angle:'+sector*30+'deg;--from-angle:'+(sector-distance)*30+'deg"></b>';
+      return '<span class="jc-dial"><span class="jc-ring">' + marker + '</span><em>' + mark + '</em></span>';
     }
     return '<span class="jc-glyph">' + mark + '</span>';
   }
-  function panel(record) {
+  function panel(record, previous) {
     const ix = record.index, step = record.steps[ix], point = step.point;
-    return '<div class="jc-piece" data-kind="' + esc(step.visit.theme) + '" aria-hidden="true">' + art(point,step.visit) + '</div>' +
+    return '<div class="jc-piece" data-kind="' + esc(step.visit.theme) + '" aria-hidden="true">' + art(point,step.visit,previous?.visit===step.visit?previous.point:null) + '</div>' +
       '<div class="jc-interpret"><h3>' + esc(point.label) + '</h3><p class="jc-fact">' + esc(point.detail) + '</p>' +
       '<p class="jc-guide">' + esc(point.reading) + '</p></div>';
   }
@@ -164,9 +169,10 @@
     const question = esc(packet.question), intake = packet.projection.intake || {};
     const context = [[intake.facts,'你補充的實際情況'],[intake.priority,'你最想釐清的事']]
       .filter(([value]) => value).map(([value,label]) => '<dt>'+label+'</dt><dd>'+esc(value)+'</dd>').join('');
-    return '<section class="jy-consult" data-visit="' + r.id + '" data-theme="' + esc(first.theme) + '" aria-label="本次互動解讀">' +
+    return '<section class="jy-consult" data-visit="' + r.id + '" data-theme="' + esc(r.steps[r.index].visit.theme) + '" aria-label="本次互動解讀">' +
       '<header><div><h2>' + esc(paired?'一起讀這幾份盤':first.title) + '</h2>' + (question ? '<p class="jc-question">' + question + '</p>':'') + '</div></header>' + (context ? '<details class="jc-context"><summary>你帶來的情況</summary><dl>'+context+'</dl></details>' : '') +
-      '<div class="jc-reading" aria-live="polite" aria-atomic="true">' + panel(r) + '</div>' +
+      '<div class="jc-reading" aria-live="polite" aria-atomic="true"' + (r.steps.length>1?' tabindex="0" role="group" aria-label="讀這一處，可用左右方向鍵切換" aria-keyshortcuts="ArrowLeft ArrowRight Home End"':'') + '>' + panel(r) + '</div>' +
+      (r.steps.length>1?'<div class="jc-pager" role="group" aria-label="逐處讀這份盤"><button type="button" data-consult-move="-1"'+(r.index===0?' disabled':'')+'>‹ 上一處</button><span>'+ (r.index+1)+' / '+r.steps.length+'</span><button type="button" data-consult-move="1"'+(r.index===r.steps.length-1?' disabled':'')+'>下一處 ›</button></div>':'')+
       '<div class="jc-stations" role="group" aria-label="' + esc(first.action) + '">' +
       r.steps.map((s,i) => '<button type="button" data-consult-point="' + i + '" aria-pressed="' + (i===r.index) + '">' +
         (paired ? '<small>' + esc(s.visit.source) + '</small>':'') + esc(tabLabel(s)) + '</button>').join('') + '</div>' +
@@ -183,15 +189,50 @@
     if (!r.notes.has(r.index)) r.notes.set(r.index,{ note:'',choice:'' });
     return r.notes.get(r.index);
   }
-  function showState(el,r) {
+  function selectPoint(el,r,index) {
+    if(!Number.isInteger(index)||index<0||index>=r.steps.length||index===r.index)return;
+    const previous=r.steps[r.index], reading=el.querySelector('.jc-reading');
+    reading.dataset.direction=index>r.index?'next':'previous';
+    r.index=index;
     const data = draft(r);
     el.querySelectorAll('[data-consult-point]').forEach(b => b.setAttribute('aria-pressed',String(Number(b.dataset.consultPoint) === r.index)));
     el.querySelectorAll('[data-consult-choice]').forEach(b => b.setAttribute('aria-pressed',String(verdicts[Number(b.dataset.consultChoice)] === data.choice)));
     el.querySelector('[data-consult-note]').value = data.note;
     el.querySelector('.jc-message').textContent = '';
     el.dataset.theme = r.steps[r.index].visit.theme;
-    el.querySelector('.jc-reading').innerHTML = panel(r);
+    reading.innerHTML=panel(r,previous);
+    const pager=el.querySelector('.jc-pager');
+    if(pager){
+      pager.querySelector('span').textContent=(index+1)+' / '+r.steps.length;
+      pager.querySelector('[data-consult-move="-1"]').disabled=index===0;
+      pager.querySelector('[data-consult-move="1"]').disabled=index===r.steps.length-1;
+    }
   }
+  doc.addEventListener('keydown',e=>{
+    if(!e.target.matches?.('.jc-reading,[data-consult-point]')||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;
+    const c=current(e.target);
+    if(!c||c.r.steps.length<2)return;
+    const destinations={ArrowLeft:c.r.index-1,ArrowRight:c.r.index+1,Home:0,End:c.r.steps.length-1};
+    if(!Object.hasOwn(destinations,e.key))return;
+    e.preventDefault();selectPoint(c.el,c.r,destinations[e.key]);
+    if(e.target.hasAttribute('data-consult-point'))c.el.querySelector('[data-consult-point="'+c.r.index+'"]').focus();
+  });
+  let swipe=null;
+  doc.addEventListener('pointerdown',e=>{
+    if(!e.isPrimary){swipe=null;return;}
+    const piece=e.target.closest?.('.jc-piece'), c=current(piece);
+    if(!c||c.r.steps.length<2||e.button!==0)return;
+    swipe={id:e.pointerId,x:e.clientX,y:e.clientY,piece,index:c.r.index};
+    piece.setPointerCapture(e.pointerId);
+  });
+  doc.addEventListener('pointerup',e=>{
+    if(swipe?.id!==e.pointerId)return;
+    const start=swipe;swipe=null;
+    const c=current(start.piece),dx=e.clientX-start.x,dy=e.clientY-start.y;
+    if(!c||!start.piece.isConnected||c.r.index!==start.index||Math.abs(dx)<24||Math.abs(dx)<Math.abs(dy)*1.5)return;
+    selectPoint(c.el,c.r,start.index+(dx<0?1:-1));
+  });
+  for(const event of ['pointercancel','lostpointercapture'])doc.addEventListener(event,e=>{if(swipe?.id===e.pointerId)swipe=null;});
   function followUp(r) {
     const {visit,point} = r.steps[r.index], d = draft(r);
     const observation = { source:visit.source || visit.title, location:point.label, evidence:point.detail, experience:d.choice || '', note:d.note.trim() };
@@ -234,7 +275,7 @@
     if (c) draft(c.r).note=e.target.value;
   });
   doc.addEventListener('click',async e => {
-    const b=e.target.closest?.('[data-consult-point],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair],[data-consult-source-copy]'), c=current(b);
+    const b=e.target.closest?.('[data-consult-point],[data-consult-move],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair],[data-consult-source-copy]'), c=current(b);
     if (!b || !c) return;
     const {el,r}=c;
     if (b.hasAttribute('data-consult-source-copy')) {
@@ -253,7 +294,8 @@
       el.querySelector('.jc-repair').hidden=!r.problems.length;
       return;
     }
-    if (b.hasAttribute('data-consult-point')) { r.index=Number(b.dataset.consultPoint); showState(el,r); }
+    if (b.hasAttribute('data-consult-point')) selectPoint(el,r,Number(b.dataset.consultPoint));
+    else if(b.hasAttribute('data-consult-move'))selectPoint(el,r,r.index+Number(b.dataset.consultMove));
     else if (b.hasAttribute('data-consult-choice')) {
       const d=draft(r),v=verdicts[Number(b.dataset.consultChoice)];
       d.choice=d.choice===v?'':v;

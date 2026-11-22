@@ -3696,5 +3696,5 @@ function _lnReviewAnswerGranularity(question, answer) {
   return {ok:issues.length===0,issues:issues,capability:x.capability};
 }
 
-window.JYLenormand={version:'23.2.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS};
+window.JYLenormand={version:'23.2.0',analyze:_lnAnalyzeQuestion,capability:function(q){return _lnAnalyzeQuestion(q).capability;},reviewAnswer:_lnReviewAnswerGranularity,recommend:_lnDetectSpread,instantiate:_lnBuildSpreadDef,grandNineGeometry:_lnGrandNineGeometry,houseRelations:_lnHouseRelations,spreads:SPREADS,imageFor:id=>IMG_MAP[id]||''};
 })();
