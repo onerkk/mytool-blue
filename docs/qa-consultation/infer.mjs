@@ -1,0 +1,28 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+const [runtime, weights, ...inputs] = process.argv.slice(2);
+if (!inputs.length) throw new Error('node infer.mjs <node-llama-cpp installation parent> <GGUF> <prompt files>');
+const resolve = createRequire(path.resolve(runtime, 'package.json'));
+const {getLlama,LlamaChatSession} = await import(pathToFileURL(resolve.resolve('node-llama-cpp')));
+const llama = await getLlama({gpu:false,build:'never',maxThreads:3});
+const model = await llama.loadModel({modelPath:path.resolve(weights), gpuLayers:0,useMmap:true});
+for (const input of inputs) {
+  const prefix = input.replace(/\.prompt\.txt$/, '');
+  const prompt = fs.readFileSync(input,'utf8')+'\n/no_think';
+  const promptTokens = model.tokenize(prompt).length, maxTokens=1600;
+  const contextSize=Math.ceil((promptTokens+maxTokens+192)/128)*128;
+  const context=await model.createContext({contextSize,batchSize:512,threads:3,flashAttention:true});
+  const sequence=context.getSequence(), session=new LlamaChatSession({contextSequence:sequence});
+  const start=Date.now(), partial=fs.openSync(prefix+'.partial','w');
+  console.log('start',input,promptTokens,new Date(start).toISOString());
+  const res=await session.promptWithMeta(prompt,{temperature:0.7,topP:0.8,topK:20,minP:0,seed:42,maxTokens,onTextChunk:s=>fs.writeSync(partial,s)});
+  fs.closeSync(partial);
+  fs.writeFileSync(prefix+'.reply.txt',res.responseText+'\n');
+  const meta={method:path.basename(prefix),model:model.fileInfo.metadata?.general?.name??path.basename(weights),gguf:path.basename(weights),contextSize,promptTokens,maxTokens,temperature:0.7,topP:0.8,topK:20,minP:0,seed:42,stopReason:res.stopReason,tokenMeter:sequence.tokenMeter.getState(),elapsedSeconds:Math.round((Date.now()-start)/1000)};
+  fs.writeFileSync(prefix+'.meta.json',JSON.stringify(meta,null,2)+'\n');
+  console.log('done',input,JSON.stringify(meta));
+  await context.dispose();
+}
+await model.dispose();await llama.dispose();

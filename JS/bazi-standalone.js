@@ -334,7 +334,7 @@
     var keys = ['year','month','day','hour'];
     var roles = {year:'年柱', month:'月柱', day:'日柱', hour:'時柱'};
 
-    var h = '<div class="bzx-section"><div class="bzx-section-title">✦ 四柱八字</div><div class="bzx-pillars">';
+    var h = (window.JYConsultationView?.render(_lastPrompt,b)||'')+'<div class="bzx-section"><div class="bzx-section-title">✦ 四柱八字</div><div class="bzx-pillars">';
     for (var i=0;i<keys.length;i++) {
       var k = keys[i], pil = P[k] || {}, gd = G[k] || {};
       if(unknown && k==='hour'){h += '<div class="bzx-pil"><div class="role">時柱</div><div class="gz">未<br>定</div></div>';continue;}

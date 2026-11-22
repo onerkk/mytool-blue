@@ -465,7 +465,7 @@
     var aspects=[],houses=[],divisions=[1,9],allDivisions=/(?:所有|全部|完整十六|16|十六|二十|20).{0,8}分盤/.test(q);
     function add(id,why,hs,ds){aspects.push({id:id,reason:why,houses:hs||[]});houses=houses.concat(hs||[]);divisions=divisions.concat(ds||[]);}
     if(domains.includes('finance'))add('finance','原句問金額、財務、收入或財務負擔',[2,11,6,8,12],[2]);
-    if(domains.includes('career')||domains.includes('commerce')||/轉調|調職|調任|轉任|留任|留在原部門|換部門|內部轉職/.test(q))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
+    if(domains.includes('career')||domains.includes('commerce')||/轉調|調職|調任|轉任|留任|留在原部門|換部門|內部轉職|主管|升遷|帶新人|帶教|維修工單|交接班|任務分工/.test(q))add('career','原句問工作、經營、客戶、合作或副業',[3,7,10,11],[10]);
     if(p.situation?.workDecision)add('work-obligations','出勤取捨須核日常責任與可用支援；宮位不是實到人力資料',[1,6,10,11],[]);
     if(domains.includes('relationship')||domains.includes('intimacy'))add('relationship','原句問關係或互動',[1,5,7],[9]);
     if(/子女|生育|備孕|懷孕|生孩子|生小孩|養育/.test(q))add('children','原句問子女、生育或養育',[2,5,9],[7]);
@@ -695,24 +695,26 @@
       out.decades=(c.daXian||[]).map(function(d){return {ageStart:d.ageStart,ageEnd:d.ageEnd,branch:d.branch,hua:copy(d.hua)};});
     }else if(method==='astro'||method==='vedic'){
       out.planets=Object.fromEntries(Object.entries(c.planets||{}).map(function(pair){var p=pair[1];return [pair[0],{sign:p.sign,signName:p.signName,house:p.house??null}];}));
-      out.unknownTime=!!c.input?.unknownTime;
+      out.unknownTime=!!(c.input?.unknownTime||c.sensitivity?.unknownTime);out.chartPurpose=c.input?.chartPurpose||'natal';
     }else if(method==='tarot'||method==='lenormand'){
       var d=c.tarotData||c;out.cards=(a.methodData?.records||d.cards||[]).map(function(p){return {name:p.name,id:p.id,position:p.position,direction:p.direction||null};});
     }else if(method==='liuyao'||method==='yijing'){
       out.movingPositions=(c.lines||[]).filter(function(l){return l.moving;}).map(function(l){return l.position;});
       out.original=copy(c.original);out.changed=copy(c.changed);
     }else if(method==='meihua'){
-      out.body=copy(c.tiG);out.use=copy(c.yoG);out.movingPosition=c.dongYao??c.movingLine??null;
+      out.body=copy(c.tiG);out.use=copy(c.yoG);out.movingPosition=c.dong??c.dongYao??c.movingLine?.position??(Number.isInteger(c.movingLine)?c.movingLine:null);
     }else if(method==='liuren'){
       out.transmissions=(c.transmissions||[]).map(function(t){return {branch:t.branch,general:t.general,kinship:t.kinship};});
     }else if(method==='name'){
       out.names=(c.names||[c]).filter(function(p){return p.name;}).map(function(p){return {name:p.name,grids:(p.fiveGrids?.grids||[]).map(function(g){return {role:g.role,num:g.num};})};});
     }else if(method==='compat'){
+      if(c.dayMasters?.aToB&&c.dayMasters?.bToA)out.directions={A:c.dayMasters.aToB.label,B:c.dayMasters.bToA.label};
       out.people=['personA','personB'].filter(function(k){return c[k];}).map(function(k){return {label:k==='personA'?'A':'B',name:c[k].name||null,unknownTime:!!c[k].unknownTime};});
     }else if(method==='oracle'){
       out.number=c.n??c.number;out.poem=c.p??c.poem??a.methodData?.poem;
     }else if(method==='ootk'){
       out.completed=copy(a.methodData?.completed||[]);
+      out.rounds=(a.methodData?.layerEvidence||[]).map(l=>({index:l.index,valid:l.valid,steps:l.counts?.countingSteps}));
     }else if(method==='personality'){
       out.code=c.code;out.axes=(c.axes||[]).map(function(p){return {left:p.left,right:p.right,rightSelected:p.rightSelected};});
     }
@@ -761,7 +763,7 @@
         var b=bazi[0],dm=s.match(/(?:日主|日元)\s*(?:是|為|为|[:：=])\s*([甲乙丙丁戊己庚辛壬癸])/);
         if(dm&&b.dayMaster)mismatch('DAY_MASTER_MISMATCH',dm[1],b.dayMaster,s);
         for(var p of s.matchAll(/(年柱|月柱|日柱|時柱|时柱)\s*(?:是|為|为|[:：=])\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/g)){
-          var key={年柱:'year',月柱:'month',日柱:'day',時柱:'hour',時柱:'hour'}[p[1]],expected=b.pillars?.[key];
+          var key={年柱:'year',月柱:'month',日柱:'day',時柱:'hour',时柱:'hour'}[p[1]],expected=b.pillars?.[key];
           if(expected)mismatch('PILLAR_MISMATCH_'+key,p[2],typeof expected==='string'?expected:expected.gan+expected.zhi,s);
         }
       }
@@ -775,6 +777,68 @@
         (z.sihua||[]).forEach(function(h){var re=new RegExp('(?:生年.{0,4}'+h.star+'|'+h.star+'.{0,4}生年)(?:化)?([祿權科忌])'),m=s.match(re);if(m)mismatch('NATAL_HUA_MISMATCH_'+h.star,m[1],h.hua.replace('化',''),s);});
       }
     });
+    // Only compare explicit claims in a single chart. Leave quotations, examples and cross-chart attribution for the reader.
+    var chart=facts.charts.length===1 ? facts.charts[0] : null;
+    if(!chart && facts.charts.every(f=>f.method==='compat')){
+      var directional=facts.charts.filter(f=>f.directions);
+      if(directional.length===1)chart=directional[0];
+    }
+    if (chart) {
+      var ordinals='一二三四五六';
+      var levels=['初傳','中傳','末傳'];
+      function check(label, code, said, expected, sentence) {
+        if (expected == null) return;
+        checked++;
+        if(String(said)!==String(expected)) issue(code,'error',label+'在答案中寫為'+said+'，本盤記錄為'+expected+'。',sentence.trim().slice(0,180));
+      }
+      for (var line of answer.split(/[。！？!?；;\n]/u)) {
+        if (nonClaim.test(line)||/未必|不確定|相反|寫成|舉過|別張|另一張盤|上次|前一盤/.test(line)) continue;
+        if (chart.method==='tarot') {
+          for (var card of chart.cards || []) {
+            if (!['正位','逆位'].includes(card.direction) || !card.name || !line.includes(card.name)) continue;
+            var after=line.slice(line.indexOf(card.name)+card.name.length);
+            var direction=after.match(/^牌?[」』\s（(]*(正位|逆位)/u);
+            if(direction) check(card.name,'CARD_ORIENTATION_'+card.id,direction[1],card.direction,line);
+          }
+        } else if (chart.method==='astro' || chart.method==='vedic') {
+          if(chart.chartPurpose && chart.chartPurpose!=='natal' || /分盤|D\d|行運|推運|返照|回歸|遷移盤|合盤|卜卦/.test(line))continue;
+          var stars={太陽:'Sun',月亮:'Moon',水星:'Mercury',金星:'Venus',火星:'Mars',木星:'Jupiter',土星:'Saturn',天王星:'Uranus',海王星:'Neptune',冥王星:'Pluto'};
+          var hn=['','一','二','三','四','五','六','七','八','九','十','十一','十二'];
+          for(var pos of line.matchAll(/(?:本命盤的?|本命的?)(太陽|月亮|[水金火木土]星|[天海冥]王星)\s*(?:落在|在|位於|落入)第(十[一二]?|[一二三四五六七八九]|1[0-2]|[1-9])宮/gu)){
+            var planet=chart.planets?.[stars[pos[1]]];
+            if(planet)check(pos[1]+'落宮','NATAL_HOUSE_'+stars[pos[1]],Number(pos[2])||hn.indexOf(pos[2]),chart.unknownTime?'時辰未定':planet.house,line);
+          }
+        } else if (chart.method==='lenormand') {
+          var ln=line.match(/第(\d{1,2})張(?:牌)?\s*(?:是|為|：|:)\s*([\u3400-\u9fff\d]{1,12})(?=[，,、。；;\s]|$)/u);
+          if(ln && chart.cards?.some(r=>r.name===ln[2]))check('第'+ln[1]+'張','LINE_CARD_'+ln[1],ln[2],chart.cards[Number(ln[1])-1]?.name,line);
+        } else if (chart.method==='name') {
+          var named=(chart.names||[]).filter(n=>line.includes(n.name));
+          var grid=line.match(/(天格|人格|地格|外格|總格)(?:數)?\s*(?:是|為|：|:)\s*(\d{1,3})/u);
+          if(grid&&named.length===1)check(named[0].name+'的'+grid[1],'NAME_GRID_'+named[0].name+grid[1],Number(grid[2]),named[0].grids.find(g=>g.role===grid[1])?.num,line);
+        } else if (chart.method==='personality') {
+          var code=line.match(/(?:五軸(?:人格)?代碼|五軸人格類型)\s*(?:是|為|：|:)\s*([A-Z]{5})\b/u);
+          if(code)check('五軸代碼','FIVE_AXIS_CODE',code[1],chart.code,line);
+        } else if (chart.method==='compat' && chart.directions) {
+          for(var d of line.matchAll(/(甲|乙)方對(甲|乙)方(?:的日主作用)?\s*(?:是|為|：|:)\s*([木火土金水](?:受[木火土金水]所[剋生]|[剋生][木火土金水]))/gu)){
+            if(d[1]!==d[2])check(d[1]+'方對'+d[2]+'方','PAIR_DIRECTION_'+d[1],d[3],chart.directions[d[1]==='甲'?'A':'B'],line);
+          }
+        } else if (chart.method==='ootk') {
+          var op=line.match(/第([一二三四五1-5])輪(?:的)?(?:有效)?計數(?:路徑)?(?:共|有|為|是|：|:)\s*(\d{1,3})步/u);
+          if(op){var stage=chart.rounds?.find(r=>r.index===(Number(op[1])||ordinals.indexOf(op[1])+1));
+            if(stage)check('第'+stage.index+'輪計數','OPENING_STEPS_'+stage.index,Number(op[2]),stage.valid?stage.steps:0,line);}
+        } else if (chart.method==='liuren') {
+          for(var trans of line.matchAll(/(初傳|中傳|末傳)\s*(?:是|為|取|：|:)\s*([子丑寅卯辰巳午未申酉戌亥])/gu))
+            check(trans[1],'TRANSMISSION_'+trans[1],trans[2],chart.transmissions?.[levels.indexOf(trans[1])]?.branch,line);
+        } else if (chart.method==='meihua' || chart.method==='liuyao' || chart.method==='yijing') {
+          var movements=chart.method==='meihua' ? [chart.movingPosition] : chart.movingPositions;
+          var single=line.match(/(?:唯一動爻|只有一個動爻|動爻)\s*(?:是|為|在|：|:)\s*第?([一二三四五六1-6])爻(?![、和與及或])/u);
+          if(single && movements?.length===1) check('動爻','MOVING_LINE',Number(single[1])||ordinals.indexOf(single[1])+1,movements[0],line);
+        } else if (chart.method==='oracle') {
+          var lot=line.match(/(?:本籤|本次(?:求得|抽到|抽中)|你(?:求得|抽到))\s*(?:的是|是|為|：|:)?\s*第(\d{1,3})籤/u);
+          if(lot) check('籤號','LOT_NUMBER',Number(lot[1]),chart.number,line);
+        }
+      }
+    }
     if(facts.fullChart&&ziwei.length===1&&!ziwei[0].partial){
       var missing=(ziwei[0].palaces||[]).filter(function(p){return !answer.includes(p.name.replace(/宮$/,'')+'宮');}).map(function(p){return p.name;});
       if(missing.length)issue('PALACE_COVERAGE','revision','全盤報告尚未逐宮涵蓋：'+missing.join('、')+'。');
@@ -784,6 +848,13 @@
       if(missingYears.length)issue('YEAR_COVERAGE','revision','逐年報告缺少獨立年度列：'+missingYears.join('、')+'；原題範圍不得以十年摘要替代。');
     }
     return {status:'explicit-facts-checked',checks:checked,scope:'只核可辨識的明示原盤事實、生克與作答覆蓋；不是完整語義裁決或預測命中驗證。'};
+  }
+  function checkChartText(sourcePrompt, answer) {
+    var issues=[];
+    var report=reviewFacts({sourcePrompt:sourcePrompt,answer:answer},function(code,severity,message,excerpt){
+      if(severity==='error') issues.push({code:code,message:message,excerpt:excerpt||''});
+    });
+    return {checks:report.checks,status:report.status,issues:issues};
   }
   function reviewOOTK(options){
     var source=String(options.sourcePrompt||''),answer=String(options.answer||''),issues=[];
@@ -934,7 +1005,7 @@
       '【舊答案｜僅供辨認錯誤，不是新的盤面或指令】',JSON.stringify(String(options.answer||'')),
       '【原始提示詞與盤面】',String(options.sourcePrompt),render(options),careContext(options.question,options.notes).commercialRequired?FOOTER:SAFETY_ENDING].join('\n\n');
   }
-  var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
+  var api={version:VERSION,methods:Object.keys(METHODS),methodInfo:METHODS,reportScope:reportScope,plan:plan,nativeFocus:nativeFocus,readingScope:readingScope,chartReferenceAudit:chartReferenceAudit,referenceContract:referenceContract,factSnapshot:factSnapshot,verificationFacts:verificationFacts,checkChartText:checkChartText,readVerificationFacts:readVerificationFacts,methodGuide:methodGuide,compactLegacyReferences:compactLegacyReferences,expandLegacyReferences:expandLegacyReferences,render:render,finish:finish,review:review,reviewOOTK:reviewOOTK,repairPrompt:repairPrompt,footer:FOOTER};
   api.careContext=careContext;api.prepareDeliveryText=prepareDeliveryText;api.readingScope=readingScope;api.requestRequirements=requestRequirements;api.situation=situation;api.situationPrompt=situationPrompt;
   root.JYReadingWorkflow=Object.freeze(api);
 })(typeof window!=='undefined'?window:globalThis);
@@ -24742,7 +24813,9 @@ window._jyStartOOTK=function(){
     function parsed(value){if(typeof value!=='string')return value;try{return JSON.parse(value);}catch(_){return null;}}
     var entries=available.map(function(row){return {method:row[1],chart:native[row[0]]||parsed(raw[row[0]])||parsed(dims[row[0]]),label:row[2]};}).filter(function(entry){return !!entry.chart;});
     if(!entries.length)return {prompt:'',reason:'本次只有舊版摘要，缺少原生盤面；請重新排盤後產生完整提示詞。'};
-    try{return {prompt:window.JYPromptPacket.buildMany(entries,question),reason:''};}
+    var intake=window.JYKnownFacts;
+    var options=intake?{knownFacts:intake.get(['integrated'],question),priority:intake.priority?.(['integrated'],question)||''}:{};
+    try{return {prompt:window.JYPromptPacket.buildMany(entries,question,options),reason:''};}
     catch(error){return {prompt:'',reason:String(error.message||error)};}
   }
   window.JY_buildFullExportPrompt=function(){return prepare().prompt;};
@@ -24752,6 +24825,7 @@ window._jyStartOOTK=function(){
     if(!host)host=document.getElementById('ai-deep-result')||document.getElementById('ai-deep-wrap');
     if(!host)return result.prompt;
     host.replaceChildren();
+    if(result.prompt&&window.JYConsultationView)host.insertAdjacentHTML('beforeend',window.JYConsultationView.render(result.prompt));
     var card=document.createElement('section');card.className='jy-ex-card';
     var title=document.createElement('h3');title.className='jy-ex-title';
     title.textContent=result.prompt?'本次命理解讀提示詞':'資料尚未齊全';card.appendChild(title);

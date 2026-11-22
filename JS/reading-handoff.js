@@ -65,9 +65,9 @@
     var P = root.JYPromptPacket;
     if (!P || wrapped === P.copy) return !!P;
     var original = P.copy;
-    var patched = function (text) {
+    var patched = function (text, options) {
       return original.apply(this, arguments).then(function (result) {
-        try { doc.dispatchEvent(new CustomEvent('jy:prompt-copied', { detail: result })); } catch (e) {}
+        try { if (!options?.inlineFeedback) doc.dispatchEvent(new CustomEvent('jy:prompt-copied', { detail: result })); } catch (e) {}
         return result;
       });
     };

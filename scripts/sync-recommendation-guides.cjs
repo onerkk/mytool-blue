@@ -128,6 +128,11 @@ persist('bazi-child-analysis.js',fs.readFileSync(path.join(root,'JS/bazi-child-a
 // One canonical compiler for normal, standalone and mixed-cache packet exports.
 // The compiler is embedded in the two delivery hosts so loading either host
 // cannot fall back to the old unbounded JSON or numbered-message formatter.
+const consultationFile='JS/prompt-single-paste.js';
+const consultationOld=fs.readFileSync(path.join(root,consultationFile),'utf8');
+const consultationCode=fs.readFileSync(path.join(root,'JS/consultation-evidence.js'),'utf8').trimEnd();
+const consultationBlock='// BEGIN GENERATED CONSULTATION EVIDENCE\n'+consultationCode+'\n// END GENERATED CONSULTATION EVIDENCE';
+persist(consultationFile,consultationOld.replace(/\/\/ BEGIN GENERATED CONSULTATION EVIDENCE[\s\S]*?\/\/ END GENERATED CONSULTATION EVIDENCE/,()=>consultationBlock));
 const singleSource=fs.readFileSync(path.join(root,'JS/prompt-single-paste.js'),'utf8').replace(/^  if\(typeof module[^\n]+\n/m,'');
 const singleRuntime='// BEGIN GENERATED SINGLE PASTE RUNTIME\n'+singleSource.trimEnd()+'\n// END GENERATED SINGLE PASTE RUNTIME\n';
 const singleRe=/\/\/ BEGIN GENERATED SINGLE PASTE RUNTIME\n[\s\S]*?\/\/ END GENERATED SINGLE PASTE RUNTIME\n/;

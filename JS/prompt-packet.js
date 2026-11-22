@@ -1,10 +1,238 @@
 // BEGIN GENERATED SINGLE PASTE RUNTIME
+// BEGIN GENERATED CONSULTATION EVIDENCE
+/* Shared by the reading table and the single-message export. Always work from
+ * the committed chart. A stop or missing input is also a useful thing to show. */
+(function (root) {
+  'use strict';
+  const list = value => Array.isArray(value) ? value : [];
+  const join = values => values.filter(value => typeof value === 'string' && value.trim()).join('；');
+  const distinct = values => [...new Set(values.filter(Boolean))];
+  const stations = {
+    tarot: ['攤開你的牌陣', '翻看牌位', 'card'],
+    ootk: ['循著代表牌開鑰', '查看操作', 'card'],
+    lenormand: ['沿著牌列讀一句話', '查看牌路', 'card'],
+    oracle: ['展讀你求得的籤', '展開籤句', 'slip'],
+    bazi: ['讀你的四柱', '查看落點', 'pillar'],
+    ziwei: ['循宮位看這件事', '入宮看星', 'sky'],
+    astro: ['在星盤上定位問題', '查看星位', 'sky'],
+    vedic: ['從本命看進分盤', '查看落點', 'sky'],
+    liuyao: ['在六爻裡找用神', '查看爻位', 'gua'],
+    yijing: ['展開這一卦的主辭', '展讀卦辭', 'gua'],
+    meihua: ['循著體用看變化', '查看卦象', 'gua'],
+    liuren: ['沿三傳看事情推進', '查看課傳', 'plate'],
+    name: ['攤開名字逐字比', '查看姓名', 'ink'],
+    compat: ['把兩個人的盤對著看', '查看作用', 'pair'],
+    personality: ['看你的五軸怎麼算', '查看一軸', 'axis']
+  };
+  const make = (label, detail, reading, visual = {}) => ({ label, detail, reading, visual });
+  const gap = (label, detail, reading) => make(label, detail, reading, { kind: 'limit' });
+  const hex = (lines, position) => ({ lines: list(lines).map(Boolean), position });
+  function fromItem(item, reading, visual) {
+    if (!item?.summary) return null;
+    return make(item.label, item.summary, reading, visual);
+  }
+
+  function cards(c, a) {
+    const d = a.methodData, raw = c.tarotData || c, slots = list(raw.methodPlan?.slots);
+    const all = list(d.records);
+    const role = r => String(slots[r.index - 1]?.authority || slots[r.index - 1]?.role || '');
+    const desired = [all.find(r => /state|core/.test(role(r))), all.find(r => /obstacle|interaction_force|cause/.test(role(r))),
+      all.find(r => /outcome/.test(role(r))), all.find(r => /advice/.test(role(r)))];
+    // A sequence or paired reading has no free-standing invented outcome slot.
+    return distinct([...desired, ...all]).map(r => {
+      const position = typeof r.position === 'string' ? r.position : '第' + r.index + '位';
+      const direction = r.direction || '方向未記錄';
+      const reading = /希望|恐懼|期待/.test(position) ? '這個位置讓你對照期待與擔心。判斷走向時，要另外看這副牌真正的結果位置。' :
+        /結果|收束|最終/.test(position) ? '走到這個牌位，再看前面哪些條件會把事情帶到這裡。' :
+        /建議|行動/.test(position) ? '想一件你自己能採取的行動，再回頭看它能處理哪個阻力。' :
+        '先看這張在牌陣裡負責哪一件事，再跟相連的牌一起讀。';
+      return make('第' + r.index + '位・' + position, r.name + '（' + direction + '）' + (r.meaning ? '。' + r.meaning : '。這次沒有登記可用的牌義。'), reading,
+        { face: r.id, reversed: direction === '逆位', mark: r.name, edition: d.sourceProfile });
+    });
+  }
+
+  function opening(c, a) {
+    const d = a.methodData;
+    return list(d.layerEvidence).map(layer => {
+      const title = '第' + layer.index + '輪・' + layer.stage, op = list(d.operations).find(o => o.operation === layer.operation)?.data;
+      if (!layer.valid || layer.readingStatus !== 'eligible' || !layer.counts.countingSteps || !layer.counts.activeCards || !d.significator)
+        return gap(title, !layer.valid ? '操作停止或未成立。' : layer.readingStatus === 'context-mainline-pending' ? '本輪的主線仍待驗證。' : '代表牌或計數路徑缺少可核對的紀錄。', '這裡只能說明操作進度，不能據此替你的問題下結論。');
+      const path = list(op.ringCountingPath).length ? op.ringCountingPath : list(op.countingPath);
+      const names = path.slice(0, 3).map(p => list(op.activeCards).find(r => r.id === p.cardId)?.name).filter(Boolean);
+      const territory = layer.domain?.label || layer.domain?.meaning || layer.domain?.value;
+      const detail = join([typeof territory === 'string' ? territory : '', names.length ? '計數起段：' + names.join(' → ') : '', '記錄了' + path.length + '步']);
+      return make(title, detail, '這一輪只承接自己的操作。回到實際計數與配對，看它為上一輪增加了什麼。', { mark: d.significator.name || '代表牌' });
+    });
+  }
+
+  function lenormand(c, a) {
+    const d = a.methodData, rows = list(d.records);
+    const data = c.lenormandData || c, spread = data.spreadType || data.spread;
+    const paths = list(d.paths);
+    const route = spread === 'nine' ? [...paths.filter(p => p.includes(5) && (p[0] === 4 || p[0] === 2)), ...paths] : paths;
+    return distinct(route).slice(0, 6).map(p => {
+      const set = p.map(i => rows[i - 1]);
+      const words = set.slice(0, 3).map(r => {
+        const m = Array.isArray(r.meaning) ? r.meaning.join('、') : r.meaning;
+        return typeof m === 'string' && m ? r.name + '：' + m : '';
+      });
+      return make('第' + p.join('、') + '位', set.map(r => r.name).join(' → '),
+        join(words) || '沿這一條線把前後牌連成一句。保留這組牌的順序，另一分支要分開看。',
+        { faces: set.slice(0, 3).map(r => r.id), mark: set[0].name });
+    });
+  }
+
+  function oracle(c, a, q) {
+    const d = a.methodData, rows = list(d.lines);
+    const categories = [
+      [/升遷|主管|考試|錄取|功名/, '功名'], [/生意|開店|攤位|營業/, '經商'], [/收入|款項|財運|錢/, '求財'],
+      [/結婚|婚姻/, '婚姻'], [/搬家|移居/, '移居'], [/找人|尋人/, '尋人'], [/家人|家事/, '家事']
+    ];
+    const name = categories.find(([rx]) => rx.test(q))?.[1];
+    const cat = list(d.categories).find(p => name && p.name === name && p.present);
+    const tags = { supportive: '有利', caution: '留意阻力', conditional: '有成立條件', delay: '待時', late: '偏晚', early: '偏早', negative: '不利', neutral: '平', waiting: '需等待' };
+    const qualified = cat && [...list(cat.textFeatureTags).map(t => tags[t]).filter(Boolean), ...list(cat.traditionalTimingTokens)].join('、');
+    const clues = rows.map(r => make('第' + d.number + '籤・第' + r.index + '句', r.text,
+      list(r.conditionWords).length ? '這句的轉折在「' + r.conditionWords.map(w => w.word).join('、') + '」。想想現實中對應的條件有沒有到。' : '把這一句放回前後句，看看它在描寫處境，還是在說下一步。', { mark: r.text }));
+    if (d.reading?.summary) clues.splice(1, 0, make('本籤解意', d.reading.summary, d.reading.premises, { mark: d.ganzhi }));
+    if (qualified) clues.splice(1, 0, make('本廟本・' + name + '附記', qualified, '這是本版本附記的要點。所問事項有自己的條件，可以跟整首籤的方向合看。', { mark: name }));
+    return clues;
+  }
+
+  function gua(c, a, kind) {
+    if (kind === 'yijing') return list(a.reading?.selections).map(r => make(r.role + '・' + r.hexagram + '卦' + r.label, r.text, a.reading.rule,
+      hex((r.side === 'changed' ? c.changed : c.original)?.lines, r.position)));
+    if (kind === 'meihua') return list(a.items).map((r, i) => fromItem(r, i === 0 ? '體卦先固定下來，你才看得出外在條件是在幫忙，還是要你多花力氣。' : i === 3 ? '回到原來的體卦，看變化之後，前面的作用有沒有改變。' : '互卦說的是中間過程，這一步要連回本卦和變卦。', hex(i === 3 ? a.changedLines : i === 0 ? a.originalLines : [...list(a.nuclear?.lower?.li), ...list(a.nuclear?.upper?.li)], i === 0 || i === 3 ? c.dong : null)));
+    if (kind === 'liuren') return list(a.items).filter(i => /^transmission-/.test(i.id)).map((i, n) => {
+      const t = i.evidence[0];
+      return make(i.label, join([i.summary, t.empty ? '本傳旬空' : '', t.assessment?.monthlyBroken ? '月破' : '']),
+        ['先看發端有沒有著力處，這會影響後面的承接。', '把這一步和初傳連起來看，事情要經過什麼轉折。', '這一步讀的是三傳收束。具體時日還要另有應期條件。'][n], { mark: t.branch, sector: t.branch && '子丑寅卯辰巳午未申酉戌亥'.indexOf(t.branch) });
+    });
+    const targets = list(a.targets), primary = targets.filter(t => t.priority === 'primary');
+    const rows = (primary.length ? primary : targets).flatMap(t => {
+      if (!list(t.candidates).length) return [gap(t.role, '本次沒有找到可確認的' + t.relative + '。', '缺少落點時，只能先核對取用條件。')];
+      return t.candidates.map(r => {
+        const state = r.assessment || {}, line = list(c.lines).find(l => l.position === r.position);
+        const label = t.role + '・第' + r.position + '爻';
+        const fact = (r.hidden ? '伏藏' : '明現') + t.relative + r.branch + (r.element || '');
+        // A hidden spirit and its covering line have different kinship and strength.
+        const detail = r.hidden ? join([fact, line ? '飛神為' + line.relative + line.branch : '', r.hiddenRelation || '']) :
+          join([fact, state.monthInfluence, state.dayInfluence, state.voidStatus]);
+        return make(label, detail, t.candidates.length > 1 ? '同一用神有多個位置，先分清它指的是哪個人或哪件事。' : r.hidden ? '先分清伏神和飛神，再看月日能否讓伏藏的作用顯出來。' : '月建、日辰和動變要一起看。遇到相反作用時，分清誰生誰、誰受制。',
+          hex(c.original?.lines, r.position));
+      });
+    });
+    return rows.concat(list(a.items).filter(i => /世|應/.test(i.label)).map(i => fromItem(i, '世應分別定位當事人和所問的一方，再核對它們與用神的關係。', hex(c.original?.lines, i.evidence[0].natal?.position))));
+  }
+
+  function natal(c, a, kind, primaryItems, question) {
+    const items = list(a.items), find = id => items.find(p => p.id === id);
+    if (a.coverage.provisional || c.input?.unknownTime || c.sensitivity?.unknownTime) {
+      const limits = { bazi: '時柱、整體旺衰與精確起運要等時辰確認。', ziwei: '缺出生時辰，十二宮和星曜落宮不能確定。', vedic: '上升、宮位、分盤宮位與精確運期不能確定。', astro: '四角與宮位不能確定，月亮位置需看當天範圍。' };
+      const available = kind === 'bazi' ? items.filter(i => /^pillar-(year|month|day)$/.test(i.id)).map(i => fromItem(i, '這是三柱中可核對的部分。', { mark: i.evidence[0]?.gan + i.evidence[0]?.zhi })) : [];
+      if (kind === 'astro' || kind === 'vedic') {
+        const signs = ['牡羊','金牛','雙子','巨蟹','獅子','處女','天秤','天蠍','射手','摩羯','水瓶','雙魚'];
+        for (const [key, name] of [['Sun','太陽'],['Moon','月亮']]) {
+          let indices;
+          if (kind === 'astro') indices = c.sensitivity?.planets?.find(p => p.key === key)?.signs;
+          else if (c.sensitivity?.sampled && c.planets?.[key]) {
+            const change = c.sensitivity.changes?.find(p => p.key === key + '/D1');
+            indices = change?.alternatives || [c.planets[key].sign];
+          }
+          const found = distinct(list(indices).map(i => signs[i]));
+          if (found.length) available.push(make(name + '・當日取樣', found.length === 1 ?
+            '當天所取時點，' + name + '都在' + found[0] + '座。' :
+            '當天取樣跨過' + found.join('、') + '座，要有時辰才能辨別。',
+            '你仍可以用這一天的範圍來對照，無法就此指定它在哪一宮。', { mark:name }));
+        }
+      }
+      return [gap('出生時辰待確認', limits[kind], '如果你能取得出生紀錄，再回來檢查這部分；目前只用已能定位的資料。'), ...available];
+    }
+    if (kind === 'astro' && c.input?.chartPurpose && c.input.chartPurpose !== 'natal') {
+      const mode = c.input.chartPurpose;
+      if (mode === 'horary') {
+        const h = c.horary || a.horary;
+        if (!h) return [gap('問事盤', '本次沒有可用的問事宮主資料。', '要有問事當下的資料，才能連接問事者和事情。')];
+        return [make('問事盤・取用', join([h.selectedHouse ? '所問第' + h.selectedHouse + '宮' : '', h.querent?.lord ? '本方宮主' + (root.JYWestern?.zh?.(h.querent?.lord) || h.querent?.lord) : '', h.quesited?.lord ? '對方宮主' + (root.JYWestern?.zh?.(h.quesited?.lord) || h.quesited?.lord) : '']) || '本次依問事時刻起盤。', '入相、接納與阻斷條件要一起讀。', { mark: '問事' })];
+      }
+      if (a.relocated || c.relocated) {
+        const r = c.relocated || a.relocated;
+        return [make('遷居參照地', join([r.location || '', r.houses?.angles?.ASC != null ? '遷居上升 ' + Math.round(r.houses.angles.ASC * 100) / 100 + '°' : '']) || '已另排參照地盤。', '比較兩地的四角與落宮，把實際的居住條件留給你核對。', { mark: '遷居' })];
+      }
+    }
+    const base = { bazi: ['pillar-month','pillar-day'], ziwei: ['palace-命宮','palace-福德'], vedic: ['house-1'], astro: ['house-1'] }[kind];
+    const rows = distinct([...primaryItems, ...base.map(find)]);
+    const cues = rows.map(i => {
+      const ev = i.evidence[0] || {}, house = Number(i.id.split('-')[1]);
+      const reading = { bazi: '把明透與藏支分開讀，再看月令是否支持它。才能談它在你所問的事上容易發揮在哪裡。', ziwei: '先看本宮，再看對宮與三方。借星、會照和本宮坐守各有不同的分量。', astro: '看這個宮的宮主落到哪裡，再核對它與其他星的作用，才知道哪兩件生活上的事連在一起。', vedic: '從這個宮追到宮主落點，再用對題的分盤與運期核對，不能把本命傾向直接當作事件日期。' }[kind];
+      return fromItem(i, reading, { mark: ev.gan && ev.zhi ? ev.gan + ev.zhi : i.label.split(' · ')[0], sector: house >= 1 && house <= 12 ? house - 1 : null });
+    });
+    if (kind === 'vedic') {
+      const focus = a.depthContract?.requestCoverage?.caseBasis?.focus;
+      const explicit = [...String(question || '').matchAll(/\bD(\d{1,3})\b/gi)].map(m => Number(m[1]));
+      const relevant = distinct([...explicit, ...list(focus?.divisions).filter(n => n !== 1 && n !== 9)]);
+      const lord = [...primaryItems].find(i => i.evidence[0]?.house?.lord)?.evidence[0]?.house?.lord;
+      for (const n of relevant.slice(0, 2)) {
+        const v = c.vargas?.[n], pl = lord && v?.planets?.[lord];
+        if (!v?.lagna?.signName) continue;
+        cues.splice(1, 0, make('D' + n + '・' + (v.purpose || '分盤'), join(['分盤上升' + v.lagna.signName, pl?.signName ? (root.JYVedic?.zh(lord) || lord) + '在' + pl.signName + (pl.house ? '第' + pl.house + '宮' : '') : '']), '同一顆星在專項分盤的落點，是拿來核對本命傾向在這件事上怎麼發揮。', { mark: 'D' + n, sector: v.lagna.sign }));
+      }
+    }
+    return cues;
+  }
+
+  function pairs(c, a) {
+    if (a.system === 'ziwei') {
+      if (!c.personA || !c.personB) return [gap('雙方定盤條件', '甲方' + (c.personA ? '有盤' : '未定盤') + '，乙方' + (c.personB ? '有盤' : '未定盤') + '。', '只能解讀資料齊全的一方，跨盤作用需要雙方都能定盤。')];
+      const rows = list(c.projectionGroups), focus = list(c.focusPalaces);
+      const relevant = rows.filter(r => focus.includes(r.targetPalace));
+      return distinct([...relevant, ...rows]).slice(0, 4).map(r => make(r.sourcePerson + ' → ' + r.targetPerson, r.star + r.hua + '入' + r.targetPalace + '（' + r.targetBranch + '）', '先辨清誰引動、誰承接。同一生年與宮干投射合併時只算一個作用。', { mark: r.targetPalace }));
+    }
+    const out = [];
+    if (c.dayMasters?.aToB?.label && c.dayMasters?.bToA?.label) out.push(make('雙方日主', '甲方對乙方：' + c.dayMasters.aToB.label + '；乙方對甲方：' + c.dayMasters.bToA.label, '這是兩個方向的關係，可以對照誰先帶動、誰承接。對方的實際意願仍要由對方表達。', { mark: [c.personA?.dayMaster, c.personB?.dayMaster].filter(Boolean).join('／') }));
+    const rs = list(c.branchRelations);
+    const relevant = rs.filter(r => r.aPillar === 'day' || r.bPillar === 'day');
+    return out.concat(distinct([...relevant, ...rs]).slice(0, 3).map(r => make(r.type, r.description, '要看它落在雙方哪一柱。若日支同時有其他作用，也要一併考慮。', { mark: r.aBranch + '／' + r.bBranch })));
+  }
+
+  function names(c) {
+    const people = list(c.names).length ? c.names : [c];
+    return people.map(p => {
+      const grid = list(p.fiveGrids?.grids).find(g => g.role === '人格');
+      const strokes = list(p.characters).map(x => x.char + (x.stroke ?? x.strokes ?? x.effectiveStrokes ?? '待核')).join('、');
+      const sound = list(p.phonetic?.characters).map(x => x.char + ' ' + (x.reading || list(x.candidates).join('／') || '待核') + (x.confirmed ? '（本人確認）' : '（待本人確認）'));
+      const details = [strokes && '各字筆畫：' + strokes, grid?.num != null ? '人格 ' + grid.num + '（' + grid.level + '，' + grid.theme + '）' : '五格未定', sound.length ? '讀音：' + sound.join('、') : ''];
+      return make(p.name + (p.name === c.baseline?.name ? '・原名' : ''), join(details), '逐個名字用同一筆畫口徑比較。你平常怎麼唸、希望名字表達什麼，也會改變實際取捨。', { mark: p.name });
+    });
+  }
+
+  function build(entry, question, primaryItems = []) {
+    const { method, chart, analysis } = entry;
+    const station = stations[method];
+    if (!station) return null;
+    let points;
+    if (method === 'tarot') points = cards(chart, analysis);
+    else if (method === 'ootk') points = opening(chart, analysis);
+    else if (method === 'lenormand') points = lenormand(chart, analysis);
+    else if (method === 'oracle') points = oracle(chart, analysis, question);
+    else if (method === 'name') points = names(chart);
+    else if (method === 'compat') points = pairs(chart, analysis);
+    else if (method === 'personality') points = analysis.coverage.provisional ? [gap('時辰待確認', '本次未能計出完整五軸。', '先保留不確定的部分。')] : list(analysis.items).map(i => fromItem(i, '想一件你真的做過的事來對照這個傾向。生活經驗可以和這個模型不一樣。', { mark: i.evidence[0][i.evidence[0].rightSelected ? 'right' : 'left'] }));
+    else if (['meihua','liuren','liuyao','yijing'].includes(method)) points = gua(chart, analysis, method);
+    else points = natal(chart, analysis, method, primaryItems, question);
+    points = points.filter(p => p?.label && p.detail);
+    if (!points.length) points = [gap('可讀範圍', '本次尚無可定位的解讀落點。', '只保留已完成的程序，等缺少的資料補齊再看。')];
+    return { method, source: entry.label || '', title: station[0], action: station[1], theme: station[2], points };
+  }
+  root.JYConsultationEvidence = Object.freeze({ build });
+})(typeof window === 'undefined' ? globalThis : window);
+// END GENERATED CONSULTATION EVIDENCE
 /* Canonical reading-message compiler. The full native computation stays in the
  * packet/JSON. Delivery is a bounded, self-contained reading projection, never
  * a substring of the old export and never a multi-message protocol. */
 (function(root){
   'use strict';
-  const VERSION='20261121evidence127',LIMIT=12000,BYTES=28000;
+  const VERSION='20261122consult129',LIMIT=12000,BYTES=28000;
   if(root.JYSinglePaste?.version===VERSION)return;
   const A=x=>Array.isArray(x)?x:[],P=(x,keys)=>Object.fromEntries(keys.filter(k=>x&&x[k]!==undefined).map(k=>[k,x[k]]));
   const keys=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Rahu','Ketu','Uranus','Neptune','Pluto','NorthNode','SouthNode'];
@@ -41,14 +269,14 @@
     oracle:'依本次廟本解籤，先選最切原題的一句，說明其中的處境、轉折或成立條件，再與本題事項的附記及籤解核對。若全詩偏吉而所問事項要等，說明眼前要等的是什麼。典故只有題名時，只可點出題名，回到籤句解意；籤上時間字保留其原有尺度。'
   };;
   const rules=[
-    '用繁體中文寫一則回覆。情境是這樣：提問的人把心事傳給一位他信得過、又懂命理的自己人，這個人就是你——你看盤多年，也真心疼他、站在他這一邊。他會在手機上讀，讀完要有三個感覺：事情會怎樣他清楚了，為什麼會這樣他聽懂了，有人懂他也替他著想。所以這是你在對他說話，不是一份分析文件：開頭先用一個稱呼叫他（是稱呼人的詞，不是招呼聲；依看得出的性別與輩分，用自己人之間的叫法；看不出性別就用不分性別的稱呼（對方是男是女不能用來推他的性別），後面也不替他或對方假設性別；不叫他的名字——這則訊息沒有給名字，你從帳號、記憶或別處知道的名字一律不用），全程對著他講，用平常聊天的字句和語氣，一段把一件事講完再換下一段；整則回覆不用粗體、標題或條列符號，也不拿引號來強調字句。溫度要從頭到尾都在，不只在開頭和結尾：每一段都要讓他感覺到是你在對他說——這段的道理落在他身上是什麼意思、你為這件事替他擔心或替他高興的地方、你希望他怎麼對待自己。溫度來自你的在乎和你對他處境的體貼，不來自替他編心情，也不來自補一句安慰的套話；溫度是說話的方式，不能取代內容——每一段都要帶一個從資料裡指得出來的判斷，整段只有關心和勸慰、指不出依據的不要寫。一段話如果原封不動放進一份分析報告裡也說得通，就是寫冷了，要重寫成你當面對他說的話。這份說明裡的字句是寫給你看的安排，回覆裡不要沿用，換成你自己會對這個人說的話。',
-    '先用本次已列資料照本法取用。原題的背景陳述只作前提；直接回答所問，不複誦題句。先辨原題已知事實與提問者的期待，衡量線索與問題的直接關係；同源只算一次。對每個主要判斷指出一處本盤具體落點，說明它怎麼影響原題。若另一條線索指向不同結果，辨明兩者是在講不同人物、條件或階段，還是真的相抵。用一件本人可觀察的事說明何時要改判；缺少關鍵資料就指明缺哪一項，接著解答其餘有依據的部分。把握只講方向與程度，線索數量不能換算事件機率。好消息照實說，替他高興；壞消息也照實說到資料原本的輕重，不改輕也不加重，用心疼他的方式說，並告訴他有沒有轉圜。',
-    '本次是獨立的一次解讀：只用本次原題與下列實算資料，不補造盤面沒有的資料；不要使用、參考或推演任何過往對話、聊天紀錄、平台記憶、使用者個人檔案或先前解讀的內容，原題沒寫的人物背景、經歷、關係與先前結論一律視為未知。你對他的處境、心情和對方的描述只有兩個來源：原題寫出來的，和盤上看到的；盤上看到的要讓他知道那是從盤上看的推測，不說成已經發生過的事。原題和「原題補充」裡他自己寫出的實際情況是最硬的依據：盤象與它相反時，把握以實際情況為主來定，並明說盤象在這一點上與現實不合，不用盤象去蓋過他寫出來的事實。醫療、法律、財務的決定要配合實際狀況與專業意見。'
+    '用台灣繁體中文，像一位細心聽他說話的命理師，當面回覆這個人。第一句用自然、不叫名字的稱呼接住他的問題，性別輩分未明就用中性稱呼。用手機好讀的短段落，不用標題、粗體、條列或引號強調。不必自稱有多年資歷。讓關心落在他明說的取捨：說清一個判斷對他意味著什麼，不替他命名情緒。',
+    '先依本法取用，回答最在意的事。每個主要判斷串起原題的一個細節、可點名的盤面落點，以及這個落點在此情境為何支持該方向。同源只算一次。兩處證據有分歧，辨明是不同人、不同階段還是真的相抵。好壞照實，講方向、程度、成立條件和何時改判，不用線索數換算機率。',
+    '只用本次原題與下列實算資料，不補造盤面沒有的資料。本人補充照原意取用。分清本人觀察、願望、轉述、待確認事項及象徵推測。已知事實優先，現實相反就修正解讀。原題沒交代的過去、個性、第三人的心思都留待核對；不要引用帳號記憶或舊對話。沒有關鍵資料就說清缺什麼，接著回答其餘有依據的部分。醫療、法律、財務決定配合實況與專業意見。'
   ];
   const baziEvidence='先依日主、月令及透藏看格局。格局順逆、扶抑與調候分別說明，有衝突就交代條件。計數只描述分布，同一關係不重複計票。神煞和五行缺項不能單獨判吉凶。問句預設、古訣子數與象徵都不能當成已發生的事。';
   const ziweiEvidence = '只讀本包已列盤面。原題的期待不能用作證據。比較與題目直接相關的星宮組合及不同運限的牽動，同一四化的重述只算一次；把握用定性語句，不換算機率。缺少某一層就說明缺口並繼續回答其餘部分。';
   const footer='[靜月之光蝦皮賣場](https://shopee.tw/a50h95648d?tab=shop)\n願你諸事順遂。';
-  const closingReminder='【下筆前最後確認】四部分依序都在：對他說的話、我怎麼看出來的、手鍊段、最後三行。第一部分裡有「先讓他對照」那一段，句句是能回到本次資料核對的話；他問適合什麼時，答案是叫得出名稱的具體項目。第一部分照「本次寫法」的開場、順序、做法、收住寫，@@STYLECHECK@@，該講到的幾樣都有；沒有叫他的名字，沒有粗體；輕重前後一致，把握不是十成的事沒有哪一句講成絕對；時間只在資料有依據時才講，精度依資料可到的年、月或時點，沒有依據就明說看不出；第一部分每一段都是你當面對他說的話、都帶著你的在乎，沒有哪一段原封不動放進分析報告裡也說得通，也沒有沿用這份說明裡的字句；同一個判斷只講一次；沒有原題與盤面以外的人事經過，也沒有把推測說成已經發生的事；第二部分每一行都指得出資料裡的具體項目，有相反線索才寫出它如何改變主判；命理名詞只留在第二部分的括號裡；手鍊段只推一款，而且講得出它的五行是盤上哪一項定的。';
+  const closingReminder='【下筆前最後確認】依序交付對他說的話（含對照）、我怎麼看出來的、手鍊段及最後三行。@@STYLECHECK@@。理由要找得到本盤落點；現況只引用本人說過的事；未有時點不指定日期。命理名詞集中在依據行的括號。只推薦一款能交代五行取法的手鍊。';
   /* 2026-11-12 root92：品類順序依題目文字打散。原本固定順序加上一串舉例，四份真實回答有三份都推海藍寶。 */
   /* 2026-11-16 deep112：使用者要求手鍊必須真的從命盤推出來。改成五行配色（傳統取象）：程式依方法告訴 AI 從盤上取哪一個五行，再從該五行的材質裡選，並要它講出盤面依據。 */
   const BRACELET_CATS=["木（綠）—綠幽靈", "火（紫、粉、紅）—紫水晶、粉晶、草莓晶、摩根石", "土（黃、褐）—黃水晶、虎眼石、茶晶、煙晶", "金（白、金、鐵）—白水晶、鈦晶、月光石、天鐵", "水（黑、藍、海）—黑曜石、黑碧璽、海藍寶、青金石、藍紋瑪瑙、拉長石、龍宮舍利"];
@@ -60,7 +288,7 @@
      再叫它「要有變化」沒有用。改由程式替每一次解讀抽一組不同的寫法（開場、把握的說法、順序、做法的寫法、收尾、篇幅、手鍊段的切入），
      都是安排而不是句子。同一題同一盤會得到同一組，不同的題或盤就不同。 */
   const STYLE={
-    open:['叫他之後不鋪陳，直接進正文。','叫他之後先用一句話把他問的事照原題的意思說一遍再進正文；不把問題換成別的，不猜他的動機和心情。','叫他之後先用一兩句講盤上（籤、牌、卦或命盤）最醒目的那個畫面再進正文；不猜他的心情。'],
+    open:['叫他之後不鋪陳，直接進正文。','稱呼後直接用一句話回答原題，連回他寫明的處境；他只問方向時，不替他補背景。','叫他之後先用一兩句講盤上（籤、牌、卦或命盤）最醒目的那個畫面再進正文；不猜他的心情。'],
     address:['稱呼用平輩朋友之間的叫法。','稱呼用老交情之間的叫法。','稱呼用親近、把他當自己人的叫法。','稱呼用客氣但不生分的叫法。'],
     conf:['用平常說話的字眼講清楚哪一點最有把握。','不報數字，用程度的說法讓他知道把握有多大。','用條件來講把握：什麼情況下會成，什麼情況下不會。'],
     /* 2026-11-16 free119：使用者指出每一份解讀都是同一套流程。原因是骨架寫死（複述問題→答案與成數→對照→原因→走向→做法），抽籤只換了細節。改成抽整篇的走法，五種骨架差別很大。 */
@@ -81,7 +309,11 @@
     '從這次牌、卦或資料裡挑兩三個跟原題有關的線索，陪他對照眼前的處境。用他能觀察到的行動說明什麼情況較吻合；他人心意與未提供的經過留給本人確認，第二部分交代依據。');
   const styleFor=(d,includeBracelet=true)=>{let h=2166136261;const t=String(d?.method||'')+'|'+String(d?.question||'')+'|'+String(JSON.stringify(d?.notes||'')).length+'|'+String(d?.styleSalt??'');for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
     const pick=a=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return a[(h>>>8)%a.length];};
-    return '【本次寫法（只管這一次、只管第一部分；後面三部分照常寫。下面是安排，不是讓你照抄的句子）】\n稱呼：'+pick(STYLE.address)+'\n開場：'+pick(STYLE.open)+'\n把握：'+(c=>{lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(c)];return c;})(pick(STYLE.conf))+'\n順序：'+pick(STYLE.order)+'\n做法：'+pick(STYLE.advice)+'\n收住：'+pick(STYLE.close)+'\n篇幅：'+(c=>{lastStyleCheck+='，'+LEN_CHECK[STYLE.len.indexOf(c)];return c;})(pick(STYLE.len))+(includeBracelet?'\n手鍊：'+pick(STYLE.bracelet):'');};
+    const address=pick(STYLE.address), open=pick(STYLE.open), confidence=pick(STYLE.conf);
+    const order=pick(STYLE.order), advice=pick(STYLE.advice), close=pick(STYLE.close), length=pick(STYLE.len);
+    lastStyleCheck=CONF_CHECK[STYLE.conf.indexOf(confidence)]+'，'+LEN_CHECK[STYLE.len.indexOf(length)];
+    return '【本次寫法】\n'+[address,open,confidence,order,advice,close,length,includeBracelet?pick(STYLE.bracelet):''].filter(Boolean).join('')+
+      '讀者只會看到你寄給他的一封訊息。直接寫給他，不列寫作步驟；同一個建議講清楚一次就往下說。';};
   const ASK_BRACELET=/手鍊|手串|手珠|水晶|礦石|天鐵|舍利|佩戴|配戴|戴什麼/;
   const WHOLE_BASIS={bazi:BRACELET_BASIS.bazi,compat:BRACELET_BASIS.compat,ziwei:'取命宮主星的五行（紫微、天府、天梁屬土，天機、貪狼屬木，太陽、廉貞屬火，武曲、七殺屬金，天同、太陰、巨門、天相、破軍屬水；空宮用借來的對宮主星）',vedic:'取上升主星的五行（'+SEVEN+'）',astro:'取上升主星的五行（'+SEVEN+'）'};
   const commercialFor=(q,m)=>(ASK_BRACELET.test(String(q||''))?'原題問的就是適合他的手鍊，所以這一題的答案就是選材：第一部分一開始就講出選哪一款、盤上憑什麼定這個五行，前面「手鍊留到第三部分才講」那一句這一題不適用；第三部分只用兩三句收尾，不換成別款。\n':'')+'這是第三部分，寫在「我怎麼看出來的」之後。用二到四句，推薦本人佩戴的一款手鍊，不另起標題：先說出這次解讀裡最需要照顧的一件事（必須是前面已經講過的一個結論），再照下面的選材依據從盤上定出一個五行，從那個五行的材質裡選一款，用一句話講出是盤上哪一項讓你定這個五行，講明它只是提醒自己的信物，並接回你剛才幫他想的做法。選材依據：'+(((ASK_BRACELET.test(String(q||''))||(m==='ziwei'&&/^完整命盤$/.test(String(q).trim())))&&WHOLE_BASIS[m])||BRACELET_BASIS[m]||THEME_BASIS)+'。五行配材質（五行配色是傳統取象，不是療效；排列沒有先後之分）：'+shuffledCats(q)+'。只挑一款；五行照選材依據直接取，不另外加減判斷，換一個人來照同一張盤也要取到同一個五行，同一個五行裡有幾款時挑最貼近那件要照顧的事的。不說礦物有療效、能改運、能挽回感情或帶來收益，不編庫存、價格、產地、成分與認證，不把凶象說重來促購。他手頭緊或不想買時，告訴他用身邊現有的東西也能當同樣的提醒。最後自然邀他到靜月之光挑喜歡的設計；盤面無效或程序停止時不做命理選材。\n'+closingReminder.replace('@@STYLECHECK@@',lastStyleCheck)+'\n第四部分：手鍊段之後，另起一行原樣輸出這句提醒：\n'+CLOSING_NOTICE+'\n全文最後兩行原樣輸出：\n'+footer;
@@ -352,7 +584,10 @@
     {const S1='牡金雙蟹獅處秤蠍射摩瓶魚',g=i=>Number.isInteger(i)&&S1[i]||'?';add('20分盤：D/上升星座/九曜星座（依序日月水金火木土羅計；星座取首字：牡金雙蟹獅處秤蠍射摩瓶魚）',A(s('二十分盤')).map(v=>'D'+v.division+'/'+g(v.lagna?.sign)+'/'+keys.slice(0,9).map(k=>g(v.planets?.[k]?.sign)).join('')).join('\n'));}
     const str=s('六力與Bhava力量');add('力量（不是吉凶）：曜/總/門檻/足額/Ishta/Kashta',A(str?.strength?.planets).map(p=>row([zh(p.planet),p.totalVirupas,p.minimumVirupas,p.meetsMinimum,p.ishtaKashta?.ishta,p.ishtaKashta?.kashta])).join('\n'));add('十二宮力',A(str?.bhavaStrength?.houses).map(p=>[p.house,num(p.totalVirupas)]));
     const y=s('格局與落陷抵消')||{},formed=briefChecks([...(y.yogas||[]),...A(y.specialRules?.checks),...A(y.additional?.checks)]);
-    add('實際成立項：名稱/狀態（同源只列一次）',[...new Map(formed.map(p=>[p.name+'|'+p.status,row([p.name,p.status])])).values()].join(';'));
+    const firm = new Set([true,'established','matched','timing-supported']);
+    const checkRows = rows => [...new Map(rows.map(p => [p.name+'|'+p.status,row([p.name,p.status])])).values()].join(';');
+    add('已核對成立的格局與檢查：名稱/狀態',checkRows(formed.filter(p=>firm.has(p.status))));
+    add('待審結構：保留原始狀態，核對條件後才能定論',checkRows(formed.filter(p=>!firm.has(p.status))));
     add('落陷救應：曜/是否抵消/實際規則與通過值（仍保留原強弱及近日）',A(y.additional?.neechabhanga).filter(p=>p.debilitated).map(p=>row([zh(p.planet),p.structuralCancellation,A(p.conditions).map(z=>[z.id,z.passed])])).join('\n'));
     const ds=s('所問運期與行運')||{};add('主運、副運、次副運及所問區間',periods(ds.vimshottari));
     {const PL=core.planets||c.planets||{},ma=PL.Mars,ju=PL.Jupiter,ve=PL.Venus,mo=PL.Moon,from=r=>Number.isInteger(r)&&ma?((ma.sign-r+12)%12)+1:null,hit=[1,2,4,7,8,12];
@@ -598,7 +833,7 @@
   }
   function compat(ctx){const{section:s,add}=ctx,c=s('雙方及雙向原盤作用')||{};
     // 紫微雙向與八字雙向形狀不同：紫微交給專屬寫入器，避免整包宮位星曜與逐條投射被當成必要資料。
-    if(A(c.personA?.palaces).length&&(c.projectionGroups||c.overlays))return compatZiwei(ctx,c);
+    if(ctx.a.system==='ziwei')return compatZiwei(ctx,c);
     add('雙方角色與精度',{scenario:c.scenario,uncertainty:c.uncertainty});
     add('出生時間核對',compactObject(c.birthTimeAudit),3);
     for(const k of ['personA','personB']){const p=c[k];if(!p)continue;add((k==='personA'?'甲方':'乙方')+'原局',{...P(p,['name','gender','pillars','dayMaster','strength','favorable','unfavorable','uncertainty','birthInput','birthLunar','sihua']),kongwang:p.auxiliary?.kongwang||undefined,palaces:p.palaces?A(p.palaces).map(v=>P(v,['name','branch','stars'])):undefined,roots:A(p.functionalAssessment?.rootContext).filter(v=>v.hasRoot&&v.stem===p.dayMaster).map(v=>({stem:v.stem,roots:A(v.roots).map(z=>P(z,['pillar','branch','stem','mainQi','rootKind','clashedBy']))})),seasonal:P(p.seasonalAssessment,['conclusion'])});}
@@ -654,7 +889,7 @@
     add('紫微雙向運限',compactObject(c.timeline),2);
   }
   function personality(ctx){const{section:s,add}=ctx;const p=s('五軸實算與模型界線')||{};add('模型及五軸（本地模型，不是臨床量表）',[(p.name?'型別：'+p.name+(p.code?'（'+p.code+'）':''):''),A(p.axes).length?'五軸：'+p.axes.map(a=>(a.left||'')+'／'+(a.right||'')+'→偏'+(a.rightSelected?a.right:a.left)+(a.evidence?'（'+a.evidence+'）':'')).join('；'):'',A(p.traits).length?'特質：'+p.traits.map(t=>t.name||t.label||t).join('、'):'',A(p.strengths).length?'長處：'+p.strengths.map(t=>t.name||t.label||t).join('、'):'',A(p.watch).length?'要注意：'+p.watch.map(t=>t.name||t.label||t).join('、'):''].filter(Boolean).join('\n'));}
-  function cards(ctx){const{c,a,e,section:s,add}=ctx,d=s('本次完整操作與牌籤作用')||a.methodData||{};
+  function cards(ctx){const{a,e,section:s,add}=ctx,c=e.method==='lenormand'?(ctx.c.lenormandData||ctx.c):ctx.c,d=s('本次完整操作與牌籤作用')||a.methodData||{};
     if(e.method==='oracle'){add('籤詩與本次版本',P(d,['number','ganzhi','poem','source','profile','sourceNote','reading','storyTitles','storyStatus']));{const TAG={supportive:'有利',caution:'要小心',conditional:'有條件',negative:'不利',delay:'要等',waiting:'要等',late:'偏晚',early:'偏早',neutral:'平'};const cats=A(d.categories).filter(x=>x.present!==false);
       add('事項附記（籤文各事項的傾向；附記優先於整首吉意）',cats.map(x=>x.name+'：'+(A(x.textFeatureTags).map(t=>TAG[t]||'').filter(Boolean).join('、')||'有附記')+(A(x.traditionalTimingTokens).length?'（時間字：'+x.traditionalTimingTokens.join('、')+'）':'')).join('；'),2);}return;}
     if(e.method==='ootk'){
@@ -674,6 +909,8 @@
       A(d.operations).forEach(op=>{const o=op.data||op;const key=op.operation;const L=[];
         if(!op.valid){add((opNames[key]||key)+'：未完成或無效，不補造',o.abandonReason||'程序未成立');return;}
         if(op.abandoned){add((opNames[key]||key)+'：已放棄，不補造',o.abandonReason||'本輪已停止。');return;}
+        if(!sig || !A(o.activeCards).length || !A(o.ringCountingPath||o.countingPath).length){add((opNames[key]||key)+'：程序記錄不足', '這一輪缺少可核對的代表牌或計數路徑，只記操作狀態。');return;}
+
         const dom=o.domainMeaning||o.sephirahMeaning;const where=o.activePile??o.activeHouse??o.activeSign??o.activeSephirah;
         if(key==='op1'){const match=b.expectedPile&&where?(b.expectedPile===where):null;L.push('代表牌'+name(sigId)+'落在'+pileWord(where)+(match===true?'，即問題所屬之堆':match===false?'；問題所屬為'+pileWord(b.expectedPile):''));}
         else if(key==='op2'){L.push('代表牌落第'+where+'宮'+(dom?'（'+dom+'）':'')+(b.primaryHouse&&Number(where)!==Number(b.primaryHouse)?'；問題所屬為第'+b.primaryHouse+'宮':'，即問題所屬之宮'));}
@@ -711,6 +948,19 @@
       const AUTH={state:'現況',cause:'成因',enabler:'助力（推動這件事的力量）',obstacle:'阻礙',advice:'建議／介入',outcome:'結果',antecedent:'既有影響（過去）',timeline:'時間段',stage:'階段',environment:'環境／他人',person_aggregate:'對方',comparison:'比較路',domain:'生活領域',structural:'結構層',synthesis:'總結',interaction_force:'交叉力量',development:'走向',cause_action:'成因與行動'};
       const nm=i=>R[i]?(R[i].name+(R[i].direction||'')):'?',lab=i=>slots[i]?.label||R[i]?.position||('第'+(i+1)+'張');
       const normA=a=>/outcome/.test(String(a||''))?'outcome':/antecedent|receding|prior|past/.test(String(a||''))?'antecedent':/^person/.test(String(a||''))?'person_aggregate':String(a||'structural');
+      if (!ctx.safetyFirst && d.sourceProfile === 'rws_reversals' && slots.length === R.length) {
+        const suits = {wand:'火',cup:'水',sword:'風',pent:'土'};
+        const counts = Object.keys(suits).map(k=>({element:suits[k], count:R.filter(r=>r.suit===k).length}));
+        const least = Math.min(...counts.map(x=>x.count));
+        const tied = counts.filter(x=>x.count===least);
+        const outcomes = R.filter((_,i)=>normA(slots[i].authority||slots[i].role)==='outcome');
+        const last = outcomes.length===1 ? outcomes[0] : null;
+        const element = tied.length===1 ? tied[0].element : last?.element;
+        const reason = tied.map(x=>x.element).join('、')+'各'+least+'張'+(tied.length===1?'，數量最少':'，同為最少');
+        const material = ({風:'金',水:'水',火:'火',土:'土'})[element];
+        add('本站手鍊取象的實算依據', material ? reason+(tied.length>1?'。結果位第'+last.index+'張'+last.name+'屬'+element:'')+'，按本站規則取'+material+'。' :
+          reason+'。本陣沒有唯一可用的結果位元素，無法按此規則定出單一五行。這次可用身邊現有信物。',1);
+      }
       const byAuth={};slots.forEach((sl,i)=>{if(!R[i])return;const a=normA(sl.authority||sl.role);(byAuth[a]=byAuth[a]||[]).push(lab(i)+'＝'+nm(i));});
       const order=['state','person_aggregate','cause','enabler','antecedent','obstacle','interaction_force','environment','advice','timeline','stage','development','comparison','outcome','domain','structural','synthesis'];
       const unmapped=[...new Set(slots.map(sl=>normA(sl.authority||sl.role)).filter(a=>!AUTH[a]))];if(unmapped.length)order.push(...unmapped);
@@ -720,7 +970,7 @@
       const chains=deps.map((g,k)=>(chainNote[k]?chainNote[k]+'：':'')+g.map(i=>lab(i)+'（'+nm(i)+'）').join('→'));
       if(lines.length||chains.length)add('牌陣結構讀法（引擎依方法登記寫成；先讀鏈，再讀單張）',lines.concat(chains.length?['讀法鏈：\n'+chains.join('\n')]:[]).join('\n'));
     }
-    if(e.method==='lenormand'&&A(d.records).length===9&&String(c.spreadType||c.lenormandData?.spreadType)==='nine'){const N=i=>d.records[i-1]?.name,g=ix=>ix.map(N).join('、');add('九宮格讀法（中心是核心；左欄已發生、中欄現在、右欄將來；上列想法意識、中列現實、下列潛在根基；四角是框住整件事的條件）','中心：'+N(5)+'；四角：'+g([1,3,7,9])+'；左欄：'+g([1,4,7])+'；中欄：'+g([2,5,8])+'；右欄：'+g([3,6,9])+'；上列：'+g([1,2,3])+'；下列：'+g([7,8,9])+'；兩條對角：'+g([1,5,9])+'／'+g([3,5,7]));}
+    if(e.method==='lenormand'&&A(d.records).length===9&&String(c.spreadType||c.spread||c.lenormandData?.spreadType)==='nine'){const N=i=>d.records[i-1]?.name,g=ix=>ix.map(N).join('、');add('九宮格讀法（中心是核心；左欄已發生、中欄現在、右欄將來；上列想法意識、中列現實、下列潛在根基；四角是框住整件事的條件）','中心：'+N(5)+'；四角：'+g([1,3,7,9])+'；左欄：'+g([1,4,7])+'；中欄：'+g([2,5,8])+'；右欄：'+g([3,6,9])+'；上列：'+g([1,2,3])+'；下列：'+g([7,8,9])+'；兩條對角：'+g([1,5,9])+'／'+g([3,5,7]));}
     if(e.method==='lenormand'&&d.tableau){const tb=d.tableau,q=String(ctx.data.question||''),cellOf=id=>A(tb.cells).find(x=>x.id===id),dist=(a,b)=>{const x=cellOf(a),y=cellOf(b);return x&&y&&typeof x.row==='number'&&typeof y.row==='number'?Math.max(Math.abs(x.row-y.row),Math.abs(x.col-y.col)):null;};
       const topic=[[/感情|戀|恋|喜歡|喜欢|復合|复合|曖昧|婚|對象|对象|伴侶|伴侣|桃花|交往|分手/,[24,25]],[/工作|事業|事业|職|职|面試|升遷|老闆|同事|公司|創業/,[35,14,19]],[/年終|年终|獎金|奖金|紅利|分紅|加薪|津貼|補助|退稅|錢|钱|財|财|收入|投資|投资|生意|薪|賣場|副業|網拍|經營|開店|客人|訂單|營收|電商|店/,[34,15,3,20]],[/健康|身體|身体|病|手術/,[5,8]],[/家|房|搬家|住/,[4]],[/消息|聯絡|联络|訊息|回覆|回复/,[27,1,12]]].filter(([re])=>re.test(q)).flatMap(([,ids])=>ids);
       add('指示牌九宮格與主題牌距離（左已發生、右將來、上想法、下潛在根基；距離1為貼身）',A(tb.significators).map(s=>s.name+'('+s.id+')在第'+s.position+'格（第'+s.row+'列第'+s.col+'欄）：'+Object.entries(s.around).map(([k,v])=>k+v).join('、')+([...new Set(topic)].length?'；主題牌距離：'+[...new Set(topic)].map(id=>{const c=cellOf(id),d0=dist(s.id,id);return c?c.name+(d0==null?'在尾排':d0):null;}).filter(Boolean).join('、'):'')).join('\n')+(A(tb.significators).length?'':'本盤無紳士／淑女牌'));
@@ -729,7 +979,7 @@
       const R=A(d.records),N=i=>R[i-1]?.name||('第'+i+'張'),g=c.declaredGender||d.declaredGender,pr=c.personRep||d.personRep,cf=c.customFocus||d.customFocus;
       const inSpread=id=>R.find(r=>r.id===id);
       add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是本人現在的處境':'，本次未抽到，整個牌陣直接當成本人的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
-      const paths=A(d.paths),mirror=A(d.mirror),knights=A(d.knights),spread=String(c.spreadType||d.spreadType||''),md=c.methodData||d.methodData||{};
+      const paths=A(d.paths),mirror=A(d.mirror),knights=A(d.knights),spread=String(c.spreadType||c.spread||d.spreadType||''),md=c.methodData||d.methodData||{};
       const pairNames=list=>list.map(m=>N(m.a)+'↔'+N(m.b)).join('、');
       if(spread==='two'&&R.length===2){add('雙牌讀法（引擎幾何）','主題'+N(1)+'，修飾'+N(2)+'：第二張形容第一張，讀成一句「'+N(1)+'，而且是'+N(2)+'那種」；沒有中心、沒有鏡像，不要讀成線。');}
       else if(spread==='choice'&&R.length===7){add('雙路比較讀法（引擎幾何）','A路：'+[1,2,3].map(N).join('→')+'；共同背景：'+N(4)+'；B路：'+[5,6,7].map(N).join('→')+'。兩路各自先讀成一句，共同背景同時套在兩路上，再用同一個標準比較；分線不跨接，A3與B1不相鄰。'+(pr&&inSpread(pr.id)?'本人'+pr.name+'落在'+inSpread(pr.id).position+'：只表示他的心思現在站在那一路，不代表那一路結果較好。':''));}
@@ -833,12 +1083,13 @@
     relationship:{bazi:'relationships',ziwei:'夫妻',vedic:7,astro:7},
     children:{ziwei:'子女',vedic:5,astro:5},
     home:{ziwei:'田宅',vedic:4,astro:4},
-    study:{bazi:'learning',vedic:9,astro:9}
+    study:{bazi:'learning',vedic:9,astro:9},
+    parents:{ziwei:'父母',vedic:4,astro:4}, health:{ziwei:'疾厄',vedic:6,astro:6}, spiritual:{ziwei:'福德',vedic:9,astro:9}
   };
   function topicEvidence(ctx){
     const {e,a,c,add}=ctx;
     const selected=new Set();
-    if(a.coverage?.provisional||c.input?.unknownTime||(e.method==='astro'&&c.input?.chartPurpose!=='natal'))return selected;
+    if(a.coverage?.provisional||(c.input?.unknownTime||c.sensitivity?.unknownTime)||(e.method==='astro'&&c.input?.chartPurpose!=='natal'))return selected;
     const focus=a.depthContract?.requestCoverage?.caseBasis?.focus;
     for(const aspect of A(focus?.aspects)){
       const role=topicItems[aspect.id]?.[e.method];
@@ -856,13 +1107,17 @@
     return selected;
   }
   const plans=new Map();
+  function observationText(observation){
+    return '【本人點選的落點與回應】\n'+[observation.source+'／'+observation.location,observation.evidence,observation.experience&&'本人對照：'+observation.experience,observation.note&&'本人補充：'+JSON.stringify(observation.note),'先就這個落點回答原題。本人說不吻合時，說清楚要修正哪個推論；尚未確認的繼續保留。'].filter(Boolean).join('\n');
+  }
   function compile(entries,data){
     if(!Object.hasOwn(data,'knownFacts'))data={...data,knownFacts:root.JYKnownFacts?.get?.()||''};
-    const caseNotes=[data.notes,data.knownFacts].filter(Boolean).join('\n');
+    const caseNotes=[data.notes,data.knownFacts,data.priority,data.followUp?.note].filter(Boolean).join('\n');
     const safe=root.JYReadingWorkflow?.careContext?.(data.question,caseNotes)?.level==='safety-first';
     const natalWestern=data.method==='astro'&&entries.length===1&&entries[0].chart?.input?.chartPurpose==='natal';
-    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',data.knownFacts?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(data.knownFacts):'', '【解讀與查證規則】\n'+rules.join('\n'),
+    const header=['【一次貼上・完整解讀提示詞】',json({schema:'jy.native-analysis/1',method:data.method,delivery:'single-message',build:VERSION}),'【原問題】\n'+JSON.stringify(data.question),hasData(data.notes)?'【本次補充】\n'+JSON.stringify(data.notes):'',data.knownFacts?'【原題補充：他自己寫的實際情況】\n'+JSON.stringify(data.knownFacts):'', data.priority?'【本人希望這次幫忙釐清的事】\n'+JSON.stringify(data.priority)+'\n這是他看重的標準，不能當成已經發生的事。':'', data.followUp?observationText(data.followUp):'', '【解讀與查證規則】\n'+rules.join('\n'),
       '【資料閱讀方式】\n以下是本次實算資料。表格依標題欄序還原，?是未定；不需要附件。'].filter(Boolean);
+    const visits=[];
     const blocks=[];const add=(label,v,priority=0)=>{zhMethod=data.method;if(hasData(v))blocks.push({label,value:typeof v==='string'?zhText(v):readable(v),priority,method:'shared'});};
     const tasks=data.requestCoverage?.[0]?.coverage?.requirements?.tasks;if(A(tasks).length>1||A(tasks).some(t=>A(t.measurement).length)){const GW={general:'這個子題本身',direction:'方向／會不會',compare:'比較',comparison:'比較',timing:'時間',amount:'數量金額',count:'數量',rate:'比率',state:'現況',yesno:'是否',reason:'原因',cause:'原因',person:'人物',enumeration:'列出有哪些',advice:'該怎麼做',choice:'選哪一個',location:'在哪裡',vocation:'適合做什麼'},OW0=root.JYTarotFoundation?.OBSERVABLES||{},OW=Object.assign({},OW0,{existence:'有沒有',independent_subjects:'每個人、每件事分開講',independent_options:'每個選項分開講',state:'現在的狀況',realization:'會不會成',trajectory:'接下來怎麼走',conditional_outcome:'照現況下去的結果',bounded_outcome:'到他說的期限時會怎樣',threshold_outcome:'過不過得了那個門檻',comparison_outcome:'兩邊用同一把尺比',enumeration:'逐項列出',attention_focus:'最該注意什麼',cause:'為什麼會這樣',antecedent:'之前的影響',obstacle:'卡住的地方',enabler:'幫得上忙的力量',advice:'可以怎麼做',dyad:'兩個人各自的狀態與互動',temporal_sequence:'先後順序',annual_overview:'整年各方面',domain_coverage:'各方面分開講',hidden:'檯面下的因素',external:'外在條件',location:'在哪裡的線索',structural_depth:'更深一層的原因',narrative:'來龍去脈',exhaustive:'完整走一遍',willingness:'對方的意願',event_action:'實際會不會行動',invitation_or_arrangement:'邀約與安排',participant_structure:'牽涉哪些人',reported_event:'他提到的那件事',causal_layers:'背景、原因與結果',evaluation_outcome:'這個人或這件事適不適合他',relationship_context:'關係現況',option_set:'有哪些選項',decision_criteria:'用什麼標準選',action_guidance:'下一步怎麼做',threshold_timing:'什麼時候達到',recurrence_context:'會不會再發生',count:'數量',amount:'金額',rate:'比率',timing:'時間',comparison:'比較',person:'對方',reason:'原因'}),zhOnly=v=>/[A-Za-z]/.test(String(v||''))?null:v;const lines=tasks.map((t,i)=>{
         const source=t.source||'';
@@ -882,10 +1137,12 @@
     }
     if(data.sourceCoverage?.requestedRecords>1)add('合讀方式','先依每份標記辨別資料屬於誰、來自哪一種方法。只有資料明示是雙人關係盤時才作雙向推論。同一出生資料的衍生結果不可重複計票；結果有歧異時交代各自適用的條件。');
     if(A(data.failures).length)add('未納入的紀錄',data.failures.map(f=>P(f,['sourceEntryIndex','label','method','status','reason','errorCode'])));
-    for(const e of entries){const ctx=createContext(e,data);
+    for(const e of entries){const ctx=createContext(e,data);ctx.safetyFirst=safe;
       const procedure=readingProcedure(e);
       ctx.add('本法正統取法（'+procedure.name+'）',procedure.guide);
       const primaryItems=topicEvidence(ctx);
+      const visit=root.JYConsultationEvidence.build(e,data.question,primaryItems);
+      if(visit)visits.push(visit);
       (writers[e.method]||cards)(ctx);
       const a=e.analysis;/* 2026-11-12：資料正常時這一段只有「暫定：否／已核」，沒有資訊；只有暫定、未核或輸入有缺時才送。 */{const prov=!!a.coverage?.provisional,st=a.computationAudit?.status,lim=a.coverage?.limitations;if(prov||hasData(lim)||(st&&!/^(verified|ok|pass|passed|已核)$/i.test(String(st))))ctx.add('資料完整度',{provisional:prov,computation:P(a.computationAudit,['status']),inputLimits:lim});}
       {const informative=A(a.items).filter(p=>!primaryItems.has(p)).filter(p=>hasData(p.support)||hasData(p.caution)||(p.summary&&!/^依本次原生操作保留作用關係$/.test(String(p.summary).trim()))).filter(p=>!/引擎JSON|原始JSON/.test(JSON.stringify([p.support,p.caution])||'')&&!/^已算$|：已算／/.test(String(p.summary||'').trim()));/* 指向本提示詞沒有附上的資料、或只寫「已算」的項目不送：AI 看不到那些資料，留著只會引它編造 *//* 只有制式佔位句的項目不送（大牌陣曾送出36行同一句），避免稀釋真正的資料 *//* 吠陀：六力、宮力、八分法、五支曆、分盤等項目在前面各有專屬資料段，這裡只留十二宮逐宮作用，不重複送。 *//* 牌卡類（塔羅、雷諾曼、五輪）：這一段若沒有佐證或反證，內容只是把前面牌序表與牌義表的牌義再抄一次，不送。 */const shown=e.method==='vedic'?informative.filter(p=>/^\d{1,2}宮/.test(String(p.label||''))):(['tarot','lenormand','ootk','mathers','yijing','name','compat'].includes(e.method)&&!informative.some(p=>hasData(p.support)||hasData(p.caution)))?[]:informative;/* 2026-11-12：這幾種方法的逐項段在沒有佐證或反證時，只是把前面的牌義、爻辭或「見上表」再寫一次（已逐一看過內容），不送；五軸人格的逐項段是各軸的實際判定，保留。 */if(shown.length)ctx.add('逐項作用與相反依據',shown.map(p=>({item:p.label,finding:p.summary,support:p.support,caution:p.caution})),6);}
@@ -916,6 +1173,13 @@
             else if(/^([^·／]*[·／] ?)?20分盤/.test(L)&&typeof ctx.b[i].value==='string'){const rows=ctx.b[i].value.split('\n').filter(r=>!keepV.size||keepV.has(r.split('/')[0]));if(rows.length)ctx.b[i]={...ctx.b[i],label:L.replace('20分盤','與本題相關的分盤'),value:rows.join('\n')};}
             else if(/AV原表/.test(L)&&typeof ctx.b[i].value==='string'){const rows=ctx.b[i].value.split('\n').filter(r=>!keepV.size||keepV.has(r.split('/')[0]));if(rows.length)ctx.b[i]={...ctx.b[i],value:rows.join('\n')};}}}}
       if(e.method==='ziwei'&&!/月|何時|什麼時候|幾時|時間點|所有|全部|完整|逐/.test(String(data.question||'')))for(let i=ctx.b.length-1;i>=0;i--)if(/流月/.test(ctx.b[i].label))ctx.b.splice(i,1);
+      if(visit && !safe){
+        // Keep excerpts secondary to mandatory source tables. Never truncate a verse or a quoted fact.
+        const picked=visit.points.slice(0,data.sourceCoverage?.requestedRecords>1?1:3);
+        const cues=picked.map(p=>p.label+'｜'+(chars(p.detail)<=115?p.detail:p.label+'的完整內容見本法資料')).join('\n');
+        ctx.add('與你這次問題一起讀的落點（同一條資料只算一次）',cues,1);
+        ctx.b.unshift(ctx.b.pop());
+      }
       blocks.push(...ctx.b);
     }
     const methodDepth={
@@ -925,13 +1189,14 @@
       ziwei:'用繁體中文，以親切稱呼開場，分短段，先用白話回應。問單一主題就先答該題；問完整命盤時，從命身福德與命財官遷看行事方式，帶到事業、財務、感情、健康與家庭，再說當前大限與今年流年。可邀他用過去一段運期對照，語氣保留，不把盤象當經歷。簡短說明最重要的依據及反證。六組對宮按題選用：命遷、財福、夫妻官祿、兄弟交友、子女田宅、父母疾厄。空宮借對宮；先看本命與生年四化，再辨宮干飛化、自化及限年。流年配當年所屬大限，小限另看。年資料只談年，流月依本盤月界，指定日時只用相符的快照。未展開、未列或超出範圍的資料不補排。',
     };
     const depth=data.method==='astro'&&!natalWestern?'':methodDepth[data.method];
-    const unknownHouse=entries.some(e=>(e.method==='vedic'||e.method==='astro')&&e.chart?.input?.unknownTime);
+    const unknownHouse=entries.some(e=>(e.method==='vedic'||e.method==='astro')&&(e.chart?.input?.unknownTime||e.chart?.sensitivity?.unknownTime));
     const safetyClose='先提供安全支持，暫停手鍊、導購與賣場收尾。';
     const end=[
       depth?'【本法解讀重點】'+(data.method==='bazi'?baziEvidence:data.method==='ziwei'?ziweiEvidence:'')+depth:'',
       '【這則回覆的樣子】第一部分對他說話。把原題每一件事答到，講最關鍵的兩三個原因、成立條件和可能的另一條路。陪他看清眼前能做的事、暫緩的事與退路。問選擇時先比較他提出的選項，用同一個取捨標準，分清照現況與採取行動後的差別。資料能區分才排先後，否則點出問清哪件事會改變選擇；他請你想選項時才提出新選項。對照段挑只有這份資料才說得出的重點。問數量要有依據才給範圍。替他講開可能錯怪自己的地方，不替他編心情。時間只寫資料能支持的精度，年度就談年，有月界才寫月，運期起訖不能當事件發生日。原題沒說的職業、個人經歷與別人的心意，留給他對照。單一問題只答所問。',
       '第二部分用一句自然的話帶出「我怎麼看出來的」，每行用生活語言講一件事，括號標出讀者能在本包找到的宮位、牌位、卦爻、詩句或算式。行數依切題依據多寡，有一條就解釋透一條。反證要說明哪一點會讓主要判斷改變；資料沒有相反線索就省略。同一判斷只說一次，重點讓他聽得懂。依本次寫法安排第一部分，再接第二部分及適用的收尾。',
-      styleFor(data,!safe&&!unknownHouse), verifyFor(data.method),
+      !safe&&'【把判斷落回這個人】先把原題中最在意的事直接答清楚，再用同一條推理把本人的原話、本盤的具體落點、不同條件下的走向連起來。有本人自述就交代它怎樣影響判斷；只有一句問題時，用如果、你可以觀察讓他核對，別替他編過去。把建議寫成他下次遇到這件事可以做或聽得見的一件事。如果現實相反，說清楚要調整哪個判斷。不要為寫滿字數重述同一件事。',
+      styleFor(data,!safe&&!unknownHouse), verifyFor(data.sourceCoverage?.requestedRecords>1&&!entries.some(e=>e.method==='compat')?'combined':data.method),
       !safe&&statedConditions(data.question,data.knownFacts),
       safe?(root.JYReadingWorkflow?.prepareDeliveryText?.(safetyClose,{question:data.question,notes:caseNotes,methods:entries.map(e=>e.method)})||safetyClose):unknownHouse?'時辰未定，省略依宮主選材。文末保留提醒。\n'+CLOSING_NOTICE+'\n'+footer:'【成稿收尾】\n'+commercialFor(data.question,data.sourceCoverage?.requestedRecords>1&&!entries.some(e=>e.method==='compat')?'combined':data.method)
     ].filter(Boolean).join('\n\n');
@@ -950,10 +1215,10 @@
     const kept=blocks.filter(b=>selected.has(b)),pending=blocks.filter(b=>!selected.has(b));
     let result=build();
     if(!fit(result)){const error=new Error('單次貼上範圍說明超過長度預算；未複製不完整資料。');error.code='SINGLE_PROMPT_SCOPE_OVER_BUDGET';throw error;}
-    const plan={version:VERSION,mode:'single-message',limits:{characters:LIMIT,utf8Bytes:BYTES},characters:chars(result),utf8Bytes:bytes(result),coreBlocks:core.map(b=>b.label),includedBlocks:kept.map(b=>b.label),notExpanded:pending.map(b=>b.label),completeCore:true,originalQuestionPreserved:true,sourceChartMutated:false,usesReferences:false,requiresAttachment:false,guaranteedExternalPlatformLimit:false};
+    const plan={version:VERSION,mode:'single-message',limits:{characters:LIMIT,utf8Bytes:BYTES},characters:chars(result),utf8Bytes:bytes(result),coreBlocks:core.map(b=>b.label),includedBlocks:kept.map(b=>b.label),notExpanded:pending.map(b=>b.label),completeCore:true,originalQuestionPreserved:true,sourceChartMutated:false,consultation:visits,intake:{facts:data.knownFacts||'',priority:data.priority||''},usesReferences:false,requiresAttachment:false,guaranteedExternalPlatformLimit:false};
     plans.set(result,plan);if(plans.size>40)plans.delete(plans.keys().next().value);return result;
   }
-  root.JYSinglePaste=Object.freeze({version:VERSION,limits:{characters:LIMIT,utf8Bytes:BYTES},compile,get:text=>plans.get(String(text))||null,chars,bytes,guides});
+  root.JYSinglePaste=Object.freeze({version:VERSION,limits:{characters:LIMIT,utf8Bytes:BYTES},compile,observationText,get:text=>plans.get(String(text))||null,chars,bytes,guides});
 })(typeof window==='undefined'?globalThis:window);
 // END GENERATED SINGLE PASTE RUNTIME
 // BEGIN GENERATED RECOMMENDATION JY_REC_PACKET
@@ -1085,7 +1350,7 @@ var JY_REC_PACKET = {
   function checkLedger(rows){return arr(rows).map(p=>({...pick(p,['id','name','status','established','selected','rule','missing','needsJudgment','assessment','planets','applicability']),...(p.conditions?{conditions:conditionFacts(p.conditions)}:{}),...(p.variants?{variants:p.variants.map(v=>({...pick(v,['name','value']),conditions:conditionFacts(v.conditions)}))}:{}),...(p.checks?{checks:conditionFacts(p.checks)}:{}),...(p.matched!==undefined?{matched:p.matched}:{}),...(p.status==='established'||p.established===true?{details:p.details}:{} )}));}
   function groupedDays(rows){const definitions=[],dictionary=new Map(),times=[],timeDictionary=new Map(),days=[];for(const row of arr(rows)){const base=Date.parse(row.date+'T00:00:00Z'),offset=t=>Number.isFinite(Date.parse(t))?Date.parse(t)-base:null,window=[offset(row.start),offset(row.endExclusive)],timeKey=JSON.stringify(window);if(!timeDictionary.has(timeKey)){timeDictionary.set(timeKey,times.length);times.push(window);}const indices=arr(row.conditions).map(t=>{const value={...pick(t,['target','role','branch','why']),monthConstraints:arr(t.monthConstraints).map(z=>({...pick(z,['monthBranch','monthlyBroken','season','dayEmpty']),startOffsetMs:offset(z.start),endOffsetMs:offset(z.endExclusive)}))},key=JSON.stringify(value);if(!dictionary.has(key)){dictionary.set(key,definitions.length);definitions.push(value);}return dictionary.get(key);});days.push({date:row.date,dayGanzhi:row.dayGanzhi,monthBranch:row.monthBranch,xunHead:row.xunHead,timeIndex:timeDictionary.get(timeKey),conditions:indices});}return {days,timeOffsetsMs:times,conditionDefinitions:definitions,encoding:'days.conditions引用conditionDefinitions索引；timeIndex引用[start,endExclusive]；所有offsetMs加在該date的00:00 UTC上，完整保留候選時窗及每個月令區段，不以AI重算日干支。'};}
   function transitionFacts(t){return {...pick(t,['rule','sourceSection','applicability','layerScope']),...Object.fromEntries(['incoming','transferred','birthTransformation','linked','from','to'].filter(k=>t[k]!==undefined).map(k=>[k,typeof t[k]==='object'?pick(t[k],['fromBranch','toBranch','gan','kind','star','hua','palace','branch','self','centripetal']):t[k]]))};}
-  function readablePerson(p){return pick(p,['name','gender','birthLine','trueSolarDateTime','pillars','pillarText','dayMaster','dayMasterElement','strength','elementWeights','favorable','unfavorable','strengthAssessment','seasonalAssessment','functionalAssessment','fuyiAssessment','branchInteractions','specialRuleAssessment','uncertainty','birthInput','birthLunar','palaces','sihua','selfHua','calculationPolicy','northern','chart','auxiliary']);}
+  function readablePerson(p){if(!p)return null;return pick(p,['name','gender','birthLine','trueSolarDateTime','pillars','pillarText','dayMaster','dayMasterElement','strength','elementWeights','favorable','unfavorable','strengthAssessment','seasonalAssessment','functionalAssessment','fuyiAssessment','branchInteractions','specialRuleAssessment','uncertainty','birthInput','birthLunar','palaces','sihua','selfHua','calculationPolicy','northern','chart','auxiliary','yearStem','yearBranch','natalTransformations','decades','palaceFlights','selfTransformations','sanFangSiZheng','patternAssessment','laiYin','wuxingJu','mingZhu','shenZhu','currentAge']);}
   function argala(a){if(!a)return a;return {...pick(a,['profile','policy','houses','planets']),signs:arr(a.signs).map(g=>({...pick(g,['key','sign','direction','thirdMalefics']),channels:arr(g.channels).map(c=>pick(c,['argalaHouse','obstructionHouse','contributors','blockers','vipareeta','countDecision','quarterCounterpairs']))}))};}
   function vargaScope(q,topic){
     const focus=root.JYReadingWorkflow?.nativeFocus?.({method:'vedic',question:q});
@@ -1151,7 +1416,7 @@ var JY_REC_PACKET = {
     }else if(kind==='liuyao'||kind==='yijing'){add('完整起卦與六爻',pick(kind==='liuyao'?{...c,focus:a.focus||c.focus}:c,['version','system','method','calendar','values','records','original','changed','hasChange','lines','movingPositions','structures','focus','policy']));add('完整作用網路與讀法',kind==='liuyao'?(a.interpretation||c.interpretation):pick(c,['reading','originalText','changedText','expositions','complementaryViews']));}
     else if(kind==='meihua'){add('本互變與起卦輸入',(()=>{const n=c&&c.ben&&c.ben.u?c.ben.u.codePointAt(0)-0x4dc0+1:null,e=n&&root.JYYijingData?arr(root.JYYijingData.entries).find(x=>x.number===n):null,l=e&&c.dong?arr(e.lines)[c.dong-1]:null;return l?{...c,movingLine:{hexagram:e.name,label:l.label,text:l.text,source:e.source}}:c;})());add('原體四階段作用',a.items.map(p=>({label:p.label,evidence:p.evidence})));}
     else if(kind==='name'){add('原名與候選、拆分及比較條件',pick(c,['schema','question','surname','purpose','policy','baseline','baselineResolution','candidateNames','criteria','decisionPolicy','questionModel']));add('所有姓名實算',arr(c.names).length?c.names.map(nameFacts):[nameFacts(c)]);add('比較方向與方法矩陣',c.comparison?{...pick(c.comparison,['status','baselineName','candidateNames','methodMatrix','scope']),pairs:arr(c.comparison.pairs).map(p=>({...pick(p,['baseline','candidate','sameName','changedCharacters','fiveGrids','sanCai','phonetic','zodiac','bazi','nameGua']),strokeSensitivity:{baseline:grid(p.strokeSensitivity?.baseline?.alternateFiveGrids),candidate:grid(p.strokeSensitivity?.candidate?.alternateFiveGrids),scope:p.strokeSensitivity?.scope}}))}:null);}
-    else if(kind==='compat'){add('雙方及雙向原盤作用',{...pick(c,['version','scenario','dayMasters','spousePalace','directionalTenGods','stemRelations','branchRelations','groupRelations','elementComplement','uncertainty','policy','overlays','directions','projectionGroups','birthTimeAudit','timeline','unavailable']),personA:readablePerson(c.personA),personB:readablePerson(c.personB),luckSynchronization:c.luckSynchronization?{aCurrent:c.luckSynchronization.aCurrent,bCurrent:c.luckSynchronization.bCurrent,years:arr(c.luckSynchronization.years).filter(y=>inRange(y.year,range))}:null});}
+    else if(kind==='compat'){add('雙方及雙向原盤作用',{...pick(c,['version','scenario','scenarioId','focusPalaces','status','dayMasters','spousePalace','directionalTenGods','stemRelations','branchRelations','groupRelations','elementComplement','uncertainty','policy','overlays','directions','projectionGroups','birthTimeAudit','timeline','unavailable']),personA:readablePerson(c.personA),personB:readablePerson(c.personB),luckSynchronization:c.luckSynchronization?{aCurrent:c.luckSynchronization.aCurrent,bCurrent:c.luckSynchronization.bCurrent,years:arr(c.luckSynchronization.years).filter(y=>inRange(y.year,range))}:null});}
     else if(kind==='personality'){add('五軸實算與模型界線',pick(c,['system','version','independent','disclaimer','index','code','name','traits','axes','modelInputs','strengths','watch','provisional']));if(c.provisional)add('三柱參考',c.chart);}
     else {add('本次完整操作與牌籤作用',a.methodData);add('程序及原题背景',pick(c,['referenceDate','question','methodPlan','sourceProfile','spread','spreadType','drawProcedure','status','gate','tarotData','ootkData']));}
     add('引擎逐項作用摘要與反證',ledger(a));
@@ -1186,8 +1451,10 @@ var JY_REC_PACKET = {
   function buildMany(entries,question,options={}){
     const q=String(question||''),sections=[],calculated=[],failures=[],errors=[];
     entries=entries.map((e,i)=>({...e,sourceEntryIndex:i,label:e.label?(entries.filter(x=>x.label===e.label).length>1?e.label+'（第'+(i+1)+'份）':e.label):(entries.length>1?'第'+(i+1)+'份'+(root.JYReadingWorkflow?.methodInfo?.[e.method]?.name||e.method):undefined)}));
-    const knownFacts=String(options.knownFacts??root.JYKnownFacts?.get?.()??'').trim();
-    const caseNotes=[options.notes,knownFacts].filter(Boolean).join('\n');
+    const methods=entries.map(e=>e.method);
+    const knownFacts=String(options.knownFacts??root.JYKnownFacts?.get?.(methods,q)??'').trim();
+    const priority=String(options.priority??root.JYKnownFacts?.priority?.(methods,q)??'').trim();
+    const caseNotes=[options.notes,knownFacts,priority,options.followUp?.note].filter(Boolean).join('\n');
     options={...options,question:q,methods:entries.map(e=>e.method)};
     for(const e of entries){
       try{const a=root.JYNativeAnalysis.analyze(e.method,e.chart,{...options,...e.options,notes:[e.options?.notes??options.notes,knownFacts].filter(Boolean).join('\n'),question:q});const entrySections=facts(e.method,e.chart,a,q,{...options,...e.options,question:q}).map(s=>({...s,label:e.label?e.label+' · '+s.label:s.label}));calculated.push({...e,analysis:a});sections.push(...entrySections);}
@@ -1196,12 +1463,45 @@ var JY_REC_PACKET = {
     if(!calculated.length){const error=errors[0]||new Error('沒有本次可確認的原生資料；請提供原盤或有效抽取紀錄。');error.excludedRecords=failures;throw error;}
     const method=entries.length===1?entries[0].method:'compat';
     const referenceAudits=calculated.map(e=>({method:e.method,label:e.label||null,audit:root.JYReadingWorkflow?.chartReferenceAudit?.({method:e.method,question:q},e.chart)})).filter(x=>x.audit);
-    const data={schema:'jy.native-analysis/1',method,question:q,knownFacts,verificationFacts:root.JYReadingWorkflow?.verificationFacts?.(calculated,q,sections)||null,notes:options.notes===undefined?null:String(options.notes),sourceCoverage:{requestedRecords:entries.length,readableRecords:calculated.length,excludedRecords:failures.length},failures,requestCoverage:calculated.map(e=>({method:e.method,label:e.label||null,coverage:e.analysis.depthContract?.requestCoverage||null})),referenceAudits,sections};
+    const data={schema:'jy.native-analysis/1',method,question:q,knownFacts,priority,followUp:options.followUp||null,verificationFacts:root.JYReadingWorkflow?.verificationFacts?.(calculated,q,sections)||null,notes:options.notes===undefined?null:String(options.notes),sourceCoverage:{requestedRecords:entries.length,readableRecords:calculated.length,excludedRecords:failures.length},failures,requestCoverage:calculated.map(e=>({method:e.method,label:e.label||null,coverage:e.analysis.depthContract?.requestCoverage||null})),referenceAudits,sections};
     const body=root.JYSinglePaste.compile(calculated,data);
-    const p=packet(body,method,q,options.methods,caseNotes,{verificationFacts:data.verificationFacts});p.readingData=data;p.sourceEntries=entries;calculated.forEach(e=>byChart.set(e.chart,p.body));return p.body;
+    const p=packet(body,method,q,options.methods,caseNotes,{verificationFacts:data.verificationFacts});p.readingData=data;p.sourceEntries=entries;p.sourceOptions={...options,knownFacts,priority};if(!options.followUp)calculated.forEach(e=>byChart.set(e.chart,p.body));return p.body;
   }
   function build(method,chart,question,options={}){return buildMany([{method,chart}],question,options);}
   function get(text){text=String(text);if(records.has(text))return records.get(text);const m=text.match(/^【命理分析資料 ([a-f0-9]{8})｜/)||text.match(/"packetId":"([a-f0-9]{8})"/);if(m){for(const p of records.values())if(p.id===m[1])return p;}try{const saved=JSON.parse(root.localStorage?.getItem('jy-prompt-packets-v1')||'[]').find(r=>r.version===VERSION&&(m?r.id===m[1]:r.body===text));if(saved)return packet(saved.body,saved.method,saved.question,saved.methods,saved.notes,{verificationFacts:saved.verificationFacts,projection:saved.projection});}catch(_){}return null;}
+  function followUp(original, observation) {
+    const p=get(original);
+    if(!p)throw Error('這份盤的資料已關閉。請回到本次結果再選一次落點。');
+    const visit=p.projection?.consultation?.find(v=>(v.source||v.title)===observation.source);
+    const point=visit?.points.find(v=>v.label===observation.location&&v.detail===observation.evidence);
+    if(!point)throw Error('這個落點與本次盤面不同，請重新選擇。');
+    const follow={source:visit.source||visit.title,location:point.label,evidence:point.detail,
+      experience:String(observation.experience||''),note:String(observation.note||'').trim().slice(0,240)};
+    const source=p.readingData, intake=p.projection.intake||{};
+    const priorNotes=[source?.notes,intake.facts,intake.priority].filter(Boolean).join('\n');
+    const notes=[priorNotes,follow.note].filter(Boolean).join('\n');
+    const workflow=root.JYReadingWorkflow, level=n=>workflow?.careContext?.(p.question,n)?.level;
+    const marker='\n\n【解讀與查證規則】', section=root.JYSinglePaste.observationText(follow);
+    const start=p.body.indexOf(marker);
+    if(start!==-1&&!source?.followUp&&!p.body.includes('\n【本人點選的落點與回應】')&&level(priorNotes)===level(notes)){
+      // Prefer the committed text, even if the user has subsequently edited inputs in the same room.
+      const body=p.body.slice(0,start)+'\n\n'+section+p.body.slice(start);
+      if(chars(body)<=LIMIT&&utf8(body)<=BYTES){
+        const projection={...p.projection,characters:chars(body),utf8Bytes:utf8(body)};
+        const next=packet(body,p.method,p.question,p.sourceOptions?.methods,notes,{projection,verificationFacts:p.readingFacts});
+        next.readingData={...source,knownFacts:intake.facts||'',priority:intake.priority||'',followUp:follow};
+        next.sourceEntries=p.sourceEntries;next.sourceOptions=p.sourceOptions;
+        return next.body;
+      }
+    }
+    if(p.sourceEntries?.length)return buildMany(p.sourceEntries,p.question,{...p.sourceOptions,followUp:follow});
+    const continuation=['請接續同一次解讀，使用對話中原本的盤面。', '原題：'+p.question,
+      intake.facts&&'本人已知的實際情況：'+JSON.stringify(intake.facts),intake.priority&&'本人希望釐清：'+JSON.stringify(intake.priority),
+      '本次選的落點：'+follow.source+'／'+follow.location+'。'+follow.evidence,
+      follow.experience&&'本人對照：'+follow.experience,follow.note&&'本人補充：'+JSON.stringify(follow.note),
+      '請說明這一處怎麼影響原問題，以及真實經驗如何改變先前的判斷。'].filter(Boolean).join('\n');
+    return level(notes)==='safety-first'?workflow.prepareDeliveryText(continuation,{question:p.question,notes,methods:[p.method]}):continuation;
+  }
   function forChart(chart){const text=byChart.get(chart);return text?exportPacket(text):null;}
   function finish(text,options={}){
     const existing=get(text);if(existing)return existing.body;
@@ -1234,13 +1534,13 @@ var JY_REC_PACKET = {
     all.onclick=async()=>{try{await rawCopy(p.body);status.textContent='已完整複製，請一次貼上。';}catch(e){area.focus();area.select();status.textContent='請長按文字全選複製整份提示詞。';}};
     const close=root.document.createElement('button');close.type='button';close.dataset.jppClose='';close.textContent='關閉';close.onclick=()=>dialog.remove();panel.appendChild(close);dialog.appendChild(panel);root.document.body.appendChild(dialog);dialog.addEventListener('keydown',e=>{if(e.key==='Escape')dialog.remove();});all.focus({preventScroll:true});
   }
-  async function copy(text){
+  async function copy(text, options={}){
     const p=get(text),body=p?p.body:String(text);
     if(chars(body)>LIMIT||utf8(body)>BYTES){const e=new Error('這份提示詞來自舊版且超過單次貼上預算；請重新產生提示詞。');e.code='STALE_PROMPT_OVER_BUDGET';throw e;}
     try{await rawCopy(body);}catch(e){if(p)show(text,false);throw e;}
-    memoryTip();
+    if(!options.inlineFeedback)memoryTip();
     return {parts:1,mode:'single-message',copied:1,characters:chars(body)};
   }
-  root.JYPromptPacket=Object.freeze({version:VERSION,memoryTip:MEMORY_TIP,limits:{characters:LIMIT,utf8Bytes:BYTES},build,buildMany,finish,get,exportPacket,forChart,download,downloadAnalysis,copy,show,dense,undense,split,utf8,chars,facts,timeRange,recommendationEnding});
+  root.JYPromptPacket=Object.freeze({version:VERSION,memoryTip:MEMORY_TIP,limits:{characters:LIMIT,utf8Bytes:BYTES},build,buildMany,finish,get,exportPacket,forChart,followUp,download,downloadAnalysis,copy,show,dense,undense,split,utf8,chars,facts,timeRange,recommendationEnding});
   if(typeof module!=='undefined'&&module.exports)module.exports=root.JYPromptPacket;
 })(typeof window!=='undefined'?window:globalThis);
