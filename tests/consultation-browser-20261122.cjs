@@ -16,6 +16,8 @@ const types = {'.html':'text/html','.js':'application/javascript','.mjs':'applic
 const rooms = {tarot:'#step-tarot',ootk:'#step-tarot',bazi:'#bazi-screen',ziwei:'#zw-result',compat:'#bzs-screen',personality:'#bzs-screen',meihua:'#meihua-screen',oracle:'#oracle-screen',vedic:'#vedic-page',western:'#western-page',liuyao:'#liuyao-screen',yijing:'#yijing-screen',name:'#nm-room',liuren:'#lr-room',lenormand:'#lenormand-screen'};
 const confirmed = {tarot:'#tarot-ai-wrap .jy-ex-card',ootk:'.ootk-record',bazi:'.bzx-pillars',ziwei:'.zw-ai',compat:'#pair-ziwei-result',personality:'.bzs-type',meihua:'.mhx-ai-card',oracle:'.or-result',vedic:'#vd-result-title',western:'.wx-result-title',liuyao:'.gw-result',yijing:'.gw-result',name:'.nm-result-title',liuren:'.lr-workspace',lenormand:'.ln-spread-board'};
 const q = '未來三個月這份工作的合作條件如何，哪些變化需要留意？';
+const relationshipQuestion='我和她會走到交往嗎？';
+const relationshipCasts={huan:[8,7,8,8,9,9],xian:[8,8,7,7,7,8]};
 const datedQuestion='我想約合作方試做小量包裝。十月八日至十五日，盤上哪兩個候選日值得聯絡？請各配對原來的觸發條件。';
 const nameQuestion='陳弘林和陳沐洪哪個適合自我介紹？我在意第一次聽就能寫對。';
 const pause = ms => new Promise(resolve=>setTimeout(resolve,ms));
@@ -96,8 +98,9 @@ async function go(page,kind,variant){
   } else if(kind==='liuyao'||kind==='yijing'){
     const room=page.locator(rooms[kind]);
     await room.locator('[data-mode="manual"]').click();
-    await room.locator('textarea').first().fill(q);
-    for(let i=0;i<6;i++)await room.locator('select[data-manual="'+i+'"]').selectOption(String([6,7,8,9,7,8][i]));
+    const values=relationshipCasts[variant]||[6,7,8,9,7,8];
+    await room.locator('textarea').first().fill(relationshipCasts[variant]?relationshipQuestion:q);
+    for(let i=0;i<6;i++)await room.locator('select[data-manual="'+i+'"]').selectOption(String(values[i]));
     await room.locator('[data-action="start"]').click();
   } else if(kind==='bazi'){
     await page.waitForFunction(()=>typeof computeBazi==='function'&&typeof enhanceBazi==='function');
@@ -276,7 +279,7 @@ async function run(browser,kind){
     const home=page.locator('.at-tools button[data-tool]');await home.first().waitFor();row.portals=await home.count();assert.equal(row.portals,14);
     await visible(page,'.at-tools button[data-tool="'+(tool==='personality'?'compat':tool)+'"]').click();row.entered=true;
     await go(page,tool,variant);row.result=true;
-    let currentQuestion=variant==='dates'?datedQuestion:variant==='compare'?nameQuestion:q;
+    let currentQuestion=relationshipCasts[variant]?relationshipQuestion:variant==='dates'?datedQuestion:variant==='compare'?nameQuestion:q;
     if(variant==='edit'){
       const region=page.locator('.jy-consult:visible').first();
       await region.locator('.jc-observe summary').click();
@@ -323,9 +326,15 @@ async function run(browser,kind){
       const table=page.locator('.jy-consult:visible').first(), check=table.locator('.jc-check');
       const opening=table.locator('.jc-opening').first();
       assert.ok(await opening.isVisible(),kind);
-      if(!(await opening.getAttribute('open')) && !await opening.locator('dl').isVisible())await opening.locator('summary').click();
+      assert.ok(await opening.locator('dl').isVisible(),'the first chart judgment must already be visible');
       assert.ok((await opening.locator('dd').first().innerText()).trim(),kind);
       row.nativeOpeningOnScreen=true;
+      if(relationshipCasts[variant]){
+        row.chartVerdict=await opening.locator('.jc-verdict').innerText();
+        assert.match(row.chartVerdict,variant==='huan'?/未見兩人成局.*遠害也.*正位也/:/取女吉.*有利於結緣/);
+        await opening.scrollIntoViewIfNeeded();
+        await page.screenshot({path:path.join(artifacts,kind+'-judgment-390.png')});
+      }
       const source=table.locator('.jc-source');await source.locator('summary').click();
       const native=source.locator('select'), sourceText=source.locator('.jc-source-text');
       if(variant==='dates'){
@@ -351,6 +360,7 @@ async function run(browser,kind){
       await reread.locator('[role=status]').filter({hasText:'已複製'}).waitFor();
       const sameCast=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
       assert.ok(sameCast.includes(currentQuestion)&&sameCast.includes('本題起斷（')&&sameCast.includes('免禍'),kind);
+      if(row.chartVerdict)assert.ok(sameCast.includes(row.chartVerdict),kind);
       row.rereadIncludesOriginalChart=true;
       const answer=check.locator('[data-consult-answer]');
       await answer.fill('你可以先核對下週的會議時間。');

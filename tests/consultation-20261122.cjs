@@ -188,6 +188,11 @@ group('十五法各自帶入本盤的可判範圍，初讀、合讀與重讀共�
     assert.ok(plan.coreBlocks.includes(primary.label),kind);
     assert.match(primary.value,native[kind],kind);
     assert.ok(plan.consultation[0].opening.anchors.every(a=>primary.value.includes(a.label+'｜'+a.detail)),kind);
+    if(kind!=='yijing'){
+      const crosscheck=body.split('【先讓他對照】')[1].split('【')[0];
+      assert.ok(crosscheck.includes(plan.consultation[0].opening.anchors[0].label),kind);
+      assert.ok(!crosscheck.includes('解釋卦辭'),kind);
+    }
     assert.ok(primary.value.includes(c.JYConsultationEvidence.conclusionScope[kind]),kind);
     assert.match(body,/第一段直接斷原題/);
     assert.doesNotMatch(body,/做決定前可向現實核對|做法分成兩三個短段|命理名詞集中在依據行/);
@@ -217,6 +222,11 @@ group('同問交往：渙之師主上九參九五，無咎不許成；咸靜卦�
   assert.match(focusBlocks(alternate)[0].value,/咸卦卦辭.*取女吉/);
   assert.doesNotMatch(focusBlocks(alternate)[0].value,/沒有直接許成的斷辭/);
   assert.ok(!check(alternate,unsupported).includes('YIJING_CLAIM_EXCEEDS_SELECTED_TEXT'));
+  for(const context of ['我們已經交往，能不能一起工作？','在一起工作會有升遷嗎？','我們什麼時候結婚？','她願不願意和我交往？']){
+    const text=visit('yijing',xian,context).body;
+    assert.equal(api.get(text).projection.consultation[0].opening.verdict,'',context);
+  }
+  assert.match(api.get(visit('yijing',xian,'我們會結婚嗎？').body).projection.consultation[0].opening.verdict,/問成婚/);
   for(const [values,main,extra] of [[[7,7,7,8,8,8],'小往大來','包荒'],[[8,8,8,7,7,7],'大往小來','包承']]){
     const chart=c.JYYijingCore.calculate({values,question}),staticBody=visit('yijing',chart).body;
     assert.ok(focusBlocks(staticBody)[0].value.includes(main));

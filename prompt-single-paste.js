@@ -349,15 +349,24 @@
 /* 2026-11-16 deep112：使用者指出真人算命師會先說中個性、選擇或過去的事，讓人覺得準，而我們的回覆只有保守的建議。
      根因：前面為了防 AI 亂編，把所有關於本人的話都要求成推測口氣，結果沒有任何一句可以讓人拿自己的經歷去對。
      傳統論命本來就先「驗盤」：先講盤上寫明的性情與已經過去的運期，對得上再往下論。這裡把這一步加回來，但只准講盤上指得出的、只講領域與性質、不編具體事件。 */
-  const NATAL=new Set(['bazi','ziwei','vedic','astro','compat','personality']);
-  const verifyFor=m=>'【先讓他對照】'+(NATAL.has(m)?'盤上有可以對照的題宮或運期才寫，經歷由他確認。':'對照主判與參象管的範圍。原題沒有互動經過，就只比對實有的主辭與參象。不要增寫聊天、回訊、約見，也不用身心狀態解釋卦辭。');
+  function verifyFor(visits){
+    const label='【先讓他對照】';
+    if(visits.length===1 && visits[0].method==='yijing')return label+'對照主判與參象管的範圍。原題沒有互動經過，就只比對實有的主辭與參象。不要增寫聊天、回訊、約見，也不用身心狀態解釋卦辭。';
+    const positions=visits.map(v=>{
+      const names=(v.opening?.anchors||[]).slice(0,2).map(p=>p.label);
+      return names.length?(v.source||v.opening.method)+'的'+names.join('與'):'';
+    }).filter(Boolean);
+    return label+(positions.length?'就'+positions.join('；另看')+'，說明各自能回答原題的哪一部分。':'只取本次能定位的資料。')+'遇到身世、行為或別人的心意，只採本人寫明的情況。';
+  }
   const styleFor=(d,steps,sparse)=>{
     let h=2166136261;
     for(const ch of [d.method,d.question,d.styleSalt].join('|'))h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
     const pick=list=>{h=(Math.imul(h,1664525)+1013904223)>>>0;return list[(h>>>8)%list.length];};
     const conf=pick(STYLE.conf),length=pick(STYLE.len);
-    lastStyleCheck=sparse?'證據只有一兩處就各說清楚，無須湊字數':CONF_CHECK[STYLE.conf.indexOf(conf)]+'，'+LEN_CHECK[STYLE.len.indexOf(length)];
-    return '【本次寫法】'+[pick(STYLE.address),pick(STYLE.open),conf,pick(STYLE.order),steps?pick(STYLE.advice):'原題只問走向就專心斷走向。',pick(STYLE.close),sparse?'不為篇幅反覆重講。':length,'直接寫給他。'].join('');
+    const full=/全盤|整張命盤|(?:全面|完整)(?:分析|解讀)|逐宮|逐年|逐爻/.test(d.question);
+    lastStyleCheck=sparse?'證據只有一兩處就各說清楚，無須湊字數':CONF_CHECK[STYLE.conf.indexOf(conf)]+(full?'，'+LEN_CHECK[STYLE.len.indexOf(length)]:'，每個主要判斷可由本盤核對');
+    const extent=sparse?'不為篇幅反覆重講。':full?length:'每段解透一個會改變答案的盤面作用，說完即可。';
+    return '【本次寫法】'+[pick(STYLE.address),pick(STYLE.open),conf,pick(STYLE.order),steps?pick(STYLE.advice):'原題只問走向就專心斷走向。',pick(STYLE.close),extent,'直接寫給他。'].join('');
   };
   const ASK_BRACELET=/手鍊|手串|手珠|水晶|礦石|天鐵|舍利|佩戴|配戴|戴什麼/;
   function wearingIntent(q){
@@ -896,11 +905,16 @@
       }
       if(wing?.text)lines.push(s.role+'所據'+(s.kind==='judgment'?'彖傳':'小象')+'｜'+wing.text);
     }
-    const relationship=/交往|在一起|成為伴侶|復合|婚姻|結婚/.test(question);
+    // An existing relationship in the background does not turn a work or timing question into a proposal.
+    const relationship=String(question||'').split(/[。！？!?；;，,\n]/).map(clause=>{
+      if(/交往後|在一起(?:工作|合作|上班)|交往多久|何時|什麼時候|幾時|哪天|哪一年|心意|喜不喜歡|想不想|願不願意/.test(clause))return '';
+      const outcome=clause.match(/(?:能否|能不能|是否|會不會|有沒有(?:可能|機會)|能|會|有望|有機會|可能).{0,10}?(結婚|成婚|交往|成為伴侶|成為(?:男|女|男女)朋友|在一起)(?:[呢嗎么嘛了啊呀]?\s*)$/);
+      return outcome?(/結婚|成婚/.test(outcome[1])?'成婚':'交往'):'';
+    }).find(Boolean);
     const marriage=relationship && chosen.find(s=>/取女吉|娶女吉/.test(s.text));
     if(marriage){
       const phrase=marriage.text.match(/取女吉|娶女吉/)[0];
-      verdict=marriage.hexagram+'卦的'+marriage.label+'明言「'+phrase+'」。問交往，這一處確有利於結緣的象。卦上可論婚配之利，對方此刻的心意仍未定。';
+      verdict=marriage.hexagram+'卦的'+marriage.label+'明言「'+phrase+'」。問'+relationship+'，這一處確有利於結緣的象。卦上可論婚配之利，對方此刻的心意仍未定。';
     }
     if(chosen.some(s=>/[无無]咎/.test(s.text))){
       lines.push('「無咎」判所述處置可免其咎。若同爻另有吉、凶、婚媾或其他具體斷語，分句取義；免咎本身不能證成事件。');
@@ -913,8 +927,7 @@
           const image=wings.find(w=>w.side===s.side&&w.position===s.position);
           return s.label+'的小象說「'+image.text.replace(/[。．]$/,'')+'」';
         });
-        verdict='問能否交往，'+e.chart.original.name+'卦這次未見兩人成局的明確占辭。'+images.join('，')+'。所選爻辭皆言無咎，沒有直接許成的斷辭。';
-
+        verdict='問能否'+relationship+'，'+e.chart.original.name+'卦這次未見兩人成局的明確占辭。'+images.join('，')+'。所選爻辭皆言無咎，沒有直接許成的斷辭。';
       }
     }
     if(e.chart.hasChange&&!chosen.some(s=>s.side==='changed'))lines.push('之卦'+e.chart.changed.name+'只記卦變，本次未取其卦爻辭。不能從卦名另推結果或行動路線。');
@@ -1324,7 +1337,7 @@
       !safe&&'第二部分用一句自然的話帶出「我怎麼看出來的」，每行用生活語言講一件事，括號標出讀者能在本包找到的宮位、牌位、卦爻、詩句或算式。行數依切題依據多寡，有一條就解釋透一條。反證要說明哪一點會讓主要判斷改變；資料沒有相反線索就省略。同一判斷只說一次，重點讓他聽得懂。依本次寫法安排第一部分，再接第二部分及適用的收尾。',
       !safe&&'【把判斷落回這個人】用他明說的問題限定所取的象。未提供的職業、行為、焦慮與對方的想法都留白。兩人互動的常理不能替代成局之象。物件選材也只回扣已成立的判斷。',
       !safe&&steps&&situation?.checks?.length&&'原題也問做法，斷盤之後才可補一件切題的事：'+situation.checks[0].question,
-      !safe&&styleFor(data,steps,visits.length===1&&visits[0].points.length<=2), !safe&&verifyFor(data.sourceCoverage?.requestedRecords>1&&!entries.some(e=>e.method==='compat')?'combined':data.method),
+      !safe&&styleFor(data,steps,visits.length===1&&visits[0].points.length<=2), !safe&&verifyFor(visits),
       !safe&&statedConditions(data.question,data.knownFacts),
       safe?(root.JYReadingWorkflow?.prepareDeliveryText?.(safetyClose,{question:data.question,notes:caseNotes,methods:entries.map(e=>e.method)})||safetyClose):unknownHouse?'時辰未定，省略依宮主選材。文末保留提醒。\n'+CLOSING_NOTICE+'\n'+footer:'【成稿收尾】\n'+commercialFor(data.question,data.sourceCoverage?.requestedRecords>1&&!entries.some(e=>e.method==='compat')?'combined':data.method)
     ].filter(Boolean).join('\n\n');
