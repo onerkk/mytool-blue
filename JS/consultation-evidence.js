@@ -204,6 +204,53 @@
     });
   }
 
+  // Each school permits a different kind of conclusion from the same question.
+  const conclusionScope = {
+    tarot:'按本次牌陣的實際角色與牌義版本起斷。結果、短期、阻力各管一層；希望或恐懼不能充作結果，也不能當成第三人的心理。',
+    ootk:'由問到的有效操作的代表牌、計數、配對與尊貴定主線。領域只限定所論何事；未完成的輪次沒有結局可取。',
+    lenormand:'把同一實際牌路照順序連成一句，交代哪張修飾哪張。人物、關係及結局須由題牌、位置或組合承擔。',
+    bazi:'以實際日主、月令、透藏及所問十神定原局能承受什麼；歲運有具體引動才斷時機。有某十神不能直接許某事件。',
+    ziwei:'以題宮的星曜及三方四正定本命，再辨限年有無引動。單方夫妻宮論本人的關係傾向，不能指定另一個人的心意。',
+    compat:'先辨甲乙、各自原局及雙向實際作用。相生、相合只說兩盤何處相應；是否已交往及另一方的意願各須另有依據。',
+    astro:'依本次本命、問事或遷居用途取用。按實際題宮、宮主與相位解題；本命傾向與問事是否成象分開。',
+    vedic:'以D1題宮及宮主起斷，用已展開的相關分盤與大／副運核實。喜見某星只論該層，落實到特定人事要有相應引動。',
+    liuren:'依課內用神及初中末傳讀發端、承接與收束。旺衰、空破與生剋要落到當傳；候選應期逐日配原來的觸發條件。',
+    liuyao:'以本題用神與世應辨人事，再查月日、動變、飛伏及空破。清楚說誰生誰、哪一爻受制，是否成事須看用神如何承接。',
+    meihua:'固定原體，依本卦體用、互卦經過、變卦與原體的生剋定最後走向。分清誰生誰剋、誰得誰耗。',
+    yijing:'依本次變占已選的主辭、參辭與所屬象傳取用。先辨辭判的是進退得失、免咎，還是直接回應原題所求之事。',
+    oracle:'以本廟本籤的原句和轉折定進退。有條件、待時與明言可成是不同的判斷；典故只有題名不補故事。',
+    name:'依本次字音形義、具名筆畫版本與五格三才比較。數理或名字寓意只論其取象，不當作現實事件、他人喜好或時間。',
+    personality:'把五軸中切題的一軸連回四柱及本模型實算訊號。只論行為傾向，無法據此斷第三人或未來事件。'
+  };
+
+  function asksForPractical(question, priority) {
+    const q=[question, priority].filter(Boolean).join('。');
+    if (/(?:不要|不必|不用|只要|只從|只想).{0,6}(?:建議|做法|命理|卦象|盤象|看盤)/.test(q)) return false;
+    return /(?:怎[麼麽樣]|如何)[^。！？\n]{0,5}(?:做|辦|試|談|處理|回應|爭取|改善|準備|開口|著手|面對|答覆)|怎辦|(?:可以|該|我能|要)(?:先)?做什麼|下一步|具體做法|行動建議|實際建議/.test(q);
+  }
+
+  function openingPoints(visit, entry, question) {
+    const {method,points}=visit, find=rx=>points.find(p=>rx.test(p.label));
+    let first=[];
+    if(method==='tarot'){
+      const slots=(entry.chart.tarotData||entry.chart).methodPlan?.slots||[];
+      const authority=p=>slots[Number(p.label.match(/^第(\d+)位/)?.[1])-1]?.authority;
+      const results=points.filter(p=>authority(p)==='outcome'||(!authority(p)&&!/希望|恐懼|期待|建議/.test(p.label)&&/最終|結果|收束/.test(p.label)));
+      first=[...results,find(/短期|身前|即將/),find(/交叉|橫跨|阻力/)];
+    } else if(method==='meihua') first=[find(/本卦/),find(/變卦/),find(/互卦/)];
+    else if(method==='ootk'){
+      const round=question.match(/第\s*([一二三四五1-5])\s*輪/);
+      const i=round&&(Number(round[1])||'一二三四五'.indexOf(round[1])+1);
+      const one=i&&find(new RegExp('^第'+i+'輪'));
+      if(one)return [one];
+      first=[points[0],points.at(-1)];
+    } else if(method==='vedic'&&points[0]?.visual.kind!=='limit'){
+      const requested=[...question.matchAll(/\bD(\d{1,3})\b/gi)].map(m=>'D'+m[1]+'・');
+      first=[points[0],...points.filter(p=>requested.some(prefix=>p.label.startsWith(prefix))),...points.filter(p=>/^D\d+・/.test(p.label))];
+    } else if(method==='name') first=points.filter(p=>p.visual.mark&&question.includes(p.visual.mark));
+    return distinct([...first,...points]).slice(0,3);
+  }
+
   function build(entry, question, primaryItems = []) {
     const { method, chart, analysis } = entry;
     const station = stations[method];
@@ -222,5 +269,5 @@
     if (!points.length) points = [gap('可讀範圍', '本次尚無可定位的解讀落點。', '只保留已完成的程序，等缺少的資料補齊再看。')];
     return { method, source: entry.label || '', title: station[0], action: station[1], theme: station[2], points };
   }
-  root.JYConsultationEvidence = Object.freeze({ build });
+  root.JYConsultationEvidence = Object.freeze({ build, openingPoints, asksForPractical, conclusionScope:Object.freeze(conclusionScope) });
 })(typeof window === 'undefined' ? globalThis : window);

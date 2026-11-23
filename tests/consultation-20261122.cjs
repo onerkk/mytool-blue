@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const { environment, examples } = require('./native-fixtures-20261003.cjs');
 const env = environment(), c = env.ctx;
-['tarot-foundation','golden-dawn-tarot','prompt-brief','prompt-packet'].forEach(env.load);
+['tarot-foundation','golden-dawn-tarot','tarot_upgrade','prompt-brief','prompt-packet'].forEach(env.load);
 const f = examples(c), api = c.JYPromptPacket;
 const plain = x => JSON.parse(JSON.stringify(x));
 const question = '我在公司還能有被主管重視的時候嗎？';
@@ -50,6 +50,7 @@ group('追問保留已送出的那副牌，並重新辨認當事人明示的安�
   chart.cards[0].isUp=true;
   const urgent=api.followUp(first.body,{...observation,note:'我現在想自殺，已經準備傷害自己。'});
   assert.doesNotMatch(urgent,/shopee\.tw/);
+  assert.match(api.rereadByMethod(urgent),/安全/);assert.doesNotMatch(api.rereadByMethod(urgent),/本題起斷|shopee/);
 });
 group('凱爾特十字保留全部十位、希望與結果、RWS 方向與並列元素',()=>{
   const positions=['核心狀態','交叉力量','理想與可能','事情根基','近期過去','短期走向','本人','環境','希望或恐懼','最終將至'];
@@ -63,6 +64,8 @@ group('凱爾特十字保留全部十位、希望與結果、RWS 方向與並列
   assert.match(end.detail,/星星（逆位）/);assert.match(hope.reading,/擔心/);
   assert.match(body,/風、土各1張，同為最少。結果位第10張星星屬風，按本站規則取金/);
   assert.match(body,/逆位8張/);
+  const opening=api.get(body).projection.referenceSections.find(s=>s.label.includes('本題起斷')).value;
+  assert.match(opening,/^第10位・最終將至｜星星（逆位）/);assert.match(opening,/第6位・短期走向｜金幣皇后（逆位）/);assert.doesNotMatch(opening,/第9位/);
 });
 
 group('三爻變依實際主參兩卦畫線，梅花標出本次動爻，六壬保留三傳順序',()=>{
@@ -172,5 +175,65 @@ group('同一段只重複兩次、引文與正常寫法不當成機械迴圈',()
   assert.deepEqual(plain(loop.writing.map(p=>p.code)),['EDITORIAL_LABEL','REPEATED_PASSAGE']);
   assert.equal(loop.issues.length,1);
   assert.equal(review([line,line,'> '+line,'> '+line,'> '+line].join('\n')).writing.length,0);
+});
+const focusBlocks=body=>api.get(body).projection.referenceSections.filter(s=>/(?:^|／)本題起斷（/.test(s.label));
+group('十五法各自帶入本盤的可判範圍，初讀、合讀與重讀共用同一筆資料',()=>{
+  const charts={...f.charts,ootk:require('../docs/qa-single-paste27/ootk-fixture.json')};
+  const native={tarot:/第[12]位・/,ootk:/第1輪・.*計數/,lenormand:/第[0-9、]+位｜.*→/,bazi:/日柱｜.*日主/,
+    ziwei:/官祿/,astro:/10宮.*宮主/,vedic:/10宮.*掌/,liuren:/初傳.*｜/,liuyao:/爻.*｜/,yijing:/主讀.*｜/,
+    meihua:/本卦用.*｜[\s\S]+變卦用/,oracle:/第1籤・第1句｜/,name:/各字筆畫/,compat:/雙方日主｜/,personality:/本模型選擇/};
+  assert.deepEqual(Object.keys(charts).sort(),Object.keys(native).sort());
+  for(const [kind,chart] of Object.entries(charts)){
+    const {body}=visit(kind,chart,question,records),[primary]=focusBlocks(body),plan=api.get(body).projection;
+    assert.ok(plan.coreBlocks.includes(primary.label),kind);
+    assert.match(primary.value,native[kind],kind);
+    assert.ok(primary.value.includes(c.JYConsultationEvidence.conclusionScope[kind]),kind);
+    assert.match(body,/第一段直接斷原題/);
+    assert.doesNotMatch(body,/做決定前可向現實核對|做法分成兩三個短段|命理名詞集中在依據行/);
+    const again=api.rereadByMethod(body);
+    for(const text of [primary.value,question,records.knownFacts,records.priority])assert.ok(again.includes(text),kind);
+  }
+  const both=api.buildMany([{method:'tarot',chart:f.tarot,label:'甲的牌陣'},{method:'yijing',chart:f.yi,label:'乙的卦'}],question);
+  assert.equal(focusBlocks(both).length,2);
+  focusBlocks(both).forEach(s=>assert.ok(api.rereadByMethod(both).includes('【'+s.label+'】\n'+s.value)));
+  const halted=visit('ootk',f.ootk);assert.match(focusBlocks(halted.body)[0].value,/程序未成立/);
+});
+
+group('同問交往：渙之師主上九參九五，無咎不許成；咸靜卦仍能按取女吉斷利',()=>{
+  const q='我和她會走到交往嗎？';
+  const huan=c.JYYijingCore.calculate({values:[8,7,8,8,9,9],question:q}),body=visit('yijing',huan,q).body;
+  assert.equal(huan.original.name,'渙');assert.equal(huan.changed.name,'師');
+  const [focus]=focusBlocks(body);
+  for(const text of ['主讀・渙卦上九','參讀・渙卦九五','遠害也','正位也','居中、當位','沒有直接許成的斷辭','之卦師只記卦變'])
+    assert.ok(focus.value.includes(text),text);
+  assert.doesNotMatch(body,/師出以律|丈人吉|渙其群|做決定前可向現實核對/);
+  const unsupported='這卦不是「沒機會」，而是「有機會，但你越急著要答案，越容易把機會推掉」。';
+  const check=(prompt,answer)=>c.JYReadingWorkflow.checkChartText(prompt,answer).issues.map(i=>i.code);
+  assert.ok(check(body,unsupported).includes('YIJING_CLAIM_EXCEEDS_SELECTED_TEXT'));
+  assert.ok(!check(body,'無咎是遠害後免咎，不能由此斷有機會交往。').length);
+  const xian=c.JYYijingCore.calculate({values:[8,8,7,7,7,8],question:q}),alternate=visit('yijing',xian,q).body;
+  assert.match(focusBlocks(alternate)[0].value,/咸卦卦辭.*取女吉/);
+  assert.doesNotMatch(focusBlocks(alternate)[0].value,/沒有直接許成的斷辭/);
+  assert.ok(!check(alternate,unsupported).includes('YIJING_CLAIM_EXCEEDS_SELECTED_TEXT'));
+  for(const [values,main,extra] of [[[7,7,7,8,8,8],'小往大來','包荒'],[[8,8,8,7,7,7],'大往小來','包承']]){
+    const chart=c.JYYijingCore.calculate({values,question}),staticBody=visit('yijing',chart).body;
+    assert.ok(focusBlocks(staticBody)[0].value.includes(main));
+    assert.ok(!staticBody.includes(extra));
+    const study=visit('yijing',chart,'請列出完整爻辭，逐爻解讀。').body;
+    assert.ok(study.includes(extra)&&!study.includes('【之卦全文'));
+  }
+  for(const values of [[7,6,9,6,8,8],Array(6).fill(9),Array(6).fill(6)]){
+    const chart=c.JYYijingCore.calculate({values,question});
+    const source=focusBlocks(visit('yijing',chart).body)[0].value;
+    chart.reading.selections.forEach(s=>assert.ok(source.includes(s.text),s.label));
+  }
+});
+
+group('只有明問現實做法才附行動，問物件戴法不強換成購物題',()=>{
+  const asks=c.JYConsultationEvidence.asksForPractical;
+  for(const q of ['她想跟我交往嗎？','這樣如何？','這個分盤怎麼看？','不用現實建議。'])assert.equal(asks(q,''),false,q);
+  for(const q of ['我能做什麼？','我該如何開口？','該怎麼答覆？'])assert.equal(asks(q,''),true,q);
+  assert.equal(asks('目前如何？','想知道下一步'),true);
+  assert.ok(visit('tarot',f.tarot,'左手戴白水晶、右手黑曜石，這樣如何？').body.includes('原題問現有戴法'));
 });
 console.log('Consultation regression groups:',checked);

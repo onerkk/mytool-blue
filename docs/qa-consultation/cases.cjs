@@ -42,3 +42,22 @@ for (const [method,[question,knownFacts]] of Object.entries(items)) {
   fs.writeFileSync(path.join(out,method+'.case.json'),JSON.stringify({method,question,knownFacts},null,2)+'\n');
   console.log(method,body.length,Buffer.byteLength(body));
 }
+
+if(process.argv.includes('--contrasts')) {
+  const relationship='我和她會走到交往嗎？';
+  const work='我在公司還能有被主管重視的時候嗎？';
+  const save=(id,method,chart,question)=>{
+    const body=c.JYPromptPacket.build(method,chart,question,{knownFacts:''});
+    fs.writeFileSync(path.join(out,id+'.prompt.txt'),body);
+    fs.writeFileSync(path.join(out,id+'.case.json'),JSON.stringify({method,question,knownFacts:''},null,2)+'\n');
+  };
+  for(const [id,values,question] of [
+    ['huan',[8,7,8,8,9,9],relationship],['xian',[8,8,7,7,7,8],relationship],
+    ['tai',[7,7,7,8,8,8],work],['pi',[8,8,8,7,7,7],work]
+  ])save(id,'yijing',c.JYYijingCore.calculate({values,question}),question);
+  env.load('tarot_upgrade');
+  const positions=['核心狀態','橫跨現況的力量','理想與可能','事情根基','近期過去','短期走向','本人','環境','希望或恐懼','最終將至'];
+  const roles=['state','interaction_force','structural','cause','antecedent','timeline','state','environment','structural','outcome'];
+  const cards=[44,41,53,40,24,76,49,42,27,17].map((id,i)=>({...x.cards[id],id,isUp:[3,6].includes(i),position:positions[i]}));
+  save('supervisor','tarot',{sourceProfile:'rws_reversals',spreadType:'celtic_cross',cards,methodPlan:{id:'celtic_cross',slots:positions.map((label,i)=>({label,authority:roles[i]}))}},work);
+}

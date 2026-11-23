@@ -4,6 +4,8 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 const [runtime, weights, ...inputs] = process.argv.slice(2);
 if (!inputs.length) throw new Error('node infer.mjs <node-llama-cpp installation parent> <GGUF> <prompt files>');
+const maxTokens=Number(process.env.JY_OUTPUT_TOKENS || 1600);
+if(!Number.isInteger(maxTokens)||maxTokens<1||maxTokens>8192)throw new Error('JY_OUTPUT_TOKENS must be between 1 and 8192');
 const resolve = createRequire(path.resolve(runtime, 'package.json'));
 const {getLlama,LlamaChatSession} = await import(pathToFileURL(resolve.resolve('node-llama-cpp')));
 const llama = await getLlama({gpu:false,build:'never',maxThreads:3});
@@ -11,7 +13,7 @@ const model = await llama.loadModel({modelPath:path.resolve(weights), gpuLayers:
 for (const input of inputs) {
   const prefix = input.replace(/\.prompt\.txt$/, '');
   const prompt = fs.readFileSync(input,'utf8')+'\n/no_think';
-  const promptTokens = model.tokenize(prompt).length, maxTokens=1600;
+  const promptTokens = model.tokenize(prompt).length;
   const contextSize=Math.ceil((promptTokens+maxTokens+192)/128)*128;
   const context=await model.createContext({contextSize,batchSize:512,threads:3,flashAttention:true});
   const sequence=context.getSequence(), session=new LlamaChatSession({contextSequence:sequence});

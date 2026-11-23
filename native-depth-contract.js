@@ -1,12 +1,12 @@
 (function(root){
   'use strict';
-  const VERSION='20261016depth28';
+  const VERSION='20261123scope131';
   const A=x=>Array.isArray(x)?x:[];
   const valueAt=(o,path)=>{try{return path.split('.').reduce((v,k)=>v==null?undefined:v[k],o);}catch(_){return undefined;}};
   const present=v=>Array.isArray(v)?v.length>0:(v&&typeof v==='object')?Object.keys(v).length>0:(v!==undefined&&v!==null);
   const has=(o,path)=>present(valueAt(o,path));
   const common={
-    synthesis:['先回答原題','再交代最強支持鏈','再交代最強反證／牽制','說明成立條件與會推翻結論的條件','時間題只使用已實算運期／候選時窗','最後才給行動建議'],
+    synthesis:['先回答原題','再交代最強支持鏈','再交代最強反證／牽制','說明成立條件與會推翻結論的條件','時間題只使用已實算運期／候選時窗','原題明問做法才於斷盤後回答'],
     forbidden:['不得把同源規則重複計票','不得把缺資料補成事實','不得把象徵直接當已發生事件','不得以單一吉凶指標蓋過完整作用網','不得把不同流派互相矛盾的表硬平均成唯一答案'],
     confidence:'本題內部解讀把握度只能描述有效證據的收斂與限制；有關鍵缺項或流派衝突時降低確定度。它不是現實事件機率，也不是經驗證的預測準確率。',
     truthBoundary:{calculationValidation:'reproducible-within-selected-profile',predictionValidation:'not-performed',claimLevels:['排盤或抽取的可重算事實','具名傳統規則及本站模型','待現實核對的個案推論'],rule:'計算核對不等於事件預測已驗證；模型強弱或凶吉不構成終身判決，沒有已算救應不得捏造轉機。'}
@@ -164,7 +164,7 @@
   function toPrompt(c){if(!c)return'';const rows=c.evidence.map(x=>`${x.status==='not-applicable'?'不適用':x.available?'✓':'缺'}${x.label}${!x.available&&x.reason?'（'+x.reason+'）':''}`).join('、');return [
     `【深度判讀契約 ${c.version}｜${c.profile}】`,
     `閱讀範圍狀態：${c.status}。`,
-    '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，不講專門術語、牌名或星名；只有原題明示技術需求才另解釋。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
+    '成稿方式：對完全不懂命理的人先答原句，再用日常用語深入說原因與實際影響，點名實際盤位、牌或星與其作用，讓他知道斷語從何而來。正常問事不逐牌位／逐宮開欄，相反讀法須比較並收斂，建議不當作結果；核對流程不逐項搬成正文。先答原題，另主動提醒完整盤面重要且有據的發現，說清關聯、範圍與應對；不由名字或缺項補造警告。',
     `真實性界線：${(c.truthBoundary||common.truthBoundary).rule}`,
     `精度與可讀內容：${c.precisionPolicy||'缺項只限制受影響部分；有效資料照常閱讀。'}`,
     c.requestCoverage?.caseBasis?'本題實際核對入口（不是成稿欄位）：'+JSON.stringify(promptBasis(c.requestCoverage.caseBasis)):'',

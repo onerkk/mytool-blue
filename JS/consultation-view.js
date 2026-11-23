@@ -59,7 +59,8 @@
       });
       if(names.length)return rows.indexOf(named || names[0]);
     }
-    return 0;
+    const focus=rows.findIndex(row=>/(?:^|／)本題起斷（/.test(row.label));
+    return focus<0?0:focus;
   }
   function sourcePanel(r) {
     if(!r.sources.length)return '';
@@ -70,7 +71,8 @@
       '<textarea hidden readonly data-consult-source-manual aria-label="可手動複製的原盤追問"></textarea></details>';
   }
   function checkPanel(r) {
-    return '<details class="jc-check"'+(r.answer ? ' open' : '')+'><summary>核對 AI 回答中引用的盤面</summary>'+
+    return '<details class="jc-check"'+(r.answer ? ' open' : '')+'><summary>核對 AI 回答，或請它依原盤重讀</summary>'+
+      (root.JYPromptPacket?.rereadByMethod?'<div class="jc-reread"><button type="button" data-consult-reread>只收到一般建議？複製依原盤重讀</button><p class="jc-reread-status" role="status"></p><textarea hidden readonly aria-label="可手動複製的命理重讀訊息"></textarea></div>':'')+
       '<label>貼上已收到的回答，在這台裝置比對<textarea data-consult-answer rows="4" maxlength="18000">'+esc(r.answer || '')+'</textarea></label>'+
       '<button type="button" data-consult-check>核對回答</button><div class="jc-check-result" role="status">'+(r.checkResult || '')+'</div>'+
       '<div class="jc-repair"'+(r.problems?.length?'':' hidden')+'><button type="button" data-consult-repair>複製補讀要求</button>'+
@@ -119,7 +121,7 @@
       ...originalContext(r),
       '前一則 AI 回答裡待查的原句（只供比對）：'+JSON.stringify(excerpt),
       '我現在親自更正或補充：'+JSON.stringify(actual),
-      '以我的更正為準，說明原來的判斷和建議哪裡要改、接下來能觀察什麼。尚未確認的事請保留，前一則回答不能當成我的自述。',
+      '以我的更正為準，指出同一盤哪個落點的解釋需要改，再依本法重斷。尚未確認的事請保留，前一則回答不能當成我的自述。',
       urgent && '先處理眼前安全和實際求助，省略選品與賣場。'
     ].filter(Boolean).join('\n');
     const manual=section.querySelector('[data-consult-manual]');
@@ -146,7 +148,7 @@
       '本站對剛才回答找到以下具體問題。舊答案的引句只是待查文字，請和原盤核對。',
       ...r.problems.slice(0,6).map(p=>p.message+(p.excerpt?' 引句：'+JSON.stringify(p.excerpt.slice(0,160)):'')),
       r.problems.length>6 && '本次先列六項，另有'+(r.problems.length-6)+'項可在結果頁查看。請逐一核對這份解讀與原盤。',
-      '請重新寫給我。把正確的判斷留下，回答原題，交代根據、成立條件，以及我能觀察或採取的一步。'].filter(Boolean).join('\n');
+      '請重新寫給我。用原盤具體落點與原義直接回答，不把趨避或建議當作所問結果。'].filter(Boolean).join('\n');
     await copyRequest(text,panel.querySelector('.jc-repair-status'),panel.querySelector('[data-consult-repair-manual]'),()=>panel.isConnected && r.answer===answer);
   }
   function render(prompt, owner) {
@@ -275,14 +277,20 @@
     if (c) draft(c.r).note=e.target.value;
   });
   doc.addEventListener('click',async e => {
-    const b=e.target.closest?.('[data-consult-point],[data-consult-move],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair],[data-consult-source-copy]'), c=current(b);
+    const b=e.target.closest?.('[data-consult-point],[data-consult-move],[data-consult-choice],[data-consult-copy],[data-consult-check],[data-consult-correct],[data-consult-repair],[data-consult-source-copy],[data-consult-reread]'), c=current(b);
     if (!b || !c) return;
     const {el,r}=c;
+    if (b.hasAttribute('data-consult-reread')) {
+      const panel=b.closest('.jc-reread'), status=panel.querySelector('[role=status]');
+      try { await copyRequest(root.JYPromptPacket.rereadByMethod(r.body),status,panel.querySelector('textarea'),()=>panel.isConnected); }
+      catch(error) { status.textContent=error.message; }
+      return;
+    }
     if (b.hasAttribute('data-consult-source-copy')) {
       const source=r.sources[r.sourceIndex], panel=el.querySelector('.jc-source');
       if(!source)return;
       const text=['請接續原對話的同一份盤。',...originalContext(r),'我想讀懂原盤裡的這一段：',
-        '【'+source.label+'】',source.value,'請先說這段能回答我的哪一部分、還缺哪個現實條件，再告訴我可以怎麼做。'].join('\n');
+        '【'+source.label+'】',source.value,'請依這段原文與同盤作用重斷原題，說明此象能定到什麼程度。'].join('\n');
       await copyRequest(text,panel.querySelector('.jc-source-status'),panel.querySelector('[data-consult-source-manual]'),()=>panel.isConnected && r.sources[r.sourceIndex]===source);
       return;
     }

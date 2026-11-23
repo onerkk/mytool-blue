@@ -103,7 +103,7 @@ assert.match(renDays, /10-09｜[^\n]*沖用神、用神五行逢日墓/);
 assert.match(renDays, /10-12｜[^\n]*沖用神/);
 assert.match(renDays, /10-15｜[^\n]*用神值日/);
 assert.ok(!meeting.includes('退出或改變安排'));
-assert.match(block(meeting, '做決定前'), /回應邀約/);
+assert.ok(!meeting.includes('回應邀約'));
 
 const tarot = sourceProfile => ({ ...fixtures.tarot, spreadType: 'mathers_21', sourceProfile });
 const book = packet.build('tarot', tarot('gd_book_t'), '眼前該怎麼做？');
@@ -133,7 +133,7 @@ c.JYKnownFacts = { get: () => { reads++; return '我已到班，今天有同事�
 const notesBody = packet.buildMany([{method:'tarot', chart:fixtures.tarot}, {method:'yijing', chart:fixtures.yi}], '今天上班怎麼辦？');
 assert.equal(reads, 1);
 assert.match(block(notesBody, '原題補充'), /我已到班/);
-assert.match(block(notesBody, '做決定前'), /已到班/);
+assert.match(notesBody, /原題也問做法，斷盤之後/);
 assert.match(block(notesBody, '合讀方式'), /同一出生資料的衍生結果不可重複計票/);
 const override = packet.build('tarot', fixtures.tarot, '我該怎麼做？', { knownFacts: '我已收到書面通知。' });
 assert.equal(reads, 1);

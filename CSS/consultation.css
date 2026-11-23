@@ -54,7 +54,7 @@
 .jc-check-result:not(:empty){margin-top:.55rem;overflow-wrap:anywhere}.jc-check-result ul{padding-inline-start:1.2rem}.jc-check-result q{display:block;color:#ceced1}
 .jc-correct{margin-top:.75rem;border-top:1px solid #ffffff25;padding-top:.65rem}
 .jc-correct blockquote{margin:.3rem 0 .7rem;padding-inline-start:.75rem;border-inline-start:2px solid var(--jc-edge);white-space:pre-wrap;overflow-wrap:anywhere}
-.jc-correct p,.jc-repair p{margin:.4rem 0}.jc-check [hidden],.jc-correction-status:empty,.jc-repair-status:empty{display:none}
+.jc-correct p,.jc-repair p,.jc-reread p{margin:.4rem 0}.jc-check [hidden],.jc-correction-status:empty,.jc-repair-status:empty,.jc-reread-status:empty{display:none}
 .jc-repair{margin:.5rem 0}
 .jc-source{margin:.8rem 1rem;border-top:1px solid #ffffff28;padding-top:.65rem;line-height:1.6}
 .jc-source summary{width:fit-content;color:var(--jc-light);cursor:pointer}

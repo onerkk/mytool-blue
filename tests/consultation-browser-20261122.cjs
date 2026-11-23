@@ -341,6 +341,12 @@ async function run(browser,kind){
       assert.ok(tableValue&&cited.includes('【'+tableLabel+'】\n'+tableValue)&&cited.includes(currentQuestion));
       row.nativeSourceReadback=true;
       await check.locator(':scope > summary').click();
+      const reread=check.locator('.jc-reread');
+      await reread.locator('[data-consult-reread]').click();
+      await reread.locator('[role=status]').filter({hasText:'已複製'}).waitFor();
+      const sameCast=await page.evaluate(real=>real?navigator.clipboard.readText():window.__consultClipboard.at(-1),variant==='liveclip');
+      assert.ok(sameCast.includes(currentQuestion)&&sameCast.includes('本題起斷（')&&sameCast.includes('免禍'),kind);
+      row.rereadIncludesOriginalChart=true;
       const answer=check.locator('[data-consult-answer]');
       await answer.fill('你可以先核對下週的會議時間。');
       await check.locator('[data-consult-check]').click();
