@@ -62,6 +62,16 @@
     const focus=rows.findIndex(row=>/(?:^|／)本題起斷（/.test(row.label));
     return focus<0?0:focus;
   }
+  function openingPanel(visits) {
+    return visits.filter(v=>v.opening?.anchors?.length).map(v=>{
+      const {method,anchors,verdict}=v.opening;
+      const title=visits.length>1 ? (v.source||method)+'・本題起斷' : '本題起斷';
+      const summary=verdict?title:title+'・'+anchors[0].label;
+      return '<details class="jc-opening"'+(verdict?' open':'')+'><summary>'+esc(summary)+'</summary>'+
+        (verdict?'<p class="jc-verdict">'+esc(verdict)+'</p>':'')+'<dl>'+
+        anchors.map(p=>'<dt>'+esc(p.label)+'</dt><dd>'+esc(p.detail)+'</dd>').join('')+'</dl></details>';
+    }).join('');
+  }
   function sourcePanel(r) {
     if(!r.sources.length)return '';
     return '<details class="jc-source"><summary>查這一盤的原文</summary>'+
@@ -173,7 +183,7 @@
       .filter(([value]) => value).map(([value,label]) => '<dt>'+label+'</dt><dd>'+esc(value)+'</dd>').join('');
     return '<section class="jy-consult" data-visit="' + r.id + '" data-theme="' + esc(r.steps[r.index].visit.theme) + '" aria-label="本次互動解讀">' +
       '<header><div><h2>' + esc(paired?'一起讀這幾份盤':first.title) + '</h2>' + (question ? '<p class="jc-question">' + question + '</p>':'') + '</div></header>' + (context ? '<details class="jc-context"><summary>你帶來的情況</summary><dl>'+context+'</dl></details>' : '') +
-      '<div class="jc-reading" aria-live="polite" aria-atomic="true"' + (r.steps.length>1?' tabindex="0" role="group" aria-label="讀這一處，可用左右方向鍵切換" aria-keyshortcuts="ArrowLeft ArrowRight Home End"':'') + '>' + panel(r) + '</div>' +
+      openingPanel(visits)+'<div class="jc-reading" aria-live="polite" aria-atomic="true"' + (r.steps.length>1?' tabindex="0" role="group" aria-label="讀這一處，可用左右方向鍵切換" aria-keyshortcuts="ArrowLeft ArrowRight Home End"':'') + '>' + panel(r) + '</div>' +
       (r.steps.length>1?'<div class="jc-pager" role="group" aria-label="逐處讀這份盤"><button type="button" data-consult-move="-1"'+(r.index===0?' disabled':'')+'>‹ 上一處</button><span>'+ (r.index+1)+' / '+r.steps.length+'</span><button type="button" data-consult-move="1"'+(r.index===r.steps.length-1?' disabled':'')+'>下一處 ›</button></div>':'')+
       '<div class="jc-stations" role="group" aria-label="' + esc(first.action) + '">' +
       r.steps.map((s,i) => '<button type="button" data-consult-point="' + i + '" aria-pressed="' + (i===r.index) + '">' +

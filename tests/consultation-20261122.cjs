@@ -187,6 +187,7 @@ group('十五法各自帶入本盤的可判範圍，初讀、合讀與重讀共�
     const {body}=visit(kind,chart,question,records),[primary]=focusBlocks(body),plan=api.get(body).projection;
     assert.ok(plan.coreBlocks.includes(primary.label),kind);
     assert.match(primary.value,native[kind],kind);
+    assert.ok(plan.consultation[0].opening.anchors.every(a=>primary.value.includes(a.label+'｜'+a.detail)),kind);
     assert.ok(primary.value.includes(c.JYConsultationEvidence.conclusionScope[kind]),kind);
     assert.match(body,/第一段直接斷原題/);
     assert.doesNotMatch(body,/做決定前可向現實核對|做法分成兩三個短段|命理名詞集中在依據行/);
@@ -204,8 +205,9 @@ group('同問交往：渙之師主上九參九五，無咎不許成；咸靜卦�
   const huan=c.JYYijingCore.calculate({values:[8,7,8,8,9,9],question:q}),body=visit('yijing',huan,q).body;
   assert.equal(huan.original.name,'渙');assert.equal(huan.changed.name,'師');
   const [focus]=focusBlocks(body);
-  for(const text of ['主讀・渙卦上九','參讀・渙卦九五','遠害也','正位也','居中、當位','沒有直接許成的斷辭','之卦師只記卦變'])
+  for(const text of ['主讀・渙卦上九','參讀・渙卦九五','遠害也','正位也','居中、當位','與六三陰陽相應','與九二同陰陽，無正應','沒有直接許成的斷辭','之卦師只記卦變'])
     assert.ok(focus.value.includes(text),text);
+  assert.match(api.get(body).projection.consultation[0].opening.verdict,/未見兩人成局.*遠害也.*正位也/);
   assert.doesNotMatch(body,/師出以律|丈人吉|渙其群|做決定前可向現實核對/);
   const unsupported='這卦不是「沒機會」，而是「有機會，但你越急著要答案，越容易把機會推掉」。';
   const check=(prompt,answer)=>c.JYReadingWorkflow.checkChartText(prompt,answer).issues.map(i=>i.code);

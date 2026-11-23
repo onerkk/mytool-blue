@@ -63,3 +63,7 @@
 .jc-source-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:clamp(16rem,45vh,24rem);overflow:auto;padding:.55rem .7rem;border-inline-start:2px solid var(--jc-edge)}
 .jc-source button{min-height:44px;margin:.7rem 0 0;border:1px solid var(--jc-edge);border-radius:8px;color:var(--jc-light);background:transparent;padding:.35rem .8rem}
 .jc-source [hidden],.jc-source-status:empty{display:none}
+
+.jy-consult .jc-opening{margin:.4rem 1rem .8rem;padding:.5rem .7rem;border-inline-start:2px solid var(--jc-edge);line-height:1.65;overflow-wrap:anywhere}
+.jc-opening summary{cursor:pointer;color:var(--jc-light);font-weight:600}
+.jc-opening dl,.jc-opening .jc-verdict{margin:.45rem 0}.jc-opening dt{font-weight:600}.jc-opening dd{margin:0 0 .35rem}

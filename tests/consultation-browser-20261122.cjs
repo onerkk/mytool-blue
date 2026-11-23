@@ -321,6 +321,11 @@ async function run(browser,kind){
     if(mode==='feature'){
       await review(page,kind,row,currentQuestion);
       const table=page.locator('.jy-consult:visible').first(), check=table.locator('.jc-check');
+      const opening=table.locator('.jc-opening').first();
+      assert.ok(await opening.isVisible(),kind);
+      if(!(await opening.getAttribute('open')) && !await opening.locator('dl').isVisible())await opening.locator('summary').click();
+      assert.ok((await opening.locator('dd').first().innerText()).trim(),kind);
+      row.nativeOpeningOnScreen=true;
       const source=table.locator('.jc-source');await source.locator('summary').click();
       const native=source.locator('select'), sourceText=source.locator('.jc-source-text');
       if(variant==='dates'){

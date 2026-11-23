@@ -337,7 +337,7 @@
   const STYLE={
     open:['叫他之後不鋪陳，直接進正文。','稱呼後直接用一句話回答原題，連回他寫明的處境；他只問方向時，不替他補背景。','叫他之後先用一兩句講盤上（籤、牌、卦或命盤）最醒目的那個畫面再進正文；不猜他的心情。'],
     address:['稱呼用平輩朋友之間的叫法。','稱呼用自然的「朋友」，接著答原題。','稱呼用親近、把他當自己人的叫法。','稱呼用客氣但不生分的叫法。'],
-    conf:['用平常說話的字眼講清楚哪一點最有把握。','不報數字，用程度的說法讓他知道把握有多大。','用條件來講把握：什麼情況下會成，什麼情況下不會。'],
+    conf:['用平常說話的字眼講清楚哪一點最有把握。','不報數字，用程度的說法讓他知道把握有多大。','說清這次能斷到哪裡、哪一層缺少成象。'],
     /* 2026-11-16 free119：使用者指出每一份解讀都是同一套流程。原因是骨架寫死（複述問題→答案與成數→對照→原因→走向→做法），抽籤只換了細節。改成抽整篇的走法，五種骨架差別很大。 */
     order:['從最能定方向的落點說起，再解釋另一處如何支持或牽制。','先把斷語與它的象義說在一起，再說此象能管到哪裡。','首段斷所問結果，依本法確有的時位講先後。','按原題各子題的順序說判斷，各自連回實際落點。','先說主判，再釐清可能讓人讀錯的另一處。'],
     advice:['原題也問做法時，最後接回盤象說一件事。','原題也問做法時，說明哪個象支持進、哪個象支持守。'],
@@ -351,7 +351,7 @@
      根因：前面為了防 AI 亂編，把所有關於本人的話都要求成推測口氣，結果沒有任何一句可以讓人拿自己的經歷去對。
      傳統論命本來就先「驗盤」：先講盤上寫明的性情與已經過去的運期，對得上再往下論。這裡把這一步加回來，但只准講盤上指得出的、只講領域與性質、不編具體事件。 */
   const NATAL=new Set(['bazi','ziwei','vedic','astro','compat','personality']);
-  const verifyFor=m=>'【先讓他對照】'+(NATAL.has(m)?'盤上有可以對照的題宮或運期才寫，經歷由他確認。':'對照主判與參象管的範圍。原題沒有互動經過就留白，不擬對話、回訊或約見情節。');
+  const verifyFor=m=>'【先讓他對照】'+(NATAL.has(m)?'盤上有可以對照的題宮或運期才寫，經歷由他確認。':'對照主判與參象管的範圍。原題沒有互動經過，就只比對實有的主辭與參象。不要增寫聊天、回訊、約見，也不用身心狀態解釋卦辭。');
   const styleFor=(d,steps,sparse)=>{
     let h=2166136261;
     for(const ch of [d.method,d.question,d.styleSalt].join('|'))h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
@@ -451,7 +451,7 @@
     const b=[],prefix=e.label?e.label+' · ':'';
     const section=label=>data.sections.find(s=>s.label===prefix+label)?.data;
     const displayPrefix=e.label&&data.sourceCoverage?.requestedRecords>1?e.label+'／':'';
-    const add=(label,v,priority=0)=>{zhMethod=e.method;if(hasData(v))b.push({label:displayPrefix+label,value:/規則來源/.test(label)?(typeof v==='string'?v:json(v)):stripDisclaimers(typeof v==='string'?zhText(v):readable(v)),priority,method:e.method});};
+    const add=(label,v,priority=0)=>{zhMethod=e.method;if(hasData(v))b.push({label:displayPrefix+label,value:/規則來源|^本題起斷（/.test(label)?(typeof v==='string'?v:json(v)):stripDisclaimers(typeof v==='string'?zhText(v):readable(v)),priority,method:e.method});};
     return {e,data,b,section,add,c:e.chart,a:e.analysis};
   }
   function bazi(ctx){const{c,a,section:s,add}=ctx,core=s('四柱、節令與換日依據')||s('三柱與未知時辰界線')||{},st=s('旺衰、格局與制化')||{};
@@ -884,18 +884,25 @@
   function selectedYiEvidence(e,question) {
     const a=e.analysis, chosen=A(a.reading?.selections),wings=A(a.expositions?.selectedCompanions);
     const lines=[a.reading?.rule];
+    let verdict='';
     for(const s of chosen){
       const wing=wings.find(w=>w.side===s.side && w.kind===s.kind && w.position===s.position);
       const geom=(s.side==='changed'?a.changedGeometry:a.originalGeometry)?.[s.position-1];
       if(s.kind==='line'&&geom){
         const where=s.position===6?'處全卦之終':s.position===1?'在事之初':geom.central?'居中':'';
-        lines.push(s.hexagram+s.label+'的爻位｜'+[where,geom.proper?'當位':'未當位'].filter(Boolean).join('、')+'。爻位輔讀該爻之辭。');
+        const text=s.side==='changed'?e.chart.changedText:e.chart.originalText;
+        const mate=text?.lines?.[geom.correspondsTo-1]?.label;
+        const response=mate?'與'+mate+(geom.corresponding?'陰陽相應':'同陰陽，無正應'):'';
+        lines.push(s.hexagram+s.label+'的爻位｜'+[where,geom.proper?'當位':'未當位',response].filter(Boolean).join('、')+'。爻位輔讀該爻之辭，有應也不能代指特定人的心意。');
       }
       if(wing?.text)lines.push(s.role+'所據'+(s.kind==='judgment'?'彖傳':'小象')+'｜'+wing.text);
     }
     const relationship=/交往|在一起|成為伴侶|復合|婚姻|結婚/.test(question);
-    if(relationship && chosen.some(s=>/取女吉|娶女吉/.test(s.text)))
-      lines.push('占辭明言取女吉，婚配是這句直接論的事；可斷所問關係有相感之利。保留原辭條件，不推作對方已答應。');
+    const marriage=relationship && chosen.find(s=>/取女吉|娶女吉/.test(s.text));
+    if(marriage){
+      const phrase=marriage.text.match(/取女吉|娶女吉/)[0];
+      verdict=marriage.hexagram+'卦的'+marriage.label+'明言「'+phrase+'」。問交往，這一處確有利於結緣的象。卦上可論婚配之利，對方此刻的心意仍未定。';
+    }
     if(chosen.some(s=>/[无無]咎/.test(s.text))){
       lines.push('「無咎」判所述處置可免其咎。若同爻另有吉、凶、婚媾或其他具體斷語，分句取義；免咎本身不能證成事件。');
       // A bare keyword cannot classify the whole verse. Limit this conclusion
@@ -903,11 +910,16 @@
       const avoidanceOnly=chosen.every(s=>/[无無]咎/.test(s.text) && !/[吉凶]|婚|媾|娶|取女/.test(s.text) &&
         wings.some(w=>w.side===s.side && w.position===s.position && /遠害也|正位也/.test(w.text)));
       if(relationship && avoidanceOnly){
-        lines.push('問兩人能否成局：這次所選主、參辭皆言無咎，沒有直接許成的斷辭。把原題答到「成象未見」，保留日後未知。');
+        const images=chosen.map(s=>{
+          const image=wings.find(w=>w.side===s.side&&w.position===s.position);
+          return s.label+'的小象說「'+image.text.replace(/[。．]$/,'')+'」';
+        });
+        verdict='問能否交往，'+e.chart.original.name+'卦這次未見兩人成局的明確占辭。'+images.join('，')+'。所選爻辭皆言無咎，沒有直接許成的斷辭。';
+
       }
     }
     if(e.chart.hasChange&&!chosen.some(s=>s.side==='changed'))lines.push('之卦'+e.chart.changed.name+'只記卦變，本次未取其卦爻辭。不能從卦名另推結果或行動路線。');
-    return lines.filter(Boolean);
+    return {lines:lines.filter(Boolean),verdict};
   }
 
   function meihua(ctx){const{c,section:s,add}=ctx,m=s('本互變與起卦輸入')||c,tri=x=>x&&x.name?x.name+(x.nat||'')+'('+(x.el||'')+')':null,hx=x=>x?(x.n||'')+(x.j?'：'+x.j:''):null;add('起卦與本互變',{上卦:tri(c.up),下卦:tri(c.lo),動爻:c.dong,體卦:tri(c.tiG),用卦:tri(c.yoG),起卦時點:c.castContext?.timestamp,本卦:hx(c.ben),互卦:hx(c.hu),變卦:hx(c.bian),互卦取法:c.nuclear?.exception?c.nuclear.note:undefined});
@@ -1273,12 +1285,18 @@
       if(visit && !safe){
         const native=root.JYConsultationEvidence, picked=native.openingPoints(visit,e,data.question);
         const usable=picked.some(p=>p.visual.kind!=='limit'), restricted=visit.points[0]?.visual.kind==='limit';
-        const cues=picked.slice(0,data.sourceCoverage?.requestedRecords>1?1:3).map(p=>p.label+'｜'+p.detail);
+        const anchors=picked.slice(0,data.sourceCoverage?.requestedRecords>1?1:3).map(p=>({label:zhText(p.label),detail:zhText(p.detail)}));
+        const yi=e.method==='yijing'&&usable?selectedYiEvidence(e,data.question):null;
+        visit.opening={method:procedure.name,anchors,verdict:yi?.verdict||''};
+        const cues=anchors.map(p=>p.label+'｜'+p.detail);
         if(!usable)cues.push('程序未成立或資料未定，只說清這次能讀到哪一步。');
         else {
           if(restricted)cues.push('先指出缺少哪一層，只依可定位的部分說明。');
           cues.push(native.conclusionScope[e.method]);
-          if(e.method==='yijing')cues.push(...selectedYiEvidence(e,data.question));
+          if(yi){
+            cues.push(...yi.lines);
+            if(yi.verdict)cues.push('依所取原文可下的斷語｜'+yi.verdict);
+          }
           if(e.method==='liuyao'&&/伏神|伏財|飛伏/.test(data.question)){
             const hidden=ctx.b.find(b=>b.label.includes('本題用神在伏爻'));
             if(hidden)cues.push(hidden.value.split('\n')[0]);
