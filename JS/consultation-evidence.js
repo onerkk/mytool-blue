@@ -70,13 +70,17 @@
     const route = spread === 'nine' ? [...paths.filter(p => p.includes(5) && (p[0] === 4 || p[0] === 2)), ...paths] : paths;
     return distinct(route).slice(0, 6).map(p => {
       const set = p.map(i => rows[i - 1]);
-      const words = set.slice(0, 3).map(r => {
-        const m = Array.isArray(r.meaning) ? r.meaning.join('、') : r.meaning;
-        return typeof m === 'string' && m ? r.name + '：' + m : '';
+      const words = set.map(r => {
+        const meaning = r.meaning?.scope || r.meaning?.keywords || r.meaning;
+        const gloss = Array.isArray(meaning) ? meaning.join('、') : meaning;
+        return typeof gloss === 'string' && gloss ? r.name + '：' + gloss : '';
       });
-      return make('第' + p.join('、') + '位', set.map(r => r.name).join(' → '),
-        join(words) || '沿這一條線把前後牌連成一句。保留這組牌的順序，另一分支要分開看。',
+      const gloss=join(words);
+      const point=make('第' + p.join('、') + '位', set.map(r => r.name).join(' → '),
+        gloss || '沿這一條線把前後牌連成一句。保留這組牌的順序，另一分支要分開看。',
         { faces: set.slice(0, 3).map(r => r.id), mark: set[0].name });
+      if(gloss)point.gloss=gloss;
+      return point;
     });
   }
 

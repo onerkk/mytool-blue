@@ -48,6 +48,13 @@ function persist(file,next){
   if(process.argv.includes('--check')){console.error('Stale generated prompt copy: '+file);failed=true;return;}
   fs.mkdirSync(path.dirname(full),{recursive:true});fs.writeFileSync(full,next);updated++;
 }
+// UI draws and archived packets use the same 36-card lexicon, including in the standalone exporter.
+const deckSource=fs.readFileSync(path.join(root,'JS/lenormand.js'),'utf8').match(/^var CARDS = (\[[\s\S]*?^\]);/m);
+if(!deckSource || (deckSource[1].match(/\bid\s*:/g)||[]).length!==36)throw Error('Expected the complete Petit Lenormand register');
+const cardFile='JS/native-card-analysis.js', cardSource=fs.readFileSync(path.join(root,cardFile),'utf8');
+const deckBlock=/  \/\/ BEGIN GENERATED PETIT LENORMAND REGISTER\n[\s\S]*?  \/\/ END GENERATED PETIT LENORMAND REGISTER/;
+if(!deckBlock.test(cardSource))throw Error('Missing native Lenormand register block');
+persist(cardFile,cardSource.replace(deckBlock,()=>'  // BEGIN GENERATED PETIT LENORMAND REGISTER\n  const lenormandRegister = '+deckSource[1]+';\n  // END GENERATED PETIT LENORMAND REGISTER'));
 for(const [file,key,value] of targets){
   const old=fs.readFileSync(path.join(root,file),'utf8');
   const block='// BEGIN GENERATED RECOMMENDATION '+key+'\n'+

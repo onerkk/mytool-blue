@@ -149,6 +149,26 @@ group('單方未定紫微合盤不借用不存在的八字日主或跨盤投射'
   const section=api.get(body).readingData.sections.find(s=>s.label==='雙方及雙向原盤作用').data;
   assert.equal(section.personA,null);assert.ok(section.personB);assert.equal(section.scenarioId,'business');
 });
+group('雷諾曼三十六張可由舊牌號還原，新舊盤同義，保留自訂版本',()=>{
+  const deck=c.JYNativeCards.lenormand({spreadType:'grand_nines',cards:Array.from({length:36},(_,i)=>({n:i+1}))}).records;
+  assert.equal(deck.length,36);
+  assert.ok(deck.every(r=>r.name&&r.meaningSource==='site-register'&&r.meaning.scope&&r.guard));
+  const saved={spreadType:'three',cards:[27,21,33].map(id=>({id}))};
+  const q='這封信還要等嗎？';
+  const read=chart=>visit('lenormand',chart,q);
+  const before=read(saved),anchor=before.v.opening.anchors[0].detail;
+  assert.match(anchor,/信 → 山 → 鑰匙。信：文字訊息.*山：阻礙.*鑰匙：重要/);
+  assert.ok(before.body.includes('依原有牌號查本站小雷諾曼牌表'));
+  const fresh={...saved,cards:saved.cards.map(({id})=>({id,name:deck[id-1].name,meaning:deck[id-1].meaning,guard:deck[id-1].guard}))};
+  assert.equal(read(fresh).v.opening.anchors[0].detail,anchor);
+  assert.ok(!read(fresh).body.includes('依原有牌號查本站小雷諾曼牌表'));
+  const variant={spreadType:'three',deckProfile:'自訂版',cards:[{id:27,name:'信',meaning:{scope:'本版只取邀請'}},{id:21,name:'獨峰'},{id:33,name:'鑰匙',keywords:['本版只取入口']}]};
+  const custom=read(variant);
+  assert.match(custom.v.opening.anchors[0].detail,/本版只取邀請.*本版只取入口/);
+  assert.doesNotMatch(custom.v.opening.anchors[0].detail,/障礙|封鎖|關鍵條件/);
+  assert.equal(c.JYNativeCards.lenormand(variant).records[1].meaning,null);
+  assert.ok(api.rereadByMethod(before.body).includes(anchor));
+});
 group('十五種問法的明示盤面錯引可在本機核對，假設與白話保留給本人',()=>{
   const work=c.JYReadingWorkflow,charts={...f.charts};
   charts.yijing=c.JYYijingCore.calculate({question,values:[8,8,6,8,8,8]});

@@ -71,13 +71,17 @@
     const route = spread === 'nine' ? [...paths.filter(p => p.includes(5) && (p[0] === 4 || p[0] === 2)), ...paths] : paths;
     return distinct(route).slice(0, 6).map(p => {
       const set = p.map(i => rows[i - 1]);
-      const words = set.slice(0, 3).map(r => {
-        const m = Array.isArray(r.meaning) ? r.meaning.join('、') : r.meaning;
-        return typeof m === 'string' && m ? r.name + '：' + m : '';
+      const words = set.map(r => {
+        const meaning = r.meaning?.scope || r.meaning?.keywords || r.meaning;
+        const gloss = Array.isArray(meaning) ? meaning.join('、') : meaning;
+        return typeof gloss === 'string' && gloss ? r.name + '：' + gloss : '';
       });
-      return make('第' + p.join('、') + '位', set.map(r => r.name).join(' → '),
-        join(words) || '沿這一條線把前後牌連成一句。保留這組牌的順序，另一分支要分開看。',
+      const gloss=join(words);
+      const point=make('第' + p.join('、') + '位', set.map(r => r.name).join(' → '),
+        gloss || '沿這一條線把前後牌連成一句。保留這組牌的順序，另一分支要分開看。',
         { faces: set.slice(0, 3).map(r => r.id), mark: set[0].name });
+      if(gloss)point.gloss=gloss;
+      return point;
     });
   }
 
@@ -1102,6 +1106,8 @@
       add('大牌陣宮位：格/宮名/落入的牌（自宮：'+(A(tb.ownHouses).join('、')||'無')+'；四角：'+A(tb.corners).join('、')+'）',A(tb.houses).map(h=>h.house+h.houseName+'宮:'+h.card).join(' '),1);}
     if(e.method==='lenormand'){
       const R=A(d.records),N=i=>R[i-1]?.name||('第'+i+'張'),g=c.declaredGender||d.declaredGender,pr=c.personRep||d.personRep,cf=c.customFocus||d.customFocus;
+      const lookedUp=R.filter(r=>r.meaningSource==='site-register');
+      if(lookedUp.length)add('牌義出處',lookedUp.map(r=>'第'+r.index+'張'+r.name).join('、')+'依原有牌號查本站小雷諾曼牌表。自訂牌義依原紀錄。');
       const inSpread=id=>R.find(r=>r.id===id);
       add('代表牌規則（引擎依性別聲明決定，不由牌面推）',(pr?'本人='+pr.name+'（'+pr.basis+'）'+(inSpread(pr.id)?'，在'+ (inSpread(pr.id).position||'第'+(R.indexOf(inSpread(pr.id))+1)+'張')+'；它周圍的牌是本人現在的處境':'，本次未抽到，整個牌陣直接當成本人的事來讀'):(g?'已聲明性別但無對應代表牌':'未聲明性別：紳士／淑女出現時只是牌面裡的一位男性／女性人物，不自動當本人'))+(cf?'；另指定焦點牌'+cf.name+'（代表本題那件事）'+(inSpread(cf.id)?'在'+(inSpread(cf.id).position||''):'未抽到'):'')+(R.some(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id))?'；牌面上另有'+R.filter(r=>(r.id===28||r.id===29)&&!(pr&&pr.id===r.id)).map(r=>r.name).join('、')+'：是別人（主管、同事、對象或家人），依題目決定是誰，不當本人':''));
       const paths=A(d.paths),mirror=A(d.mirror),knights=A(d.knights),spread=String(c.spreadType||c.spread||d.spreadType||''),md=c.methodData||d.methodData||{};
@@ -1297,7 +1303,7 @@
       if(visit && !safe){
         const native=root.JYConsultationEvidence, picked=native.openingPoints(visit,e,data.question);
         const usable=picked.some(p=>p.visual.kind!=='limit'), restricted=visit.points[0]?.visual.kind==='limit';
-        const anchors=picked.slice(0,data.sourceCoverage?.requestedRecords>1?1:3).map(p=>({label:zhText(p.label),detail:zhText(p.detail)}));
+        const anchors=picked.slice(0,data.sourceCoverage?.requestedRecords>1?1:3).map(p=>({label:zhText(p.label),detail:zhText(p.gloss?p.detail+'。'+p.gloss:p.detail)}));
         const yi=e.method==='yijing'&&usable?selectedYiEvidence(e,data.question):null;
         visit.opening={method:procedure.name,anchors,verdict:yi?.verdict||''};
         const cues=anchors.map(p=>p.label+'｜'+p.detail);
