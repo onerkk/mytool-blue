@@ -205,6 +205,36 @@ group('十五法各自帶入本盤的可判範圍，初讀、合讀與重讀共�
   const halted=visit('ootk',f.ootk);assert.match(focusBlocks(halted.body)[0].value,/程序未成立/);
 });
 
+group('十五法同題換盤：起斷必須跟隨正逆、順序、主客、時辰或原始算式的變化',()=>{
+  const q='這次合作能成嗎？', values=[8,7,8,8,9,9], unknown={...f.input,unknownTime:true};
+  const secondSlip=c.JYOracleRegister.get(2);
+  const cases={
+    tarot:[{...f.tarot,cards:f.tarot.cards.map(card=>({...card,isUp:!card.isUp}))},/權杖王牌（逆位）/,/權杖王牌（正位）/],
+    ootk:[require('../docs/qa-single-paste27/ootk-fixture.json'),/程序未成立/,/計數起段/],
+    lenormand:[{...f.ln,cards:f.ln.cards.slice().reverse()},/牌2 → 牌5 → 牌8/,/牌8 → 牌5 → 牌2/],
+    bazi:[f.bb,/日主乙/,/日主戊/],
+    compat:[c.BaziSuiteCore.createCompatibility(f.bb,f.b,{scenarioId:'couple'}),/甲方對乙方：木剋土/,/甲方對乙方：土受木所剋/],
+    ziwei:[c.computeZiwei(1983,8,25,22,'male',{minute:55,referenceDate:f.instant}),/命宮 · 乙丑｜天府廟/,/命宮 · 辛酉｜空宮；借對宮太陽、天梁/],
+    meihua:[c.calcMH(2,4,3,{timestamp:f.instant}),/變卦用 · 巽｜金體對木：克/,/變卦用 · 離｜金體對火：受克/],
+    oracle:[{n:2,g:secondSlip.ganzhi,p:secondSlip.canonicalPoem,sourceUrl:secondSlip.poemSource},/日出便見風雲散/,/於今此景正當時/],
+    vedic:[c.JYVedic.compute(unknown),/木星掌1、4宮/,/分盤宮位與精確運期不能確定/],
+    astro:[c.JYWestern.compute(unknown),/摩羯宮頭，宮主土星/,/四角與宮位不能確定/],
+    liuyao:[c.JYLiuyaoCore.calculate({question:q,values,calendar:{day:'甲子',monthBranch:'辰'}}),/第1爻｜明現世應寅木/,/第2爻｜明現世應辰土/],
+    yijing:[c.JYYijingCore.calculate({question:q,values}),/主讀・困卦九四/,/主讀・渙卦上九/],
+    name:[c.JYNameEngine.compare({surname:'林',candidates:['弘林','沐洪'],baselineName:'林政軒',question:q}),/陳16、政9、軒10；人格 25/,/林8、政9、軒10；人格 17/],
+    liuren:[c.JYLiurenCore.calculate({question:q,date:'2026-10-01',time:'05:06'}),/初傳 · 卯太常/,/初傳 · 戌玄武/],
+    personality:[c.BaziSuiteCore.buildPersonality(f.bb,{}),/官印訊號 7，食傷比劫訊號 3/,/官印訊號 5，食傷比劫訊號 5/]
+  };
+  assert.deepEqual(Object.keys(cases).sort(),Object.keys(f.charts).sort());
+  for(const [method,[other,expectFirst,expectSecond]] of Object.entries(cases)){
+    const first=focusBlocks(visit(method,f.charts[method],q).body)[0].value;
+    const changed=visit(method,other,q),second=focusBlocks(changed.body)[0].value;
+    assert.match(first,expectFirst,method);assert.match(second,expectSecond,method);
+    assert.doesNotMatch(second,expectFirst,method);
+    assert.ok(api.rereadByMethod(changed.body).includes(second),method);
+  }
+});
+
 group('同問交往：渙之師主上九參九五，無咎不許成；咸靜卦仍能按取女吉斷利',()=>{
   const q='我和她會走到交往嗎？';
   const huan=c.JYYijingCore.calculate({values:[8,7,8,8,9,9],question:q}),body=visit('yijing',huan,q).body;

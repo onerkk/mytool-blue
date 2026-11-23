@@ -63,11 +63,11 @@
     return focus<0?0:focus;
   }
   function openingPanel(visits) {
-    return visits.filter(v=>v.opening?.anchors?.length).map(v=>{
+    return visits.filter(v=>v.opening?.anchors?.length).map((v,index)=>{
       const {method,anchors,verdict}=v.opening;
       const title=visits.length>1 ? (v.source||method)+'・本題起斷' : '本題起斷';
       const summary=verdict?title:title+'・'+anchors[0].label;
-      return '<details class="jc-opening"'+(verdict || visits.length===1?' open':'')+'><summary>'+esc(summary)+'</summary>'+
+      return '<details class="jc-opening"'+(verdict || index===0?' open':'')+'><summary>'+esc(summary)+'</summary>'+
         (verdict?'<p class="jc-verdict">'+esc(verdict)+'</p>':'')+'<dl>'+
         anchors.map(p=>'<dt>'+esc(p.label)+'</dt><dd>'+esc(p.detail)+'</dd>').join('')+'</dl></details>';
     }).join('');
