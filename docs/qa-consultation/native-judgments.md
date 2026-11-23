@@ -1,6 +1,6 @@
 # 十五種方法怎麼按盤回答
 
-正式站版本 `jy-main-dcdb9e1eaa`。這次驗證以同一句話換盤重問，核對引擎取的依據、手機顯示的原文，以及交給 AI 的內容。這批案例沒有當事人後續的事件追蹤。
+正式站版本 `jy-main-879e50b6d7`。這次驗證以同一句話換盤重問，核對引擎取的依據、手機顯示的原文，以及交給 AI 的內容。另用三份實際模型回覆測試白話解讀有沒有超出原盤。這批案例沒有當事人後續的事件追蹤。
 
 ## 同問「我和她會走到交往嗎？」
 
@@ -14,6 +14,20 @@
 再往爻位看，渙上九與六三陰陽有應，九五與九二同陽無正應。有應在這裡說明的是同一卦中兩爻的位置關係。若把它寫成對方已有好感，便超出所取爻辭。換成已在交往者問工作、問具體婚期或問他人意願時，專項測試也核對這些題目各自的界線。[變占取辭](https://zh.wikisource.org/wiki/易學啟蒙通釋_(四庫全書本)/卷下) · [渙卦原文](https://zh.wikisource.org/wiki/周易/渙) · [咸卦原文](https://zh.wikisource.org/wiki/周易/咸)
 
 [渙之師手機實測畫面](huan-reading.png) · [咸卦手機實測畫面](xian-reading.png)
+
+## 把模型原答貼回網站核對
+
+下表保留模型讀對與讀錯的地方。末欄記錄把同一份回答貼回本盤結果頁所用的核對函式後，網站實際辨認出什麼。[三份模型原答、核對摘句及雜湊](native-model-samples.json)
+
+| 個案 | 模型怎麼答 | 網站核對得到什麼 |
+| --- | --- | --- |
+| 渙之師問交往 | 答沒有明確成局之象，引用上九及九五。後半又寫兩人都在觀察，還把渙其血引申成血流不止。 | 標出「彼此都還在觀察」缺少當事人陳述。血流不止這層誇張引申仍需讀者對照。 |
+| 咸卦靜卦問同一題 | 依取女吉斷有結緣機會，但把彖傳標成象傳，也替對方描寫心情。 | 從本卦原文找到所引句出自彖傳，也標出「她心裡的反應像風一樣」。 |
+| 雷諾曼問信件與市集報名 | 依序讀到信的書面往來、山的阻礙與鑰匙的解法。開頭卻倒置了收件者，又把價目表當成解決報名的關鍵。題目只說主辦已收件、本人這週才有空準備價目表。 | 沒有命中可逐項核對的明示錯引。這個結果也顯示，仍需對照生活敘述中的人與事。 |
+
+雷諾曼這例沿用只存牌號和牌名的舊盤。結果頁與交給 AI 的資料都從本站同一份 36 張牌表讀回牌義。另有測試核對當次已記錄的自訂義及其他牌組版本。
+
+兩個易經案例各用 Qwen3-4B-Instruct-2507，均在 600 個輸出 token 到頂，檔案原樣保留中斷處。雷諾曼用 Qwen3-1.7B，最多 400 個輸出 token，模型自行結束。三份輸入與本版匯出逐位元組相同。`promptSha256` 對照原匯出，`replySha256` 對照 JSON 中的完整回答字串。可用下方指令產生輸入，再依不同模型重跑。
 
 ## 全站同題換盤測試
 
@@ -46,4 +60,6 @@ node tests/consultation-20261122.cjs
 node tests/consultation-browser-20261122.cjs
 node tests/consultation-browser-20261122.cjs yijing-huan yijing-xian
 node docs/qa-consultation/cases.cjs . /tmp/jingyue-inputs --contrasts
+JY_OUTPUT_TOKENS=600 node docs/qa-consultation/infer.mjs "$RUNTIME" "$QWEN4B_GGUF" /tmp/jingyue-inputs/huan.prompt.txt /tmp/jingyue-inputs/xian.prompt.txt
+JY_OUTPUT_TOKENS=400 node docs/qa-consultation/infer.mjs "$RUNTIME" "$QWEN17_GGUF" /tmp/jingyue-inputs/lenormand.prompt.txt
 ```

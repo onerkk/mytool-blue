@@ -197,6 +197,23 @@ group('同一段只重複兩次、引文與正常寫法不當成機械迴圈',()
   assert.equal(review([line,line,'> '+line,'> '+line,'> '+line].join('\n')).writing.length,0);
 });
 const focusBlocks=body=>api.get(body).projection.referenceSections.filter(s=>/(?:^|／)本題起斷（/.test(s.label));
+group('十五法的心意核對區分他人的心思、本人陳述與條件句',()=>{
+  const q='我和她會走到交往嗎？', state='彼此都還在觀察', other='她心裡的反應像風一樣';
+  const flagged=(body,answer)=>c.JYReadingWorkflow.checkChartText(body,answer).writing.some(i=>i.code==='PERSONAL_STATE_SOURCE');
+  for(const [method,chart] of Object.entries(f.charts)){
+    const {body,v}=visit(method,chart,q);
+    assert.ok(flagged(body,'你們的關係尚未確定，'+state+'。'),method);
+    assert.ok(flagged(body,other+'，時而吹動，時而停歇。'),method);
+    for(const answer of ['如果'+state+'，就留給你核對。','這一卦不能說：'+state+'。',state+'嗎？','你們都還在觀察候選人的簡報。'])
+      assert.equal(flagged(body,answer),false,method+' '+answer);
+    const reported=visit(method,chart,q,{knownFacts:'我們昨天談過，彼此都還在觀察。'}).body;
+    assert.equal(flagged(reported,state+'。'),false,method);
+    const p=v.points[0],follow=api.followUp(body,{source:v.source||v.title,location:p.label,evidence:p.detail,note:'我們談過，雙方都還在觀察。'});
+    assert.equal(flagged(follow,state+'。'),false,method);
+    const single=visit(method,chart,q,{knownFacts:'她昨天親口說自己還在觀察。'}).body;
+    assert.ok(flagged(single,state+'。'),method);
+  }
+});
 group('十五法各自帶入本盤的可判範圍，初讀、合讀與重讀共用同一筆資料',()=>{
   const charts={...f.charts,ootk:require('../docs/qa-single-paste27/ootk-fixture.json')};
   const native={tarot:/第[12]位・/,ootk:/第1輪・.*計數/,lenormand:/第[0-9、]+位｜.*→/,bazi:/日柱｜.*日主/,
@@ -272,6 +289,10 @@ group('同問交往：渙之師主上九參九五，無咎不許成；咸靜卦�
   assert.match(focusBlocks(alternate)[0].value,/咸卦卦辭.*取女吉/);
   assert.doesNotMatch(focusBlocks(alternate)[0].value,/沒有直接許成的斷辭/);
   assert.ok(!check(alternate,unsupported).includes('YIJING_CLAIM_EXCEEDS_SELECTED_TEXT'));
+  const quote='「柔上而剛下，二氣感應以相與」';
+  assert.ok(check(alternate,'這卦的象傳說：'+quote+'。').includes('YIJING_QUOTE_SOURCE_彖傳'));
+  for(const text of ['彖傳說：'+quote,'有人誤稱象傳說：'+quote,'大象說「山上有澤，咸」','象傳說「山上有澤，咸」','象傳說「無從比對的白話」'])
+    assert.ok(!check(alternate,text).length,text);
   for(const context of ['我們已經交往，能不能一起工作？','在一起工作會有升遷嗎？','我們什麼時候結婚？','她願不願意和我交往？']){
     const text=visit('yijing',xian,context).body;
     assert.equal(api.get(text).projection.consultation[0].opening.verdict,'',context);

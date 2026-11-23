@@ -725,6 +725,18 @@ return function timeScope(question,referenceYear){
     }else if(method==='liuyao'||method==='yijing'){
       out.movingPositions=(c.lines||[]).filter(function(l){return l.moving;}).map(function(l){return l.position;});
       out.original=copy(c.original);out.changed=copy(c.changed);
+      if(method==='yijing'){
+        out.quoteSources={};
+        const sides=new Set((c.reading?.selections||[]).map(s=>s.side));
+        for(const side of sides){
+          const text=side==='original'?c.originalText:c.changedText, wings=c.expositions?.[side];
+          if(!text||!wings)continue;
+          const passages={卦辭:[text.judgment],爻辭:(text.lines||[]).map(l=>l.text),彖傳:[wings.tuan],大象:[wings.greatImage],小象:wings.lineImages||[]};
+          for(const [kind,quotes] of Object.entries(passages)){
+            (out.quoteSources[kind]??=[]).push(...quotes.filter(q=>typeof q==='string'&&q));
+          }
+        }
+      }
     }else if(method==='meihua'){
       out.body=copy(c.tiG);out.use=copy(c.yoG);out.movingPosition=c.dong??c.dongYao??c.movingLine?.position??(Number.isInteger(c.movingLine)?c.movingLine:null);
     }else if(method==='liuren'){
@@ -772,6 +784,27 @@ return function timeScope(question,referenceYear){
     if(e.pillars||e.dayMaster)return {facts:{charts:[{method:'bazi',pillars:e.pillars||{},dayMaster:e.dayMaster}],requiredYears:e.requiredYears||[]},status:'available'};
     return {facts:null,status:'source-required'};
   }
+  function checkYiQuotes(sources,answer,issue){
+    if(!sources)return 0;
+    const normalize=s=>s.replace(/[\p{P}\s]/gu,'').replace(/无/g,'無');
+    const groups=Object.entries(sources).filter(pair=>Array.isArray(pair[1])).map(([kind,rows])=>[kind,rows.filter(t=>typeof t==='string').map(normalize)]);
+    let checked=0;
+    const claims=answer.matchAll(/(卦辭|爻辭|彖傳|彖曰|大象|小象|象傳|象曰)(?:裡|中)?(?:說|寫道|提到|明言|指出|記載|曰)?[\s：:，,]*[「『“"]([^」』”"\n]{4,160})[」』”"]/gu);
+    for(const claim of claims){
+      const preceding=answer.slice(0,claim.index).split(/[。！？!?\n]/).pop();
+      if(/假設|如果|誤(?:寫|引|稱)|錯(?:寫|引|稱)|並非|不是/.test(preceding))continue;
+      const quote=normalize(claim[2]);
+      if(quote.length<4)continue;
+      const found=groups.filter(([,rows])=>rows.some(text=>text.includes(quote))).map(([kind])=>kind);
+      const allowed=claim[1]==='象傳'||claim[1]==='象曰'?['大象','小象']:[claim[1]==='彖曰'?'彖傳':claim[1]];
+      if(!found.length)continue;
+      if(found.some(kind=>allowed.includes(kind))){checked++;continue;}
+      if(found.length!==1)continue;
+      checked++;
+      issue('YIJING_QUOTE_SOURCE_'+found[0],'error','這段原文見於本盤的'+found[0]+'。回答將它標為'+claim[1]+'，請依原文改正出處。',claim[0]);
+    }
+    return checked;
+  }
   function reviewFacts(options,issue){
     var read=readVerificationFacts(options),facts=read.facts,answer=String(options.answer||''),checked=0;
     if(read.status==='invalid-source')issue('INVALID_FACT_SOURCE','error','原盤事實核對資料不完整或格式無效，請貼回完整原始提示詞。');
@@ -808,6 +841,7 @@ return function timeScope(question,referenceYear){
       if(directional.length===1)chart=directional[0];
     }
     if (chart) {
+      if(chart.method==='yijing')checked+=checkYiQuotes(chart.quoteSources,answer,issue);
       var ordinals='一二三四五六';
       var levels=['初傳','中傳','末傳'];
       function check(label, code, said, expected, sentence) {
@@ -873,7 +907,35 @@ return function timeScope(question,referenceYear){
     }
     return {status:'explicit-facts-checked',checks:checked,scope:'只核可辨識的明示原盤事實、生克與作答覆蓋；不是完整語義裁決或預測命中驗證。'};
   }
-  function writingIssues(answer) {
+  // Return a passage for the reader to check. A chart can describe a tendency,
+  // while the other person's present thoughts require a separate source.
+  function personalStateIssue(packet,answer) {
+    if(!packet)return null;
+    const intake=packet.projection?.intake;
+    const reports=[packet.question,intake?.facts,packet.readingData?.notes,packet.readingData?.followUp?.note]
+      .filter(Boolean).flatMap(text=>String(text).split(/[。！；，,\n]/u))
+      .filter(text=>!/[?？]|是否|會不會|是不是|我猜|我擔心|假設|如果|並未|並不|沒有|還沒/u.test(text));
+    const assertions=[
+      /(?:彼此|雙方|你們(?:兩個人|兩人)?)(?:其實)?都(?:還|仍|正|已經)?在(觀察|試探|防備|猶豫)(?:彼此|對方)?(?=[\s\p{P}]|$)/u,
+      /(?:她|他|對方|主管)(?:的)?(?:內心|心[裡裏中])的(反應|想法|感受|打算)(?:像|就是|其實是|一直是)/u,
+      /(?:她|他|對方|主管)(?:內心|心[裡裏中]|其實|早就)(?:已經|一直|很|還在|正在)?(喜歡你|討厭你|看不起你|欣賞你|害怕|試探|猶豫)/u
+    ];
+    for(const sentence of String(answer||'').match(/[^。！？!?\n]+[。！？!?]?/gu)||[]){
+      if(/[?？]|如果|假設|假如|倘若|也許|或許|可能|推測|猜測|你提到|你說過|舉例/u.test(sentence))continue;
+      for(const clause of sentence.split(/[，,；;]/u)){
+        if(/不(?:能|代表|表示|等於|是說)|並非|無法|未知|看不出|無從|未必|是否|有沒有|例如/u.test(clause))continue;
+        for(const assertion of assertions){
+          const match=clause.match(assertion);
+          if(!match)continue;
+          const subject=/^(彼此|雙方|你們)/u.test(match[0]) ? /彼此|雙方|(?:我們|兩人|兩個人)都/u : /[她他]|對方|主管/u;
+          if(reports.some(text=>subject.test(text)&&text.includes(match[1])))continue;
+          return {code:'PERSONAL_STATE_SOURCE',message:'這句替另一個人說出了當下的心思。請核對是否有人明說過，只留下原題或本盤確實支持的部分。',excerpt:clause.trim().slice(0,160)};
+        }
+      }
+    }
+    return null;
+  }
+  function writingIssues(answer,packet) {
     const lines=String(answer||'').split(/\r?\n/).map(line=>line.trim()).filter(Boolean);
     const issues=[], counts=new Map();
     const label=lines.find(line=>/^(?:\*\*)?(?:稱呼|開場)[：:]/.test(line));
@@ -887,6 +949,8 @@ return function timeScope(question,referenceYear){
       }
       counts.set(line,count);
     }
+    const personal=personalStateIssue(packet,answer);
+    if(personal)issues.push(personal);
     return issues;
   }
   function checkChartText(sourcePrompt, answer) {
@@ -905,7 +969,7 @@ return function timeScope(question,referenceYear){
       });
       if(unsupported)issues.push({code:'YIJING_CLAIM_EXCEEDS_SELECTED_TEXT',message:'本次主、參辭言無咎。請重讀兩爻所說的免咎條件，這個判詞沒有許成交往。',excerpt:unsupported.slice(0,160)});
     }
-    return {checks:report.checks,status:report.status,issues:issues,writing:writingIssues(answer)};
+    return {checks:report.checks,status:report.status,issues:issues,writing:writingIssues(answer,packet)};
   }
   function reviewOOTK(options){
     var source=String(options.sourcePrompt||''),answer=String(options.answer||''),issues=[];
