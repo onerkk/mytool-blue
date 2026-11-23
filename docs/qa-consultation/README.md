@@ -1,5 +1,7 @@
 # 重跑十五個配對個案
 
+[這次十五法的同題換盤與渙、咸兩個手機實例](native-judgments.md)
+
 [逐案對照與統計](model-review.md) · [三十份原始模型輸出，含達到長度上限的回答](model-pairs.json)
 
 基準版為 `8cbccec0e507966dd12dfd369ab02bb61be64836`，新版首答為 `fa4f769962db1cfab7a14d342fa8d7536f1f6d05`。兩個目錄各放一份待測版本及專案本來使用的 Node 依賴。推論使用 Node 24、`node-llama-cpp@3.14.1`（llama.cpp b6843），以及 Unsloth 的 Qwen3-1.7B Q4_K_M GGUF。本次權重的 SHA-256 為 `b139949c5bd74937ad8ed8c8cf3d9ffb1e99c866c823204dc42c0d91fa181897`。
